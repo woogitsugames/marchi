@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1648 990" width="1648" height="990" role="img" aria-label="Marchia accessibility CVD comparison: original, protanopia, deuteranopia, tritanopia">
+<desc>Approximate color-vision-deficiency previews, not diagnostic or exact perceptual simulation. Original source: docs/shots/ui-why-bakery-412x915.png.</desc>
+<defs><image id="source" width="412" height="915" xlink:href="../shots/ui-why-bakery-412x915.png"/>
+<filter id="protanopia" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0 0.114503 0.786281 0.099216 0 0 -0.003882 -0.048116 1.051998 0 0 0 0 0 1 0"/></filter>
+<filter id="deuteranopia" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0 0.280085 0.672501 0.047413 0 0 -0.011820 0.042940 0.968881 0 0 0 0 0 1 0"/></filter>
+<filter id="tritanopia" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0 -0.078411 0.930809 0.147602 0 0 0.004733 0.691367 0.303900 0 0 0 0 0 1 0"/></filter>
+</defs><rect width="1648" height="990" fill="#2b2620"/>
+<text x="14" y="27" fill="#e4dccb" font-family="sans-serif" font-size="17">Oryginał / Original</text>
+<text x="426" y="27" fill="#e4dccb" font-family="sans-serif" font-size="17">Protanopia (symulacja)</text>
+<text x="838" y="27" fill="#e4dccb" font-family="sans-serif" font-size="17">Deuteranopia (symulacja)</text>
+<text x="1250" y="27" fill="#e4dccb" font-family="sans-serif" font-size="17">Tritanopia (symulacja)</text>
+<use xlink:href="#source" x="0" y="45"/>
+<use xlink:href="#source" x="412" y="45" filter="url(#protanopia)"/>
+<use xlink:href="#source" x="824" y="45" filter="url(#deuteranopia)"/>
+<use xlink:href="#source" x="1236" y="45" filter="url(#tritanopia)"/>
+<text x="14" y="978" fill="#c9c6bb" font-family="sans-serif" font-size="14">Approximate sRGB matrix filters; compare shape, luminance and UI text, not only hue.</text>
+</svg>

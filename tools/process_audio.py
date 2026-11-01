@@ -11,11 +11,15 @@ Leaves unverified synthetic SFX unchanged. Python 3.10+, ffmpeg, ffprobe only.
 from __future__ import annotations
 
 import argparse
+from array import array
 import hashlib
 import json
 import re
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
@@ -25,7 +29,138 @@ BASE = Path(__file__).resolve().parents[1]
 MANIFEST = BASE / "tools/audio_sources.json"
 OUT = BASE / "public/assets/audio"
 PROVENANCE = BASE / "docs/audio-provenance.json"
+FREESOUND_SOURCES = BASE / "tools/audio-src"
 MAX_BYTES = 4 * 1024 * 1024
+
+
+
+class FreesoundPage(HTMLParser):
+    """Read the CC0 licence and public audio metadata from a sound page."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.preview: str | None = None
+        self.cc0_link = False
+        self.cc0_label = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == "meta" and (
+            values.get("property") == "og:audio"
+            or values.get("name") == "twitter:player:stream"
+        ):
+            self.preview = values.get("content") or self.preview
+        if tag == "a" and "creativecommons.org/publicdomain/zero/1.0" in (
+            values.get("href") or ""
+        ):
+            self.cc0_link = True
+
+    def handle_data(self, data: str) -> None:
+        if "Creative Commons 0" in data:
+            self.cc0_label = True
+
+
+def freesound_preview(source: dict) -> str:
+    """Discover the official HQ OGG preview (original files require OAuth).
+
+    All files must be CC0, verified on their individual page. The downloaded
+    audio is Freesound's lossy preview, not the original lossless recording.
+    """
+    page = source["page"]
+    sid = source["sound_id"]
+    parsed = urlsplit(page)
+    if parsed.scheme != "https" or parsed.netloc != "freesound.org":
+        raise ValueError(f"Invalid Freesound sound page: {page}")
+    if not re.fullmatch(rf"/people/[^/]+/sounds/{sid}/", parsed.path):
+        raise ValueError(f"Freesound page/ID mismatch: {page}")
+    if source["author"].lower() != parsed.path.split("/")[2].lower():
+        raise ValueError(f"Freesound author/page mismatch: {page}")
+    request = urllib.request.Request(
+        page, headers={"User-Agent": "Mozilla/5.0 (MARCHIA CC0 asset review)"}
+    )
+    with urllib.request.urlopen(request, timeout=45) as response:
+        if urlsplit(response.url).netloc != "freesound.org":
+            raise ValueError("Unexpected Freesound page redirect")
+        html = response.read(2_000_001)
+        if len(html) > 2_000_000:
+            raise ValueError("Freesound page exceeded size limit")
+    reader = FreesoundPage()
+    reader.feed(html.decode("utf-8", errors="replace"))
+    if not (reader.cc0_link and reader.cc0_label):
+        raise ValueError(f"CC0 not independently confirmed on {page}")
+    if not reader.preview or not reader.preview.endswith("-lq.mp3"):
+        raise ValueError(f"No public Freesound preview found on {page}")
+    p = urlsplit(reader.preview)
+    if (p.scheme != "https" or p.netloc != "cdn.freesound.org"
+            or p.query or p.fragment or not re.fullmatch(
+                rf"/previews/\d+/{sid}_[^/]+-lq\.mp3", p.path
+            )):
+        raise ValueError(f"Untrusted Freesound preview URL: {reader.preview}")
+    return reader.preview[:-7] + "-hq.ogg"
+
+
+def fetch_freesound(source: dict, dest: Path) -> str:
+    url = freesound_preview(source)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_name(dest.name + ".part")
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "MARCHIA-audio-assets/2.0 (CC0)"}
+        )
+        with urllib.request.urlopen(req, timeout=90) as response, tmp.open("wb") as fh:
+            landed = urlsplit(response.url)
+            if landed.scheme != "https" or landed.netloc != "cdn.freesound.org":
+                raise ValueError(f"Untrusted Freesound CDN redirect: {response.url}")
+            total = 0
+            while chunk := response.read(1024 * 1024):
+                total += len(chunk)
+                if total > 40 * 1024 * 1024:
+                    raise ValueError("Freesound preview exceeded 40 MiB")
+                fh.write(chunk)
+        if total < 1000:
+            raise ValueError(f"Preview looks empty: {url}")
+        tmp.replace(dest)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return url
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_manifest(manifest: dict) -> None:
+    ids = [t["id"] for t in manifest["tracks"]]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Duplicate audio asset ID in manifest")
+    for track in manifest["tracks"]:
+        if track["kind"] not in ("ambient", "sfx"):
+            raise ValueError(f"Invalid kind for {track['id']}")
+        if track["source"] not in manifest["sources"]:
+            raise ValueError(f"Missing source for {track['id']}")
+        if track["seconds"] <= 0 or track.get("start", 0) < 0:
+            raise ValueError(f"Invalid timing for {track['id']}")
+        if "loop_crossfade" in track and not (
+            0 < track["loop_crossfade"] < track["seconds"] / 2
+        ):
+            raise ValueError(f"Invalid crossfade for {track['id']}")
+    for key, source in manifest["sources"].items():
+        if source["license"] != "CC0-1.0":
+            raise ValueError(f"Non-CC0 audio source: {key}")
+        if source.get("provider") == "freesound":
+            sid = source["sound_id"]
+            if not isinstance(sid, int) or sid <= 0:
+                raise ValueError(f"Invalid Freesound ID: {key}")
+            if source.get("preview") != "ogg-hq":
+                raise ValueError(f"Unsupported Freesound preview quality: {key}")
+            if source["filename"] != f"{sid}-hq.ogg":
+                raise ValueError(f"Unexpected Freesound filename: {key}")
+        elif source.get("provider", "opengameart") != "opengameart":
+            raise ValueError(f"Unsupported provider: {key}")
 
 
 def run(cmd: list[str], *, capture: bool = False) -> str:
@@ -84,29 +219,43 @@ def fetch(url: str, dest: Path) -> None:
             time.sleep(2 * (attempt + 1))
 
 
-def source_checksums(manifest: dict, source_dir: Path, fetch_missing: bool) -> dict[str, dict]:
+def source_checksums(
+    manifest: dict, source_dir: Path, fetch_missing: bool, tracks: list[dict]
+) -> dict[str, dict]:
     records = {}
-    used = {t["source"] for t in manifest["tracks"]}
-    used |= {e["source"] for t in manifest["tracks"] for e in t.get("extra", [])}
+    used = {t["source"] for t in tracks}
+    used |= {e["source"] for t in tracks for e in t.get("extra", [])}
     for key in sorted(used):
         source = manifest["sources"][key]
-        if source["license"] != "CC0-1.0":
-            raise ValueError(f"Cannot process non-CC0 recording: {key}")
-        file = source_dir / source["filename"]
+        provider = source.get("provider", "opengameart")
+        # Version Freesound source previews alongside shipped audio in the PR.
+        folder = FREESOUND_SOURCES if provider == "freesound" and (
+            source_dir == BASE / ".cache/audio-sources"
+        ) else source_dir
+        file = folder / source["filename"]
+        resolved = source.get("url")
         if not file.exists():
             if not fetch_missing:
-                raise FileNotFoundError(f"Missing {file}; pass --fetch or --source-dir")
-            print(f"Downloading CC0 field recording {key}: {source['page']}", flush=True)
-            fetch(source["url"], file)
+                raise FileNotFoundError(
+                    f"Missing CC0 source {file}; pass --fetch or supply the file"
+                )
+            print(f"Downloading CC0 sound {key}: {source['page']}", flush=True)
+            if provider == "freesound":
+                resolved = fetch_freesound(source, file)
+            else:
+                fetch(source["url"], file)
         probe = ffprobe(file)
-        digest = hashlib.sha256()
-        with file.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-                digest.update(chunk)
-        records[key] = {"file": file, "sha256": digest.hexdigest(), **probe}
-        print(f"Source {key}: {file.stat().st_size:,} B, {probe['duration']:.1f} s", flush=True)
+        digest = sha256(file)
+        if source.get("sha256") and digest != source["sha256"]:
+            raise ValueError(f"Source hash mismatch for {key}: {file}")
+        records[key] = {
+            "file": file, "sha256": digest, "download_url": resolved, **probe
+        }
+        print(
+            f"Source {key}: {file.stat().st_size:,} B, {probe['duration']:.1f} s",
+            flush=True,
+        )
     return records
-
 
 def field_loop(track: dict, src: Path, extras: list[tuple[dict, Path]], output: Path) -> None:
     seconds = float(track["seconds"])
@@ -145,9 +294,56 @@ def field_loop(track: dict, src: Path, extras: list[tuple[dict, Path]], output: 
     ])
 
 
+def loudest_window_index(
+    samples: array, window: int, step: int = 400, margin: int = 160
+) -> int:
+    """Return the loudest excerpt, leaving a short fade margin at either end."""
+    if window <= 0 or step <= 0 or window > len(samples):
+        raise ValueError("Invalid recording/window length")
+    margin = min(margin, window // 5)
+    prefix = [0.0]
+    for sample in samples:
+        prefix.append(prefix[-1] + sample * sample)
+    last = len(samples) - window
+    candidates = range(0, last + 1, step)
+    best_start, best_energy = 0, -1.0
+    for start in candidates:
+        energy = prefix[start + window - margin] - prefix[start + margin]
+        if energy > best_energy:
+            best_start, best_energy = start, energy
+    # Do not discard a particularly good sound near the very end of the file.
+    if last % step:
+        energy = prefix[last + window - margin] - prefix[last + margin]
+        if energy > best_energy:
+            best_start, best_energy = last, energy
+    if best_energy < 1e-8:
+        raise ValueError("Recording is silent in the requested duration")
+    return best_start
+
+
+def loudest_excerpt_start(src: Path, seconds: float) -> float:
+    rate = 8000
+    decoded = subprocess.run([
+        "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(src),
+        "-vn", "-ac", "1", "-ar", str(rate), "-f", "f32le", "pipe:1",
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    samples = array("f")
+    samples.frombytes(decoded.stdout)
+    if sys.byteorder != "little":
+        samples.byteswap()
+    pos = loudest_window_index(
+        samples, round(seconds * rate), step=400, margin=800
+    )
+    start = pos / rate
+    print(f"Auto-selected strongest {seconds:.2f}-s excerpt at "
+          f"{start:.3f}s from {src.name}", flush=True)
+    return start
+
+
 def shot(track: dict, src: Path, output: Path) -> None:
     seconds = float(track["seconds"])
-    start = float(track.get("start", 0))
+    start = (loudest_excerpt_start(src, seconds) if track.get("auto_peak")
+             else float(track.get("start", 0)))
     fade_out = max(.1, seconds - .12)
     run([
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
@@ -246,19 +442,45 @@ def main() -> None:
     parser.add_argument("--fetch", action="store_true",
                         help="Download missing verified CC0 original recordings")
     parser.add_argument("--check", action="store_true",
-                        help="Validate shipped OGG and M4A assets, codecs and budget")
+                        help="Validate OGG/M4A assets, source hashes and budget")
+    parser.add_argument("--only-freesound", action="store_true",
+                        help="Render only Freesound SFX; keep shipped ambience")
     parser.add_argument("--source-dir", type=Path,
                         default=BASE / ".cache/audio-sources")
     args = parser.parse_args()
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    tracks = manifest["tracks"]
+    validate_manifest(manifest)
+    tracks = [t for t in manifest["tracks"] if not args.only_freesound or
+              manifest["sources"][t["source"]].get("provider") == "freesound"]
     if args.check:
-        total = budget_and_channels(OUT, tracks if PROVENANCE.exists() else None)
+        total = budget_and_channels(
+            OUT, manifest["tracks"] if PROVENANCE.exists() else None
+        )
+        if PROVENANCE.exists():
+            prov = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+            if prov.get("output_sha256"):
+                for rel, expected in prov["output_sha256"].items():
+                    file = OUT / rel
+                    if not file.is_file() or sha256(file) != expected:
+                        raise ValueError(f"Shipped audio digest mismatch: {rel}")
+                actual = {
+                    str(p.relative_to(OUT)) for p in OUT.rglob("*")
+                    if p.suffix in (".ogg", ".m4a")
+                }
+                if set(prov["output_sha256"]) != actual:
+                    raise ValueError("Output digest catalogue incomplete")
+            for key, source in manifest["sources"].items():
+                if source.get("provider") != "freesound":
+                    continue
+                file = FREESOUND_SOURCES / source["filename"]
+                expected = prov.get("sources", {}).get(key, {}).get("sha256")
+                if expected and (not file.is_file() or sha256(file) != expected):
+                    raise ValueError(f"Bundled Freesound source digest mismatch: {key}")
         print(f"PASS: {total} B / {MAX_BYTES} B; 46 files; stereo ambient / mono SFX")
         return
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         parser.error("ffmpeg and ffprobe must be installed")
-    sources = source_checksums(manifest, args.source_dir, args.fetch)
+    sources = source_checksums(manifest, args.source_dir, args.fetch, tracks)
     with tempfile.TemporaryDirectory(prefix="marchia-cc0-") as td:
         temp = Path(td)
         staged = temp / "out"
@@ -275,7 +497,7 @@ def main() -> None:
                     f"Source {key} too short: {meta['duration']:.2f} < {needed:.2f}"
                 )
             raw = temp / (track["id"].replace("/", "_") + ".wav")
-            if track["kind"] == "ambient":
+            if track["kind"] == "ambient" or "loop_crossfade" in track:
                 layers = [
                     (layer, sources[layer["source"]]["file"])
                     for layer in track.get("extra", [])
@@ -300,22 +522,44 @@ def main() -> None:
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 file.replace(dest)
         PROVENANCE.parent.mkdir(parents=True, exist_ok=True)
-        source_json = {
-            k: {
-                "sha256": v["sha256"],
-                "seconds": round(v["duration"], 4),
-                "original": manifest["sources"][k]["url"],
-            } for k, v in sorted(sources.items())
+        previous = (
+            json.loads(PROVENANCE.read_text(encoding="utf-8"))
+            if PROVENANCE.exists() else {}
+        )
+        source_json = dict(previous.get("sources", {}))
+        for key, record in sorted(sources.items()):
+            meta = manifest["sources"][key]
+            source_json[key] = {
+                "sha256": record["sha256"],
+                "seconds": round(record["duration"], 4),
+                "original": meta.get("url", meta["page"]),
+                "page": meta["page"],
+                "author": meta["author"],
+                "sound_id": meta.get("sound_id"),
+                "source_format": (
+                    "Freesound public HQ OGG preview"
+                    if meta.get("provider") == "freesound" else "original"
+                ),
+                "preview_url": record["download_url"],
+            }
+        output_sha256 = {
+            str(p.relative_to(OUT)): sha256(p)
+            for p in sorted(OUT.rglob("*"))
+            if p.suffix in (".ogg", ".m4a")
         }
         PROVENANCE.write_text(
             json.dumps({
-                "format_version": 1, "sources": source_json,
-                "output_bytes": total, "tracks": [t["id"] for t in tracks],
+                "format_version": 2, "sources": source_json,
+                "output_bytes": total,
+                "tracks": [t["id"] for t in manifest["tracks"]],
+                "output_sha256": output_sha256,
             }, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-        print(f"PASS: {len(tracks)} CC0 field recordings; "
-              f"6 requested SFX left synthetic; {total} B combined")
+        print(
+            f"PASS: rendered {len(tracks)} CC0 recordings; "
+            f"{len(manifest['tracks'])} verified tracks; {total} B combined"
+        )
 
 
 if __name__ == "__main__":

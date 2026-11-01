@@ -30,12 +30,22 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
 - [ ] P2 — Kamera po otwarciu panelu chowa obiekt pod arkuszem: `camera.focusCell(cell, screenOffset)`.
 - [ ] P2 — Samouczek misji 1 wg docs/tutorial/m1.md (GPT, PR #4).
-- [ ] P2 — Protokół playtestu (zlecenie GPT 08 — jeszcze nie dostarczony).
+- [ ] P2 — Przeprowadzić 5–8 sesji playtestu na Androidzie wg `docs/playtest/PROTOCOL.md`, zebrać CSV, policzyć mediany i odsetek poprawnych diagnoz <30 s oraz zastąpić hipotezy H1–H5 rzeczywistymi TOP 5 problemów z licznikami (źródło: owner, docs/playtest/PROTOCOL.md).
 - [ ] P3 — Ikona: „M” na pieczęci w Grenze Gotisch, kreskowanie koła.
 - [ ] P3 — Turkot wozu, siekiera, piła, koń: wciąż syntetyczne — szukać nagrań CC0.
 - [ ] P3 — Wozy na zakrętach odstają od wygładzonej drogi (~0,6 m); kolejki przy moście mogą wychodzić poza drogę.
 - [ ] P4 — Budowanie budynków w trybie swobodnym (sim ma `place`, brak UI).
 - [ ] P4 — Monetyzacja: pełna wersja jednorazowo (D-10) — sklep na późniejszym etapie.
+
+### Playtest — hipotezy UI do walidacji, **nie wyniki badań**
+
+Wpisy H1–H5 są kandydatami do sprawdzenia podczas sesji z `docs/playtest/PROTOCOL.md`, a nie „TOP 5 zaobserwowanych problemów”. Po badaniu nadaj priorytety na podstawie liczby **unikalnych osób**, ciężkości błędu i mediany czasu; uzupełnij licznik i kryterium akceptacji. Bez danych nie zamykaj tych wpisów.
+
+- [ ] P2 — **[H1 / S1–S2 / DISCOVERY, NETWORK]** Jeśli badani nie znajdują braku/przerwania mostu, dodać wejście „Co teraz stoi?” do najistotniejszego przestoju i oznaczyć rozłączone brzegi sieci / brakujący odcinek; sprawdzić na telefonie czas do poprawnej diagnozy <30 s (źródło: hipoteza playtestu, docs/playtest/PROTOCOL.md).
+- [ ] P2 — **[H2 / S3 / BUSY]** Jeśli `NO_WAGON:ALL_BUSY` jest mylone z brakiem surowca, rozdzielić te komunikaty i podać w łańcuchu jeden adekwatny następny krok „Kup wóz” z kosztem (źródło: hipoteza playtestu, src/sim/logistics.ts, docs/playtest/PROTOCOL.md).
+- [ ] P2 — **[H3 / S4 / JAM]** Jeśli `BRIDGE_JAM` jest mylony z `NO_ROUTE`, w karcie wozu wyjaśnić kolejkę na jednym pasie oraz pokazać wybór „drugi most / modernizuj do kamiennego” (źródło: hipoteza playtestu, src/ui/panels.ts, docs/playtest/PROTOCOL.md).
+- [ ] P2 — **[H4 / S5 / MUD]** Jeśli deszcz nie tłumaczy wizualnie wolnej jazdy, wyeksponować w karcie wozu „Zwalnia przez błoto” i porównanie tempa na gruncie/bruku; **nie nazywać tego przestojem** (źródło: hipoteza playtestu, src/sim/diagnose.ts, docs/playtest/PROTOCOL.md).
+- [ ] P2 — **[H5 / S6 / STORAGE]** Jeśli pełny magazyn nie jest rozpoznawany, pokazać jednoznaczny stan „60/60 — brak miejsca na odbiór” i wskazać skutek w łańcuchu przyczyn; nie obiecywać budowy magazynu, której nie ma w UI (źródło: hipoteza playtestu, src/ui/panels.ts, docs/playtest/PROTOCOL.md).
 
 ### Research 2026-11-01 (Sonnet)
 Numery linii z chwili researchu (inne zmiany w toku mogą je przesuwać). Dowody liczbowe z uruchomień `npx tsx` na `createWorld`.
@@ -136,6 +146,7 @@ Numery linii z 2026-11-01. Pozycje 1–6: samouczek; 7–16: i18n/RTL; 17–23: 
 - 2026-11-01 — 15 tłumaczeń od GPT (PR #22–#36) scalone: es, nl, fr, it, de, pt-BR, sv, ru, tr, uk, ko, ja, hi, zh-Hans, ar (słowniki, glosariusze, testy, opisy sklepu, polityki prywatności); `cellsWord` wg reguł liczby mnogiej języka (Intl.PluralRules).
 - 2026-11-01 — Liczenie straconego czasu wg źródła przestoju (`ledger.stallSeconds`, `topStallCauses`, stan v2 + migracja) — dane do podsumowania misji.
 - 2026-11-01 — Szukacz przerwy w sim: `suggestConnection` / `suggestLinkToStable` (najtańsza droga/most w srebrze, zgodna z validateRoad; test na m1).
+- 2026-11-01 — Przygotowano protokół playtestu Android (6 scenariuszy, zgoda, ankieta, CSV, plan analizy); **sesje i obserwowane TOP 5 problemów pozostają do wykonania** (`docs/playtest/PROTOCOL.md`).
 - 2026-11-01 — (research P2) Fałszywe alarmy na starcie: nowy status `WAITING_UPSTREAM` (dostawca pracuje lub sam czeka na dostawę) bez dymka; NO_INPUT wskazuje najpierw zablokowanego producenta, nie najniższe id.
 - 2026-11-01 — Przegląd symulacji (PR #8): naprawione F-01 (zakleszczenie na moście ukośnym), F-02, F-03, F-04.
 - 2026-11-01 — (research P1) Soft-lock m1: dodana komenda `sellWagon` (zwrot 15 srebra) — wyjście z braku srebra; przycisk w karcie wozu (agent Fold). Wczesne wykrycie „brak drogi do zwycięstwa” nadal otwarte.

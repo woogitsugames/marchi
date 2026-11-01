@@ -1,5 +1,5 @@
 {
-  "format_version": 1,
+  "format_version": 2,
   "sample_rate": 24000,
   "tracks": [
     {
@@ -46,12 +46,120 @@
       "notes": "Real wind; no unverified owl call was added."
     },
     {
+      "id": "sfx/cart-dirt",
+      "kind": "sfx",
+      "seconds": 4.8,
+      "start": 0,
+      "source": "cart_dirt",
+      "notes": "Wood wheels rolling on gritty dirt road (vintage archive)",
+      "loop_crossfade": 0.45
+    },
+    {
+      "id": "sfx/cart-cobble",
+      "kind": "sfx",
+      "seconds": 3.8,
+      "start": 7,
+      "source": "cart_cobble",
+      "notes": "Horse-drawn milk wagon on cobblestone, not modern traffic",
+      "loop_crossfade": 0.35
+    },
+    {
+      "id": "sfx/horse-snort",
+      "kind": "sfx",
+      "seconds": 1.6,
+      "start": 0,
+      "source": "horse_snort",
+      "notes": "Horse snorting; natural animal recording"
+    },
+    {
+      "id": "sfx/axe",
+      "kind": "sfx",
+      "seconds": 0.85,
+      "start": 0.1,
+      "source": "axe",
+      "notes": "Real small axe chopping a branch, outdoors"
+    },
+    {
+      "id": "sfx/saw",
+      "kind": "sfx",
+      "seconds": 1.9,
+      "start": 0.8,
+      "source": "saw",
+      "notes": "Real manual handsaw sawing through wooden plank"
+    },
+    {
+      "id": "sfx/mill-wheel",
+      "kind": "sfx",
+      "seconds": 5.5,
+      "start": 3,
+      "source": "mill_wheel",
+      "notes": "Watermill wooden wheel turning with rhythmic water",
+      "loop_crossfade": 0.55
+    },
+    {
       "id": "sfx/bridge-wood",
       "kind": "sfx",
       "seconds": 1.3,
-      "start": 0,
-      "source": "steps_wood",
-      "notes": "Real footsteps on a wooden floor used as bridge plank impacts; provisional, not cart wheels."
+      "start": 0.4,
+      "source": "bridge_cart",
+      "notes": "Heavy wooden cart wheel rolling on wooden floor/bridge"
+    },
+    {
+      "id": "sfx/oven",
+      "kind": "sfx",
+      "seconds": 1.3,
+      "start": 0.6,
+      "source": "oven_fire",
+      "notes": "Real fireplace wood crackling (fire, not oven mechanics)"
+    },
+    {
+      "id": "sfx/load-sack",
+      "kind": "sfx",
+      "seconds": 0.95,
+      "start": 0.2,
+      "source": "sack",
+      "notes": "Real sack impact (alternate excerpt from same CC0 recording)"
+    },
+    {
+      "id": "sfx/unload-sack",
+      "kind": "sfx",
+      "seconds": 1.15,
+      "start": 3.5,
+      "source": "sack",
+      "notes": "Real sack impact (alternate excerpt from same CC0 recording)"
+    },
+    {
+      "id": "sfx/load-plank",
+      "kind": "sfx",
+      "seconds": 1.1,
+      "start": 0.5,
+      "source": "plank",
+      "notes": "Real plank impact (alternate excerpt from same CC0 recording)"
+    },
+    {
+      "id": "sfx/unload-plank",
+      "kind": "sfx",
+      "seconds": 1.35,
+      "start": 7.2,
+      "source": "plank",
+      "notes": "Real plank impact (alternate excerpt from same CC0 recording)"
+    },
+    {
+      "id": "sfx/load-log",
+      "kind": "sfx",
+      "seconds": 1.25,
+      "start": 0.3,
+      "source": "log",
+      "notes": "Automatic loudest non-silent segment selected from the CC0 log-drop take; avoiding quiet introduction",
+      "auto_peak": true
+    },
+    {
+      "id": "sfx/unload-log",
+      "kind": "sfx",
+      "seconds": 1.45,
+      "start": 4.2,
+      "source": "log",
+      "notes": "Real log impact (alternate excerpt from same CC0 recording)"
     }
   ],
   "sources": {
@@ -96,22 +204,119 @@
       "page": "https://opengameart.org/content/steps-in-wood-floor",
       "license": "CC0-1.0",
       "url": "https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav"
+    },
+    "cart_dirt": {
+      "provider": "freesound",
+      "sound_id": 480020,
+      "filename": "480020-hq.ogg",
+      "author": "craigsmith",
+      "page": "https://freesound.org/people/craigsmith/sounds/480020/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Wood wheels rolling on gritty dirt road (vintage archive)"
+    },
+    "cart_cobble": {
+      "provider": "freesound",
+      "sound_id": 437092,
+      "filename": "437092-hq.ogg",
+      "author": "craigsmith",
+      "page": "https://freesound.org/people/craigsmith/sounds/437092/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Horse-drawn milk wagon on cobblestone, not modern traffic"
+    },
+    "horse_snort": {
+      "provider": "freesound",
+      "sound_id": 475483,
+      "filename": "475483-hq.ogg",
+      "author": "o_ciz",
+      "page": "https://freesound.org/people/o_ciz/sounds/475483/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Horse snorting; natural animal recording"
+    },
+    "axe": {
+      "provider": "freesound",
+      "sound_id": 753925,
+      "filename": "753925-hq.ogg",
+      "author": "xkeril",
+      "page": "https://freesound.org/people/xkeril/sounds/753925/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real small axe chopping a branch, outdoors"
+    },
+    "saw": {
+      "provider": "freesound",
+      "sound_id": 707527,
+      "filename": "707527-hq.ogg",
+      "author": "LiezelDippenaar",
+      "page": "https://freesound.org/people/LiezelDippenaar/sounds/707527/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real manual handsaw sawing through wooden plank"
+    },
+    "mill_wheel": {
+      "provider": "freesound",
+      "sound_id": 263583,
+      "filename": "263583-hq.ogg",
+      "author": "Berwitz",
+      "page": "https://freesound.org/people/Berwitz/sounds/263583/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Watermill wooden wheel turning with rhythmic water"
+    },
+    "bridge_cart": {
+      "provider": "freesound",
+      "sound_id": 480042,
+      "filename": "480042-hq.ogg",
+      "author": "craigsmith",
+      "page": "https://freesound.org/people/craigsmith/sounds/480042/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Heavy wooden cart wheel rolling on wooden floor/bridge"
+    },
+    "sack": {
+      "provider": "freesound",
+      "sound_id": 382642,
+      "filename": "382642-hq.ogg",
+      "author": "bbrocer",
+      "page": "https://freesound.org/people/bbrocer/sounds/382642/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Bag of flour moved from shelf and dropped onto counter"
+    },
+    "plank": {
+      "provider": "freesound",
+      "sound_id": 537755,
+      "filename": "537755-hq.ogg",
+      "author": "Tim_Verberne",
+      "page": "https://freesound.org/people/Tim_Verberne/sounds/537755/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real small wooden planks dropping to ground"
+    },
+    "log": {
+      "provider": "freesound",
+      "sound_id": 681416,
+      "filename": "681416-hq.ogg",
+      "author": "ventousawins",
+      "page": "https://freesound.org/people/ventousawins/sounds/681416/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real wooden log dropped"
+    },
+    "oven_fire": {
+      "provider": "freesound",
+      "sound_id": 263864,
+      "filename": "263864-hq.ogg",
+      "author": "ceich93",
+      "page": "https://freesound.org/people/ceich93/sounds/263864/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real fireplace wood crackling (fire, not oven mechanics)"
     }
   },
   "synthetic_retained": [
-    "sfx/cart-dirt",
-    "sfx/cart-cobble",
-    "sfx/horse-snort",
-    "sfx/axe",
-    "sfx/saw",
-    "sfx/mill-wheel",
-    "sfx/load-sack",
-    "sfx/unload-sack",
-    "sfx/load-plank",
-    "sfx/unload-plank",
-    "sfx/load-log",
-    "sfx/unload-log",
-    "sfx/oven",
     "sfx/wax-seal",
     "ui/stall",
     "ui/wood",
