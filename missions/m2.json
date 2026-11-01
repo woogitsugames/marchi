@@ -1,0 +1,242 @@
+{
+  "formatVersion": 1,
+  "mission": {
+    "id": "m2",
+    "mapId": "valley-m2",
+    "seed": 2402,
+    "coins": 160,
+    "wagons": 7,
+    "buildings": [
+      {
+        "type": "woodcutter",
+        "x": 20,
+        "y": 25,
+        "facing": 0,
+        "stock": {
+          "wood": 4
+        }
+      },
+      {
+        "type": "woodcutter",
+        "x": 26,
+        "y": 27,
+        "facing": 0
+      },
+      {
+        "type": "mill",
+        "x": 32,
+        "y": 27,
+        "facing": 0
+      },
+      {
+        "type": "stable",
+        "x": 46,
+        "y": 27,
+        "facing": 0
+      },
+      {
+        "type": "castle",
+        "x": 64,
+        "y": 25,
+        "facing": 0
+      },
+      {
+        "type": "sawmill",
+        "x": 32,
+        "y": 44,
+        "facing": 2
+      },
+      {
+        "type": "farm",
+        "x": 22,
+        "y": 46,
+        "facing": 2,
+        "stock": {
+          "grain": 4
+        }
+      },
+      {
+        "type": "farm",
+        "x": 27,
+        "y": 46,
+        "facing": 2
+      },
+      {
+        "type": "bakery",
+        "x": 43,
+        "y": 44,
+        "facing": 2
+      },
+      {
+        "type": "bakery",
+        "x": 56,
+        "y": 44,
+        "facing": 2
+      }
+    ],
+    "roads": [
+      [
+        [
+          21,
+          30
+        ],
+        [
+          72,
+          30
+        ]
+      ],
+      [
+        [
+          21,
+          27
+        ],
+        [
+          21,
+          30
+        ]
+      ],
+      [
+        [
+          23,
+          42
+        ],
+        [
+          70,
+          42
+        ]
+      ],
+      [
+        [
+          23,
+          42
+        ],
+        [
+          23,
+          45
+        ]
+      ],
+      [
+        [
+          28,
+          42
+        ],
+        [
+          28,
+          45
+        ]
+      ],
+      [
+        [
+          33,
+          42
+        ],
+        [
+          33,
+          43
+        ]
+      ],
+      [
+        [
+          44,
+          42
+        ],
+        [
+          44,
+          43
+        ]
+      ],
+      [
+        [
+          57,
+          42
+        ],
+        [
+          57,
+          43
+        ]
+      ],
+      [
+        [
+          51,
+          30
+        ],
+        [
+          51,
+          42
+        ]
+      ]
+    ],
+    "contract": {
+      "wood": 0,
+      "planks": 36,
+      "grain": 0,
+      "flour": 0,
+      "bread": 30
+    },
+    "deadlineMin": 12,
+    "star3Min": 8.75,
+    "star2Min": 9.75,
+    "rain": [],
+    "roadsOverWater": true
+  },
+  "valley": {
+    "w": 96,
+    "h": 72,
+    "seed": 2402,
+    "waterLevel": 10,
+    "spacing": 12,
+    "riverY": [
+      36,
+      36,
+      36,
+      36,
+      36,
+      36,
+      36,
+      36,
+      36
+    ],
+    "riverHalfWidth": [
+      3.6,
+      3.6,
+      3.6,
+      3.6,
+      3.6,
+      3.6,
+      3.6,
+      3.6,
+      3.6
+    ],
+    "hills": [
+      {
+        "x": 16,
+        "y": 60,
+        "r": 11,
+        "h": 3
+      },
+      {
+        "x": 80,
+        "y": 60,
+        "r": 12,
+        "h": 3
+      }
+    ],
+    "northRidge": 6,
+    "southRidge": 69,
+    "forestNorthOf": 22,
+    "fields": [
+      {
+        "x": 15,
+        "y": 49,
+        "w": 10,
+        "h": 10
+      },
+      {
+        "x": 28,
+        "y": 51,
+        "w": 10,
+        "h": 9
+      }
+    ]
+  }
+}
