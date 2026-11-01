@@ -36,3 +36,17 @@ test('not enough coins: command rejected, nothing changes', () => {
   assert(!r.ok && r.err.k === 'NO_COINS', 'no coins');
   eq(JSON.stringify(w.state.roads), before, 'roads unchanged');
 });
+
+test('selling an idle wagon refunds half its price; busy wagons cannot be sold', () => {
+  const w = createWorld('m1');
+  const idle = w.state.wagons[0]!;
+  const coins = w.state.coins;
+  const r = applyCommand(w, { t: 'sellWagon', wagon: idle.id });
+  assert(r.ok, 'sold');
+  eq(w.state.coins, coins + 15, 'refund');
+  eq(w.state.wagons.length, 1, 'one wagon left');
+  const other = w.state.wagons[0]!;
+  other.job = { id: 999, good: 'wood', qty: 1, from: 1, to: 2, phase: 'pickup' };
+  const r2 = applyCommand(w, { t: 'sellWagon', wagon: other.id });
+  assert(!r2.ok && r2.err.k === 'WAGON_BUSY', 'busy wagon refused');
+});

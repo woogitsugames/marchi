@@ -12,6 +12,8 @@ export type Command =
   | { t: 'road'; cells: number[]; surface: SurfaceKind }
   | { t: 'demolish'; cell: number }
   | { t: 'buyWagon'; stable: number }
+  /** Sell an idle wagon back for half its price (recovery when silver runs out). */
+  | { t: 'sellWagon'; wagon: number }
   | { t: 'place'; type: BuildingType; x: number; y: number; facing: number };
 
 export type CommandError =
@@ -26,7 +28,8 @@ export type CommandError =
   | { k: 'CANNOT_DEMOLISH'; building: number }
   | { k: 'TOO_MANY_WAGONS' }
   | { k: 'NOT_FLAT'; cell: number }
-  | { k: 'BAD_TARGET' };
+  | { k: 'BAD_TARGET' }
+  | { k: 'WAGON_BUSY'; wagon: number };
 
 export type CommandResult = { ok: true; cost: number } | { ok: false; err: CommandError };
 
@@ -89,6 +92,16 @@ export function applyCommand(world: World, cmd: Command): CommandResult {
       st.coins -= WAGON_PRICE;
       spawnWagon(world, stable.id);
       return { ok: true, cost: WAGON_PRICE };
+    }
+    case 'sellWagon': {
+      const i = st.wagons.findIndex((w) => w.id === cmd.wagon);
+      if (i < 0) return { ok: false, err: { k: 'BAD_TARGET' } };
+      const w = st.wagons[i]!;
+      if (w.job || w.cargoQty > 0 || w.busyTicks > 0 || w.next >= 0) return { ok: false, err: { k: 'WAGON_BUSY', wagon: w.id } };
+      st.wagons.splice(i, 1);
+      const refund = Math.floor(WAGON_PRICE * 0.5);
+      st.coins += refund;
+      return { ok: true, cost: -refund };
     }
     case 'place':
       return place(world, cmd.type, cmd.x, cmd.y, cmd.facing, false);

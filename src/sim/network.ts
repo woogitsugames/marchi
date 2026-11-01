@@ -226,13 +226,14 @@ export interface DistMap {
  * Dijkstra over road cells from `start`. reverse=false: dist[x] = time start -> x.
  * reverse=true: dist[x] = time x -> start. Stops early when `stopAt` is settled.
  */
-export function dijkstra(world: World, start: number, reverse: boolean, loaded: boolean, stopAt = -1): DistMap {
+export function dijkstra(world: World, start: number, reverse: boolean, loaded: boolean, stopAt = -1, reuse = false): DistMap {
   const t = world.terrain, w = t.w, h = t.h;
   const n = w * h;
-  const dist = new Float64Array(n).fill(Infinity);
-  const prev = new Int32Array(n).fill(-1);
-  if (!world.state.roads[start]) return { dist, prev };
   const sc = scratch(world);
+  // reuse=true: results live in shared scratch buffers (valid until the next reuse call) — no allocation
+  const dist = reuse ? sc.dist.fill(Infinity) : new Float64Array(n).fill(Infinity);
+  const prev = reuse ? sc.prev.fill(-1) : new Int32Array(n).fill(-1);
+  if (!world.state.roads[start]) return { dist, prev };
   const hn = sc.heapNode, hk = sc.heapKey;
   let size = 0;
   const push = (node: number, key: number) => {
@@ -301,7 +302,7 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
 /** Node list from `from` (exclusive) to `to` (inclusive), or null if unreachable. */
 export function findPath(world: World, from: number, to: number, loaded: boolean): number[] | null {
   if (from === to) return [];
-  const m = dijkstra(world, from, false, loaded, to);
+  const m = dijkstra(world, from, false, loaded, to, true);
   if (m.dist[to] === Infinity) return null;
   const out: number[] = [];
   for (let c = to; c !== from; c = m.prev[c]!) out.push(c);
