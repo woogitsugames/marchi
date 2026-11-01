@@ -50,7 +50,7 @@ jobs:
           summary="$(awk 'NF { line=$0 } END { print line }' "$RUNNER_TEMP/npm-test.log")"
           {
             echo '### Testy symulacji'
-            if [[ "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)$ ]]; then
+            if [[ "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)([[:space:]].*)?$ ]]; then
               echo "\`$summary\`"
             else
               echo '**FAIL:** brak poprawnej końcowej linii `SUMMARY passed=N failed=M`.'
@@ -61,7 +61,7 @@ jobs:
             echo "npm test: kod wyjścia $test_exit" >&2
             exit "$test_exit"
           fi
-          if [[ ! "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)$ ]]; then
+          if [[ ! "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)([[:space:]].*)?$ ]]; then
             echo 'npm test: niepoprawna lub brakująca końcowa linia SUMMARY' >&2
             exit 1
           fi
