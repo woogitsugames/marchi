@@ -144,6 +144,18 @@ Numery linii z 2026-11-01. Pozycje 1–6: samouczek; 7–16: i18n/RTL; 17–23: 
 - [ ] P3 — Sesja 10 min: „migawka diagnozy” — przy pierwszym krytycznym przestoju misji (isCritical) kamera nie zmienia się, ale pulsuje (raz, 2 s) bąbelek i na pasku powiadomień pokazuje się `showNotice` z nazwą budynku („Piekarnia stoi: brak drogi”) i przyciskiem „Pokaż” (`go('building', id)`); łączy się z wpisem „Co teraz stoi?”, ale jest tanie do zrobienia samodzielnie, bo `showNotice` i `go` już istnieją (źródło: research, hud.ts:265, app.ts:395, markers.ts:68)
 
 
+### Sandbox (Sonnet)
+Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -> S6 -> S7 -> S8.
+- [ ] P2 — Sandbox S1: generyczne towary — `GoodMap = Record<Good,number>` z `GOODS`, `STATE_VERSION = 3` + migracja v2→v3, 5 nowych towarów (kamień, węgiel, ryby, słód, piwo) bez budynków; hashe m1–m3 muszą pozostać bez zmian (sim: types/defs/sim/save)
+- [ ] P2 — Sandbox S2: rynek — sprzedaż towarów w zamku przy rozładunku, ceny stałe z nasyceniem (`market.sold`, odnowa), `ledger.consumed`, start „Osada” 260 sr / 2 wozy / drwal+tartak połączone; `tests/market.test.ts` (sim)
+- [ ] P2 — Sandbox S3: czysty `validatePlace` bez mutacji, `placedTick`, zwrot 100% świeżego budynku (≤ 30 s symulacji), błędy `LOCKED` i `NOT_NEAR_WATER`; test zgodności z `place` na fuzz (sim: commands/types)
+- [ ] P2 — Sandbox S4: renoma i rangi 0–3 (próg renomy + zatrzaski różnorodności i przepływu 3 min), blokady budynków tylko w sandboxie; `src/sim/town.ts`, `tests/town.test.ts`; bot sandbox osiąga rangę 1 w ≤ 12 min (sim)
+- [ ] P4 — Sandbox S5: treść — rybak, węglarnia, kamieniołom, Targ, słodownia, browar; nowe przyczyny `NOT_NEAR_WATER`, `NO_STONE`, `CONTESTED`, `MARKET_SATURATED`; ładunek kamienia 4; kamień w koszcie bruku/mostu kamiennego; wpisy w `stallCodex.ts` + i18n pl/en (sim + content)
+- [ ] P4 — Sandbox S6: zamówienia królewskie (maks. 2, bez terminu, odrzucalne) i jarmarki sezonowe (+25% ceny jednego towaru, RNG w stanie); `src/sim/orders.ts`, `tests/orders.test.ts` (sim)
+- [ ] P2 — Sandbox S7: UI stawiania — narzędzie `build`, półka kart z blokadami rang, duch z obrysem (przeciąganie z offsetem 72 dp nad palcem, obrót bramy, powód błędu, podgląd kosztu z dojazdem), „Cofnij”, HUD renomy; `ui/buildTool.ts` + `render` (ghost); zrzuty 3 rozmiarów (ui + render)
+- [ ] P3 — Sandbox: rozszerzyć `tools/balance.ts` o plan `sandbox` (stały horyzont 1800 s, strategie, minuta awansu rangi, srebro/min, `stallSeconds` wg przyczyny) i dodać `tools/bot-sandbox.ts`; cel: ranga 1 w 7–10 min dla rozsądnej strategii, „nic” nie bankrutuje
+- [ ] P3 — Sandbox S8 (po decyzji o reklamach): `AdsPort` + opcjonalna nagroda (+40 sr, ≤ 3/sesję, tylko sandbox, poza misją, bez timerów), zgoda UMP/ATT, aktualizacja `docs/store/data-safety.md` i `privacy-*.md` (reklamy = dane zbierane/udostępniane); domyślnie wersja 1.0 bez reklam
+
 ## Zrobione
 - 2026-11-01 — 15 tłumaczeń od GPT (PR #22–#36) scalone: es, nl, fr, it, de, pt-BR, sv, ru, tr, uk, ko, ja, hi, zh-Hans, ar (słowniki, glosariusze, testy, opisy sklepu, polityki prywatności); `cellsWord` wg reguł liczby mnogiej języka (Intl.PluralRules).
 - 2026-11-01 — Liczenie straconego czasu wg źródła przestoju (`ledger.stallSeconds`, `topStallCauses`, stan v2 + migracja) — dane do podsumowania misji.
