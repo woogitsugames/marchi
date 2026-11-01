@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+      - 'gpt/**'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # PRs typically target main; GitHub's PR branch filter checks the BASE,
+    # so the head/base pattern needs to be checked at job level instead.
+    if: >-
+      github.event_name == 'push' ||
+      startsWith(github.head_ref, 'claude/') ||
+      startsWith(github.head_ref, 'gpt/') ||
+      startsWith(github.base_ref, 'claude/') ||
+      startsWith(github.base_ref, 'gpt/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js 22 and npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Headless simulation tests
+        shell: bash
+        run: |
+          # Keep npm's exit code even though tee is used to capture output.
+          set +e
+          npm test 2>&1 | tee "$RUNNER_TEMP/npm-test.log"
+          test_exit=${PIPESTATUS[0]}
+          set -e
+
+          # Contract: the final nonempty output line must contain the counters.
+          summary="$(awk 'NF { line=$0 } END { print line }' "$RUNNER_TEMP/npm-test.log")"
+          {
+            echo '### Testy symulacji'
+            if [[ "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)$ ]]; then
+              echo "\`$summary\`"
+            else
+              echo '**FAIL:** brak poprawnej końcowej linii `SUMMARY passed=N failed=M`.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if (( test_exit != 0 )); then
+            echo "npm test: kod wyjścia $test_exit" >&2
+            exit "$test_exit"
+          fi
+          if [[ ! "$summary" =~ ^SUMMARY[[:space:]]passed=([0-9]+)[[:space:]]failed=([0-9]+)$ ]]; then
+            echo 'npm test: niepoprawna lub brakująca końcowa linia SUMMARY' >&2
+            exit 1
+          fi
+          passed="${BASH_REMATCH[1]}"
+          failed="${BASH_REMATCH[2]}"
+          if (( 10#$passed == 0 || 10#$failed != 0 )); then
+            echo "npm test: oczekiwano passed>0 i failed=0, otrzymano: $summary" >&2
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Bot wins mission 1
+        # npm run bot must return nonzero when it cannot win mission 1.
+        run: npm run bot
+
+      - name: Simulation performance (diagnostic)
+        shell: bash
+        run: |
+          set +e
+          npm run perf:sim 2>&1 | tee "$RUNNER_TEMP/perf-sim.log"
+          perf_exit=${PIPESTATUS[0]}
+          set -e
+          {
+            echo '### perf:sim'
+            echo '```text'
+            tail -n 100 "$RUNNER_TEMP/perf-sim.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$perf_exit"
