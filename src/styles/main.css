@@ -96,7 +96,8 @@ svg { display: block; fill: currentColor; flex: none; }
 
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui > * { pointer-events: none; }
-#ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter { pointer-events: auto; }
+#ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter, #ui .waybill { pointer-events: auto; }
+.wb-line { cursor: pointer; }
 
 /* Clear screen (three-finger tap): only the scene stays; a small button brings the UI back. */
 body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear #menu .menu-wrap {
