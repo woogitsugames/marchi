@@ -1,5 +1,5 @@
 // In-game HUD: waybill (contract), tool rail with coins/time/speed, toasts, rain notice.
-import { GOODS, isRaining, timeOfDay, TICK_HZ, type Good, type World } from '../sim/index';
+import { GOODS, WAGON_PRICE, isRaining, timeOfDay, TICK_HZ, type Good, type World } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { t } from '../i18n/index';
 import { deckle, h, setHtml, setText } from './dom';
@@ -171,6 +171,8 @@ export class Hud {
   update(world: World): void {
     const st = world.state;
     setText(this.coins, String(st.coins));
+    const wagonBtn = this.toolBtns.get('wagon');
+    if (wagonBtn) wagonBtn.classList.toggle('is-disabled', st.coins < WAGON_PRICE);
     const raining = isRaining(st);
     const tod = timeOfDay(world);
     setText(this.day, dayClock(tod));
@@ -211,16 +213,30 @@ export class Hud {
   }
 
   toast(text: string, kind: 'info' | 'err' = 'info', icon: IconId | null = null, ms = 2600): void {
-    const el = h('div.toast.cf.parch.float', null);
+    // repeated message: bump a counter on the newest toast instead of stacking copies
+    const first = this.toasts.firstElementChild as (HTMLElement & { __toast?: { text: string; n: number; timer: number } }) | null;
+    if (first?.__toast && first.__toast.text === text && !first.querySelector('.is-out')) {
+      const st = first.__toast;
+      st.n++;
+      const c = first.querySelector('.toast-n');
+      if (c) c.textContent = `×${st.n}`;
+      window.clearTimeout(st.timer);
+      st.timer = this.dismiss(first, ms);
+      return;
+    }
+    const el = h('div.toast.cf.parch', null);
     if (kind === 'err') el.classList.add('err');
-    el.innerHTML = `${icon ? iconSvg(icon, 22) : ''}<span>${text.replace(/</g, '&lt;')}</span>`;
+    el.innerHTML = `${icon ? iconSvg(icon, 22) : ''}<span>${text.replace(/</g, '&lt;')}</span><b class="toast-n num"></b>`;
     // the shadow needs a wrapper because the chamfer clips filters
-    const wrap = h('div.float', null, el);
-    el.classList.remove('float');
+    const wrap = h('div.float', null, el) as HTMLElement & { __toast?: { text: string; n: number; timer: number } };
+    wrap.__toast = { text, n: 1, timer: this.dismiss(wrap, ms) };
     this.toasts.prepend(wrap);
     while (this.toasts.children.length > 3) this.toasts.lastElementChild?.remove();
-    window.setTimeout(() => {
-      el.classList.add('is-out');
+  }
+
+  private dismiss(wrap: HTMLElement, ms: number): number {
+    return window.setTimeout(() => {
+      wrap.firstElementChild?.classList.add('is-out');
       window.setTimeout(() => wrap.remove(), 220);
     }, ms);
   }

@@ -54,15 +54,12 @@ async function openSettings(page) {
 
 async function ensureServer() {
   if (process.env.SHOTS_URL) return { url: process.env.SHOTS_URL, close: async () => {} };
-  const port = 5175;
-  try {
-    const r = await fetch(`http://localhost:${port}/`);
-    if (r.ok) return { url: `http://localhost:${port}/`, close: async () => {} };
-  } catch { /* not running */ }
+  // always our own server: a borrowed one may be restarted by someone else mid-run
   const { createServer } = await import('vite');
-  const server = await createServer({ root, server: { port, strictPort: true, host: '127.0.0.1' }, logLevel: 'warn' });
+  const server = await createServer({ root, server: { port: 5175, strictPort: false, host: '127.0.0.1', hmr: false }, logLevel: 'warn' });
   await server.listen();
-  return { url: `http://127.0.0.1:${port}/`, close: () => server.close() };
+  const addr = server.httpServer.address();
+  return { url: `http://127.0.0.1:${addr.port}/`, close: () => server.close() };
 }
 
 const filters = process.argv.slice(2);

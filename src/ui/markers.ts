@@ -67,7 +67,9 @@ export class Markers {
         if (!a.visible) continue;
         const crit = isCritical(bd.status, bd.stalledTicks);
         const sig = JSON.stringify(bd.status) + crit;
-        this.place(this.take('building:' + bd.id), a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
+        const b = this.take('building:' + bd.id);
+        b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP');
+        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
       }
       for (const w of world.state.wagons) {
         if (w.status.k !== 'BRIDGE_JAM' && w.status.k !== 'NO_ROUTE') continue;

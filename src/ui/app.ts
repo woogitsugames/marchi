@@ -261,7 +261,7 @@ export class App implements PanelNav {
       const s = this.view.stats();
       const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
       this.perfEl.textContent = `fps ${s.fps.toFixed(0)}  draw ${s.drawCalls}  tri ${(s.triangles / 1000).toFixed(0)}k\n` +
-        `wozy ${this.world.state.wagons.length}  tick ${this.world.state.tick}` + (mem ? `  heap ${(mem.usedJSHeapSize / 1048576).toFixed(0)} MB` : '');
+        `${t('why.wagons', { n: this.world.state.wagons.length })}  tick ${this.world.state.tick}` + (mem ? `  heap ${(mem.usedJSHeapSize / 1048576).toFixed(0)} MB` : '');
     }
     requestAnimationFrame((t) => this.frame(t));
   }
@@ -468,6 +468,8 @@ export class App implements PanelNav {
 
   private applyDebug(): void {
     const p = this.params;
+    const hudBefore = this.hud;
+    this.hud = null; // no toasts for the scripted plan or while fast-forwarding
     if (p.get('bot') === '1') {
       const w = this.world;
       const plan: Command[] = [bridgeA(w)];
@@ -478,12 +480,10 @@ export class App implements PanelNav {
     const ff = Number(p.get('ff') ?? 0);
     if (ff > 0) {
       const target = Math.min(ff * TICK_HZ, 60 * 60 * TICK_HZ);
-      const hudBefore = this.hud;
-      this.hud = null; // no toasts while fast-forwarding
       while (this.world.state.tick < target && this.world.state.mission.result === 'running') this.loop.tickOnce();
-      this.hud = hudBefore;
       this.lastSaveTick = this.world.state.tick;
     }
+    this.hud = hudBefore;
     const speed = p.get('speed');
     if (speed !== null) { this.loop.speed = Number(speed) as Speed; this.hud?.setSpeed(this.loop.speed); }
     const tool = p.get('tool');

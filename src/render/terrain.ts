@@ -67,9 +67,17 @@ export class TerrainView {
       uOchre: { value: new Color('#b8893a') },
       uClay: { value: new Color('#8c4a2f') },
       uDetail: { value: 1 },
+      uSky: { value: new Color('#c9c6bb') },
     };
     this.material = makeTerrainMaterial(this.uniforms);
     this.buildMeshes();
+  }
+
+  /** Low quality: no normal/ORM reads, one meadow scale, shared mud sample, no rut relief. */
+  setLowQuality(low: boolean): void {
+    if (!!this.material.userData.low === low) return;
+    this.material.userData.low = low;
+    this.material.needsUpdate = true;
   }
 
   setTextures(t: TerrainTextureSet): void {
@@ -252,18 +260,29 @@ uniform float uDetail;
 varying vec3 vWPos;
 varying vec3 vWNrm;
 
+uniform vec3 uSky;
+
 vec2 gDx, gDy;
+// Fallback roughness / AO per layer when the ORM map is not read (low quality).
+vec2 layerRO(float L) {
+  return L < 0.5 ? vec2(0.93, 0.95) : L < 1.5 ? vec2(0.86, 0.9) : L < 2.5 ? vec2(0.95, 0.85) : L < 3.5 ? vec2(0.8, 0.9) : vec2(0.82, 0.85);
+}
 void sampleLayer(float L, vec2 uv, float k, out vec3 a, out vec3 n, out vec2 ro) {
   vec3 p = vec3(uv * k, L);
   a = textureGrad(tAlb, p, gDx * k, gDy * k).rgb;
+#ifdef TERRAIN_LOW
+  n = vec3(0.0, 0.0, 1.0);
+  ro = layerRO(L);
+#else
   n = textureGrad(tNrm, p, gDx * k, gDy * k).xyz * 2.0 - 1.0;
   n.y = -n.y;
   vec3 o = textureGrad(tOrm, p, gDx * k, gDy * k).rgb;
   ro = vec2(o.g, o.r);
+#endif
 }
 #define BLEND(w, a2, n2, ro2) { A = mix(A, a2, w); N = mix(N, n2, w); RO = mix(RO, ro2, w); }
 float rutProfile(float d) {
-  // wheel ruts at ±0.86 m (wagon track 1.72 m); a softer worn band where horses walk
+  // wheel ruts at ±0.86 m (wagon track 1.72 m)
   float r1 = exp(-pow((d - 0.86) / 0.2, 2.0));
   return -r1;
 }
@@ -274,10 +293,13 @@ const FRAG_MAIN = /* glsl */ `
   vec2 wxz = vWPos.xz;
   vec2 uv = wxz / 3.2;
   gDx = dFdx(uv); gDy = dFdy(uv);
+  // metres per pixel: drives level of detail of ruts, furrows and edge noise
+  float fw = length(vec2(fwidth(wxz.x), fwidth(wxz.y))) * 0.7071;
   vec2 cuv = wxz / uMap;
   vec4 gnd = texture(tGround, cuv);
   vec4 nzM = texture(tNoise, wxz / 61.0);
   vec4 nzS = texture(tNoise, wxz / 9.7 + 0.31);
+  vec4 nzL = texture(tNoise, wxz / 197.0 + 0.13);
   vec4 rd = texture(tRoad, cuv);
   vec4 ov = texture(tOver, cuv);
   float hW = vWPos.y - uWL;
@@ -286,16 +308,34 @@ const FRAG_MAIN = /* glsl */ `
 
   vec3 A; vec3 N; vec2 RO;
   vec3 a2; vec3 n2; vec2 ro2;
-  // base: wet meadow, two scales to break tiling
+  // base: wet meadow
   sampleLayer(0.0, uv, 1.0, A, N, RO);
+#ifndef TERRAIN_LOW
+  // second scale to break tiling
   sampleLayer(0.0, uv, 0.29, a2, n2, ro2);
-  A = mix(A, a2, 0.35) * vec3(0.94, 1.04, 1.0);
-  // macro tone variation (dry/wet patches), kept in the desaturated middle
-  A *= 0.84 + 0.3 * nzM.r;
+  A = mix(A, a2, 0.35);
+#endif
+  A *= vec3(0.94, 1.04, 1.0);
+  // macro tone variation (kept in the desaturated middle)
+  A *= 0.86 + 0.26 * nzM.r;
+  // slight colour noise: some tufts warmer, some cooler
+  A *= vec3(1.0 + (nzS.r - 0.5) * 0.12, 1.0, 1.0 + (nzS.g - 0.5) * 0.1);
   vec4 nzP = texture(tNoise, wxz / 23.0 + 0.71);
-  // dry tussock patches toward thatch colour, damp hollows darker and greener
-  A = mix(A, A * vec3(1.18, 1.06, 0.82), smoothstep(0.55, 0.85, nzP.r) * 0.55);
-  A = mix(A, A * vec3(0.78, 0.86, 0.8), smoothstep(0.6, 0.9, nzP.b) * 0.5);
+  float nearW = 1.0 - smoothstep(0.4, 2.2, hW);
+  // large patches of dark, wet grass (more of them in the river meadows)
+  float wetP = smoothstep(0.52, 0.78, nzL.r + nearW * 0.22 + (nzP.b - 0.5) * 0.25);
+  A = mix(A, A * vec3(0.7, 0.8, 0.74), wetP * 0.7);
+  // dry, yellowed tussock grass in large drifts, mottled at tussock scale
+  float dryP = smoothstep(0.5, 0.75, nzL.g + (nzP.r - 0.5) * 0.3) * (1.0 - nearW);
+  float tus = smoothstep(0.35, 0.75, nzS.b);
+  A = mix(A, A * vec3(1.32, 1.14, 0.74), dryP * (0.35 + 0.45 * tus));
+  // small-scale tussock mottling everywhere
+  A *= 0.9 + 0.2 * smoothstep(0.3, 0.8, nzS.b);
+  // stubble / trampled verge around ploughed fields
+  float halo = smoothstep(0.03, 0.45, gnd.g) * (1.0 - smoothstep(0.45, 0.7, gnd.g));
+  A = mix(A, A * vec3(1.12, 0.98, 0.72) * (0.85 + 0.25 * nzS.a), halo * 0.6);
+  // grass grades darker and ranker toward the river (sedge fringe)
+  A = mix(A, A * vec3(0.78, 0.86, 0.78), nearW * 0.6);
 
   float slope = 1.0 - Ng.y;
   float wForest = smoothstep(0.1, 0.5, gnd.r + (nzS.r - 0.5) * 0.35);
@@ -303,14 +343,26 @@ const FRAG_MAIN = /* glsl */ `
   wForest = max(wForest, wSteep * 0.75);
   if (outside) wForest = max(wForest, cuv.y < 0.12 ? 0.85 : smoothstep(0.5, 0.75, nzM.b) * 0.7);
   if (wForest > 0.003) {
+#ifdef TERRAIN_LOW
+    a2 = vec3(0.07, 0.055, 0.035) * (0.8 + 0.4 * nzS.b); n2 = vec3(0.0, 0.0, 1.0); ro2 = vec2(0.95, 0.85);
+#else
     sampleLayer(2.0, uv, 0.8, a2, n2, ro2);
     a2 *= 0.85 + 0.3 * nzS.b;
+#endif
     BLEND(wForest, a2, n2, ro2);
   }
+  // mud albedo shared by fields, yards and tracks in low quality
+#ifdef TERRAIN_LOW
+  vec3 mudA; vec3 mudN; vec2 mudRO;
+  sampleLayer(1.0, uv, 1.0, mudA, mudN, mudRO);
+#define MUD(k) { a2 = mudA; n2 = mudN; ro2 = mudRO; }
+#else
+#define MUD(k) sampleLayer(1.0, uv, k, a2, n2, ro2);
+#endif
   float wField = smoothstep(0.35, 0.7, gnd.g);
   if (wField > 0.003) {
     // ploughed soil with furrows (0.8 m pitch), a little straw stubble left on the ridges
-    sampleLayer(1.0, uv, 1.3, a2, n2, ro2);
+    MUD(1.3)
     float fc = (gnd.a > 0.5 ? wxz.x : wxz.y) + (nzS.r - 0.5) * 0.6;
     float ph = fc * 6.2831853 / 0.8;
     float fade = 1.0 - smoothstep(0.25, 0.6, fwidth(fc) / 0.8);
@@ -324,52 +376,87 @@ const FRAG_MAIN = /* glsl */ `
   }
   float wYard = smoothstep(0.3, 0.75, gnd.b + (nzS.g - 0.5) * 0.45);
   if (wYard > 0.003) {
-    sampleLayer(1.0, uv, 0.9, a2, n2, ro2);
+    MUD(0.9)
     a2 *= 0.95;
     BLEND(wYard * 0.85, a2, n2, ro2);
   }
-  float wBank = 1.0 - smoothstep(0.2, 0.95, hW + (nzS.b - 0.5) * 0.55);
+  // river bank: irregular mud / gravel band, darker and glossy where wet
+  float bn = (nzS.b - 0.5) * 0.45 + (nzM.g - 0.5) * 0.5;
+  float wBank = 1.0 - smoothstep(0.1, 0.7, hW + bn);
   if (wBank > 0.003) {
     sampleLayer(3.0, uv, 1.1, a2, n2, ro2);
-    float wetB = 1.0 - smoothstep(-0.1, 0.35, hW);
-    a2 *= mix(0.72, 0.45, wetB);
-    ro2.x = mix(ro2.x, 0.25, wetB);
+    // gravel bars and pebble spits in patches
+    float grav = smoothstep(0.56, 0.7, nzM.a + (nzS.r - 0.5) * 0.35) * (1.0 - smoothstep(0.25, 0.6, hW));
+#ifndef TERRAIN_LOW
+    if (grav > 0.01) {
+      vec3 a3; vec3 n3; vec2 ro3;
+      sampleLayer(4.0, uv, 3.4, a3, n3, ro3);
+      a2 = mix(a2, a3 * vec3(0.8, 0.78, 0.74), grav * 0.85);
+      n2 = mix(n2, n3, grav * 0.85);
+    }
+#else
+    a2 = mix(a2, a2 * 1.25, grav * 0.6);
+#endif
+    float wetB = 1.0 - smoothstep(-0.05, 0.26 + (nzS.g - 0.5) * 0.25, hW);
+    a2 *= mix(0.62, 0.38, wetB) * vec3(0.95, 0.97, 1.0);
+    ro2.x = mix(ro2.x, 0.2, wetB);
     BLEND(wBank, a2, n2, ro2);
   }
 
   // --- roads -------------------------------------------------------------------------
   float dD = rd.r * ${ROAD_MAXD.toFixed(1)};
   float dC = rd.g * ${ROAD_MAXD.toFixed(1)};
-  float eN = (nzS.a - 0.5) * 0.7;
+  // trodden mud patch where roads meet
+  float jn = 1.0 - smoothstep(1.2, 3.6, rd.b * ${ROAD_MAXD.toFixed(1)});
+  // ruts only when they resolve on screen; further out one worn track
+  float rutK = (1.0 - smoothstep(0.045, 0.12, fw)) * (1.0 - jn);
+#ifdef TERRAIN_LOW
+  float eN = (nzS.a - 0.5) * 0.8;
+#else
+  float eN = (nzS.a - 0.5) * 0.7 + (texture(tNoise, wxz / 2.7 + 0.47).b - 0.5) * 0.45 * (1.0 - smoothstep(0.05, 0.2, fw));
+#endif
+  // width varies along the road; a bit wider where it is worn at junctions
+  float halfW = 1.85 + (nzM.a - 0.5) * 0.9 + jn * 1.1;
   // at far zoom keep roads at least a couple of pixels wide (they are the drawing)
-  float grow = clamp(fwidth(wxz.x) * 1.6 - 0.4, 0.0, 2.5);
-  float wDirt = 1.0 - smoothstep(1.9 + eN + grow, 2.6 + eN + grow, dD);
+  float grow = clamp(fw * 1.6 - 0.4, 0.0, 2.5);
+  float wDirt = 1.0 - smoothstep(halfW - 0.35 + eN + grow, halfW + 0.45 + eN + grow, dD);
   float wCob = 1.0 - smoothstep(1.95 + eN * 0.3 + grow, 2.25 + eN * 0.3 + grow, dC);
   float roadCover = max(wDirt, wCob);
+  // trampled, browned verge just outside the track
+  float verge = (1.0 - smoothstep(halfW + 0.2 + grow, halfW + 1.6 + grow, dD)) * (1.0 - wDirt);
+  A = mix(A, A * vec3(0.92, 0.86, 0.76), verge * 0.6);
   vec3 bumpW = vec3(0.0);
   if (wDirt > 0.003 && hW > -0.2) {
-    sampleLayer(1.0, uv, 1.0, a2, n2, ro2);
-    float rut = -rutProfile(dD);
-    float strip = (1.0 - smoothstep(0.18, 0.42, dD)) * smoothstep(0.3, 0.75, nzS.r + 0.2);
-    a2 *= 0.8 - 0.28 * rut;
+    MUD(1.0)
+    float rut = -rutProfile(dD) * rutK;
+    // worn centre/hoof line and wheel lanes merge into one track when far
+    float wear = 1.0 - smoothstep(0.4, 1.6, dD);
+    a2 *= mix(0.92, 0.84, wear * (1.0 - rutK));
+    a2 *= (0.88 + 0.24 * nzP.g) - 0.24 * rut;
     ro2.x = mix(ro2.x, 0.55, rut * 0.5);
-    // grass strip between the ruts: back toward the meadow
-    vec3 grass = A * 0.95;
-    a2 = mix(a2, grass, strip * 0.75);
-    // rain: dark, glossy mud, water standing in the ruts
-    float puddle = uWet * smoothstep(0.35, 0.8, rut + (nzS.g - 0.5) * 0.9);
+    // grass strip between the ruts, only close up and patchy
+    float strip = (1.0 - smoothstep(0.2, 0.45, dD)) * smoothstep(0.35, 0.75, nzS.r + 0.15) * rutK;
+    a2 = mix(a2, A * 0.85, strip * 0.5);
+    // standing water: a few patches always (wet November), many in rain, mostly in the ruts
+    float pz = nzP.g * 0.6 + nzS.g * 0.4;
+    float puddle = smoothstep(0.66, 0.74, pz + uWet * 0.22 + rut * 0.18 * uWet) * (1.0 - smoothstep(1.1, 1.7, dD));
+    puddle = max(puddle, uWet * smoothstep(0.35, 0.8, rut + (nzS.g - 0.5) * 0.9));
     a2 *= 1.0 - 0.28 * uWet;
     ro2.x = mix(ro2.x, 0.42, uWet * 0.7);
-    a2 = mix(a2, a2 * 0.45, puddle);
+    a2 = mix(a2, a2 * 0.4 + uSky * 0.06, puddle);
     ro2.x = mix(ro2.x, 0.06, puddle);
     n2 = mix(n2, vec3(0.0, 0.0, 1.0), puddle);
     BLEND(wDirt, a2, n2, ro2);
-    // rut relief: gradient of the profile along the distance-field gradient
-    float dx = texture(tRoad, cuv + vec2(uRoadTexel.x, 0.0)).r * ${ROAD_MAXD.toFixed(1)} - dD;
-    float dz = texture(tRoad, cuv + vec2(0.0, uRoadTexel.y)).r * ${ROAD_MAXD.toFixed(1)} - dD;
-    vec2 gd = vec2(dx, dz) * 2.0; // texel = 0.5 m
-    float dp = (rutProfile(dD + 0.08) - rutProfile(dD - 0.08)) / 0.16;
-    bumpW = vec3(gd.x, 0.0, gd.y) * dp * 0.12 * wDirt * (1.0 - puddle);
+#ifndef TERRAIN_LOW
+    if (rutK > 0.01) {
+      // rut relief: gradient of the profile along the distance-field gradient
+      float dx = texture(tRoad, cuv + vec2(uRoadTexel.x, 0.0)).r * ${ROAD_MAXD.toFixed(1)} - dD;
+      float dz = texture(tRoad, cuv + vec2(0.0, uRoadTexel.y)).r * ${ROAD_MAXD.toFixed(1)} - dD;
+      vec2 gd = vec2(dx, dz) * 2.0; // texel = 0.5 m
+      float dp = (rutProfile(dD + 0.08) - rutProfile(dD - 0.08)) / 0.16;
+      bumpW = vec3(gd.x, 0.0, gd.y) * dp * 0.12 * wDirt * (1.0 - puddle) * rutK;
+    }
+#endif
   }
   if (wCob > 0.003 && hW > -0.2) {
     sampleLayer(4.0, uv, 1.6, a2, n2, ro2);
@@ -434,12 +521,12 @@ function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {
         '#include <begin_vertex>\n vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\n vWNrm = normalize(mat3(modelMatrix) * objectNormal);',
       );
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\n' + FRAG_DECL)
+      .replace('#include <common>', '#include <common>\n' + (m.userData.low ? '#define TERRAIN_LOW\n' : '') + FRAG_DECL)
       .replace('#include <map_fragment>', FRAG_MAIN)
       .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = tRough;')
       .replace('#include <normal_fragment_maps>', 'normal = normalize((viewMatrix * vec4(Nw, 0.0)).xyz);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += tEmis;');
   };
-  m.customProgramCacheKey = () => 'marchia-terrain-1';
+  m.customProgramCacheKey = () => 'marchia-terrain-2' + (m.userData.low ? '-low' : '');
   return m;
 }

@@ -26,6 +26,13 @@ export function capFirst(s: string): string {
   return s.length ? s[0]!.toLocaleUpperCase() + s.slice(1) : s;
 }
 
+/** Count word for cells with Polish plural rules (1 pole, 2-4 pola, 5+ pól); English uses one/other. */
+export function cellsWord(n: number): string {
+  const n10 = n % 10, n100 = n % 100;
+  const form = n === 1 ? 'one' : n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14) ? 'few' : 'many';
+  return t(`unit.cell.${form}` as MessageKey);
+}
+
 export function goodName(g: Good): string {
   return t(`good.${g}` as MessageKey);
 }
@@ -44,7 +51,11 @@ export function buildingStatusText(s: BuildingStatus): string {
   const cause = 'cause' in s ? s.cause : null;
   const key = (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
   const params: Record<string, string | number> = {};
-  if ('good' in s) params.good = goodName(s.good);
+  if ('good' in s) {
+    params.good = goodName(s.good);
+    params.goodGen = t(`goodGen.${s.good}` as MessageKey);
+    params.goodAcc = t(`goodAcc.${s.good}` as MessageKey);
+  }
   if ('wagon' in s) params.wagon = s.wagon;
   return capFirst(t(key, params));
 }

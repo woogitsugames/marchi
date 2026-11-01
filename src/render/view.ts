@@ -263,6 +263,7 @@ class View implements WorldView {
     // --- world
     const tu = this.terrain.uniforms;
     tu.uWet!.value = this.wet;
+    (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
     tu.uTraffic!.value = this.overlayMode === 'traffic' ? 1 : 0;
     this.water!.update(this.time, this.rain, env.mist * (this.menu ? 1 : 0.85));
@@ -429,7 +430,10 @@ class View implements WorldView {
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
     this.wagons?.setShadows(true, high);
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;
-    if (this.terrain) this.terrain.uniforms.uDetail!.value = high ? 1 : 0.7;
+    if (this.terrain) {
+      this.terrain.uniforms.uDetail!.value = high ? 1 : 0.7;
+      this.terrain.setLowQuality(!high);
+    }
   }
 
   setMenuMode(on: boolean): void {

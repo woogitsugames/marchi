@@ -1,5 +1,8 @@
 // Render-side terrain surface: a smooth bicubic (Catmull-Rom) interpolation of the sim's
 // corner heights plus a little deterministic detail noise, so the 4 m grid never shows.
+// Along the river the cell-carved channel is replaced by a profile of a smooth signed
+// distance (blurred water mask + low-frequency wobble), so the waterline is a natural curve
+// with irregular bays instead of stair steps along cell edges.
 // Everything that sits on the ground (terrain mesh, trees, buildings, wagons, picking) uses
 // this one function, so objects stay glued to what is drawn.
 import type { Terrain } from '../sim/index';
@@ -17,6 +20,8 @@ export class Heightfield {
   private readonly c: Float32Array;
   /** Distance (cells) to the nearest water cell, capped at 8; per cell. */
   readonly waterDist: Float32Array;
+  /** Gaussian-blurred water mask (cell centres), 0..1. */
+  private readonly wm: Float32Array;
 
   constructor(readonly t: Terrain) {
     this.w = t.w;
@@ -27,6 +32,38 @@ export class Heightfield {
     this.waterLevel = t.waterLevel;
     this.c = Float32Array.from(t.corners);
     this.waterDist = waterDistance(t);
+    this.wm = blurMask(t);
+  }
+
+  /** Catmull-Rom sample of a cell-centred field. */
+  private cellField(f: Float32Array, x: number, z: number): number {
+    const gx = x / CELL - 0.5, gz = z / CELL - 0.5;
+    const ix = Math.floor(gx), iz = Math.floor(gz);
+    const tx = gx - ix, tz = gz - iz;
+    const W = this.w, H = this.h;
+    const at = (i: number, j: number) => f[(j < 0 ? 0 : j >= H ? H - 1 : j) * W + (i < 0 ? 0 : i >= W ? W - 1 : i)]!;
+    const wx0 = ((-tx + 2) * tx - 1) * tx * 0.5, wx1 = ((3 * tx - 5) * tx * tx + 2) * 0.5;
+    const wx2 = ((-3 * tx + 4) * tx + 1) * tx * 0.5, wx3 = ((tx - 1) * tx * tx) * 0.5;
+    let s = 0;
+    for (let k = 0; k < 4; k++) {
+      const j = iz - 1 + k;
+      const r = wx0 * at(ix - 1, j) + wx1 * at(ix, j) + wx2 * at(ix + 1, j) + wx3 * at(ix + 2, j);
+      const wz = k === 0 ? ((-tz + 2) * tz - 1) * tz * 0.5 : k === 1 ? ((3 * tz - 5) * tz * tz + 2) * 0.5 : k === 2 ? ((-3 * tz + 4) * tz + 1) * tz * 0.5 : ((tz - 1) * tz * tz) * 0.5;
+      s += r * wz;
+    }
+    return s;
+  }
+
+  /**
+   * Smooth signed distance to the river bank in metres (> 0 on land), valid within ~±6 m;
+   * saturates further out. Includes a low-frequency wobble so the banks are not parallel.
+   */
+  shoreDist(x: number, z: number): number {
+    const m = this.cellField(this.wm, x, z);
+    if (m < 0.004) return 12;
+    const wob = (vnoise(x / 21, z / 17, 1.5, 91) - 0.5) * 3.2 + (vnoise(x / 7.5, z / 6.5, 2.5, 92) - 0.5) * 1.1;
+    // far side of the blur: push past the blend range so the profile hands over continuously
+    return (0.5 - m) * 11.5 + wob + 6 * (1 - smooth(0, 0.1, m));
   }
 
   private corner(ix: number, iz: number): number {
@@ -37,6 +74,19 @@ export class Heightfield {
 
   /** Smooth base surface (no noise). x, z in metres. */
   base(x: number, z: number): number {
+    const raw = this.raw(x, z);
+    const s = this.shoreDist(x, z);
+    if (s >= 8) return raw;
+    const WL = this.waterLevel;
+    // bank: gentle rise out of the water; bed: shelving down to ~1.3 m in mid-channel
+    let hb = WL - 0.06 + 0.62 * Math.tanh(s / 2.6);
+    if (s < 0) hb -= 0.75 * smooth(1.2, 7.5, -s);
+    const k = smooth(2.5, 8, s);
+    return hb + (raw - hb) * k;
+  }
+
+  /** Bicubic interpolation of the sim's corner heights. */
+  raw(x: number, z: number): number {
     const gx = x / CELL, gz = z / CELL;
     const ix = Math.floor(gx), iz = Math.floor(gz);
     const tx = gx - ix, tz = gz - iz;
@@ -60,10 +110,7 @@ export class Heightfield {
 
   /** Detail displacement amplitude falls off near water (keeps the shoreline calm). */
   detail(x: number, z: number): number {
-    const cx = Math.min(this.w - 1, Math.max(0, Math.floor(x / CELL)));
-    const cz = Math.min(this.h - 1, Math.max(0, Math.floor(z / CELL)));
-    const wd = this.waterDist[cz * this.w + cx]!;
-    const amp = Math.min(1, Math.max(0, (wd - 1) / 3));
+    const amp = smooth(3, 9.5, this.shoreDist(x, z));
     if (amp <= 0) return 0;
     const n = (vnoise(x / 9, z / 9, 0.5, 71) - 0.5) * 0.34 + (vnoise(x / 2.6, z / 2.6, 3.5, 72) - 0.5) * 0.09;
     return n * amp;
@@ -86,6 +133,34 @@ export class Heightfield {
   inside(x: number, z: number): boolean {
     return x >= 0 && z >= 0 && x <= this.sizeX && z <= this.sizeZ;
   }
+}
+
+function smooth(a: number, b: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
+
+/** Separable Gaussian blur (σ ≈ 1.1 cells) of the water mask. */
+function blurMask(t: Terrain): Float32Array {
+  const W = t.w, H = t.h;
+  const R = 3, sig = 1.1;
+  const k: number[] = [];
+  let sum = 0;
+  for (let i = -R; i <= R; i++) { const v = Math.exp(-(i * i) / (2 * sig * sig)); k.push(v); sum += v; }
+  for (let i = 0; i < k.length; i++) k[i] = k[i]! / sum;
+  const a = new Float32Array(W * H), b = new Float32Array(W * H);
+  for (let i = 0; i < W * H; i++) a[i] = t.water[i] ? 1 : 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    let v = 0;
+    for (let i = -R; i <= R; i++) v += a[y * W + Math.min(W - 1, Math.max(0, x + i))]! * k[i + R]!;
+    b[y * W + x] = v;
+  }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    let v = 0;
+    for (let i = -R; i <= R; i++) v += b[Math.min(H - 1, Math.max(0, y + i)) * W + x]! * k[i + R]!;
+    a[y * W + x] = v;
+  }
+  return a;
 }
 
 function waterDistance(t: Terrain): Float32Array {

@@ -34,6 +34,8 @@ export class RoadField {
   readonly th: number;
   readonly dirt: Float32Array;
   readonly cobble: Float32Array;
+  /** Distance to the nearest junction centre (degree ≥ 3), for trodden mud patches. */
+  readonly junc: Float32Array;
   readonly texture: DataTexture;
   private readonly data: Uint8Array;
   bridges: BridgeCell[] = [];
@@ -44,6 +46,7 @@ export class RoadField {
     this.th = h * CELL * ROAD_RES;
     this.dirt = new Float32Array(this.tw * this.th);
     this.cobble = new Float32Array(this.tw * this.th);
+    this.junc = new Float32Array(this.tw * this.th);
     this.data = new Uint8Array(this.tw * this.th * 4);
     this.texture = new DataTexture(this.data, this.tw, this.th, RGBAFormat, UnsignedByteType);
     this.texture.magFilter = LinearFilter;
@@ -66,6 +69,7 @@ export class RoadField {
     const occ = net(world).occupied;
     this.dirt.fill(ROAD_MAXD);
     this.cobble.fill(ROAD_MAXD);
+    this.junc.fill(ROAD_MAXD);
     const roads = st.roads;
     const isRoad = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && roads[y * w + x]! > 0 && occ[y * w + x] === -1;
     const nb: number[] = [];
@@ -110,6 +114,11 @@ export class RoadField {
             this.segment(target, cx, cz, cx - DX8[d]! * CELL * 0.45, cz - DY8[d]! * CELL * 0.45);
           }
         }
+        if (nb.length >= 3 && !t.water[c]) {
+          // a junction: offset the patch centre a little so it is not a perfect disc
+          const ox = (((c * 2654435761) >>> 0) % 1000) / 1000 - 0.5, oz = (((c * 40503) >>> 0) % 1000) / 1000 - 0.5;
+          this.segment(this.junc, cx + ox * 0.8, cz + oz * 0.8, cx - ox * 0.6, cz - oz * 0.6);
+        }
         if (t.water[c]) this.bridges.push(bridgeCell(world, x, y, nb, roads[c] === 2 ? 2 : 1));
       }
     }
@@ -118,7 +127,7 @@ export class RoadField {
     for (let i = 0; i < n; i++) {
       dd[i * 4] = Math.round((this.dirt[i]! / ROAD_MAXD) * 255);
       dd[i * 4 + 1] = Math.round((this.cobble[i]! / ROAD_MAXD) * 255);
-      dd[i * 4 + 2] = 0;
+      dd[i * 4 + 2] = Math.round((this.junc[i]! / ROAD_MAXD) * 255);
       dd[i * 4 + 3] = 255;
     }
     this.texture.needsUpdate = true;

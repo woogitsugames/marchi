@@ -1551,10 +1551,12 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.cut(shrink(almond, 1.6));
     d.layer();
     d.ink(circ(12, 11.9, 4.6));
-    d.hatchCut(clipHalf(circ(12, 11.9, 3.8), 1, 1, 23), -45, 1.5, 0.55);
-    d.cut(circ(12, 11.9, 1.5));
-    d.ink(circ(12, 11.9, 0.9));
-    d.cut(gouge([9.6, 9.8], [10.9, 8.9], 0.9));
+    // a ring of short radial gouges for the iris, a solid pupil, one highlight
+    for (let i = 0; i < 12; i++) {
+      const a = (i * 30 + 10) * DEG;
+      d.cut(gouge([12 + Math.cos(a) * 2.4, 11.9 + Math.sin(a) * 2.4], [12 + Math.cos(a) * 3.9, 11.9 + Math.sin(a) * 3.9], 0.55));
+    }
+    d.cut(gouge([9.3, 10.4], [10.6, 8.8], 1.0));
     // lashes on the upper lid
     for (const x of [6.2, 9.4, 12.6, 15.8]) d.inkFine(band(seg([x + 0.3, 6.6], [x - 0.4, 3.6], 3), lerpW(1.1, 0.5)));
   },

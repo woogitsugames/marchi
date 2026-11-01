@@ -66,12 +66,23 @@ void main() {
   float fres = 0.03 + 0.97 * pow(1.0 - ndv, 5.0);
   vec3 R = reflect(-V, N);
   vec3 sky = mix(uSkyH, uSkyZ, smoothstep(0.0, 0.7, R.y));
-  float d = clamp(vDepth / 1.4, 0.0, 1.0);
-  vec3 body = mix(uShallow, uDeep, smoothstep(0.0, 1.0, d)) * uLight;
-  vec3 col = mix(body, sky * 0.55, clamp(fres * 0.75 + 0.05, 0.0, 1.0));
+  // large slow patches: deeper pools and shallower riffles, so the channel is not one tone
+  vec4 big = texture2D(tNoise, p / 140.0 + vec2(0.17, 0.53));
+  float d = clamp(vDepth / 1.3 + (big.r - 0.5) * 0.5, 0.0, 1.0);
+  vec3 body = mix(uShallow, uDeep, smoothstep(0.0, 1.0, d));
+  body *= 0.9 + 0.2 * big.g;
+  body *= uLight;
+  // current: streaks stretched along the flow (river runs roughly along +x)
+  float st = texture2D(tNoise, vec2(p.x / 55.0 - uTime * 0.012, p.y / 5.0 + big.b * 0.6)).a;
+  float streak = smoothstep(0.62, 0.85, st) * (1.0 - uRain * 0.6) * smoothstep(0.15, 0.5, vDepth);
+  vec3 col = mix(body, sky * 0.55, clamp(fres * 0.75 + 0.05 + streak * 0.18, 0.0, 1.0));
   float spec = pow(max(dot(R, uSunDir), 0.0), 180.0) * (1.0 - uRain * 0.8);
   col += uSunCol * spec * 1.4;
-  float alpha = smoothstep(0.0, 0.22, vDepth) * mix(0.72, 0.97, d);
+  // broken scum / foam line along the waterline, lit like the sky
+  float edge = smoothstep(0.02, 0.1, vDepth) * (1.0 - smoothstep(0.12, 0.32, vDepth));
+  float brk = texture2D(tNoise, p / 6.0).r;
+  col = mix(col, uSkyH * 0.62 * uLight, edge * smoothstep(0.45, 0.75, brk) * 0.45);
+  float alpha = smoothstep(0.0, 0.3, vDepth) * mix(0.62, 0.96, d);
   gl_FragColor = vec4(col, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -136,7 +147,7 @@ export class WaterView {
     if (!isFinite(zmin)) { zmin = 0; zmax = 0; }
     const z0 = (zmin - 3) * CELL, z1 = (zmax + 4) * CELL;
     const x0 = -APRON, x1 = hf.sizeX + APRON;
-    const S = 2;
+    const S = 1;
     const nx = Math.ceil((x1 - x0) / S), nz = Math.ceil((z1 - z0) / S);
     const verts: number[] = [], depth: number[] = [], idx: number[] = [];
     const vid = new Int32Array((nx + 1) * (nz + 1)).fill(-1);
@@ -155,7 +166,7 @@ export class WaterView {
     for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
       const k = j * (nx + 1) + i;
       const m = Math.max(depthAt[k]!, depthAt[k + 1]!, depthAt[k + nx + 1]!, depthAt[k + nx + 2]!);
-      if (m < -0.05) continue;
+      if (m < -0.35) continue;
       const a = vertex(i, j), b = vertex(i + 1, j), c = vertex(i, j + 1), d = vertex(i + 1, j + 1);
       idx.push(a, c, b, b, c, d);
     }
@@ -172,7 +183,7 @@ export class WaterView {
           uRain: { value: 0 },
           uLight: { value: 1 },
           uDeep: { value: new Color('#2c3533') },
-          uShallow: { value: new Color('#45453a') },
+          uShallow: { value: new Color('#4d4b3c') },
           uSkyH: { value: new Color('#c9c6bb') },
           uSkyZ: { value: new Color('#9aa3a3') },
           uSunDir: { value: new Vector3(0, 1, 0) },

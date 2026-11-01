@@ -96,7 +96,7 @@ export function gameMenuSheet(act: GameMenuActions, world: World): SheetContent 
     update(sheet: Sheet) {
       setHtml(sheet.icon, iconSvg('pause', 30));
       sheet.kicker.textContent = t('menu.paused');
-      sheet.title.textContent = world.state.mission.contract ? t('contract.title') : t('hud.sandbox');
+      sheet.title.textContent = world.state.mission.contract ? t('menu.contractItem') : t('hud.sandbox');
       const html = `<div class="sheet-actions" style="flex-direction:column">
         <button class="btn primary cf" data-a="resume">${esc(t('menu.resume'))}</button>
         <button class="btn cf" data-a="settings">${esc(t('menu.settings'))}</button>

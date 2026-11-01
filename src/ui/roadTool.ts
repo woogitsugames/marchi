@@ -3,6 +3,7 @@ import { lineCells, roadCellCost, validateRoad, type CommandError, type SurfaceK
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
 import type { Markers } from './markers';
+import { cellsWord } from './format';
 
 export function errorText(err: CommandError): string {
   const key = `err.${err.k}` as MessageKey;
@@ -55,7 +56,7 @@ export class RoadDraft {
     const world = this.world();
     const r = this.cells.length >= 2 ? validateRoad(world, this.cells, this.surface) : null;
     if (r && r.ok) {
-      this.build([...this.cells], this.surface);
+      if (r.cost > 0) this.build([...this.cells], this.surface); // nothing new on an existing road
       this.cancel();
     } else {
       // keep the red draft visible briefly so the reason can be read
@@ -84,11 +85,11 @@ export class RoadDraft {
     let cost = 0;
     const seen = new Set<number>();
     for (const c of this.cells) if (!seen.has(c)) { seen.add(c); cost += roadCellCost(world, c, this.surface); }
-    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: water }) : '';
+    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: water, cells: cellsWord(water) }) : '';
     const costText = cost > 0 ? t('road.cost', { n: cost }) : t('road.free');
     if (r.ok) {
       view.setRoadPreview({ cells: this.cells, valid: true, badCell: -1 });
-      this.markers.setDraft(x, y, costText, [bridge, t('road.cells', { n: seen.size })].filter(Boolean).join(' · '), false);
+      this.markers.setDraft(x, y, costText, [bridge, t('road.cells', { n: seen.size, cells: cellsWord(seen.size) })].filter(Boolean).join(' · '), false);
     } else {
       const bad = 'cell' in r.err ? r.err.cell : -1;
       view.setRoadPreview({ cells: this.cells, valid: false, badCell: bad });

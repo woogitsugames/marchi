@@ -92,6 +92,7 @@ const C = {
 };
 
 const STREAK = new Color('#4f4b44');
+const SOOT = new Color('#2e2a26');
 const stoneO = (color = C.stone): Opts => ({
   color,
   jitter: 0.04,
@@ -600,9 +601,9 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
   });
   // domed bread oven of field stone + daub, with its own stone chimney
   const ox = 2.75, oz = -1.6;
-  box(b, 'stone', 2.1, 0.8, 2.3, trs(ox, 0.4, oz), stoneO(), 0.4);
+  box(b, 'stone', 2.1, 0.8, 2.3, trs(ox, 0.4, oz), stoneO(C.stoneDark), 0.4);
   b.add('plaster', new SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), {
-    color: '#8f8371',
+    color: '#7a7063',
     m: trs(ox, 0.8, oz, 0, 0, 0, 0.95, 0.85, 1.05),
     jitter: 0.04,
     jitterFreq: 2.5,
@@ -614,9 +615,13 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
       else if (p.y > 1.45) c.lerp(new Color('#3a332c'), 0.35); // soot
     },
   });
-  // chimney
-  box(b, 'stone', 0.75, 4.9, 0.75, trs(ox + 0.15, 2.45, oz - 0.75), stoneO(), 0.45);
-  box(b, 'stone', 0.9, 0.18, 0.9, trs(ox + 0.15, 4.95, oz - 0.75), stoneO(C.stoneDark));
+  // flue: a short, soot-darkened field-stone stack at the back of the oven dome (~3.3 m)
+  const flue = { ...stoneO('#4f4a42'), shade: (p: Vector3, n: Vector3, c: Color) => {
+    stoneO('#4f4a42').shade!(p, n, c);
+    if (p.y > 2.3) c.lerp(SOOT, Math.min(0.6, (p.y - 2.3) * 0.7));
+  } };
+  box(b, 'stone', 0.56, 3.2, 0.56, trs(ox + 0.15, 1.6, oz - 0.78), flue, 0.4);
+  box(b, 'stone', 0.66, 0.12, 0.66, trs(ox + 0.15, 3.24, oz - 0.78), stoneO('#46423b'));
   // shelter roof over the oven mouth
   box(b, 'wood', 1.7, 0.05, 1.4, trs(ox, 2.1, oz + 0.6, 0.38), { color: C.shingle });
   for (const s of [-1, 1]) rod(b, 'wood', v3(ox + s * 0.75, 0, oz + 1.3), v3(ox + s * 0.75, 1.9, oz + 1.3), 0.06, 0.05, 6, { color: C.timber });
@@ -628,7 +633,7 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
     b.add('wood', new CylinderGeometry(0.22, 0.18, 0.18, 12, 1, true), { color: '#7a6242', m: trs(x, 0.68, 1.0), ao: 0 });
     for (let i = 0; i < 3; i++) b.add('cloth', new SphereGeometry(1, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), { color: '#a67a3d', m: trs(x + (i - 1) * 0.1, 0.74, 1.0 + (i % 2) * 0.06, 0, i, 0, 0.1, 0.07, 0.1), ao: 0 });
   }
-  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 5.2, oz - 0.75) };
+  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78) };
 }
 
 function warehouse(b: PartBuilder): Partial<BuildingModel> {
