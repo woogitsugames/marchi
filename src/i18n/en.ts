@@ -39,6 +39,7 @@ export const en: Dict = {
   'status.NO_ROAD': 'No road to the gate',
   'status.NO_INPUT.NONE_AVAILABLE': 'No {good} available',
   'status.NO_INPUT.UNREACHABLE': '{good} available — no road access',
+  'status.WAITING_UPSTREAM': 'Waiting for {good} — the supplier is making it now',
   'status.WAITING_DELIVERY': '{good} on the way — wagon {wagon}',
   'status.NO_WAGON.ALL_BUSY': 'No free wagon for {good}',
   'status.NO_WAGON.NONE_CAN_REACH': 'No free wagon can reach the {good}',

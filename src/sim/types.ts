@@ -28,6 +28,8 @@ export type BuildingStatus =
   | { k: 'NO_ROAD' }
   /** Input missing and nothing on the way. cause tells what the dispatcher saw. */
   | { k: 'NO_INPUT'; good: Good; cause: 'NONE_AVAILABLE' | 'UNREACHABLE'; blockedBy: number }
+  /** Input missing, but a reachable producer is making it right now: not a stall (start-up, slow supply). */
+  | { k: 'WAITING_UPSTREAM'; good: Good; from: number }
   /** Input is on its way on a wagon. */
   | { k: 'WAITING_DELIVERY'; good: Good; wagon: number }
   /** Goods available somewhere reachable, but no free wagon could take the job. */

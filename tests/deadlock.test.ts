@@ -20,3 +20,12 @@ test('untouched mission (no bridge): every stalled building and wagon has a reas
   const s = buildingById(w, castle.id)!.status;
   eq(s.k === 'NO_WAGON' || s.k === 'NO_INPUT', true, 'castle reason ' + s.k);
 });
+
+test('start-up is not reported as a stall: input made upstream right now = WAITING_UPSTREAM', () => {
+  const w = createWorld('m2');
+  for (let i = 0; i < 150; i++) step(w);
+  const falseAlarms = w.state.buildings.filter((b) => b.status.k === 'NO_INPUT' && b.status.cause === 'NONE_AVAILABLE'
+    && w.state.buildings.some((p) => p.id === (b.status as { blockedBy: number }).blockedBy && p.status.k === 'WORKING'));
+  eq(falseAlarms.length, 0, 'NO_INPUT blaming a working producer: ' + falseAlarms.map((b) => b.type).join(','));
+  assert(w.state.buildings.some((b) => b.status.k === 'WAITING_UPSTREAM'), 'someone waits for upstream at start');
+});
