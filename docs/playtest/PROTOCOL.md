@@ -13,7 +13,7 @@ Podstawa implementacji (na gałęzi `claude/eager-cori-08wt8e`): `src/sim/missio
 | Strategie/logistyka | 2 | Grają co najmniej raz w miesiącu w strategie lub gry ekonomiczne |
 | Casual mobile | 2 | Grają na telefonie, lecz rzadko w strategie |
 | Niegrający | 1–2 | Nie grają regularnie lub wcale |
-| Dodatkowe osoby (do 8) | 0–3 | W pierwszej kolejności uzupełnij mniej reprezentowany segment |
+| Dodatkowe osoby | Do łącznego limitu 8 | W pierwszej kolejności uzupełnij mniej reprezentowany segment |
 
 Nie zapraszaj osób, które widziały wcześniej te misje, projektowały interfejs lub czytały scenariusze. Nadaj losowy kod `P01`–`P08`; w wynikach nie zapisuj imion, kont, telefonów ani innych danych identyfikujących. Używaj tego samego APK/commita, ustawienia języka PL i podobnej jasności ekranu. Odnotuj model telefonu i wersję Androida; jeśli korzystasz z różnych urządzeń, **nie mieszaj wyników urządzeń bez adnotacji**.
 
@@ -50,7 +50,7 @@ Ustal kolejność przed testem, żeby ograniczyć efekt nauki: dla osób nieparz
 | `play=m1|m2|m3` | Start wskazanej misji (jest też `sandbox`) |
 | `ff=<s>` | Deterministyczny fast-forward w **sekundach symulacji**, maks. 3600; zatrzymuje się po wygranej/przegranej |
 | `speed=0|1|2|4` | Prędkość (0 = pauza); kod nie waliduje innych liczb, więc ich nie podawaj |
-| `bot=1` | **Tylko dla m1:** stawia most `bridgeA` (`x=41`) i kupuje 4 wozy; nie używać w m2/m3 i w scenariuszu bez mostu |
+| `bot=1` | Uruchamia **plan z m1** (most `bridgeA`, `x=41`, i zakup 4 wozów), nawet gdy wybrano inną misję; **stosować tylko w m1**, nigdy w m2/m3 ani w przypadku braku mostu |
 | `open=<buildingType>` | Otwiera **pierwszy budynek danego typu**, np. `castle`, `bakery`, `warehouse`; **nie przyjmuje ID** |
 | `wagon=jam` | Otwiera pierwszy `BRIDGE_JAM`, **a jeśli go brak — pierwszy wóz nie-IDLE** |
 | `wagon=<inna_wartość>` | Otwiera pierwszy wóz nie-IDLE; **nie przyjmuje ID** |
@@ -216,4 +216,4 @@ Po zebraniu wszystkich sesji przedstaw dla **każdego S1–S6**: `n` ważnych pr
 
 Dla **TOP 5** grupuj problemy po kodzie, zliczaj **unikalne osoby** (współwystąpienia w kilku scenach tej samej osoby liczą się raz), podaj `liczba/n`, medianę czasu dla dotkniętych prób, stopień utrudnienia `1=kosmetyczny,2=opóźnia,3=uniemożliwia diagnozę`. Ranking: malejąco `liczba_osób × stopień`, potem dłuższa mediana; opisz konkurencyjne wyjaśnienia. Wpisz do `docs/BACKLOG.md` **rzeczywiście zaobserwowane TOP 5** po testach, z licznikami, linkiem do podsumowania i warunkiem akceptacji. W tej wersji backlog zawiera **tylko 5 hipotez do zweryfikowania**, a nie wymyślone wyniki.
 
-**Definicja ukończenia playtestu:** 5–8 podpisanych zgodą sesji, plik wyników bez danych osobowych, osobny wynik S5, pięć rzeczywistych problemów z licznikami, propozycje UI w backlogu, brak udawanych fixtur i brak interpretacji błędów przygotowania jako błędów użytkownika.
+**Definicja ukończenia playtestu:** 5–8 sesji przeprowadzonych po uzyskaniu zgody, plik wyników bez danych osobowych, osobny wynik S5, pięć rzeczywistych problemów z licznikami, propozycje UI w backlogu, brak udawanych fixtur i brak interpretacji błędów przygotowania jako błędów użytkownika.
