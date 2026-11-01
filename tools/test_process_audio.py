@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from process_audio import (
+from tools.process_audio import (
     MANIFEST,
     FREESOUND_SOURCES,
     FreesoundPage,
@@ -55,7 +55,7 @@ class FreesoundTests(unittest.TestCase):
         ).encode()
 
     def test_verified_cc0_hq_preview(self) -> None:
-        with patch("process_audio.urllib.request.urlopen", return_value=FakePage(self.html)):
+        with patch("tools.process_audio.urllib.request.urlopen", return_value=FakePage(self.html)):
             result = freesound_preview(self.source)
         self.assertEqual(
             result, self.preview.replace("-lq.mp3", "-hq.ogg")
@@ -63,13 +63,13 @@ class FreesoundTests(unittest.TestCase):
 
     def test_rejects_non_cc0_page(self) -> None:
         bad = self.html.replace(b"publicdomain/zero/1.0/", b"licenses/by/4.0/")
-        with patch("process_audio.urllib.request.urlopen", return_value=FakePage(bad)):
+        with patch("tools.process_audio.urllib.request.urlopen", return_value=FakePage(bad)):
             with self.assertRaisesRegex(ValueError, "CC0"):
                 freesound_preview(self.source)
 
     def test_rejects_wrong_sound_id_in_preview(self) -> None:
         bad = self.html.replace(b"475483_1040", b"999999_1040")
-        with patch("process_audio.urllib.request.urlopen", return_value=FakePage(bad)):
+        with patch("tools.process_audio.urllib.request.urlopen", return_value=FakePage(bad)):
             with self.assertRaisesRegex(ValueError, "Untrusted"):
                 freesound_preview(self.source)
 
