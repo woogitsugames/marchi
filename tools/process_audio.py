@@ -217,29 +217,43 @@ def fetch(url: str, dest: Path) -> None:
             time.sleep(2 * (attempt + 1))
 
 
-def source_checksums(manifest: dict, source_dir: Path, fetch_missing: bool) -> dict[str, dict]:
+def source_checksums(
+    manifest: dict, source_dir: Path, fetch_missing: bool, tracks: list[dict]
+) -> dict[str, dict]:
     records = {}
-    used = {t["source"] for t in manifest["tracks"]}
-    used |= {e["source"] for t in manifest["tracks"] for e in t.get("extra", [])}
+    used = {t["source"] for t in tracks}
+    used |= {e["source"] for t in tracks for e in t.get("extra", [])}
     for key in sorted(used):
         source = manifest["sources"][key]
-        if source["license"] != "CC0-1.0":
-            raise ValueError(f"Cannot process non-CC0 recording: {key}")
-        file = source_dir / source["filename"]
+        provider = source.get("provider", "opengameart")
+        # Version Freesound source previews alongside shipped audio in the PR.
+        folder = FREESOUND_SOURCES if provider == "freesound" and (
+            source_dir == BASE / ".cache/audio-sources"
+        ) else source_dir
+        file = folder / source["filename"]
+        resolved = source.get("url")
         if not file.exists():
             if not fetch_missing:
-                raise FileNotFoundError(f"Missing {file}; pass --fetch or --source-dir")
-            print(f"Downloading CC0 field recording {key}: {source['page']}", flush=True)
-            fetch(source["url"], file)
+                raise FileNotFoundError(
+                    f"Missing CC0 source {file}; pass --fetch or supply the file"
+                )
+            print(f"Downloading CC0 sound {key}: {source['page']}", flush=True)
+            if provider == "freesound":
+                resolved = fetch_freesound(source, file)
+            else:
+                fetch(source["url"], file)
         probe = ffprobe(file)
-        digest = hashlib.sha256()
-        with file.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-                digest.update(chunk)
-        records[key] = {"file": file, "sha256": digest.hexdigest(), **probe}
-        print(f"Source {key}: {file.stat().st_size:,} B, {probe['duration']:.1f} s", flush=True)
+        digest = sha256(file)
+        if source.get("sha256") and digest != source["sha256"]:
+            raise ValueError(f"Source hash mismatch for {key}: {file}")
+        records[key] = {
+            "file": file, "sha256": digest, "download_url": resolved, **probe
+        }
+        print(
+            f"Source {key}: {file.stat().st_size:,} B, {probe['duration']:.1f} s",
+            flush=True,
+        )
     return records
-
 
 def field_loop(track: dict, src: Path, extras: list[tuple[dict, Path]], output: Path) -> None:
     seconds = float(track["seconds"])
