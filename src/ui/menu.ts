@@ -16,7 +16,8 @@ export interface MenuActions {
 
 export interface SaveInfo { missionId: string; tick: number }
 
-export function buildMainMenu(act: MenuActions, save: SaveInfo | null): HTMLElement {
+/** broken = the save could not be loaded: show why and offer that contract afresh. */
+export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: 'm1' | 'm2' | 'm3' | 'sandbox' | null = null): HTMLElement {
   const items: HTMLElement[] = [];
   const item = (label: string, sub: string, fn: () => void, primary = false): void => {
     const b = h(`button.menu-item${primary ? '.primary' : ''}` as 'button.menu-item', null,
@@ -34,10 +35,17 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null): HTMLElem
   item(t('menu.m3'), t('menu.m3Sub'), () => act.newGame('m3'));
   item(t('menu.sandbox'), t('menu.sandboxSub'), () => act.newGame('sandbox'));
   item(t('menu.settings'), '', act.openSettings);
+  let err: HTMLElement | null = null;
+  if (broken) {
+    const again = h('button.btn.primary.cf', null, t('menu.saveBrokenNew'));
+    again.addEventListener('click', () => act.newGame(broken));
+    err = h('div.menu-error', { role: 'alert' }, h('p', null, t('menu.saveBroken')), again);
+  }
   const strip = h('div.menu-strip', null,
     h('h1.title', null, t('app.title')),
     h('p.subtitle', null, t('app.subtitle')),
     h('div.rule'),
+    err,
     h('ul.menu-list', null, ...items),
   );
   strip.style.clipPath = deckle('bottom', 977, 9, 30);
@@ -51,6 +59,10 @@ export interface SettingsActions {
   autoQuality(): QualityChoice;
   leftHanded(): boolean;
   setLeftHanded(v: boolean): void;
+  musicVolume(): number;
+  effectsVolume(): number;
+  /** commit = slider released: persist */
+  setVolume(kind: 'music' | 'effects', v: number, commit: boolean): void;
 }
 
 export function settingsSheet(act: SettingsActions): SheetContent {
@@ -69,10 +81,23 @@ export function settingsSheet(act: SettingsActions): SheetContent {
         <div class="setting"><span class="s-label">${esc(t('menu.quality'))}</span>
           ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality())}
           <div class="s-hint">${esc(act.quality() === 'auto' ? t('menu.qualityDetected', { q: t(`quality.${act.autoQuality()}` as MessageKey) }) : t('menu.qualityHint'))}</div></div>
+        <div class="setting"><label class="s-label" for="vol-music">${esc(t('menu.music'))}</label>
+          <input class="vol" id="vol-music" type="range" min="0" max="100" step="5" data-vol="music"></div>
+        <div class="setting"><label class="s-label" for="vol-fx">${esc(t('menu.effects'))}</label>
+          <input class="vol" id="vol-fx" type="range" min="0" max="100" step="5" data-vol="effects"></div>
         <div class="setting"><span class="s-label">${esc(t('menu.leftHanded'))}</span>
           ${seg('left', [['0', t('menu.off')], ['1', t('menu.on')]], act.leftHanded() ? '1' : '0')}</div>
         <div class="setting"><div class="s-hint">${esc(t('hud.clearHint'))}</div></div>`;
       if (setHtml(sheet.body, html)) {
+        // slider values are set here, not in the HTML, so the 4 Hz refresh never rebuilds a slider mid-drag
+        sheet.body.querySelectorAll<HTMLInputElement>('input[data-vol]').forEach((inp) => {
+          const kind = inp.dataset.vol === 'music' ? 'music' : 'effects';
+          const cur = kind === 'music' ? act.musicVolume() : act.effectsVolume();
+          inp.value = String(Math.round(cur * 100));
+          inp.style.setProperty('--v', `${inp.value}%`);
+          inp.addEventListener('input', () => { inp.style.setProperty('--v', `${inp.value}%`); act.setVolume(kind, Number(inp.value) / 100, false); });
+          inp.addEventListener('change', () => act.setVolume(kind, Number(inp.value) / 100, true));
+        });
         sheet.body.querySelectorAll<HTMLElement>('[data-set]').forEach((b) => b.addEventListener('click', () => {
           const [k, v] = (b.dataset.set ?? '').split(':');
           if (k === 'lang') setLang(v as Lang);

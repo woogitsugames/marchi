@@ -11,6 +11,9 @@ export interface SheetContent {
   /** Called ~4x a second while open; return false to close (subject vanished). */
   update(sheet: Sheet): boolean;
   onClose?(): void;
+  /** When another content replaces this one inside the same sheet (pause menu -> settings),
+   *  run onClose only when the sheet itself finally closes. Default: run it on replace. */
+  closeWithSheet?: boolean;
 }
 
 export interface Sheet {
@@ -20,12 +23,16 @@ export interface Sheet {
   title: HTMLElement;
   body: HTMLElement;
   content: SheetContent;
+  /** onClose callbacks of replaced contents that asked to wait for the sheet (closeWithSheet). */
+  deferred: (() => void)[];
 }
 
 export class Sheets {
   private stack: Sheet[] = [];
   private suppressPop = 0;
   private gestureCancels = new WeakMap<Sheet, () => void>();
+  /** Removes the window-level swipe listeners of a sheet once it is closed. */
+  private detachers = new WeakMap<Sheet, () => void>();
   onChange: (() => void) | null = null;
 
   constructor(private host: HTMLElement) {
@@ -53,7 +60,9 @@ export class Sheets {
     }
     if (top) {
       // replace: links in the chain navigate within one sheet; back/escape still closes it
-      top.content.onClose?.();
+      const prev = top.content;
+      if (prev.closeWithSheet) { if (prev.onClose) top.deferred.push(() => prev.onClose?.()); }
+      else prev.onClose?.();
       top.content = content;
       top.body.scrollTop = 0;
       top.body.innerHTML = '';
@@ -80,6 +89,8 @@ export class Sheets {
       try { history.back(); } catch { this.suppressPop--; }
     }
     s.content.onClose?.();
+    for (const f of s.deferred.splice(0)) f();
+    this.detachers.get(s)?.();
     s.el.classList.add('is-leaving');
     window.setTimeout(() => s.el.remove(), 240);
     this.onChange?.();
@@ -113,13 +124,13 @@ export class Sheets {
     const icon = h('div.sh-icon');
     const kicker = h('div.kicker');
     const title = h('h3');
-    const close = h('button.close', { 'aria-label': t('menu.resume'), html: iconSvg('close', 22) });
+    const close = h('button.close', { 'aria-label': t('sheet.close'), html: iconSvg('close', 22) });
     const head = h('div.sheet-head', null, icon, h('div.sh-text', null, kicker, title), close);
     const body = h('div.sheet-body');
     const grip = h('div.sheet-grip');
     const inner = h('div.sp-in', null, grip, head, body);
     const el = h('section.sheet', { role: 'dialog' }, h('div.sheet-paper', null, inner));
-    const sheet: Sheet = { el, icon, kicker, title, body, content };
+    const sheet: Sheet = { el, icon, kicker, title, body, content, deferred: [] };
     close.addEventListener('click', () => {
       if (this.top === sheet) this.closeTop();
     });
@@ -138,13 +149,14 @@ export class Sheets {
     };
     for (const z of zones) {
       z.addEventListener('pointerdown', (e) => {
+        if ((e.target as HTMLElement).closest('input, select, textarea')) return; // sliders drag sideways
         const fromBody = z === sheet.body;
         if (fromBody && sheet.body.scrollTop > 0) return;
         start = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId, fromBody };
         d = 0;
       });
     }
-    window.addEventListener('pointermove', (e) => {
+    const move = (e: PointerEvent): void => {
       if (!start || e.pointerId !== start.id) return;
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       let along = side() ? dx * sideSign() : dy;
@@ -158,7 +170,7 @@ export class Sheets {
       d = along;
       sheet.el.classList.add('is-dragging');
       sheet.el.style.transform = side() ? `translateX(${along * sideSign()}px)` : `translateY(${along}px)`;
-    });
+    };
     const end = (e: PointerEvent): void => {
       if (!start || e.pointerId !== start.id) return;
       const v = d / Math.max(1, performance.now() - start.t);
@@ -171,8 +183,14 @@ export class Sheets {
       }
       d = 0;
     };
+    window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
+    this.detachers.set(sheet, () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+    });
     this.gestureCancels.set(sheet, () => { start = null; d = 0; });
   }
 }

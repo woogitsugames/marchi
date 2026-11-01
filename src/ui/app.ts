@@ -41,6 +41,16 @@ function armAudioUnlock(): void {
 
 type MissionKey = 'm1' | 'm2' | 'm3' | 'sandbox';
 
+/** Player volumes (0..1 sliders) -> engine channels; effects scale sfx, ambience and UI clicks together. */
+function applyVolumes(p: Prefs): void {
+  music.setVolume(p.musicVolume * MUSIC_FULL);
+  audio.setVolume('sfx', 0.65 * p.effectsVolume);
+  audio.setVolume('ambient', 0.55 * p.effectsVolume);
+  audio.setVolume('ui', 0.7 * p.effectsVolume);
+}
+/** Music level at slider 100 %; the default slider (0.8) gives ~0.56, the player's built-in level. */
+const MUSIC_FULL = 0.7;
+
 const SAVE_SLOT = 'auto';
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
 
@@ -85,6 +95,7 @@ export class App implements PanelNav {
   private dynres = new DynamicResolution();
   /** Session-only quality override from ?quality= (screenshots, tests). */
   private qualityParam: QualityPref | null = null;
+  private menuToken = 0;
 
   constructor(o: AppOptions) {
     this.view = o.view;
@@ -107,6 +118,7 @@ export class App implements PanelNav {
     this.qualityParam = isQualityPref(qp) ? qp : null;
     this.dynres.enabled = this.params.get('dynres') !== '0';
     document.body.classList.toggle('left-handed', this.prefs.leftHanded);
+    applyVolumes(this.prefs);
     this.view.setQuality(renderQuality(this.view, this.effectiveQuality()));
     this.applyLayout();
     this.watchLayout();
@@ -168,22 +180,28 @@ export class App implements PanelNav {
     this.view.setMenuMode(true);
     music.setMood('menu');
     armAudioUnlock();
+    // render at once: IndexedDB may be slow or hang (save.ts times out after 1.5 s);
+    // "Continue" is added when the save list arrives
+    this.save = null;
+    this.renderMenu();
+    const token = ++this.menuToken;
     try {
       const saves = await listSaves();
       const s = saves.find((x) => x.slot === SAVE_SLOT);
       this.save = s ? { missionId: s.missionId, tick: s.tick } : null;
     } catch { this.save = null; }
-    this.renderMenu();
+    if (token !== this.menuToken || this.mode !== 'menu') return;
+    if (this.save) this.renderMenu();
   }
 
-  private renderMenu(): void {
+  private renderMenu(broken: MissionKey | null = null): void {
     this.layers.menu.innerHTML = '';
     if (this.mode !== 'menu') return;
     this.layers.menu.append(buildMainMenu({
       continueGame: () => void this.continueGame(),
       newGame: (m) => this.newGame(m),
       openSettings: () => this.openSettings(),
-    }, this.save));
+    }, broken ? null : this.save, broken));
   }
 
   private setWorld(w: World): void {
@@ -210,11 +228,16 @@ export class App implements PanelNav {
   private async continueGame(): Promise<void> {
     try {
       const st: SimState | null = await loadGame(SAVE_SLOT);
-      if (!st) return;
+      if (!st) throw new Error('save slot is empty');
       this.missionId = (['m1', 'm2', 'm3', 'sandbox'] as const).find((k) => k === st.mission.id) ?? 'm1';
       this.enterGame(worldFromState(st));
     } catch (e) {
-      console.error(e);
+      // damaged / incompatible save: say so and offer the same contract afresh
+      console.error('continue failed', e);
+      if (this.mode !== 'menu') return;
+      const m = (['m1', 'm2', 'm3', 'sandbox'] as const).find((k) => k === this.save?.missionId) ?? 'm1';
+      if (audio.ready) void audio.play('ui.error');
+      this.renderMenu(m);
     }
   }
 
@@ -350,7 +373,7 @@ export class App implements PanelNav {
 
   private onCommandResult(cmd: Command, r: CommandResult): void {
     if (this.mode !== 'game' || !this.hud) return;
-    const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish' : 'buy_wagon';
+    const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish' : cmd.t === 'sellWagon' ? 'coin' : 'buy_wagon';
     if (!r.ok) {
       if (audio.ready) void audio.play('ui.error');
       this.hud.toast(errorText(r.err), 'err', icon);
@@ -359,6 +382,7 @@ export class App implements PanelNav {
     if (cmd.t === 'road') this.hud.toast(t('hud.built', { n: r.cost }), 'info', icon, 1800);
     else if (cmd.t === 'demolish') this.hud.toast(t('hud.demolished', { n: -r.cost }), 'info', icon, 1800);
     else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n: r.cost }), 'info', icon, 1800);
+    else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n: -r.cost }), 'info', icon, 1800);
   }
 
   private buyWagonFromRail(): void {
@@ -385,6 +409,11 @@ export class App implements PanelNav {
 
   buyWagon(stable: number): void {
     this.enqueue({ t: 'buyWagon', stable });
+  }
+
+  sellWagon(wagon: number): void {
+    if (this.followId === wagon) this.stopFollow();
+    this.enqueue({ t: 'sellWagon', wagon });
   }
 
   following(): number | null {
@@ -484,6 +513,14 @@ export class App implements PanelNav {
         document.body.classList.toggle('left-handed', v);
         requestAnimationFrame(() => this.measureRail());
       },
+      musicVolume: () => this.prefs.musicVolume,
+      effectsVolume: () => this.prefs.effectsVolume,
+      setVolume: (kind, v, commit) => {
+        if (kind === 'music') this.prefs.musicVolume = v;
+        else this.prefs.effectsVolume = v;
+        applyVolumes(this.prefs);
+        if (commit) savePrefs(this.prefs);
+      },
     }));
   }
 
@@ -499,6 +536,8 @@ export class App implements PanelNav {
       toMenu: () => { void this.autosave().then(() => this.showMenu()); },
     }, this.world);
     content.onClose = resume;
+    // Settings opened from here replace this content in the same sheet: stay paused until the sheet closes
+    content.closeWithSheet = true;
     this.sheets.open(content);
   }
 

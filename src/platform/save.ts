@@ -34,25 +34,46 @@ export function migrate(env: SaveEnvelope): SaveEnvelope {
   return { ...env, stateVersion: v, state: s as unknown as SimState };
 }
 
+/** IndexedDB can hang (blocked upgrade, wedged WebView storage): never wait longer than this. */
+const IDB_TIMEOUT_MS = 1500;
+
+function withTimeout<T>(p: Promise<T>, what: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`IndexedDB ${what} timed out`)), IDB_TIMEOUT_MS);
+    p.then((v) => { clearTimeout(timer); resolve(v); }, (e: unknown) => { clearTimeout(timer); reject(e); });
+  });
+}
+
 function open(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
+  return withTimeout(new Promise<IDBDatabase>((resolve, reject) => {
+    let req: IDBOpenDBRequest;
+    try { req = indexedDB.open(DB_NAME, DB_VERSION); } catch (e) { reject(e); return; }
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'slot' });
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => db.close(); // never block another tab's upgrade
+      resolve(db);
+    };
     req.onerror = () => reject(req.error);
-  });
+    req.onblocked = () => reject(new Error('IndexedDB open blocked'));
+  }), 'open');
 }
 
 function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-  return open().then((db) => new Promise<T>((resolve, reject) => {
-    const t = db.transaction(STORE, mode);
-    const r = f(t.objectStore(STORE));
+  return open().then((db) => withTimeout(new Promise<T>((resolve, reject) => {
+    let t: IDBTransaction;
+    let r: IDBRequest<T>;
+    try {
+      t = db.transaction(STORE, mode);
+      r = f(t.objectStore(STORE));
+    } catch (e) { db.close(); reject(e); return; }
     t.oncomplete = () => { resolve(r.result); db.close(); };
     t.onerror = () => { reject(t.error); db.close(); };
-  }));
+    t.onabort = () => { reject(t.error ?? new Error('IndexedDB transaction aborted')); db.close(); };
+  }), mode));
 }
 
 export async function saveGame(slot: string, state: SimState): Promise<void> {

@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta, wagonSlowdown,
+  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta, wagonSlowdown, WAGON_PRICE,
   type Building, type Good, type ReasonLink, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
@@ -17,6 +17,7 @@ export interface PanelNav {
   /** Jump the camera to a subject and open its sheet. */
   go(kind: 'building' | 'wagon', id: number): void;
   buyWagon(stable: number): void;
+  sellWagon(wagon: number): void;
   toggleFollow(wagon: number): void;
   following(): number | null;
 }
@@ -38,6 +39,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     const [act, arg] = (el.dataset.act ?? '').split(':');
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
+    if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
   });
 }
 
@@ -172,7 +174,11 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         const chain = explainWagon(world, id);
         if (chain.length > 1) html += `<div class="section-h">${esc(t('wagon.chain'))}</div>${chainHtml(world, chain, 'wagon', id)}`;
       }
-      html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button></div>`;
+      // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still
+      const canSell = !w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0;
+      html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
+        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${esc(t('wagon.sell', { n: Math.floor(WAGON_PRICE * 0.5) }))}</span></button></div>` +
+        (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
       setHtml(sheet.body, html);
       return true;
     },
