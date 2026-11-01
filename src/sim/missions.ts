@@ -3,6 +3,7 @@ import { STATE_VERSION, TICK_HZ, emptyGoods } from './defs';
 import { lineCells, place, spawnWagon } from './commands';
 import { nextInt, seedRng } from './rng';
 import { generateValley, type ValleySpec } from './terrain';
+import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
 import type { World } from './network';
 import type { BuildingType, GoodMap, RainSpell, SimState, Terrain } from './types';
 
@@ -32,14 +33,22 @@ export function valleySpec(seed: number): ValleySpec {
   };
 }
 
+/** Map id -> valley spec for a seed. */
+const MAP_SPECS: Record<string, (seed: number) => ValleySpec> = {
+  valley1: valleySpec,
+  'valley-m2': (seed) => ({ ...M2_VALLEY, seed }),
+  'valley-m3': (seed) => ({ ...M3_VALLEY, seed }),
+};
+
 const terrainCache = new Map<string, Terrain>();
 
 export function terrainFor(mapId: string, seed: number): Terrain {
   const key = mapId + ':' + seed;
   let t = terrainCache.get(key);
   if (!t) {
-    if (mapId !== 'valley1') throw new Error('unknown map ' + mapId);
-    t = generateValley(valleySpec(seed));
+    const spec = MAP_SPECS[mapId];
+    if (!spec) throw new Error('unknown map ' + mapId);
+    t = generateValley(spec(seed));
     terrainCache.set(key, t);
   }
   return t;
@@ -60,6 +69,10 @@ export interface MissionDef {
   deadlineMin: number;
   star3Min: number;
   star2Min: number;
+  /** Fixed weather instead of the seeded rain schedule. */
+  rain?: RainSpell[];
+  /** Authored roads keep their water cells (pre-built bridges). */
+  roadsOverWater?: boolean;
 }
 
 export const MISSIONS: Record<string, MissionDef> = {
@@ -106,6 +119,8 @@ export const MISSIONS: Record<string, MissionDef> = {
     star2Min: 0,
   },
 };
+MISSIONS.m2 = PROPOSED_MISSIONS.m2;
+MISSIONS.m3 = PROPOSED_MISSIONS.m3;
 MISSIONS.sandbox!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.sandbox!.roads = MISSIONS.m1!.roads;
 
@@ -145,6 +160,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods() },
   };
   state.rain = rainSpells(state.rng);
+  if (def.rain) state.rain = def.rain.map((r) => ({ ...r }));
   const world: World = { terrain, state, cache: null, scratch: null };
   for (const p of def.buildings) {
     const r = place(world, p.type, p.x, p.y, p.facing, true);
@@ -161,7 +177,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     for (let i = 1; i < poly.length; i++) {
       const a = poly[i - 1]!, b = poly[i]!;
       for (const c of lineCells(terrain.w, a[1] * terrain.w + a[0], b[1] * terrain.w + b[0])) {
-        if (!state.roads[c] && !terrain.water[c]) state.roads[c] = 1;
+        if (!state.roads[c] && (def.roadsOverWater || !terrain.water[c])) state.roads[c] = 1;
       }
     }
   }

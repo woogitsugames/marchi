@@ -1,7 +1,7 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
 import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS } from './defs';
 import { buildingById } from './logistics';
-import { edgeLength, edgeSpeedAt, findPath, isRaining, pathTime, type World } from './network';
+import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
 import type { BuildingStatus, Wagon, WagonStatus } from './types';
 
 export type ReasonLink =
@@ -115,4 +115,35 @@ export function wagonEta(world: World, wagonId: number): Eta | null {
 export function timeOfDay(world: World): number {
   const f = START_DAY_FRACTION + world.state.tick / DAY_TICKS;
   return f - Math.floor(f);
+}
+
+export interface Slowdown {
+  /** Surface under the wagon right now. */
+  surface: 'dirt' | 'cobble' | 'woodBridge' | 'stoneBridge';
+  raining: boolean;
+  /** True when rain turns the current dirt track into mud. */
+  mud: boolean;
+  /** Current speed divided by the dry, flat speed of the same surface (1 = no slowdown). */
+  factor: number;
+  /** Grade of the current edge, positive uphill. */
+  grade: number;
+}
+
+/**
+ * Why a moving wagon is slow (mud, slope), for the wagon card. Moving slowly is not a stall,
+ * so this is not a WagonStatus — it is an explanation the UI shows next to the ETA.
+ */
+export function wagonSlowdown(world: World, wagonId: number): Slowdown | null {
+  const w = wagonById(world, wagonId);
+  if (!w) return null;
+  const a = w.at, b = w.next >= 0 ? w.next : w.at;
+  const cell = w.next >= 0 && w.edgeT / Math.max(1e-6, edgeLength(world.terrain, a, b)) >= 0.5 ? b : a;
+  const water = world.terrain.water[cell] === 1;
+  const cobble = world.state.roads[cell] === 2;
+  const surface = water ? (cobble ? 'stoneBridge' : 'woodBridge') : cobble ? 'cobble' : 'dirt';
+  const raining = isRaining(world.state);
+  const g = a !== b ? grade(world.terrain, a, b) : 0;
+  const dry = cellSpeed(world, cell, false);
+  const now = cellSpeed(world, cell, raining) * slopeFactor(g, w.cargoQty > 0);
+  return { surface, raining, mud: raining && surface === 'dirt', factor: now / dry, grade: g };
 }

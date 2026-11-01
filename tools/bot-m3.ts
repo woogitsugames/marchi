@@ -3,7 +3,8 @@ import {
   applyCommand, checkInvariants, isRaining, lineCells, step, stars, TICK_HZ,
   unexplainedStalls, type Command, type World,
 } from '../src/sim/index';
-import { createProposedWorld, M3_RAIN } from '../src/sim/missions-proposed';
+import { createWorld } from '../src/sim/index';
+import { M3_RAIN } from '../src/sim/missions-proposed';
 
 function row(w: World, y: number, x1: number, x2: number): number[] {
   return lineCells(w.terrain.w, y * w.terrain.w + x1, y * w.terrain.w + x2);
@@ -17,7 +18,7 @@ function requireCommand(w: World, cmd: Command): void {
 }
 
 function run(): void {
-  const w = createProposedWorld('m3');
+  const w = createWorld('m3');
   const schedule = w.state.rain;
   if (JSON.stringify(schedule) !== JSON.stringify(M3_RAIN)) throw new Error('m3 rain missing from state.rain');
   if (isRaining(w.state)) throw new Error('rain should start at 20s');

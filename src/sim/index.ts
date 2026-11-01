@@ -6,5 +6,5 @@ export { applyCommand, validateRoad, lineCells, roadCellCost, type Command, type
 export { MISSIONS, VALLEY_W, VALLEY_H } from './missions';
 export { isRaining, edgeLength, findPath, pathTime, net, hasEdge, grade, type World } from './network';
 export { buildingById, gateConnected } from './logistics';
-export { explainBuilding, explainWagon, wagonEta, timeOfDay, type ReasonLink } from './diagnose';
+export { explainBuilding, explainWagon, wagonEta, wagonSlowdown, timeOfDay, type ReasonLink, type Slowdown } from './diagnose';
 export { hashState } from './hash';
