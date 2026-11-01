@@ -137,6 +137,8 @@ export const sv: Dict = {
   "hud.wagonSold": "Vagn såld: +{n} silver",
   "menu.saveBroken": "Sparfilen kan inte läsas: den är skadad eller från en annan spelversion.",
   "menu.saveBrokenNew": "Börja om kontraktet",
+  "menu.saveNewer": "Sparfilen kommer från en nyare version av spelet. Uppdatera spelet för att läsa in den.",
+  "menu.saveTerrain": "Kartan för det här kontraktet har ändrats i den nya versionen, så sparfilen kan inte fortsättas.",
   "menu.music": "Musik",
   "menu.effects": "Ljudeffekter",
   "quality.auto": "Auto",

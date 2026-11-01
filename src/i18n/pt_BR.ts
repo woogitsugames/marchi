@@ -137,6 +137,8 @@ export const pt_BR: Dict = {
   "hud.wagonSold": "Carroça vendida: +{n} de prata",
   "menu.saveBroken": "Não foi possível carregar o jogo salvo: arquivo danificado ou de outra versão.",
   "menu.saveBrokenNew": "Reiniciar este contrato",
+  "menu.saveNewer": "Este jogo salvo é de uma versão mais nova do jogo. Atualize o jogo para carregá-lo.",
+  "menu.saveTerrain": "O mapa deste contrato mudou na nova versão do jogo, então o jogo salvo não pode continuar.",
   "menu.music": "Música",
   "menu.effects": "Efeitos sonoros",
   "quality.auto": "Auto",

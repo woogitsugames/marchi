@@ -137,6 +137,8 @@ export const ko: Dict = {
   "hud.wagonSold": "수레 판매: 은 +{n}",
   "menu.saveBroken": "저장 데이터가 손상되었거나 다른 버전의 것이어서 불러올 수 없습니다.",
   "menu.saveBrokenNew": "이 계약을 처음부터 시작",
+  "menu.saveNewer": "이 저장 데이터는 더 새로운 버전의 게임에서 만들어졌습니다. 불러오려면 게임을 업데이트하세요.",
+  "menu.saveTerrain": "새 버전에서 이 계약의 지도가 바뀌어 저장 데이터를 이어서 할 수 없습니다.",
   "menu.music": "음악",
   "menu.effects": "효과음",
   "quality.auto": "자동",

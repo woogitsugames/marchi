@@ -137,6 +137,8 @@ export const it: Dict = {
   "hud.wagonSold": "Carro venduto: +{n} d'argento",
   "menu.saveBroken": "Il salvataggio non si carica: è danneggiato o di un'altra versione del gioco.",
   "menu.saveBrokenNew": "Ricomincia questo contratto",
+  "menu.saveNewer": "Questo salvataggio viene da una versione più recente del gioco. Aggiorna il gioco per caricarlo.",
+  "menu.saveTerrain": "La mappa di questo contratto è cambiata nella nuova versione del gioco: il salvataggio non può proseguire.",
   "menu.music": "Musica",
   "menu.effects": "Effetti sonori",
   "quality.auto": "Auto",

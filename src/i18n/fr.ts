@@ -137,6 +137,8 @@ export const fr: Dict = {
   "hud.wagonSold": "Chariot vendu : +{n} argent",
   "menu.saveBroken": "Sauvegarde illisible : elle est endommagée ou provient d’une autre version du jeu.",
   "menu.saveBrokenNew": "Recommencer ce contrat",
+  "menu.saveNewer": "Cette sauvegarde provient d’une version plus récente du jeu. Mettez le jeu à jour pour la charger.",
+  "menu.saveTerrain": "La carte de ce contrat a changé dans la nouvelle version du jeu : la sauvegarde ne peut pas être poursuivie.",
   "menu.music": "Musique",
   "menu.effects": "Effets sonores",
   "quality.auto": "Auto",
