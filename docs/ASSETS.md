@@ -419,3 +419,11 @@ FFmpeg: `loudnorm I=-18 LUFS, TP -1.5 dB`, Opus 48 kbps constrained VBR stereo 4
 | rain-on-cobblestone.webm | Rain on Cobblestone | gameplay while raining |
 | won-silver-pennant-fanfare.webm | Silver Pennant Fanfare | contract fulfilled |
 | lost-frost-on-the-rooftops.webm | Frost on the Rooftops | first snow, contract lost |
+
+## App icon v3 (Grenze Gotisch, OFL)
+
+The wax seal's outlined **M** in `art/app-icon.svg` derives from the Google Fonts
+**Grenze Gotisch** font (weight 400, original font outlines; SIL OFL 1.1).
+Source: https://github.com/google/fonts/tree/main/ofl/grenzegotisch
+Only the glyph's filled SVG contours are shipped in the icon, not a font file.
+Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.

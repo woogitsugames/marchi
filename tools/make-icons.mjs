@@ -2,7 +2,7 @@
 /**
  * MARCHIA native icon pipeline: hand-drawn SVG -> Android/iOS launchers,
  * splash graphics, and repeatable legibility / circular-mask previews.
- * Usage: npm run icons
+ * Usage: npm run icons (staging only) / npm run icons -- --install-native
  */
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -10,10 +10,17 @@ import path from 'node:path';
 import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const res = path.join(ROOT, 'android/app/src/main/res');
-const iosAssets = path.join(ROOT, 'ios/App/App/Assets.xcassets');
-const shots = path.join(ROOT, 'docs/shots');
 const outArt = path.join(ROOT, 'art');
+const stageRoot = path.join(outArt, 'out');
+// Safe by default: do not mutate android/ or ios/ unless explicitly requested.
+const INSTALL_NATIVE = process.argv.includes('--install-native');
+if (process.argv.slice(2).some(arg => arg !== '--install-native')) {
+  throw new Error('Unknown icon option. Use --install-native only for an explicit native update.');
+}
+const targetRoot = INSTALL_NATIVE ? ROOT : stageRoot;
+const res = path.join(targetRoot, 'android/app/src/main/res');
+const iosAssets = path.join(targetRoot, 'ios/App/App/Assets.xcassets');
+const shots = path.join(ROOT, 'docs/shots');
 const TORF = '#2b2620';
 const PARCHMENT = '#e4dccb';
 const CLAY = '#8c4a2f';
@@ -157,7 +164,7 @@ async function makePreview(master,layers) {
     {label:'ANDROID ADAPTIVE  /  CIRCULAR MASK + 66/108 SAFE ZONE',bg:'#d2cabb',fg:TORF,
       paint:async(size)=>roundForPreview(master,layers,size)},
   ];
-  await sheet({file:'app-icon.png',width:1450,height:2020,title:'MARCHIA  /  APP ICON v2  /  WHEEL + SEAL',rows,columns,sectionHeight:630,headHeight:130});
+  await sheet({file:'app-icon.png',width:1450,height:2020,title:'MARCHIA  /  APP ICON v3  /  WHEEL + SEAL',rows,columns,sectionHeight:630,headHeight:130});
 }
 
 async function makeVariants() {
@@ -186,7 +193,7 @@ async function makeVariants() {
     <rect x="0" y="85" width="${width}" height="390" fill="#2b2620"/>
     <rect x="0" y="475" width="${width}" height="365" fill="#181511"/>
     <rect x="1200" y="85" width="330" height="755" fill="#c9c6bb"/>
-    <text x="40" y="51" font-family="sans-serif" font-weight="700" font-size="33" fill="#2b2620">MARCHIA / APP ICON v2 - VARIANT COMPARISON</text>
+    <text x="40" y="51" font-family="sans-serif" font-weight="700" font-size="33" fill="#2b2620">MARCHIA / APP ICON v3 - VARIANT COMPARISON</text>
     ${definitions.map((v,i)=>{
       const yy=i===0?118:509;
       return `<text x="40" y="${yy}" fill="#e4dccb" font-family="sans-serif" font-size="23" font-weight="700">${v.title}</text>`+
@@ -196,6 +203,55 @@ async function makeVariants() {
     <text x="50" y="944" font-family="sans-serif" font-size="22" fill="#8c4a2f" font-weight="700">SELECTED: B / WHEEL + WAX SEAL  -  fewer small details, stronger 48 px silhouette</text>
   </svg>`;
   await sharp(Buffer.from(bg)).composite(tiles).png({compressionLevel:9}).toFile(path.join(shots,'app-icon-variants.png'));
+}
+
+
+/**
+ * A source-driven comparison: the v2 baseline is checked in and both rows
+ * are re-rendered at real 48/96/192 px plus the Android circular safe zone.
+ */
+async function makeVersionComparison(v2, v3) {
+  const width = 1200, height = 900;
+  const positions = [
+    { x: 175, size: 48, label: '48 px - native size' },
+    { x: 415, size: 96, label: '96 px' },
+    { x: 690, size: 192, label: '192 px' },
+    { x: 1020, size: 192, label: 'Android circular mask' },
+  ];
+  const sources = [
+    { name: 'v2 - geometric M / clean wheel', svg: v2, y: 285 },
+    { name: 'v3 - Grenze Gotisch / woodcut hatching / wax rim', svg: v3, y: 690 },
+  ];
+  const frame = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <rect width="${width}" height="${height}" fill="#e4dccb"/>
+    <rect x="0" y="0" width="${width}" height="90" fill="#2b2620"/>
+    <text x="36" y="58" font-family="sans-serif" font-size="34" font-weight="700"
+          fill="#e4dccb">MARCHIA / APP ICON / V2 VERSUS V3</text>
+    <rect x="20" y="125" width="1160" height="335" rx="8" fill="#d2cabb"/>
+    <rect x="20" y="530" width="1160" height="335" rx="8" fill="#d2cabb"/>
+    ${sources.map(row => `<text x="40" y="${row.y-115}" font-family="sans-serif"
+       font-size="24" font-weight="700" fill="#2b2620">${escaped(row.name)}</text>`).join('')}
+    ${sources.map(row => positions.map(pos => `<text x="${pos.x}" y="${row.y+151}"
+       font-family="sans-serif" font-size="19" text-anchor="middle" fill="#2b2620">${pos.label}</text>`).join('')).join('')}
+  </svg>`;
+  const overlays = [];
+  for (const row of sources) {
+    const layers = extractLayers(row.svg);
+    for (let col = 0; col < positions.length; col++) {
+      const pos = positions[col];
+      const img = col === 3
+        ? await roundForPreview(row.svg, layers, pos.size)
+        : await sharp(Buffer.from(row.svg)).resize(pos.size, pos.size).png().toBuffer();
+      overlays.push({
+        input: img,
+        left: Math.round(pos.x - pos.size / 2),
+        top: Math.round(row.y - pos.size / 2),
+      });
+    }
+  }
+  await mkdir(shots, { recursive: true });
+  await sharp(Buffer.from(frame)).composite(overlays).png({ compressionLevel: 9 })
+    .toFile(path.join(shots, 'app-icon-v2-v3.png'));
 }
 
 async function main() {
@@ -211,6 +267,10 @@ async function main() {
   await mkdir(outArt,{recursive:true});
   await writeFile(path.join(outArt,'app-icon-foreground.svg'),fg+'\n');
   await writeFile(path.join(outArt,'app-icon-monochrome.svg'),mono+'\n');
+  // Keep the staging directory self-contained for handoff to a native agent.
+  await mkdir(stageRoot, {recursive:true});
+  await writeFile(path.join(stageRoot,'app-icon-foreground.svg'),fg+'\n');
+  await writeFile(path.join(stageRoot,'app-icon-monochrome.svg'),mono+'\n');
   for(const name of ['marchia_launcher_foreground','marchia_splash_icon'])
     await savePng(fg,432,path.join(res,'drawable-nodpi',name+'.png'));
   await savePng(mono,432,path.join(res,'drawable-nodpi/marchia_launcher_monochrome.png'));
@@ -239,6 +299,7 @@ async function main() {
     await rm(path.join(res,`drawable-${orientation}-${density}/splash.png`),{force:true});
   await makePreview(source,layers);
   await makeVariants();
-  console.log(`MARCHIA icons: ${Object.keys(dpi).length} Android densities, adaptive/themed, ${appIcons.length} iOS slots, splash, 2 preview sheets; safe scale ${fit.scale.toFixed(3)}.`);
+  await makeVersionComparison(await readFile(path.join(outArt,'app-icon-v2.svg'),'utf8'), source);
+  console.log(`MARCHIA icons (${INSTALL_NATIVE ? 'native install' : 'staged in art/out'}): ${Object.keys(dpi).length} Android densities, adaptive/themed, ${appIcons.length} iOS slots, splash, 3 preview sheets; safe scale ${fit.scale.toFixed(3)}.`);
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
