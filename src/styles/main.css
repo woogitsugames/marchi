@@ -998,6 +998,7 @@ body.is-flex.is-split.mode-game.left-handed .sheet {
   left: calc(var(--safe-l) + 12px + 262px + 12px);
   right: calc(var(--safe-r) + 12px + 258px + 12px);
 }
+body.is-flex.is-split .sheet-actions .btn { font-size: 15px; padding: 0 8px; gap: 4px; }
 body.is-flex.is-split.left-handed .waybill-wrap { left: auto; right: calc(var(--safe-r) + 10px); }
 body.is-flex .toasts { bottom: auto; top: calc(var(--hinge-top) - 12px); transform: translate(-50%, -100%); flex-direction: column; }
 body.is-flex .menu-wrap { top: var(--hinge-bottom); }

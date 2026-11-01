@@ -98,9 +98,10 @@ export class MusicPlayer {
     if (next) this.cur = this.els.indexOf(next);
     const p0 = prev.volume, t0 = performance.now(), dur = immediate ? 400 : FADE_MS;
     const step = (t: number): void => {
-      const k = Math.min(1, (t - t0) / dur);
-      if (prev !== next) prev.volume = p0 * (1 - k);
-      if (next) next.volume = this.volume * k;
+      const k = Math.max(0, Math.min(1, (t - t0) / dur));
+      const clamp = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
+      if (prev !== next) prev.volume = clamp(p0 * (1 - k));
+      if (next) next.volume = clamp(this.volume * k);
       if (k < 1) this.fadeRaf = requestAnimationFrame(step);
       else if (prev !== next) { prev.pause(); }
     };

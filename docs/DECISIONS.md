@@ -64,7 +64,7 @@ did not relieve the first (found by GPT-6 in the mission 2 proposal); stress tes
 music on phone speakers/earbuds. Supported by Android WebView and iOS 17+; on older engines music stays
 silent (feature-detected) rather than failing. *Keep the APK small; the music plays under ambience anyway.* (decided)
 
-**D-16 — Foldables and big screens (Galaxy Z Fold / Flip).** Screen classes (CSS px at the default
+**D-19 — Foldables and big screens (Galaxy Z Fold / Flip).** Screen classes (CSS px at the default
 display scale) live in `src/ui/layout.ts` and are tested by `npm run shots -- --fold`:
 Fold 8 / 8 Ultra cover 412×960 @2.625 (21:9), older Fold cover 344×882 (narrow: menu joins the tool
 row), Fold inner 874×787 / 787×874 @2.5, Fold 8 Ultra inner 911×820 @2.75, Flip main 412×1004,
@@ -118,7 +118,7 @@ ICU-lite blocks `{n, plural, one {…} few {…} many {…} other {…}}` resolv
 incl. Cyrillic), CJK / Arabic / Devanagari use the OS Noto families (Android/iOS ship them) — bundling CJK would
 add tens of MB. The picker shows only languages present in the build. (decided)
 
-**D-18 — Texture quality tiers low / high (2K) / ultra (4K), all GPU-compressed.** `Quality` is now
+**D-20 — Texture quality tiers low / high (2K) / ultra (4K), all GPU-compressed.** `Quality` is now
 `'ultra' | 'high' | 'low'`. Low = existing 512/1k files; high = 2048 albedo + ORM as KTX2 ETC1S q255
 and 2048 normals as KTX2 UASTC (in the APK, +63 MB); ultra = 4096 albedo + ORM ETC1S (bark stays 2048)
 as a separate download pack `assets-ultra/` (59 MB, manifest with SHA-256, per D-17), reusing the 2048
