@@ -6,6 +6,12 @@ export const pl = {
   'menu.contract': 'Kontrakt: chleb i deski',
   'menu.sandbox': 'Wolna dolina',
   'menu.settings': 'Ustawienia',
+  'settings.volume.title': 'Dźwięk',
+  'settings.volume.master': 'Głośność główna',
+  'settings.volume.ambient': 'Otoczenie',
+  'settings.volume.sfx': 'Efekty',
+  'settings.volume.ui': 'Interfejs',
+  'settings.volume.mute': 'Wycisz',
   'menu.language': 'Język',
 
   'good.wood': 'drewno',

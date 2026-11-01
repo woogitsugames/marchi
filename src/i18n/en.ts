@@ -7,6 +7,12 @@ export const en: Dict = {
   'menu.contract': 'Contract: bread and planks',
   'menu.sandbox': 'Free valley',
   'menu.settings': 'Settings',
+  'settings.volume.title': 'Sound',
+  'settings.volume.master': 'Master volume',
+  'settings.volume.ambient': 'Ambience',
+  'settings.volume.sfx': 'Effects',
+  'settings.volume.ui': 'Interface',
+  'settings.volume.mute': 'Mute',
   'menu.language': 'Language',
 
   'good.wood': 'logs',
