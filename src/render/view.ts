@@ -135,7 +135,7 @@ class View implements WorldView {
     this.texturesRequested = true;
     const all: Promise<unknown>[] = [];
     all.push(
-      loadTerrainTextures(512)
+      loadTerrainTextures(this.quality)
         .then((t) => this.terrain?.setTextures(t))
         .catch((e) => console.warn('[view] terrain textures', e)),
     );
@@ -362,7 +362,7 @@ class View implements WorldView {
     this.dpr = dpr;
     this.rig.resize(this.cssW, this.cssH);
     if (!this.renderer) return;
-    this.renderer.setPixelRatio(Math.min(dpr, this.quality === 'low' ? 1.25 : 2));
+    this.renderer.setPixelRatio(Math.min(dpr, this.quality === 'low' ? 1.25 : this.quality === 'ultra' ? 3 : 2));
     this.renderer.setSize(this.cssW, this.cssH, false);
   }
 
@@ -484,7 +484,7 @@ class View implements WorldView {
   }
 
   private applyQuality(): void {
-    const high = this.quality === 'high';
+    const high = this.quality !== 'low';
     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
     this.vegetation?.setShadows(high);
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
