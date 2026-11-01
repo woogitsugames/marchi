@@ -20,6 +20,7 @@ import { BridgesView } from './bridgesView';
 import { BuildingsView } from './buildingsView';
 import { CameraRig } from './cameraRig';
 import { Effects } from './fx';
+import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
 import { applyTextures, foliageLift, type MatKey } from './models/materials';
@@ -67,6 +68,7 @@ class View implements WorldView {
   private roads: RoadField | null = null;
   private overlay: OverlayData | null = null;
   private vegetation: VegetationView | null = null;
+  private cover: GroundCover | null = null;
   private buildings: BuildingsView | null = null;
   private bridges = new BridgesView();
   private wagons: WagonsView | null = null;
@@ -157,6 +159,8 @@ class View implements WorldView {
       this.terrain = new TerrainView(hf, this.roads, this.overlay);
       this.water = new WaterView(hf);
       this.vegetation = new VegetationView(hf, this.treeGroup);
+      this.cover = new GroundCover(hf);
+      this.worldGroup.add(this.cover.group);
       this.buildings = new BuildingsView(hf);
       this.wagons = new WagonsView(hf);
       this.worldGroup.add(this.terrain.group, this.water.mesh, this.water.mist, this.buildings.group, this.wagons.group);
@@ -180,6 +184,7 @@ class View implements WorldView {
     if (this.buildings) { this.worldGroup.remove(this.buildings.group); this.buildings.dispose(); }
     if (this.wagons) { this.worldGroup.remove(this.wagons.group); this.wagons.dispose(); }
     this.vegetation?.dispose();
+    if (this.cover) { this.worldGroup.remove(this.cover.group); this.cover.dispose(); this.cover = null; }
     this.terrain = null;
   }
 
@@ -195,6 +200,7 @@ class View implements WorldView {
     this.terrain!.updateGround(w);
     this.vegetation!.rebuild(w, this.roads);
     this.vegetation!.update(this.rig.camera.position, true);
+    this.cover?.rebuild(w, this.roads);
     this.updateEmitters(true);
   }
 
@@ -278,6 +284,7 @@ class View implements WorldView {
 
     this.buildings!.update(w, dt);
     this.vegetation!.update(cam.position);
+    this.cover?.update(this.rig.target, dist);
 
     this.trafficTimer -= dt;
     if (this.trafficTimer <= 0) {
@@ -429,6 +436,7 @@ class View implements WorldView {
     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
     this.vegetation?.setShadows(high);
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
+    if (this.cover) this.cover.radius = high ? 38 : 0;
     this.wagons?.setShadows(true, high);
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;
     if (this.terrain) {

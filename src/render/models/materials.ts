@@ -27,7 +27,8 @@ export type MatKey =
   | 'metal' // iron fittings that need a sheen
   | 'needles' // conifer branch sprays (alpha cards; right half of the texture is solid)
   | 'leaves' // alpha-tested leaf cards
-  | 'billboard'; // far-tree impostor cards (map baked by `bakeTreeBillboards`)
+  | 'billboard' // far-tree impostor cards (map baked by `bakeTreeBillboards`)
+  | 'grass'; // grass tufts, reeds, sedge (untextured double-sided blades)
 
 interface MatSpec {
   roughness: number;
@@ -50,6 +51,7 @@ const SPECS: Record<MatKey, MatSpec> = {
   needles: { roughness: 0.92, side: 'double', alphaNeedle: true },
   leaves: { roughness: 0.85, side: 'double', alphaLeaf: true },
   billboard: { roughness: 0.95, side: 'double' },
+  grass: { roughness: 0.92, side: 'double' },
 };
 
 export interface TextureSet {
@@ -91,7 +93,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
   });
   if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
-  if (key === 'needles' || key === 'leaves' || key === 'billboard') addFoliageLift(m, key);
+  if (key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'grass') addFoliageLift(m, key);
   if (s.alphaLeaf) {
     m.map = leafTexture();
     m.alphaTest = 0.5;
