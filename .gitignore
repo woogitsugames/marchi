@@ -7,3 +7,8 @@ dist/
 android/app/build/
 android/.gradle/
 ios/App/Pods/
+dist-apk/
+android/build/
+android/local.properties
+ios/App/build/
+ios/DerivedData/

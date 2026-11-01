@@ -14,21 +14,23 @@
     "bot": "tsx tools/mission-bot.ts",
     "perf:sim": "tsx tools/perf-sim.ts",
     "shots": "node tools/screenshots.mjs",
-    "cap:sync": "npm run build && cap sync"
+    "cap:sync": "npm run build && cap sync",
+    "apk": "bash tools/build-apk.sh",
+    "setup:android": "bash tools/setup-android-sdk.sh"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@capacitor/android": "^7.6.10",
-    "@capacitor/core": "^7.6.10",
-    "@capacitor/ios": "^7.6.10",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
     "@fontsource/alegreya-sans": "^5.3.0",
     "@fontsource/grenze-gotisch": "^5.3.0",
     "three": "^0.181.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.6.10",
+    "@capacitor/cli": "^8.6.0",
     "@types/node": "^22.20.5",
     "@types/three": "^0.181.0",
     "tsx": "^4.23.15",
