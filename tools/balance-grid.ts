@@ -236,7 +236,7 @@ function formatSeals(r: Runs, t: Thresholds): string {
   return STRATEGIES.map((s) => s + '=' + score(r[s], t)).join(', ');
 }
 function tableHead(head: string[]): string {
-  return '| ' + head.join(' | ') + ' |\n| ' + head.map(() => '---').join(' | ') + ' |\n';
+  return '| ' + head.join(' | ') + ' |\n| ' + head.map(() => '---').join(' | ') + ' |';
 }
 function runOneUncached(id: string, p: Physical, seed: number, strategy: Strategy): Outcome {
   const key = JSON.stringify([id, p.planks, p.bread, p.coins, p.wagons, seed, strategy]);

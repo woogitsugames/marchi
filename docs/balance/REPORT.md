@@ -2,6 +2,7 @@
 
 > Wygenerowano przez `npx tsx tools/balance-grid.ts` z rzeczywistego symulatora `src/sim`.
 > To **rekomendacje**, nie zmiany danych w `src/sim`.
+> **Zakres zweryfikowany:** raport zawiera ostatni zakończony przebieg, w tym 162 warianty fizyczne M1 (M2: 81, M3: 81). Nowsza wersja skryptu dodatkowo przeszukuje lżejsze kontrakty M1 (50% i 67%), lecz jej rozszerzony przebieg nie został jeszcze zweryfikowany; nie przypisujemy mu wyników.
 
 ## Metoda i kryteria
 
@@ -14,10 +15,8 @@
 - Reprodukowalność: zwycięski wariant jest uruchamiany jeszcze raz na bazowym seedzie dla każdej z czterech strategii, z porównaniem wyników i hasza stanu.
 
 ## Rekomendowane ustawienia (bez modyfikacji kodu misji)
-
 | Misja | Kontrakt | Srebro | Wozy | 3★ | 2★ | Termin | Zgodne seedy / 6 | Deterministyczna |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
 | M1 | 30 desek / 16 chleba | 180 | 4 | 8.25 min | 11.50 min | 12.00 min | 3/6 | tak |
 | M2 | 36 desek / 30 chleba | 160 | 7 | 8.75 min | 10.00 min | 12.00 min | 6/6 | tak |
 | M3 | 24 desek / 16 chleba | 270 | 4 | 6.25 min | 8.00 min | 11.00 min | 6/6 | tak |
@@ -30,17 +29,13 @@
 **Rekomendacja:** 30 desek / 16 chleba, 180 srebra, 4 wozów, progi 8.25 / 11.5 / 12 min. Trafność: **3/6** seedów.
 
 **Stan obecny — bazowy seed 1301:**
-
 | Nic | +2 wozy | Sama naprawa | Naprawa + wozy |
 | --- | --- | --- | --- |
-
 | porażka (0) | porażka (0) | porażka (0) | porażka (0) |
 
 **Po rekomendacji — porównanie sześciu seedów:**
-
 | Seed | Nic | +2 wozy | Sama naprawa | Naprawa + wozy | Częściowa (2★) | Kryteria |
 | --- | --- | --- | --- | --- | --- | --- |
-
 | 1301 | porażka (0) | porażka (0) | 11.30 min (2) | 8.08 min (3) | repair | **TAK** |
 | 1302 | porażka (0) | porażka (0) | porażka (0) | porażka (0) | brak | NIE |
 | 1308 | porażka (0) | porażka (0) | porażka (0) | porażka (0) | brak | NIE |
@@ -51,10 +46,8 @@
 **Uzasadnienie:** Bez interwencji wyznaczamy punkt odniesienia; pozostałe strategie rozdzielają koszt przepustowości i floty. Test seeda uwzględnia również wykonalność komend i wpływ terenu. **Nie osiągnięto pełnej stabilności na sześciu seedach**: wartości są najlepszą znalezioną propozycją, nie potwierdzonym balansem. Dwa dodatkowe wozy kosztują 60 srebra.
 
 **Najlepsze sprawdzone alternatywy:**
-
 | Deski/chleb | Srebro | Wozy | 3★ / 2★ / termin | Seedy zgodne |
 | --- | --- | --- | --- | --- |
-
 | 30/16 | 180 | 4 | 8.25 / 11.5 / 12 | 3/6 |
 | 24/16 | 180 | 4 | 7.75 / 11.5 / 12 | 3/6 |
 | 30/16 | 150 | 4 | 8.25 / 11.5 / 12 | 3/6 |
@@ -67,17 +60,13 @@
 **Rekomendacja:** 36 desek / 30 chleba, 160 srebra, 7 wozów, progi 8.75 / 10 / 12 min. Trafność: **6/6** seedów.
 
 **Stan obecny — bazowy seed 2402:**
-
 | Nic | +2 wozy | Sama naprawa | Naprawa + wozy |
 | --- | --- | --- | --- |
-
 | 10.81 min (1) | 9.94 min (1) | 9.58 min (2) | 8.51 min (3) |
 
 **Po rekomendacji — porównanie sześciu seedów:**
-
 | Seed | Nic | +2 wozy | Sama naprawa | Naprawa + wozy | Częściowa (2★) | Kryteria |
 | --- | --- | --- | --- | --- | --- | --- |
-
 | 2402 | 10.81 min (1) | 9.94 min (2) | 9.58 min (2) | 8.51 min (3) | repair | **TAK** |
 | 2403 | 10.61 min (1) | 9.66 min (2) | 9.60 min (2) | 8.54 min (3) | repair | **TAK** |
 | 2409 | 10.46 min (1) | 9.56 min (2) | 8.93 min (2) | 8.57 min (3) | repair | **TAK** |
@@ -88,10 +77,8 @@
 **Uzasadnienie:** Bez interwencji wyznaczamy punkt odniesienia; pozostałe strategie rozdzielają koszt przepustowości i floty. Test seeda uwzględnia również wykonalność komend i wpływ terenu. Wymagany podział pieczęci uzyskano na wszystkich sześciu seedach. Dwa dodatkowe wozy kosztują 60 srebra.
 
 **Najlepsze sprawdzone alternatywy:**
-
 | Deski/chleb | Srebro | Wozy | 3★ / 2★ / termin | Seedy zgodne |
 | --- | --- | --- | --- | --- |
-
 | 36/30 | 160 | 7 | 8.75 / 10 / 12 | 6/6 |
 | 36/30 | 190 | 7 | 8.75 / 10 / 12 | 6/6 |
 | 28/30 | 160 | 7 | 9 / 9.75 / 12 | 6/6 |
@@ -104,17 +91,13 @@
 **Rekomendacja:** 24 desek / 16 chleba, 270 srebra, 4 wozów, progi 6.25 / 8 / 11 min. Trafność: **6/6** seedów.
 
 **Stan obecny — bazowy seed 3303:**
-
 | Nic | +2 wozy | Sama naprawa | Naprawa + wozy |
 | --- | --- | --- | --- |
-
 | 8.57 min (1) | 7.41 min (2) | 7.05 min (2) | 5.44 min (3) |
 
 **Po rekomendacji — porównanie sześciu seedów:**
-
 | Seed | Nic | +2 wozy | Sama naprawa | Naprawa + wozy | Częściowa (2★) | Kryteria |
 | --- | --- | --- | --- | --- | --- | --- |
-
 | 3303 | 8.57 min (1) | 7.41 min (2) | 7.05 min (2) | 5.44 min (3) | repair | **TAK** |
 | 3304 | 8.57 min (1) | 7.38 min (2) | 6.51 min (2) | 5.62 min (3) | repair | **TAK** |
 | 3310 | 8.69 min (1) | 7.47 min (2) | 5.40 min (3) | 5.58 min (3) | wagons | **TAK** |
@@ -125,10 +108,8 @@
 **Uzasadnienie:** Bez interwencji wyznaczamy punkt odniesienia; pozostałe strategie rozdzielają koszt przepustowości i floty. Test seeda uwzględnia również wykonalność komend i wpływ terenu. Wymagany podział pieczęci uzyskano na wszystkich sześciu seedach. Dwa dodatkowe wozy kosztują 60 srebra.
 
 **Najlepsze sprawdzone alternatywy:**
-
 | Deski/chleb | Srebro | Wozy | 3★ / 2★ / termin | Seedy zgodne |
 | --- | --- | --- | --- | --- |
-
 | 24/16 | 270 | 4 | 6.25 / 8 / 11 | 6/6 |
 | 24/16 | 240 | 4 | 6.25 / 8 / 11 | 6/6 |
 | 24/16 | 300 | 4 | 6.25 / 8 / 11 | 6/6 |
