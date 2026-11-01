@@ -16,7 +16,7 @@ import { bridgeA, stableId } from '../../tools/bot';
 import { h } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
-import { applyLayoutClasses, computeLayout, devicePosture, isAbrupt, type LayoutInfo } from './layout';
+import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { buildEndLetter, buildMainMenu, gameMenuSheet, settingsSheet, type SaveInfo } from './menu';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -96,6 +96,8 @@ export class App implements PanelNav {
   /** Session-only quality override from ?quality= (screenshots, tests). */
   private qualityParam: QualityPref | null = null;
   private menuToken = 0;
+  private foldSig = '';
+  private foldCheckAt = 0;
 
   constructor(o: AppOptions) {
     this.view = o.view;
@@ -306,6 +308,11 @@ export class App implements PanelNav {
     const dt = Math.min(250, now - this.lastFrame);
     this.lastFrame = now;
     if (document.visibilityState === 'visible' && this.dynres.sample(dt, now)) this.applyRenderSize();
+    if (now - this.foldCheckAt > 500) {
+      this.foldCheckAt = now;
+      const sig = foldSignature();
+      if (sig !== this.foldSig) { this.foldSig = sig; this.scheduleLayout(); }
+    }
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {

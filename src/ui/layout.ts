@@ -160,3 +160,14 @@ export function applyLayoutClasses(l: LayoutInfo): void {
   else root.removeProperty('--seg-right-w');
   root.setProperty('--scene-h', `${l.sceneH}px`);
 }
+
+/** Cheap fingerprint of the fold state, polled twice a second: some WebViews (and DevTools
+ *  emulation) change viewport segments or posture without firing 'resize'. */
+export function foldSignature(): string {
+  let s = '';
+  try {
+    const segs = (window as unknown as SegmentsWindow).viewport?.segments;
+    if (segs) for (const r of segs) s += `${Math.round(r.x)},${Math.round(r.y)},${Math.round(r.width)},${Math.round(r.height)};`;
+  } catch { /* ignore */ }
+  return s + '|' + (devicePosture()?.type ?? '');
+}
