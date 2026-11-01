@@ -154,7 +154,8 @@ test(`save migration v2 -> v${STATE_VERSION}: ice, tranches and capOverride are 
   for (const b of v2.buildings) delete b.capOverride;
   delete v2.mission.contract.tranches;
   const frozen = JSON.stringify(v2);
-  const env: SaveEnvelope = { format: 1, stateVersion: 2, slot: 'auto', savedAt: 0, missionId: 'm2', tick: 300, state: v2 as never };
+  // cast: the envelope format grows with save hardening; migrate() only reads stateVersion and state
+  const env = { format: 1, stateVersion: 2, slot: 'auto', savedAt: 0, missionId: 'm2', tick: 300, state: v2 } as unknown as SaveEnvelope;
   const out = migrate(env);
   eq(JSON.stringify(v2), frozen, 'input not mutated');
   eq(out.stateVersion, STATE_VERSION, 'migrated to current');
@@ -162,4 +163,13 @@ test(`save migration v2 -> v${STATE_VERSION}: ice, tranches and capOverride are 
   const w2 = deserialize(JSON.stringify(out.state));
   for (let i = 0; i < 600; i++) { step(w); step(w2); }
   eq(stateHash(w2), stateHash(w), 'migrated save continues identically');
+});
+
+test('mission clocks are whole ticks for every mission', () => {
+  for (const id of ['m1', 'm2', 'm3', 'm4', 'm5', 'm6']) {
+    const c = createWorld(id).state.mission.contract!;
+    for (const t of [c.deadlineTick, c.star3Tick, c.star2Tick, ...c.tranches.map((x) => x.deadlineTick)]) {
+      assert(Number.isInteger(t), `${id}: ${t} is not an integer tick`);
+    }
+  }
 });

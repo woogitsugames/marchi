@@ -210,9 +210,10 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     state.mission.contract = {
       need: { ...def.contract },
       castle: castle.id,
-      deadlineTick: def.deadlineMin * 60 * TICK_HZ,
-      star3Tick: def.star3Min * 60 * TICK_HZ,
-      star2Tick: def.star2Min * 60 * TICK_HZ,
+      // ticks are integers (8.45 min * 600 is 5069.999… in floating point)
+      deadlineTick: Math.round(def.deadlineMin * 60 * TICK_HZ),
+      star3Tick: Math.round(def.star3Min * 60 * TICK_HZ),
+      star2Tick: Math.round(def.star2Min * 60 * TICK_HZ),
       tranches: (def.tranches ?? []).map((t) => ({
         need: { ...t.need }, deadlineTick: Math.round(t.dueMin * 60 * TICK_HZ), doneTick: -1, missed: false,
       })),
