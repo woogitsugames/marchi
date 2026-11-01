@@ -1007,6 +1007,10 @@ body.is-flex .menu-strip .rule { margin: 12px 0 4px; }
 body.is-flex .menu-list { columns: 2; column-gap: 20px; }
 body.is-flex .menu-list li { break-inside: avoid; }
 body.is-flex .menu-pin { top: 6px; }
+body.is-flex:not(.is-split) .menu-list { columns: 1; }
+body.is-flex:not(.is-split) .menu-strip { width: min(340px, calc(100vw - 24px)); padding-top: 12px; }
+body.is-flex:not(.is-split) .menu-strip .title { font-size: 34px; }
+body.is-flex:not(.is-split) .menu-item { min-height: 50px; padding: 4px 0; }
 body.is-flex.mode-menu.is-side .sheet { width: min(380px, calc(100vw - 600px)); min-width: 300px; }
 body.is-flex .scrim { align-items: flex-start; padding-top: calc(var(--hinge-bottom) + 30px); }
 body.is-flex .letter { padding: 18px 20px 16px; }
