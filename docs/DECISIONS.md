@@ -129,3 +129,11 @@ without the pack or on a 4K error, ultra falls back to 2K, then to the 1k JPGs.
 *Measured: UASTC+RDO albedo was 3.4× larger than ETC1S q255 and scored lower PSNR on these noisy
 scans; 4K UASTC normals were 10–16 MB each while 2048 normals already give ~3 texels per pixel at the closest zoom, so
 they are not worth the download. ETC1S → ETC2 RGB also halves VRAM versus ASTC.* (decided)
+
+**D-21 — Owner decisions 2026-11-01 (night).** (1) Monetisation CHANGED: the game is **free**, possibly
+with ads (no energy/timers/pay-to-win — the original ban stays); the one-time full-version purchase (D-10)
+is dropped, so billing work (docs/BILLING.md, entitlements stub) is parked. All missions are free.
+(2) Sandbox becomes a relaxing **city-builder mode**: grow the town in the free valley (placing buildings,
+roads, more wagons) — still logistics-driven, still no settler life-sim. (3) 4K pack: no hosting yet;
+Ultra works only in dev builds, release APKs top out at 2K. (4) Night work: one APK in the morning with a
+summary. (5) Flip cover screen: the "watch" mode is approved. (decided)

@@ -10,6 +10,8 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
+- [ ] P2 — (D-21) Tryb swobodny jako spokojny city builder: UI stawiania budynków (sim ma `place`; podgląd footprintu, brama, koszt, płaskość), sandbox bez terminu, więcej srebra/dochód z dostaw do zamku lub targu, zapis postępów; bez life-simu osadników.
+- [ ] P3 — (D-21) Opisy sklepu i polityka prywatności: usunąć „jednorazowy zakup / pełna wersja”, dopisać tryb swobodny; reklamy dopiero po decyzji o dostawcy (wymaga zmiany deklaracji danych!).
 - [ ] P1 — List końcowy: top 3 przyczyny przestojów i stracony czas (`topStallCauses`) — UI w `buildEndLetter` (menu.ts), po zakończeniu pracy agenta Fold.
 - [ ] P2 — Narzędzie raportu pokrycia tłumaczeń (klucze dodane po paczce 04) + paczka uzupełnień dla GPT; zrzuty `?lang=ar|ja|de|ru` (długość, RTL, glify).
 - [ ] P2 — UI dla szukacza przerwy: w „Dlaczego stoi?” przy NO_ROAD / NO_WAGON(NONE_CAN_REACH) / NO_ROUTE pokazać `suggestLinkToStable` (podgląd drogi na mapie przez setRoadPreview + „Zbuduj: N srebra” jednym dotknięciem) — po zakończeniu pracy agenta Fold w src/ui.
