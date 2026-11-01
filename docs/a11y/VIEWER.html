@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marchia — symulacje daltonizmu (a11y)</title>
+<style>
+:root{color-scheme:dark;font:16px/1.45 system-ui,sans-serif;background:#181a1c;color:#f0f0f0}
+*{box-sizing:border-box}body{margin:0 auto;max-width:1480px;padding:22px}
+h1{font-size:1.6rem}p{max-width:85ch}.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:16px 0 24px}
+select{min-height:48px;max-width:100%;padding:8px;background:#30353b;color:white;border:1px solid #88949b;border-radius:4px}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:start}
+figure{margin:0;background:#26292c;padding:10px;border:1px solid #4a555d}
+figcaption{font-weight:700;margin:0 0 8px}img{display:block;width:100%;height:auto;max-height:760px;object-fit:contain}
+.protanopia{filter:url(#a11y-prot)}.deuteranopia{filter:url(#a11y-deut)}.tritanopia{filter:url(#a11y-trit)}
+small{color:#bfc7cc}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+ <defs>
+  <filter id="a11y-prot" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0"/></filter>
+  <filter id="a11y-deut" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0"/></filter>
+  <filter id="a11y-trit" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0"/></filter>
+ </defs>
+</svg>
+<h1>Marchia — podgląd dostępności kolorów</h1>
+<p>Porównanie oryginalnego zrzutu z symulacją protanopii, deuteranopii i tritanopii. Model macierzowy Machado 100%, przeliczanie linearRGB. To przybliżenie, nie certyfikat dostępności. Wybierz dowolny z 61 zapisanych zrzutów.</p>
+<div class="controls"><label for="shot">Zrzut:</label><select id="shot"></select><small id="size"></small></div>
+<main>
+ <figure><figcaption>Oryginał</figcaption><img id="original" alt="Oryginalny zrzut"></figure>
+ <figure><figcaption>Protanopia</figcaption><img id="prot" class="protanopia" alt="Symulacja protanopii"></figure>
+ <figure><figcaption>Deuteranopia</figcaption><img id="deut" class="deuteranopia" alt="Symulacja deuteranopii"></figure>
+ <figure><figcaption>Tritanopia</figcaption><img id="trit" class="tritanopia" alt="Symulacja tritanopii"></figure>
+</main>
+<script>
+const shots = ["fold-flip-cover-hud.png","fold-flip-cover-menu.png","fold-flip-cover-wagon.png","fold-flip-cover-why.png","fold-flip-flex-hud.png","fold-flip-flex-menu.png","fold-flip-main-hud.png","fold-flip-main-menu.png","fold-flip-main-wagon.png","fold-flip-main-why.png","fold-fold-cover-hud.png","fold-fold-cover-menu.png","fold-fold-cover-old-hud.png","fold-fold-cover-old-menu.png","fold-fold-cover-old-wagon.png","fold-fold-cover-old-why.png","fold-fold-cover-wagon.png","fold-fold-cover-why.png","fold-fold-flex-hud.png","fold-fold-flex-menu.png","fold-fold-flex-wagon.png","fold-fold-flex-why.png","fold-fold-inner-land-hud.png","fold-fold-inner-land-menu.png","fold-fold-inner-land-wagon.png","fold-fold-inner-land-why.png","fold-fold-inner-port-hud.png","fold-fold-inner-port-menu.png","fold-fold-inner-port-wagon.png","fold-fold-inner-port-why.png","fold-fold-ultra-land-hud.png","fold-fold-ultra-land-menu.png","fold-fold-ultra-land-wagon.png","fold-fold-ultra-land-why.png","ui-end-412x915.png","ui-end-904x1000.png","ui-end-915x412.png","ui-end-lost-412x915.png","ui-end-lost-904x1000.png","ui-end-lost-915x412.png","ui-game-3min-412x915.png","ui-game-3min-904x1000.png","ui-game-3min-915x412.png","ui-hud-start-412x915.png","ui-hud-start-904x1000.png","ui-hud-start-915x412.png","ui-menu-412x915.png","ui-menu-904x1000.png","ui-menu-915x412.png","ui-road-steep-412x915.png","ui-road-steep-904x1000.png","ui-road-steep-915x412.png","ui-settings-412x915.png","ui-settings-904x1000.png","ui-settings-915x412.png","ui-wagon-412x915.png","ui-wagon-904x1000.png","ui-wagon-915x412.png","ui-why-bakery-412x915.png","ui-why-bakery-904x1000.png","ui-why-bakery-915x412.png"];
+const pick = document.getElementById('shot');
+for(const name of shots) {const o=document.createElement('option');o.textContent=name;o.value=name;pick.append(o);}
+function show() {
+ const name=pick.value;const url='../shots/'+encodeURIComponent(name);
+ for(const id of ['original','prot','deut','trit']) document.getElementById(id).src=url;
+ const original=document.getElementById('original');
+ original.onload=()=>{document.getElementById('size').textContent=original.naturalWidth+' × '+original.naturalHeight+' px'};
+}
+pick.value=shots.includes('ui-hud-start-412x915.png')?'ui-hud-start-412x915.png':shots[0];
+pick.addEventListener('change',show);show();
+</script>
+</body>
+</html>

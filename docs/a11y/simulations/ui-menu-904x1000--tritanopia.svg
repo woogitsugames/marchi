@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="904" height="1000" viewBox="0 0 904 1000" role="img" aria-label="tritanopia: ui-menu-904x1000.png">
+<defs><filter id="simulation" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0"/></filter></defs>
+<rect x="0" y="0" width="904" height="1000" fill="#222"/>
+<image href="../../shots/ui-menu-904x1000.png" x="0" y="0" width="904" height="1000" preserveAspectRatio="xMidYMid meet" filter="url(#simulation)"/>
+</svg>

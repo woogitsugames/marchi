@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="412" height="915" viewBox="0 0 412 915" role="img" aria-label="tritanopia: ui-wagon-412x915.png">
+<defs><filter id="simulation" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0"/></filter></defs>
+<rect x="0" y="0" width="412" height="915" fill="#222"/>
+<image href="../../shots/ui-wagon-412x915.png" x="0" y="0" width="412" height="915" preserveAspectRatio="xMidYMid meet" filter="url(#simulation)"/>
+</svg>
