@@ -39,7 +39,7 @@ function tallySvg(have: number, need: number, seed: number): string {
     }
     (i < have ? on : off).push(d);
   }
-  return `<svg class="tally" viewBox="0 0 ${width.toFixed(1)} 18" width="${width.toFixed(0)}" height="18" aria-hidden="true">
+  return `<svg class="tally" viewBox="0 0 ${width.toFixed(1)} 18" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
     <path class="off" d="${off.join('')}"/><path class="on" d="${on.join('')}"/></svg>`;
 }
 

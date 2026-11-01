@@ -10,7 +10,7 @@ import type { Sheet, SheetContent } from './sheets';
 
 export interface MenuActions {
   continueGame(): void;
-  newGame(mission: 'm1' | 'sandbox'): void;
+  newGame(mission: 'm1' | 'm2' | 'm3' | 'sandbox'): void;
   openSettings(): void;
 }
 
@@ -26,10 +26,12 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null): HTMLElem
     items.push(h('li', null, b));
   };
   if (save) {
-    const what = save.missionId === 'sandbox' ? t('menu.sandbox') : t('menu.contractItem');
+    const what = save.missionId === 'sandbox' ? t('menu.sandbox') : save.missionId === 'm2' ? t('menu.m2') : save.missionId === 'm3' ? t('menu.m3') : t('menu.m1');
     item(t('menu.continue'), t('menu.continueSub', { what, time: ticksClock(save.tick) }), act.continueGame, true);
   }
-  item(t('menu.contractItem'), t('menu.contractSub'), () => act.newGame('m1'), !save);
+  item(t('menu.m1'), t('menu.contractSub'), () => act.newGame('m1'), !save);
+  item(t('menu.m2'), t('menu.m2Sub'), () => act.newGame('m2'));
+  item(t('menu.m3'), t('menu.m3Sub'), () => act.newGame('m3'));
   item(t('menu.sandbox'), t('menu.sandboxSub'), () => act.newGame('sandbox'));
   item(t('menu.settings'), '', act.openSettings);
   const strip = h('div.menu-strip', null,

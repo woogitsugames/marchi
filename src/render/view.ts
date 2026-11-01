@@ -56,6 +56,9 @@ export interface WorldViewDebug {
 }
 
 class View implements WorldView {
+  audioListener(): { x: number; z: number; yaw: number } {
+    return { x: this.rig.target.x, z: this.rig.target.z, yaw: this.rig.yaw };
+  }
   readonly scene = new Scene();
   readonly rig = new CameraRig();
   readonly debug: WorldViewDebug = { forceTime: null };

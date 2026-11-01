@@ -62,6 +62,8 @@ export interface WorldView {
   setQuality(q: Quality): void;
   /** Cinematic slow drift for the main menu (valley at dawn, wagon on the bridge). */
   setMenuMode(on: boolean): void;
+  /** Ground point the camera looks at (metres) and its yaw, for positional audio. */
+  audioListener?(): { x: number; z: number; yaw: number };
   /** Renderer stats for the perf HUD / docs/PERF.md. */
   stats(): { fps: number; drawCalls: number; triangles: number; geometries: number; textures: number };
   dispose(): void;

@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta,
+  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta, wagonSlowdown,
   type Building, type Good, type ReasonLink, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
@@ -153,6 +153,12 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       if (eta && w.status.k !== 'IDLE') {
         rows.push(`<dt>${esc(t('wagon.eta'))}</dt><dd class="eta num">${clock(eta.toDest)}</dd>`);
         if (job) rows.push(`<dt>${esc(t('wagon.etaFinish'))}</dt><dd class="eta num">${clock(eta.toFinish)}</dd>`);
+        const slow = w.next >= 0 ? wagonSlowdown(world, id) : null;
+        if (slow && slow.factor < 0.93) {
+          const pct = Math.round(slow.factor * 100);
+          const why = slow.mud ? t('wagon.slowMud', { pct }) : slow.grade > 0.02 ? t('wagon.slowUphill', { pct }) : t('wagon.slowOther', { pct });
+          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud ? 'rain' : 'road_dirt', 20)}<span>${esc(why)}</span></dd>`);
+        }
         if (job && job.phase === 'pickup') {
           const to = buildingById(world, job.to);
           if (to) rows.push(`<dt>&nbsp;</dt><dd style="font-weight:500">${iconSvg(job.good, 20)}<span>${esc(goodName(job.good))} →</span><button class="linkish" data-go="building:${to.id}">${esc(t(`building.${to.type}` as MessageKey))}</button></dd>`);

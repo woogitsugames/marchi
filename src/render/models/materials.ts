@@ -70,9 +70,40 @@ const cache = new Map<MatKey, MeshStandardMaterial>();
  */
 export const foliageLift = { value: new Color(0, 0, 0) };
 
+// Far-tree cards turn about their vertical axis to face the camera (cylindrical billboard):
+// the first quad of the cross is swung toward the camera, the second collapses to nothing, so
+// from a high camera there is no "X" of two crossed cards. Shadows keep the static cross.
+const BB_NORMAL = /* glsl */ `
+vec3 objectNormal = vec3(normal);
+#ifdef USE_INSTANCING
+  vec3 bbWorld = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
+  vec3 bbTo = cameraPosition - bbWorld;
+  bbTo.y = 0.0;
+  vec3 bbF = normalize(bbTo + vec3(1e-4, 0.0, 0.0));
+  vec3 bbR = vec3(bbF.z, 0.0, -bbF.x);
+  mat3 bbIM = transpose(mat3(instanceMatrix));
+  vec3 bbLR = normalize(bbIM * bbR);
+  vec3 bbLF = normalize(bbIM * bbF);
+  objectNormal = normalize(bbLR * normal.x + vec3(0.0, normal.y, 0.0) + bbLF * 0.6);
+#endif
+#ifdef USE_TANGENT
+  vec3 objectTangent = vec3(tangent.xyz);
+#endif
+`;
+const BB_VERTEX = /* glsl */ `
+vec3 transformed = vec3(position);
+#ifdef USE_INSTANCING
+  transformed = bbLR * position.x + vec3(0.0, position.y, 0.0);
+#endif
+#ifdef USE_ALPHAHASH
+  vPosition = vec3(position);
+#endif
+`;
+
 function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uFoliageLift = foliageLift;
+    if (key === 'billboard') sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', BB_NORMAL).replace('#include <begin_vertex>', BB_VERTEX);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform vec3 uFoliageLift;')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * uFoliageLift;');

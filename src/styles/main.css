@@ -259,9 +259,9 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   line-height: 1;
 }
 .waybill .wb-to { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; }
-.wb-line { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 6px; min-height: 30px; }
+.wb-line { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 6px; min-height: 30px; }
 .wb-line + .wb-line { border-top: 1px solid rgb(74 72 67 / .3); }
-.wb-line .tally { height: 18px; }
+.wb-line .tally { width: 100%; max-width: 150px; height: 18px; display: block; }
 .wb-line .tally path.on { fill: var(--ink); }
 .wb-line .tally path.off { fill: rgb(74 72 67 / .16); }
 .wb-line .count { font-size: 15px; font-weight: 700; min-width: 42px; text-align: right; }

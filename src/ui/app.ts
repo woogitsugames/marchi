@@ -1,5 +1,7 @@
 // App shell: main menu over a live scene, the game screen (HUD, sheets, markers, tools),
 // autosave, end-of-mission letter, debug params for screenshots.
+import { AudioEngine } from '../audio/audio';
+import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
   TICK_HZ, applyCommand, buildingById, createWorld, grade, lineCells, net, stars, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
@@ -20,6 +22,20 @@ import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import type { IconId } from './icons';
 
+const audio = new AudioEngine();
+bindAudioEngine(audio);
+let audioUnlockArmed = false;
+/** Web Audio may only start from a trusted gesture: unlock on the first touch/click/key. */
+function armAudioUnlock(): void {
+  if (audioUnlockArmed) return;
+  audioUnlockArmed = true;
+  const unlock = (): void => { void audio.init(); };
+  window.addEventListener('pointerdown', unlock, { capture: true, once: true });
+  window.addEventListener('keydown', unlock, { capture: true, once: true });
+}
+
+type MissionKey = 'm1' | 'm2' | 'm3' | 'sandbox';
+
 const SAVE_SLOT = 'auto';
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
 
@@ -38,7 +54,8 @@ export class App implements PanelNav {
   world: World;
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
-  private missionId: 'm1' | 'sandbox' = 'm1';
+  private missionId: MissionKey = 'm1';
+  private prevAudio: AudioSnapshot | null = null;
   private sheets: Sheets;
   private hud: Hud | null = null;
   private markers = new Markers();
@@ -108,7 +125,7 @@ export class App implements PanelNav {
 
   async start(): Promise<void> {
     const play = this.params.get('play');
-    if (play === 'm1' || play === 'sandbox') {
+    if (play === 'm1' || play === 'm2' || play === 'm3' || play === 'sandbox') {
       this.newGame(play);
       this.applyDebug();
     } else {
@@ -157,6 +174,8 @@ export class App implements PanelNav {
     this.world = w;
     this.loop = new GameLoop(w);
     this.loop.onTick = () => this.onTick();
+    this.prevAudio = captureAudioState(w.state);
+    armAudioUnlock();
     this.loop.onCommandResult = (cmd, r) => this.onCommandResult(cmd, r);
     this.view.setWorld(w);
     this.lastSaveTick = w.state.tick;
@@ -167,7 +186,7 @@ export class App implements PanelNav {
     this.view.setRoadPreview(null);
   }
 
-  newGame(id: 'm1' | 'sandbox'): void {
+  newGame(id: MissionKey): void {
     this.missionId = id;
     this.enterGame(createWorld(id));
   }
@@ -176,7 +195,7 @@ export class App implements PanelNav {
     try {
       const st: SimState | null = await loadGame(SAVE_SLOT);
       if (!st) return;
-      this.missionId = st.mission.id === 'sandbox' ? 'sandbox' : 'm1';
+      this.missionId = (['m1', 'm2', 'm3', 'sandbox'] as const).find((k) => k === st.mission.id) ?? 'm1';
       this.enterGame(worldFromState(st));
     } catch (e) {
       console.error(e);
@@ -268,6 +287,14 @@ export class App implements PanelNav {
 
   private onTick(): void {
     this.view.afterTick();
+    if (this.prevAudio && audio.ready) {
+      const l = this.view.audioListener?.() ?? { x: 0, z: 0, yaw: 0 };
+      const tr = this.world.terrain;
+      observeSim(this.prevAudio, this.world.state, {
+        x: l.x, z: l.z, yaw: l.yaw, mapWidth: tr.w, cellSize: tr.cellSize, water: tr.water, audibleRadius: 90,
+      });
+    }
+    this.prevAudio = captureAudioState(this.world.state);
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
   }
 
@@ -302,6 +329,7 @@ export class App implements PanelNav {
     if (this.mode !== 'game' || !this.hud) return;
     const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish' : 'buy_wagon';
     if (!r.ok) {
+      if (audio.ready) void audio.play('ui.error');
       this.hud.toast(errorText(r.err), 'err', icon);
       return;
     }
