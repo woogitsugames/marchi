@@ -393,19 +393,45 @@ def main() -> None:
     parser.add_argument("--fetch", action="store_true",
                         help="Download missing verified CC0 original recordings")
     parser.add_argument("--check", action="store_true",
-                        help="Validate shipped OGG and M4A assets, codecs and budget")
+                        help="Validate OGG/M4A assets, source hashes and budget")
+    parser.add_argument("--only-freesound", action="store_true",
+                        help="Render only Freesound SFX; keep shipped ambience")
     parser.add_argument("--source-dir", type=Path,
                         default=BASE / ".cache/audio-sources")
     args = parser.parse_args()
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    tracks = manifest["tracks"]
+    validate_manifest(manifest)
+    tracks = [t for t in manifest["tracks"] if not args.only_freesound or
+              manifest["sources"][t["source"]].get("provider") == "freesound"]
     if args.check:
-        total = budget_and_channels(OUT, tracks if PROVENANCE.exists() else None)
+        total = budget_and_channels(
+            OUT, manifest["tracks"] if PROVENANCE.exists() else None
+        )
+        if PROVENANCE.exists():
+            prov = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+            if prov.get("output_sha256"):
+                for rel, expected in prov["output_sha256"].items():
+                    file = OUT / rel
+                    if not file.is_file() or sha256(file) != expected:
+                        raise ValueError(f"Shipped audio digest mismatch: {rel}")
+                actual = {
+                    str(p.relative_to(OUT)) for p in OUT.rglob("*")
+                    if p.suffix in (".ogg", ".m4a")
+                }
+                if set(prov["output_sha256"]) != actual:
+                    raise ValueError("Output digest catalogue incomplete")
+            for key, source in manifest["sources"].items():
+                if source.get("provider") != "freesound":
+                    continue
+                file = FREESOUND_SOURCES / source["filename"]
+                expected = prov.get("sources", {}).get(key, {}).get("sha256")
+                if expected and (not file.is_file() or sha256(file) != expected):
+                    raise ValueError(f"Bundled Freesound source digest mismatch: {key}")
         print(f"PASS: {total} B / {MAX_BYTES} B; 46 files; stereo ambient / mono SFX")
         return
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         parser.error("ffmpeg and ffprobe must be installed")
-    sources = source_checksums(manifest, args.source_dir, args.fetch)
+    sources = source_checksums(manifest, args.source_dir, args.fetch, tracks)
     with tempfile.TemporaryDirectory(prefix="marchia-cc0-") as td:
         temp = Path(td)
         staged = temp / "out"
@@ -422,7 +448,7 @@ def main() -> None:
                     f"Source {key} too short: {meta['duration']:.2f} < {needed:.2f}"
                 )
             raw = temp / (track["id"].replace("/", "_") + ".wav")
-            if track["kind"] == "ambient":
+            if track["kind"] == "ambient" or "loop_crossfade" in track:
                 layers = [
                     (layer, sources[layer["source"]]["file"])
                     for layer in track.get("extra", [])
@@ -447,22 +473,44 @@ def main() -> None:
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 file.replace(dest)
         PROVENANCE.parent.mkdir(parents=True, exist_ok=True)
-        source_json = {
-            k: {
-                "sha256": v["sha256"],
-                "seconds": round(v["duration"], 4),
-                "original": manifest["sources"][k]["url"],
-            } for k, v in sorted(sources.items())
+        previous = (
+            json.loads(PROVENANCE.read_text(encoding="utf-8"))
+            if PROVENANCE.exists() else {}
+        )
+        source_json = dict(previous.get("sources", {}))
+        for key, record in sorted(sources.items()):
+            meta = manifest["sources"][key]
+            source_json[key] = {
+                "sha256": record["sha256"],
+                "seconds": round(record["duration"], 4),
+                "original": meta.get("url", meta["page"]),
+                "page": meta["page"],
+                "author": meta["author"],
+                "sound_id": meta.get("sound_id"),
+                "source_format": (
+                    "Freesound public HQ OGG preview"
+                    if meta.get("provider") == "freesound" else "original"
+                ),
+                "preview_url": record["download_url"],
+            }
+        output_sha256 = {
+            str(p.relative_to(OUT)): sha256(p)
+            for p in sorted(OUT.rglob("*"))
+            if p.suffix in (".ogg", ".m4a")
         }
         PROVENANCE.write_text(
             json.dumps({
-                "format_version": 1, "sources": source_json,
-                "output_bytes": total, "tracks": [t["id"] for t in tracks],
+                "format_version": 2, "sources": source_json,
+                "output_bytes": total,
+                "tracks": [t["id"] for t in manifest["tracks"]],
+                "output_sha256": output_sha256,
             }, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
-        print(f"PASS: {len(tracks)} CC0 field recordings; "
-              f"6 requested SFX left synthetic; {total} B combined")
+        print(
+            f"PASS: rendered {len(tracks)} CC0 recordings; "
+            f"{len(manifest['tracks'])} verified tracks; {total} B combined"
+        )
 
 
 if __name__ == "__main__":
