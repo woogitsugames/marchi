@@ -103,3 +103,9 @@ ID3 comments, e.g. `made with suno; created=…; id=…`). Rights are held by th
 because transcoding drops ID3. Before store release: confirm the Suno plan that applied at generation time
 and answer the stores' AI-generated-content questions accordingly (Google Play / App Store). Owner confirmed
 2026-11-01: the Suno plan was paid at generation time. (decided; store AI-content answers remain a release step)
+
+**D-17 — Owner decisions 2026-11-01.** (1) Textures: 2K ship inside the APK; the 4K pack is downloaded
+in-game when Ultra is chosen (Play Asset Delivery or own download — to be designed). (2) Order of work after
+4K + foldables: tutorial + playtest readiness → missions IV–VI → building in the free valley; store,
+billing and release builds are postponed until the game is fully playable. (3) Languages beyond PL/EN:
+the owner will send a list. (4) No Google Play release/signing yet — debug APKs only. (decided)

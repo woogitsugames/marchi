@@ -10,6 +10,10 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
+- [ ] P1 — (D-17) 4K jako pakiet do pobrania: w APK tylko 2K (+low); pobieranie 4K po wyborze Ultra (Play Asset Delivery lub własne pobieranie do pamięci aplikacji), pasek postępu, weryfikacja SHA-256, możliwość usunięcia.
+- [ ] P2 — (D-17 kolejność) Samouczek misji I (docs/tutorial/m1.md) + gotowość do playtestu (docs/playtest).
+- [ ] P4 — (D-17 kolejność) Misje IV–VI (po samouczku) → budowanie w wolnej dolinie.
+- [ ] — Języki: czekamy na listę od właściciela. Sklep/płatności/release: odłożone (D-17).
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
 - [ ] P2 — Wczesne wykrycie „brak drogi do zwycięstwa” (brak ścieżki do zamku i srebro < koszt najtańszej przeprawy, a wozów nie ma do sprzedania) → list z przyczyną.
 - [ ] P2 — Drogi z daleka prawie niewidoczne (view-far-*.png): łamie zasadę „drogi są rysunkiem” z ART_DIRECTION — zwiększyć kontrast/szerokość toru przy dalekim zoomie (src/render/terrain.ts) (źródło: claude).
