@@ -7,6 +7,8 @@ on:
       - tools/process_audio.py
       - tools/audio_sources.json
       - .github/workflows/cc0-audio.yml
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Check FFmpeg installation
         run: |
@@ -49,7 +52,21 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Upload preview audio artifact for PR review
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc0-audio-${{ github.sha }}
+          path: |
+            public/assets/audio/ambient/*.ogg
+            public/assets/audio/ambient/*.m4a
+            public/assets/audio/sfx/bridge-wood.ogg
+            public/assets/audio/sfx/bridge-wood.m4a
+            docs/audio-provenance.json
+          retention-days: 7
+
       - name: Commit processed OGG/M4A and source fingerprints
+        if: github.event_name == 'push'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
