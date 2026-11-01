@@ -8,7 +8,7 @@
 - Strategie: **nic**, **+2 wozy na starcie** (koszt 60 srebra), **właściwa naprawa**, **naprawa +2 wozy**. Interwencja M1: drewniany most `x=41,y=24..44` na starcie; M2: kamienna modernizacja mostu `x=51,y=30..42` po 45 s; M3: bruk `x=32..80,y=40` po 25 s.
 - Cel: **nic = 0–1 pieczęć**, **częściowa strategia (same wozy albo sama naprawa) = 2**, **pełna interwencja (naprawa + wozy) = 3**, zwycięstwa w przedziale **5–12 min**.
 - Wyniki czterech strategii na tym samym seedzie są porównywane bez zmian AI, tras, terenu ani zasad produkcji. Nieudane komendy i błędy inicjalizacji dyskwalifikują wariant.
-- Siatka fizyczna: ilości desek/chleba × srebro × początkowe wozy (warianty 80%, 100%, 120% ilości; srebro −30/0/+30; wozy −1/0/+1). Termin kontraktu: **7–12 min co 0,5 min**; pieczęcie: próg 3 od 5 min co 0,25 min, próg 2 co 0,25 min z warunkiem `5 ≤ 3★ < 2★ < termin`.
+- Siatka fizyczna: ilości desek/chleba × srebro × początkowe wozy (warianty 80%, 100%, 120% ilości; srebro −30/0/+30; wozy −1/0/+1, a dla M1 również +2/+3/+4). Termin kontraktu: **7–12 min co 0,5 min**; pieczęcie: próg 3 od 5 min co 0,25 min, próg 2 co 0,25 min z warunkiem `5 ≤ 3★ < 2★ < termin`.
 - Dla każdej konfiguracji symulacja trwa maksymalnie 12 min (10 ticków/s). Terminy i progi pieczęci są przeszukiwane **analitycznie** z uzyskanych czasów zwycięstwa — nie zmieniają zachowania dyspozytora przed końcem kontraktu.
 - Każda konfiguracja fizyczna jest sprawdzana na seedzie misji. **10** najlepszych kandydatów + ustawienia pierwotne są oceniane na sześciu seedach: bazowy oraz przesunięcia **+1, +7, +19, +41, +73**. Finalista wygrywa według liczby seedów spełniających wszystkie warunki, następnie sumy zgodnych kryteriów i odległości od danych obecnych.
 - Reprodukowalność: zwycięski wariant jest uruchamiany jeszcze raz na bazowym seedzie dla każdej z czterech strategii, z porównaniem wyników i hasza stanu.
@@ -18,7 +18,7 @@
 | Misja | Kontrakt | Srebro | Wozy | 3★ | 2★ | Termin | Zgodne seedy / 6 | Deterministyczna |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
-| M1 | 24 desek / 20 chleba | 180 | 3 | 10.75 min | 11.25 min | 12.00 min | 0/6 | tak |
+| M1 | 30 desek / 16 chleba | 180 | 4 | 8.25 min | 11.50 min | 12.00 min | 3/6 | tak |
 | M2 | 36 desek / 30 chleba | 160 | 7 | 8.75 min | 10.00 min | 12.00 min | 6/6 | tak |
 | M3 | 24 desek / 16 chleba | 270 | 4 | 6.25 min | 8.00 min | 11.00 min | 6/6 | tak |
 
@@ -27,7 +27,7 @@
 ## M1 — porównanie i uzasadnienie
 
 **Dane obecne:** 30 desek / 20 chleba, 180 srebra, 2 wozów, 7 / 9 / 12 min (3★ / 2★ / koniec).
-**Rekomendacja:** 24 desek / 20 chleba, 180 srebra, 3 wozów, progi 10.75 / 11.25 / 12 min. Trafność: **0/6** seedów.
+**Rekomendacja:** 30 desek / 16 chleba, 180 srebra, 4 wozów, progi 8.25 / 11.5 / 12 min. Trafność: **3/6** seedów.
 
 **Stan obecny — bazowy seed 1301:**
 
@@ -41,11 +41,11 @@
 | Seed | Nic | +2 wozy | Sama naprawa | Naprawa + wozy | Częściowa (2★) | Kryteria |
 | --- | --- | --- | --- | --- | --- | --- |
 
-| 1301 | porażka (0) | porażka (0) | porażka (0) | 10.58 min (3) | brak | NIE |
+| 1301 | porażka (0) | porażka (0) | 11.30 min (2) | 8.08 min (3) | repair | **TAK** |
 | 1302 | porażka (0) | porażka (0) | porażka (0) | porażka (0) | brak | NIE |
 | 1308 | porażka (0) | porażka (0) | porażka (0) | porażka (0) | brak | NIE |
-| 1320 | porażka (0) | porażka (0) | porażka (0) | 10.46 min (3) | brak | NIE |
-| 1342 | porażka (0) | porażka (0) | porażka (0) | 10.20 min (3) | brak | NIE |
+| 1320 | porażka (0) | porażka (0) | 10.83 min (2) | 7.72 min (3) | repair | **TAK** |
+| 1342 | porażka (0) | porażka (0) | 10.20 min (2) | 7.76 min (3) | repair | **TAK** |
 | 1374 | porażka (0) | porażka (0) | porażka (0) | porażka (0) | brak | NIE |
 
 **Uzasadnienie:** Bez interwencji wyznaczamy punkt odniesienia; pozostałe strategie rozdzielają koszt przepustowości i floty. Test seeda uwzględnia również wykonalność komend i wpływ terenu. **Nie osiągnięto pełnej stabilności na sześciu seedach**: wartości są najlepszą znalezioną propozycją, nie potwierdzonym balansem. Dwa dodatkowe wozy kosztują 60 srebra.
@@ -55,11 +55,11 @@
 | Deski/chleb | Srebro | Wozy | 3★ / 2★ / termin | Seedy zgodne |
 | --- | --- | --- | --- | --- |
 
-| 24/20 | 180 | 3 | 10.75 / 11.25 / 12 | 0/6 |
-| 24/20 | 150 | 3 | 10.75 / 11.25 / 12 | 0/6 |
-| 24/20 | 210 | 3 | 10.75 / 11.25 / 12 | 0/6 |
-| 24/16 | 180 | 3 | 10.75 / 11.25 / 12 | 0/6 |
-| 24/24 | 180 | 3 | 11 / 11.5 / 12 | 0/6 |
+| 30/16 | 180 | 4 | 8.25 / 11.5 / 12 | 3/6 |
+| 24/16 | 180 | 4 | 7.75 / 11.5 / 12 | 3/6 |
+| 30/16 | 150 | 4 | 8.25 / 11.5 / 12 | 3/6 |
+| 30/16 | 210 | 4 | 8.25 / 11.5 / 12 | 3/6 |
+| 24/16 | 150 | 4 | 7.75 / 11.5 / 12 | 3/6 |
 
 ## M2 — porównanie i uzasadnienie
 
@@ -137,7 +137,7 @@
 
 ## Ograniczenia / dalsza weryfikacja
 
-- To przeszukiwanie **siatki dyskretnej**, nie dowód globalnej optymalności. Zakres: m1 = 81 konfiguracji; m2 = 81 konfiguracji; m3 = 81 konfiguracji; dodatkowe seedy badano dla finalistów, a nie dla całej siatki.
+- To przeszukiwanie **siatki dyskretnej**, nie dowód globalnej optymalności. Zakres: m1 = 162 konfiguracji; m2 = 81 konfiguracji; m3 = 81 konfiguracji; dodatkowe seedy badano dla finalistów, a nie dla całej siatki.
 - „Częściowa” to **sama naprawa albo +2 wozy**, nie ukryta zmiana mechaniki.
 - Zmiana seeda regeneruje teren; niemożliwe komendy dyskwalifikują wynik.
 - W M3 magazyn pośredni nie należy do czterech strategii: obecny dispatcher nie gwarantuje jego wpływu na czas.
