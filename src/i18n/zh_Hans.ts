@@ -126,6 +126,8 @@ export const zh_Hans: Dict = {
   "hud.wagonSold": "货车已出售：银+{n}",
   "menu.saveBroken": "存档已损坏或来自其他游戏版本，无法加载。",
   "menu.saveBrokenNew": "重新开始此契约",
+  "menu.saveNewer": "此存档来自更新版本的游戏。请更新游戏后再读取。",
+  "menu.saveTerrain": "此契约的地图在新版本中已改变，因此无法继续该存档。",
   "menu.music": "音乐",
   "menu.effects": "音效",
   "quality.auto": "自动",

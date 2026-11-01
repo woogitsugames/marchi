@@ -135,6 +135,8 @@ export const pl = {
   'hud.wagonSold': 'Sprzedano wóz: +{n} srebra',
   'menu.saveBroken': 'Zapisu nie da się wczytać — jest uszkodzony albo z innej wersji gry.',
   'menu.saveBrokenNew': 'Zacznij ten kontrakt od nowa',
+  'menu.saveNewer': 'Ten zapis pochodzi z nowszej wersji gry. Zaktualizuj grę, aby go wczytać.',
+  'menu.saveTerrain': 'Mapa tego kontraktu zmieniła się w nowej wersji gry, więc zapisu nie da się kontynuować.',
   'menu.music': 'Muzyka',
   'menu.effects': 'Odgłosy',
   'quality.auto': 'Auto',

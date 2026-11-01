@@ -136,6 +136,8 @@ export const en: Dict = {
   'hud.wagonSold': 'Wagon sold: +{n} silver',
   'menu.saveBroken': 'The save cannot be loaded — it is damaged or from another version of the game.',
   'menu.saveBrokenNew': 'Start this contract afresh',
+  'menu.saveNewer': 'This save comes from a newer version of the game. Update the game to load it.',
+  'menu.saveTerrain': 'This contract’s map changed in the new version of the game, so the save cannot be continued.',
   'menu.music': 'Music',
   'menu.effects': 'Sound effects',
   'quality.auto': 'Auto',

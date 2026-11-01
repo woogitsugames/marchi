@@ -129,3 +129,24 @@ without the pack or on a 4K error, ultra falls back to 2K, then to the 1k JPGs.
 *Measured: UASTC+RDO albedo was 3.4× larger than ETC1S q255 and scored lower PSNR on these noisy
 scans; 4K UASTC normals were 10–16 MB each while 2048 normals already give ~3 texels per pixel at the closest zoom, so
 they are not worth the download. ETC1S → ETC2 RGB also halves VRAM versus ASTC.* (decided)
+
+**D-19 — Save gate before migration + golden terrain hash.** Every load goes through
+`src/platform/saveGate.ts` (pure, Node-tested, never mutates or throws) before `migrate()`:
+raw size cap (4 M chars, `parseSave` only) → one structural walk (depth ≤ 16, arrays ≤ 65,536 checked by
+`.length` before iterating, ≤ 4,096 keys per object, strings ≤ 256, ≤ 2 M values, no `__proto__` /
+`constructor` / `prototype` keys, only plain objects and finite numbers) → envelope (`format` 1..2,
+`stateVersion` integer 1..STATE_VERSION, newer is refused untouched) → known state fields (types, integer
+ranges, cell indexes < W·H from the map id, footprints inside the map and non-overlapping, gate = footprint +
+facing, roads/traffic length = W·H, unique ids, wagon home = stable, pickup source exists, contract castle
+exists, ≤ 2,048 buildings / MAX_WAGONS wagons) → the sim's own `checkInvariants()` (conservation,
+reservations = jobs). Unknown extra fields are tolerated so a newer state schema (e.g. v3 tranches,
+`capOverride`) does not need a gate change first; the gate validates what it knows. Errors are
+`{code, path, detail}` with machine codes; the UI maps codes to i18n keys (`saveErrorMessageKey`).
+Terrain is not saved but regenerated from `mapId + seed`, so the envelope (format 2) stores
+`terrainHash` (FNV over the JSON of corners / cellH / water / forest / field, prefix `t1-`) and the loader
+refuses a mismatch with `TERRAIN_CHANGED`. Format-1 envelopes are upgraded on load by computing the hash
+from today's generator (trust-on-first-load: they were made before the hash existed, nothing better is
+known). `tests/terrain-golden.test.ts` pins the hash of every map/seed used by MISSIONS, so a generator
+change fails CI with instructions (new mapId, or accept invalidating saves and record it here). The
+envelope format is versioned separately from STATE_VERSION on purpose: the terrain check is metadata
+about the save, not sim state. (decided)

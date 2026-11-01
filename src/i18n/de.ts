@@ -126,6 +126,8 @@ export const de: Dict = {
   "hud.wagonSold": "Wagen verkauft: +{n} Silber",
   "menu.saveBroken": "Spielstand unlesbar: beschädigt oder aus einer anderen Spielversion.",
   "menu.saveBrokenNew": "Auftrag neu beginnen",
+  "menu.saveNewer": "Dieser Spielstand stammt aus einer neueren Spielversion. Aktualisiere das Spiel, um ihn zu laden.",
+  "menu.saveTerrain": "Die Karte dieses Auftrags hat sich in der neuen Spielversion geändert; der Spielstand kann nicht fortgesetzt werden.",
   "menu.music": "Musik",
   "menu.effects": "Toneffekte",
   "quality.auto": "Auto",

@@ -126,6 +126,8 @@ export const tr: Dict = {
   "hud.wagonSold": "Araba satıldı: +{n} gümüş",
   "menu.saveBroken": "Kayıt yüklenemiyor: hasarlı veya oyunun başka bir sürümünden.",
   "menu.saveBrokenNew": "Sözleşmeye yeniden başla",
+  "menu.saveNewer": "Bu kayıt oyunun daha yeni bir sürümünden. Yüklemek için oyunu güncelle.",
+  "menu.saveTerrain": "Bu sözleşmenin haritası oyunun yeni sürümünde değişti; kayda devam edilemez.",
   "menu.music": "Müzik",
   "menu.effects": "Ses efektleri",
   "quality.auto": "Otomatik",

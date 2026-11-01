@@ -126,6 +126,8 @@ export const nl: Dict = {
   "hud.wagonSold": "Wagen verkocht: +{n} zilver",
   "menu.saveBroken": "Opslag kan niet worden geladen: beschadigd of van een andere spelversie.",
   "menu.saveBrokenNew": "Begin dit contract opnieuw",
+  "menu.saveNewer": "Deze opslag komt uit een nieuwere spelversie. Werk het spel bij om hem te laden.",
+  "menu.saveTerrain": "De kaart van dit contract is veranderd in de nieuwe spelversie, dus deze opslag kan niet verder.",
   "menu.music": "Muziek",
   "menu.effects": "Geluidseffecten",
   "quality.auto": "Auto",

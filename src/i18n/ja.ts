@@ -126,6 +126,8 @@ export const ja: Dict = {
   "hud.wagonSold": "荷車を売却：銀 +{n}",
   "menu.saveBroken": "セーブデータが破損しているか、別バージョンのため読み込めません。",
   "menu.saveBrokenNew": "この契約を最初から始める",
+  "menu.saveNewer": "このセーブデータは新しいバージョンのゲームのものです。読み込むにはゲームを更新してください。",
+  "menu.saveTerrain": "新しいバージョンでこの契約のマップが変わったため、このセーブデータは続けられません。",
   "menu.music": "音楽",
   "menu.effects": "効果音",
   "quality.auto": "自動",
