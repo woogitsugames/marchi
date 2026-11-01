@@ -1,0 +1,15 @@
+{
+ "name": "stall-new-producer-idle",
+ "status": "known-failing",
+ "expect": "stall",
+ "review": "F-04",
+ "note": "A freshly placed producer that cannot start keeps status IDLE (progress -1) until the next dispatch (up to DISPATCH_INTERVAL-1 ticks), so unexplainedStalls() reports it. Strict mode: placeGraceTicks=0.",
+ "options": { "placeGraceTicks": 0 },
+ "scenario": {
+  "mission": "m1",
+  "coins": null,
+  "ticks": 34,
+  "saveAt": -1,
+  "commands": [{ "tick": 32, "cmd": { "t": "place", "type": "sawmill", "x": 73, "y": 50, "facing": 0 } }]
+ }
+}

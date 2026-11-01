@@ -11,6 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sim.json --noEmit",
     "test": "tsx tests/run.ts",
     "test:one": "tsx tests/run.ts",
+    "test:known-failing": "tsx tests/known-failing/run.ts",
+    "fuzz": "tsx tools/fuzz.ts",
     "bot": "tsx tools/mission-bot.ts",
     "perf:sim": "tsx tools/perf-sim.ts",
     "shots": "node tools/screenshots.mjs",
