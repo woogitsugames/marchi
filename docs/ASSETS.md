@@ -202,77 +202,84 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 | `public/vendor/basis/basis_transcoder.js`, `.wasm` | copied unmodified from `three@0.181` `examples/jsm/libs/basis/` (Binomial Basis Universal) | Apache-2.0 | `public/licenses/Apache-2.0-basis_universal.txt` |
 
 
-## Audio — verified CC0 field recordings (task 07)
+## Audio — CC0 field recordings (tasks 07 and 18)
 
-The field recordings listed below were verified **individually as CC0 1.0** on their
-original OpenGameArt asset pages (not merely by a search-result filter). They are
-genuine captured audio, not synthesizer patches. Attribution is provided for
-provenance although CC0 does not require it. No Sonniss audio is used: that bundle
-is royalty-free under its own conditions, **not CC0**, and has not been bundled.
+All 23 runtime IDs, paths and OGG/M4A codecs remain unchanged. Ambient is stereo;
+SFX/UI is mono, 24 kHz. The combined **46 runtime files** must remain under 4 MiB,
+excluding public/assets/music. The reproducible asset manifest is
+`tools/audio_sources.json` and fingerprints live in `docs/audio-provenance.json`.
 
-A pair of 24-kHz OGG Vorbis + M4A/AAC-LC files is shipped for each ID.
-The existing paths and all identifiers in src/audio/sounds.ts stay unchanged.
-Stereo for ambience; mono for SFX/UI. The combined 46 files must be **under 4 MiB**.
-The full manifest (including licensing and exact URLs) is tools/audio_sources.json.
-The renderer is tools/process_audio.py; source hashes and actual output byte count
-are written at render time to docs/audio-provenance.json.
+### Task 07 — OpenGameArt CC0 field recordings
 
-### Selected replacement sources (specific original files)
+| Runtime ID | Recording | Author | Licence / limitation |
+|---|---|---|---|
+| ambient/morning | [Park ambiences](https://opengameart.org/content/park-ambiences) + [dog barking](https://opengameart.org/content/dog-barking-mono) | Thimras; Brandon Morris (via HaelDB) | CC0; winter birds, distant dog; jackdaw not confirmed |
+| ambient/river | [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0; river and Australian frogs (season not verified) |
+| ambient/rain | [AMB Rain Loop 2](https://opengameart.org/content/amb-rain-loop-2) | Kresiek The Furry | CC0; genuine rain, surface not documented |
+| ambient/evening | [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0; wind, no unverified owl |
 
-| In-game files (.ogg and .m4a) | Recorded original (exact link) | Author | Licence | Processing / suitability notes |
-|---|---|---|---|---|
-| public/assets/audio/ambient/morning.* | [park_ambience_birds.wav](https://opengameart.org/sites/default/files/park_ambience_birds.wav), from [Park ambiences](https://opengameart.org/content/park-ambiences); [dog_barking_mono.wav](https://opengameart.org/sites/default/files/dog_barking_mono.wav) from [Dog barking mono](https://opengameart.org/content/dog-barking-mono) | Thimras; Brandon Morris (submitted by HaelDB) | CC0 1.0 (both) | Birds recorded during Adelaide winter, low-pass-filtered distant dog around 16 s; loop 30 s / 1.5 s crossfade, stereo, −24 LUFS. **Jackdaws are not independently confirmed**. |
-| public/assets/audio/ambient/river.* | [park_ambience_river.wav](https://opengameart.org/sites/default/files/park_ambience_river.wav) from [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0 1.0 | Small river/water step, wildlife; 30 s / 1.5 s crossfade, stereo, −24 LUFS. Includes frogs, so biotope/season may not exactly match European November. |
-| public/assets/audio/ambient/rain.* | [amb_rain2.ogg](https://opengameart.org/sites/default/files/amb_rain2.ogg) from [AMB Rain Loop 2](https://opengameart.org/content/amb-rain-loop-2) | Kresiek The Furry | CC0 1.0 | Real rain recorded on a GoPro Hero 12; 30 s / 1.5 s crossfade, stereo, −24 LUFS. Specific surface (thatch/grass) not documented. |
-| public/assets/audio/ambient/evening.* | [park_ambience_wind.wav](https://opengameart.org/sites/default/files/park_ambience_wind.wav) from [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0 1.0 | Genuine winter wind; 30 s / 1.5 s crossfade, stereo, −24 LUFS. No owl included without a verified suitable recording. |
-| public/assets/audio/sfx/bridge-wood.* | [steps in wood floor.wav](https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav) from [Steps in wood floor](https://opengameart.org/content/steps-in-wood-floor) | mikeask | CC0 1.0 | 1.3-s extracted mono recording of footfalls on wooden planks, fade-in/out, high/low-pass, −6 dBFS peak. Provisional bridge-thump proxy, not a recording of wheels on bridge. |
+The previous `sfx/bridge-wood` proxy (CC0 footsteps on wooden floor by
+mikeask) is replaced in task 18 with wooden cart wheels crossing a bridge.
 
-**Important:** the source catalogue above is not proof that an OGG/M4A binary has
-already been replaced. Confirm docs/audio-provenance.json exists, the generated
-files are in the Git commit, and the processing CI job passed before describing
-the installed audio as field recordings.
+### Task 18 — Freesound CC0 recordings, individually verified
 
-### Effects deliberately retained from task 02 (synthetic)
+The following 11 Freesound sound pages were checked for their own **Creative
+Commons 0** label on 2026-11-01, author and ID. Fourteen SFX tracks use
+these sources (load and unload can use distinct excerpts of the same take).
 
-The following files remain the **original procedural CC0 sound design by the MARCHIA
-project author**, rendered by tools/generate_audio.py. They are not documentary
-field recordings. No suitably authenticated and period-appropriate CC0 source
-was established for the following six task-07 target sounds:
+Freesound requires login/OAuth to download original WAV/FLAC. Without an API
+key, the tool resolves the **official high-quality OGG preview** published by
+Freesound in the sound page metadata. Each preview is a lossy derivative, not
+an original WAV. It is bundled as `tools/audio-src/<ID>-hq.ogg`; its SHA-256 and
+the generated runtime pair hashes go in `docs/audio-provenance.json`.
 
-| Original (both .ogg and .m4a) | Why not replaced |
-|---|---|
-| sfx/cart-dirt | No verified recording of wooden wagon wheels over earth, suitable for looping |
-| sfx/cart-cobble | No verified recording of wooden wagon wheels on cobbles |
-| sfx/horse-snort | Horse-like foley and synthetic imitations rejected as not genuine snorting |
-| sfx/axe | No adequately verified actual wood-chopping field sample |
-| sfx/saw | Available samples imitate a saw by rubbing wood; not an actual human-powered frame saw |
-| sfx/mill-wheel | No verified mechanical waterwheel recording suitable for a loop |
+| Runtime ID(s) | Freesound page (author) | Sound ID | License | Processing / caveats |
+|---|---|---:|---|---|
+| `sfx/cart-dirt` | [craigsmith](https://freesound.org/people/craigsmith/sounds/480020/) | 480020 | CC0 1.0 | Wood wheels rolling on gritty dirt road (vintage archive); 4.8 s loop, 0.45 s overlap |
+| `sfx/cart-cobble` | [craigsmith](https://freesound.org/people/craigsmith/sounds/437092/) | 437092 | CC0 1.0 | Horse-drawn milk wagon on cobblestone, not modern traffic; 3.8 s loop, 0.35 s overlap |
+| `sfx/horse-snort` | [o_ciz](https://freesound.org/people/o_ciz/sounds/475483/) | 475483 | CC0 1.0 | Horse snorting; natural animal recording |
+| `sfx/axe` | [xkeril](https://freesound.org/people/xkeril/sounds/753925/) | 753925 | CC0 1.0 | Real small axe chopping a branch, outdoors |
+| `sfx/saw` | [LiezelDippenaar](https://freesound.org/people/LiezelDippenaar/sounds/707527/) | 707527 | CC0 1.0 | Real manual handsaw sawing through wooden plank |
+| `sfx/mill-wheel` | [Berwitz](https://freesound.org/people/Berwitz/sounds/263583/) | 263583 | CC0 1.0 | Watermill wooden wheel turning with rhythmic water; 5.5 s loop, 0.55 s overlap |
+| `sfx/bridge-wood` | [craigsmith](https://freesound.org/people/craigsmith/sounds/480042/) | 480042 | CC0 1.0 | Heavy wooden cart wheel rolling on wooden floor/bridge |
+| `sfx/load-sack`, `sfx/unload-sack` | [bbrocer](https://freesound.org/people/bbrocer/sounds/382642/) | 382642 | CC0 1.0 | Bag of flour moved from shelf and dropped onto counter |
+| `sfx/load-plank`, `sfx/unload-plank` | [Tim_Verberne](https://freesound.org/people/Tim_Verberne/sounds/537755/) | 537755 | CC0 1.0 | Real small wooden planks dropping to ground |
+| `sfx/load-log`, `sfx/unload-log` | [ventousawins](https://freesound.org/people/ventousawins/sounds/681416/) | 681416 | CC0 1.0 | Real wooden log dropped |
+| `sfx/oven` | [ceich93](https://freesound.org/people/ceich93/sounds/263864/) | 263864 | CC0 1.0 | Real fireplace wood crackling (fire, not oven mechanics) |
 
-The other 12 untouched original synthetic IDs (all variants as OGG + M4A) are:
-sfx/load-sack, sfx/unload-sack, sfx/load-plank, sfx/unload-plank,
-sfx/load-log, sfx/unload-log, sfx/oven, sfx/wax-seal,
-ui/stall, ui/wood, ui/paper, ui/error.
-Their original generator and CC0 waiver remain in tools/generate_audio.py.
-Do **not** rerun tools/generate_audio.py over the processed field recordings:
-it would silently regenerate every audio file as synthetic.
+**Listening limitations:** `cart-dirt` is a vintage optical archive with
+phase artefacts; `cart-cobble` includes a horse and must be trimmed/checked for
+speech or street traffic. The oven uses *real fireplace crackling* rather than
+a documented bread oven. Each loading/unloading ID uses a different portion
+of a real sack, plank or log recording. Reject modern engines, asphalt and
+intelligible speech after listening — metadata alone cannot guarantee absence.
 
-### Reproduction and verification
+### Original procedural effects retained
 
-1. Install FFmpeg and FFprobe; use Python 3.10+ (no pip modules).
-2. Run: python3 tools/process_audio.py --fetch
-3. Run: python3 tools/process_audio.py --check
-4. Run: npm test
-5. Listen to every scene and check historical suitability, especially wildlife
-   in the river and bird species in the morning.
+Only `sfx/wax-seal`, `ui/stall`, `ui/wood`, `ui/paper` and `ui/error` remain
+the original procedural CC0 sound design from `tools/generate_audio.py`.
+Do not rerun that generator after rendering these field recordings.
 
-The processing job downloads originals into an untracked .cache directory and
-stores SHA-256 fingerprints in docs/audio-provenance.json. It extracts clips,
-overlaps head and tail with complementary ramps to remove the loop boundary,
-applies 2-pass EBU R128 normalisation to ambience (−24 LUFS target), peak
-normalisation to SFX (−6 dBFS target), and encodes both web codecs. Before
-copying over existing assets, it checks 46 files, channel layouts and the
-combined 4-MiB budget. Lossy encoders can introduce slight reconstructed-peak
-differences, so final listening/measurements are still recommended.
+### Reproducing and validating
+
+1. Install Python 3.10+, FFmpeg and FFprobe.
+2. Render just the new sources with:
+   `python3 tools/process_audio.py --only-freesound --fetch`.
+   If online downloads are unavailable, place the verified CC0 HQ OGG previews
+   under `tools/audio-src/` and omit `--fetch`.
+3. To reproduce all recorded sound tracks, run
+   `python3 tools/process_audio.py --fetch` (includes OpenGameArt).
+4. Verify: `python3 tools/process_audio.py --check`,
+   `python3 -m unittest tools/test_process_audio.py`, `npm test`,
+   `npm run typecheck`.
+5. Listen to the cart loops and crossfade seams, hand saw, horse, mill and
+   all load/unload effects. The PR stays draft until editorial listening.
+
+The workflow writes SHA-256 hashes for all 46 runtime outputs and all used
+CC0 source previews. The hash manifest must be updated atomically with the
+committed generated files. Runtime audio is limited to 4 × 1024 × 1024 bytes;
+`tools/audio-src/` files are review/reproduction inputs and not deployed.
+
 
 ## Music — owner's own medieval score
 
