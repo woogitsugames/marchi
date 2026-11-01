@@ -35,10 +35,10 @@ covered by re-routing the wagons approaching it.* (decided)
 latin-ext (Polish diacritics). *IM Fell English was considered but lacks latin-ext (no ą, ę, ł).* (decided)
 
 **D-09 — Visual direction: late autumn, damp morning, palette of 10 named colours**
-(`docs/ART_DIRECTION.md`). (proposed — to confirm with owner)
+(`docs/ART_DIRECTION.md`). (decided — accepted by owner 2026-11-01)
 
 **D-10 — Monetisation implementation deferred.** Stage 1 has no store code; the free/full split
-(proposal: mission 1–3 + sandbox small valley free, rest in full version) is to confirm. (to confirm)
+(proposal: mission 1–3 + sandbox small valley free, rest in full version) is accepted by owner 2026-11-01; store code comes in a later stage. (decided)
 
 **D-11 — i18n as typed TS dictionaries** (`pl.ts` is the source of keys, `en.ts` must satisfy
 the same type). *Missing translations become compile errors, no runtime JSON loading.* (decided)
