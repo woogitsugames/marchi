@@ -9,7 +9,7 @@ import { rng } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, type TreeKind } from './models/trees';
 import type { RoadField } from './roads';
-import { APRON, apronHeight } from './terrain';
+import { apronHeight } from './terrain';
 
 interface Tree {
   x: number;
@@ -130,7 +130,7 @@ export class VegetationView {
 
 function makeTree(x: number, y: number, z: number, kind: number, rot: number, scale: number): Tree {
   _q.setFromAxisAngle(_up, rot);
-  const m = new Matrix4().compose(_v.set(x, y - 0.15, z), _q, _s.set(scale, scale * (0.92 + (scale % 0.1)), scale));
+  const m = new Matrix4().compose(_v.set(x, y - 0.15, z), _q, _s.set(scale, scale * (0.9 + Math.abs((x * 13.7 + z * 7.1) % 1) * 0.2), scale));
   return { x, y, z, kind, m };
 }
 
@@ -159,7 +159,7 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
       if (t.water[i] || t.field[i] || occ[i] !== -1 || st.roads[i] || yard[i]) continue;
       const r = rng(i * 7919 + 17);
       const f = t.forest[i]!;
-      let n = Math.floor(f * 1.75 + r());
+      let n = Math.floor(f * 1.3 + r() * 0.9);
       if (f < 0.05) n = r() < 0.01 ? 1 : 0;
       if (n > 2) n = 2;
       for (let k = 0; k < n; k++) {
@@ -195,6 +195,5 @@ function placeApron(hf: Heightfield): Tree[] {
       out.push(makeTree(px, y, pz, pickKind(r(), north), r() * 6.28, 0.8 + r() * 0.4));
     }
   }
-  void APRON;
   return out;
 }

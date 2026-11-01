@@ -110,6 +110,9 @@ export class WagonsView {
   private link = new Int32Array(MAX_WAGONS * 2 + 8);
   private item = new Int32Array(MAX_WAGONS * 2 + 8);
   private touched: number[] = [];
+  private home = new Set<number>();
+  private homeVer = -1;
+  private cells = [0, 0, 0, 0];
 
   constructor(private readonly hf: Heightfield) {
     const cap = MAX_WAGONS;
@@ -232,7 +235,8 @@ export class WagonsView {
       const s = this.snaps.get(w.id);
       if (!s || w.next < 0) continue;
       let opp = false;
-      const cells = [w.at, w.next, w.path[0] ?? -1, w.path[1] ?? -1];
+      const cells = this.cells;
+      cells[0] = w.at; cells[1] = w.next; cells[2] = w.path[0] ?? -1; cells[3] = w.path[1] ?? -1;
       for (const c of cells) {
         if (c < 0 || opp) continue;
         for (let e = head[c]!; e !== -1; e = link[e]!) {
@@ -265,7 +269,7 @@ export class WagonsView {
       this.simSpeed += (est - this.simSpeed) * Math.min(1, dt * 2);
     }
     if (this.tickTimes.length && performance.now() - this.tickTimes[this.tickTimes.length - 1]! > 400) this.simSpeed *= 0.9; // paused
-    this.walk.uniforms.uWalkTime.value += (dt * Math.max(0.15, this.simSpeed)) / 1;
+    this.walk.uniforms.uWalkTime.value += dt * Math.max(0.15, this.simSpeed);
     void time;
     _pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_pm);
@@ -281,8 +285,12 @@ export class WagonsView {
     this.order.length = 0;
     for (const w of world.state.wagons) this.order.push(w);
 
-    const home = new Set<number>();
-    for (const b of world.state.buildings) if (b.type === 'stable') home.add(b.gate);
+    if (this.homeVer !== world.state.netVersion) {
+      this.homeVer = world.state.netVersion;
+      this.home.clear();
+      for (const b of world.state.buildings) if (b.type === 'stable') this.home.add(b.gate);
+    }
+    const home = this.home;
 
     for (const w of this.order) {
       const s = this.snaps.get(w.id);

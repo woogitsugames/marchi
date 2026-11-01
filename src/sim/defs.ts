@@ -49,7 +49,8 @@ export const DISPATCH_INTERVAL = 5; // ticks
 export const TRAFFIC_DECAY_TICKS = 60 * TICK_HZ;
 
 // --- Time ------------------------------------------------------------------
-export const DAY_TICKS = 480 * TICK_HZ;
+/** One day spans a whole contract: mission 1 runs from early morning to dusk. */
+export const DAY_TICKS = 1440 * TICK_HZ;
 /** Mission clocks start a little after dawn (fraction of the day). */
 export const START_DAY_FRACTION = 0.27;
 

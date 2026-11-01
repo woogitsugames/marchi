@@ -33,6 +33,27 @@ interface Wheel {
   base: Matrix4;
   axis: 'x' | 'z';
   buildingId: number;
+  angle: number;
+}
+
+const boundsCache = new Map<ModelPart[], Box3>();
+/** Ground-level footprint of a model (parts below 2.5 m), model space. */
+function modelBounds(parts: ModelPart[]): Box3 {
+  let b = boundsCache.get(parts);
+  if (b) return b;
+  b = new Box3();
+  const v = new Vector3();
+  for (const p of parts) {
+    if (p.material !== 'plaster' && p.material !== 'wood' && p.material !== 'stone') continue;
+    const pos = p.geometry.getAttribute('position');
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      if (v.y < 1.5 && v.y > 0) b.expandByPoint(v);
+    }
+  }
+  if (b.isEmpty()) b.set(new Vector3(-2, 0, -2), new Vector3(2, 1, 2));
+  boundsCache.set(parts, b);
+  return b;
 }
 
 const KEEP = new Set(['position', 'normal', 'uv', 'color']);
@@ -51,7 +72,6 @@ export class BuildingsView {
   private meshes: Mesh[] = [];
   private wheels: Wheel[] = [];
   private signature = '';
-  private wheelAngle = 0;
 
   constructor(private readonly hf: Heightfield) {}
 
@@ -87,16 +107,19 @@ export class BuildingsView {
       const sz = odd ? b.w / mcz : b.h / mcz;
       const m = new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeScale(sx, 1, sz));
       add(model.parts, m);
-      if (hi - baseY > -0.1 || baseY - lo > 0.25) {
-        // stone plinth reaching into the ground on the low side
-        const pb = new PartBuilder({ seed: b.id, ao: 0, dirt: 0.5, dirtHeight: 0.6 });
-        const depth = baseY - lo + 0.6;
-        pb.add('stone', new BoxGeometry(b.w * CELL - 0.5, depth, b.h * CELL - 0.5), {
-          color: '#7d776c',
-          m: new Matrix4().makeTranslation(cx, baseY - depth / 2 + 0.06, cz),
+      if (baseY - lo > 0.3) {
+        // field-stone plinth under the main house, reaching into the ground on the low side
+        const mb = modelBounds(model.parts);
+        const pw = (mb.max.x - mb.min.x) * 0.8 * sx, pd = (mb.max.z - mb.min.z) * 0.8 * sz;
+        const pcx = (mb.max.x + mb.min.x) * 0.5, pcz = (mb.max.z + mb.min.z) * 0.5;
+        const pb = new PartBuilder({ seed: b.id, ao: 0, dirt: 0.6, dirtHeight: 0.5 });
+        const depth = baseY - lo + 0.5;
+        pb.add('stone', new BoxGeometry(pw, depth, pd), {
+          color: '#625d53',
+          m: new Matrix4().makeTranslation(0, -depth / 2 + 0.05, 0),
           noise: 0.12,
         });
-        add(pb.build(), new Matrix4());
+        add(pb.build(), new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeTranslation(pcx * sx, 0, pcz * sz)));
       }
       if (model.wheel) {
         const wm = m.clone().multiply(new Matrix4().makeTranslation(model.wheel.pivot.x, model.wheel.pivot.y, model.wheel.pivot.z));
@@ -108,7 +131,7 @@ export class BuildingsView {
           this.group.add(mesh);
           return mesh;
         });
-        this.wheels.push({ mesh: meshes, base: wm, axis: model.wheel.axis, buildingId: b.id });
+        this.wheels.push({ mesh: meshes, base: wm, axis: model.wheel.axis, buildingId: b.id, angle: 0 });
       }
       // bounds and marker anchor
       const box = new Box3();
@@ -144,13 +167,16 @@ export class BuildingsView {
 
   update(world: World, dt: number): void {
     if (!this.wheels.length) return;
-    this.wheelAngle += dt * 0.6;
     for (const w of this.wheels) {
       const b = world.state.buildings.find((x) => x.id === w.buildingId);
       const speed = b && b.status.k === 'WORKING' ? 1 : 0.55;
-      const a = this.wheelAngle * speed;
+      w.angle += dt * 0.6 * speed;
+      const a = w.angle;
       _m.copy(w.base).multiply(w.axis === 'x' ? ROT.makeRotationX(a) : ROT.makeRotationZ(a));
-      for (const mesh of w.mesh) mesh.matrix.copy(_m), mesh.matrixWorldNeedsUpdate = true;
+      for (const mesh of w.mesh) {
+        mesh.matrix.copy(_m);
+        mesh.matrixWorldNeedsUpdate = true;
+      }
     }
   }
 

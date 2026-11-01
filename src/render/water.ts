@@ -59,7 +59,7 @@ void main() {
   float h0 = hgt(p);
   float hx = hgt(p + vec2(e, 0.0)) - h0;
   float hz = hgt(p + vec2(0.0, e)) - h0;
-  float amp = 0.5 + 0.35 * uRain;
+  float amp = 0.9 + 0.5 * uRain;
   vec3 N = normalize(vec3(-hx * amp / e, 1.0, -hz * amp / e));
   vec3 V = normalize(cameraPosition - vW);
   float ndv = max(dot(N, V), 0.0);
@@ -68,7 +68,7 @@ void main() {
   vec3 sky = mix(uSkyH, uSkyZ, smoothstep(0.0, 0.7, R.y));
   float d = clamp(vDepth / 1.4, 0.0, 1.0);
   vec3 body = mix(uShallow, uDeep, smoothstep(0.0, 1.0, d)) * uLight;
-  vec3 col = mix(body, sky * 0.62, clamp(fres * 0.8 + 0.05, 0.0, 1.0));
+  vec3 col = mix(body, sky * 0.55, clamp(fres * 0.75 + 0.05, 0.0, 1.0));
   float spec = pow(max(dot(R, uSunDir), 0.0), 180.0) * (1.0 - uRain * 0.8);
   col += uSunCol * spec * 1.4;
   float alpha = smoothstep(0.0, 0.22, vDepth) * mix(0.72, 0.97, d);
@@ -112,7 +112,8 @@ void main() {
   float r = length(vUv);
   float soft = 1.0 - smoothstep(0.2, 1.0, r);
   float n = texture2D(tNoise, vW.xz / 37.0 + vec2(uTime * 0.004, vSeed)).a;
-  float a = soft * soft * (0.3 + 0.9 * n) * uOpacity * 0.13;
+  float camFade = smoothstep(12.0, 70.0, distance(cameraPosition, vW));
+  float a = soft * soft * (0.3 + 0.9 * n) * uOpacity * 0.09 * camFade;
   gl_FragColor = vec4(uColor, a);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>

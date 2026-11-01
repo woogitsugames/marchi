@@ -13,13 +13,15 @@
  *   tod=0..1         force time of day
  *   follow=1         follow the first moving loaded wagon
  *   sel=wagon|building|N  select something (N = building id)
+ *   preview=x0,y0,x1,y1  show a road preview (validated like the build tool)
+ *   stress=1         harness-only: scatter all wagons over the road network with random cargo
  *   hud=0            hide the stats box
  *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
  * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
  * window.__harness exposes { world, view, loop } for scripted screenshots.
  */
 import { GameLoop, type Speed } from '../src/game/loop';
-import { applyCommand, createWorld, step, TICK_HZ, type Command } from '../src/sim/index';
+import { applyCommand, createWorld, lineCells, step, TICK_HZ, validateRoad, type Command } from '../src/sim/index';
 import { createWorldView, viewInternals } from '../src/render/view';
 import { bridgeA, stableId } from './bot';
 
@@ -40,6 +42,18 @@ if (wantWagons > 0) {
     const r = applyCommand(world, { t: 'buyWagon', stable: stableId(world) });
     if (!r.ok) break;
   }
+}
+if (q.get('stress') === '1') {
+  // Harness-only perf scene: put every wagon somewhere on the roads with some cargo.
+  const roadCells: number[] = [];
+  world.state.roads.forEach((r, i) => { if (r && !world.terrain.water[i]) roadCells.push(i); });
+  const goods = ['wood', 'planks', 'grain', 'flour', 'bread'] as const;
+  world.state.wagons.forEach((w, i) => {
+    w.at = roadCells[(i * 7919) % roadCells.length]!;
+    w.dest = -1; w.pathVer = -1; w.path = [];
+    w.cargoGood = goods[i % goods.length]!;
+    w.cargoQty = 1 + (i % 6);
+  });
 }
 if (q.get('rain') === '1') world.state.rain = [{ start: 0, end: 1e9 }];
 const ff = num('t', 0);
@@ -81,11 +95,25 @@ function applySel(): void {
   }
 }
 applySel();
-if (q.get('follow') === '1') {
-  const w = world.state.wagons.find((x) => x.cargoQty > 0 && x.next >= 0) ?? world.state.wagons.find((x) => x.next >= 0);
+if (q.has('preview')) {
+  const [x0, y0, x1, y1] = q.get('preview')!.split(',').map(Number);
+  const W = world.terrain.w;
+  const cells = lineCells(W, y0! * W + x0!, y1! * W + x1!);
+  const r = validateRoad(world, cells, 1);
+  const bad = !r.ok && 'cell' in r.err ? (r.err as { cell: number }).cell : -1;
+  view.setRoadPreview({ cells, valid: r.ok, badCell: bad });
+}
+if (q.get('follow') === '1' || q.get('follow') === 'near') {
+  const W = world.terrain.w;
+  const [cx, cz] = (q.get('cam') ?? '0,0').split(',').map(Number);
+  const dist2 = (c: number) => ((c % W) - (cx ?? 0)) ** 2 + (Math.floor(c / W) - (cz ?? 0)) ** 2;
+  const moving = world.state.wagons.filter((x) => x.next >= 0);
+  if (q.get('follow') === 'near') moving.sort((a, b) => dist2(a.at) - dist2(b.at) - (a.cargoQty > 0 ? 30 : 0) + (b.cargoQty > 0 ? 30 : 0));
+  const w = q.get('follow') === 'near' ? moving[0] : world.state.wagons.find((x) => x.cargoQty > 0 && x.next >= 0) ?? moving[0];
   if (w) {
     const W = world.terrain.w;
     const [, , d, yaw] = (q.get('cam') ?? '0,0,26,-0.5').split(',').map(Number);
+    void W;
     internals.rig.set(((w.at % W) + 0.5) * 4, (Math.floor(w.at / W) + 0.5) * 4, d ?? 26, yaw ?? -0.5);
     view.camera.follow(w.id);
   }

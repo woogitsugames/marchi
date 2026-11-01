@@ -291,14 +291,17 @@ const FRAG_MAIN = /* glsl */ `
   sampleLayer(0.0, uv, 0.29, a2, n2, ro2);
   A = mix(A, a2, 0.35) * vec3(0.94, 1.04, 1.0);
   // macro tone variation (dry/wet patches), kept in the desaturated middle
-  A *= 0.86 + 0.28 * nzM.r;
-  A = mix(A, A * vec3(1.08, 1.0, 0.86), smoothstep(0.55, 0.9, nzM.g) * 0.5);
+  A *= 0.84 + 0.3 * nzM.r;
+  vec4 nzP = texture(tNoise, wxz / 23.0 + 0.71);
+  // dry tussock patches toward thatch colour, damp hollows darker and greener
+  A = mix(A, A * vec3(1.18, 1.06, 0.82), smoothstep(0.55, 0.85, nzP.r) * 0.55);
+  A = mix(A, A * vec3(0.78, 0.86, 0.8), smoothstep(0.6, 0.9, nzP.b) * 0.5);
 
   float slope = 1.0 - Ng.y;
   float wForest = smoothstep(0.1, 0.5, gnd.r + (nzS.r - 0.5) * 0.35);
   float wSteep = smoothstep(0.18, 0.42, slope + (nzS.g - 0.5) * 0.1);
   wForest = max(wForest, wSteep * 0.75);
-  if (outside) wForest = max(wForest, smoothstep(-0.1, 0.4, (nzM.b - 0.45)));
+  if (outside) wForest = max(wForest, cuv.y < 0.12 ? 0.85 : smoothstep(0.5, 0.75, nzM.b) * 0.7);
   if (wForest > 0.003) {
     sampleLayer(2.0, uv, 0.8, a2, n2, ro2);
     a2 *= 0.85 + 0.3 * nzS.b;
@@ -310,10 +313,11 @@ const FRAG_MAIN = /* glsl */ `
     sampleLayer(1.0, uv, 1.3, a2, n2, ro2);
     float fc = (gnd.a > 0.5 ? wxz.x : wxz.y) + (nzS.r - 0.5) * 0.6;
     float ph = fc * 6.2831853 / 0.8;
-    float ridge = 0.5 + 0.5 * sin(ph);
+    float fade = 1.0 - smoothstep(0.25, 0.6, fwidth(fc) / 0.8);
+    float ridge = mix(0.6, 0.5 + 0.5 * sin(ph), fade);
     a2 *= mix(0.62, 1.0, ridge);
     a2 = mix(a2, vec3(0.32, 0.25, 0.15), smoothstep(0.75, 1.0, ridge) * smoothstep(0.4, 0.8, nzS.a) * 0.6);
-    float dh = cos(ph) * 0.55;
+    float dh = cos(ph) * 0.55 * fade;
     vec3 fn = gnd.a > 0.5 ? vec3(-dh, 0.0, 1.0) : vec3(0.0, dh, 1.0);
     n2 = normalize(n2 + fn - vec3(0.0, 0.0, 1.0));
     BLEND(wField, a2, n2, ro2);
@@ -328,7 +332,7 @@ const FRAG_MAIN = /* glsl */ `
   if (wBank > 0.003) {
     sampleLayer(3.0, uv, 1.1, a2, n2, ro2);
     float wetB = 1.0 - smoothstep(-0.1, 0.35, hW);
-    a2 *= mix(1.0, 0.55, wetB);
+    a2 *= mix(0.72, 0.45, wetB);
     ro2.x = mix(ro2.x, 0.25, wetB);
     BLEND(wBank, a2, n2, ro2);
   }
@@ -337,8 +341,10 @@ const FRAG_MAIN = /* glsl */ `
   float dD = rd.r * ${ROAD_MAXD.toFixed(1)};
   float dC = rd.g * ${ROAD_MAXD.toFixed(1)};
   float eN = (nzS.a - 0.5) * 0.7;
-  float wDirt = 1.0 - smoothstep(1.9 + eN, 2.6 + eN, dD);
-  float wCob = 1.0 - smoothstep(1.95 + eN * 0.3, 2.25 + eN * 0.3, dC);
+  // at far zoom keep roads at least a couple of pixels wide (they are the drawing)
+  float grow = clamp(fwidth(wxz.x) * 1.6 - 0.4, 0.0, 2.5);
+  float wDirt = 1.0 - smoothstep(1.9 + eN + grow, 2.6 + eN + grow, dD);
+  float wCob = 1.0 - smoothstep(1.95 + eN * 0.3 + grow, 2.25 + eN * 0.3 + grow, dC);
   float roadCover = max(wDirt, wCob);
   vec3 bumpW = vec3(0.0);
   if (wDirt > 0.003 && hW > -0.2) {
@@ -382,7 +388,7 @@ const FRAG_MAIN = /* glsl */ `
     float tr = ov.r;
     float k = roadCover * smoothstep(0.04, 0.2, tr);
     ovCol = mix(uOchre, uClay, smoothstep(0.35, 0.95, tr));
-    ovA = k * 0.8;
+    ovA = k * 0.62;
   }
   float pv = smoothstep(0.32, 0.55, ov.g);
   float pb = smoothstep(0.32, 0.55, ov.b);
@@ -397,14 +403,14 @@ const FRAG_MAIN = /* glsl */ `
     vec2 c = (uSelRect.xy + uSelRect.zw) * 0.5, hs = (uSelRect.zw - uSelRect.xy) * 0.5;
     vec2 q = abs(wxz - c) - hs;
     float sd = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
-    float line = 1.0 - smoothstep(0.18, 0.4, abs(sd - 0.6));
-    ovCol = mix(ovCol, uClay, line); ovA = max(ovA, line * 0.9);
+    float line = 1.0 - smoothstep(0.1, 0.28, abs(sd - 0.6));
+    ovCol = mix(ovCol, uClay, line); ovA = max(ovA, line * 0.8);
   }
   if (uSelRing.w > 0.5) {
     float sd = length(wxz - uSelRing.xy) - uSelRing.z;
-    float line = 1.0 - smoothstep(0.12, 0.3, abs(sd));
-    float fill = (1.0 - smoothstep(-0.2, 0.0, sd)) * 0.18;
-    ovCol = mix(ovCol, uClay, max(line, fill)); ovA = max(ovA, max(line * 0.9, fill));
+    float line = 1.0 - smoothstep(0.06, 0.2, abs(sd));
+    float fill = (1.0 - smoothstep(-0.2, 0.0, sd)) * 0.12;
+    ovCol = mix(ovCol, uClay, max(line, fill)); ovA = max(ovA, max(line * 0.75, fill));
   }
   A = mix(A, ovCol, ovA * 0.85);
 
@@ -413,7 +419,7 @@ const FRAG_MAIN = /* glsl */ `
   vec3 Ttn = normalize(vec3(1.0, 0.0, 0.0) - Ng * Ng.x);
   vec3 Btn = cross(Ttn, Ng);
   vec3 Nw = normalize(Ttn * N.x * uDetail + Btn * N.y * uDetail + Ng * max(N.z, 0.2) - bumpW);
-  vec3 tEmis = ovCol * ovA * 0.25;
+  vec3 tEmis = ovCol * ovA * 0.07;
 `;
 
 function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {

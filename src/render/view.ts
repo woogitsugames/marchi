@@ -4,6 +4,7 @@
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
+  type Color,
   Group,
   PCFSoftShadowMap,
   Ray,
@@ -27,14 +28,14 @@ import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
 import { TerrainView } from './terrain';
 import { loadTerrainTextures } from './terrainTextures';
-import { loadPbrSet, type TextureName } from './textures';
+import { initTextureLoaders, loadPbrSet, type TextureName } from './textures';
 import { VegetationView } from './vegetation';
 import { WaterView } from './water';
 import { WagonsView } from './wagonsView';
 
 /** Menu: dawn at the river crossing. */
 const MENU_TIME = 0.262;
-const MENU_TARGET = { x: 41.5 * CELL, z: 33.5 * CELL, dist: 58, yaw: -0.75 };
+const MENU_TARGET = { x: 41.5 * CELL, z: 35 * CELL, dist: 52, yaw: -0.75 };
 
 const MODEL_TEXTURES: [MatKey, TextureName][] = [
   ['wood', 'wood_planks'],
@@ -90,6 +91,8 @@ class View implements WorldView {
   texturesReady: Promise<void> = Promise.resolve();
   private baked = false;
   private menu = false;
+  /** Jump environment (time of day, rain) to the sim state on the next frame. */
+  private snapEnv = true;
   private lastStats = { calls: 0, triangles: 0 };
 
   constructor() {
@@ -111,6 +114,11 @@ class View implements WorldView {
     r.shadowMap.type = PCFSoftShadowMap;
     r.info.autoReset = true;
     this.renderer = r;
+    try {
+      initTextureLoaders(r);
+    } catch (e) {
+      console.warn('[view] KTX2 loader unavailable, using JPG textures', e);
+    }
     this.applyQuality();
     this.resize(canvas.clientWidth || 1, canvas.clientHeight || 1, window.devicePixelRatio || 1);
     this.loadTextures();
@@ -158,6 +166,7 @@ class View implements WorldView {
       else this.rig.set(MENU_TARGET.x, MENU_TARGET.z, MENU_TARGET.dist, MENU_TARGET.yaw);
     }
     this.wagons!.reset();
+    this.snapEnv = true;
     this.netVer = -1;
     this.syncNetwork();
     this.wagons!.afterTick(world, performance.now());
@@ -223,14 +232,20 @@ class View implements WorldView {
     let d = f - this.tod;
     if (d > 0.5) d -= 1;
     if (d < -0.5) d += 1;
-    this.tod = (this.tod + d * Math.min(1, dt * 4) + 1) % 1;
+    const snap = this.snapEnv;
+    this.snapEnv = false;
+    this.tod = snap ? f : (this.tod + d * Math.min(1, dt * 4) + 1) % 1;
     const raining = !this.menu && isRaining(w.state);
-    this.rain += ((raining ? 1 : 0) - this.rain) * Math.min(1, dt * 0.6);
+    const rt = raining ? 1 : 0;
+    this.rain = snap ? rt : this.rain + (rt - this.rain) * Math.min(1, dt * 0.6);
     // ground gets wet quickly and dries slowly
-    this.wet += ((raining ? 1 : 0) - this.wet) * Math.min(1, dt * (raining ? 0.4 : 0.05));
+    this.wet = snap ? rt : this.wet + (rt - this.wet) * Math.min(1, dt * (raining ? 0.4 : 0.05));
     this.lighting.update(this.tod, this.rain);
     const env = this.lighting.env;
     r.toneMappingExposure = env.exposure * 1.3;
+
+    // wagons first (with last frame's camera) so a followed wagon's position is current
+    this.wagons.frame(w, alpha, dt, this.rig.camera, this.time);
 
     // --- camera
     let followPos: Vector3 | null = null;
@@ -253,13 +268,12 @@ class View implements WorldView {
     this.water!.update(this.time, this.rain, env.mist * (this.menu ? 1 : 0.85));
     const wu = this.water!.material.uniforms;
     wu.uLight!.value = env.light;
-    (wu.uSkyH!.value as import('three').Color).copy(env.skyH);
-    (wu.uSkyZ!.value as import('three').Color).copy(env.skyZ);
+    (wu.uSkyH!.value as Color).copy(env.skyH);
+    (wu.uSkyZ!.value as Color).copy(env.skyZ);
     (wu.uSunDir!.value as Vector3).copy(env.sunDir);
-    (wu.uSunCol!.value as import('three').Color).copy(env.sunColor).multiplyScalar(env.isNight ? 0.2 : 1);
-    (this.water!.mistMaterial.uniforms.uColor!.value as import('three').Color).copy(env.fogColor).lerp(env.skyH, 0.3);
+    (wu.uSunCol!.value as Color).copy(env.sunColor).multiplyScalar(env.isNight ? 0.2 : 1);
+    (this.water!.mistMaterial.uniforms.uColor!.value as Color).copy(env.fogColor).lerp(env.skyH, 0.3);
 
-    this.wagons.frame(w, alpha, dt, cam, this.time);
     this.buildings!.update(w, dt);
     this.vegetation!.update(cam.position);
 
@@ -419,7 +433,13 @@ class View implements WorldView {
   }
 
   setMenuMode(on: boolean): void {
+    const was = this.menu;
     this.menu = on;
+    this.snapEnv = true;
+    if (was && !on && this.hf) {
+      // leaving the menu: glide out to a working view of the valley
+      this.rig.setGoal(this.hf.sizeX * 0.45, this.hf.sizeZ * 0.5, 200, -0.3);
+    }
     this.rig.menu = on;
     if (on) {
       this.rig.follow(null);

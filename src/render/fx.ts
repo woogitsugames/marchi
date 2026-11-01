@@ -69,7 +69,7 @@ void main() {
   float H = uBox * 0.7;
   float y = mod(seed.y * H - uTime * length(uVel), H);
   vec3 p = uCenter + vec3((seed.x - 0.5) * uBox, y - H * 0.25, (seed.z - 0.5) * uBox);
-  p -= uVel * tip * 0.045;
+  p -= uVel * tip * 0.085;
   vTip = tip;
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
 }`;
@@ -78,7 +78,7 @@ uniform vec3 uColor;
 uniform float uOpacity;
 varying float vTip;
 void main() {
-  gl_FragColor = vec4(uColor, uOpacity * (0.35 + 0.65 * vTip));
+  gl_FragColor = vec4(uColor, uOpacity * (0.15 + 0.85 * vTip));
 }`;
 
 export class Effects {
@@ -149,7 +149,7 @@ export class Effects {
         uCenter: { value: new Vector3() },
         uBox: { value: 80 },
         uVel: { value: new Vector3(2.2, -14, 1.2) },
-        uColor: { value: new Color('#b9bcb8') },
+        uColor: { value: new Color('#8f9391') },
         uOpacity: { value: 0 },
       },
       vertexShader: RAIN_VERT,
@@ -182,11 +182,11 @@ export class Effects {
 
   update(time: number, rain: number, center: Vector3, box: number, light: number): void {
     this.smokeMat.uniforms.uTime!.value = time;
-    (this.smokeMat.uniforms.uColor!.value as Color).setRGB(0.27 * light + 0.03, 0.26 * light + 0.03, 0.24 * light + 0.03);
+    (this.smokeMat.uniforms.uColor!.value as Color).setRGB(0.16 * light + 0.02, 0.15 * light + 0.02, 0.14 * light + 0.02);
     this.rainMat.uniforms.uTime!.value = time;
     (this.rainMat.uniforms.uCenter!.value as Vector3).copy(center);
     this.rainMat.uniforms.uBox!.value = box;
-    this.rainMat.uniforms.uOpacity!.value = rain * 0.22 * (0.4 + 0.6 * light);
+    this.rainMat.uniforms.uOpacity!.value = rain * 0.32 * (0.4 + 0.6 * light);
     this.rain.visible = rain > 0.02;
   }
 

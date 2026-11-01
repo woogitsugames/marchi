@@ -29,17 +29,17 @@ interface Key {
 }
 
 const KEYS: Key[] = [
-  { f: 0.0, sun: '#8a98ad', sunI: 0.55, hemiSky: '#56606c', hemiGround: '#1f1c18', hemiI: 0.9, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.35, mist: 0.35 },
-  { f: 0.205, sun: '#8a98ad', sunI: 0.5, hemiSky: '#56606c', hemiGround: '#1f1c18', hemiI: 0.9, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.35, mist: 0.5 },
-  { f: 0.245, sun: '#d08a62', sunI: 0.5, hemiSky: '#8f8e8c', hemiGround: '#2e2822', hemiI: 0.9, skyH: '#b49c88', skyZ: '#5e666e', fog: '#8d8479', exposure: 1.2, mist: 0.9 },
-  { f: 0.27, sun: '#ffb47e', sunI: 2.3, hemiSky: '#b4b2ab', hemiGround: '#40372d', hemiI: 1.05, skyH: '#d9c6ad', skyZ: '#8f989c', fog: '#c2b8a8', exposure: 1.08, mist: 1.0 },
-  { f: 0.34, sun: '#ffd2a6', sunI: 3.1, hemiSky: '#c4c6c4', hemiGround: '#4a3f33', hemiI: 1.2, skyH: '#cdc9bd', skyZ: '#9aa3a6', fog: '#c9c6bb', exposure: 1.02, mist: 0.55 },
-  { f: 0.45, sun: '#ffdcb8', sunI: 3.3, hemiSky: '#c6c8c6', hemiGround: '#4a3f33', hemiI: 1.25, skyH: '#cbc8bd', skyZ: '#9ea6a8', fog: '#c9c6bb', exposure: 1.0, mist: 0.12 },
-  { f: 0.66, sun: '#ffd2a6', sunI: 3.0, hemiSky: '#c2c3c0', hemiGround: '#4a3f33', hemiI: 1.2, skyH: '#ccc5b6', skyZ: '#979fa2', fog: '#c6c1b4', exposure: 1.02, mist: 0.05 },
+  { f: 0.0, sun: '#8a98ad', sunI: 1.0, hemiSky: '#5d6874', hemiGround: '#24201b', hemiI: 1.6, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.55, mist: 0.35 },
+  { f: 0.205, sun: '#8a98ad', sunI: 0.9, hemiSky: '#5d6874', hemiGround: '#24201b', hemiI: 1.6, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.55, mist: 0.5 },
+  { f: 0.245, sun: '#d08a62', sunI: 0.5, hemiSky: '#8f8e8c', hemiGround: '#2e2822', hemiI: 1.2, skyH: '#b49c88', skyZ: '#5e666e', fog: '#8d8479', exposure: 1.2, mist: 0.9 },
+  { f: 0.27, sun: '#ffb47e', sunI: 2.3, hemiSky: '#b4b2ab', hemiGround: '#40372d', hemiI: 1.35, skyH: '#d9c6ad', skyZ: '#8f989c', fog: '#c2b8a8', exposure: 1.08, mist: 1.0 },
+  { f: 0.34, sun: '#ffd2a6', sunI: 3.1, hemiSky: '#c4c6c4', hemiGround: '#4a3f33', hemiI: 1.5, skyH: '#cdc9bd', skyZ: '#9aa3a6', fog: '#c9c6bb', exposure: 1.02, mist: 0.3 },
+  { f: 0.45, sun: '#ffdcb8', sunI: 3.3, hemiSky: '#c6c8c6', hemiGround: '#4a3f33', hemiI: 1.55, skyH: '#cbc8bd', skyZ: '#9ea6a8', fog: '#c9c6bb', exposure: 1.0, mist: 0.04 },
+  { f: 0.66, sun: '#ffd2a6', sunI: 3.0, hemiSky: '#c2c3c0', hemiGround: '#4a3f33', hemiI: 1.5, skyH: '#ccc5b6', skyZ: '#979fa2', fog: '#c6c1b4', exposure: 1.02, mist: 0.02 },
   { f: 0.73, sun: '#ff9f6a', sunI: 2.1, hemiSky: '#a8a2a0', hemiGround: '#3c3229', hemiI: 1.0, skyH: '#cfa98a', skyZ: '#6e767e', fog: '#a99d8f', exposure: 1.1, mist: 0.15 },
-  { f: 0.765, sun: '#9a7a78', sunI: 0.45, hemiSky: '#6a6c72', hemiGround: '#262119', hemiI: 0.9, skyH: '#6d6466', skyZ: '#2c333b', fog: '#4f4f52', exposure: 1.25, mist: 0.25 },
-  { f: 0.8, sun: '#8a98ad', sunI: 0.55, hemiSky: '#56606c', hemiGround: '#1f1c18', hemiI: 0.9, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.35, mist: 0.3 },
-  { f: 1.0, sun: '#8a98ad', sunI: 0.55, hemiSky: '#56606c', hemiGround: '#1f1c18', hemiI: 0.9, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.35, mist: 0.35 },
+  { f: 0.765, sun: '#9a7a78', sunI: 0.45, hemiSky: '#6a6c72', hemiGround: '#262119', hemiI: 1.2, skyH: '#6d6466', skyZ: '#2c333b', fog: '#4f4f52', exposure: 1.25, mist: 0.25 },
+  { f: 0.8, sun: '#8a98ad', sunI: 1.0, hemiSky: '#5d6874', hemiGround: '#24201b', hemiI: 1.6, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.55, mist: 0.3 },
+  { f: 1.0, sun: '#8a98ad', sunI: 1.0, hemiSky: '#5d6874', hemiGround: '#24201b', hemiI: 1.6, skyH: '#3b4249', skyZ: '#20262d', fog: '#363c42', exposure: 1.55, mist: 0.35 },
 ];
 
 const RAIN_SKY_H = new Color('#a9aaa6');
@@ -75,6 +75,7 @@ void main() {
 }`;
 
 const tmpA = new Color(), tmpB = new Color();
+const _right = new Vector3(), _up = new Vector3(), _snap = new Vector3();
 function lerpKey(f: number, pick: (k: Key) => string, out: Color): Color {
   let i = 0;
   while (i < KEYS.length - 2 && KEYS[i + 1]!.f <= f) i++;
@@ -227,13 +228,13 @@ export class Lighting {
     const texel = (2 * r) / this.shadowSize;
     // snap target in light space
     const dir = this.env.sunDir;
-    const right = new Vector3(0, 1, 0).cross(dir).normalize();
+    const right = _right.set(0, 1, 0).cross(dir).normalize();
     if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
-    const up = new Vector3().crossVectors(dir, right).normalize();
+    const up = _up.crossVectors(dir, right).normalize();
     const tx = Math.round(target.dot(right) / texel) * texel;
     const ty = Math.round(target.dot(up) / texel) * texel;
     const tz = target.dot(dir);
-    const snapped = new Vector3().addScaledVector(right, tx).addScaledVector(up, ty).addScaledVector(dir, tz);
+    const snapped = _snap.set(0, 0, 0).addScaledVector(right, tx).addScaledVector(up, ty).addScaledVector(dir, tz);
     s.target.position.copy(snapped);
     s.position.copy(snapped).addScaledVector(dir, 300);
     cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r;

@@ -23,7 +23,7 @@ No energy, no wait timers, no pay-to-win.
 | Speeds | pause, ×1, ×2, ×4 | loop runs 0/1/2/4 ticks per 100 ms |
 
 Time is compressed for play: a wagon on a dirt road travels ~3 m/s (a brisk, game-scaled
-walk). Day/night: one day = 480 sim-s; mission 1 starts just after dawn in late autumn.
+walk). Day/night: one day = 1440 sim-s (24 min), so a 12-minute contract runs from early morning to dusk.
 
 ## Roads
 

@@ -325,6 +325,11 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .speed .btn { min-width: 44px; width: 46px; min-height: 44px; height: 46px; padding: 0; --c: 5px; }
 .speed .btn.is-on { --fill: #4b3f31; }
 .rail-tools { display: flex; justify-content: space-between; gap: 4px; padding-top: 6px; }
+@media (min-width: 600px) {
+  body:not(.is-landscape) .rail-tools { justify-content: flex-end; gap: 6px; }
+  body:not(.is-landscape).left-handed .rail-tools { justify-content: flex-end; }
+  body:not(.is-landscape) .tool { flex: 0 0 96px; }
+}
 .tool {
   flex: 1;
   min-width: 52px;
@@ -607,13 +612,14 @@ body.is-landscape.left-handed .notice-wrap { right: calc(var(--safe-r) + 12px); 
 /* side sheet (landscape, foldables >= 840 px) */
 body.is-side .sheet {
   top: calc(var(--safe-t) + 10px);
-  bottom: calc(var(--safe-b) + 10px);
+  bottom: auto;
+  max-height: calc(100% - var(--safe-t) - var(--safe-b) - 20px);
   left: auto;
   right: calc(var(--safe-r) + 10px);
   width: min(380px, 46vw);
   max-height: none;
 }
-body.is-side:not(.is-landscape) .sheet { bottom: calc(var(--rail-h) + var(--safe-b) + 10px); }
+body.is-side:not(.is-landscape) .sheet { max-height: calc(100% - var(--rail-h) - var(--safe-b) - var(--safe-t) - 20px); }
 body.is-side.is-landscape .sheet { right: auto; left: calc(var(--safe-l) + 10px); width: min(380px, calc(100vw - var(--rail-w) - 40px)); }
 body.is-side.is-landscape.left-handed .sheet { left: auto; right: calc(var(--safe-r) + 10px); }
 body.is-side .sheet.is-entering, body.is-side .sheet.is-leaving { transform: translateX(32px); }
@@ -711,7 +717,7 @@ body.is-side .sheet-grip::before { display: none; }
 
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: baseline; font-size: 15px; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
-.kv dd { margin: 0; font-weight: 700; }
+.kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
 .kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 32px; text-align: left; font-weight: 700; }
 .sheet-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }

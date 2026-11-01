@@ -67,29 +67,47 @@ async function ensureServer() {
 
 const filters = process.argv.slice(2);
 const { url, close } = await ensureServer();
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const launch = () => chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+let browser = await launch();
 const errors = [];
+
+async function shoot(s, size) {
+  const ctx = await browser.newContext({
+    viewport: { width: size.w, height: size.h }, deviceScaleFactor: 1, isMobile: size.mobile, hasTouch: size.mobile,
+  });
+  try {
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => errors.push(`${s.name} ${size.w}x${size.h}: ${e.message}`));
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(`${s.name} ${size.w}x${size.h}: ${m.text()}`); });
+    const q = [s.q, s.q.includes('lang=') ? '' : 'lang=pl', extra].filter(Boolean).join('&');
+    await page.goto(url + (q ? '?' + q : ''), { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 90000 });
+    await page.waitForTimeout(Number(process.env.SHOTS_SETTLE ?? 1500));
+    const after = s.act ? await s.act(page) : null;
+    await page.waitForTimeout(300);
+    const file = resolve(outDir, `ui-${s.name}-${size.w}x${size.h}.png`);
+    await page.screenshot({ path: file, timeout: 180000 });
+    if (typeof after === 'function') await after();
+    console.log('shot', file.replace(root + '/', ''));
+  } finally {
+    await ctx.close();
+  }
+}
+
 try {
   for (const s of SCREENS) {
     if (filters.length && !filters.some((f) => s.name.includes(f))) continue;
     for (const size of SIZES) {
-      const ctx = await browser.newContext({
-        viewport: { width: size.w, height: size.h }, deviceScaleFactor: 1, isMobile: size.mobile, hasTouch: size.mobile,
-      });
-      const page = await ctx.newPage();
-      page.on('pageerror', (e) => errors.push(`${s.name} ${size.w}x${size.h}: ${e.message}`));
-      page.on('console', (m) => { if (m.type() === 'error') errors.push(`${s.name} ${size.w}x${size.h}: ${m.text()}`); });
-      const q = [s.q, s.q.includes('lang=') ? '' : 'lang=pl', extra].filter(Boolean).join('&');
-      await page.goto(url + (q ? '?' + q : ''), { waitUntil: 'load' });
-      await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 60000 });
-      await page.waitForTimeout(Number(process.env.SHOTS_SETTLE ?? 1500));
-      const after = s.act ? await s.act(page) : null;
-      await page.waitForTimeout(300);
-      const file = resolve(outDir, `ui-${s.name}-${size.w}x${size.h}.png`);
-      await page.screenshot({ path: file, timeout: 180000 });
-      if (typeof after === 'function') await after();
-      console.log('shot', file.replace(root + '/', ''));
-      await ctx.close();
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          await shoot(s, size);
+          break;
+        } catch (e) {
+          console.warn(`  ${s.name} ${size.w}x${size.h} attempt ${attempt} failed: ${String(e.message ?? e).split('\n')[0]}`);
+          if (!browser.isConnected()) browser = await launch();
+          if (attempt === 2) errors.push(`${s.name} ${size.w}x${size.h}: ${String(e.message ?? e).split('\n')[0]}`);
+        }
+      }
     }
   }
 } finally {

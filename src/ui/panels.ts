@@ -138,7 +138,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       const eta = wagonEta(world, id);
       const waiting = w.status.k === 'BRIDGE_JAM' || w.status.k === 'NO_ROUTE';
       const cargo = w.cargoGood && w.cargoQty > 0
-        ? `<span style="display:inline-flex;align-items:center;gap:6px">${iconSvg(w.cargoGood, 26, goodName(w.cargoGood))}<span class="num">× ${w.cargoQty}</span> ${esc(goodName(w.cargoGood))}</span>`
+        ? `${iconSvg(w.cargoGood, 26, goodName(w.cargoGood))}<span class="num">× ${w.cargoQty}</span><span>${esc(goodName(w.cargoGood))}</span>`
         : esc(t('wagon.empty'));
       const job = w.job;
       const destId = eta && eta.destBuilding >= 0 ? eta.destBuilding : job ? (job.phase === 'pickup' ? job.from : job.to) : -1;
@@ -155,11 +155,11 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         if (job) rows.push(`<dt>${esc(t('wagon.etaFinish'))}</dt><dd class="eta num">${clock(eta.toFinish)}</dd>`);
         if (job && job.phase === 'pickup') {
           const to = buildingById(world, job.to);
-          if (to) rows.push(`<dt>&nbsp;</dt><dd style="font-weight:500">${iconSvg(job.good, 18)}<span style="display:inline-block;vertical-align:top;margin-left:4px">${esc(goodName(job.good))} → <button class="linkish" data-go="building:${to.id}">${esc(t(`building.${to.type}` as MessageKey))}</button></span></dd>`);
+          if (to) rows.push(`<dt>&nbsp;</dt><dd style="font-weight:500">${iconSvg(job.good, 20)}<span>${esc(goodName(job.good))} →</span><button class="linkish" data-go="building:${to.id}">${esc(t(`building.${to.type}` as MessageKey))}</button></dd>`);
         }
       }
       const follow = nav.following() === id;
-      let html = `<div class="status-line${waiting ? ' bad' : ''}">${waiting ? linkIcon(world, { kind: 'wagon', id, status: w.status }, 28) : iconSvg('wagon', 28)}<span>${esc(wagonStatusText(world, w.status))}</span>${
+      let html = `<div class="status-line${waiting ? ' bad' : ''}">${waiting ? linkIcon(world, { kind: 'wagon', id, status: w.status }, 28) : ''}<span>${esc(wagonStatusText(world, w.status))}</span>${
         w.status.k === 'NO_ROUTE' ? `<span class="since num">${esc(t('why.stalledFor', { time: ticksClock(world.state.tick - w.status.since) }))}</span>` : ''}</div>`;
       html += `<dl class="kv" style="margin-top:10px">${rows.join('')}</dl>`;
       if (waiting) {
