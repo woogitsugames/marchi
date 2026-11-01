@@ -133,8 +133,9 @@ export class Tutorial {
   private notePlaced: Box | null = null;
 
   constructor(private host: TutorialHost) {
-    this.noteFrom = h('span.tut-from');
-    this.noteText = h('p.tut-text', { 'aria-live': 'polite' });
+    this.noteFrom = h('span.tut-from', { dir: 'auto' });
+    // dir=auto: a key still missing in this language falls back to English and must keep its own direction
+    this.noteText = h('p.tut-text', { 'aria-live': 'polite', dir: 'auto' });
     this.skipBtn = h('button.tut-skip', { type: 'button' });
     this.skipBtn.addEventListener('click', () => this.end('skipped'));
     const note = h('div.tut-note', null,

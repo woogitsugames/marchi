@@ -2,7 +2,7 @@
 // With raw_dir (process.py --tiers output) the tiles come from the graded 4k sources
 // (<raw>/<set>__albedo_preview.jpg) and each set also shows a 1:1 crop of its largest size
 // (<raw>/<set>__albedo_crop.png); without it, from the shipped 512 terrain JPGs (model sets ship
-// no albedo since D-21 and are skipped).
+// no albedo since D-22 and are skipped).
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');

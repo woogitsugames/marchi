@@ -212,7 +212,7 @@ export const pl = {
   'fix.short': 'Brakuje {n} srebra',
   'contract.causes': 'Gdzie stracono czas',
   'contract.noStalls': 'Żaden szlak nie stanął na dłużej.',
-  'contract.deliveredItem': '{have}/{need} {good}',
+  'contract.deliveredItem': '{count} {good}',
   'cause.NO_ROAD': 'brak drogi do bramy',
   'cause.NO_INPUT.NONE_AVAILABLE': 'brak zapasów do przywiezienia',
   'cause.NO_INPUT.UNREACHABLE': 'brak dojazdu do zapasów',
@@ -227,7 +227,7 @@ export const pl = {
   'ledger.bridge': 'Most',
   'app.valley': 'Dolina',
   'app.docTitle': 'Marchia — Szlaki Królestwa',
-  'why.holdsCount': 'W spichlerzu: {n}/{cap}',
+  'why.holdsCount': 'W spichlerzu: {count}',
   'hud.stallFixed': 'Znów pracuje: {name}',
 } as const;
 

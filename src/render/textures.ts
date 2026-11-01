@@ -1,7 +1,7 @@
 // PBR texture manifest + loader. Files live in public/assets/textures/<name>/ (see docs/ASSETS.md).
 //
 // Per set: albedo (sRGB), normal (OpenGL / +Y, as three.js expects), orm (R = AO, G = roughness,
-// B = 0). Three quality tiers (D-20, sizes per D-21):
+// B = 0). Three quality tiers (D-20, sizes per D-22):
 //   low   — model sets: 1024 ETC1S ORM + 1024 UASTC normal (KTX2). Terrain: 512 JPG arrays.
 //   high  — 2048 ETC1S albedo / ORM + the same 1024 UASTC normals. Anisotropy min(8, GPU max).
 //   ultra — 4096 albedo / ORM (bark stays 2048) + the same 1024 normals. Anisotropy min(16, GPU).
@@ -78,7 +78,7 @@ const TRANSCODER_PATH = `${import.meta.env.BASE_URL}vendor/basis/`;
 export const TIER_ANISOTROPY: Readonly<Record<Quality, number>> = { low: 2, high: 8, ultra: 16 };
 /** Albedo / ORM edge length per tier for the terrain array textures. */
 export const TERRAIN_TIER_SIZE: Readonly<Record<Quality, number>> = { low: 512, high: 2048, ultra: 4096 };
-/** KTX2 UASTC normals: 1024 for every tier that uses KTX2 (D-21: 2048 normals were 45 MB of the APK). */
+/** KTX2 UASTC normals: 1024 for every tier that uses KTX2 (D-22: 2048 normals were 45 MB of the APK). */
 export const NORMAL_TIER_SIZE = 1024;
 
 const sfx = (size: number) => (size === 1024 ? '' : `_${size}`);

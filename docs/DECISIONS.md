@@ -137,3 +137,17 @@ is dropped, so billing work (docs/BILLING.md, entitlements stub) is parked. All 
 roads, more wagons) — still logistics-driven, still no settler life-sim. (3) 4K pack: no hosting yet;
 Ultra works only in dev builds, release APKs top out at 2K. (4) Night work: one APK in the morning with a
 summary. (5) Flip cover screen: the "watch" mode is approved. (decided)
+
+**D-22 — 1024 normals for every tier; ship only files a tier loads (APK budget).** The 2048 UASTC
+normals were 45 MB of the 77.5 MB `public/assets/textures`. High and ultra (and the low-tier models)
+now share one 1024 UASTC normal per set (encoded from the 4k sources, renormalised; terrain sets
+unflipped like their other array layers): 11.7 MB for ten sets. Files no tier loads were deleted
+(2048 normals, 1k terrain JPG/KTX2, 512 KTX2, every model-set albedo — models are vertex-coloured
+and load `{ albedo: false }`), and the ultra pack lost the never-loaded model `albedo_4096`
+(manifest v2, 44.9 MB). One no-KTX2 fallback remains: terrain 512 JPG arrays, model 1k normal + ORM
+JPGs. Result: textures 29.5 MB, `dist/` 46 MB, debug APK 49.6 MB; est. VRAM low 30 / high 53 /
+ultra 165 MiB. Ultra keeps a 2048 shadow map (4096 = ~+96 MB of render targets and 4× shadow fill
+for a frustum already fitted to the zoom); pixel-ratio cap ultra 3 / high 2 / low 1.25. The dev
+server sets the ultra base to `/assets-ultra/`; release builds stay at 2K until the pack is hosted
+(D-21 (3)). *At game distances a 1024 normal still gives ≥ 1.5 texels/px on the terrain; colour
+detail and anisotropic filtering come from the 2K/4K albedo + ORM.* (decided)

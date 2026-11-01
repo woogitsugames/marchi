@@ -5,7 +5,7 @@ usage:
   python3 -I process.py <src_dir> <out_root> <raw_dir> --tiers --normals   # only the 1024 tier normals
 The --tiers mode writes no JPGs (KTX2 only, see docs/ASSETS.md): raw files are
 <raw_dir>/<set>__<map>_<size>.rgba (Y not flipped; ktx.mjs flips at encode time).
-Tier normals are 1024 px for high AND ultra (APK budget, D-21); ktx.mjs names them normal.ktx2.
+Tier normals are 1024 px for high AND ultra (APK budget, D-22); ktx.mjs names them normal.ktx2.
 Grading is identical in both modes; thatch crop/cross-fade lengths scale with the source size.
 """
 import sys, os, json
@@ -15,7 +15,7 @@ from PIL import Image
 SRC, OUT, RAW = sys.argv[1], sys.argv[2], sys.argv[3]
 TIERS = '--tiers' in sys.argv[4:]
 NORMALS_ONLY = '--normals' in sys.argv[4:]
-NORMAL_TIER_SIZE = 1024   # high + ultra normals (D-21: 2048 UASTC normals were 45 MB of the APK)
+NORMAL_TIER_SIZE = 1024   # high + ultra normals (D-22: 2048 UASTC normals were 45 MB of the APK)
 ONLY = [a for a in sys.argv[4:] if not a.startswith('--')]
 # --tiers: sizes per set. Bark stays 2k (thin trunks, never fills the screen).
 TIER_SIZES = {'bark': [2048]}
@@ -96,7 +96,7 @@ for name, (pid, terrain, sscale, k, target) in SETS.items():
     orm = arm.copy(); orm[..., 2] = 0
     od = f'{OUT}/{name}'; os.makedirs(od, exist_ok=True)
     if TIERS:
-        ns = NORMAL_TIER_SIZE                     # one normal size for high + ultra (D-21)
+        ns = NORMAL_TIER_SIZE                     # one normal size for high + ultra (D-22)
         nim = to_img(n, ns)
         if nim.size[0] < n.shape[1]:              # downsampled normals get shorter: renormalise
             nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), ns)

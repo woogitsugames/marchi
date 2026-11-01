@@ -212,7 +212,7 @@ export const en: FullDict = {
   'fix.short': 'Short by {n} silver',
   'contract.causes': 'Where the time went',
   'contract.noStalls': 'No route stood still for long.',
-  'contract.deliveredItem': '{have}/{need} {good}',
+  'contract.deliveredItem': '{count} {good}',
   'cause.NO_ROAD': 'no road to the gate',
   'cause.NO_INPUT.NONE_AVAILABLE': 'nothing in stock to fetch',
   'cause.NO_INPUT.UNREACHABLE': 'stock out of reach',
@@ -227,6 +227,6 @@ export const en: FullDict = {
   'ledger.bridge': 'Bridge',
   'app.valley': 'The valley',
   'app.docTitle': 'Marchia — Roads of the Kingdom',
-  'why.holdsCount': 'In the granary: {n}/{cap}',
+  'why.holdsCount': 'In the granary: {count}',
   'hud.stallFixed': '{name} is working again',
 };

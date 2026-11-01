@@ -170,7 +170,7 @@ function causeReason(status: string): string {
 function causesHtml(world: World): string {
   const top = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
   const rows = top.length
-    ? top.map((c) => `<li><span class="lg-what"><b>${esc(causeSubject(world, c.kind, c.id))}</b> <span>${esc(causeReason(c.status))}</span></span>` +
+    ? top.map((c) => `<li><span class="lg-what"><b>${esc(causeSubject(world, c.kind, c.id))}</b> <span dir="auto">${esc(causeReason(c.status))}</span></span>` +
       `<span class="lg-dots" aria-hidden="true"></span>${bdi(clock(c.seconds), 'lg-time num')}</li>`).join('')
     : `<li class="lg-none">${esc(t('contract.noStalls'))}</li>`;
   return `<div class="ledger"><div class="lg-h">${esc(t('contract.causes'))}</div><ol>${rows}</ol></div>`;
@@ -183,7 +183,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const c = st.mission.contract;
   const castle = c ? st.buildings.find((b) => b.id === c.castle) : null;
   const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
-    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { have: fmtInt(Math.min(castle?.stock[g] ?? 0, c.need[g])), need: fmtInt(c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
+    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: `${fmtInt(Math.min(castle?.stock[g] ?? 0, c.need[g]))}/${fmtInt(c.need[g])}`, good: goodName(g) })}</span></span>`).join('') : '';
   const def = MISSIONS[st.mission.id];
   const sealRow = [0, 1, 2].map((i) => `<span class="s${i < seals ? '' : ' off'}">${iconSvg('seal', 52)}</span>`).join('');
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });

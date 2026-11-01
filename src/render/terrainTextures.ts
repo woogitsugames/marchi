@@ -3,7 +3,7 @@
 // (mobile GPUs often expose only 16 texture units). Layers are loaded asynchronously from the
 // CC0 sets in public/assets/textures; until they arrive, flat palette colours are used.
 //
-// Tiers (D-20, D-21): 'low' decodes the 512 px JPGs into RGBA8 DataArrayTextures;
+// Tiers (D-20, D-22): 'low' decodes the 512 px JPGs into RGBA8 DataArrayTextures;
 // 'high' / 'ultra' stitch the per-layer KTX2 files (2048 / 4096 albedo + ORM, 1024 UASTC normals)
 // into CompressedArrayTextures so the GPU keeps them block-compressed (ETC2 / ASTC / BC*). A 4k
 // RGBA8 array set would be ~1.3 GB of VRAM; compressed it is ~120 MB (ETC2 + ASTC).

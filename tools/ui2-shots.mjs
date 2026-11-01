@@ -54,7 +54,7 @@ async function tutorial(w, h) {
   console.log('   step', await step(page));
   await shot(page, `tut4-${tag}`);
   await page.locator('.rail [data-tool="road"]').click();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(2500);
   console.log('   step', await step(page));
   await shot(page, `tut5-${tag}`);
   await page.evaluate(() => { const a = window.__marchia.app; a.buildRoad(a.tutorial.crossing().cells); });
@@ -88,7 +88,8 @@ if (want('end')) {
   for (const [q, n] of [['play=m1&bot=1&ff=600', 'end-won'], ['play=m1&ff=720', 'end-lost']]) {
     for (const [w, h] of [[412, 915], [915, 412]]) {
       const { page, ctx } = await open(q + '&lang=pl', w, h);
-      await page.waitForTimeout(500);
+      await page.waitForFunction(() => document.querySelector('.letter'), null, { timeout: 120000 }).catch(() => {});
+      await page.waitForTimeout(800);
       await shot(page, `${n}-${w}x${h}`); await ctx.close();
     }
   }
@@ -98,14 +99,15 @@ if (want('lang')) {
     const { page, ctx } = await open(`play=m1&ff=90&speed=0&lang=${l}`);
     await shot(page, `${l}-hud-412x915`);
     await page.evaluate(() => { const a = window.__marchia.app; const b = a.world.state.buildings.find((x) => x.type === 'bakery'); a.go('building', b.id, true); });
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(2500);
     await shot(page, `${l}-why-412x915`);
     await page.evaluate(() => { const a = window.__marchia.app; const w = a.world.state.wagons.find((x) => x.status.k !== 'IDLE'); if (w) a.go('wagon', w.id, true); });
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(2500);
     await shot(page, `${l}-wagon-412x915`);
     await ctx.close();
     const e = await open(`play=m1&ff=720&lang=${l}`);
-    await e.page.waitForTimeout(500);
+    await e.page.waitForFunction(() => document.querySelector('.letter'), null, { timeout: 120000 }).catch(() => {});
+    await e.page.waitForTimeout(800);
     await shot(e.page, `${l}-end-412x915`); await e.ctx.close();
   }
   // live switch: tool labels must follow

@@ -4,7 +4,7 @@
 //   output:    <textures_root>/<set>/<map>[_<size>].ktx2  (a raw `normal_1024` -> `normal.ktx2`)
 // Encoder: npm `ktx2-encoder@0.5.4` installed in a temp folder (NOT a project dependency).
 // 0.6.x (Basis 2.5 WASM) refuses sources above ~12 Mpix, so it cannot encode 4096².
-// Settings (docs/ASSETS.md, D-20 / D-21):
+// Settings (docs/ASSETS.md, D-20 / D-22):
 //   1k / 512 (low tier, legacy): albedo + orm ETC1S q160 clevel 2.
 //   2k / 4k (high / ultra):      albedo + orm ETC1S q255 clevel 2.
 //   tier normals (raw `normal_1024`, used by low models, high and ultra): UASTC level 2,

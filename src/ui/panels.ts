@@ -124,7 +124,7 @@ function stockHtml(world: World, b: Building): string {
       parts.push(`<div class="progress" title="${esc(t('why.cycle'))}"><i style="width:${pct.toFixed(1)}%"></i></div>`);
     }
   } else if (b.type === 'warehouse') {
-    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { n: fmtInt(GOODS.reduce((a, g) => a + b.stock[g], 0)), cap: fmtInt(def.storeCap) })}</span></div>
+    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(GOODS.reduce((a, g) => a + b.stock[g], 0))}/${fmtInt(def.storeCap ?? 0)}` })}</span></div>
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
   } else if (b.type === 'castle') {
     const c = world.state.mission.contract;
