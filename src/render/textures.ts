@@ -5,7 +5,10 @@
 //   low   — terrain sets 512 px, other sets 1024 px: KTX2 (ETC1S) albedo/orm + JPG normals.
 //   high  — 2048 px: KTX2 ETC1S albedo/orm + KTX2 UASTC normals. Anisotropy min(8, GPU max).
 //   ultra — 4096 px albedo/orm (bark stays 2048) + the same 2048 UASTC normals.
-//           Anisotropy min(16, GPU max).
+//           Anisotropy min(16, GPU max). The 4096 files are NOT in the APK / public/ (D-17):
+//           they form a downloadable pack (repo: assets-ultra/, manifest.json) whose location is
+//           handed in at runtime with setUltraBase(). Without it, or if a 4K file fails, 'ultra'
+//           uses the 2048 files from the APK.
 // All KTX2 files carry their own mip chain and are encoded Y-flipped so they match the default
 // flipY = true orientation of the JPGs. They are transcoded to a GPU block format (ETC2 / ASTC /
 // BC*) — 2k / 4k textures are never uploaded as uncompressed RGBA unless the GPU has no
@@ -46,6 +49,9 @@ export interface PbrPaths {
   albedoKtx2?: string;
   ormKtx2?: string;
   normalKtx2?: string;
+  /** Tried before the JPG when the first KTX2 fails (ultra: the 2048 file shipped in the APK). */
+  albedoKtx2Fallback?: string;
+  ormKtx2Fallback?: string;
   /** Edge length in px of the KTX2 albedo / orm (the JPG fallbacks may be smaller). */
   size?: number;
 }
@@ -55,9 +61,8 @@ export interface TextureEntry {
   terrain: boolean;
   /** Real-world edge length of one tile in metres (from the source scan). */
   tileMetres: number;
-  /** Largest shipped albedo / orm size (4096, or 2048 for bark). */
+  /** Largest albedo / orm size (4096 = in the downloadable ultra pack, or 2048 for bark). */
   maxSize: number;
-  ultra: PbrPaths;
   high: PbrPaths;
   low: PbrPaths;
 }
@@ -103,7 +108,6 @@ function entry(name: TextureName, terrain: boolean, tileMetres: number, maxSize 
     terrain,
     tileMetres,
     maxSize,
-    ultra: tier(name, maxSize),
     high: tier(name, Math.min(2048, maxSize)),
     low: legacy(name, terrain ? 512 : 1024),
   };
@@ -122,10 +126,46 @@ export const TEXTURES: Readonly<Record<TextureName, TextureEntry>> = {
   plaster_daub: entry('plaster_daub', false, 1.8),
 };
 
+let ultraBase: string | null = null;
+
+/**
+ * Where the downloaded 4K pack lives: a URL / WebView-servable path of the folder that holds
+ * `textures/<set>/<map>_4096.ktx2` (the root of assets-ultra/, same layout as its manifest
+ * paths). null = pack not installed: 'ultra' then loads the 2048 files. Already-loaded ultra
+ * sets are dropped from the cache (call disposeTextures() + reload to apply to a live scene).
+ */
+export function setUltraBase(url: string | null): void {
+  const next = url ? (url.endsWith('/') ? url : `${url}/`) : null;
+  if (next === ultraBase) return;
+  ultraBase = next;
+  for (const k of [...cache.keys()]) if (k.includes(':ultra:')) cache.delete(k);
+}
+
+export function getUltraBase(): string | null {
+  return ultraBase;
+}
+
+/** URL of a 4K file in the ultra pack, or null when the pack is not set / the set has no 4K. */
+export function ultraUrl(name: TextureName, map: 'albedo' | 'orm'): string | null {
+  if (!ultraBase || TEXTURES[name].maxSize < 4096) return null;
+  return `${ultraBase}textures/${name}/${map}_4096.ktx2`;
+}
+
 /** Paths for a set at a quality tier ('high' for unknown values, e.g. an old saved pref). */
 export function texturePaths(name: TextureName, quality: Quality): PbrPaths {
   const e = TEXTURES[name];
-  return quality === 'ultra' ? e.ultra : quality === 'low' ? e.low : e.high;
+  if (quality === 'low') return e.low;
+  if (quality !== 'ultra') return e.high;
+  const a = ultraUrl(name, 'albedo'), o = ultraUrl(name, 'orm');
+  if (!a || !o) return e.high;
+  return {
+    ...e.high,
+    albedoKtx2: a,
+    ormKtx2: o,
+    albedoKtx2Fallback: e.high.albedoKtx2,
+    ormKtx2Fallback: e.high.ormKtx2,
+    size: 4096,
+  };
 }
 
 export interface PbrSet {
@@ -184,12 +224,13 @@ function setup(tex: Texture, srgb: boolean, aniso: number): Texture {
   return tex;
 }
 
-async function loadOne(jpg: string, ktx2: string | undefined, srgb: boolean, aniso: number): Promise<Texture> {
-  if (ktx2 && ktx2Loader) {
+async function loadOne(jpg: string, ktx2: string | undefined, srgb: boolean, aniso: number, ktx2Fallback?: string): Promise<Texture> {
+  for (const url of [ktx2, ktx2Fallback]) {
+    if (!url || !ktx2Loader) continue;
     try {
-      return setup(await ktx2Loader.loadAsync(ktx2), srgb, aniso);
+      return setup(await ktx2Loader.loadAsync(url), srgb, aniso);
     } catch (err) {
-      console.warn(`[textures] KTX2 failed, falling back to JPG: ${ktx2}`, err);
+      console.warn(`[textures] KTX2 failed, trying the next fallback: ${url}`, err);
     }
   }
   return setup(await jpgLoader.loadAsync(jpg), srgb, aniso);
@@ -212,15 +253,15 @@ function whiteTexture(): DataTexture {
  */
 export function loadPbrSet(name: TextureName, quality: Quality, opts: PbrLoadOptions = {}): Promise<PbrSet> {
   const withAlbedo = opts.albedo !== false;
-  const key = `${name}:${quality}:${withAlbedo ? 'a' : '-'}`;
+  const key = `${name}:${quality}:${withAlbedo ? 'a' : '-'}:${quality === 'ultra' ? ultraBase ?? '' : ''}`;
   let p = cache.get(key);
   if (!p) {
     const src = texturePaths(name, quality);
     const aniso = anisotropyFor(quality);
     p = Promise.all([
-      withAlbedo ? loadOne(src.albedo, src.albedoKtx2, true, aniso) : Promise.resolve<Texture>(whiteTexture()),
+      withAlbedo ? loadOne(src.albedo, src.albedoKtx2, true, aniso, src.albedoKtx2Fallback) : Promise.resolve<Texture>(whiteTexture()),
       loadOne(src.normal, src.normalKtx2, false, aniso),
-      loadOne(src.orm, src.ormKtx2, false, aniso),
+      loadOne(src.orm, src.ormKtx2, false, aniso, src.ormKtx2Fallback),
     ]).then(([map, normalMap, orm]) => ({ map, normalMap, roughnessMap: orm, aoMap: orm }));
     p.catch(() => cache.delete(key));
     cache.set(key, p);

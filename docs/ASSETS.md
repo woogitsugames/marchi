@@ -6,8 +6,8 @@ Every third-party file shipped with the game is listed here. Only CC0 (art) and 
 ## Textures (PBR, CC0)
 
 All ten sets come from **Poly Haven** (https://polyhaven.com, licence **CC0 1.0**, no attribution
-required — authors listed anyway). Downloaded at 1k from `https://dl.polyhaven.org` (JPG:
-`_diff_1k`, `_nor_gl_1k`, `_arm_1k`) via `https://api.polyhaven.com/files/<id>`.
+required — authors listed anyway). Downloaded at 1k and 4k from `https://dl.polyhaven.org` (JPG:
+`_diff`, `_nor_gl`, `_arm`) via `https://api.polyhaven.com/files/<id>` (`tools/textures/fetch.py`).
 
 | Set (`public/assets/textures/<name>/`) | Use | Poly Haven asset | Tile size (m) | Terrain (512 variant) |
 |---|---|---|---:|---|
@@ -23,7 +23,8 @@ required — authors listed anyway). Downloaded at 1k from `https://dl.polyhaven
 | `plaster_daub` | lime-washed wattle-and-daub walls | Worn Mossy Plasterwall (`worn_mossy_plasterwall`) | 1.8 | no |
 
 Manifest + loader: `src/render/textures.ts` (`TEXTURES`, `initTextureLoaders(renderer)`,
-`loadPbrSet(name, 'high' | 'low')`). Contact sheet of all albedos: `docs/shots/textures.png`.
+`loadPbrSet(name, 'ultra' | 'high' | 'low')`, `setUltraBase(url)`); terrain arrays: `src/render/terrainTextures.ts`
+(`loadTerrainTextures(quality)`). Contact sheet of all albedos (from the 4k sources): `docs/shots/textures.png`.
 
 ### Files per set
 
@@ -61,7 +62,7 @@ forest floor, planks, bark and plaster use in-between values of those (Mgła-ish
 cross-faded over 96 rows (all three maps; normals renormalised), the albedo's low-frequency
 top-to-bottom shading flattened, then resized back to 1024².
 
-### Sizes
+### Sizes (1k / 512 files)
 
 | Bundle | Size |
 |---|---:|
@@ -77,7 +78,8 @@ Encoded with the npm package `ktx2-encoder@0.6.0` (Basis Universal WASM, MIT; ru
 folder, **not** a project dependency). Settings: albedo ETC1S q160 clevel 2, sRGB transfer +
 perceptual; orm ETC1S q160 clevel 2, linear; mipmaps on; Y-flip on.
 
-Normals were also encoded as UASTC (RDO λ 4, zstd, normal-map tuning) but came out at
+*(1k history; F-TEX-1 is resolved for high/ultra by D-18: 2048 UASTC normals, see Quality tiers below. The
+low tier keeps JPG normals.)* Normals were also encoded as UASTC (RDO λ 4, zstd, normal-map tuning) but came out at
 0.7–1.3 MB each (10.3 MB for the high set — over the 12 MB budget on their own), so they are
 **not shipped**; normals stay JPG. Follow-up (**F-TEX-1**): decide between (a) UASTC normals only
 for the 512 terrain set (1.4 MB total), (b) UASTC with stronger RDO (λ 8–10) + zstd 18 and accept
@@ -102,6 +104,110 @@ toktx --t2 --encode uastc --uastc_quality 2 --uastc_rdo_l 4 --zcmp 18 --genmipma
 
 If normals become KTX2, add `normalKtx2` to `PbrPaths` in `src/render/textures.ts` and pass it
 to `loadOne(...)` for the normal map.
+
+### Quality tiers: low / high (2K) / ultra (4K) — D-18
+
+Owner requirement 2026-11-01: much better textures, 4K, running well on Galaxy Z Fold / Flip
+(Snapdragon / Adreno, large high-DPI screens). Owner decision D-17: **2K ships in the APK, the 4K pack
+is downloaded in-game** when Ultra is chosen.
+
+| Tier | Albedo + ORM | Normals | Where | Anisotropy |
+|---|---|---|---|---|
+| `low` | 512 terrain / 1024 others — KTX2 ETC1S q160 (+ JPG) | JPG 512 / 1024 | APK (`public/`) | min(2, GPU) |
+| `high` | 2048 — KTX2 ETC1S q255 | 2048 KTX2 UASTC | APK (`public/`) | min(8, GPU) |
+| `ultra` | 4096 — KTX2 ETC1S q255 (bark 2048) | 2048 KTX2 UASTC (same files as high) | download pack `assets-ultra/` | min(16, GPU) |
+
+Sources: the same ten Poly Haven assets at **4k** (`_diff_4k`, `_nor_gl_4k`, `_arm_4k` JPG; ARM is Poly
+Haven's own AO + Rough + Metal packing, used instead of separate `_ao` / `_rough`), graded with exactly
+the same per-set (s, k, target) as the 1k files (means match the table above to ±2/255; thatch crop /
+cross-fade lengths scaled ×4). 2048 is a Lanczos downscale of the graded 4k; 2048 normals are
+renormalised after the downscale. The 1024 / 512 files (and all JPGs) are unchanged.
+
+**Encoder choice (measured, mip 0 PSNR vs the graded source, meadow = worst case):**
+
+| Map | Candidate | Size 4096 | PSNR R/G/B |
+|---|---|---:|---|
+| albedo | ETC1S q255 | 3.3 MB | 34.8 / 36.3 / 34.5 |
+| albedo | ETC1S q200 | 3.2 MB | 34.6 / 35.9 / 34.2 |
+| albedo | UASTC + RDO λ12 + zstd | 11.3 MB | 32.4 / 32.5 / 33.2 |
+| normal | UASTC + RDO λ8 + zstd | 16.9 MB | 26.6 / 26.4 / 29.3 |
+| normal | UASTC + RDO λ20 + zstd | 15.8 MB | 24.5 / 24.3 / 27.6 |
+| normal | ETC1S q255 | 4.4 MB | 23.7 / 23.5 / 26.0 |
+| normal (2048) | UASTC level 2, RDO λ3, zstd | 5.0 MB | 28.5 / 28.3 / 29.2 (cobblestone: 41.8 / 41.9 / 48.7) |
+
+UASTC + RDO lost to ETC1S q255 for these noisy natural albedos at 3.4× the size, so albedo and ORM
+are ETC1S (transcoded to **ETC2 RGB, 0.5 B/texel** on Adreno/Mali — three's KTX2Loader prefers ETC2 for
+ETC1S; BC1/BC7 on desktop). Normals are UASTC (→ **ASTC 4×4, 1 B/texel** on Adreno; BC7 desktop):
+ETC1S normals are visibly blocky. 4K normals would cost 10–16 MB each (the grass/leaf normals are
+pure noise and do not compress), and at the closest zoom (MIN_DIST 16 m, 32° FOV, ~2000 px
+drawing buffer) the meadow is already ~3 texels/pixel at 2048 — so ultra reuses the 2048 normals.
+Texel density for reference: terrain uv = world / 3.2 m; at 16 m a 1024 layer gives ~1.5 texels/px,
+2048 ~3, 4096 ~6 (cobble layer is ×3.4 denser): 4K helps mostly through anisotropic filtering at
+grazing angles and in close/oblique views, not in the head-on centre of the screen.
+
+Settings (`tools/textures/ktx.mjs`, npm **`ktx2-encoder@0.5.4`** in a temp folder, not a project
+dependency — 0.6.x / Basis 2.5 refuses sources over ~12 Mpix, so it cannot encode 4096²):
+albedo `ETC1S qualityLevel 255, compressionLevel 2, perceptual, sRGB transfer`; orm `ETC1S q255
+clevel 2, linear`; normal `UASTC, isNormalMap, uastc level 2, RDO λ 3, zstd, linear`; all with
+mipmaps and Y-flip. Equivalent `toktx`: `--encode etc1s --qlevel 255 --clevel 2` /
+`--encode uastc --uastc_quality 2 --uastc_rdo_l 3 --zcmp`.
+
+**Sizes**
+
+| Bundle | Files | Size |
+|---|---|---:|
+| APK `public/assets/textures` total (low JPG + KTX2, high 2K KTX2) | | **77.5 MB** |
+| — low tier files (unchanged) | 1024/512 JPG + KTX2 | 14.5 MB |
+| — high 2K KTX2 (albedo 9.3 + orm 8.5 + normals 45.2) | 30 | 63.0 MB |
+| Ultra 4K pack `assets-ultra/` (albedo 31.7 + orm 27.3), **download** | 18 | **59.0 MB** (56.2 MiB) |
+| Loaded for ultra (4K pack + 2K normals + bark 2K) | | ~106 MB |
+
+**Estimated GPU memory** (ETC2 RGB 0.5 B/texel, ASTC 4×4 1 B/texel, RGBA8 4 B/texel, mips ×4/3;
+terrain = 5-layer arrays × albedo / normal / ORM; models = wood, thatch, stone, plaster, bark):
+
+| Tier | Terrain arrays | Models normal+ORM (+albedo) | Total |
+|---|---:|---:|---:|
+| low (512 JPG → RGBA8 arrays; 1k model sets, JPG normals) | 20 MiB | 30 (33) MiB | **50 MiB** |
+| high (2048) | 53 MiB | 40 (53) MiB | **93 MiB** |
+| ultra (4096 albedo/ORM, 2048 normals) | 133 MiB | 72 (117) MiB | **205 MiB** |
+
+For comparison a 4096 RGBA8 terrain array set would be ~1.3 GB: 2K/4K are never uploaded
+uncompressed (terrain arrays are stitched from the per-layer KTX2 into `CompressedArrayTexture`s).
+Only if a GPU exposes no ETC2/ASTC/BC format at all does Basis fall back to RGBA32.
+
+**Ultra pack layout**: `assets-ultra/textures/<set>/{albedo,orm}_4096.ktx2` + `assets-ultra/manifest.json`
+(`pack`, `version`, `totalBytes`, per file `path` / `bytes` / `sha256`; regenerate with
+`node tools/textures/ultra-manifest.mjs <version>`). Runtime: `setUltraBase(url)` in
+`src/render/textures.ts` points at the folder that contains `textures/`; until then (or if a 4K file
+fails) 'ultra' loads the 2K files. Not bundled: `assets-ultra/` is outside `public/`.
+
+**Reproduce** (scratch folder outside the repo):
+
+```bash
+python3 -I tools/textures/fetch.py $SCRATCH/src4k 4k              # Poly Haven API, md5-checked
+python3 -I tools/textures/process.py $SCRATCH/src4k $SCRATCH/out $SCRATCH/raw4 --tiers
+node tools/textures/ktx.mjs $ENC/node_modules/ktx2-encoder/dist/node/index.js $SCRATCH/raw4 $SCRATCH/ktx
+#   copy *_2048.ktx2 into public/assets/textures/<set>/, *_4096.ktx2 into assets-ultra/textures/<set>/
+node tools/textures/ultra-manifest.mjs 1
+node tools/textures/sheet.cjs public/assets/textures docs/shots/textures.png $SCRATCH/raw4
+npx vite --port 5176 & node tools/textures/tier-shots.mjs http://localhost:5176   # docs/shots/tex-tier-*.png
+```
+
+Tier files (KB; all derived from the same Poly Haven assets/authors as above, CC0, graded as above,
+Y-flipped, full mips):
+
+| Set | albedo_2048 | orm_2048 | normal_2048 | albedo_4096 (pack) | orm_4096 (pack) |
+|---|---:|---:|---:|---:|---:|
+| `meadow` | 878 | 836 | 5086 | 3398 | 3170 |
+| `mud_track` | 867 | 889 | 4816 | 3366 | 3332 |
+| `cobblestone` | 901 | 760 | 2827 | 3400 | 2821 |
+| `riverbank` | 936 | 915 | 4720 | 3611 | 3407 |
+| `forest_floor` | 919 | 976 | 5003 | 3374 | 3577 |
+| `wood_planks` | 789 | 701 | 3479 | 3038 | 2295 |
+| `thatch` | 987 | 920 | 4883 | 3787 | 3457 |
+| `fieldstone_wall` | 880 | 605 | 4458 | 3424 | 1784 |
+| `bark` | 979 | 929 | 4698 | — | — |
+| `plaster_daub` | 904 | 732 | 4198 | 3528 | 2807 |
 
 ### Per-file table
 

@@ -3,6 +3,7 @@
 // Start a dev server first:  npx vite --port 5176   then:  node tools/textures/tier-shots.mjs [baseUrl]
 // Uses the view harness; textures are swapped in the page through the real loaders
 // (loadTerrainTextures / loadPbrSet), view settings stay at 'high' so only textures differ.
+// Ultra reads the 4K pack from <repo>/assets-ultra via setUltraBase('/assets-ultra/').
 // SwiftShader software GL: slow, each shot takes a while.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -48,6 +49,8 @@ for (const [scene, { q, crop }] of Object.entries(SCENES)) {
       const tt = await import('/src/render/terrainTextures.ts');
       const tx = await import('/src/render/textures.ts');
       const mats = await import('/src/render/models/index.ts');
+      // dev server serves the repo root, so the 4K pack (not in public/) is at /assets-ultra/
+      tx.setUltraBase('/assets-ultra/');
       const t0 = performance.now();
       const set = await tt.loadTerrainTextures(tier);
       h.view.terrain.setTextures(set);
@@ -70,7 +73,7 @@ for (const [scene, { q, crop }] of Object.entries(SCENES)) {
     const file = path.join(OUT, `.tier-${scene}-${label}.png`);
     await page.screenshot({ path: file, timeout: 300000 });
     report.push({ scene, label, ...info, errors });
-    console.log(scene, label, JSON.stringify(info), errors.length ? 'ERRORS ' + errors.join(' | ') : 'no errors');
+    process.stdout.write([scene, label, JSON.stringify(info), errors.length ? 'ERRORS ' + errors.join(' | ') : 'no errors'].join(' ') + '\n');
     shots.push([label, file]);
     await page.close();
   }

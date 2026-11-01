@@ -22,7 +22,7 @@ import {
   RGBAFormat,
 } from 'three';
 import type { Quality } from './api';
-import { NORMAL_TIER_SIZE, TERRAIN_TIER_SIZE, TIER_ANISOTROPY, anisotropyFor, getKtx2Loader } from './textures';
+import { NORMAL_TIER_SIZE, TIER_ANISOTROPY, anisotropyFor, getKtx2Loader, ultraUrl } from './textures';
 
 export const TERRAIN_LAYERS = ['meadow', 'mud_track', 'forest_floor', 'riverbank', 'cobblestone'] as const;
 export type TerrainLayer = (typeof TERRAIN_LAYERS)[number];
@@ -154,9 +154,14 @@ function jpgContext(size: number): CanvasRenderingContext2D {
 async function loadKtx2Array(map: MapKind, size: number, aniso: number): Promise<CompressedArrayTexture> {
   const loader = getKtx2Loader();
   if (!loader) throw new Error('KTX2 loader not initialised');
-  const texs = (await Promise.all(
-    TERRAIN_LAYERS.map((l) => loader.loadAsync(texUrl(l, map, size, 'ktx2'))),
-  )) as unknown as CompressedTexture[];
+  const url = (l: TerrainLayer) => {
+    if (size !== 4096) return texUrl(l, map, size, 'ktx2');
+    const u = map === 'normal' ? null : ultraUrl(l, map);
+    if (!u) throw new Error('ultra pack not set (setUltraBase)');
+    return u;
+  };
+  const urls = TERRAIN_LAYERS.map(url);
+  const texs = (await Promise.all(urls.map((u) => loader.loadAsync(u)))) as unknown as CompressedTexture[];
   try {
     const t0 = texs[0]!;
     const levels = t0.mipmaps as CompressedTextureMipmap[];
@@ -192,7 +197,8 @@ async function loadKtx2Array(map: MapKind, size: number, aniso: number): Promise
 /**
  * Load all terrain layers.
  *  - `loadTerrainTextures('ultra' | 'high')`: KTX2 compressed arrays (4096 / 2048 albedo + ORM,
- *    2048 normals); any map whose KTX2 fails falls back to the 1024 JPGs.
+ *    2048 normals). Ultra reads the 4096 files from the pack set with setUltraBase(); without it
+ *    (or on any 4K error) it uses the 2048 files, then the 1024 JPGs.
  *  - `loadTerrainTextures('low')`: 512 JPGs as RGBA8 arrays.
  *  - `loadTerrainTextures(512 | 1024)` (legacy): JPGs at that size, anisotropy 4.
  * Resolves with a complete set; layers that fail stay flat.
@@ -210,7 +216,6 @@ export async function loadTerrainTextures(sizeOrQuality: number | Quality = 512)
   }
   const quality: Quality = sizeOrQuality in TIER_ANISOTROPY ? sizeOrQuality : 'high';
   const aniso = anisotropyFor(quality);
-  const size = TERRAIN_TIER_SIZE[quality];
   let ctx: CanvasRenderingContext2D | null = null;
   const jpg = async (map: MapKind, s: number) => loadJpgArray(map, s, (ctx ??= jpgContext(1024)), aniso);
   const one = async (map: MapKind): Promise<TerrainArray> => {
@@ -218,12 +223,15 @@ export async function loadTerrainTextures(sizeOrQuality: number | Quality = 512)
       if (!ctx || ctx.canvas.width !== 512) ctx = jpgContext(512);
       return loadJpgArray(map, 512, ctx, aniso);
     }
-    try {
-      return await loadKtx2Array(map, map === 'normal' ? NORMAL_TIER_SIZE : size, aniso);
-    } catch (err) {
-      console.warn(`[terrainTextures] KTX2 ${map} ${quality} failed, using 1024 JPG`, err);
-      return jpg(map, 1024);
+    const sizes = map === 'normal' ? [NORMAL_TIER_SIZE] : quality === 'ultra' && ultraUrl('meadow', 'albedo') ? [4096, 2048] : [2048];
+    for (const s of sizes) {
+      try {
+        return await loadKtx2Array(map, s, aniso);
+      } catch (err) {
+        console.warn(`[terrainTextures] KTX2 ${map} ${s} failed, trying a smaller fallback`, err);
+      }
     }
+    return jpg(map, 1024);
   };
   // Sequential: keeps the transient transcoded data (~56 MB per 4k ETC2 map) bounded.
   const albedo = await one('albedo');

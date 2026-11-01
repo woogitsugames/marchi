@@ -1,0 +1,99 @@
+{
+ "pack": "marchia-textures-ultra",
+ "version": 1,
+ "description": "4096 px albedo + ORM KTX2 (Basis ETC1S q255, mips, Y-flipped) for the ultra tier; normals stay 2048 in the APK.",
+ "licence": "CC0 1.0 (Poly Haven), see docs/ASSETS.md",
+ "totalBytes": 58965980,
+ "files": [
+  {
+   "path": "textures/cobblestone/albedo_4096.ktx2",
+   "bytes": 3482269,
+   "sha256": "99d9203d245f1a4be19d8801f093274e3cd330d8e87f42b8cda99c65fbde4ba1"
+  },
+  {
+   "path": "textures/cobblestone/orm_4096.ktx2",
+   "bytes": 2889593,
+   "sha256": "ae02a03ce72ae7934ac8ff3e84b28ceb4461aad48fbc727d760b209f47f59c32"
+  },
+  {
+   "path": "textures/fieldstone_wall/albedo_4096.ktx2",
+   "bytes": 3506399,
+   "sha256": "e3577a820934081023b4ab38c55cb0b1f07ebdef0197f0ccb70450b6be785ed9"
+  },
+  {
+   "path": "textures/fieldstone_wall/orm_4096.ktx2",
+   "bytes": 1826842,
+   "sha256": "8fb89681859d1e31438ece3b13ee142c200df58c97b116841aa9c11a04669c44"
+  },
+  {
+   "path": "textures/forest_floor/albedo_4096.ktx2",
+   "bytes": 3455395,
+   "sha256": "5c7a3998a34a02ec5698e34b33d7b69a331e1a1e4ef76b084d6eb9b63ba95f6a"
+  },
+  {
+   "path": "textures/forest_floor/orm_4096.ktx2",
+   "bytes": 3662969,
+   "sha256": "34fabfeddc91f8d6bfb4e7d1635c3658ce87f443a6641848a2f43eee50972cfb"
+  },
+  {
+   "path": "textures/meadow/albedo_4096.ktx2",
+   "bytes": 3479838,
+   "sha256": "6aa66282692f81fa771d6223abb0efcaa14d07fa121ecb26dfd6fb5078c613ef"
+  },
+  {
+   "path": "textures/meadow/orm_4096.ktx2",
+   "bytes": 3246529,
+   "sha256": "80b174bdf12828710fa7b225ed2b06e46f3561a0962ff77263802894b67086c1"
+  },
+  {
+   "path": "textures/mud_track/albedo_4096.ktx2",
+   "bytes": 3447104,
+   "sha256": "0c4e07cd83fe39382eb0ee410323176f7b97fdb3b1b2f844d4245a886da2f80b"
+  },
+  {
+   "path": "textures/mud_track/orm_4096.ktx2",
+   "bytes": 3412320,
+   "sha256": "3655013ae27530bdefd5fbefeda7af392c7c846153bc8318d82c5f973c8aed1f"
+  },
+  {
+   "path": "textures/plaster_daub/albedo_4096.ktx2",
+   "bytes": 3613033,
+   "sha256": "763321f1a03242cad04a7b8e6321f2baafae47883e7ccb8727811de017637723"
+  },
+  {
+   "path": "textures/plaster_daub/orm_4096.ktx2",
+   "bytes": 2874451,
+   "sha256": "d9e892c01a8b15a696463d8e4d98b19bb87137ee5d4ca8e3985225cb59e75b38"
+  },
+  {
+   "path": "textures/riverbank/albedo_4096.ktx2",
+   "bytes": 3698142,
+   "sha256": "042155f7d1f8303b6cbdac8d7d99bcacd4a4e403c351d9bed97f743b44ff7dad"
+  },
+  {
+   "path": "textures/riverbank/orm_4096.ktx2",
+   "bytes": 3489397,
+   "sha256": "5f2d363d6598457e9154347ea2d8d014a28b2721f3f14aa97c3eca29eb082015"
+  },
+  {
+   "path": "textures/thatch/albedo_4096.ktx2",
+   "bytes": 3878697,
+   "sha256": "f6e42f3e27f1c6984e05d6c3aea790b3ead2fd516a9a2ab51d5fcfadf110b40e"
+  },
+  {
+   "path": "textures/thatch/orm_4096.ktx2",
+   "bytes": 3540361,
+   "sha256": "5594dd8708e12a88675e21d0c353adf9113042ad75beae5482bbc551b148cdb9"
+  },
+  {
+   "path": "textures/wood_planks/albedo_4096.ktx2",
+   "bytes": 3111907,
+   "sha256": "f7012360faf9db03f843b3b7596b8f006b5e75971f648aaa5c5c1984b50c110d"
+  },
+  {
+   "path": "textures/wood_planks/orm_4096.ktx2",
+   "bytes": 2350734,
+   "sha256": "a433900b15770553e9902c863d3059a0cb6272537886092bb11f2f6f43086aa9"
+  }
+ ]
+}
