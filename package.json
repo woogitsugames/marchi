@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "build": "tsc -p tsconfig.json --noEmit && vite build && vite build --config vite.bench.config.ts",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.sim.json --noEmit",
     "test": "tsx tests/run.ts",
@@ -20,7 +20,8 @@
     "apk": "bash tools/build-apk.sh",
     "setup:android": "bash tools/setup-android-sdk.sh",
     "icons": "node tools/make-icons.mjs",
-    "icons:check": "node tools/check-icons.mjs"
+    "icons:check": "node tools/check-icons.mjs",
+    "build:bench": "vite build --config vite.bench.config.ts"
   },
   "engines": {
     "node": ">=20"
