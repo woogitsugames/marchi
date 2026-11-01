@@ -1,7 +1,7 @@
 # Store screenshot generator
 
 `tools/store-shots.mjs` captures **real gameplay**, overlays the bilingual captions from
-[`screenshots-plan.md`](screenshots-plan.md), and exports Google Play / App Store-ready PNGs.
+[`screenshots-plan.md`](screenshots-plan.md), and exports fixed-size PNGs for store marketing and review.
 The framing falls back to the parchment, oak, iron and wax vocabulary of
 [`UI_STYLE.md`](../UI_STYLE.md) until the separate store-frame design is available.
 No screenshot substitutes a texture sheet, illustration, or synthetic panel for gameplay.
@@ -32,7 +32,7 @@ installs its own Chromium and uploads the generated files as an artifact.
 Each language receives six **1080 × 1920** portrait and six **1920 × 1080** landscape
 PNGs, 24 images total. The game is rendered at phone-like DPR **2.625** for portrait;
 the final frame is composed at exactly the export dimensions. Generated files are
-ignored by Git and published through the workflow artifact instead.
+ignored by Git and published through the workflow artifact instead. Check the\nindividual store's current device-specific screenshot size requirements before\nuploading, particularly for iOS.
 
 ## Authenticity and QA
 
