@@ -18,7 +18,8 @@ export interface SaveEnvelope {
 
 /** Migrations from state version N to N+1. Add an entry whenever STATE_VERSION grows. */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
-  // 1: (s) => ({ ...s, version: 2, newField: 0 }),
+  // v1 -> v2: per-root-cause stall accounting (end-of-mission summary). Old saves start counting now.
+  1: (s) => ({ ...s, version: 2, ledger: { ...(s.ledger as object), stallSeconds: {} } }),
 };
 
 export function migrate(env: SaveEnvelope): SaveEnvelope {

@@ -1,8 +1,9 @@
 // Simulation entry points: create, step, save/load, invariants.
-import { BUILDINGS, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TRAFFIC_DECAY_TICKS, emptyGoods, inputGoods, outputGoods } from './defs';
+import { BUILDINGS, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TICK_HZ, TRAFFIC_DECAY_TICKS, emptyGoods, inputGoods, outputGoods } from './defs';
 import { applyCommand, type Command, type CommandResult } from './commands';
 import { hashState } from './hash';
 import { dispatch } from './logistics';
+import { explainBuilding } from './diagnose';
 import { buildMission, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
@@ -49,6 +50,7 @@ export function step(world: World): void {
     for (let i = 0; i < st.traffic.length; i++) if (st.traffic[i]) st.traffic[i] = st.traffic[i]! >> 1;
   }
   checkMission(world);
+  if (st.tick % TICK_HZ === 0 && st.mission.result === 'running') accountStalls(world);
   for (const b of st.buildings) {
     const k = b.status.k;
     b.stalledTicks = k === 'WORKING' || k === 'IDLE' || k === 'CONTRACT_DONE' || k === 'WAITING_DELIVERY' || k === 'WAITING_UPSTREAM' ? 0 : b.stalledTicks + 1;
@@ -88,6 +90,48 @@ function produce(world: World): void {
       b.status = { k: 'WORKING' };
     }
   }
+}
+
+const NOT_STALL = new Set(['WORKING', 'IDLE', 'CONTRACT_DONE', 'WAITING_DELIVERY', 'WAITING_UPSTREAM']);
+/** Ignore blips shorter than this (seconds) before charging a cause. */
+const STALL_GRACE_TICKS = 2 * TICK_HZ;
+
+/** Once per sim second: charge one second to every distinct root cause currently stalling something. */
+function accountStalls(world: World): void {
+  const st = world.state;
+  const roots = new Set<string>();
+  for (const b of st.buildings) {
+    if (NOT_STALL.has(b.status.k) || b.stalledTicks < STALL_GRACE_TICKS) continue;
+    const chain = explainBuilding(world, b.id);
+    // root = deepest link that is itself a stall (a working supplier at the end is not the cause)
+    let root = chain[0];
+    for (const l of chain) {
+      const stalled = l.kind === 'building' ? !NOT_STALL.has(l.status.k) : l.status.k === 'BRIDGE_JAM' || l.status.k === 'NO_ROUTE';
+      if (stalled) root = l;
+    }
+    if (root) roots.add(`${root.kind}:${root.id}:${statusKey(root.status)}`);
+  }
+  for (const w of st.wagons) {
+    if (w.status.k === 'BRIDGE_JAM' && st.tick - w.status.since >= STALL_GRACE_TICKS) roots.add(`span:${w.status.span}:BRIDGE_JAM`);
+    else if (w.status.k === 'NO_ROUTE' && st.tick - w.status.since >= STALL_GRACE_TICKS && w.job) roots.add(`wagon:${w.id}:NO_ROUTE`);
+  }
+  const acc = st.ledger.stallSeconds;
+  for (const r of [...roots].sort()) acc[r] = (acc[r] ?? 0) + 1;
+}
+
+function statusKey(s: { k: string; cause?: string }): string {
+  return s.cause ? `${s.k}.${s.cause}` : s.k;
+}
+
+/** Top root causes by seconds lost, for the end-of-mission letter. */
+export function topStallCauses(world: World, n = 3): { kind: string; id: number; status: string; seconds: number }[] {
+  return Object.entries(world.state.ledger.stallSeconds)
+    .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+    .slice(0, n)
+    .map(([key, seconds]) => {
+      const [kind, id, status] = key.split(':');
+      return { kind: kind!, id: Number(id), status: status!, seconds };
+    });
 }
 
 function checkMission(world: World): void {

@@ -157,7 +157,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     nextId: 1,
     rain: [],
     mission: { id: def.id, contract: null, result: 'running', endTick: -1 },
-    ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods() },
+    ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods(), stallSeconds: {} },
   };
   state.rain = rainSpells(state.rng);
   if (def.rain) state.rain = def.rain.map((r) => ({ ...r }));

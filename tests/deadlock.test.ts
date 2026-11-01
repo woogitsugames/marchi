@@ -1,4 +1,4 @@
-import { createWorld, explainBuilding, step, unexplainedStalls, buildingById } from '../src/sim/index';
+import { createWorld, explainBuilding, step, unexplainedStalls, buildingById, topStallCauses } from '../src/sim/index';
 import { assert, eq, test } from './harness';
 
 test('untouched mission (no bridge): every stalled building and wagon has a reason', () => {
@@ -28,4 +28,15 @@ test('start-up is not reported as a stall: input made upstream right now = WAITI
     && w.state.buildings.some((p) => p.id === (b.status as { blockedBy: number }).blockedBy && p.status.k === 'WORKING'));
   eq(falseAlarms.length, 0, 'NO_INPUT blaming a working producer: ' + falseAlarms.map((b) => b.type).join(','));
   assert(w.state.buildings.some((b) => b.status.k === 'WAITING_UPSTREAM'), 'someone waits for upstream at start');
+});
+
+test('stall accounting charges each root cause once (end-of-mission summary data)', () => {
+  const w = createWorld('m1');
+  for (let i = 0; i < 1200; i++) step(w);
+  const top = topStallCauses(w, 5);
+  assert(top.length > 0, 'something stalled in m1 without a bridge');
+  // the sum over roots is bounded by elapsed seconds × number of distinct roots, not × stalled buildings
+  const total = Object.values(w.state.ledger.stallSeconds).reduce((a, b) => a + b, 0);
+  assert(total <= 120 * top.length + 1, `charged per root, total=${total}`);
+  console.log('     top causes:', top.map((c) => `${c.kind}:${c.id}:${c.status}=${c.seconds}s`).join(', '));
 });

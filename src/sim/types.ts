@@ -139,6 +139,12 @@ export interface Ledger {
   consumed: GoodMap;
   /** Lost with demolished buildings. */
   destroyed: GoodMap;
+  /**
+   * Seconds lost per ROOT cause (end of the explain chain), so one missing bridge that stalls the
+   * mill, the bakery and the castle counts once. Key: `<kind>:<id>:<statusKey>`, e.g.
+   * `building:5:NO_ROAD`, `wagon:12:NO_ROUTE`, `span:3315:BRIDGE_JAM`. For the end-of-mission summary.
+   */
+  stallSeconds: Record<string, number>;
 }
 
 export interface SimState {
