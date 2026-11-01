@@ -1,4 +1,4 @@
-// Hostile / damaged saves against the save gate (D-22). Vectors are built in memory; nothing here
+// Hostile / damaged saves against the save gate (D-23). Vectors are built in memory; nothing here
 // allocates more than a few MB (huge arrays are sparse, the size limit is tested at its edge).
 import { migrate } from '../src/platform/save';
 import {

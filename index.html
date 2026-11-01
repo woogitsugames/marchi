@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pl">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -8,8 +8,16 @@
   <meta name="format-detection" content="telephone=no" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Marchia — Szlaki Królestwa</title>
+  <title>Marchia</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <script>
+    // language and direction before the first paint; src/main.ts and setLang() keep them in sync afterwards
+    try {
+      var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('marchia.lang') || navigator.language || 'en';
+      document.documentElement.lang = l;
+      document.documentElement.dir = /^ar(-|$)/i.test(l) ? 'rtl' : 'ltr';
+    } catch (e) { /* storage unavailable */ }
+  </script>
   <style>
     /* first paint before the CSS bundle: peat, never white */
     html, body { margin: 0; height: 100%; background: #2b2620; }
@@ -17,7 +25,7 @@
 </head>
 <body>
   <div id="app">
-    <canvas id="scene" aria-label="Dolina"></canvas>
+    <canvas id="scene" role="img"></canvas>
     <div id="ui"></div>
   </div>
   <script type="module" src="/src/main.ts"></script>

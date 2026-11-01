@@ -4,7 +4,7 @@ A replay report is a small, versioned record of one play session: the mission, t
 player command with its tick, and state hashes taken along the way. Anyone with the same build can
 re-run it headless (`tools/replay.ts`) and see whether, and from which tick, the simulation diverged.
 Code: `src/sim/replay.ts` (pure sim), `src/platform/reportCodec.ts` (clipboard encoding),
-`tools/replay.ts` (CLI), tests in `tests/replay.test.ts`. Decision: D-24.
+`tools/replay.ts` (CLI), tests in `tests/replay.test.ts`. Decision: D-25.
 
 ## Format (version 1)
 
@@ -44,7 +44,7 @@ Limits enforced by `parseReport`: journal and checkpoints at most 50 000 entries
 data at most 16 MiB (zip-bomb guard). Unknown keys anywhere are rejected; parsing never throws.
 
 A report can only be built for a session recorded from tick 0. A session continued from a save has
-no journal for the earlier part, so `buildReport` refuses it (see D-24, open item).
+no journal for the earlier part, so `buildReport` refuses it (see D-25, open item).
 
 ## Privacy
 
@@ -85,7 +85,7 @@ const text = await encodeReportText(JSON.stringify(r.value));
 await navigator.clipboard.writeText(text).then(() => toast(t('report.copied')), () => toast(t('report.copyFailed')));
 ```
 
-Proposed i18n keys (not added yet, see D-24): `menu.copyReport` (pl "Skopiuj raport", en "Copy report"),
+Proposed i18n keys (not added yet, see D-25): `menu.copyReport` (pl "Skopiuj raport", en "Copy report"),
 `report.copied` (pl "Raport skopiowany do schowka", en "Report copied to clipboard"),
 `report.copyFailed` (pl "Nie udało się skopiować raportu", en "Could not copy the report"),
 `report.unavailable` (pl "Raport dostępny tylko dla misji rozpoczętej od nowa", en "Report is only available for a mission started from the beginning").

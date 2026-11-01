@@ -1,4 +1,4 @@
-// Golden terrain hashes (D-22). Saves do not contain terrain; it is regenerated from mapId + seed.
+// Golden terrain hashes (D-23). Saves do not contain terrain; it is regenerated from mapId + seed.
 // If this test fails you changed generateValley(), fbm(), a ValleySpec or CELL_SIZE, and every save
 // made on that map will now load with TERRAIN_CHANGED ("Continue" disabled).
 //

@@ -130,7 +130,15 @@ without the pack or on a 4K error, ultra falls back to 2K, then to the 1k JPGs.
 scans; 4K UASTC normals were 10–16 MB each while 2048 normals already give ~3 texels per pixel at the closest zoom, so
 they are not worth the download. ETC1S → ETC2 RGB also halves VRAM versus ASTC.* (decided)
 
-**D-21 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
+**D-21 — Owner decisions 2026-11-01 (night).** (1) Monetisation CHANGED: the game is **free**, possibly
+with ads (no energy/timers/pay-to-win — the original ban stays); the one-time full-version purchase (D-10)
+is dropped, so billing work (docs/BILLING.md, entitlements stub) is parked. All missions are free.
+(2) Sandbox becomes a relaxing **city-builder mode**: grow the town in the free valley (placing buildings,
+roads, more wagons) — still logistics-driven, still no settler life-sim. (3) 4K pack: no hosting yet;
+Ultra works only in dev builds, release APKs top out at 2K. (4) Night work: one APK in the morning with a
+summary. (5) Flip cover screen: the "watch" mode is approved. (decided)
+
+**D-22 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
 [start, end) in ticks; wooden one-lane spans cannot be **entered** inside a window (wagons already on a span leave
 it). A wagon at the bridgehead waits with `BRIDGE_CLOSED{span, until, since}`, keeps job, cargo and reservations
 (never turned into `NO_ROUTE`, so nothing is cancelled), and re-plans every 3 s. Routing charges the wait until the
@@ -145,7 +153,7 @@ currently due; a late tranche costs one seal (min 1 for a win), only the last de
 fresh state (the hash is taken over `JSON.stringify`). *Measured seal ladders are in docs/missions/m4–m6.md;
 m5/m6 margins are thin because surplus hauls to a granary compete with demand for wagons.* (decided)
 
-**D-22 — Save gate before migration + golden terrain hash.** Every load goes through
+**D-23 — Save gate before migration + golden terrain hash.** Every load goes through
 `src/platform/saveGate.ts` (pure, Node-tested, never mutates or throws) before `migrate()`:
 raw size cap (4 M chars, `parseSave` only) → one structural walk (depth ≤ 16, arrays ≤ 65,536 checked by
 `.length` before iterating, ≤ 4,096 keys per object, strings ≤ 256, ≤ 2 M values, no `__proto__` /
@@ -165,7 +173,7 @@ known). `tests/terrain-golden.test.ts` pins the hash of every map/seed used by M
 change fails CI with instructions (new mapId, or accept invalidating saves and record it here). The
 envelope format is versioned separately from STATE_VERSION on purpose: the terrain check is metadata
 about the save, not sim state. (decided)
-**D-23 — 4K pack: own download, per-version folders, CDN hosting proposed.** The Ultra pack (D-17 / D-20) is
+**D-24 — 4K pack: own download, per-version folders, CDN hosting proposed.** The Ultra pack (D-17 / D-20) is
 fetched by `src/platform/assetPack.ts`, not Play Asset Delivery: PAD needs Play/AAB distribution (we ship
 sideloaded debug APKs), a custom native plugin and has no iOS counterpart. Each pack version installs into its
 own folder (native `Directory.Data/ultra-pack/v<N>`, web cache `marchia-ultra-v<N>`); the active version
@@ -175,7 +183,7 @@ pack. Files restart from byte 0 on failure (no HTTP Range; 2–4 MB each). Nativ
 and falls back to the network URL without one. Hosting: Cloudflare R2 + custom domain recommended (CORS, free
 egress); GitHub Releases rejected (no CORS headers). Production URL is still a placeholder. Details:
 docs/ASSET_PACK.md. (decided: mechanism; proposed: hosting — owner to confirm)
-**D-24 — Replay reports: allowlisted journal + checkpoint hashes, copy to clipboard only.** "Copy report"
+**D-25 — Replay reports: allowlisted journal + checkpoint hashes, copy to clipboard only.** "Copy report"
 produces `{version, game, missionId, seed, stateVersion, journal, checkpoints, finalTick, finalHash}`
 (`src/sim/replay.ts`, format in `docs/REPLAY.md`). (1) Commands are re-serialized from a per-variant field
 declaration (`COMMAND_FIELDS`, a mapped type over `Command`, so new fields fail typecheck until declared);

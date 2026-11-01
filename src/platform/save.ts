@@ -94,7 +94,7 @@ export async function saveGame(slot: string, state: SimState): Promise<void> {
 }
 
 /**
- * Loads a slot through the save gate (D-22): validation -> envelope upgrade -> terrain hash check ->
+ * Loads a slot through the save gate (D-23): validation -> envelope upgrade -> terrain hash check ->
  * migrate(). Throws SaveError (with `.code`) for a damaged, newer or terrain-changed save.
  */
 export async function loadGame(slot: string): Promise<SimState | null> {

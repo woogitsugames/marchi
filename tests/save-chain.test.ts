@@ -1,5 +1,5 @@
 // Save migrations run as a chain 1 -> 2 -> 3 behind the save gate, and the gate checks the
-// state v3 fields (ice windows, contract tranches, per-building capOverride). D-21, D-22.
+// state v3 fields (ice windows, contract tranches, per-building capOverride). D-22, D-23.
 import { migrate } from '../src/platform/save';
 import { gateEnvelope, makeEnvelope, prepareLoad, type GateResult } from '../src/platform/saveGate';
 import { STATE_VERSION, createWorld, deserialize, serialize, stateHash, step } from '../src/sim/index';

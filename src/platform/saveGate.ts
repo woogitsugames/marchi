@@ -1,4 +1,4 @@
-// Save import gate (D-22): pure, Node-testable validation that runs BEFORE migrate().
+// Save import gate (D-23): pure, Node-testable validation that runs BEFORE migrate().
 // No DOM, no IndexedDB, never mutates its input and never throws on hostile input.
 //
 // Layers, cheapest first:
@@ -73,7 +73,7 @@ export interface SaveEnvelope {
   savedAt: number;
   missionId: string;
   tick: number;
-  /** terrainHash(terrainFor(mapId, seed)) when the save was written (see D-22). */
+  /** terrainHash(terrainFor(mapId, seed)) when the save was written (see D-23). */
   terrainHash: string;
   state: SimState;
 }
@@ -128,7 +128,7 @@ const BUILDING_STATUS = new Set([
   'WORKING', 'IDLE', 'NO_ROAD', 'NO_INPUT', 'WAITING_UPSTREAM', 'WAITING_DELIVERY', 'NO_WAGON',
   'OUTPUT_FULL', 'WAITING_PICKUP', 'STORAGE_FULL', 'CONTRACT_DONE',
 ]);
-// BRIDGE_CLOSED: wagon status of state v3 (ice on wooden bridges, D-21).
+// BRIDGE_CLOSED: wagon status of state v3 (ice on wooden bridges, D-22).
 const WAGON_STATUS = new Set(['IDLE', 'TO_PICKUP', 'LOADING', 'TO_DROPOFF', 'UNLOADING', 'RETURNING', 'BRIDGE_JAM', 'NO_ROUTE', 'BRIDGE_CLOSED']);
 const RESULTS = new Set(['running', 'won', 'lost']);
 
@@ -398,7 +398,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     }
     int(c, b, 'progress', bp, -1, LIMITS.maxInt);
     int(c, b, 'stalledTicks', bp, 0, LIMITS.maxInt);
-    // state v3 (D-21): per-building granary capacity, -1 = type default
+    // state v3 (D-22): per-building granary capacity, -1 = type default
     if (version >= 3 || has(b, 'capOverride')) int(c, b, 'capOverride', bp, -1, LIMITS.maxInt);
     status(c, b, bp, BUILDING_STATUS);
   });
@@ -467,7 +467,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     if (to !== null && ids.get(to) === 'wagon') e.add('DANGLING_REF', `${jp}.to`, `${to} is a wagon`);
   });
 
-  // rain, and (state v3, D-21) ice windows: same [start, end) shape
+  // rain, and (state v3, D-22) ice windows: same [start, end) shape
   const windows = (key: 'rain' | 'ice') => {
     const list = arr(c, s, key, P, LIMITS.maxRain) ?? [];
     list.forEach((r, i) => {
@@ -499,7 +499,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
         int(c, ct, 'deadlineTick', cp, 0, LIMITS.maxInt);
         int(c, ct, 'star3Tick', cp, 0, LIMITS.maxInt);
         int(c, ct, 'star2Tick', cp, 0, LIMITS.maxInt);
-        // state v3 (D-21): the waybill of tranches
+        // state v3 (D-22): the waybill of tranches
         if (version >= 3 || has(ct, 'tranches')) {
           const trs = arr(c, ct, 'tranches', cp, LIMITS.maxTranches) ?? [];
           trs.forEach((t, i) => {

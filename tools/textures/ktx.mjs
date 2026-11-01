@@ -1,17 +1,19 @@
 // Encode raw RGBA dumps from process.py into KTX2 (Basis Universal) next to the JPGs.
 // usage: node ktx.mjs <ktx2-encoder dist/node/index.js> <raw_dir> <textures_root> [filter]
 //   raw files: <set>__<map>[_<size>].rgba (square, 8-bit RGBA, top row first)
-//   output:    <textures_root>/<set>/<map>[_<size>].ktx2
+//   output:    <textures_root>/<set>/<map>[_<size>].ktx2  (a raw `normal_1024` -> `normal.ktx2`)
 // Encoder: npm `ktx2-encoder@0.5.4` installed in a temp folder (NOT a project dependency).
 // 0.6.x (Basis 2.5 WASM) refuses sources above ~12 Mpix, so it cannot encode 4096².
-// Settings (docs/ASSETS.md, D-14):
+// Settings (docs/ASSETS.md, D-20 / D-21):
 //   1k / 512 (low tier, legacy): albedo + orm ETC1S q160 clevel 2.
-//   2k / 4k (high / ultra):      albedo + orm ETC1S q255 clevel 2; normal UASTC level 2,
+//   2k / 4k (high / ultra):      albedo + orm ETC1S q255 clevel 2.
+//   tier normals (raw `normal_1024`, used by low models, high and ultra): UASTC level 2,
 //                                RDO lambda 3, zstd.  All: mipmaps.
-// Orientation: model sets (and all 1k/512 files) are Y-flipped to match three's flipY = true
-// JPG textures. The 2048/4096 files of the five TERRAIN sets are NOT flipped: they are stitched
-// into array textures, which upload with flipY = false like the canvas-decoded JPG arrays
-// (top row first), and the terrain shader's normal Y sign assumes that orientation.
+// Orientation: model sets (and the legacy 1k/512 albedo/orm) are Y-flipped to match three's
+// flipY = true JPG textures. The tier files (2048/4096 albedo + orm, 1024 normals) of the five
+// TERRAIN sets are NOT flipped: they are stitched into array textures, which upload with
+// flipY = false like the canvas-decoded JPG arrays (top row first), and the terrain shader's
+// normal Y sign assumes that orientation.
 import fs from 'node:fs';
 import path from 'node:path';
 const [enc, rawDir, outRoot, only] = process.argv.slice(2);
@@ -27,7 +29,8 @@ for (const f of files) {
   const buf = new Uint8Array(fs.readFileSync(path.join(rawDir, f)));
   const kind = map.split('_')[0];
   const size = Math.round(Math.sqrt(buf.length / 4));
-  const tier = size >= 2048;
+  const tierNormal = map === 'normal_1024';
+  const tier = size >= 2048 || tierNormal;
   const flip = !(tier && TERRAIN.has(name));
   const base = { generateMipmap: true, isYFlip: flip, imageDecoder: decoder, isKTX2File: true };
   const q = tier ? 255 : 160;
@@ -39,7 +42,7 @@ for (const f of files) {
       : { ...base, isUASTC: false, qualityLevel: q, compressionLevel: 2, isPerceptual: false, isSetKTX2SRGBTransferFunc: false };
   const t = Date.now();
   const out = await encodeToKTX2(buf, opts);
-  const dest = path.join(outRoot, name, map + '.ktx2');
+  const dest = path.join(outRoot, name, (tierNormal ? 'normal' : map) + '.ktx2');
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, out);
   console.log(dest, (out.length / 1024).toFixed(0) + 'KB', (Date.now() - t) + 'ms');

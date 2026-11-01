@@ -82,6 +82,9 @@ export class Hud {
       if (this.compact) this.act.openCastle();
       else this.setCollapsed(false);
     });
+    this.waybillBody.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && (e.target as HTMLElement).dataset.wb === 'castle') { e.preventDefault(); this.act.openCastle(); }
+    });
     this.waybillBody.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest('[data-wb]');
       if (!el) return;
@@ -226,7 +229,7 @@ export class Hud {
       setHtml(this.sealOnly, `${sealStack(frac, 52)}${bdi(ticksClock(left), 'seal-time num')}`);
       return;
     }
-    const lines = goods.map((g, i) => `<div class="wb-line${have[i]! >= c.need[g] ? ' done' : ''}" data-wb="castle">
+    const lines = goods.map((g, i) => `<div class="wb-line${have[i]! >= c.need[g] ? ' done' : ''}" data-wb="castle" role="button" tabindex="0">
         ${iconSvg(g, 24, goodName(g))}${tallySvg(have[i]!, c.need[g], i + 1)}
         <bdi class="count num">${fmtInt(have[i]!)}<small>/${fmtInt(c.need[g])}</small></bdi></div>`).join('');
     setHtml(this.waybillBody, `<h2>${t('contract.title')}</h2>

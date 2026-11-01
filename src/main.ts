@@ -16,7 +16,7 @@ import '@fontsource/ruslan-display/cyrillic-400.css';
 import '@fontsource/alegreya-sans/latin-ext-700.css';
 import './styles/main.css';
 
-import { detectLang, parseLang, setLang } from './i18n/index';
+import { RTL_LANGS, detectLang, onLangChange, parseLang, scriptOf, setLang, t } from './i18n/index';
 import type { CreateWorldView, WorldView } from './render/api';
 import { App } from './ui/app';
 import { createFlatView } from './ui/flatView';
@@ -42,8 +42,18 @@ async function pickView(params: URLSearchParams): Promise<{ view: WorldView; kin
 
 async function boot(): Promise<void> {
   const params = new URLSearchParams(location.search);
-  const lang = params.get('lang');
-  void setLang(parseLang(lang) ?? detectLang());
+  const lang = parseLang(params.get('lang')) ?? detectLang();
+  // lang/dir before the first frame (the dictionary loads lazily); title and the canvas label follow every switch
+  const root = document.documentElement;
+  root.lang = lang;
+  root.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+  root.dataset.script = scriptOf(lang);
+  const label = (): void => {
+    document.title = t('app.docTitle');
+    document.getElementById('scene')?.setAttribute('aria-label', t('app.valley'));
+  };
+  onLangChange(label);
+  void setLang(lang).then(label);
   // Fonts first so the first frame of the menu is set in the right faces.
   try {
     await Promise.race([

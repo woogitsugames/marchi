@@ -1,6 +1,6 @@
 // Golden terrain fingerprint. Saves do not store terrain: worldFromState() regenerates it from
 // mapId + seed, so any change to the generator silently moves water, slopes and bridges under an
-// old save. The save envelope keeps this hash and the loader compares it (see D-22).
+// old save. The save envelope keeps this hash and the loader compares it (see D-23).
 import { hashString } from './hash';
 import type { Terrain } from './types';
 
