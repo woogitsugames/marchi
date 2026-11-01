@@ -109,3 +109,11 @@ in-game when Ultra is chosen (Play Asset Delivery or own download — to be desi
 4K + foldables: tutorial + playtest readiness → missions IV–VI → building in the free valley; store,
 billing and release builds are postponed until the game is fully playable. (3) Languages beyond PL/EN:
 the owner will send a list. (4) No Google Play release/signing yet — debug APKs only. (decided)
+
+**D-18 — 17 languages (owner's list).** en, pl, de, fr, es, it, pt-BR, nl, sv, tr, ru, uk, ja, ko, zh-Hans, ar, hi.
+Dictionaries `src/i18n/<lang>.ts` (`pt_BR.ts`, `zh_Hans.ts`; export name = file name) typed `Partial<Dict>` are
+lazy-loaded (Vite glob) so each language costs only when chosen; missing keys fall back to English. Plurals use
+ICU-lite blocks `{n, plural, one {…} few {…} many {…} other {…}}` resolved with `Intl.PluralRules`. Arabic sets
+`dir="rtl"`. Fonts: Latin + Cyrillic bundled (Grenze Gotisch / Ruslan Display for Cyrillic headings, Alegreya Sans
+incl. Cyrillic), CJK / Arabic / Devanagari use the OS Noto families (Android/iOS ship them) — bundling CJK would
+add tens of MB. The picker shows only languages present in the build. (decided)

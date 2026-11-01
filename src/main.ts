@@ -8,10 +8,15 @@ import '@fontsource/alegreya-sans/latin-ext-400.css';
 import '@fontsource/alegreya-sans/latin-500.css';
 import '@fontsource/alegreya-sans/latin-ext-500.css';
 import '@fontsource/alegreya-sans/latin-700.css';
+import '@fontsource/alegreya-sans/cyrillic-400.css';
+import '@fontsource/alegreya-sans/cyrillic-500.css';
+import '@fontsource/alegreya-sans/cyrillic-700.css';
+import '@fontsource/alegreya-sans/cyrillic-ext-400.css';
+import '@fontsource/ruslan-display/cyrillic-400.css';
 import '@fontsource/alegreya-sans/latin-ext-700.css';
 import './styles/main.css';
 
-import { detectLang, setLang } from './i18n/index';
+import { detectLang, parseLang, setLang } from './i18n/index';
 import type { CreateWorldView, WorldView } from './render/api';
 import { App } from './ui/app';
 import { createFlatView } from './ui/flatView';
@@ -38,7 +43,7 @@ async function pickView(params: URLSearchParams): Promise<{ view: WorldView; kin
 async function boot(): Promise<void> {
   const params = new URLSearchParams(location.search);
   const lang = params.get('lang');
-  setLang(lang === 'pl' || lang === 'en' ? lang : detectLang());
+  void setLang(parseLang(lang) ?? detectLang());
   // Fonts first so the first frame of the menu is set in the right faces.
   try {
     await Promise.race([

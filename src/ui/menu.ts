@@ -1,6 +1,6 @@
 // Main menu strip over the live scene, the settings sheet, the in-game menu sheet and the
 // end-of-mission sealed letter.
-import { getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
+import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
 import { GOODS, MISSIONS, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
 import { goodName, ticksClock } from './format';
@@ -77,7 +77,7 @@ export function settingsSheet(act: SettingsActions): SheetContent {
           `<button class="btn cf${v === cur ? ' is-on' : ''}" data-set="${name}:${v}" aria-pressed="${v === cur}">${esc(l)}</button>`).join('')}</div>`;
       const html = `
         <div class="setting"><span class="s-label">${esc(t('menu.language'))}</span>
-          ${seg('lang', [['pl', t('lang.pl')], ['en', t('lang.en')]], getLang())}</div>
+          ${seg('lang', availableLangs().map((l) => [l, LANG_NAMES[l]] as [string, string]), getLang())}</div>
         <div class="setting"><span class="s-label">${esc(t('menu.quality'))}</span>
           ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality())}
           <div class="s-hint">${esc(act.quality() === 'auto' ? t('menu.qualityDetected', { q: t(`quality.${act.autoQuality()}` as MessageKey) }) : t('menu.qualityHint'))}</div></div>
@@ -100,7 +100,7 @@ export function settingsSheet(act: SettingsActions): SheetContent {
         });
         sheet.body.querySelectorAll<HTMLElement>('[data-set]').forEach((b) => b.addEventListener('click', () => {
           const [k, v] = (b.dataset.set ?? '').split(':');
-          if (k === 'lang') setLang(v as Lang);
+          if (k === 'lang') void setLang(v as Lang);
           if (k === 'quality') act.setQuality(v as QualityPref);
           if (k === 'left') act.setLeftHanded(v === '1');
           (sheet.body as HTMLElement & { __html?: string }).__html = undefined;
