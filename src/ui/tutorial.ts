@@ -379,9 +379,13 @@ export class Tutorial {
     // horizontal arrows read better beside short targets (waybill lines, chain links)
     cand.sort((a, b) => (b.room + (b.d === 'left' || b.d === 'right' ? 40 : 0)) - (a.room + (a.d === 'left' || a.d === 'right' ? 40 : 0)));
     const note = this.notePlaced;
+    // never across other controls (coins, speed, neighbouring tools) or the open card
+    const blockers = [...document.querySelectorAll('.rail .rail-stat, .rail .speed, .rail .btn, #sheets .sheet, .waybill-wrap')]
+      .map(visibleBox).filter((b): b is Box => !!b && !hits(grow(box, -8), b));
     for (const c of cand) {
       if (c.room < L + 4) continue;
       if (note && hits(grow(note, 4), c.b)) continue;
+      if (blockers.some((o) => hits(o, c.b))) continue;
       return c.d;
     }
     return null;

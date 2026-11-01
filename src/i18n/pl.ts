@@ -220,7 +220,7 @@ export const pl = {
   'cause.NO_WAGON.NONE_CAN_REACH': 'żaden wóz nie dojedzie',
   'cause.OUTPUT_FULL.NO_WAGON': 'pełny magazyn, brak wozu',
   'cause.OUTPUT_FULL.NO_DESTINATION': 'pełny magazyn, nie ma dokąd wieźć',
-  'cause.WAITING_PICKUP': 'czekał na odbiór',
+  'cause.WAITING_PICKUP': 'czekanie na odbiór',
   'cause.STORAGE_FULL': 'spichlerz pełny',
   'cause.BRIDGE_JAM': 'korek na moście',
   'cause.NO_ROUTE': 'brak drogi do celu',
