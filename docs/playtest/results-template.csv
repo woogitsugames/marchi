@@ -1,0 +1,1 @@
+participant_id,segment,device,android_version,apk_commit,scenario_id,order_index,setup_url,setup_method,preflight_ok,invalid_setup,time_s,correct,timeout,taps,opened_why,opened_wagon,followed_chain,chain_steps,action_correct,assistance,issue_codes,quote_anonymized,notes_no_pii
