@@ -46,14 +46,6 @@
       "notes": "Real wind; no unverified owl call was added."
     },
     {
-      "id": "sfx/bridge-wood",
-      "kind": "sfx",
-      "seconds": 1.3,
-      "start": 0,
-      "source": "steps_wood",
-      "notes": "Real footsteps on a wooden floor used as bridge plank impacts; provisional, not cart wheels."
-    },
-    {
       "id": "sfx/cart-dirt",
       "kind": "sfx",
       "seconds": 4.8,
