@@ -1,0 +1,2 @@
+participant_id,group,apk_version,device,orientation,text_scale,scenario_id,setup_verified,setup_notes,time_s,correct,timeout,touches,opened_why,followed_chain,repair_attempt,repair_ok,wrong_hypothesis,quote,observer_notes
+P01,strategy,,Android,portrait,100%,A,1,,0,0,0,0,0,0,0,0,,,
