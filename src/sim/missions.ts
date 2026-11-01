@@ -42,11 +42,23 @@ const MAP_SPECS: Record<string, (seed: number) => ValleySpec> = {
 
 const terrainCache = new Map<string, Terrain>();
 
+/** Known map id (own key only, so '__proto__' / 'constructor' are not maps). */
+export function isMapId(mapId: string): boolean {
+  return Object.prototype.hasOwnProperty.call(MAP_SPECS, mapId);
+}
+
+/** Grid size of a map without generating its terrain; null for an unknown map id. */
+export function mapSize(mapId: string): { w: number; h: number } | null {
+  if (!isMapId(mapId)) return null;
+  const s = MAP_SPECS[mapId]!(0);
+  return { w: s.w, h: s.h };
+}
+
 export function terrainFor(mapId: string, seed: number): Terrain {
   const key = mapId + ':' + seed;
   let t = terrainCache.get(key);
   if (!t) {
-    const spec = MAP_SPECS[mapId];
+    const spec = isMapId(mapId) ? MAP_SPECS[mapId] : undefined;
     if (!spec) throw new Error('unknown map ' + mapId);
     t = generateValley(spec(seed));
     terrainCache.set(key, t);
