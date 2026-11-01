@@ -1,14 +1,30 @@
 // Translation contract tests: source keys, runtime parameters and mobile action labels.
 import { test, assert, eq } from './harness';
 import { pl, type Dict, type MessageKey } from '../src/i18n/pl';
+import { en } from '../src/i18n/en';
 import { de } from '../src/i18n/de';
 import { fr } from '../src/i18n/fr';
 
 const locales: ReadonlyArray<readonly [string, Dict]> = [['de', de], ['fr', fr]];
 const sourceKeys = Object.keys(pl).sort() as MessageKey[];
 
+const PLURAL_BLOCK = /\{(\w+), plural,((?:\s*(?:=\d+|zero|one|two|few|many|other)\s*\{[^{}]*\})+)\s*\}/g;
+
+/** ICU-lite plural blocks (D-18) count as their {name} placeholder. */
+function flattenPlurals(value: string): string {
+  return value.replace(PLURAL_BLOCK, (_m, name: string) => '{' + name + '}');
+}
+
 function params(value: string): string[] {
-  return [...value.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((m) => m[1]!).sort();
+  return [...new Set([...flattenPlurals(value).matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((m) => m[1]!))].sort();
+}
+
+// {cells} is the PL/EN count word; a language that uses a plural block on {n} instead may drop it.
+const OPTIONAL_PARAMS = new Set(['cells']);
+// Any case form of the good may be used (goodGen/goodAcc are Polish case helpers).
+const GOOD_FORMS = new Set(['good', 'goodGen', 'goodAcc']);
+function required(value: string): string[] {
+  return [...new Set(params(value).filter((p) => !OPTIONAL_PARAMS.has(p)).map((p) => GOOD_FORMS.has(p) ? 'good' : p))].sort();
 }
 
 // Every parameter below is supplied by the UI (format.ts, menu.ts, panels.ts,
@@ -33,11 +49,14 @@ test('DE and FR contain exactly all source-language keys', () => {
   }
 });
 
-test('DE and FR preserve the PL placeholders for each message key', () => {
+test('DE and FR preserve the EN placeholders for each message key', () => {
   for (const [locale, dict] of locales) {
     for (const key of sourceKeys) {
-      eq(JSON.stringify(params(dict[key])), JSON.stringify(params(pl[key])),
+      eq(JSON.stringify(required(dict[key])), JSON.stringify(required(en[key])),
         locale + ': placeholders at ' + key);
+      for (const p of params(dict[key])) {
+        assert(GOOD_FORMS.has(p) || params(en[key]).includes(p), locale + ': extra placeholder {' + p + '} at ' + key);
+      }
     }
   }
 });
@@ -45,7 +64,7 @@ test('DE and FR preserve the PL placeholders for each message key', () => {
 test('every DE/FR placeholder can be interpolated by the current UI', () => {
   for (const [locale, dict] of locales) {
     for (const key of sourceKeys) {
-      const rendered = dict[key].replace(/\{([A-Za-z][A-Za-z0-9]*)\}/g,
+      const rendered = flattenPlurals(dict[key]).replace(/\{([A-Za-z][A-Za-z0-9]*)\}/g,
         (_match, name: string) => {
           assert(Object.hasOwn(sampleParams, name), locale + ': unknown UI parameter {' + name + '} at ' + key);
           return String(sampleParams[name]);
@@ -97,4 +116,25 @@ test('DE and FR action button labels fit within 28 characters', () => {
       assert(length <= 28, locale + ': ' + key + ' has ' + length + ' characters: ' + value);
     }
   }
+});
+
+test('DE and FR plural blocks are well-formed and pick the right form', () => {
+  for (const [locale, dict] of locales) {
+    for (const key of sourceKeys) {
+      const v = dict[key];
+      if (!v.includes(', plural,')) continue;
+      assert(!v.replace(PLURAL_BLOCK, '').includes(', plural,'), locale + ': malformed plural block at ' + key);
+      for (const m of v.matchAll(PLURAL_BLOCK)) {
+        assert(/(^|\s)other\s*\{/.test(m[2]!), locale + ': plural block without other at ' + key);
+      }
+    }
+  }
+  const pick = (lang: string, value: string, n: number) => value.replace(PLURAL_BLOCK, (_m, _name, body: string) => {
+    const branches = new Map([...body.matchAll(/(=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}/g)].map((b) => [b[1]!, b[2]!]));
+    return (branches.get(new Intl.PluralRules(lang).select(n)) ?? branches.get('other')!).split('#').join(String(n));
+  });
+  eq(pick('de', de['road.cells'], 1), '1 Feld', 'de one');
+  eq(pick('de', de['road.cells'], 5), '5 Felder', 'de other');
+  eq(pick('fr', fr['contract.stars'], 1), '1 sceau sur 3', 'fr one');
+  eq(pick('fr', fr['contract.stars'], 3), '3 sceaux sur 3', 'fr other');
 });
