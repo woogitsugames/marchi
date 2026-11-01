@@ -141,6 +141,30 @@ const CONTENT = {
       "chain": "Mill holds flour → bridge to bakery is broken → bakery stalls."
     }
   },
+  "status.WAITING_UPSTREAM": {
+    "pl": {
+      "name": "Czeka na dostawcę",
+      "meaning": "Dostawca jest osiągalny i wytwarza towar lub czeka na własną dostawę; ładunek nie jest jeszcze gotowy.",
+      "check": "Dotknij odbiorcy, potem dostawcy w Łańcuchu przyczyn; sprawdź postęp i zapasy.",
+      "fixes": [
+        "Poczekaj, aż dostawca przygotuje towar.",
+        "Jeśli sam czeka na dostawę, przejdź wyżej w łańcuchu przyczyn.",
+        "Sprawdź, czy wozy mają dojazd do gotowego towaru."
+      ],
+      "chain": "Piekarnia czeka na mąkę → młyn właśnie ją produkuje → wóz odbierze mąkę."
+    },
+    "en": {
+      "name": "Waiting for upstream supply",
+      "meaning": "A reachable supplier is producing the goods or awaiting its own delivery; the cargo is not ready yet.",
+      "check": "Tap the customer, then the supplier in the Cause chain; check progress and stock.",
+      "fixes": [
+        "Wait until the supplier has goods ready.",
+        "If it is awaiting input too, follow the chain further upstream.",
+        "Check that wagons can reach the goods once ready."
+      ],
+      "chain": "Bakery awaits flour → mill is producing it → a wagon will collect the flour."
+    }
+  },
   "status.WAITING_DELIVERY": {
     "pl": {
       "name": "Dostawa w drodze",
