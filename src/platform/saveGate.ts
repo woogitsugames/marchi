@@ -114,6 +114,8 @@ export const LIMITS = {
   maxBuildings: 2_048,
   maxWagons: MAX_WAGONS,
   maxRain: 256,
+  /** Contract tranches (state v3); missions use 2-3. */
+  maxTranches: 64,
   /** Bound for any integer counter (ticks, ids, ledger, coins). 2^40 ticks = 3,500 years at 10 Hz. */
   maxInt: 2 ** 40,
   maxErrors: 20,
@@ -126,8 +128,7 @@ const BUILDING_STATUS = new Set([
   'WORKING', 'IDLE', 'NO_ROAD', 'NO_INPUT', 'WAITING_UPSTREAM', 'WAITING_DELIVERY', 'NO_WAGON',
   'OUTPUT_FULL', 'WAITING_PICKUP', 'STORAGE_FULL', 'CONTRACT_DONE',
 ]);
-// BRIDGE_CLOSED: announced for state v3 (closed-bridge status from a concurrent change); harmless
-// to accept early, the sim recomputes wagon statuses every tick.
+// BRIDGE_CLOSED: wagon status of state v3 (ice on wooden bridges, D-21).
 const WAGON_STATUS = new Set(['IDLE', 'TO_PICKUP', 'LOADING', 'TO_DROPOFF', 'UNLOADING', 'RETURNING', 'BRIDGE_JAM', 'NO_ROUTE', 'BRIDGE_CLOSED']);
 const RESULTS = new Set(['running', 'won', 'lost']);
 
@@ -397,6 +398,8 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     }
     int(c, b, 'progress', bp, -1, LIMITS.maxInt);
     int(c, b, 'stalledTicks', bp, 0, LIMITS.maxInt);
+    // state v3 (D-21): per-building granary capacity, -1 = type default
+    if (version >= 3 || has(b, 'capOverride')) int(c, b, 'capOverride', bp, -1, LIMITS.maxInt);
     status(c, b, bp, BUILDING_STATUS);
   });
   // gates must not sit under a footprint (net() maps gate -> building)
@@ -464,15 +467,19 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     if (to !== null && ids.get(to) === 'wagon') e.add('DANGLING_REF', `${jp}.to`, `${to} is a wagon`);
   });
 
-  // rain
-  const rain = arr(c, s, 'rain', P, LIMITS.maxRain) ?? [];
-  rain.forEach((r, i) => {
-    const rp = `${P}.rain[${i}]`;
-    if (!isObj(r)) { e.add('BAD_TYPE', rp, `expected object, got ${show(r)}`); return; }
-    const a = int(c, r, 'start', rp, 0, LIMITS.maxInt);
-    const b = int(c, r, 'end', rp, 0, LIMITS.maxInt);
-    if (a !== null && b !== null && b < a) e.add('OUT_OF_RANGE', rp, `end ${b} before start ${a}`);
-  });
+  // rain, and (state v3, D-21) ice windows: same [start, end) shape
+  const windows = (key: 'rain' | 'ice') => {
+    const list = arr(c, s, key, P, LIMITS.maxRain) ?? [];
+    list.forEach((r, i) => {
+      const rp = `${P}.${key}[${i}]`;
+      if (!isObj(r)) { e.add('BAD_TYPE', rp, `expected object, got ${show(r)}`); return; }
+      const a = int(c, r, 'start', rp, 0, LIMITS.maxInt);
+      const b = int(c, r, 'end', rp, 0, LIMITS.maxInt);
+      if (a !== null && b !== null && b < a) e.add('OUT_OF_RANGE', rp, `end ${b} before start ${a}`);
+    });
+  };
+  windows('rain');
+  if (version >= 3 || has(s, 'ice')) windows('ice');
 
   // mission
   const m = obj(c, s, 'mission', P);
@@ -492,6 +499,18 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
         int(c, ct, 'deadlineTick', cp, 0, LIMITS.maxInt);
         int(c, ct, 'star3Tick', cp, 0, LIMITS.maxInt);
         int(c, ct, 'star2Tick', cp, 0, LIMITS.maxInt);
+        // state v3 (D-21): the waybill of tranches
+        if (version >= 3 || has(ct, 'tranches')) {
+          const trs = arr(c, ct, 'tranches', cp, LIMITS.maxTranches) ?? [];
+          trs.forEach((t, i) => {
+            const tp = `${cp}.tranches[${i}]`;
+            if (!isObj(t)) { e.add('BAD_TYPE', tp, `expected object, got ${show(t)}`); return; }
+            goodMap(c, t, 'need', tp);
+            int(c, t, 'deadlineTick', tp, 0, LIMITS.maxInt);
+            int(c, t, 'doneTick', tp, -1, LIMITS.maxInt);
+            if (typeof t.missed !== 'boolean') e.add('BAD_TYPE', `${tp}.missed`, `expected boolean, got ${show(t.missed)}`);
+          });
+        }
       }
     }
   }
