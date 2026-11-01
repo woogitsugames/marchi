@@ -165,3 +165,13 @@ known). `tests/terrain-golden.test.ts` pins the hash of every map/seed used by M
 change fails CI with instructions (new mapId, or accept invalidating saves and record it here). The
 envelope format is versioned separately from STATE_VERSION on purpose: the terrain check is metadata
 about the save, not sim state. (decided)
+**D-23 — 4K pack: own download, per-version folders, CDN hosting proposed.** The Ultra pack (D-17 / D-20) is
+fetched by `src/platform/assetPack.ts`, not Play Asset Delivery: PAD needs Play/AAB distribution (we ship
+sideloaded debug APKs), a custom native plugin and has no iOS counterpart. Each pack version installs into its
+own folder (native `Directory.Data/ultra-pack/v<N>`, web cache `marchia-ultra-v<N>`); the active version
+switches only after every file passed its SHA-256 check, so an interrupted upgrade never breaks the installed
+pack. Files restart from byte 0 on failure (no HTTP Range; 2–4 MB each). Native serves files via
+`Capacitor.convertFileSrc`; web serves Cache Storage through a tiny service worker (`public/ultra-pack-sw.js`)
+and falls back to the network URL without one. Hosting: Cloudflare R2 + custom domain recommended (CORS, free
+egress); GitHub Releases rejected (no CORS headers). Production URL is still a placeholder. Details:
+docs/ASSET_PACK.md. (decided: mechanism; proposed: hosting — owner to confirm)
