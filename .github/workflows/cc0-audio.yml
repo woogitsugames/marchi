@@ -1,0 +1,60 @@
+name: CC0 field-recording audio
+on:
+  push:
+    branches:
+      - gpt/07-realistic-recordings
+    paths:
+      - tools/process_audio.py
+      - tools/audio_sources.json
+      - .github/workflows/cc0-audio.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Check FFmpeg installation
+        run: |
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+          python3 --version
+
+      - name: Render approved CC0 field recordings
+        run: python3 tools/process_audio.py --fetch
+
+      - name: Verify 46 assets, stereo/mono and 4 MiB budget
+        run: python3 tools/process_audio.py --check
+
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Commit processed OGG/M4A and source fingerprints
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/assets/audio/ambient public/assets/audio/sfx/bridge-wood.ogg public/assets/audio/sfx/bridge-wood.m4a docs/audio-provenance.json
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(audio): replace five synthetic tracks with genuine CC0 recordings"
+            git push origin "HEAD:gpt/07-realistic-recordings"
+          fi
