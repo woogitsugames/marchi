@@ -1,6 +1,6 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
 import { BUILDINGS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
-import { t, type MessageKey } from '../i18n/index';
+import { getLang, t, type MessageKey } from '../i18n/index';
 import { iconSvg, struckIconSvg, type IconId } from './icons';
 
 /** m:ss (or h:mm:ss) from seconds. */
@@ -28,8 +28,9 @@ export function capFirst(s: string): string {
 
 /** Count word for cells with Polish plural rules (1 pole, 2-4 pola, 5+ pól); English uses one/other. */
 export function cellsWord(n: number): string {
-  const n10 = n % 10, n100 = n % 100;
-  const form = n === 1 ? 'one' : n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14) ? 'few' : 'many';
+  // CLDR plural category of the current language mapped onto the three stored forms
+  const cat = new Intl.PluralRules(getLang()).select(n);
+  const form = cat === 'one' ? 'one' : cat === 'few' || cat === 'two' ? 'few' : 'many';
   return t(`unit.cell.${form}` as MessageKey);
 }
 
