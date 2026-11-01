@@ -96,3 +96,9 @@ Flip cover 360×380, phone 412×915 / 915×412, tablet 904×1000.
   `view.qualities` or `view.supportsQuality`), otherwise it renders as 'high' with the higher DPR cap.
 *A Fold is a phone, a small tablet and a laptop-on-a-table in one device; one breakpoint at 840 px
 covered none of them well.* (decided)
+
+**D-16 — Music provenance is tracked per file.** The 14 music tracks are AI-generated (Suno, per the source
+ID3 comments, e.g. `made with suno; created=…; id=…`). Rights are held by the publisher (owner, 2026-11-01).
+`docs/legal/music_provenance.json` records source path, source SHA-256, Suno id and shipped-file SHA-256,
+because transcoding drops ID3. Before store release: confirm the Suno plan that applied at generation time
+and answer the stores' AI-generated-content questions accordingly (Google Play / App Store). (decided; release check open)

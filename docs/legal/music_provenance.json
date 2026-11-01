@@ -1,0 +1,173 @@
+{
+ "_note": "Generated from source files; the source mp3 ID3 metadata is not preserved by transcoding, hence source hashes.",
+ "tracks": [
+  {
+   "file": "public/assets/music/lost-frost-on-the-rooftops.webm",
+   "sha256": "5e1463cc3950d9dac1597306026944cf680af4f33581a2a20388b9f4e32654c5",
+   "title": "Frost on the Rooftops",
+   "source": "woogitsu/osadale music/Frost on the Rooftops.mp3",
+   "sourceSha256": "e237b67b1529f1dc127cf3cf8a916c75e12c1f338510f3dec83fbaed3c7f8637",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-08T20:20:16Z; id=76d9630b-2983-47a8-8be4-d87bb5d49cb7"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/menu-first-light.webm",
+   "sha256": "93951e950884d7cd4a5d4c0291a0b097cb419b5f3f860ab2493b903d23f491f4",
+   "title": "First Light Over Greystone",
+   "source": "woogitsu/osadale music/First Light Over Greystone.mp3",
+   "sourceSha256": "7f2e278e2c124be6076a7282bb877973058f52887e108791ae5b7e106cebdfe4",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:32:30Z; id=db025f07-f93a-45b3-b604-bcbac3f11adf"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/menu-hush-before-sunrise.webm",
+   "sha256": "9622d7da7dee1c0fabf2ea9c5babe79efeff3fd11d815c78285b3f8aadbef5a2",
+   "title": "Hush Before Sunrise",
+   "source": "woogitsu/osadale music/Hush Before Sunrise.mp3",
+   "sourceSha256": "b8a204ba893fa3f472b5ff4bae78125b78e42d657dcc5006e76d77b28b67d166",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-08T20:20:13Z; id=7c77e237-d25a-4a93-8ccd-7c8b3d289623"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-bakers-hearth-glow.webm",
+   "sha256": "8e268b57ded8bd179a61138f4ef4ecf28147272292a2662a2e293173b2787503",
+   "title": "Bakers Hearth Glow",
+   "source": "woogitsu/osadale music/Bakers Hearth Glow.mp3",
+   "sourceSha256": "cbb67978ae6daf83bf45608c9dfb3e7ac864a6cc3c1f7af77fa74a70b7b4675a",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:38:20Z; id=2ba986c3-441f-4ced-aca4-5e10e7f37b20"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-gleaning-at-dusk.webm",
+   "sha256": "46f2a9f7f64db7e549be0f72e288d15a3e684b3d058a530a85bc478472a7d2bc",
+   "title": "Gleaning at Dusk",
+   "source": "woogitsu/osadale music/Gleaning at Dusk.mp3",
+   "sourceSha256": "00b80eccff46cac73758e93a9757a8362ff21851a646fe0ec110c06438ba5036",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:38:12Z; id=c4d2cf2c-6d53-4861-a3de-d0edd04215e1"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-granary-at-stonegate.webm",
+   "sha256": "dbeb68d26a6c01f32929638479992846fa92396c2588e10bc861ea9f95441bf2",
+   "title": "Granary at Stonegate",
+   "source": "woogitsu/osadale music/Granary at Stonegate.mp3",
+   "sourceSha256": "594feac40d960b4a118b7c2b152cc675ecb2baaa4f96329813b59d1d6f92839f",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-08T20:21:34Z; id=a77f8bbe-6382-4220-af2b-fc81fb520561"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-harvest-lane.webm",
+   "sha256": "2ca81380f6ecea4312f0c78201d10a41a994a48749822dd66a4b545028e3615a",
+   "title": "Harvest Lane",
+   "source": "woogitsu/osadale music/Harvest Lane.mp3",
+   "sourceSha256": "2122cc4144c73af1cfbd5eacf575c38cf0b13a8c1d95e3aa19f2b0e5646ac633",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-08T20:18:23Z; id=bd6addcf-6a18-4773-8196-0e0b61539ce3"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-millpond-crossing.webm",
+   "sha256": "c509356b2a9c148e573432a22af0a7ce38dd664152bd1e98377ce5081165b572",
+   "title": "Millpond Crossing",
+   "source": "woogitsu/osadale music/Millpond Crossing.mp3",
+   "sourceSha256": "3725256f32a579a26f17b9f23eaa33e521c8f816d91b8e1b0892965429dcd58a",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:37:07Z; id=19f71afc-16c2-4cc9-849c-e5036bc6462b"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-oven-hearth-morning.webm",
+   "sha256": "a68759bc970dcc263ac76989bb0df9f3fb1fef54584b6a77289e3e07fce615d1",
+   "title": "Oven Hearth Morning",
+   "source": "woogitsu/osadale music/Oven Hearth Morning.mp3",
+   "sourceSha256": "440e54380076b8ab6d38500ef43434429a365e7e34640a612729e08722d427a1",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:38:20Z; id=faac26b1-c176-4697-b869-6ba237eb094d"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-wheatfield-lane.webm",
+   "sha256": "fd80341b4a9a2f7b0cd53599e8851944bab8dddd6d12a6b80d8aa8aef8076e74",
+   "title": "Wheatfield Lane",
+   "source": "woogitsu/osadale music/Wheatfield Lane.mp3",
+   "sourceSha256": "56abac885f5fdf4658a48a6179ab0cf94f9df1e41880f66cffd3dc8e9b627f9a",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-08T20:18:06Z; id=b9255f8f-f118-4451-9625-e446680e12e9"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/play-wheatmill-path.webm",
+   "sha256": "ce2c06573018f24eb9b1b4b50dbfd784d235a15089616be18b2f163ee0f6a6e5",
+   "title": "Wheatmill Path",
+   "source": "woogitsu/osadale music/Wheatmill Path.mp3",
+   "sourceSha256": "39af05d35decd5fd54c3eb1e989cd5ad6dff2d993665794b869ecf96e4b67328",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:37:16Z; id=60454dac-e211-4c87-ab56-a213ae50fbae"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/rain-drizzle-on-the-square.webm",
+   "sha256": "0bcebe1cb5afa4f26d74a54c302fe4090f67206fa58efe2467f2874c56a22247",
+   "title": "Drizzle on the Square",
+   "source": "woogitsu/osadale music/Drizzle on the Square.mp3",
+   "sourceSha256": "ce5e32895e532a821a69d2c23fa3cb9fa515590b9cdd1cbd60904817eaa14632",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:36:05Z; id=ec6623d7-b71f-4324-9df2-86e6eaccdeee"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/rain-on-cobblestone.webm",
+   "sha256": "cea47d22f7a243a75cf2e9a0938e45be031526c6a4c027388c6e3d36af67d75f",
+   "title": "Rain on Cobblestone",
+   "source": "woogitsu/osadale music/Rain on Cobblestone.mp3",
+   "sourceSha256": "67ad6a00b412c365e1ca9d59edd0b73ae531aad1c7338b4025ce13c21523618e",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:36:14Z; id=631c2d78-752d-4c3f-8f75-18a07fcb340a"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  },
+  {
+   "file": "public/assets/music/won-silver-pennant-fanfare.webm",
+   "sha256": "ae46ea20665326feb471c0eb75ccdb815a1fccada4a1400478a033bd5112ca88",
+   "title": "Silver Pennant Fanfare",
+   "source": "woogitsu/osadale music/Silver Pennant Fanfare.mp3",
+   "sourceSha256": "b5d2f072e39d47babcda4ae742581a57b8ef028b1e4c7b007518cfdc607fec4f",
+   "sourceTags": {
+    "comment": "made with suno; created=2026-07-09T18:34:58Z; id=f3de8262-38d7-4df3-939d-e5dd41e3e056"
+   },
+   "tool": "Suno AI (per source ID3 metadata / osadale docs/legal/audio_provenance.json)",
+   "rights": "held by the game's publisher (owner statement 2026-11-01); Suno paid plan per osadale records — confirm before release"
+  }
+ ]
+}
