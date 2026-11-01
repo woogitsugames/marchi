@@ -1,0 +1,121 @@
+{
+  "format_version": 1,
+  "sample_rate": 24000,
+  "tracks": [
+    {
+      "id": "ambient/morning",
+      "kind": "ambient",
+      "seconds": 30,
+      "loop_crossfade": 1.5,
+      "start": 0,
+      "source": "birds",
+      "extra": [
+        {
+          "source": "dog",
+          "at": 16,
+          "gain": 0.04
+        }
+      ],
+      "notes": "Real winter birds; subtle distant dog. Jackdaws specifically not verified."
+    },
+    {
+      "id": "ambient/river",
+      "kind": "ambient",
+      "seconds": 30,
+      "loop_crossfade": 1.5,
+      "start": 0,
+      "source": "river",
+      "notes": "Small river with wildlife, including frogs; not guaranteed to match a European November."
+    },
+    {
+      "id": "ambient/rain",
+      "kind": "ambient",
+      "seconds": 30,
+      "loop_crossfade": 1.5,
+      "start": 0,
+      "source": "rain",
+      "notes": "Genuine rain; surface is not documented as thatch or meadow."
+    },
+    {
+      "id": "ambient/evening",
+      "kind": "ambient",
+      "seconds": 30,
+      "loop_crossfade": 1.5,
+      "start": 0,
+      "source": "wind",
+      "notes": "Real wind; no unverified owl call was added."
+    },
+    {
+      "id": "sfx/bridge-wood",
+      "kind": "sfx",
+      "seconds": 1.3,
+      "start": 0,
+      "source": "steps_wood",
+      "notes": "Real footsteps on a wooden floor used as bridge plank impacts; provisional, not cart wheels."
+    }
+  ],
+  "sources": {
+    "birds": {
+      "filename": "park_ambience_birds.wav",
+      "author": "Thimras",
+      "page": "https://opengameart.org/content/park-ambiences",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/park_ambience_birds.wav"
+    },
+    "river": {
+      "filename": "park_ambience_river.wav",
+      "author": "Thimras",
+      "page": "https://opengameart.org/content/park-ambiences",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/park_ambience_river.wav"
+    },
+    "wind": {
+      "filename": "park_ambience_wind.wav",
+      "author": "Thimras",
+      "page": "https://opengameart.org/content/park-ambiences",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/park_ambience_wind.wav"
+    },
+    "rain": {
+      "filename": "amb_rain2.ogg",
+      "author": "Kresiek The Furry",
+      "page": "https://opengameart.org/content/amb-rain-loop-2",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/amb_rain2.ogg"
+    },
+    "dog": {
+      "filename": "dog_barking_mono.wav",
+      "author": "Brandon Morris (posted by HaelDB)",
+      "page": "https://opengameart.org/content/dog-barking-mono",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/dog_barking_mono.wav"
+    },
+    "steps_wood": {
+      "filename": "steps in wood floor.wav",
+      "author": "mikeask",
+      "page": "https://opengameart.org/content/steps-in-wood-floor",
+      "license": "CC0-1.0",
+      "url": "https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav"
+    }
+  },
+  "synthetic_retained": [
+    "sfx/cart-dirt",
+    "sfx/cart-cobble",
+    "sfx/horse-snort",
+    "sfx/axe",
+    "sfx/saw",
+    "sfx/mill-wheel",
+    "sfx/load-sack",
+    "sfx/unload-sack",
+    "sfx/load-plank",
+    "sfx/unload-plank",
+    "sfx/load-log",
+    "sfx/unload-log",
+    "sfx/oven",
+    "sfx/wax-seal",
+    "ui/stall",
+    "ui/wood",
+    "ui/paper",
+    "ui/error"
+  ]
+}
