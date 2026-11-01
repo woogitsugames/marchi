@@ -1,20 +1,13 @@
 // IndexedDB save slots with a versioned envelope and migrations.
 import { STATE_VERSION, type SimState } from '../sim/index';
+import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope } from './saveGate';
 
 const DB_NAME = 'marchia';
 const DB_VERSION = 1;
 const STORE = 'saves';
 
-export interface SaveEnvelope {
-  /** Envelope format version (independent of the sim state version). */
-  format: 1;
-  stateVersion: number;
-  slot: string;
-  savedAt: number;
-  missionId: string;
-  tick: number;
-  state: SimState;
-}
+export type { SaveEnvelope, SaveErrorCode, GateError } from './saveGate';
+export { SaveError } from './saveGate';
 
 /** Migrations from state version N to N+1. Add an entry whenever STATE_VERSION grows. */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
@@ -78,18 +71,32 @@ function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T>
 }
 
 export async function saveGame(slot: string, state: SimState): Promise<void> {
-  const env: SaveEnvelope = {
-    format: 1, stateVersion: state.version, slot, savedAt: Date.now(), missionId: state.mission.id, tick: state.tick,
-    // structured clone of plain JSON data
-    state: JSON.parse(JSON.stringify(state)) as SimState,
-  };
+  const env = makeEnvelope(slot, state, Date.now());
   await tx('readwrite', (s) => s.put(env));
 }
 
+/**
+ * Loads a slot through the save gate (D-19): validation -> envelope upgrade -> terrain hash check ->
+ * migrate(). Throws SaveError (with `.code`) for a damaged, newer or terrain-changed save.
+ */
 export async function loadGame(slot: string): Promise<SimState | null> {
-  const env = await tx<SaveEnvelope | undefined>('readonly', (s) => s.get(slot));
-  if (!env) return null;
-  return migrate(env).state;
+  const raw = await tx<unknown>('readonly', (s) => s.get(slot));
+  if (raw === undefined) return null;
+  const v = prepareLoad(raw);
+  if (!v.ok) throw new SaveError(v.errors);
+  try {
+    return migrate(v.envelope).state;
+  } catch (e) {
+    throw new SaveError([{ code: 'NO_MIGRATION', path: '$.stateVersion', detail: e instanceof Error ? e.message : String(e) }]);
+  }
+}
+
+/** Checks a slot without loading it (e.g. to disable "Continue"): null = loadable or empty. */
+export async function verifySave(slot: string): Promise<SaveError | null> {
+  const raw = await tx<unknown>('readonly', (s) => s.get(slot));
+  if (raw === undefined) return null;
+  const v = prepareLoad(raw);
+  return v.ok ? null : new SaveError(v.errors);
 }
 
 export async function listSaves(): Promise<Omit<SaveEnvelope, 'state'>[]> {
