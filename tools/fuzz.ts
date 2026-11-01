@@ -1,13 +1,13 @@
 // Long-running simulation fuzzer.
-//   npx tsx tools/fuzz.ts --runs 500 [--ticks 6000] [--seed 1] [--save] [--timing] [--no-stalls]
-// Each run: a seeded random command sequence on 'm1' or 'sandbox', every tick checked for
+//   npx tsx tools/fuzz.ts --runs 500 [--ticks 6000] [--seed 1] [--missions m1,m4] [--save] [--timing] [--no-stalls]
+// Each run: a seeded random command sequence on one of the missions (default: every playable map), every tick checked for
 // invariants, unexplained stalls, NaN/Infinity and stuck wagons; a save/load clone runs side by
 // side from a random tick; the whole run is replayed once more for determinism.
 // On failure the sequence is shrunk; --save writes it to tests/regressions/<kind>-<seed>.json.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generateScenario, runScenario, shrink, type Failure, type Scenario } from './fuzz-lib';
+import { ALL_FUZZ_MISSIONS, generateScenario, runScenario, shrink, type Failure, type Scenario } from './fuzz-lib';
 
 const args = process.argv.slice(2);
 const opt = (name: string, def: number) => {
@@ -19,6 +19,9 @@ const flag = (name: string) => args.includes('--' + name);
 const runs = opt('runs', 50);
 const ticks = opt('ticks', 6000);
 const seed0 = opt('seed', 1);
+// --missions m4,m5,m6 (default: every playable map)
+const mi = args.indexOf('--missions');
+const missions = mi >= 0 ? args[mi + 1]!.split(',') : ALL_FUZZ_MISSIONS;
 const save = flag('save');
 const timing = flag('timing');
 const checkStalls = !flag('no-stalls');
@@ -38,7 +41,7 @@ const t0 = performance.now();
 
 for (let r = 0; r < runs; r++) {
   const seed = seed0 + r;
-  const sc = generateScenario(seed, { ticks });
+  const sc = generateScenario(seed, { ticks, missions });
   const res = runScenario(sc, { rerun: true, timing, checkStalls });
   totalTicks += res.stats.ticks * 2 + (sc.saveAt >= 0 ? res.stats.ticks - sc.saveAt : 0);
   ok += res.stats.commandsOk;

@@ -2,6 +2,7 @@
 import {
   BUILDINGS, DT, LOAD_TICKS, NO_ROUTE_CANCEL_TICKS, UNLOAD_TICKS, WAGON_CAPACITY, WOOD_BRIDGE_MAX_WAGONS, inputGoods, sumGoods,
 } from './defs';
+import { contractTarget, iceUntil, storeCapOf } from './contract';
 import { buildingById } from './logistics';
 import { dijkstra, edgeLength, edgeSpeedAt, findPath, hasEdge, isRaining, net, type World } from './network';
 import type { Building, Good, Wagon } from './types';
@@ -50,6 +51,7 @@ function stepWagon(world: World, w: Wagon): void {
       const nxt = w.path[0]!;
       if (!hasEdge(world, w.at, nxt)) { w.pathVer = -1; if (!ensurePath(world, w)) return; }
       const n2 = w.path[0]!;
+      if (iceBlocks(world, w, n2)) return;
       const blocker = bridgeBlocker(world, w, n2);
       if (blocker) {
         const since = w.status.k === 'BRIDGE_JAM' && w.status.span === blocker.span ? w.status.since : st.tick;
@@ -84,6 +86,31 @@ function stepWagon(world: World, w: Wagon): void {
       arriveNode(world, w);
     }
   }
+}
+
+/**
+ * Ice (mission IV): a wooden span cannot be entered while an ice window is open. The wagon keeps
+ * its job, cargo and reservations and waits at the bridgehead with BRIDGE_CLOSED; every few seconds
+ * it re-plans, so a stone bridge or another crossing is taken when the router (which charges the
+ * wait until the thaw) prefers it. Wagons already on a span may leave it.
+ */
+function iceBlocks(world: World, w: Wagon, to: number): boolean {
+  const st = world.state;
+  const until = iceUntil(st);
+  if (until < 0) return false;
+  const c = net(world);
+  const sp = c.span[to]!;
+  if (sp < 0 || c.span[w.at] === sp) return false;
+  const since = w.status.k === 'BRIDGE_CLOSED' && w.status.span === sp ? w.status.since : st.tick;
+  w.status = { k: 'BRIDGE_CLOSED', span: sp, until, since };
+  if ((st.tick - since) % JAM_RECONSIDER_EVERY === 0) {
+    const alt = findPath(world, w.at, w.dest, w.cargoQty > 0);
+    if (alt && alt.length > 0 && alt[0] !== to) {
+      w.path = alt;
+      w.pathVer = st.netVersion;
+    }
+  }
+  return true;
 }
 
 /** Loaded wagon whose destination disappeared and nobody else accepts the cargo yet. */
@@ -250,11 +277,11 @@ function alternativeDestination(world: World, w: Wagon, except: number): Buildin
 /** How many more units of g the building can accept beyond what is already promised. */
 export function acceptsUpTo(world: World, b: Building, g: Good): number {
   const def = BUILDINGS[b.type];
-  if (b.type === 'warehouse') return def.storeCap - sumGoods(b.stock) - sumGoods(b.incoming);
+  if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
   if (b.type === 'castle') {
     const m = world.state.mission;
     if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
-    return m.contract.need[g] - b.stock[g] - b.incoming[g];
+    return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
   }
   if (inputGoods(b.type).includes(g)) return def.inCap - b.stock[g] - b.incoming[g];
   return 0;
@@ -262,10 +289,10 @@ export function acceptsUpTo(world: World, b: Building, g: Good): number {
 
 export function accepts(world: World, b: Building, g: Good, qty: number): boolean {
   const def = BUILDINGS[b.type];
-  if (b.type === 'warehouse') return def.storeCap - sumGoods(b.stock) - sumGoods(b.incoming) >= qty;
+  if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming) >= qty;
   if (b.type === 'castle') {
     const m = world.state.mission;
-    return !!m.contract && m.result === 'running' && m.contract.castle === b.id && m.contract.need[g] - b.stock[g] - b.incoming[g] >= qty;
+    return !!m.contract && m.result === 'running' && m.contract.castle === b.id && contractTarget(m.contract, g) - b.stock[g] - b.incoming[g] >= qty;
   }
   if (inputGoods(b.type).includes(g)) return def.inCap - b.stock[g] - b.incoming[g] >= qty;
   return false;

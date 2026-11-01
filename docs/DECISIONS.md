@@ -151,3 +151,62 @@ for a frustum already fitted to the zoom); pixel-ratio cap ultra 3 / high 2 / lo
 server sets the ultra base to `/assets-ultra/`; release builds stay at 2K until the pack is hosted
 (D-21 (3)). *At game distances a 1024 normal still gives ≥ 1.5 texels/px on the terrain; colour
 detail and anisotropic filtering come from the 2K/4K albedo + ORM.* (decided)
+**D-22 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
+[start, end) in ticks; wooden one-lane spans cannot be **entered** inside a window (wagons already on a span leave
+it). A wagon at the bridgehead waits with `BRIDGE_CLOSED{span, until, since}`, keeps job, cargo and reservations
+(never turned into `NO_ROUTE`, so nothing is cancelled), and re-plans every 3 s. Routing charges the wait until the
+thaw when a path enters a span (forward searches subtract the travel time to the bridge), so a stone bridge or
+another crossing wins when it is cheaper; stone bridges are not spans and are never closed. No cache depends on
+time, so determinism and save/load are unaffected. (2) *Tranches*: `Contract.tranches[]` `{need, deadlineTick,
+doneTick, missed}` is the waybill in the state; needs add up in order; the castle orders only up to the tranche
+currently due; a late tranche costs one seal (min 1 for a win), only the last deadline loses the mission.
+(3) *Granary capacity per building*: `Building.capOverride` (-1 = type default). Warehouses report
+`STORAGE_FULL` counting promised arrivals; an overflowing producer whose only granary is cut off points at it
+(`blockedBy`) so the chain shows `NO_ROAD`. Migration v2→v3 in `src/platform/save.ts` keeps the key order of a
+fresh state (the hash is taken over `JSON.stringify`). *Measured seal ladders are in docs/missions/m4–m6.md;
+m5/m6 margins are thin because surplus hauls to a granary compete with demand for wagons.* (decided)
+
+**D-23 — Save gate before migration + golden terrain hash.** Every load goes through
+`src/platform/saveGate.ts` (pure, Node-tested, never mutates or throws) before `migrate()`:
+raw size cap (4 M chars, `parseSave` only) → one structural walk (depth ≤ 16, arrays ≤ 65,536 checked by
+`.length` before iterating, ≤ 4,096 keys per object, strings ≤ 256, ≤ 2 M values, no `__proto__` /
+`constructor` / `prototype` keys, only plain objects and finite numbers) → envelope (`format` 1..2,
+`stateVersion` integer 1..STATE_VERSION, newer is refused untouched) → known state fields (types, integer
+ranges, cell indexes < W·H from the map id, footprints inside the map and non-overlapping, gate = footprint +
+facing, roads/traffic length = W·H, unique ids, wagon home = stable, pickup source exists, contract castle
+exists, ≤ 2,048 buildings / MAX_WAGONS wagons) → the sim's own `checkInvariants()` (conservation,
+reservations = jobs). Unknown extra fields are tolerated so a newer state schema (e.g. v3 tranches,
+`capOverride`) does not need a gate change first; the gate validates what it knows. Errors are
+`{code, path, detail}` with machine codes; the UI maps codes to i18n keys (`saveErrorMessageKey`).
+Terrain is not saved but regenerated from `mapId + seed`, so the envelope (format 2) stores
+`terrainHash` (FNV over the JSON of corners / cellH / water / forest / field, prefix `t1-`) and the loader
+refuses a mismatch with `TERRAIN_CHANGED`. Format-1 envelopes are upgraded on load by computing the hash
+from today's generator (trust-on-first-load: they were made before the hash existed, nothing better is
+known). `tests/terrain-golden.test.ts` pins the hash of every map/seed used by MISSIONS, so a generator
+change fails CI with instructions (new mapId, or accept invalidating saves and record it here). The
+envelope format is versioned separately from STATE_VERSION on purpose: the terrain check is metadata
+about the save, not sim state. (decided)
+**D-24 — 4K pack: own download, per-version folders, CDN hosting proposed.** The Ultra pack (D-17 / D-20) is
+fetched by `src/platform/assetPack.ts`, not Play Asset Delivery: PAD needs Play/AAB distribution (we ship
+sideloaded debug APKs), a custom native plugin and has no iOS counterpart. Each pack version installs into its
+own folder (native `Directory.Data/ultra-pack/v<N>`, web cache `marchia-ultra-v<N>`); the active version
+switches only after every file passed its SHA-256 check, so an interrupted upgrade never breaks the installed
+pack. Files restart from byte 0 on failure (no HTTP Range; 2–4 MB each). Native serves files via
+`Capacitor.convertFileSrc`; web serves Cache Storage through a tiny service worker (`public/ultra-pack-sw.js`)
+and falls back to the network URL without one. Hosting: Cloudflare R2 + custom domain recommended (CORS, free
+egress); GitHub Releases rejected (no CORS headers). Production URL is still a placeholder. Details:
+docs/ASSET_PACK.md. (decided: mechanism; proposed: hosting — owner to confirm)
+**D-25 — Replay reports: allowlisted journal + checkpoint hashes, copy to clipboard only.** "Copy report"
+produces `{version, game, missionId, seed, stateVersion, journal, checkpoints, finalTick, finalHash}`
+(`src/sim/replay.ts`, format in `docs/REPLAY.md`). (1) Commands are re-serialized from a per-variant field
+declaration (`COMMAND_FIELDS`, a mapped type over `Command`, so new fields fail typecheck until declared);
+no free-text field type exists, so no personal data can enter. (2) A checkpoint hash is taken after the step
+that reached its tick and before that tick's commands (where `GameLoop.onTick` fires), every 600 ticks plus
+tick 0; the final hash includes commands applied at the final tick while paused. This needs no change to the
+sim or to `GameLoop`. (3) Compression (deflate-raw + base64url, `MR1.` prefix) lives in
+`src/platform/reportCodec.ts`, never in the sim. (4) No network: the player copies the text. (5) Only sessions
+recorded from tick 0 are reportable; the journal is not persisted in saves, so a continued mission cannot be
+reported yet (open: store journal + recorder in the save envelope, or start reports from a saved state hash).
+(6) The UI keys were not added in this change: every locale file is typed `Dict` and tested for identical keys,
+so adding keys only to pl/en would break typecheck; they are listed in `docs/REPLAY.md` and land with the
+pause-menu button. (decided)

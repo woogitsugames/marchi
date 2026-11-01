@@ -1,6 +1,7 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
 import { BUILDINGS, GOODS, WAGON_CAPACITY, inputGoods, outputGoods, sumGoods } from './defs';
+import { contractTarget, storeCapOf } from './contract';
 import { dijkstra, hasEdge, net, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Good, Wagon } from './types';
 
@@ -53,11 +54,11 @@ export function buildingById(world: World, id: number): Building | null {
 function remainingContract(world: World, b: Building, g: Good): number {
   const m = world.state.mission;
   if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
-  return m.contract.need[g] - b.stock[g] - b.incoming[g];
+  return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
 }
 
 function warehouseSpace(b: Building): number {
-  return BUILDINGS[b.type].storeCap - sumGoods(b.stock) - sumGoods(b.incoming);
+  return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
 }
 
 export function assignJob(world: World, wagon: Wagon, from: Building, to: Building, good: Good, qty: number): void {
@@ -151,16 +152,18 @@ export function dispatch(world: World): void {
       const avail = b.stock[g] - b.reservedOut[g];
       // only when nearly full: consumers get first call on output
       if (avail < Math.max(WAGON_CAPACITY / 2, def.outCap - 2)) continue;
-      let best: Building | null = null, bestT = Infinity, fullWh = -1;
+      let best: Building | null = null, bestT = Infinity, fullWh = -1, cutOffWh = -1;
       const fwd = dc.from(b.gate);
       for (const wh of st.buildings) {
         if (wh.type !== 'warehouse') continue;
         if (warehouseSpace(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
         const t = fwd.dist[wh.gate]!;
+        if (t === Infinity) { if (cutOffWh === -1) cutOffWh = wh.id; continue; }
         if (t < bestT) { bestT = t; best = wh; }
       }
       const key = b.id + ':' + g;
-      if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh }); continue; }
+      // point at the granary that would help: a full one, else one cut off from the roads (NO_ROAD)
+      if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh >= 0 ? fullWh : cutOffWh }); continue; }
       const wagon = pickWagon(b);
       if (!wagon || dc.to(b.gate).dist[wagonNode(wagon)] === Infinity) {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
@@ -246,7 +249,8 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
   if (b.type === 'stable') return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
   if (b.type === 'warehouse') {
     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
-    return sumGoods(b.stock) >= def.storeCap ? { k: 'STORAGE_FULL' } : { k: 'IDLE' };
+    // full counts what is already promised to arrive, matching the dispatcher's view of free space
+    return sumGoods(b.stock) + sumGoods(b.incoming) >= storeCapOf(b) ? { k: 'STORAGE_FULL' } : { k: 'IDLE' };
   }
   if (b.type === 'castle') {
     const m = world.state.mission;
@@ -256,10 +260,12 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
     // report the first good still missing, preferring a real stall over "on the way"
     let waiting: BuildingStatus | null = null;
     for (const g of GOODS) {
-      if (m.contract.need[g] - b.stock[g] <= 0) continue;
+      // with tranches only the goods of the letter currently due count
+      const target = contractTarget(m.contract, g);
+      if (target - b.stock[g] <= 0) continue;
       const r = inputReason(world, b, g, unmet, dc);
       if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM') { if (!waiting) waiting = r; continue; }
-      if (m.contract.need[g] - b.stock[g] - b.incoming[g] > 0) return r;
+      if (target - b.stock[g] - b.incoming[g] > 0) return r;
     }
     return waiting ?? { k: 'IDLE' };
   }

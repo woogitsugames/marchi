@@ -195,7 +195,7 @@ export function place(world: World, type: BuildingType, x: number, y: number, fa
   st.buildings.push({
     id: st.nextId++, type, x, y, w: def.w, h: def.h, gate, facing: facing & 3,
     stock: emptyGoods(), reservedOut: emptyGoods(), incoming: emptyGoods(), progress: -1,
-    status: initialStatus(world, type), stalledTicks: 0,
+    status: initialStatus(world, type), stalledTicks: 0, capOverride: -1,
   });
   st.netVersion++;
   return { ok: true, cost };

@@ -28,3 +28,41 @@ test('mission 3: rain is in the data and cobbles are the fix', () => {
   const paved = play('m3', 250, (w) => [{ t: 'road', surface: 2, cells: row(w, 40, 32, 80) }]);
   assert(stars(paved) >= 2, 'paving earns at least 2 seals');
 });
+
+// --- Missions IV-VI (session 2). Seal ladders come from tools/balance.ts (expect fields). ---
+import { plans, runStrategy } from '../tools/balance';
+
+for (const id of ['m4', 'm5', 'm6']) {
+  test(`mission ${id.slice(1)}: no action = 1 seal, partial fix = 2, the lesson's fix = 3 (5-12 min)`, () => {
+    for (const s of plans[id]!.filter((p) => p.expect !== undefined)) {
+      const r = runStrategy(id, s);
+      eq(r.errors.length, 0, `${id} ${s.name}: commands accepted (${r.errors.join(',')})`);
+      eq(r.result, 'won', `${id} ${s.name}: won`);
+      eq(r.seals, s.expect!, `${id} ${s.name}: seals`);
+      assert(r.minutes >= 5 && r.minutes <= 12, `${id} ${s.name}: ${r.minutes.toFixed(2)} min within 5-12`);
+    }
+  });
+}
+
+test('mission 4: the ice closes the wooden bridge, wagons wait with BRIDGE_CLOSED and keep their jobs', () => {
+  const w = createWorld('m4');
+  const ice = w.state.ice[0]!;
+  let closedSeen = 0, jobsKept = true;
+  while (w.state.tick < ice.end + 600) {
+    step(w);
+    for (const q of w.state.wagons) {
+      if (q.status.k !== 'BRIDGE_CLOSED') continue;
+      closedSeen++;
+      assert(w.state.tick >= ice.start && w.state.tick < ice.end + 1, `closed only inside the window (tick ${w.state.tick})`);
+      eq(q.status.until, ice.end, 'until = thaw tick');
+      if (q.cargoQty > 0 && !q.job) jobsKept = false;
+    }
+    if (w.state.tick % 25 === 0) {
+      const v = checkInvariants(w);
+      assert(v.length === 0, v.join('; '));
+    }
+  }
+  assert(closedSeen > 0, 'some wagon waited at the iced bridge');
+  assert(jobsKept, 'loaded wagons keep their jobs');
+  assert(!w.state.wagons.some((q) => q.status.k === 'BRIDGE_CLOSED'), 'all moving again after the thaw');
+});
