@@ -3,6 +3,7 @@
 - [AUDIT.md](AUDIT.md): wyniki, kontrast i priorytety.
 - [VIEWER.html](VIEWER.html): porównanie oryginału z symulacjami wszystkich 61 zrzutów (wybór z listy).
 - [simulations/](simulations/): dokładnie 183 pliki SVG (61 × 3), z nazwami odpowiadającymi PNG i typowi symulacji.
+- [standalone/](standalone/): 9 kompletnych SVG z osadzonym base64 źródłowym PNG (3 tryby × 3 reprezentatywne zrzuty: HUD, błędna droga i Flip cover). Niezależne od docs/shots.
 
 **Jak oglądać:** pobierz repozytorium razem z folderem docs/shots, otwórz VIEWER.html w Chrome/Firefox. Poszczególne SVG ładują źródłowy PNG z ścieżki ../../shots/ i nakładają feColorMatrix. Są to *renderowane zrzuty-symulacje*, nie rasteryzowane, autonomiczne PNG. Na GitHubie przeglądarka obrazów SVG może blokować odwołania do plików względnych (CSP); w razie pustego obrazu użyj lokalnego VIEWER.html.
 
