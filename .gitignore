@@ -12,3 +12,4 @@ android/build/
 android/local.properties
 ios/App/build/
 ios/DerivedData/
+.cache/

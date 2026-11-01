@@ -1,0 +1,43 @@
+{
+  "format_version": 1,
+  "sources": {
+    "birds": {
+      "sha256": "dc1a5ac34b89cab7f8f261b53a23da7c1c5e3cc895aae4cb6fb4a1a04001b2af",
+      "seconds": 448.9047,
+      "original": "https://opengameart.org/sites/default/files/park_ambience_birds.wav"
+    },
+    "dog": {
+      "sha256": "bbd0f908b3514dd3bd7d2bc04dcf64f8d360a161e7f43cac5d6761e7add79451",
+      "seconds": 2.0386,
+      "original": "https://opengameart.org/sites/default/files/dog_barking_mono.wav"
+    },
+    "rain": {
+      "sha256": "36b009dfec2e8cdda1a38ee65a14664a54293edac42827d0480f759e5d718d81",
+      "seconds": 733.0347,
+      "original": "https://opengameart.org/sites/default/files/amb_rain2.ogg"
+    },
+    "river": {
+      "sha256": "da0c0c9b1249a83a1611cc116d5737b0864a8db9f45f1ae8dcc079d0f7c0bbbf",
+      "seconds": 516.0,
+      "original": "https://opengameart.org/sites/default/files/park_ambience_river.wav"
+    },
+    "steps_wood": {
+      "sha256": "aae50329e6b702c23a2e6e21f0eb673a0bca5aa9386fb9eb4ea6e9acdcb05536",
+      "seconds": 3.4788,
+      "original": "https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav"
+    },
+    "wind": {
+      "sha256": "5c381856745b4706e7eba55eb9271a61a530e90c05df8126adb2db89ecfa6c5a",
+      "seconds": 256.8033,
+      "original": "https://opengameart.org/sites/default/files/park_ambience_wind.wav"
+    }
+  },
+  "output_bytes": 1400760,
+  "tracks": [
+    "ambient/morning",
+    "ambient/river",
+    "ambient/rain",
+    "ambient/evening",
+    "sfx/bridge-wood"
+  ]
+}

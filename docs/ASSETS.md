@@ -202,49 +202,74 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 | `public/vendor/basis/basis_transcoder.js`, `.wasm` | copied unmodified from `three@0.181` `examples/jsm/libs/basis/` (Binomial Basis Universal) | Apache-2.0 | `public/licenses/Apache-2.0-basis_universal.txt` |
 
 
-## Audio — procedural CC0 original sound design (task 02)
+## Audio — verified CC0 field recordings (task 07)
 
-All files below were **generated specifically for MARCHIA**, with no input recordings, external
-samples, instruments, or third-party sound libraries. Author-generated procedural waveforms
-are expressly dedicated to **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/).
-The source is `tools/generate_audio.py` (deterministic seed 1300; NumPy/SciPy synthesis; FFmpeg
-Vorbis / AAC encoding). The sources are original synthetic sound-design effects, **not**
-actual documentary field recordings. No external licences or attribution are needed.
+The field recordings listed below were verified **individually as CC0 1.0** on their
+original OpenGameArt asset pages (not merely by a search-result filter). They are
+genuine captured audio, not synthesizer patches. Attribution is provided for
+provenance although CC0 does not require it. No Sonniss audio is used: that bundle
+is royalty-free under its own conditions, **not CC0**, and has not been bundled.
 
-- **Budget (both formats, all 46 files):** 1539860 bytes (1.47 MiB; limit 4 MiB).
-- **Formats:** 24 kHz OGG Vorbis (`.ogg`) and AAC-LC (`.m4a`) Safari fallback.
-  Mono for 19 SFX/UI (including three mechanical loops), stereo for four ambient beds.
-- **Dynamics:** source ambient beds processed for −24 LUFS integrated (FFmpeg loudnorm);
-  discrete SFX sources normalized to −6 dBFS peak before lossy encoding. Codec encoding may
-  alter final codec-reconstructed peak by a fraction of a dB; retest after replacements.
-- **Looping:** seamless fade-in/out within all loop files, with scheduled 1.4–1.5 s
-  crossfades at gain changes in the Web Audio engine.
+A pair of 24-kHz OGG Vorbis + M4A/AAC-LC files is shipped for each ID.
+The existing paths and all identifiers in src/audio/sounds.ts stay unchanged.
+Stereo for ambience; mono for SFX/UI. The combined 46 files must be **under 4 MiB**.
+The full manifest (including licensing and exact URLs) is tools/audio_sources.json.
+The renderer is tools/process_audio.py; source hashes and actual output byte count
+are written at render time to docs/audio-provenance.json.
 
-| OGG (relative to repository) | M4A (relative) | Seconds | Channels | OGG B | M4A B | License |
-|---|---|---:|---:|---:|---:|---|
-| `public/assets/audio/ambient/evening.ogg` | `public/assets/audio/ambient/evening.m4a` | 40.0 | 2 | 181633 | 155174 | CC0 1.0 (original) |
-| `public/assets/audio/ambient/morning.ogg` | `public/assets/audio/ambient/morning.m4a` | 36.0 | 2 | 163686 | 139723 | CC0 1.0 (original) |
-| `public/assets/audio/ambient/rain.ogg` | `public/assets/audio/ambient/rain.m4a` | 32.0 | 2 | 178250 | 124267 | CC0 1.0 (original) |
-| `public/assets/audio/ambient/river.ogg` | `public/assets/audio/ambient/river.m4a` | 34.0 | 2 | 186548 | 131993 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/axe.ogg` | `public/assets/audio/sfx/axe.m4a` | 0.8 | 1 | 4790 | 3373 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/bridge-wood.ogg` | `public/assets/audio/sfx/bridge-wood.m4a` | 1.4 | 1 | 6942 | 4771 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/cart-cobble.ogg` | `public/assets/audio/sfx/cart-cobble.m4a` | 3.8 | 1 | 17663 | 10952 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/cart-dirt.ogg` | `public/assets/audio/sfx/cart-dirt.m4a` | 4.8 | 1 | 21302 | 13689 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/horse-snort.ogg` | `public/assets/audio/sfx/horse-snort.m4a` | 1.6 | 1 | 9239 | 5305 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/load-log.ogg` | `public/assets/audio/sfx/load-log.m4a` | 1.2 | 1 | 7131 | 4404 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/load-plank.ogg` | `public/assets/audio/sfx/load-plank.m4a` | 1.1 | 1 | 7011 | 3954 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/load-sack.ogg` | `public/assets/audio/sfx/load-sack.m4a` | 0.9 | 1 | 7338 | 3571 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/mill-wheel.ogg` | `public/assets/audio/sfx/mill-wheel.m4a` | 5.5 | 1 | 25070 | 15454 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/oven.ogg` | `public/assets/audio/sfx/oven.m4a` | 1.3 | 1 | 8718 | 4590 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/saw.ogg` | `public/assets/audio/sfx/saw.m4a` | 1.9 | 1 | 11200 | 6022 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/unload-log.ogg` | `public/assets/audio/sfx/unload-log.m4a` | 1.4 | 1 | 7576 | 4907 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/unload-plank.ogg` | `public/assets/audio/sfx/unload-plank.m4a` | 1.4 | 1 | 7595 | 4579 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/unload-sack.ogg` | `public/assets/audio/sfx/unload-sack.m4a` | 1.1 | 1 | 8074 | 4013 | CC0 1.0 (original) |
-| `public/assets/audio/sfx/wax-seal.ogg` | `public/assets/audio/sfx/wax-seal.m4a` | 1.1 | 1 | 6776 | 3812 | CC0 1.0 (original) |
-| `public/assets/audio/ui/error.ogg` | `public/assets/audio/ui/error.m4a` | 0.5 | 1 | 4357 | 2413 | CC0 1.0 (original) |
-| `public/assets/audio/ui/paper.ogg` | `public/assets/audio/ui/paper.m4a` | 0.5 | 1 | 5520 | 2482 | CC0 1.0 (original) |
-| `public/assets/audio/ui/stall.ogg` | `public/assets/audio/ui/stall.m4a` | 0.6 | 1 | 5082 | 2681 | CC0 1.0 (original) |
-| `public/assets/audio/ui/wood.ogg` | `public/assets/audio/ui/wood.m4a` | 0.3 | 1 | 4381 | 1849 | CC0 1.0 (original) |
+### Selected replacement sources (specific original files)
 
-Regenerate: `python tools/generate_audio.py` with `numpy`, `scipy` and FFmpeg installed.
-Every rendered audio asset must be checked for codec support, gapless loops, and combined size.
+| In-game files (.ogg and .m4a) | Recorded original (exact link) | Author | Licence | Processing / suitability notes |
+|---|---|---|---|---|
+| public/assets/audio/ambient/morning.* | [park_ambience_birds.wav](https://opengameart.org/sites/default/files/park_ambience_birds.wav), from [Park ambiences](https://opengameart.org/content/park-ambiences); [dog_barking_mono.wav](https://opengameart.org/sites/default/files/dog_barking_mono.wav) from [Dog barking mono](https://opengameart.org/content/dog-barking-mono) | Thimras; Brandon Morris (submitted by HaelDB) | CC0 1.0 (both) | Birds recorded during Adelaide winter, low-pass-filtered distant dog around 16 s; loop 30 s / 1.5 s crossfade, stereo, −24 LUFS. **Jackdaws are not independently confirmed**. |
+| public/assets/audio/ambient/river.* | [park_ambience_river.wav](https://opengameart.org/sites/default/files/park_ambience_river.wav) from [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0 1.0 | Small river/water step, wildlife; 30 s / 1.5 s crossfade, stereo, −24 LUFS. Includes frogs, so biotope/season may not exactly match European November. |
+| public/assets/audio/ambient/rain.* | [amb_rain2.ogg](https://opengameart.org/sites/default/files/amb_rain2.ogg) from [AMB Rain Loop 2](https://opengameart.org/content/amb-rain-loop-2) | Kresiek The Furry | CC0 1.0 | Real rain recorded on a GoPro Hero 12; 30 s / 1.5 s crossfade, stereo, −24 LUFS. Specific surface (thatch/grass) not documented. |
+| public/assets/audio/ambient/evening.* | [park_ambience_wind.wav](https://opengameart.org/sites/default/files/park_ambience_wind.wav) from [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0 1.0 | Genuine winter wind; 30 s / 1.5 s crossfade, stereo, −24 LUFS. No owl included without a verified suitable recording. |
+| public/assets/audio/sfx/bridge-wood.* | [steps in wood floor.wav](https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav) from [Steps in wood floor](https://opengameart.org/content/steps-in-wood-floor) | mikeask | CC0 1.0 | 1.3-s extracted mono recording of footfalls on wooden planks, fade-in/out, high/low-pass, −6 dBFS peak. Provisional bridge-thump proxy, not a recording of wheels on bridge. |
+
+**Important:** the source catalogue above is not proof that an OGG/M4A binary has
+already been replaced. Confirm docs/audio-provenance.json exists, the generated
+files are in the Git commit, and the processing CI job passed before describing
+the installed audio as field recordings.
+
+### Effects deliberately retained from task 02 (synthetic)
+
+The following files remain the **original procedural CC0 sound design by the MARCHIA
+project author**, rendered by tools/generate_audio.py. They are not documentary
+field recordings. No suitably authenticated and period-appropriate CC0 source
+was established for the following six task-07 target sounds:
+
+| Original (both .ogg and .m4a) | Why not replaced |
+|---|---|
+| sfx/cart-dirt | No verified recording of wooden wagon wheels over earth, suitable for looping |
+| sfx/cart-cobble | No verified recording of wooden wagon wheels on cobbles |
+| sfx/horse-snort | Horse-like foley and synthetic imitations rejected as not genuine snorting |
+| sfx/axe | No adequately verified actual wood-chopping field sample |
+| sfx/saw | Available samples imitate a saw by rubbing wood; not an actual human-powered frame saw |
+| sfx/mill-wheel | No verified mechanical waterwheel recording suitable for a loop |
+
+The other 12 untouched original synthetic IDs (all variants as OGG + M4A) are:
+sfx/load-sack, sfx/unload-sack, sfx/load-plank, sfx/unload-plank,
+sfx/load-log, sfx/unload-log, sfx/oven, sfx/wax-seal,
+ui/stall, ui/wood, ui/paper, ui/error.
+Their original generator and CC0 waiver remain in tools/generate_audio.py.
+Do **not** rerun tools/generate_audio.py over the processed field recordings:
+it would silently regenerate every audio file as synthetic.
+
+### Reproduction and verification
+
+1. Install FFmpeg and FFprobe; use Python 3.10+ (no pip modules).
+2. Run: python3 tools/process_audio.py --fetch
+3. Run: python3 tools/process_audio.py --check
+4. Run: npm test
+5. Listen to every scene and check historical suitability, especially wildlife
+   in the river and bird species in the morning.
+
+The processing job downloads originals into an untracked .cache directory and
+stores SHA-256 fingerprints in docs/audio-provenance.json. It extracts clips,
+overlaps head and tail with complementary ramps to remove the loop boundary,
+applies 2-pass EBU R128 normalisation to ambience (−24 LUFS target), peak
+normalisation to SFX (−6 dBFS target), and encodes both web codecs. Before
+copying over existing assets, it checks 46 files, channel layouts and the
+combined 4-MiB budget. Lossy encoders can introduce slight reconstructed-peak
+differences, so final listening/measurements are still recommended.
