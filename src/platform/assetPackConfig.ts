@@ -1,4 +1,4 @@
-// Where the downloadable 4K texture pack (assets-ultra/, D-17 / D-18) is fetched from.
+// Where the downloadable 4K texture pack (assets-ultra/, D-17 / D-20) is fetched from.
 // See docs/ASSET_PACK.md for hosting and for running the dev mode.
 
 /**

@@ -1,4 +1,4 @@
-// Downloadable 4K texture pack (D-17 / D-18): fetch the files listed in assets-ultra/manifest.json,
+// Downloadable 4K texture pack (D-17 / D-20): fetch the files listed in assets-ultra/manifest.json,
 // verify SHA-256, store them per pack version, resume after interruptions, report progress, and
 // hand back the base URL for setUltraBase() (src/render/textures.ts).
 //

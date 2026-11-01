@@ -1,7 +1,7 @@
 # 4K texture pack (Ultra) — download, hosting, integration
 
 Per D-17 the APK ships the 2K textures only; the 4096 px albedo + ORM files (`assets-ultra/`, ~59 MB,
-18 KTX2 files, see D-18) are downloaded in game when the player picks **Ultra**. The renderer reads
+18 KTX2 files, see D-20) are downloaded in game when the player picks **Ultra**. The renderer reads
 them from whatever base URL is passed to `setUltraBase(url)` (`src/render/textures.ts`); without it,
 Ultra falls back to the 2K files. Implementation decision: D-23.
 
