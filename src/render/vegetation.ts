@@ -5,7 +5,7 @@ import { InstancedMesh, Matrix4, type Material, Quaternion, Vector3, type WebGLR
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { rng } from './models/kit';
+import { rng, vnoise } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, type TreeKind } from './models/trees';
 import type { RoadField } from './roads';
@@ -134,12 +134,43 @@ function makeTree(x: number, y: number, z: number, kind: number, rot: number, sc
   return { x, y, z, kind, m };
 }
 
+const K = (k: TreeKind) => TREE_KINDS.indexOf(k);
+
 function pickKind(r: number, north: boolean): number {
-  const K = (k: TreeKind) => TREE_KINDS.indexOf(k);
   if (north) return r < 0.55 ? K('spruce') : r < 0.88 ? K('pine') : K('birch');
   return r < 0.42 ? K('oak') : r < 0.78 ? K('birch') : K('pine');
 }
 
+/** Chamfer distance (cells, capped) from cells where `src` is true. */
+function cellDistance(W: number, H: number, src: (i: number) => boolean, cap: number): Float32Array {
+  const d = new Float32Array(W * H).fill(cap);
+  for (let i = 0; i < W * H; i++) if (src(i)) d[i] = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    let v = d[i]!;
+    if (x > 0) v = Math.min(v, d[i - 1]! + 1);
+    if (y > 0) v = Math.min(v, d[i - W]! + 1);
+    if (x > 0 && y > 0) v = Math.min(v, d[i - W - 1]! + 1.414);
+    if (x < W - 1 && y > 0) v = Math.min(v, d[i - W + 1]! + 1.414);
+    d[i] = v;
+  }
+  for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) {
+    const i = y * W + x;
+    let v = d[i]!;
+    if (x < W - 1) v = Math.min(v, d[i + 1]! + 1);
+    if (y < H - 1) v = Math.min(v, d[i + W]! + 1);
+    if (x < W - 1 && y < H - 1) v = Math.min(v, d[i + W + 1]! + 1.414);
+    if (x > 0 && y < H - 1) v = Math.min(v, d[i + W - 1]! + 1.414);
+    d[i] = Math.min(cap, v);
+  }
+  return d;
+}
+
+/**
+ * Forest from terrain.forest; a scrub belt whose density falls off away from the forest edge;
+ * hedgerows (bushes with the odd oak or birch) along field edges; small copses in the open
+ * meadow; a few shrubs on the river banks. No random solitary trees.
+ */
 function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
   const t = world.terrain, st = world.state;
   const occ = net(world).occupied;
@@ -153,25 +184,83 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
       if (x >= 0 && y >= 0 && x < W && y < H) yard[y * W + x] = 1;
     }
   }
+  const blocked = (i: number) => !!(t.water[i] || t.field[i] || occ[i] !== -1 || st.roads[i] || yard[i]);
+  const fd = cellDistance(W, H, (i) => t.forest[i]! > 0.3, 8);
+  const rd = cellDistance(W, H, (i) => st.roads[i]! > 0 || occ[i] !== -1, 8);
+  const put = (px: number, pz: number, kind: number, scale: number, rot: number) => {
+    const clear = (kind === K('bush') ? 1.9 : 2.6) + TREE_SIZE[TREE_KINDS[kind]!].radius * scale * 0.35;
+    if (roads.distAt(px, pz) < clear) return;
+    if (!hf.inside(px, pz)) return;
+    const cx = Math.floor(px / CELL), cz = Math.floor(pz / CELL);
+    if (blocked(cz * W + cx)) return;
+    const py = hf.height(px, pz);
+    if (py < hf.waterLevel + (kind === K('bush') ? 0.3 : 0.45)) return;
+    out.push(makeTree(px, py, pz, kind, rot, scale));
+  };
+  const bushes = (x: number, y: number, n: number, r: () => number, s0 = 0.7) => {
+    for (let k = 0; k < n; k++) put((x + r()) * CELL, (y + r()) * CELL, K('bush'), s0 + r() * 0.55, r() * 6.28);
+  };
+
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = y * W + x;
-      if (t.water[i] || t.field[i] || occ[i] !== -1 || st.roads[i] || yard[i]) continue;
+      if (blocked(i)) continue;
       const r = rng(i * 7919 + 17);
       const f = t.forest[i]!;
-      let n = Math.floor(f * 1.3 + r() * 0.9);
-      if (f < 0.05) n = r() < 0.01 ? 1 : 0;
-      if (n > 2) n = 2;
-      for (let k = 0; k < n; k++) {
-        const px = (x + 0.1 + r() * 0.8) * CELL, pz = (y + 0.1 + r() * 0.8) * CELL;
-        const kind = pickKind(r(), y < 22 && f > 0.2);
-        const scale = 0.72 + r() * 0.45;
-        const clear = 2.6 + TREE_SIZE[TREE_KINDS[kind]!].radius * scale * 0.35;
-        if (roads.distAt(px, pz) < clear) continue;
-        const py = hf.height(px, pz);
-        if (py < hf.waterLevel + 0.45) continue;
-        out.push(makeTree(px, py, pz, kind, r() * Math.PI * 2, scale));
+      if (f >= 0.05) {
+        let n = Math.floor(f * 1.3 + r() * 0.9);
+        if (n > 2) n = 2;
+        for (let k = 0; k < n; k++) {
+          const kind = pickKind(r(), y < 22 && f > 0.2);
+          put((x + 0.1 + r() * 0.8) * CELL, (y + 0.1 + r() * 0.8) * CELL, kind, 0.72 + r() * 0.45, r() * Math.PI * 2);
+        }
+        // understorey shrubs thicken toward the edge of the wood
+        if (f < 0.6 && r() < 0.9 - f) bushes(x, y, 1 + (r() < 0.5 ? 1 : 0), r);
+      } else {
+        // scrub belt: shrubs and young trees thinning out away from the forest
+        const d = fd[i]!;
+        if (d < 4.5) {
+          const p = Math.pow(1 - d / 4.5, 1.4);
+          if (r() < p * 0.95) bushes(x, y, 1 + (r() < p ? 1 : 0) + (r() < p * 0.5 ? 1 : 0), r, 0.6);
+          if (r() < p * 0.35) put((x + 0.2 + r() * 0.6) * CELL, (y + 0.2 + r() * 0.6) * CELL, r() < 0.6 ? K('birch') : y < 22 ? K('spruce') : K('pine'), 0.55 + r() * 0.3, r() * 6.28);
+        }
+        // hedgerow along field edges, with gaps
+        const fieldN = (x > 0 && t.field[i - 1]) || (x < W - 1 && t.field[i + 1]) || (y > 0 && t.field[i - W]) || (y < H - 1 && t.field[i + W]);
+        if (fieldN && vnoise(x / 3.5, y / 3.5, 0.5, 81) > 0.38) {
+          bushes(x, y, 2, r, 0.75);
+          if (r() < 0.28) put((x + 0.5) * CELL, (y + 0.5) * CELL, r() < 0.6 ? K('oak') : K('birch'), 0.7 + r() * 0.35, r() * 6.28);
+        }
+        // shrubs along the river bank (alder/willow scrub stand-in)
+        const wd = hf.waterDist[i]!;
+        if (wd >= 1 && wd < 2.5 && rd[i]! > 2 && vnoise(x / 4, y / 4, 1.5, 83) > 0.55) {
+          bushes(x, y, 1 + (r() < 0.4 ? 1 : 0), r, 0.7);
+          if (r() < 0.12) put((x + 0.5) * CELL, (y + 0.5) * CELL, K('birch'), 0.65 + r() * 0.3, r() * 6.28);
+        }
       }
+    }
+  }
+
+  // copses: a few clumps of oak and birch in the open meadow, ringed by shrubs
+  const G = 12;
+  for (let by = 0; by < H; by += G) for (let bx = 0; bx < W; bx += G) {
+    const r = rng((by * 131 + bx) * 7 + 99);
+    if (r() > 0.55) continue;
+    const cx = bx + Math.floor(r() * G), cy = by + Math.floor(r() * G);
+    if (cx >= W || cy >= H) continue;
+    const ci = cy * W + cx;
+    if (blocked(ci) || t.forest[ci]! > 0.05 || fd[ci]! < 5 || rd[ci]! < 3 || hf.waterDist[ci]! < 3) continue;
+    const ox = (cx + 0.5) * CELL, oz = (cy + 0.5) * CELL;
+    const nT = 3 + Math.floor(r() * 5);
+    const spread = 4 + nT * 0.9;
+    for (let k = 0; k < nT; k++) {
+      const a = r() * 6.28, d = Math.sqrt(r()) * spread;
+      const q = r();
+      put(ox + Math.cos(a) * d, oz + Math.sin(a) * d, q < 0.5 ? K('oak') : q < 0.88 ? K('birch') : K('pine'), 0.65 + r() * 0.45, r() * 6.28);
+    }
+    const nB = 4 + Math.floor(r() * 6);
+    for (let k = 0; k < nB; k++) {
+      const a = r() * 6.28, d = spread * (0.7 + r() * 0.6);
+      put(ox + Math.cos(a) * d, oz + Math.sin(a) * d, K('bush'), 0.6 + r() * 0.6, r() * 6.28);
     }
   }
   return out;

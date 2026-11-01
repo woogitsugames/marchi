@@ -22,7 +22,7 @@ import { CameraRig } from './cameraRig';
 import { Effects } from './fx';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
-import { applyTextures, type MatKey } from './models/materials';
+import { applyTextures, foliageLift, type MatKey } from './models/materials';
 import { OverlayData } from './overlay';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
@@ -242,6 +242,7 @@ class View implements WorldView {
     this.wet = snap ? rt : this.wet + (rt - this.wet) * Math.min(1, dt * (raining ? 0.4 : 0.05));
     this.lighting.update(this.tod, this.rain);
     const env = this.lighting.env;
+    foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
     r.toneMappingExposure = env.exposure * 1.3;
 
     // wagons first (with last frame's camera) so a followed wagon's position is current

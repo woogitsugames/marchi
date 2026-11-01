@@ -16,7 +16,9 @@
     "shots": "node tools/screenshots.mjs",
     "cap:sync": "npm run build && cap sync",
     "apk": "bash tools/build-apk.sh",
-    "setup:android": "bash tools/setup-android-sdk.sh"
+    "setup:android": "bash tools/setup-android-sdk.sh",
+    "icons": "node tools/make-icons.mjs",
+    "icons:check": "node tools/check-icons.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -33,6 +35,7 @@
     "@capacitor/cli": "^8.6.0",
     "@types/node": "^22.20.5",
     "@types/three": "^0.181.0",
+    "sharp": "^0.34.5",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vite": "^7.3.7"

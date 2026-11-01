@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MARCHIA — an original, hand-drawn woodcut mark: cargo wagon on a timber bridge.
+     Master artwork for all native icons. Do not edit generated raster assets. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Marchia — wóz z ładunkiem na drewnianym moście</title>
+  <path id="background" fill="#2b2620" d="M0 0H512V512H0Z"/>
+  <!-- Solid silhouettes. Deliberately irregular contours and rectangular gouges
+       recall the filled-polygon engraving technique of src/ui/icons.ts. -->
+  <g id="motif" fill="#e4dccb">
+    <!-- Bridge trestles, braces, and planked deck (behind the wagon). -->
+    <path d="M121 364 143 364 146 412 126 412Z"/>
+    <path d="M365 364 387 365 386 412 366 412Z"/>
+    <path d="M137 388 151 381 207 409 194 415Z"/>
+    <path d="M371 383 382 390 319 414 307 407Z"/>
+    <path d="M118 405 165 404 173 413 117 414Z"/>
+    <path d="M345 405 395 406 396 414 339 413Z"/>
+    <path d="M109 352 398 351 414 360 412 369 104 370 101 361Z"/>
+    <path d="M111 372 404 371 396 383 114 382Z"/>
+    <!-- Three sacks: their unequal crests make the load legible at 48 px. -->
+    <path d="M165 245 168 222 Q171 202 184 191 Q195 180 205 184 Q221 192 228 216 L234 245Z"/>
+    <path d="M210 245 214 204 Q219 180 233 174 L233 165 Q244 155 255 163 L258 176 Q275 188 281 211 L285 247Z"/>
+    <path d="M271 247 274 220 Q279 200 293 191 Q303 183 314 190 Q336 204 347 229 L351 247Z"/>
+    <!-- Rear rim and iron straps of the wagon body. -->
+    <path d="M155 239 354 239 372 249 366 262 149 260 143 251Z"/>
+    <path d="M147 255 370 253 358 296 162 295Z"/>
+    <path d="M170 288 344 290 352 304 160 303Z"/>
+    <path d="M164 299 176 299 174 318 159 319Z"/>
+    <path d="M336 299 349 300 357 317 343 317Z"/>
+    <!-- Wheel rims use even-odd holes (not dark overpainting) for themed icons. -->
+    <path fill-rule="evenodd" d="M231 330A38 38 0 1 1 155 330A38 38 0 1 1 231 330ZM219 330A26 26 0 1 0 167 330A26 26 0 1 0 219 330Z"/>
+    <path fill-rule="evenodd" d="M358 330A38 38 0 1 1 282 330A38 38 0 1 1 358 330ZM346 330A26 26 0 1 0 294 330A26 26 0 1 0 346 330Z"/>
+    <!-- Six sturdy spokes + hubs, designed to survive downsampling. -->
+    <path d="M190 302 196 302 196 358 190 358Z"/>
+    <path d="M166 327 220 327 220 333 166 333Z"/>
+    <path d="M171 310 175 305 215 349 211 354Z"/>
+    <path d="M172 349 212 306 217 310 177 354Z"/>
+    <path d="M317 302 323 302 323 358 317 358Z"/>
+    <path d="M293 327 347 327 347 333 293 333Z"/>
+    <path d="M298 310 302 305 342 349 338 354Z"/>
+    <path d="M299 349 339 306 344 310 304 354Z"/>
+    <path d="M184 330A9 9 0 1 1 202 330A9 9 0 1 1 184 330Z"/>
+    <path d="M311 330A9 9 0 1 1 329 330A9 9 0 1 1 311 330Z"/>
+  </g>
+  <!-- Narrow negative gouges: no strokes, gradients, or filters. The monochrome
+       icon intentionally leaves these out to retain a single alpha silhouette. -->
+  <g id="gouges" fill="#2b2620">
+    <path d="M177 224 Q181 205 189 198 L185 218Z"/>
+    <path d="M194 191 207 194 210 200 191 199Z"/>
+    <path d="M218 210 Q220 193 228 185 L227 216Z"/>
+    <path d="M235 167 Q245 170 255 168 L258 175 233 174Z"/>
+    <path d="M265 190 Q274 204 277 225 L270 217Z"/>
+    <path d="M284 219 Q288 200 298 195 L294 214Z"/>
+    <path d="M305 188 Q314 191 320 196 L315 201 300 194Z"/>
+    <path d="M329 212 338 228 330 223Z"/>
+    <path d="M174 268 187 268 174 288 169 288Z"/>
+    <path d="M197 267 208 267 190 292 182 292Z"/>
+    <path d="M221 265 231 265 211 290 202 290Z"/>
+    <path d="M247 266 257 266 236 290 227 290Z"/>
+    <path d="M273 265 282 265 262 290 252 290Z"/>
+    <path d="M299 265 309 265 287 290 279 290Z"/>
+    <path d="M326 264 334 264 313 290 303 290Z"/>
+    <path d="M344 265 353 265 333 289 323 289Z"/>
+    <path d="M119 355 124 355 116 366 111 366Z"/>
+    <path d="M142 354 146 354 136 367 131 367Z"/>
+    <path d="M365 354 370 354 360 367 356 367Z"/>
+    <path d="M387 354 392 354 382 367 377 367Z"/>
+    <path d="M150 375 157 375 149 381 142 381Z"/>
+    <path d="M233 374 239 374 233 381 227 381Z"/>
+    <path d="M315 373 321 373 315 380 308 380Z"/>
+    <path d="M378 374 384 374 378 380 372 380Z"/>
+  </g>
+</svg>

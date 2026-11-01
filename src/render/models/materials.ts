@@ -8,6 +8,7 @@
  */
 import {
   CanvasTexture,
+  Color,
   DoubleSide,
   MeshStandardMaterial,
   SRGBColorSpace,
@@ -60,6 +61,23 @@ export interface TextureSet {
 
 const cache = new Map<MatKey, MeshStandardMaterial>();
 
+/**
+ * Shared fill for foliage (needles, leaves, far-tree cards): light scattered through the crown
+ * so self-shadowed crowns stay readable green-grey (palette 'Bór') instead of going black.
+ * Set every frame by the view from the sky light (black at night).
+ */
+export const foliageLift = { value: new Color(0, 0, 0) };
+
+function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uFoliageLift = foliageLift;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uFoliageLift;')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * uFoliageLift;');
+  };
+  m.customProgramCacheKey = () => 'foliage-' + key;
+}
+
 /** Shared material for a kind (created lazily, one instance per kind). */
 export function modelMaterial(key: MatKey): MeshStandardMaterial {
   let m = cache.get(key);
@@ -73,6 +91,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
   });
   if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
+  if (key === 'needles' || key === 'leaves' || key === 'billboard') addFoliageLift(m, key);
   if (s.alphaLeaf) {
     m.map = leafTexture();
     m.alphaTest = 0.5;
@@ -128,7 +147,7 @@ export function leafTexture(): CanvasTexture {
   g.quadraticCurveTo(size * 0.45, size * 0.55, size * 0.9, size * 0.15);
   g.stroke();
   // sparse leaves, each a small ellipse with random tone (alpha carries the shape)
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 64; i++) {
     const t = r();
     const cx = size * (0.1 + 0.8 * t) + (r() - 0.5) * size * 0.42;
     const cy = size * (0.9 - 0.75 * t) + (r() - 0.5) * size * 0.42;

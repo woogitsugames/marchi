@@ -3,7 +3,8 @@
  *  - spruce : dark conical crown of ragged, drooping branch tiers (~260 tris)
  *  - pine   : Scots pine, tall bare trunk with an orange upper bark and an irregular flat crown
  *  - oak    : broad crown that keeps its dry brown leaves into November (alpha leaf cards)
- *  - birch  : slender pale trunk, almost bare, a few last yellow leaves
+ *  - birch  : slender pale trunk, thinning yellow crown
+ *  - bush   : hazel / blackthorn shrub (~2.6 m) for forest edges, hedgerows and copse rims
  *
  * Origin at the trunk base, unit scale ≈ a mature tree (spruce 15 m, pine 16 m, oak 12 m,
  * birch 11 m); vary per instance with a uniform scale of 0.7–1.2 and random Y rotation.
@@ -31,8 +32,8 @@ import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
 import { leafTexture, modelMaterial, needleTexture } from './materials';
 import { rod } from './shapes';
 
-export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch';
-export const TREE_KINDS: TreeKind[] = ['spruce', 'pine', 'oak', 'birch'];
+export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch' | 'bush';
+export const TREE_KINDS: TreeKind[] = ['spruce', 'pine', 'oak', 'birch', 'bush'];
 
 /** Nominal height and crown radius at scale 1 (used for billboards and culling). */
 export const TREE_SIZE: Record<TreeKind, { height: number; radius: number }> = {
@@ -40,6 +41,7 @@ export const TREE_SIZE: Record<TreeKind, { height: number; radius: number }> = {
   pine: { height: 16, radius: 3.6 },
   oak: { height: 12, radius: 5.2 },
   birch: { height: 11, radius: 3.0 },
+  bush: { height: 2.8, radius: 2.0 },
 };
 
 const BARK = '#4a4036';
@@ -91,7 +93,7 @@ function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, siz
       c.set(colors[card % colors.length]);
       const d = p.clone().sub(crown);
       const inner = Math.sqrt((d.x / rad.x) ** 2 + (d.y / rad.y) ** 2 + (d.z / rad.z) ** 2);
-      c.multiplyScalar(0.62 + 0.38 * Math.min(1, inner));
+      c.multiplyScalar(0.72 + 0.28 * Math.min(1, inner));
     },
   });
 }
@@ -146,7 +148,7 @@ function whorls(b: PartBuilder, y0: number, y1: number, step: number, perTier: n
       c.set(colors[card % colors.length]);
       // inner (near the trunk) darker, tips lighter
       const rr = Math.hypot(p.x, p.z) / (radius(Math.max(y0, p.y)) + 0.3);
-      c.multiplyScalar(0.7 + 0.45 * Math.min(1, rr));
+      c.multiplyScalar(0.82 + 0.3 * Math.min(1, rr));
     },
   });
 }
@@ -165,8 +167,8 @@ function spruce(b: PartBuilder): void {
   const R = TREE_SIZE.spruce.radius;
   rod(b, 'bark', v3(0, -0.2, 0), v3(0, H * 0.97, 0), 0.24, 0.03, 6, { color: '#4b4038', ao: 0.4, dirt: 0.3 }, true);
   const radius = (y: number) => 0.35 + R * Math.pow(Math.max(0, 1 - (y - 1.2) / (H - 1.2)), 0.95);
-  crownCore(b, 2.4, H - 1.6, R * 0.3, '#28311f');
-  whorls(b, 1.3, H - 0.6, 0.62, 6, radius, 0.3, ['#435039', '#4b5a40', '#3b4834', '#505d3f'], 61, v3(0, 1, 0));
+  crownCore(b, 2.4, H - 1.6, R * 0.3, '#34402b');
+  whorls(b, 1.3, H - 0.6, 0.62, 6, radius, 0.3, ['#4f5e43', '#58684a', '#475640', '#5d6b48'], 61, v3(0, 1, 0));
 }
 
 function pine(b: PartBuilder): void {
@@ -195,7 +197,7 @@ function pine(b: PartBuilder): void {
     clumps.push(e);
   }
   clumps.forEach((c, i) => {
-    leafCards(b, c.clone().add(v3(0, 0.25, 0)), v3(1.5, 0.55, 1.5), 13, 1.5, ['#34402f', '#3c4733', '#2c3629'], 70 + i, 'needles');
+    leafCards(b, c.clone().add(v3(0, 0.25, 0)), v3(1.5, 0.55, 1.5), 13, 1.5, ['#45533c', '#4e5b42', '#3e4a37'], 70 + i, 'needles');
   });
 }
 
@@ -216,9 +218,13 @@ function oak(b: PartBuilder): void {
   // leading shoot
   rod(b, 'bark', trunkTop, v3(0.3, 10.5, -0.2), 0.25, 0.06, 5, { color: BARK, ao: 0, dirt: 0 }, true);
   // dry, withered brown leaves retained in clumps — sparse, with gaps showing the limbs
-  const cols = ['#7a5a33', '#6c5232', '#8a6a3c', '#5f4a30'];
-  leafCards(b, v3(0, 8.2, 0), v3(4.6, 2.8, 4.6), 52, 1.6, cols, 31);
-  leafCards(b, v3(0.2, 10.2, 0), v3(2.4, 1.4, 2.4), 12, 1.4, cols, 32);
+  // (autumn-thinned, but a full silhouette: clumps around each limb end plus an outer shell)
+  const cols = ['#7a5a33', '#6c5232', '#8a6a3c', '#5f4a30', '#6e6038'];
+  leafCards(b, v3(0, 8.0, 0), v3(4.4, 2.7, 4.4), 46, 2.0, cols, 31);
+  leafCards(b, v3(0.2, 10.0, 0), v3(2.6, 1.5, 2.6), 16, 1.8, cols, 32);
+  ends.forEach((e, i) => {
+    if (i % 2 === 1) leafCards(b, e.clone().add(v3(0, 0.3, 0)), v3(1.9, 1.3, 1.9), 11, 1.7, cols, 33 + i);
+  });
 }
 
 function birch(b: PartBuilder): void {
@@ -251,11 +257,27 @@ function birch(b: PartBuilder): void {
     rod(b, 'bark', e, e.clone().add(v3(Math.cos(a) * 0.6, -0.9, Math.sin(a) * 0.6)), 0.012, 0.006, 3, { color: '#4a3e36', ao: 0, dirt: 0 }, true);
     ends.push(e);
   }
-  // the last yellow leaves
-  leafCards(b, v3(0, H * 0.72, 0), v3(2.4, 2.8, 2.4), 22, 1.0, ['#a48c45', '#937c3e', '#7d6a3a'], 43);
+  // thinning yellow crown: clumps at the branch ends, a looser shell around them
+  const bc = ['#a48c45', '#937c3e', '#7d6a3a', '#8a7a46'];
+  leafCards(b, v3(0, H * 0.72, 0), v3(2.5, 3.0, 2.5), 30, 1.3, bc, 43);
+  ends.forEach((e, i) => leafCards(b, e.clone().add(v3(0, -0.3, 0)), v3(1.2, 1.1, 1.2), 6, 1.2, bc, 44 + i));
 }
 
-const BUILD: Record<TreeKind, (b: PartBuilder) => void> = { spruce, pine, oak, birch };
+function bush(b: PartBuilder): void {
+  const r = rng(51);
+  // a few thin stems fanning out of one root, twiggy tops
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2 + r() * 0.7;
+    const l = 0.9 + r() * 0.8;
+    const e = v3(Math.cos(a) * l, 1.6 + r() * 0.9, Math.sin(a) * l);
+    rod(b, 'bark', v3(Math.cos(a) * 0.1, -0.1, Math.sin(a) * 0.1), e, 0.05, 0.015, 4, { color: '#4a4038', ao: 0.3, dirt: 0.2 }, true);
+  }
+  const cols = ['#5c5537', '#6b5b36', '#4d4c33', '#776338', '#55583a'];
+  leafCards(b, v3(0, 1.45, 0), v3(1.7, 1.05, 1.7), 34, 1.15, cols, 52);
+  leafCards(b, v3(0.3, 2.1, -0.2), v3(1.1, 0.6, 1.1), 10, 1.0, cols, 53);
+}
+
+const BUILD: Record<TreeKind, (b: PartBuilder) => void> = { spruce, pine, oak, birch, bush };
 const cache = new Map<TreeKind, ModelPart[]>();
 
 /** Full-detail tree (LOD0). */

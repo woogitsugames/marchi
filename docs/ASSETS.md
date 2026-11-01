@@ -200,3 +200,51 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 | File | Origin | Licence | Licence file |
 |---|---|---|---|
 | `public/vendor/basis/basis_transcoder.js`, `.wasm` | copied unmodified from `three@0.181` `examples/jsm/libs/basis/` (Binomial Basis Universal) | Apache-2.0 | `public/licenses/Apache-2.0-basis_universal.txt` |
+
+
+## Audio — procedural CC0 original sound design (task 02)
+
+All files below were **generated specifically for MARCHIA**, with no input recordings, external
+samples, instruments, or third-party sound libraries. Author-generated procedural waveforms
+are expressly dedicated to **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/).
+The source is `tools/generate_audio.py` (deterministic seed 1300; NumPy/SciPy synthesis; FFmpeg
+Vorbis / AAC encoding). The sources are original synthetic sound-design effects, **not**
+actual documentary field recordings. No external licences or attribution are needed.
+
+- **Budget (both formats, all 46 files):** 1539860 bytes (1.47 MiB; limit 4 MiB).
+- **Formats:** 24 kHz OGG Vorbis (`.ogg`) and AAC-LC (`.m4a`) Safari fallback.
+  Mono for 19 SFX/UI (including three mechanical loops), stereo for four ambient beds.
+- **Dynamics:** source ambient beds processed for −24 LUFS integrated (FFmpeg loudnorm);
+  discrete SFX sources normalized to −6 dBFS peak before lossy encoding. Codec encoding may
+  alter final codec-reconstructed peak by a fraction of a dB; retest after replacements.
+- **Looping:** seamless fade-in/out within all loop files, with scheduled 1.4–1.5 s
+  crossfades at gain changes in the Web Audio engine.
+
+| OGG (relative to repository) | M4A (relative) | Seconds | Channels | OGG B | M4A B | License |
+|---|---|---:|---:|---:|---:|---|
+| `public/assets/audio/ambient/evening.ogg` | `public/assets/audio/ambient/evening.m4a` | 40.0 | 2 | 181633 | 155174 | CC0 1.0 (original) |
+| `public/assets/audio/ambient/morning.ogg` | `public/assets/audio/ambient/morning.m4a` | 36.0 | 2 | 163686 | 139723 | CC0 1.0 (original) |
+| `public/assets/audio/ambient/rain.ogg` | `public/assets/audio/ambient/rain.m4a` | 32.0 | 2 | 178250 | 124267 | CC0 1.0 (original) |
+| `public/assets/audio/ambient/river.ogg` | `public/assets/audio/ambient/river.m4a` | 34.0 | 2 | 186548 | 131993 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/axe.ogg` | `public/assets/audio/sfx/axe.m4a` | 0.8 | 1 | 4790 | 3373 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/bridge-wood.ogg` | `public/assets/audio/sfx/bridge-wood.m4a` | 1.4 | 1 | 6942 | 4771 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/cart-cobble.ogg` | `public/assets/audio/sfx/cart-cobble.m4a` | 3.8 | 1 | 17663 | 10952 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/cart-dirt.ogg` | `public/assets/audio/sfx/cart-dirt.m4a` | 4.8 | 1 | 21302 | 13689 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/horse-snort.ogg` | `public/assets/audio/sfx/horse-snort.m4a` | 1.6 | 1 | 9239 | 5305 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/load-log.ogg` | `public/assets/audio/sfx/load-log.m4a` | 1.2 | 1 | 7131 | 4404 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/load-plank.ogg` | `public/assets/audio/sfx/load-plank.m4a` | 1.1 | 1 | 7011 | 3954 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/load-sack.ogg` | `public/assets/audio/sfx/load-sack.m4a` | 0.9 | 1 | 7338 | 3571 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/mill-wheel.ogg` | `public/assets/audio/sfx/mill-wheel.m4a` | 5.5 | 1 | 25070 | 15454 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/oven.ogg` | `public/assets/audio/sfx/oven.m4a` | 1.3 | 1 | 8718 | 4590 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/saw.ogg` | `public/assets/audio/sfx/saw.m4a` | 1.9 | 1 | 11200 | 6022 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/unload-log.ogg` | `public/assets/audio/sfx/unload-log.m4a` | 1.4 | 1 | 7576 | 4907 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/unload-plank.ogg` | `public/assets/audio/sfx/unload-plank.m4a` | 1.4 | 1 | 7595 | 4579 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/unload-sack.ogg` | `public/assets/audio/sfx/unload-sack.m4a` | 1.1 | 1 | 8074 | 4013 | CC0 1.0 (original) |
+| `public/assets/audio/sfx/wax-seal.ogg` | `public/assets/audio/sfx/wax-seal.m4a` | 1.1 | 1 | 6776 | 3812 | CC0 1.0 (original) |
+| `public/assets/audio/ui/error.ogg` | `public/assets/audio/ui/error.m4a` | 0.5 | 1 | 4357 | 2413 | CC0 1.0 (original) |
+| `public/assets/audio/ui/paper.ogg` | `public/assets/audio/ui/paper.m4a` | 0.5 | 1 | 5520 | 2482 | CC0 1.0 (original) |
+| `public/assets/audio/ui/stall.ogg` | `public/assets/audio/ui/stall.m4a` | 0.6 | 1 | 5082 | 2681 | CC0 1.0 (original) |
+| `public/assets/audio/ui/wood.ogg` | `public/assets/audio/ui/wood.m4a` | 0.3 | 1 | 4381 | 1849 | CC0 1.0 (original) |
+
+Regenerate: `python tools/generate_audio.py` with `numpy`, `scipy` and FFmpeg installed.
+Every rendered audio asset must be checked for codec support, gapless loops, and combined size.
