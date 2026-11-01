@@ -74,8 +74,8 @@ void main() {
   body *= uLight;
   // current: streaks stretched along the flow (river runs roughly along +x)
   float st = texture2D(tNoise, vec2(p.x / 55.0 - uTime * 0.012, p.y / 5.0 + big.b * 0.6)).a;
-  float streak = smoothstep(0.62, 0.85, st) * (1.0 - uRain * 0.6) * smoothstep(0.15, 0.5, vDepth);
-  vec3 col = mix(body, sky * 0.55, clamp(fres * 0.75 + 0.05 + streak * 0.18, 0.0, 1.0));
+  float streak = smoothstep(0.5, 0.9, st) * (1.0 - uRain * 0.6) * smoothstep(0.15, 0.5, vDepth);
+  vec3 col = mix(body, sky * 0.5, clamp(fres * 0.6 + 0.04 + streak * 0.06, 0.0, 1.0));
   float spec = pow(max(dot(R, uSunDir), 0.0), 180.0) * (1.0 - uRain * 0.8);
   col += uSunCol * spec * 1.4;
   // broken scum / foam line along the waterline, lit like the sky

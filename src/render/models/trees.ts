@@ -258,7 +258,7 @@ function birch(b: PartBuilder): void {
     ends.push(e);
   }
   // thinning yellow crown: clumps at the branch ends, a looser shell around them
-  const bc = ['#a48c45', '#937c3e', '#7d6a3a', '#8a7a46'];
+  const bc = ['#8f7c45', '#7f6d3d', '#6e6038', '#857446'];
   leafCards(b, v3(0, H * 0.72, 0), v3(2.5, 3.0, 2.5), 30, 1.3, bc, 43);
   ends.forEach((e, i) => leafCards(b, e.clone().add(v3(0, -0.3, 0)), v3(1.2, 1.1, 1.2), 6, 1.2, bc, 44 + i));
 }

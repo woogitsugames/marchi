@@ -23,6 +23,8 @@ export class CameraRig implements CameraControl {
   pitch = 0.6;
   followId: number | null = null;
   menu = false;
+  private menuT = 0;
+  private menuYaw = 0;
   private hf: Heightfield | null = null;
   private cssW = 1;
   private cssH = 1;
@@ -53,6 +55,7 @@ export class CameraRig implements CameraControl {
     this.target.set(x, this.hf ? this.hf.height(x, z) : 0, z);
     this.dist = this.goalDist = dist;
     this.yaw = this.goalYaw = yaw;
+    this.menuT = 0;
   }
 
   setGoal(x: number, z: number, dist?: number, yaw?: number): void {
@@ -132,7 +135,12 @@ export class CameraRig implements CameraControl {
   /** Advance damping and place the camera. followPos: current position of the followed wagon. */
   update(dt: number, followPos: Vector3 | null): void {
     if (this.menu) {
-      this.goalYaw += dt * 0.025;
+      // slow sway around the framing yaw (not a full orbit, so the bridge stays framed)
+      if (this.menuT === 0) this.menuYaw = this.goalYaw;
+      this.menuT += dt;
+      this.goalYaw = this.menuYaw + Math.sin(this.menuT * 0.045) * 0.16;
+    } else {
+      this.menuT = 0;
     }
     if (followPos) {
       this.goal.x = followPos.x;
@@ -163,6 +171,14 @@ export class CameraRig implements CameraControl {
       if (c.position.y < g + 4) c.position.y = g + 4;
     }
     c.lookAt(this.target.x, this.target.y + Math.min(2, this.dist * 0.02), this.target.z);
+    // menu: shift the projection so the subject sits clear of the menu panel
+    // (right of it in landscape, below it in portrait)
+    if (this.menu) {
+      const a = this.cssW / this.cssH;
+      const sx = a > 1.2 ? 0.17 : a < 0.8 ? 0 : 0.1;
+      const sy = a > 1.2 ? 0.02 : a < 0.8 ? 0.17 : 0.1;
+      c.setViewOffset(this.cssW, this.cssH, -sx * this.cssW, -sy * this.cssH, this.cssW, this.cssH);
+    } else if (c.view?.enabled) c.clearViewOffset();
     c.near = Math.max(0.5, this.dist * 0.04);
     c.far = 2600;
     c.updateProjectionMatrix();

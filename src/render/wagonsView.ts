@@ -78,6 +78,18 @@ class Parts {
   setShadow(on: boolean): void { for (const m of this.meshes) m.castShadow = on; }
 }
 
+/** A render-only wagon (main-menu cinematic); not part of the simulation. */
+export interface DecorWagon {
+  x: number;
+  y: number;
+  z: number;
+  heading: number;
+  pitch: number;
+  odo: number;
+  cargo: CargoGood | null;
+  qty: number;
+}
+
 const _M = new Matrix4();
 const _R = new Matrix4();
 const _W = new Matrix4();
@@ -103,6 +115,8 @@ export class WagonsView {
   private order: Wagon[] = [];
   /** Distance beyond which the low-detail rig is used. */
   lodDist = 110;
+  /** Render-only rigs drawn after the sim wagons (menu cinematic). */
+  decor: DecorWagon[] = [];
   /** Estimated sim speed (ticks per real second / TICK_HZ), drives the leg animation. */
   simSpeed = 1;
   private tickTimes: number[] = [];
@@ -364,6 +378,22 @@ export class WagonsView {
           _W.multiplyMatrices(_M, slots[i]!);
           parts.push(_W);
         }
+      }
+    }
+    for (const d of this.decor) {
+      _M.makeRotationY(d.heading).multiply(_R.makeRotationX(-d.pitch)).setPosition(d.x, d.y, d.z);
+      this.body.push(_M);
+      const hi = this.horse.push(_M);
+      this.walkAttr.setX(hi, 1);
+      this.driver.push(_M);
+      for (const wh of WAGON.wheels) {
+        _W.copy(_M).multiply(_R.makeTranslation(wh.position.x, wh.position.y, wh.position.z)).multiply(_R.makeRotationX(d.odo / wh.radius));
+        (wh.kind === 'front' ? this.wheelF : this.wheelR).push(_W);
+      }
+      if (d.cargo && d.qty > 0) {
+        const parts = this.cargo.get(d.cargo)!;
+        const slots = this.slots.get(d.cargo)!;
+        for (let i = 0; i < Math.min(slots.length, d.qty); i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
       }
     }
     for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver, this.lod1]) p.end();

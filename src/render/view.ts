@@ -167,12 +167,15 @@ class View implements WorldView {
       if (this.renderer && !this.baked) { this.vegetation.bake(this.renderer); this.baked = true; }
       this.applyQuality();
       if (!this.menu) this.rig.set(hf.sizeX * 0.45, hf.sizeZ * 0.5, 230, -0.3);
-      else this.rig.set(MENU_TARGET.x, MENU_TARGET.z, MENU_TARGET.dist, MENU_TARGET.yaw);
     }
     this.wagons!.reset();
     this.snapEnv = true;
     this.netVer = -1;
     this.syncNetwork();
+    if (!sameTerrain && this.menu) {
+      const m = this.menuTarget();
+      this.rig.set(m.x, m.z, MENU_TARGET.dist, MENU_TARGET.yaw);
+    }
     this.wagons!.afterTick(world, performance.now());
     this.overlay!.updateTraffic(world);
     this.setSelection(this.selection);
@@ -251,6 +254,7 @@ class View implements WorldView {
     foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
     r.toneMappingExposure = env.exposure * 1.3;
 
+    this.updateMenuWagon();
     // wagons first (with last frame's camera) so a followed wagon's position is current
     this.wagons.frame(w, alpha, dt, this.rig.camera, this.time);
 
@@ -302,6 +306,51 @@ class View implements WorldView {
     r.render(this.scene, cam);
     this.lastStats.calls = r.info.render.calls;
     this.lastStats.triangles = r.info.render.triangles;
+  }
+
+  /** Bridge centre and axis (first bridge found), for the menu shot. */
+  private bridgeAxis(): { x: number; z: number; dx: number; dz: number } | null {
+    const br = this.roads?.bridges;
+    if (!br || !br.length) return null;
+    let x = 0, z = 0;
+    for (const b of br) { x += b.x; z += b.z; }
+    const a = br[0]!.angle;
+    return { x: x / br.length, z: z / br.length, dx: Math.sin(a), dz: Math.cos(a) };
+  }
+
+  private menuTarget(): { x: number; z: number } {
+    const b = this.bridgeAxis();
+    return b ? { x: b.x, z: b.z } : MENU_TARGET;
+  }
+
+  /** Menu cinematic: one loaded wagon keeps crossing the bridge (render-only, no sim effect). */
+  private updateMenuWagon(): void {
+    const wv = this.wagons, w = this.world, hf = this.hf;
+    if (!wv || !w || !hf) return;
+    const b = this.menu ? this.bridgeAxis() : null;
+    if (!b) { wv.decor.length = 0; return; }
+    const t = w.terrain;
+    const yRaw = (x: number, z: number) => {
+      const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+      const c = cz * t.w + cx;
+      const g = hf.inside(x, z) ? hf.height(x, z) : hf.waterLevel;
+      return t.water[c] && w.state.roads[c] ? Math.max(g, t.cellH[c]!) : g;
+    };
+    const span = 44, speed = 1.6;
+    const u = ((this.time * speed + span * 0.7) % (2 * span)) - span;
+    const at = (v: number) => {
+      const x = b.x + b.dx * v, z = b.z + b.dz * v;
+      return (yRaw(x - b.dx * 1.5, z - b.dz * 1.5) + yRaw(x, z) * 2 + yRaw(x + b.dx * 1.5, z + b.dz * 1.5)) / 4;
+    };
+    const x = b.x + b.dx * u, z = b.z + b.dz * u;
+    const yF = at(u + 1.6), yB = at(u - 1.6);
+    const y = Math.max(hf.inside(x, z) ? hf.height(x, z) : 0, (yF + yB) / 2);
+    if (!wv.decor.length) wv.decor.push({ x, y, z, heading: 0, pitch: 0, odo: 0, cargo: 'planks', qty: 4 });
+    const d = wv.decor[0]!;
+    d.x = x; d.y = y; d.z = z;
+    d.heading = Math.atan2(b.dx, b.dz);
+    d.pitch = Math.atan2(yF - yB, 3.2);
+    d.odo = u + span;
   }
 
   resize(cssW: number, cssH: number, dpr: number): void {
@@ -456,8 +505,9 @@ class View implements WorldView {
     this.rig.menu = on;
     if (on) {
       this.rig.follow(null);
-      this.rig.setGoal(MENU_TARGET.x, MENU_TARGET.z, MENU_TARGET.dist, MENU_TARGET.yaw);
-      if (this.hf) this.rig.set(MENU_TARGET.x, MENU_TARGET.z, MENU_TARGET.dist, MENU_TARGET.yaw);
+      const m = this.menuTarget();
+      this.rig.setGoal(m.x, m.z, MENU_TARGET.dist, MENU_TARGET.yaw);
+      if (this.hf) this.rig.set(m.x, m.z, MENU_TARGET.dist, MENU_TARGET.yaw);
     }
   }
 

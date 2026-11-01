@@ -65,7 +65,7 @@ const _p = new Vector3();
 const _s = new Vector3();
 const _up = new Vector3(0, 1, 0);
 const _c = new Color();
-const TINTS = [new Color('#ffffff'), new Color('#d9d0a8'), new Color('#b7c0a4'), new Color('#efe0b0')];
+const TINTS = [new Color('#ffffff'), new Color('#e2d6aa'), new Color('#b9c2a6'), new Color('#cfc9a8'), new Color('#f0dca6')];
 
 export class GroundCover {
   readonly group = new Group();
@@ -82,8 +82,8 @@ export class GroundCover {
   radius = 38;
 
   constructor(private readonly hf: Heightfield) {
-    const tg = bladeClump(11, 0.22, 0.55, 0.16, 0.45, '#3f4430', '#7d7a52', 5, '#5c6440');
-    this.tufts = new InstancedMesh(tg, modelMaterial('grass') as Material, 2600);
+    const tg = bladeClump(13, 0.2, 0.5, 0.18, 0.5, '#363c27', '#6e6a46', 5, '#4f5838');
+    this.tufts = new InstancedMesh(tg, modelMaterial('grass') as Material, 4000);
     this.tufts.count = 0;
     this.tufts.name = 'grass-tufts';
     this.tufts.receiveShadow = true;
@@ -126,7 +126,7 @@ export class GroundCover {
       // reed beds in patches, with gaps of open bank
       const patch = vnoise(jx / 11, jz / 9, 0.5, 61) + (vnoise(jx / 3, jz / 3, 1.5, 62) - 0.5) * 0.3;
       if (patch < 0.5) continue;
-      if (roads.distAt(jx, jz) < 4.5) continue;
+      if (roads.distAt(jx, jz) < 3.6) continue; // (field saturates at ROAD_MAXD = 4 m)
       const s = 0.65 + 0.6 * Math.min(1, (patch - 0.5) * 3) * (0.7 + hash3(Math.round(jx * 3), Math.round(jz * 3), 3, 5) * 0.5);
       items.push(jx, hf.height(jx, jz) - 0.05, jz, hash3(Math.round(jx * 5), 0, Math.round(jz * 5), 7) * 6.28, s);
     }
@@ -158,7 +158,7 @@ export class GroundCover {
     if (w && roads) {
       const occ = net(w).occupied;
       const terr = w.terrain;
-      const S = 1.35;
+      const S = 1.05;
       for (let j = 0; j < TILE / S; j++) for (let i = 0; i < TILE / S; i++) {
         const gx = tx * TILE + i * S, gz = tz * TILE + j * S;
         const hsh = hash3(Math.round(gx * 3), Math.round(gz * 3), 11, 3);
@@ -169,7 +169,7 @@ export class GroundCover {
         const rdist = roads.distAt(x, z);
         if (rdist < 2.1) continue;
         // clumpy density: thick in some patches, bare in others
-        const dens = vnoise(x / 7, z / 7, 3.5, 63) * 0.9 + (terr.forest[ci]! > 0.3 ? -0.35 : 0) + (rdist < 3.2 ? 0.25 : 0);
+        const dens = vnoise(x / 7, z / 7, 3.5, 63) * 0.85 + 0.12 + (terr.forest[ci]! > 0.3 ? -0.35 : 0) + (rdist < 3.2 ? 0.25 : 0);
         const r2 = hash3(Math.round(x * 7), Math.round(z * 7), 13, 3);
         if (r2 > dens) continue;
         const y = hf.height(x, z);

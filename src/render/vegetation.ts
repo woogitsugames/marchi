@@ -137,7 +137,7 @@ function makeTree(x: number, y: number, z: number, kind: number, rot: number, sc
 const K = (k: TreeKind) => TREE_KINDS.indexOf(k);
 
 function pickKind(r: number, north: boolean): number {
-  if (north) return r < 0.55 ? K('spruce') : r < 0.88 ? K('pine') : K('birch');
+  if (north) return r < 0.58 ? K('spruce') : r < 0.93 ? K('pine') : K('birch');
   return r < 0.42 ? K('oak') : r < 0.78 ? K('birch') : K('pine');
 }
 
@@ -226,8 +226,8 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
         }
         // hedgerow along field edges, with gaps
         const fieldN = (x > 0 && t.field[i - 1]) || (x < W - 1 && t.field[i + 1]) || (y > 0 && t.field[i - W]) || (y < H - 1 && t.field[i + W]);
-        if (fieldN && vnoise(x / 3.5, y / 3.5, 0.5, 81) > 0.38) {
-          bushes(x, y, 2, r, 0.75);
+        if (fieldN && vnoise(x / 3.5, y / 3.5, 0.5, 81) > 0.36) {
+          bushes(x, y, 3, r, 0.85);
           if (r() < 0.28) put((x + 0.5) * CELL, (y + 0.5) * CELL, r() < 0.6 ? K('oak') : K('birch'), 0.7 + r() * 0.35, r() * 6.28);
         }
         // shrubs along the river bank (alder/willow scrub stand-in)
