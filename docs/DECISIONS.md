@@ -151,7 +151,7 @@ for a frustum already fitted to the zoom); pixel-ratio cap ultra 3 / high 2 / lo
 server sets the ultra base to `/assets-ultra/`; release builds stay at 2K until the pack is hosted
 (D-21 (3)). *At game distances a 1024 normal still gives ≥ 1.5 texels/px on the terrain; colour
 detail and anisotropic filtering come from the 2K/4K albedo + ORM.* (decided)
-**D-22 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
+**D-26 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
 [start, end) in ticks; wooden one-lane spans cannot be **entered** inside a window (wagons already on a span leave
 it). A wagon at the bridgehead waits with `BRIDGE_CLOSED{span, until, since}`, keeps job, cargo and reservations
 (never turned into `NO_ROUTE`, so nothing is cancelled), and re-plans every 3 s. Routing charges the wait until the
