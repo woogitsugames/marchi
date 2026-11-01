@@ -17,7 +17,14 @@ export interface NetCache {
   gateOf: Int32Array;
   /** cell -> wooden bridge span id (min cell index of the span), -1 otherwise. */
   span: Int32Array;
+  /** cell*8+dir -> 1 when the edge cell -> neighbour(dir) is drivable. */
+  edgeMask: Uint8Array;
+  /** Lazily built edge travel times per (loaded, rain) variant, index cell*8+dir, Infinity = no edge. */
+  costs: (Float64Array | null)[];
 }
+
+/** Opposite direction index for DX/DY. */
+export const OPP = [2, 3, 0, 1, 6, 7, 4, 5];
 
 export interface World {
   terrain: Terrain;
@@ -59,8 +66,38 @@ export function net(world: World): NetCache {
       }
     }
   }
-  world.cache = { ver: st.netVersion, occupied, gateOf, span };
+  world.cache = { ver: st.netVersion, occupied, gateOf, span, edgeMask: new Uint8Array(n * 8), costs: [null, null, null, null] };
+  const mask = world.cache.edgeMask;
+  for (let i = 0; i < n; i++) {
+    if (!st.roads[i]) continue;
+    const x = i % w, y = (i - x) / w;
+    for (let d = 0; d < 8; d++) {
+      const nx = x + DX[d]!, ny = y + DY[d]!;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      if (hasEdge(world, i, ny * w + nx)) mask[i * 8 + d] = 1;
+    }
+  }
   return world.cache;
+}
+
+/** Edge cost table for a (loaded, rain) variant, cached until the network changes. */
+export function edgeCosts(world: World, loaded: boolean, rain: boolean): Float64Array {
+  const c = net(world);
+  const k = (loaded ? 1 : 0) + (rain ? 2 : 0);
+  let tab = c.costs[k];
+  if (tab) return tab;
+  const w = world.terrain.w, n = w * world.terrain.h;
+  tab = new Float64Array(n * 8).fill(Infinity);
+  for (let i = 0; i < n; i++) {
+    if (!world.state.roads[i]) continue;
+    const x = i % w, y = (i - x) / w;
+    for (let d = 0; d < 8; d++) {
+      if (!c.edgeMask[i * 8 + d]) continue;
+      tab[i * 8 + d] = edgeTime(world, i, (y + DY[d]!) * w + x + DX[d]!, loaded, rain);
+    }
+  }
+  c.costs[k] = tab;
+  return tab;
 }
 
 export function isRaining(st: SimState): boolean {
@@ -96,7 +133,7 @@ export function edgeLength(t: Terrain, a: number, b: number): number {
 export function hasEdge(world: World, a: number, b: number): boolean {
   const st = world.state, t = world.terrain;
   if (!st.roads[a] || !st.roads[b]) return false;
-  const c = net(world);
+  const c = world.cache && world.cache.ver === st.netVersion ? world.cache : net(world);
   if (c.occupied[a] !== -1 || c.occupied[b] !== -1) return false;
   const ax = a % t.w, ay = (a - ax) / t.w, bx = b % t.w, by = (b - bx) / t.w;
   const ddx = bx - ax, ddy = by - ay;
@@ -192,6 +229,7 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
     return top;
   };
   const rain = isRaining(world.state);
+  const costs = edgeCosts(world, loaded, rain);
   dist[start] = 0;
   push(start, 0);
   sc.curStamp = (sc.curStamp + 1) >>> 0 || 1;
@@ -209,8 +247,8 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
       if (vx < 0 || vy < 0 || vx >= w || vy >= h) continue;
       const v = vy * w + vx;
       if (done[v] === mark) continue;
-      if (reverse ? !hasEdge(world, v, u) : !hasEdge(world, u, v)) continue;
-      const cost = reverse ? edgeTime(world, v, u, loaded, rain) : edgeTime(world, u, v, loaded, rain);
+      const cost = reverse ? costs[v * 8 + OPP[d]!]! : costs[u * 8 + d]!;
+      if (cost === Infinity) continue;
       const nd = dist[u]! + cost;
       if (nd < dist[v]!) {
         dist[v] = nd;
