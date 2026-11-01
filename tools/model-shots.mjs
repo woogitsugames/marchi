@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const views = process.argv.slice(2).length ? process.argv.slice(2) : ['overview', 'wagons', 'close', 'far', 'buildings', 'bwest', 'castle', 'trees', 'bridges', 'props'];
-const server = await createServer({ server: { port: 5199, host: '127.0.0.1' }, logLevel: 'error' });
+const server = await createServer({ server: { port: 5199, host: '127.0.0.1', hmr: false }, optimizeDeps: { noDiscovery: true, include: [] }, logLevel: 'error' });
 await server.listen();
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });

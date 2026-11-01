@@ -50,7 +50,7 @@ document.body.appendChild(renderer.domElement);
 const MIST = new Color('#c9c6bb');
 const scene = new Scene();
 scene.background = MIST;
-scene.fog = new FogExp2(MIST, view === 'far' ? 0.0055 : 0.0075);
+scene.fog = new FogExp2(MIST, view === 'far' || view === 'overview' ? 0.0032 : 0.005);
 
 const hemi = new HemisphereLight('#c4c6c4', '#4a3f33', 1.25);
 scene.add(hemi);
@@ -191,8 +191,8 @@ bakeTreeBillboards(renderer);
     const far: Matrix4[] = [];
     for (let i = 0; i < 6; i++) {
       const s = 0.85 + ((i * 37) % 10) / 30;
-      ms.push(trs(44 + (i % 3) * 5 + k * 1.3, 0, -6 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
-      far.push(trs(62 + (i % 3) * 5, 0, -6 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
+      ms.push(trs(80 + (i % 3) * 5 + k * 1.3, 0, -4 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
+      far.push(trs(98 + (i % 3) * 5, 0, -4 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
     }
     addInstanced(treeParts(kind), ms);
     const bb = treeBillboard(kind);
@@ -211,14 +211,14 @@ bakeTreeBillboards(renderer);
 // ---------------------------------------------------------------- camera views
 const camera = new PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.5, 900);
 const views: Record<string, [Vector3, Vector3]> = {
-  overview: [new Vector3(55, 70, 95), new Vector3(5, 0, -8)],
+  overview: [new Vector3(70, 75, 100), new Vector3(25, 0, -10)],
   wagons: [new Vector3(18, 17, 30), new Vector3(9, 1, -2)],
   close: [new Vector3(-6.5, 3.2, 8.5), new Vector3(-11, 1.2, 0)],
-  far: [new Vector3(60, 95, 140), new Vector3(10, 0, -5)],
+  far: [new Vector3(75, 110, 150), new Vector3(30, 0, -8)],
   buildings: [new Vector3(10, 32, 30), new Vector3(10, 2, -22)],
-  castle: [new Vector3(66, 24, 14), new Vector3(52, 4, -24)],
+  castle: [new Vector3(82, 26, 6), new Vector3(64, 4, -24)],
   bwest: [new Vector3(-10, 26, 22), new Vector3(-12, 2, -20)],
-  trees: [new Vector3(72, 14, 22), new Vector3(52, 4, -12)],
+  trees: [new Vector3(108, 16, 26), new Vector3(90, 5, -12)],
   bridges: [new Vector3(-28, 14, 12), new Vector3(-44, 0, -12)],
   props: [new Vector3(2, 5, 16), new Vector3(-2, 0.8, 6)],
 };
@@ -231,7 +231,8 @@ sun.target.position.copy(target);
 sun.position.copy(target).addScaledVector(sunDir, 120);
 
 const info = document.getElementById('info');
-if (info) info.textContent = stats.join('\n');
+if (info) info.textContent = params.has('still') ? '' : stats.join('\n');
+if (info && params.has('still')) info.style.display = 'none';
 const nav = document.getElementById('views');
 if (nav) for (const k of Object.keys(views)) {
   const a = document.createElement('a');

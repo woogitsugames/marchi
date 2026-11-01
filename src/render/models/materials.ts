@@ -69,8 +69,8 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
     vertexColors: true,
     roughness: s.roughness,
     metalness: s.metalness ?? 0,
-    side: s.side === 'double' ? DoubleSide : undefined,
   });
+  if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
   if (s.alphaLeaf) {
     m.map = leafTexture();
