@@ -116,7 +116,7 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
           let da = ang - multi.ang;
           if (da > Math.PI) da -= 2 * Math.PI;
           if (da < -Math.PI) da += 2 * Math.PI;
-          cam.rotate(da);
+          cam.rotate(da, cx, cy);
         }
         multi.dist = dist;
         multi.ang = ang;

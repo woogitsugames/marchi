@@ -32,8 +32,9 @@ export interface CameraControl {
   pan(dxPx: number, dyPx: number): void;
   /** Multiply distance by factor around a screen point (pinch / wheel). */
   zoom(factor: number, atX: number, atY: number): void;
-  /** Rotate around the vertical axis (two-finger twist / right-drag). */
-  rotate(radians: number): void;
+  /** Rotate around the vertical axis (two-finger twist / right-drag); with a screen point the ground
+   *  under it stays fixed (pivot between the fingers), otherwise the screen centre is the pivot. */
+  rotate(radians: number, atX?: number, atY?: number): void;
   /** Smoothly centre on a world cell (e.g. following a wagon). */
   focusCell(cell: number): void;
   /** Follow a wagon until cleared (null). */

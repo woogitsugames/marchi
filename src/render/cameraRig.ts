@@ -99,9 +99,23 @@ export class CameraRig implements CameraControl {
     this.clampGoal();
   }
 
-  rotate(radians: number): void {
+  /**
+   * Rotate the view by `radians` around the ground point under (atX, atY) — the point between the
+   * fingers stays put, like a map. Without a screen point it orbits the screen centre (target).
+   */
+  rotate(radians: number, atX?: number, atY?: number): void {
     if (this.menu) return;
     this.goalYaw += radians;
+    if (atX === undefined || atY === undefined || this.followId !== null) return;
+    const p = this.groundPoint(atX, atY, _f);
+    if (!p) return;
+    // the camera offset rotates by R(r): x' = x cos r + z sin r, z' = z cos r - x sin r.
+    // Keep P fixed in the camera frame: goal' = P - R(P - goal).
+    const c = Math.cos(radians), s = Math.sin(radians);
+    const vx = p.x - this.goal.x, vz = p.z - this.goal.z;
+    this.goal.x = p.x - (vx * c + vz * s);
+    this.goal.z = p.z - (vz * c - vx * s);
+    this.clampGoal();
   }
 
   focusCell(cell: number): void {
