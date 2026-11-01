@@ -51,7 +51,7 @@ export function step(world: World): void {
   checkMission(world);
   for (const b of st.buildings) {
     const k = b.status.k;
-    b.stalledTicks = k === 'WORKING' || k === 'IDLE' || k === 'CONTRACT_DONE' || k === 'WAITING_DELIVERY' ? 0 : b.stalledTicks + 1;
+    b.stalledTicks = k === 'WORKING' || k === 'IDLE' || k === 'CONTRACT_DONE' || k === 'WAITING_DELIVERY' || k === 'WAITING_UPSTREAM' ? 0 : b.stalledTicks + 1;
   }
   st.tick++;
 }

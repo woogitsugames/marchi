@@ -38,6 +38,7 @@ export const pl = {
   'status.NO_ROAD': 'Brak drogi do bramy',
   'status.NO_INPUT.NONE_AVAILABLE': 'Brak dostępnych zapasów {goodGen}',
   'status.NO_INPUT.UNREACHABLE': 'Brak dojazdu do zapasów {goodGen}',
+  'status.WAITING_UPSTREAM': 'Czeka na {goodAcc} — dostawca właśnie wytwarza',
   'status.WAITING_DELIVERY': '{good} w drodze — wóz {wagon}',
   'status.NO_WAGON.ALL_BUSY': 'Brak wolnego wozu do przewozu {goodGen}',
   'status.NO_WAGON.NONE_CAN_REACH': 'Żaden wolny wóz nie dojedzie po {goodAcc}',

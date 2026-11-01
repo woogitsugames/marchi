@@ -51,6 +51,7 @@ function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: 
   switch (s.k) {
     case 'NO_INPUT': return s.blockedBy >= 0 ? { kind: 'building', id: s.blockedBy } : null;
     case 'WAITING_DELIVERY': return { kind: 'wagon', id: s.wagon };
+    case 'WAITING_UPSTREAM': return { kind: 'building', id: s.from };
     case 'WAITING_PICKUP': return { kind: 'wagon', id: s.wagon };
     case 'OUTPUT_FULL': return s.blockedBy >= 0 ? { kind: 'building', id: s.blockedBy } : null;
     default: return null;

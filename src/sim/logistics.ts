@@ -172,7 +172,7 @@ export function dispatch(world: World): void {
     }
   }
 
-  diagnose(world, unmet, pushFail);
+  diagnose(world, unmet, pushFail, dc);
 }
 
 /** A building that produces `good` (lowest id, not `except`), or -1. */
@@ -203,26 +203,45 @@ function pickupWagon(world: World, b: Building, g: Good): number {
   return -1;
 }
 
-function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>): void {
+function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, dc: DistCache): void {
   const st = world.state;
   void net(world);
   for (const b of st.buildings) {
-    b.status = statusFor(world, b, unmet, pushFail);
+    b.status = statusFor(world, b, unmet, pushFail, dc);
   }
 }
 
-function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>): BuildingStatus {
+/**
+ * When nothing of `g` is available: is a producer that can reach `b` busy making it? Returns
+ * WAITING_UPSTREAM for a working, reachable producer; otherwise the producer to blame (stalled
+ * ones first, so the cause chain follows the real blockage rather than the lowest id).
+ */
+function upstreamReason(world: World, b: Building, g: Good, dc: DistCache): BuildingStatus {
+  let stalled = -1, any = -1;
+  for (const p of world.state.buildings) {
+    if (p.id === b.id || !outputGoods(p.type).includes(g)) continue;
+    const reach = dc.from(p.gate).dist[b.gate]! < Infinity;
+    // healthy supplier: producing now, or itself just waiting for a delivery / its own supplier
+    const healthy = p.progress >= 0 || p.status.k === 'WORKING' || p.status.k === 'WAITING_DELIVERY' || p.status.k === 'WAITING_UPSTREAM';
+    if (reach && healthy) return { k: 'WAITING_UPSTREAM', good: g, from: p.id };
+    if (any === -1) any = p.id;
+    if (stalled === -1 && !healthy) stalled = p.id;
+  }
+  return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: stalled >= 0 ? stalled : any };
+}
+
+function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, dc: DistCache): BuildingStatus {
   if (b.incoming[g] > 0) {
     const w = incomingWagon(world, b, g);
     if (w >= 0) return { k: 'WAITING_DELIVERY', good: g, wagon: w };
   }
   const u = unmet.get(b.id + ':' + g);
   if (u && u.k === 'NO_WAGON') return { k: 'NO_WAGON', good: g, cause: u.cause };
-  if (u && u.k === 'NO_INPUT') return { k: 'NO_INPUT', good: g, cause: u.cause, blockedBy: u.blockedBy };
-  return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: upstreamOf(world, g, b.id) };
+  if (u && u.k === 'NO_INPUT' && u.cause === 'UNREACHABLE') return { k: 'NO_INPUT', good: g, cause: u.cause, blockedBy: u.blockedBy };
+  return upstreamReason(world, b, g, dc);
 }
 
-function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>): BuildingStatus {
+function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, dc: DistCache): BuildingStatus {
   const def = BUILDINGS[b.type];
   if (b.type === 'stable') return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
   if (b.type === 'warehouse') {
@@ -238,8 +257,8 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
     let waiting: BuildingStatus | null = null;
     for (const g of GOODS) {
       if (m.contract.need[g] - b.stock[g] <= 0) continue;
-      const r = inputReason(world, b, g, unmet);
-      if (r.k === 'WAITING_DELIVERY') { if (!waiting) waiting = r; continue; }
+      const r = inputReason(world, b, g, unmet, dc);
+      if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM') { if (!waiting) waiting = r; continue; }
       if (m.contract.need[g] - b.stock[g] - b.incoming[g] > 0) return r;
     }
     return waiting ?? { k: 'IDLE' };
@@ -248,7 +267,7 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
   if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
   const r = def.recipe!;
   for (const g of inputGoods(b.type)) {
-    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet);
+    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet, dc);
   }
   for (const g of outputGoods(b.type)) {
     if (b.stock[g] + (r.outputs[g] ?? 0) > def.outCap) {

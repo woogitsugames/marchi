@@ -109,6 +109,7 @@ export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof
     case 'OUTPUT_FULL': return iconSvg('output_full', size);
     case 'WAITING_PICKUP': return iconSvg('waiting', size);
     case 'WAITING_DELIVERY': return iconSvg(s.good, size);
+    case 'WAITING_UPSTREAM': return iconSvg('waiting', size);
     case 'STORAGE_FULL': return iconSvg('storage_full', size);
     case 'CONTRACT_DONE': return iconSvg('seal', size);
     default: return iconSvg((type ?? 'castle') as IconId, size);

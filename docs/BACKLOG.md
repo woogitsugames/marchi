@@ -95,6 +95,8 @@ Wnioski z rozbioru gatunku (Mini Metro/Motorways: ciągły wzrost popytu zmusza 
 - [ ] P3 — Wydanie AAB: archiwum z SHA256, `mapping.txt` R8, versionCode i commit; odmowa plików z sekretami; ciężkie zrzuty tylko nocą/na PR (źródło: osadale, tools/create_release_rollback.py, tools/release_provenance.py, .github/workflows/ci.yml)
 
 ## Zrobione
+- 2026-11-01 — (research P2) Fałszywe alarmy na starcie: nowy status `WAITING_UPSTREAM` (dostawca pracuje lub sam czeka na dostawę) bez dymka; NO_INPUT wskazuje najpierw zablokowanego producenta, nie najniższe id.
+- 2026-11-01 — Przegląd symulacji (PR #8): naprawione F-01 (zakleszczenie na moście ukośnym), F-02, F-03, F-04.
 - 2026-11-01 — (research P1) Soft-lock m1: dodana komenda `sellWagon` (zwrot 15 srebra) — wyjście z braku srebra; przycisk w karcie wozu (agent Fold). Wczesne wykrycie „brak drogi do zwycięstwa” nadal otwarte.
 - 2026-11-01 — (research P1) `findPath` bez alokacji (współdzielone bufory); p99 przy 200 wozach 0,68 ms.
 - 2026-11-01 — Muzyka właściciela (14 utworów z woogitsu/osadale) z nastrojami menu/gra/deszcz/wygrana/przegrana.
