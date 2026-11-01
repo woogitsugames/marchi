@@ -150,7 +150,8 @@
       "seconds": 1.25,
       "start": 0.3,
       "source": "log",
-      "notes": "Real log impact (alternate excerpt from same CC0 recording)"
+      "notes": "Automatic loudest non-silent segment selected from the CC0 log-drop take; avoiding quiet introduction",
+      "auto_peak": true
     },
     {
       "id": "sfx/unload-log",

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from array import array
 import json
 import tempfile
 import unittest
@@ -15,6 +16,7 @@ from tools.process_audio import (
     freesound_preview,
     sha256,
     validate_manifest,
+    loudest_window_index,
 )
 
 
@@ -93,6 +95,19 @@ class FreesoundTests(unittest.TestCase):
         changed["sources"]["axe"]["license"] = "CC-BY-4.0"
         with self.assertRaisesRegex(ValueError, "Non-CC0"):
             validate_manifest(changed)
+
+    def test_loudest_excerpt_skips_silent_lead(self) -> None:
+        samples = array("f", [0.0] * 500)
+        for i in range(260, 300):
+            samples[i] = 0.6
+        start = loudest_window_index(samples, 100, step=10, margin=10)
+        self.assertGreater(start, 100)
+        self.assertLessEqual(start, 260)
+        self.assertGreaterEqual(start + 100, 300)
+
+    def test_loudest_excerpt_rejects_silence(self) -> None:
+        with self.assertRaisesRegex(ValueError, "silent"):
+            loudest_window_index(array("f", [0.0] * 100), 50, step=10)
 
     def test_sha256(self) -> None:
         with tempfile.TemporaryDirectory() as root:

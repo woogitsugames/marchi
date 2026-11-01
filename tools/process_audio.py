@@ -11,6 +11,7 @@ Leaves unverified synthetic SFX unchanged. Python 3.10+, ffmpeg, ffprobe only.
 from __future__ import annotations
 
 import argparse
+from array import array
 import hashlib
 import json
 import re
@@ -18,6 +19,7 @@ from html.parser import HTMLParser
 from urllib.parse import urlsplit
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
@@ -292,9 +294,56 @@ def field_loop(track: dict, src: Path, extras: list[tuple[dict, Path]], output: 
     ])
 
 
+def loudest_window_index(
+    samples: array, window: int, step: int = 400, margin: int = 160
+) -> int:
+    """Return the loudest excerpt, leaving a short fade margin at either end."""
+    if window <= 0 or step <= 0 or window > len(samples):
+        raise ValueError("Invalid recording/window length")
+    margin = min(margin, window // 5)
+    prefix = [0.0]
+    for sample in samples:
+        prefix.append(prefix[-1] + sample * sample)
+    last = len(samples) - window
+    candidates = range(0, last + 1, step)
+    best_start, best_energy = 0, -1.0
+    for start in candidates:
+        energy = prefix[start + window - margin] - prefix[start + margin]
+        if energy > best_energy:
+            best_start, best_energy = start, energy
+    # Do not discard a particularly good sound near the very end of the file.
+    if last % step:
+        energy = prefix[last + window - margin] - prefix[last + margin]
+        if energy > best_energy:
+            best_start, best_energy = last, energy
+    if best_energy < 1e-8:
+        raise ValueError("Recording is silent in the requested duration")
+    return best_start
+
+
+def loudest_excerpt_start(src: Path, seconds: float) -> float:
+    rate = 8000
+    decoded = subprocess.run([
+        "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(src),
+        "-vn", "-ac", "1", "-ar", str(rate), "-f", "f32le", "pipe:1",
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    samples = array("f")
+    samples.frombytes(decoded.stdout)
+    if sys.byteorder != "little":
+        samples.byteswap()
+    pos = loudest_window_index(
+        samples, round(seconds * rate), step=400, margin=800
+    )
+    start = pos / rate
+    print(f"Auto-selected strongest {seconds:.2f}-s excerpt at "
+          f"{start:.3f}s from {src.name}", flush=True)
+    return start
+
+
 def shot(track: dict, src: Path, output: Path) -> None:
     seconds = float(track["seconds"])
-    start = float(track.get("start", 0))
+    start = (loudest_excerpt_start(src, seconds) if track.get("auto_peak")
+             else float(track.get("start", 0)))
     fade_out = max(.1, seconds - .12)
     run([
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src),
