@@ -134,12 +134,14 @@ export const CONTRACT_LETTERS = {
       lost: "Goods piled up, and the deliveries fell short of the deadline. Check the full granary and the route from mill to bakery.\n— Wszebor",
     },
   },
-} as const satisfies Record<ContractMissionId, Record<Lang, ContractLetterSet>>;
+} as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
 
 /** Get all variants for a known contract; no letters exist for sandbox. */
 export function getContractLetters(missionId: string, lang: Lang = getLang()): ContractLetterSet | null {
   if (!Object.prototype.hasOwnProperty.call(CONTRACT_LETTERS, missionId)) return null;
-  return CONTRACT_LETTERS[missionId as ContractMissionId][lang] ?? null;
+  // Languages without authored letters fall back to English (D-18).
+  const byLang: Partial<Record<Lang, ContractLetterSet>> = CONTRACT_LETTERS[missionId as ContractMissionId];
+  return byLang[lang] ?? byLang.en ?? null;
 }
 
 /** Resolve a start, loss, or seal-specific victory letter. Invalid selections return null. */
