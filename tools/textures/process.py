@@ -94,10 +94,11 @@ for name, (pid, terrain, sscale, k, target) in SETS.items():
     if TIERS:
         for s in TIER_SIZES.get(name, DEFAULT_TIER_SIZES):
             write_rgba(to_img(g, s), f'{RAW}/{name}__albedo_{s}.rgba')
-            nim = to_img(n, s)
-            if nim.size[0] < n.shape[1]:          # downsampled normals get shorter: renormalise
-                nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), s)
-            write_rgba(nim, f'{RAW}/{name}__normal_{s}.rgba')
+            if s == 2048:                         # normals ship at 2k only (ultra reuses them, D-14)
+                nim = to_img(n, s)
+                if nim.size[0] < n.shape[1]:      # downsampled normals get shorter: renormalise
+                    nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), s)
+                write_rgba(nim, f'{RAW}/{name}__normal_{s}.rgba')
             write_rgba(to_img(orm, s), f'{RAW}/{name}__orm_{s}.rgba')
             if s == max(TIER_SIZES.get(name, DEFAULT_TIER_SIZES)):   # preview for the contact sheet
                 to_img(g, 1024).save(f'{RAW}/{name}__albedo_preview.jpg', quality=92)

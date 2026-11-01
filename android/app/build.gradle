@@ -35,7 +35,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
-    // foldables: hinge / Flex-mode detection forwarded to the web layer (D-14)
+    // foldables: hinge / Flex-mode detection forwarded to the web layer (D-16)
     implementation "androidx.window:window:1.5.1"
     implementation "androidx.window:window-java:1.5.1"
     implementation project(':capacitor-android')

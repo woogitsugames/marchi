@@ -9,7 +9,8 @@ export type PickResult =
   | null;
 
 export type Overlay = 'none' | 'traffic';
-export type Quality = 'high' | 'low';
+/** 'ultra' = 4k textures (large high-DPI phones, foldables), 'high' = 2k (default), 'low' = 512/1k. */
+export type Quality = 'ultra' | 'high' | 'low';
 
 export interface ScreenAnchor {
   /** CSS pixels relative to the canvas' top-left. */

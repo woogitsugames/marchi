@@ -912,6 +912,13 @@ body.is-split.left-handed .rail { flex-direction: row-reverse; }
 body.is-split.left-handed .rail-tools, body.is-split.left-handed .rail-line { flex-direction: row; }
 body.is-split.left-handed .rail-line { flex-wrap: wrap; }
 
+/* split screens: the side sheet docks bottom-right, just above the speed pad, so its close button
+   and links stay within the right thumb's reach instead of the far top corner */
+body.is-split:not(.is-flex) .sheet { top: auto; bottom: calc(var(--rail-h) + var(--safe-b) + 10px); }
+
+/* big screens: a wider menu strip so the mission names do not wrap */
+body.is-split .menu-strip { width: 320px; }
+
 /* ---- narrow portrait (old Fold cover ~344 px): menu button joins the tools row */
 body.is-narrow .rail-line .menu-slot { display: none; }
 body.is-narrow .rail-tools .menu-slot { display: inline-flex; flex: 0 0 48px; }
@@ -921,6 +928,8 @@ body.is-narrow .speed { gap: 1px; }
 body.is-narrow .tool { min-width: 48px; }
 body.is-narrow .tool .tl { font-size: 12px; letter-spacing: 0; }
 body.is-narrow .waybill { width: 196px; }
+body.is-narrow .menu-strip { width: min(290px, 84vw); padding-right: 16px; }
+body.is-narrow .menu-item { font-size: 23px; }
 
 /* ---- mini (Flip cover, tiny windows): watch mode. Controls at the TOP edge because the Flip
    cover's cameras cut into the bottom of the panel; no building tools, seal instead of waybill. */

@@ -4,7 +4,7 @@
 //        npm run shots -- menu why  (only screens whose name contains one of the args)
 //        npm run shots -- --fold [class...]  foldable set -> docs/shots/fold-<class>-<screen>.png
 //                                            plus the live fold/unfold sequence fold-seq-<n>-<state>.png
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -95,7 +95,7 @@ async function shoot(s, size) {
   }
 }
 
-// ---------------------------------------------------------------- foldables (D-14)
+// ---------------------------------------------------------------- foldables (D-16)
 // CSS px at the devices' default display scale. Sources: Samsung spec sheets (Z Fold 8 / Fold 8 Ultra:
 // 8.0" inner, 6.5" 2520x1080 cover; Z Flip 7: 6.9" 2520x1080 main, 4.1" 948x1048 FlexWindow),
 // older Fold 5/6 cover 904x2316. Heights already exclude nothing: the game runs edge-to-edge.
@@ -136,6 +136,16 @@ async function foldPage(c) {
   return { ctx, page, cdp };
 }
 
+/** CDP capture: page.screenshot() would re-apply Playwright's own device metrics and drop the
+ *  emulated hinge (display feature) right before the capture. Output is in CSS px. */
+async function cdpShot(cdp, page, file) {
+  const m = await page.evaluate(() => ({ w: innerWidth, h: innerHeight, dpr: devicePixelRatio }));
+  const { data } = await cdp.send('Page.captureScreenshot', {
+    format: 'png', clip: { x: 0, y: 0, width: m.w, height: m.h, scale: 1 / m.dpr },
+  });
+  writeFileSync(file, Buffer.from(data, 'base64'));
+}
+
 async function state(page) {
   return page.evaluate(() => {
     const cv = document.getElementById('scene');
@@ -152,15 +162,16 @@ async function state(page) {
 }
 
 async function foldShoot(c, s) {
-  const { ctx, page } = await foldPage(c);
+  const { ctx, page, cdp } = await foldPage(c);
   try {
     page.on('pageerror', (e) => errors.push(`${c.id} ${s.name}: ${e.message}`));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(`${c.id} ${s.name}: ${m.text()}`); });
     await page.goto(url + '?' + [s.q, FOLD_Q].filter(Boolean).join('&'), { waitUntil: 'load' });
     await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 120000 });
+    if (c.hinge) await metrics(cdp, c); // Playwright re-applies its own metrics on navigation, dropping the display feature
     await page.waitForTimeout(Number(process.env.SHOTS_SETTLE ?? 1500));
     const file = resolve(outDir, `fold-${c.id}-${s.name}.png`);
-    await page.screenshot({ path: file, timeout: 180000, scale: 'css' });
+    await cdpShot(cdp, page, file);
     console.log('shot', file.replace(root + '/', ''), JSON.stringify(await state(page)));
   } finally {
     await ctx.close();
@@ -183,7 +194,7 @@ async function foldSequence() {
     const snap = async (label) => {
       await page.waitForTimeout(700);
       const file = resolve(outDir, `fold-seq-${++n}-${label}.png`);
-      await page.screenshot({ path: file, timeout: 180000, scale: 'css' });
+      await cdpShot(cdp, page, file);
       console.log('shot', file.replace(root + '/', ''), JSON.stringify(await state(page)));
     };
     await snap('cover-wagon');

@@ -96,7 +96,7 @@ export function detectTier(): DeviceTier {
 }
 
 /**
- * Adaptive render scale. Feed it every frame's dt; it averages over windows of >= 1 s / 60
+ * Adaptive render scale. Feed it every frame's dt; it averages over windows of >= 1 s / 30
  * frames. Below 55 fps it steps the scale down; after 5 good windows (and a cooldown that
  * doubles each time a raise had to be taken back) it steps up again.
  */
@@ -129,7 +129,7 @@ export class DynamicResolution {
     if (dtMs <= 0 || dtMs > 200) return false; // hitch (resize, GC, tab switch): not a steady-state sample
     this.frames++;
     this.acc += dtMs;
-    if (this.frames < 60 || this.acc < 1000) return false;
+    if (this.frames < 30 || this.acc < 1000) return false;
     const fps = (this.frames * 1000) / this.acc;
     this.lastFps = fps;
     this.frames = 0;

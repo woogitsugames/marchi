@@ -16,7 +16,7 @@ import com.getcapacitor.BridgeActivity;
 import java.util.Locale;
 
 /**
- * Capacitor activity plus a foldable fallback (D-14): Android WebView does not always expose the
+ * Capacitor activity plus a foldable fallback (D-16): Android WebView does not always expose the
  * Viewport Segments API, so the hinge reported by androidx.window (FoldingFeature) is forwarded
  * to the page as window.__marchiaFold and a 'marchia:fold' CustomEvent, in CSS px relative to
  * the WebView. The page decides the layout (src/ui/layout.ts). Everything here is best effort:

@@ -39,8 +39,12 @@ Status colours are always paired with an icon shape (never colour alone).
 - Touch targets **≥ 48 px** (CSS px ≈ dp), primary actions 56 px.
 - Respect `env(safe-area-inset-*)` on every edge-anchored element.
 - **Thumb zone**: tools and speed live on the bottom edge in portrait, on the right edge in
-  landscape (right-handed default, mirrored option later). Panels open from the bottom in
-  portrait, from the side in landscape / on foldables (width ≥ 840 px: side sheet, map stays visible).
+  landscape (right-handed default, mirrored for left-handed). On near-square / wide portrait screens
+  (width ≥ 720 px, unfolded Fold, tablets) the rail splits into two pads: tools bottom-left, speed
+  bottom-right. Panels open from the bottom in portrait, from the side in landscape / on foldables
+  (width ≥ 720 px: side sheet, map stays visible).
+- **Foldables** (D-16): Flex mode puts the scene in the top half and every control in the bottom half;
+  the Flip cover screen is a watch mode (scene, bubbles, speed; no building tools; controls on top).
 - Every overlay closes with one gesture: tap on the empty map, swipe down on the sheet, or the
   Android back button. A "clear screen" tap (two-finger tap) hides all UI except the scene.
 

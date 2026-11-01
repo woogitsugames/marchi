@@ -1,4 +1,4 @@
-// Sheet stack: bottom sheet in portrait, side sheet in landscape / >= 840 px.
+// Sheet stack: bottom sheet in portrait, side sheet in landscape / >= 720 px (src/ui/layout.ts).
 // Closes with: close button, swipe down (or sideways on side sheets), Escape, Android back
 // (history entry per open sheet), tap on the empty map (handled by the app).
 import { h } from './dom';
