@@ -111,6 +111,28 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. Build a detour around the obstacle.
 - **Chain:** Mill holds flour → bridge to bakery is broken → bakery stalls.
 
+## `status.WAITING_UPSTREAM`
+
+### PL — Czeka na dostawcę
+
+- **Co to znaczy:** Dostawca jest osiągalny i wytwarza towar lub czeka na własną dostawę; ładunek nie jest jeszcze gotowy.
+- **Jak sprawdzić:** Dotknij odbiorcy, potem dostawcy w Łańcuchu przyczyn; sprawdź postęp i zapasy.
+- **Naprawy / działania:**
+  1. Poczekaj, aż dostawca przygotuje towar.
+  2. Jeśli sam czeka na dostawę, przejdź wyżej w łańcuchu przyczyn.
+  3. Sprawdź, czy wozy mają dojazd do gotowego towaru.
+- **Łańcuch:** Piekarnia czeka na mąkę → młyn właśnie ją produkuje → wóz odbierze mąkę.
+
+### EN — Waiting for upstream supply
+
+- **Meaning:** A reachable supplier is producing the goods or awaiting its own delivery; the cargo is not ready yet.
+- **How to check:** Tap the customer, then the supplier in the Cause chain; check progress and stock.
+- **Fixes / next steps:**
+  1. Wait until the supplier has goods ready.
+  2. If it is awaiting input too, follow the chain further upstream.
+  3. Check that wagons can reach the goods once ready.
+- **Chain:** Bakery awaits flour → mill is producing it → a wagon will collect the flour.
+
 ## `status.WAITING_DELIVERY`
 
 ### PL — Dostawa w drodze
