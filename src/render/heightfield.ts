@@ -61,7 +61,7 @@ export class Heightfield {
   shoreDist(x: number, z: number): number {
     const m = this.cellField(this.wm, x, z);
     if (m < 0.004) return 12;
-    const wob = (vnoise(x / 21, z / 17, 1.5, 91) - 0.5) * 3.2 + (vnoise(x / 7.5, z / 6.5, 2.5, 92) - 0.5) * 1.1;
+    const wob = (vnoise(x / 26, z / 19, 1.5, 91) - 0.5) * 3.8 + (vnoise(x / 7.5, z / 6.5, 2.5, 92) - 0.5) * 1.1;
     // far side of the blur: push past the blend range so the profile hands over continuously
     return (0.5 - m) * 11.5 + wob + 6 * (1 - smooth(0, 0.1, m));
   }

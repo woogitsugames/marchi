@@ -169,13 +169,13 @@ export class GroundCover {
         const rdist = roads.distAt(x, z);
         if (rdist < 2.1) continue;
         // clumpy density: thick in some patches, bare in others
-        const dens = vnoise(x / 7, z / 7, 3.5, 63) * 0.85 + 0.12 + (terr.forest[ci]! > 0.3 ? -0.35 : 0) + (rdist < 3.2 ? 0.25 : 0);
+        const dens = (vnoise(x / 6, z / 6, 3.5, 63) + vnoise(x / 2.2, z / 2.2, 4.5, 64) * 0.5 - 0.62) * 1.5 + (terr.forest[ci]! > 0.3 ? -0.35 : 0) + (rdist < 3.2 ? 0.25 : 0);
         const r2 = hash3(Math.round(x * 7), Math.round(z * 7), 13, 3);
         if (r2 > dens) continue;
         const y = hf.height(x, z);
         if (y - hf.waterLevel < 0.3) continue;
-        const shrub = r2 < 0.035 && rdist > 3.5;
-        t.push({ x, y: y - 0.03, z, rot: hsh * 6.28, s: shrub ? 0.28 + r2 * 4 : 0.7 + hsh * 0.7, kind: shrub ? 1 : 0, tint: Math.floor(hash3(Math.round(x * 2), Math.round(z * 2), 14, 3) * TINTS.length) });
+        const shrub = r2 < 0.03 && dens > 0.3 && rdist > 3.5;
+        t.push({ x, y: y - 0.03, z, rot: hsh * 6.28, s: shrub ? 0.28 + r2 * 4 : 0.55 + hsh * hsh * 1.1, kind: shrub ? 1 : 0, tint: Math.floor(hash3(Math.round(x * 2), Math.round(z * 2), 14, 3) * TINTS.length) });
       }
     }
     if (this.tiles.size > 900) this.tiles.clear();
