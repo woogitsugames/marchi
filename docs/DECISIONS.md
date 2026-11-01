@@ -129,3 +129,20 @@ without the pack or on a 4K error, ultra falls back to 2K, then to the 1k JPGs.
 *Measured: UASTC+RDO albedo was 3.4× larger than ETC1S q255 and scored lower PSNR on these noisy
 scans; 4K UASTC normals were 10–16 MB each while 2048 normals already give ~3 texels per pixel at the closest zoom, so
 they are not worth the download. ETC1S → ETC2 RGB also halves VRAM versus ASTC.* (decided)
+
+**D-22 — Missions IV–VI mechanics in the sim (STATE_VERSION 3).** (1) *Ice*: `state.ice` holds windows
+[start, end) in ticks; wooden one-lane spans cannot be **entered** inside a window (wagons already on a span leave
+it). A wagon at the bridgehead waits with `BRIDGE_CLOSED{span, until, since}`, keeps job, cargo and reservations
+(never turned into `NO_ROUTE`, so nothing is cancelled), and re-plans every 3 s. Routing charges the wait until the
+thaw when a path enters a span (forward searches subtract the travel time to the bridge), so a stone bridge or
+another crossing wins when it is cheaper; stone bridges are not spans and are never closed. No cache depends on
+time, so determinism and save/load are unaffected. (2) *Tranches*: `Contract.tranches[]` `{need, deadlineTick,
+doneTick, missed}` is the waybill in the state; needs add up in order; the castle orders only up to the tranche
+currently due; a late tranche costs one seal (min 1 for a win), only the last deadline loses the mission.
+(3) *Granary capacity per building*: `Building.capOverride` (-1 = type default). Warehouses report
+`STORAGE_FULL` counting promised arrivals; an overflowing producer whose only granary is cut off points at it
+(`blockedBy`) so the chain shows `NO_ROAD`. Migration v2→v3 in `src/platform/save.ts` keeps the key order of a
+fresh state (the hash is taken over `JSON.stringify`). *Measured seal ladders are in docs/missions/m4–m6.md;
+m5/m6 margins are thin because surplus hauls to a granary compete with demand for wagons.* (decided — note:
+parallel PRs of this session used D-19 three times; renumber at merge.)
+

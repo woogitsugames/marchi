@@ -525,6 +525,30 @@ const CONTENT = {
       "chain": "Two wagons approach from opposite sides → one waits at bridge → delivery is delayed."
     }
   },
+  "wagon.BRIDGE_CLOSED": {
+    "pl": {
+      "name": "Most skuty lodem",
+      "meaning": "Kra zamknęła drewniany most; wóz czeka przy przyczółku do odwilży, ładunek i zlecenie zostają.",
+      "check": "Dotknij wozu: zobaczysz, do której godziny most jest zamknięty. Kamienny most lód omija.",
+      "fixes": [
+        "Przed zamknięciem zgromadź zapas w spichlerzu po drugiej stronie rzeki.",
+        "Zamień przęsło na kamienne — lód zamyka tylko drewniane mosty.",
+        "Poczekaj do odwilży; potem wozy ruszą same."
+      ],
+      "chain": "Wóz z drewnem → most skuty lodem do 08:00 → tartak bez drewna → zamek bez desek."
+    },
+    "en": {
+      "name": "Bridge closed by ice",
+      "meaning": "Ice has closed the wooden bridge; the wagon waits at the bridgehead until the thaw and keeps its cargo and job.",
+      "check": "Tap the wagon to see until when the bridge is closed. Stone bridges are not affected.",
+      "fixes": [
+        "Before the closure, stock a granary on the far bank of the river.",
+        "Rebuild the span in stone — ice only closes wooden bridges.",
+        "Wait for the thaw; wagons then continue on their own."
+      ],
+      "chain": "Wagon with wood → bridge iced until 08:00 → sawmill without wood → castle without planks."
+    }
+  },
   "wagon.NO_ROUTE": {
     "pl": {
       "name": "Brak drogi do celu",

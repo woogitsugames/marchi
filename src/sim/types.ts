@@ -51,7 +51,9 @@ export type WagonStatus =
   /** Waiting at a bridgehead for opposing traffic to clear the one-lane bridge. */
   | { k: 'BRIDGE_JAM'; span: number; blocker: number; since: number }
   /** The road to the target is broken. target: building id or -1 for home. */
-  | { k: 'NO_ROUTE'; target: number; since: number };
+  | { k: 'NO_ROUTE'; target: number; since: number }
+  /** Ice closed the wooden span ahead until tick `until` (inclusive start, exclusive end window). */
+  | { k: 'BRIDGE_CLOSED'; span: number; until: number; since: number };
 
 export interface Job {
   id: number;
@@ -112,6 +114,8 @@ export interface Building {
   status: BuildingStatus;
   /** Ticks spent stalled continuously (for UI "stalled for 1:20"). */
   stalledTicks: number;
+  /** Warehouse capacity for this building (units, all goods); -1 = the type default (BUILDINGS.storeCap). */
+  capOverride: number;
 }
 
 export interface RainSpell {
@@ -119,12 +123,25 @@ export interface RainSpell {
   end: number; // tick
 }
 
+/** One part of a contract with its own deadline. Needs are per tranche; they add up in order. */
+export interface Tranche {
+  need: GoodMap;
+  deadlineTick: number;
+  /** Tick at which the castle held everything up to and including this tranche; -1 = not yet. */
+  doneTick: number;
+  /** The deadline passed before the tranche was complete (costs one seal; delivery still counts later). */
+  missed: boolean;
+}
+
 export interface Contract {
+  /** Total of all tranches (or the whole order when there are no tranches). */
   need: GoodMap;
   castle: number; // building id
   deadlineTick: number;
   star3Tick: number;
   star2Tick: number;
+  /** Waybill: ordered tranches. Empty = a single order due at deadlineTick. */
+  tranches: Tranche[];
 }
 
 export interface MissionState {
@@ -164,6 +181,8 @@ export interface SimState {
   wagons: Wagon[];
   nextId: number;
   rain: RainSpell[];
+  /** Ice windows: wooden bridges (one-lane spans) cannot be entered while tick is in [start, end). */
+  ice: RainSpell[];
   mission: MissionState;
   ledger: Ledger;
 }

@@ -4,6 +4,7 @@ import { lineCells, place, spawnWagon } from './commands';
 import { nextInt, seedRng } from './rng';
 import { generateValley, type ValleySpec } from './terrain';
 import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
+import { S2_MISSIONS } from './missions-s2';
 import type { World } from './network';
 import type { BuildingType, GoodMap, RainSpell, SimState, Terrain } from './types';
 
@@ -38,6 +39,10 @@ const MAP_SPECS: Record<string, (seed: number) => ValleySpec> = {
   valley1: valleySpec,
   'valley-m2': (seed) => ({ ...M2_VALLEY, seed }),
   'valley-m3': (seed) => ({ ...M3_VALLEY, seed }),
+  // Mission IV reuses the mission II river (same generator input); own id so saves name their map.
+  'valley-m4': (seed) => ({ ...M2_VALLEY, seed }),
+  'valley-m5': (seed) => ({ ...M3_VALLEY, seed }),
+  'valley-m6': (seed) => ({ ...M3_VALLEY, seed }),
 };
 
 const terrainCache = new Map<string, Terrain>();
@@ -54,7 +59,14 @@ export function terrainFor(mapId: string, seed: number): Terrain {
   return t;
 }
 
-interface Placement { type: BuildingType; x: number; y: number; facing: number; stock?: Partial<GoodMap> }
+interface Placement {
+  type: BuildingType; x: number; y: number; facing: number; stock?: Partial<GoodMap>;
+  /** Warehouse capacity override (mission VI's small granary). */
+  cap?: number;
+}
+
+/** A contract tranche as authored: goods due by `dueMin` mission minutes. */
+export interface TrancheDef { need: GoodMap; dueMin: number }
 
 export interface MissionDef {
   id: string;
@@ -73,6 +85,10 @@ export interface MissionDef {
   rain?: RainSpell[];
   /** Authored roads keep their water cells (pre-built bridges). */
   roadsOverWater?: boolean;
+  /** Ice windows (ticks): wooden bridges cannot be entered (mission IV). */
+  ice?: RainSpell[];
+  /** Contract in tranches (mission V). `contract` must equal their sum; the last dueMin is the deadline. */
+  tranches?: TrancheDef[];
 }
 
 export const MISSIONS: Record<string, MissionDef> = {
@@ -121,6 +137,9 @@ export const MISSIONS: Record<string, MissionDef> = {
 };
 MISSIONS.m2 = PROPOSED_MISSIONS.m2;
 MISSIONS.m3 = PROPOSED_MISSIONS.m3;
+MISSIONS.m4 = S2_MISSIONS.m4;
+MISSIONS.m5 = S2_MISSIONS.m5;
+MISSIONS.m6 = S2_MISSIONS.m6;
 MISSIONS.sandbox!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.sandbox!.roads = MISSIONS.m1!.roads;
 
@@ -156,6 +175,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     wagons: [],
     nextId: 1,
     rain: [],
+    ice: (def.ice ?? []).map((r) => ({ ...r })),
     mission: { id: def.id, contract: null, result: 'running', endTick: -1 },
     ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods(), stallSeconds: {} },
   };
@@ -166,6 +186,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     const r = place(world, p.type, p.x, p.y, p.facing, true);
     if (!r.ok) throw new Error(`mission ${def.id}: cannot place ${p.type} at ${p.x},${p.y}: ${JSON.stringify(r.err)}`);
     const b = state.buildings[state.buildings.length - 1]!;
+    if (p.cap !== undefined) b.capOverride = p.cap;
     if (p.stock) {
       for (const [g, v] of Object.entries(p.stock) as [keyof GoodMap, number][]) {
         b.stock[g] += v;
@@ -189,10 +210,21 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     state.mission.contract = {
       need: { ...def.contract },
       castle: castle.id,
-      deadlineTick: def.deadlineMin * 60 * TICK_HZ,
-      star3Tick: def.star3Min * 60 * TICK_HZ,
-      star2Tick: def.star2Min * 60 * TICK_HZ,
+      // ticks are integers (8.45 min * 600 is 5069.999… in floating point)
+      deadlineTick: Math.round(def.deadlineMin * 60 * TICK_HZ),
+      star3Tick: Math.round(def.star3Min * 60 * TICK_HZ),
+      star2Tick: Math.round(def.star2Min * 60 * TICK_HZ),
+      tranches: (def.tranches ?? []).map((t) => ({
+        need: { ...t.need }, deadlineTick: Math.round(t.dueMin * 60 * TICK_HZ), doneTick: -1, missed: false,
+      })),
     };
+    if (def.tranches) {
+      for (const g of Object.keys(def.contract) as (keyof GoodMap)[]) {
+        let sum = 0;
+        for (const t of def.tranches) sum += t.need[g];
+        if (sum !== def.contract[g]) throw new Error(`mission ${def.id}: tranches of ${g} sum to ${sum}, contract says ${def.contract[g]}`);
+      }
+    }
   }
   return { terrain, state };
 }

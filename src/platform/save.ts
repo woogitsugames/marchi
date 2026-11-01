@@ -20,6 +20,24 @@ export interface SaveEnvelope {
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
   // v1 -> v2: per-root-cause stall accounting (end-of-mission summary). Old saves start counting now.
   1: (s) => ({ ...s, version: 2, ledger: { ...(s.ledger as object), stallSeconds: {} } }),
+  // v2 -> v3: ice windows (no ice in old missions), contract tranches (none), per-building warehouse
+  // capacity (-1 = type default). Pure: returns new objects, never mutates the loaded save.
+  2: (s) => {
+    const mission = s.mission as Record<string, unknown>;
+    const contract = mission.contract as Record<string, unknown> | null;
+    // Rebuild in the key order of a fresh state ('ice' right after 'rain'): the state hash is taken
+    // over JSON.stringify, so a migrated save must serialize exactly like a new one.
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(s)) {
+      out[k] = s[k];
+      if (k === 'rain') out.ice = [];
+    }
+    if (!('ice' in out)) out.ice = [];
+    out.version = 3;
+    out.buildings = (s.buildings as Record<string, unknown>[]).map((b) => ({ ...b, capOverride: -1 }));
+    out.mission = { ...mission, contract: contract ? { ...contract, tranches: [] } : null };
+    return out;
+  },
 };
 
 export function migrate(env: SaveEnvelope): SaveEnvelope {

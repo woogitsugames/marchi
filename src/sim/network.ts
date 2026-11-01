@@ -1,8 +1,9 @@
 // Road network: derived caches, edge validity, travel times, bridge spans, pathfinding.
 import {
   MAX_GRADE, RAIN_COBBLE, RAIN_DIRT, RAIN_WOOD_BRIDGE, SLOPE_K_DOWN, SLOPE_K_EMPTY, SLOPE_K_LOADED,
-  SPEED_COBBLE, SPEED_DIRT, SPEED_STONE_BRIDGE, SPEED_WOOD_BRIDGE,
+  SPEED_COBBLE, SPEED_DIRT, SPEED_STONE_BRIDGE, SPEED_WOOD_BRIDGE, TICK_HZ,
 } from './defs';
+import { iceUntil } from './contract';
 import type { SimState, Terrain } from './types';
 
 export const DX = [1, 0, -1, 0, 1, -1, -1, 1];
@@ -263,6 +264,8 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   const costs = edgeCosts(world, loaded, rain);
   const pen = spanPenalties(world);
   const spanOf = net(world).span;
+  const until = iceUntil(world.state);
+  const iceLeft = until >= 0 ? (until - world.state.tick) / TICK_HZ : 0;
   dist[start] = 0;
   push(start, 0);
   sc.curStamp = (sc.curStamp + 1) >>> 0 || 1;
@@ -282,11 +285,16 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
       if (done[v] === mark) continue;
       let cost = reverse ? costs[v * 8 + OPP[d]!]! : costs[u * 8 + d]!;
       if (cost === Infinity) continue;
-      if (pen.size > 0) {
+      if (pen.size > 0 || iceLeft > 0) {
         // entering a span: forward u -> v, reverse the real move is v -> u
         const from = reverse ? v : u, to = reverse ? u : v;
         const sp = spanOf[to]!;
-        if (sp >= 0 && spanOf[from] !== sp) cost += pen.get(sp) ?? 0;
+        if (sp >= 0 && spanOf[from] !== sp) {
+          cost += pen.get(sp) ?? 0;
+          // Ice: wait at the bridgehead until the thaw. Forward searches know the arrival time
+          // (dist[u]); reverse searches do not and charge the whole remaining window.
+          if (iceLeft > 0) cost += reverse ? iceLeft : Math.max(0, iceLeft - dist[u]!);
+        }
       }
       const nd = dist[u]! + cost;
       if (nd < dist[v]!) {

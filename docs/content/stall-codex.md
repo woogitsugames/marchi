@@ -463,6 +463,28 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. Consider a stone bridge to remove the traffic restriction.
 - **Chain:** Two wagons approach from opposite sides → one waits at bridge → delivery is delayed.
 
+## `wagon.BRIDGE_CLOSED`
+
+### PL — Most skuty lodem
+
+- **Co to znaczy:** Kra zamknęła drewniany most; wóz czeka przy przyczółku do odwilży, ładunek i zlecenie zostają.
+- **Jak sprawdzić:** Dotknij wozu: zobaczysz, do której godziny most jest zamknięty. Kamienny most lód omija.
+- **Naprawy / działania:**
+  1. Przed zamknięciem zgromadź zapas w spichlerzu po drugiej stronie rzeki.
+  2. Zamień przęsło na kamienne — lód zamyka tylko drewniane mosty.
+  3. Poczekaj do odwilży; potem wozy ruszą same.
+- **Łańcuch:** Wóz z drewnem → most skuty lodem do 08:00 → tartak bez drewna → zamek bez desek.
+
+### EN — Bridge closed by ice
+
+- **Meaning:** Ice has closed the wooden bridge; the wagon waits at the bridgehead until the thaw and keeps its cargo and job.
+- **How to check:** Tap the wagon to see until when the bridge is closed. Stone bridges are not affected.
+- **Fixes / next steps:**
+  1. Before the closure, stock a granary on the far bank of the river.
+  2. Rebuild the span in stone — ice only closes wooden bridges.
+  3. Wait for the thaw; wagons then continue on their own.
+- **Chain:** Wagon with wood → bridge iced until 08:00 → sawmill without wood → castle without planks.
+
 ## `wagon.NO_ROUTE`
 
 ### PL — Brak drogi do celu
