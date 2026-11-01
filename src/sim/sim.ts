@@ -3,6 +3,7 @@ import { BUILDINGS, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TICK_HZ, TRAFFIC_DE
 import { applyCommand, type Command, type CommandResult } from './commands';
 import { hashState } from './hash';
 import { dispatch } from './logistics';
+import { trancheCovered } from './contract';
 import { explainBuilding } from './diagnose';
 import { buildMission, terrainFor } from './missions';
 import type { World } from './network';
@@ -106,13 +107,14 @@ function accountStalls(world: World): void {
     // root = deepest link that is itself a stall (a working supplier at the end is not the cause)
     let root = chain[0];
     for (const l of chain) {
-      const stalled = l.kind === 'building' ? !NOT_STALL.has(l.status.k) : l.status.k === 'BRIDGE_JAM' || l.status.k === 'NO_ROUTE';
+      const stalled = l.kind === 'building' ? !NOT_STALL.has(l.status.k) : l.status.k === 'BRIDGE_JAM' || l.status.k === 'NO_ROUTE' || l.status.k === 'BRIDGE_CLOSED';
       if (stalled) root = l;
     }
     if (root) roots.add(`${root.kind}:${root.id}:${statusKey(root.status)}`);
   }
   for (const w of st.wagons) {
     if (w.status.k === 'BRIDGE_JAM' && st.tick - w.status.since >= STALL_GRACE_TICKS) roots.add(`span:${w.status.span}:BRIDGE_JAM`);
+    else if (w.status.k === 'BRIDGE_CLOSED' && st.tick - w.status.since >= STALL_GRACE_TICKS) roots.add(`span:${w.status.span}:BRIDGE_CLOSED`);
     else if (w.status.k === 'NO_ROUTE' && st.tick - w.status.since >= STALL_GRACE_TICKS && w.job) roots.add(`wagon:${w.id}:NO_ROUTE`);
   }
   const acc = st.ledger.stallSeconds;
@@ -137,25 +139,36 @@ export function topStallCauses(world: World, n = 3): { kind: string; id: number;
 function checkMission(world: World): void {
   const st = world.state, m = st.mission;
   if (!m.contract || m.result !== 'running') return;
-  const castle = st.buildings.find((b) => b.id === m.contract!.castle);
+  const c = m.contract;
+  const castle = st.buildings.find((b) => b.id === c.castle);
   if (!castle) return;
+  // waybill: tranches complete in order; a passed deadline marks a tranche missed (delivery still counts)
+  for (let i = 0; i < c.tranches.length; i++) {
+    const tr = c.tranches[i]!;
+    if (tr.doneTick >= 0) continue;
+    if (trancheCovered(c, i, castle.stock)) { tr.doneTick = st.tick; continue; }
+    if (!tr.missed && st.tick >= tr.deadlineTick) tr.missed = true;
+    break;
+  }
   let done = true;
-  for (const g of GOODS) if (castle.stock[g] < m.contract.need[g]) done = false;
+  for (const g of GOODS) if (castle.stock[g] < c.need[g]) done = false;
   if (done) {
     m.result = 'won';
     m.endTick = st.tick;
-  } else if (st.tick >= m.contract.deadlineTick) {
+  } else if (st.tick >= c.deadlineTick) {
     m.result = 'lost';
     m.endTick = st.tick;
   }
 }
 
+/** Seals: by finishing time, minus one per tranche delivered late (never below 1 for a win). */
 export function stars(world: World): number {
   const m = world.state.mission;
   if (m.result !== 'won' || !m.contract) return 0;
-  if (m.endTick <= m.contract.star3Tick) return 3;
-  if (m.endTick <= m.contract.star2Tick) return 2;
-  return 1;
+  const base = m.endTick <= m.contract.star3Tick ? 3 : m.endTick <= m.contract.star2Tick ? 2 : 1;
+  let missed = 0;
+  for (const t of m.contract.tranches) if (t.missed) missed++;
+  return Math.max(1, base - missed);
 }
 
 // --- Invariants ---------------------------------------------------------------
@@ -224,7 +237,7 @@ export function unexplainedStalls(world: World): string[] {
   }
   for (const w of world.state.wagons) {
     if (!w.status || !w.status.k) out.push(`wagon ${w.id} has no status`);
-    if (w.next < 0 && w.busyTicks === 0 && w.job && w.status.k !== 'NO_ROUTE' && w.status.k !== 'BRIDGE_JAM' && w.status.k !== 'TO_PICKUP' && w.status.k !== 'TO_DROPOFF') {
+    if (w.next < 0 && w.busyTicks === 0 && w.job && w.status.k !== 'NO_ROUTE' && w.status.k !== 'BRIDGE_JAM' && w.status.k !== 'BRIDGE_CLOSED' && w.status.k !== 'TO_PICKUP' && w.status.k !== 'TO_DROPOFF') {
       out.push(`wagon ${w.id} with job stands still as ${w.status.k}`);
     }
   }

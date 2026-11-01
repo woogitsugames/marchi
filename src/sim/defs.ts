@@ -3,7 +3,7 @@ import type { BuildingType, Good, GoodMap } from './types';
 
 export const TICK_HZ = 10;
 export const DT = 1 / TICK_HZ;
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 export const GOODS: readonly Good[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
 
