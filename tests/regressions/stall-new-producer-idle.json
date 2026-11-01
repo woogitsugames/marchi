@@ -1,6 +1,6 @@
 {
  "name": "stall-new-producer-idle",
- "status": "known-failing",
+ "status": "fixed",
  "expect": "stall",
  "review": "F-04",
  "note": "A freshly placed producer that cannot start keeps status IDLE (progress -1) until the next dispatch (up to DISPATCH_INTERVAL-1 ticks), so unexplainedStalls() reports it. Strict mode: placeGraceTicks=0.",

@@ -199,7 +199,10 @@ function ensurePath(world: World, w: Wagon): boolean {
 function handleNoRoute(world: World, w: Wagon): void {
   const st = world.state;
   if (w.status.k !== 'NO_ROUTE' || !w.job) return;
-  if (st.tick - w.status.since < NO_ROUTE_CANCEL_TICKS) return;
+  const waited = st.tick - w.status.since;
+  if (waited < NO_ROUTE_CANCEL_TICKS) return;
+  // retry the (expensive) re-target only every few seconds, keep `since` for the UI ("stalled for")
+  if (w.job.phase === 'dropoff' && (waited - NO_ROUTE_CANCEL_TICKS) % REPLAN_RETRY_TICKS !== 0) return;
   if (w.job.phase === 'pickup') {
     cancelJob(world, w);
     w.status = { k: 'NO_ROUTE', target: -1, since: st.tick };
@@ -214,8 +217,8 @@ function handleNoRoute(world: World, w: Wagon): void {
     w.job.to = alt.id;
     w.pathVer = -1;
     w.dest = alt.gate;
+    w.status = { k: 'NO_ROUTE', target: w.job.to, since: st.tick };
   }
-  w.status = { k: 'NO_ROUTE', target: w.job.to, since: st.tick };
 }
 
 export function cancelJob(world: World, w: Wagon): void {
@@ -271,6 +274,8 @@ export function accepts(world: World, b: Building, g: Good, qty: number): boolea
 /** Fix jobs whose source or destination was demolished. */
 function repairJob(world: World, w: Wagon): void {
   const j = w.job!;
+  // destination already lost: strandedCargo() owns the retry (keeps NO_ROUTE.since stable, review F-03)
+  if (j.phase === 'dropoff' && j.to < 0) return;
   const from = buildingById(world, j.from);
   const to = buildingById(world, j.to);
   if (j.phase === 'pickup' && !from) {

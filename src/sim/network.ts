@@ -51,13 +51,13 @@ export function net(world: World): NetCache {
   const water = world.terrain.water;
   for (let i = 0; i < n; i++) {
     if (span[i] !== -1 || !water[i] || st.roads[i] !== 1) continue;
-    // flood fill wooden bridge cells (4-neighbourhood); i is the minimal index of its span
+    // flood fill wooden bridge cells (8-neighbourhood: a diagonal bridge is one span, see review F-01); i is the minimal index of its span
     const stack = [i];
     span[i] = i;
     while (stack.length) {
       const c = stack.pop()!;
       const cx = c % w, cy = (c - cx) / w;
-      for (let d = 0; d < 4; d++) {
+      for (let d = 0; d < 8; d++) {
         const nx = cx + DX[d]!, ny = cy + DY[d]!;
         if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
         const j = ny * w + nx;

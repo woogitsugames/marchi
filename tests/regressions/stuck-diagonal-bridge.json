@@ -1,6 +1,6 @@
 {
  "name": "stuck-diagonal-bridge",
- "status": "known-failing",
+ "status": "fixed",
  "expect": "stuck",
  "review": "F-01",
  "note": "Diagonal road over water creates several one-cell wooden spans; two opposing wagons on adjacent spans block each other forever (BRIDGE_JAM cycle).",

@@ -1,6 +1,6 @@
 {
  "name": "stuck-fuzz-1055",
- "status": "known-failing",
+ "status": "fixed",
  "expect": "stuck",
  "review": "F-01",
  "note": "Found by tools/fuzz.ts seed 1055 (9000 ticks), shrunk: a diagonal river crossing (one-cell spans) + a mill + one wagon; opposing wagons deadlock on adjacent one-cell spans.",

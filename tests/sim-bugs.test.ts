@@ -1,8 +1,8 @@
-// Open sim bugs found in review (docs/reviews/sim-review-01.md). Each test asserts the intended
-// behaviour and fails while the bug is open.
-import { applyCommand, checkInvariants, createWorld, step, type World } from '../../src/sim/index';
-import { bridgeA } from '../../tools/bot';
-import { assert, test } from '../harness';
+// Sim bugs found in review (docs/reviews/sim-review-01.md), now fixed. Each test asserts the intended
+// behaviour (regression guard).
+import { applyCommand, checkInvariants, createWorld, step, type World } from '../src/sim/index';
+import { bridgeA } from '../tools/bot';
+import { assert, test } from './harness';
 
 /** A wagon carrying flour whose bakery gets demolished while no other building accepts flour. */
 function strandedFlour(): { w: World; id: number } {

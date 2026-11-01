@@ -1,12 +1,12 @@
 // Player commands. The only way input reaches the simulation. Applied at tick boundaries.
 import {
   BUILDINGS, COST_COBBLE, COST_DIRT, COST_STONE_BRIDGE, COST_WOOD_BRIDGE, DEMOLISH_REFUND, MAX_GRADE,
-  MAX_WAGONS, WAGON_PRICE, emptyGoods, GOODS,
+  MAX_WAGONS, WAGON_PRICE, emptyGoods, GOODS, inputGoods,
 } from './defs';
-import { buildingById } from './logistics';
+import { buildingById, upstreamOf } from './logistics';
 import { grade, net, type World } from './network';
 import { cancelJob } from './wagons';
-import type { BuildingType, SurfaceKind } from './types';
+import type { BuildingStatus, BuildingType, SurfaceKind } from './types';
 
 export type Command =
   | { t: 'road'; cells: number[]; surface: SurfaceKind }
@@ -195,10 +195,17 @@ export function place(world: World, type: BuildingType, x: number, y: number, fa
   st.buildings.push({
     id: st.nextId++, type, x, y, w: def.w, h: def.h, gate, facing: facing & 3,
     stock: emptyGoods(), reservedOut: emptyGoods(), incoming: emptyGoods(), progress: -1,
-    status: { k: 'IDLE' }, stalledTicks: 0,
+    status: initialStatus(world, type), stalledTicks: 0,
   });
   st.netVersion++;
   return { ok: true, cost };
+}
+
+/** A fresh building explains itself before the first dispatch (review F-04). */
+function initialStatus(world: World, type: BuildingType): BuildingStatus {
+  const ins = inputGoods(type);
+  if (ins.length > 0) return { k: 'NO_INPUT', good: ins[0]!, cause: 'NONE_AVAILABLE', blockedBy: upstreamOf(world, ins[0]!, -1) };
+  return BUILDINGS[type].recipe ? { k: 'WORKING' } : { k: 'IDLE' };
 }
 
 /** 8-connected raster line between two cells (inclusive), for drag-to-build. */
