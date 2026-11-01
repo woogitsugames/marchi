@@ -1,0 +1,162 @@
+/**
+ * Dev harness for the world view (src/render/view.ts).
+ *   npx vite --port 5174   then open /tools/view-harness.html
+ * URL params:
+ *   speed=1|2|4      sim speed (default 1), paused=1 to freeze the sim
+ *   wagons=N         buy wagons until N exist (coins forced high — harness only)
+ *   t=seconds        fast-forward the sim before showing
+ *   menu=1           main-menu cinematic mode
+ *   overlay=traffic  road-load overlay
+ *   rain=1           force rain (harness-only override of state.rain)
+ *   quality=low      low quality preset
+ *   cam=x,z,dist,yaw camera preset (cells for x/z, metres, radians)
+ *   tod=0..1         force time of day
+ *   follow=1         follow the first moving loaded wagon
+ *   sel=wagon|building|N  select something (N = building id)
+ *   hud=0            hide the stats box
+ *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
+ * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
+ * window.__harness exposes { world, view, loop } for scripted screenshots.
+ */
+import { GameLoop, type Speed } from '../src/game/loop';
+import { applyCommand, createWorld, step, TICK_HZ, type Command } from '../src/sim/index';
+import { createWorldView, viewInternals } from '../src/render/view';
+import { bridgeA, stableId } from './bot';
+
+const q = new URLSearchParams(location.search);
+const num = (k: string, d: number) => (q.has(k) ? Number(q.get(k)) : d);
+
+const world = createWorld('m1');
+const plan: Command[] = [bridgeA(world)];
+for (let i = 0; i < 4; i++) plan.push({ t: 'buyWagon', stable: stableId(world) });
+for (const c of plan) {
+  const r = applyCommand(world, c);
+  if (!r.ok) console.warn('harness command failed', c, r.err);
+}
+const wantWagons = num('wagons', 0);
+if (wantWagons > 0) {
+  world.state.coins = 1e6;
+  while (world.state.wagons.length < wantWagons) {
+    const r = applyCommand(world, { t: 'buyWagon', stable: stableId(world) });
+    if (!r.ok) break;
+  }
+}
+if (q.get('rain') === '1') world.state.rain = [{ start: 0, end: 1e9 }];
+const ff = num('t', 0);
+for (let i = 0; i < ff * TICK_HZ; i++) step(world);
+
+const canvas = document.getElementById('c') as HTMLCanvasElement;
+const view = createWorldView();
+const internals = viewInternals(view);
+if (q.has('tod')) internals.debug.forceTime = num('tod', 0.3);
+view.mount(canvas);
+if (q.get('quality') === 'low') view.setQuality('low');
+view.setMenuMode(q.get('menu') === '1');
+view.setWorld(world);
+if (q.get('overlay') === 'traffic') view.setOverlay('traffic');
+
+const resize = () => view.resize(window.innerWidth, window.innerHeight, window.devicePixelRatio || 1);
+window.addEventListener('resize', resize);
+resize();
+
+if (q.has('cam')) {
+  const [x, z, d, yaw] = q.get('cam')!.split(',').map(Number);
+  internals.rig.set((x ?? 48) * 4, (z ?? 36) * 4, d ?? 120, yaw ?? -0.3);
+}
+
+const loop = new GameLoop(world);
+loop.speed = (q.get('paused') === '1' ? 0 : num('speed', 1)) as Speed;
+loop.onTick = () => view.afterTick();
+
+const sel = q.get('sel');
+function applySel(): void {
+  if (!sel) return;
+  if (sel === 'wagon') {
+    const w = world.state.wagons.find((x) => x.cargoQty > 0 && x.next >= 0) ?? world.state.wagons[0];
+    if (w) view.setSelection({ kind: 'wagon', id: w.id });
+  } else if (sel === 'building') {
+    view.setSelection({ kind: 'building', id: world.state.buildings[0]!.id });
+  } else {
+    view.setSelection({ kind: 'building', id: Number(sel) });
+  }
+}
+applySel();
+if (q.get('follow') === '1') {
+  const w = world.state.wagons.find((x) => x.cargoQty > 0 && x.next >= 0) ?? world.state.wagons.find((x) => x.next >= 0);
+  if (w) {
+    const W = world.terrain.w;
+    const [, , d, yaw] = (q.get('cam') ?? '0,0,26,-0.5').split(',').map(Number);
+    internals.rig.set(((w.at % W) + 0.5) * 4, (Math.floor(w.at / W) + 0.5) * 4, d ?? 26, yaw ?? -0.5);
+    view.camera.follow(w.id);
+  }
+}
+
+// ---- input
+let drag: { x: number; y: number; button: number; moved: number } | null = null;
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('pointerdown', (e) => {
+  drag = { x: e.clientX, y: e.clientY, button: e.button, moved: 0 };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  drag.moved += Math.abs(dx) + Math.abs(dy);
+  if (drag.button === 2) view.camera.rotate(-dx * 0.006);
+  else view.camera.pan(dx, dy);
+  drag.x = e.clientX;
+  drag.y = e.clientY;
+});
+canvas.addEventListener('pointerup', (e) => {
+  if (drag && drag.moved < 4 && drag.button === 0) {
+    const p = view.pick(e.clientX, e.clientY);
+    view.setSelection(p);
+    lastPick = JSON.stringify(p) + ' cell ' + view.cellAt(e.clientX, e.clientY);
+  }
+  drag = null;
+});
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  view.camera.zoom(Math.exp(e.deltaY * 0.0012), e.clientX, e.clientY);
+}, { passive: false });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 't') view.setOverlay(overlay = overlay === 'traffic' ? 'none' : 'traffic');
+  if (e.key === ' ') loop.speed = (loop.speed === 0 ? 1 : 0) as Speed;
+  if (e.key >= '1' && e.key <= '4') loop.speed = Number(e.key) as Speed;
+});
+let overlay: 'none' | 'traffic' = q.get('overlay') === 'traffic' ? 'traffic' : 'none';
+let lastPick = '';
+
+const info = document.getElementById('info')!;
+if (q.get('hud') === '0') info.classList.add('hidden');
+const mark = document.getElementById('mark')!;
+let last = performance.now();
+let frames = 0;
+const maxFrames = num('frames', 0);
+const hide = (q.get('hide') ?? '').split(',').filter(Boolean);
+function tick(now: number): void {
+  let dt = now - last;
+  last = now;
+  if (maxFrames) dt = 1000 / 30;
+  const alpha = loop.advance(dt);
+  for (const n of hide) internals.scene.traverse((o) => { if (o.name.startsWith(n)) o.visible = false; });
+  view.frame(alpha, dt);
+  frames++;
+  if ((frames % 15 === 0 || frames === maxFrames) && q.get('hud') !== '0') {
+    const s = view.stats();
+    const sel = world.state.wagons.find((w) => w.cargoQty > 0);
+    const a = sel ? view.anchorOf('wagon', sel.id) : null;
+    if (a && a.visible) { mark.style.display = 'block'; mark.style.left = a.x + 'px'; mark.style.top = a.y + 'px'; } else mark.style.display = 'none';
+    info.textContent = `fps ${s.fps}  calls ${s.drawCalls}  tris ${(s.triangles / 1000).toFixed(0)}k  geo ${s.geometries}  tex ${s.textures}\n` +
+      `t ${(world.state.tick / TICK_HZ).toFixed(0)}s  wagons ${world.state.wagons.length}  speed x${loop.speed}  ${lastPick}`;
+  }
+  if (maxFrames && frames >= maxFrames) {
+    (window as unknown as { __done: boolean }).__done = true;
+    return;
+  }
+  requestAnimationFrame(tick);
+}
+if (maxFrames) void internals.ready().then(() => requestAnimationFrame(tick));
+else requestAnimationFrame(tick);
+
+(window as unknown as { __harness: unknown }).__harness = { world, view, loop, internals, frames: () => frames };

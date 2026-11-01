@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, TICK_HZ, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta,
+  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta,
   type Building, type Good, type ReasonLink, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
@@ -113,7 +113,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const since = b.stalledTicks > 0 ? `<span class="since num">${esc(t('why.stalledFor', { time: ticksClock(b.stalledTicks) }))}</span>` : '';
       let top: string;
       if (chain.length > 1) {
-        top = `<div class="section-h">${esc(t('why.chain'))}${since ? '' : ''}</div>${since ? `<div class="status-line bad">${since}</div>` : ''}${chainHtml(world, chain, 'building', id)}`;
+        top = `<div class="section-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id)}`;
       } else {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status))}</span>${since}</div>`;
@@ -173,4 +173,3 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
   };
 }
 
-void TICK_HZ;

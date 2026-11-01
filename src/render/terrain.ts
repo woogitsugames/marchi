@@ -263,10 +263,9 @@ void sampleLayer(float L, vec2 uv, float k, out vec3 a, out vec3 n, out vec2 ro)
 }
 #define BLEND(w, a2, n2, ro2) { A = mix(A, a2, w); N = mix(N, n2, w); RO = mix(RO, ro2, w); }
 float rutProfile(float d) {
-  // two lanes: wheel ruts at ~0.15 m (shared centre) and ~1.85 m, grass strip between
-  float r0 = exp(-pow(d / 0.32, 2.0));
-  float r1 = exp(-pow((d - 1.85) / 0.26, 2.0));
-  return -(0.7 * r0 + r1);
+  // wheel ruts at ±0.86 m (wagon track 1.72 m); a softer worn band where horses walk
+  float r1 = exp(-pow((d - 0.86) / 0.2, 2.0));
+  return -r1;
 }
 `;
 
@@ -290,7 +289,7 @@ const FRAG_MAIN = /* glsl */ `
   // base: wet meadow, two scales to break tiling
   sampleLayer(0.0, uv, 1.0, A, N, RO);
   sampleLayer(0.0, uv, 0.29, a2, n2, ro2);
-  A = mix(A, a2, 0.35);
+  A = mix(A, a2, 0.35) * vec3(0.94, 1.04, 1.0);
   // macro tone variation (dry/wet patches), kept in the desaturated middle
   A *= 0.86 + 0.28 * nzM.r;
   A = mix(A, A * vec3(1.08, 1.0, 0.86), smoothstep(0.55, 0.9, nzM.g) * 0.5);
@@ -345,8 +344,8 @@ const FRAG_MAIN = /* glsl */ `
   if (wDirt > 0.003 && hW > -0.2) {
     sampleLayer(1.0, uv, 1.0, a2, n2, ro2);
     float rut = -rutProfile(dD);
-    float strip = exp(-pow((dD - 1.0) / 0.33, 2.0)) * smoothstep(0.25, 0.7, nzS.r + 0.15);
-    a2 *= 0.92 - 0.3 * rut;
+    float strip = (1.0 - smoothstep(0.18, 0.42, dD)) * smoothstep(0.3, 0.75, nzS.r + 0.2);
+    a2 *= 0.8 - 0.28 * rut;
     ro2.x = mix(ro2.x, 0.55, rut * 0.5);
     // grass strip between the ruts: back toward the meadow
     vec3 grass = A * 0.95;

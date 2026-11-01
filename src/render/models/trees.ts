@@ -23,13 +23,12 @@ import {
   MeshBasicMaterial,
   OrthographicCamera,
   Scene,
-  SphereGeometry,
   Vector3,
   WebGLRenderer,
   WebGLRenderTarget,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
-import { leafTexture, modelMaterial } from './materials';
+import { leafTexture, modelMaterial, needleTexture } from './materials';
 import { rod } from './shapes';
 
 export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch';
@@ -47,7 +46,7 @@ const BARK = '#4a4036';
 const PINE_UPPER = new Color('#8a5e3e');
 
 /** Card cluster: `n` leaf quads scattered in an ellipsoid, normals pointing out of the crown. */
-function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, size: number, colors: string[], seed: number): void {
+function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, size: number, colors: string[], seed: number, mat: 'leaves' | 'needles' = 'leaves'): void {
   const r = rng(seed);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
   const crown = centre.clone();
@@ -69,7 +68,7 @@ function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, siz
       const q = p.clone().addScaledVector(a, (cx * sz) / 2).addScaledVector(t, (cy * sz) / 2);
       pos.push(q.x, q.y, q.z);
       nor.push(nrm.x, nrm.y, nrm.z);
-      uv.push((cx + 1) / 2, (cy + 1) / 2);
+      uv.push(((cx + 1) / 2) * (mat === 'needles' ? 0.5 : 1), (cy + 1) / 2);
     }
     idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
@@ -79,7 +78,7 @@ function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, siz
   g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
   g.setIndex(idx);
   let ci = 0;
-  b.add('leaves', g, {
+  b.add(mat, g, {
     color: colors[0],
     keepUv: true,
     vary: 0,
@@ -97,50 +96,77 @@ function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, siz
   });
 }
 
+/** Spray cards radiating from the trunk in whorls; crown radius follows `radius(y)`. */
+function whorls(b: PartBuilder, y0: number, y1: number, step: number, perTier: number, radius: (y: number) => number, droop: number, colors: string[], seed: number, axisTop: Vector3): void {
+  const r = rng(seed);
+  const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
+  let tier = 0;
+  for (let y = y0; y <= y1; y += step * (0.85 + r() * 0.3), tier++) {
+    const R = radius(y);
+    for (let k = 0; k < perTier; k++) {
+      const a = tier * 2.39996 + (k / perTier) * Math.PI * 2 + r() * 0.5;
+      const d = v3(Math.cos(a), 0, Math.sin(a));
+      const len = R * (0.85 + r() * 0.3);
+      const wid = Math.max(0.7, len * 0.75);
+      const axis = v3(axisTop.x * (y / axisTop.y), y, axisTop.z * (y / axisTop.y));
+      const start = axis.clone().addScaledVector(d, 0.05);
+      const end = axis.clone().addScaledVector(d, len).add(v3(0, -len * droop * (0.7 + r() * 0.6), 0));
+      const along = new Vector3().subVectors(end, start).normalize();
+      // card plane mostly horizontal, rolled a little so some sprays show their face from the side
+      const roll = (r() - 0.5) * 0.9;
+      const side = v3(-d.z, 0, d.x).applyAxisAngle(along, roll);
+      const nrm = d.clone().multiplyScalar(0.75).add(v3(0, 0.65, 0)).normalize();
+      const base = pos.length / 3;
+      const corners: [number, number][] = [[0, -1], [1, -1], [1, 1], [0, 1]];
+      for (const [u, v] of corners) {
+        const q = start.clone().lerp(end, u).addScaledVector(side, (v * wid) / 2);
+        pos.push(q.x, q.y, q.z);
+        nor.push(nrm.x, nrm.y, nrm.z);
+        uv.push(u * 0.5, (v + 1) / 2);
+      }
+      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    }
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  let ci = 0;
+  b.add('needles', g, {
+    color: colors[0],
+    keepUv: true,
+    vary: 0,
+    noise: 0.12,
+    noiseFreq: 0.7,
+    ao: 0,
+    dirt: 0,
+    shade: (p, _n, c) => {
+      const card = Math.floor(ci++ / 4);
+      c.set(colors[card % colors.length]);
+      // inner (near the trunk) darker, tips lighter
+      const rr = Math.hypot(p.x, p.z) / (radius(Math.max(y0, p.y)) + 0.3);
+      c.multiplyScalar(0.7 + 0.45 * Math.min(1, rr));
+    },
+  });
+}
+
+/** Opaque dark core (cone) using the solid half of the needle texture. */
+function crownCore(b: PartBuilder, y0: number, y1: number, r0: number, color: string, top = v3(0, 1, 0)): void {
+  const g = new CylinderGeometry(0.05, r0, y1 - y0, 7, 2, true);
+  const uv = g.getAttribute('uv');
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, 0.75, 0.5);
+  const lean = Math.atan2(top.x, top.y);
+  b.add('needles', g, { color, keepUv: true, m: trs(0, (y0 + y1) / 2, 0, 0, 0, -lean), ao: 0, dirt: 0, jitter: 0.15, jitterFreq: 0.8, shade: (_p, n, c) => { if (n.y < 0) c.multiplyScalar(0.6); } });
+}
+
 function spruce(b: PartBuilder): void {
   const H = TREE_SIZE.spruce.height;
-  rod(b, 'bark', v3(0, -0.2, 0), v3(0, H * 0.75, 0), 0.24, 0.05, 6, { color: '#4b4038', ao: 0.4, dirt: 0.3 });
-  const tiers = 6;
-  for (let i = 0; i < tiers; i++) {
-    const t = i / (tiers - 1);
-    const y0 = 1.6 + t * (H - 4.2);
-    const h = 4.6 - t * 1.6;
-    const R = TREE_SIZE.spruce.radius * (1 - t * 0.78);
-    const seg = 11;
-    const g = new CylinderGeometry(0.02, R, h, seg, 2, false);
-    const p = g.getAttribute('position');
-    for (let k = 0; k < p.count; k++) {
-      const x = p.getX(k), y = p.getY(k), z = p.getZ(k);
-      const rr = Math.hypot(x, z);
-      if (rr < 1e-3) continue;
-      const ang = Math.atan2(z, x);
-      // branch tips: alternate radius around the rim, droop the rim downward
-      const tip = 1 + 0.22 * Math.cos(ang * 5 + i * 1.7) + 0.1 * fnoise(ang * 2, i, 0, 3);
-      const rim = y < -h / 2 + 1e-3;
-      const sc = rim ? tip : 0.6 + 0.4 * tip;
-      p.setX(k, x * sc);
-      p.setZ(k, z * sc);
-      if (rim) p.setY(k, y - 0.35 * tip);
-      if (Math.abs(y) < 1e-3) { p.setX(k, p.getX(k) * 1.12); p.setZ(k, p.getZ(k) * 1.12); }
-    }
-    g.computeVertexNormals();
-    b.add('needles', g, {
-      color: '#2f3a2c',
-      m: trs(0, y0 + h / 2, 0, 0, i * 0.9, 0),
-      jitter: 0.12,
-      jitterFreq: 0.9,
-      vary: 0.05,
-      noise: 0.1,
-      ao: 0,
-      dirt: 0,
-      shade: (q, n, c) => {
-        // underside and inner parts darker, sunlit tips a touch lighter/warmer
-        if (n.y < -0.2) c.multiplyScalar(0.55);
-        const rr = Math.hypot(q.x, q.z) / (R + 0.01);
-        c.multiplyScalar(0.8 + 0.3 * Math.min(1, rr));
-      },
-    });
-  }
+  const R = TREE_SIZE.spruce.radius;
+  rod(b, 'bark', v3(0, -0.2, 0), v3(0, H * 0.97, 0), 0.24, 0.03, 6, { color: '#4b4038', ao: 0.4, dirt: 0.3 }, true);
+  const radius = (y: number) => 0.35 + R * Math.pow(Math.max(0, 1 - (y - 1.2) / (H - 1.2)), 0.95);
+  crownCore(b, 2.4, H - 1.6, R * 0.3, '#28311f');
+  whorls(b, 1.3, H - 0.6, 0.62, 6, radius, 0.3, ['#435039', '#4b5a40', '#3b4834', '#505d3f'], 61, v3(0, 1, 0));
 }
 
 function pine(b: PartBuilder): void {
@@ -148,7 +174,7 @@ function pine(b: PartBuilder): void {
   const r = rng(11);
   // slightly leaning trunk: grey-brown at the bottom, orange-brown above
   const top = v3(0.35, H * 0.86, 0.15);
-  b.add('bark', new CylinderGeometry(0.1, 0.27, H * 0.88, 7, 3, false), {
+  b.add('bark', new CylinderGeometry(0.1, 0.27, H * 0.88, 7, 3, true), {
     m: trs(top.x / 2, H * 0.44 - 0.2, top.z / 2, 0.012, 0, -0.022),
     color: '#4c4239',
     jitter: 0.05,
@@ -159,31 +185,18 @@ function pine(b: PartBuilder): void {
       if (q.y > H * 0.45) c.lerp(PINE_UPPER, Math.min(1, (q.y - H * 0.45) / 3));
     },
   });
-  // a few bare branch stubs and crown branches
-  for (let i = 0; i < 4; i++) {
-    const a = r() * Math.PI * 2;
-    const y = H * (0.66 + r() * 0.18);
-    rod(b, 'bark', v3(0.25, y, 0.1), v3(Math.cos(a) * 2.2, y + 1.2, Math.sin(a) * 2.2), 0.08, 0.04, 4, { color: '#7a5640', ao: 0 }, true);
+  // crown branches with needle clusters at their ends (flat, irregular Scots-pine crown)
+  const clumps: Vector3[] = [v3(0.35, H * 0.93, 0.15)];
+  for (let i = 0; i < 5; i++) {
+    const a = i * 2.4 + r() * 0.6;
+    const y = H * (0.66 + i * 0.045);
+    const e = v3(Math.cos(a) * (1.8 + r() * 0.8), y + 1.0, Math.sin(a) * (1.8 + r() * 0.8));
+    rod(b, 'bark', v3(0.3, y, 0.12), e, 0.09, 0.04, 4, { color: '#7a5640', ao: 0 }, true);
+    clumps.push(e);
   }
-  // crown: irregular flattened clumps
-  const clumps: [number, number, number, number][] = [
-    [0.3, H * 0.9, 0.1, 2.2], [-1.6, H * 0.8, 0.8, 1.7], [1.8, H * 0.78, -0.9, 1.8], [0.6, H * 0.72, 1.9, 1.5], [-0.8, H * 0.7, -1.7, 1.4],
-  ];
-  for (const [x, y, z, s] of clumps) {
-    b.add('needles', new SphereGeometry(1, 9, 6), {
-      color: '#34402f',
-      m: trs(x, y, z, 0, r() * 3, 0, s, s * 0.5, s * 0.95),
-      jitter: 0.3,
-      jitterFreq: 1.1,
-      renormal: true,
-      noise: 0.12,
-      ao: 0,
-      dirt: 0,
-      shade: (_q, n, c) => {
-        if (n.y < -0.2) c.multiplyScalar(0.55);
-      },
-    });
-  }
+  clumps.forEach((c, i) => {
+    leafCards(b, c.clone().add(v3(0, 0.25, 0)), v3(1.5, 0.55, 1.5), 13, 1.5, ['#34402f', '#3c4733', '#2c3629'], 70 + i, 'needles');
+  });
 }
 
 function oak(b: PartBuilder): void {
@@ -320,12 +333,13 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGL
   renderer.clear();
   const leafMat = new MeshBasicMaterial({ vertexColors: true, map: leafTexture(), alphaTest: 0.5, side: DoubleSide });
   const solidMat = new MeshBasicMaterial({ vertexColors: true });
+  const needleMat = new MeshBasicMaterial({ vertexColors: true, map: needleTexture(), alphaTest: 0.5, side: DoubleSide });
   TREE_KINDS.forEach((kind, i) => {
     const { height: H, radius: R } = TREE_SIZE[kind];
     const W = R * 2.3;
     const top = H * 1.05;
     const grp = new Group();
-    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? leafMat : solidMat));
+    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? leafMat : p.material === 'needles' ? needleMat : solidMat));
     scene.add(grp);
     const cam = new OrthographicCamera(-W / 2, W / 2, top - 0.2, -0.2, 0.1, 100);
     cam.position.set(0, 0, 40);

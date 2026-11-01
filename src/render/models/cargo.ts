@@ -11,8 +11,7 @@
  * these 30 variants and swap them per wagon); `cargoUnitParts` + `cargoSlots` support
  * per-unit instancing instead.
  */
-import { Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
-import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { Color, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
 import { type ModelPart, PartBuilder, trs } from './kit';
 import { box, logGeom } from './shapes';
 import { WAGON } from './wagon';
@@ -56,22 +55,34 @@ export function cargoSlots(good: CargoGood): Matrix4[] {
   return out;
 }
 
-/** Add one unit of a good at transform `m` (variant seeds the shape variation). */
+/** Rounded "pillow" box from a sphere pushed toward a superellipsoid (smooth, cheap sack). */
+function pillow(w: number, h: number, d: number, ws = 8, hs = 6): SphereGeometry {
+  const g = new SphereGeometry(1, ws, hs);
+  const p = g.getAttribute('position');
+  for (let i = 0; i < p.count; i++) {
+    const sq = (v: number) => Math.sign(v) * Math.pow(Math.abs(v), 0.45);
+    p.setXYZ(i, sq(p.getX(i)) * w / 2, sq(p.getY(i)) * h / 2, sq(p.getZ(i)) * d / 2);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Add one unit of a good at transform `m`. */
 function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
   switch (good) {
     case 'wood': {
       const len = 3.0 + b.r(-0.15, 0.2);
-      logGeom(b, m.clone().multiply(trs(0, 0, b.r(-0.12, 0.12), Math.PI / 2, 0, 0)), 0.15 + b.r(-0.012, 0.015), len, 9);
+      logGeom(b, m.clone().multiply(trs(0, 0, b.r(-0.12, 0.12), Math.PI / 2, 0, 0)), 0.15 + b.r(-0.012, 0.015), len, 10);
       break;
     }
     case 'planks': {
-      // one unit = 3 courses of 5 boards + 2 spacer sticks underneath
+      // one unit = 2 courses of 4 boards on two spacer sticks
       for (const z of [-0.9, 0.9]) box(b, 'wood', 1.25, 0.03, 0.06, m.clone().multiply(trs(0, 0.015, z)), { color: '#5b4a39', ao: 0, dirt: 0 });
-      for (let c = 0; c < 3; c++) {
-        for (let k = 0; k < 5; k++) {
-          const x = -0.5 + k * 0.25 + b.r(-0.01, 0.01);
-          const len = 2.85 + b.r(-0.12, 0.08);
-          box(b, 'wood', 0.235, 0.028, len, m.clone().multiply(trs(x, 0.03 + 0.014 + c * 0.031, b.r(-0.05, 0.05), 0, b.r(-0.006, 0.006))), {
+      for (let c = 0; c < 2; c++) {
+        for (let k = 0; k < 4; k++) {
+          const x = -0.465 + k * 0.31 + b.r(-0.01, 0.01);
+          const len = 2.85 + b.r(-0.14, 0.08);
+          box(b, 'wood', 0.295, 0.042, len, m.clone().multiply(trs(x, 0.03 + 0.021 + c * 0.046, b.r(-0.06, 0.06), 0, b.r(-0.006, 0.006))), {
             color: '#a88d68',
             vary: 0.08,
             noise: 0.05,
@@ -87,12 +98,12 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
       break;
     }
     case 'grain': {
-      // upright round sack: lumpy lathe, tied neck, folded-over top
+      // upright round sack: lumpy lathe, tied neck with a folded-over tuft
       const h = 0.62 + b.r(-0.04, 0.04);
       const prof = [
-        [0.001, 0], [0.18, 0.01], [0.25, 0.08], [0.27, 0.2], [0.26, 0.34], [0.22, 0.46], [0.13, h - 0.08], [0.06, h - 0.02], [0.05, h], [0.09, h + 0.06], [0.07, h + 0.11], [0.001, h + 0.1],
+        [0.001, 0], [0.22, 0.03], [0.27, 0.18], [0.25, 0.38], [0.15, h - 0.08], [0.055, h], [0.09, h + 0.07], [0.001, h + 0.1],
       ].map(([r, y]) => new Vector2(r, y));
-      b.add('cloth', new LatheGeometry(prof, 12), {
+      b.add('cloth', new LatheGeometry(prof, 9), {
         color: '#9c8458',
         m: m.clone().multiply(trs(0, 0, 0, b.r(-0.08, 0.08), 0, b.r(-0.08, 0.08), 1, 1, 0.9)),
         jitter: 0.025,
@@ -109,25 +120,27 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
       break;
     }
     case 'flour': {
-      const g = new RoundedBoxGeometry(0.56, 0.25, 1.0, 2, 0.09);
-      b.add('cloth', g, {
-        color: '#c4bba6',
+      b.add('cloth', pillow(0.56, 0.26, 1.0), {
+        color: '#aaa18c',
         m: m.clone().multiply(trs(0, 0, 0, 0, 0, b.r(-0.04, 0.04))),
-        jitter: 0.02,
+        jitter: 0.015,
         jitterFreq: 3,
         renormal: true,
         noise: 0.05,
         ao: 0,
         dirt: 0,
+        shade: (_p, n, c) => {
+          if (n.y < -0.3) c.multiplyScalar(0.7);
+        },
       });
-      // tied corner ears
-      for (const s of [-1, 1]) b.add('cloth', new SphereGeometry(0.05, 6, 4), { color: '#bdb39d', m: m.clone().multiply(trs(s * 0.22, 0.02, 0.52, 0, 0, 0, 1, 0.7, 1.3)), ao: 0, dirt: 0 });
+      // tied corner ear
+      b.add('cloth', new SphereGeometry(0.05, 5, 3), { color: '#9f9783', m: m.clone().multiply(trs(0.2, 0.03, 0.5, 0, 0, 0, 1, 0.7, 1.4)), ao: 0, dirt: 0 });
       break;
     }
     case 'bread': {
-      // wide wicker basket (open lathe, double wall) + loaves heaped above the rim
-      const prof = [[0.001, 0.0], [0.2, 0.0], [0.24, 0.05], [0.28, 0.28], [0.3, 0.3], [0.26, 0.3], [0.24, 0.07], [0.001, 0.07]].map(([r, y]) => new Vector2(r, y));
-      b.add('wood', new LatheGeometry(prof, 14), {
+      // wide wicker basket (open lathe with a rolled rim) heaped with ochre loaves
+      const prof = [[0.001, 0.0], [0.22, 0.0], [0.28, 0.27], [0.31, 0.3], [0.26, 0.29], [0.001, 0.12]].map(([r, y]) => new Vector2(r, y));
+      b.add('wood', new LatheGeometry(prof, 9), {
         color: '#7a6242',
         m,
         noise: 0.18,
@@ -137,19 +150,15 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
         jitter: 0.008,
         jitterFreq: 8,
       });
-      // handles
-      b.add('wood', new CylinderGeometry(0.29, 0.29, 0.025, 10, 1, true, -0.35, 0.7), { color: '#6a5438', m: m.clone().multiply(trs(0, 0.33, 0)), ao: 0, dirt: 0 });
-      const loaves: [number, number, number][] = [[-0.11, 0.24, 0.1], [0.12, 0.25, -0.08], [0.02, 0.24, -0.15], [-0.05, 0.36, 0.0], [0.1, 0.27, 0.13]];
-      for (const [x, y, z] of loaves) {
-        b.add('cloth', new SphereGeometry(1, 9, 6, 0, Math.PI * 2, 0, Math.PI * 0.62), {
+      const loaves: [number, number, number, number][] = [[-0.1, 0.22, 0.07, 0.16], [0.12, 0.22, -0.05, 0.15], [0.02, 0.3, 0.0, 0.14]];
+      for (const [x, y, z, r] of loaves) {
+        b.add('cloth', new SphereGeometry(1, 6, 3, 0, Math.PI * 2, 0, Math.PI * 0.55), {
           color: '#a67a3d',
-          m: m.clone().multiply(trs(x, y, z, b.r(-0.2, 0.2), b.r(0, 3), b.r(-0.2, 0.2), 0.12, 0.09, 0.12)),
+          m: m.clone().multiply(trs(x, y, z, b.r(-0.25, 0.25), b.r(0, 3), b.r(-0.25, 0.25), r, r * 0.72, r * 1.2)),
           ao: 0,
           dirt: 0,
           noise: 0.12,
           noiseFreq: 10,
-          jitter: 0.008,
-          jitterFreq: 9,
           shade: (_p, n, c) => {
             if (n.y < 0.2) c.multiplyScalar(0.75); // underside darker
             else c.lerp(CRUST, 0.35); // crust highlight

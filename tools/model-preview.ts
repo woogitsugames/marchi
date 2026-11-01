@@ -42,7 +42,7 @@ renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = SRGBColorSpace;
 renderer.toneMapping = tone === 'aces' ? ACESFilmicToneMapping : AgXToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 0.95;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
@@ -85,7 +85,12 @@ scene.add(sun, sun.target);
     const fine = 1 + fnoise(x * 1.3, 2, z * 1.3, 9) * 0.07;
     c.multiplyScalar(fine);
     col.set([c.r, c.g, c.b], i * 3);
-    pos.setY(i, fnoise(x * 0.05, 4, z * 0.05, 3) * 0.12 * Math.min(1, Math.abs(x + 44) / 6));
+    // river channel: banks drop ~1.9 m around x = -44
+    const dr = Math.abs(x + 44);
+    const bed = dr < 5 ? -1.9 : dr < 7 ? -1.9 * (1 - (dr - 5) / 2) : 0;
+    pos.setY(i, fnoise(x * 0.05, 4, z * 0.05, 3) * 0.12 + bed);
+    if (dr < 7) c.lerp(mud, 0.6);
+    col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new BufferAttribute(col, 3));
   g.computeVertexNormals();
@@ -93,9 +98,9 @@ scene.add(sun, sun.target);
   ground.receiveShadow = true;
   scene.add(ground);
   // river channel for the bridges: a sunk grey-green plane
-  const water = new Mesh(new PlaneGeometry(10, 120), new MeshStandardMaterial({ color: '#4c5b5c', roughness: 0.25, metalness: 0 }));
+  const water = new Mesh(new PlaneGeometry(12, 120), new MeshStandardMaterial({ color: '#4c5b5c', roughness: 0.25, metalness: 0 }));
   water.rotation.x = -Math.PI / 2;
-  water.position.set(-44, 0.05, -10);
+  water.position.set(-44, -1.2, -10);
   water.receiveShadow = true;
   scene.add(water);
 }
@@ -212,15 +217,16 @@ bakeTreeBillboards(renderer);
 const camera = new PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.5, 900);
 const views: Record<string, [Vector3, Vector3]> = {
   overview: [new Vector3(70, 75, 100), new Vector3(25, 0, -10)],
-  wagons: [new Vector3(18, 17, 30), new Vector3(9, 1, -2)],
+  wagons: [new Vector3(16, 30, 52), new Vector3(14, 0.5, -3)],
   close: [new Vector3(-6.5, 3.2, 8.5), new Vector3(-11, 1.2, 0)],
   far: [new Vector3(75, 110, 150), new Vector3(30, 0, -8)],
   buildings: [new Vector3(10, 32, 30), new Vector3(10, 2, -22)],
-  castle: [new Vector3(82, 26, 6), new Vector3(64, 4, -24)],
+  castle: [new Vector3(50, 30, 14), new Vector3(64, 5, -24)],
   bwest: [new Vector3(-10, 26, 22), new Vector3(-12, 2, -20)],
   trees: [new Vector3(108, 16, 26), new Vector3(90, 5, -12)],
   bridges: [new Vector3(-28, 14, 12), new Vector3(-44, 0, -12)],
   props: [new Vector3(2, 5, 16), new Vector3(-2, 0.8, 6)],
+  mill: [new Vector3(25, 8, -9), new Vector3(12, 2, -20)],
 };
 const [eye, target] = views[view] ?? views.overview;
 camera.position.copy(eye);
@@ -248,7 +254,11 @@ renderer.setAnimationLoop(() => {
   walk.uniforms.uWalkTime.value = params.has('still') ? 0.2 : (performance.now() - t0) / 1000;
   controls.update();
   renderer.render(scene, camera);
-  if (++frames === 3) (window as unknown as { __ready: boolean }).__ready = true;
+  if (++frames === 3) {
+    (window as unknown as { __ready: boolean }).__ready = true;
+    // screenshot mode: stop rendering so the capture is not starved by the software GL
+    if (params.has('still')) renderer.setAnimationLoop(null);
+  }
 });
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;

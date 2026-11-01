@@ -25,6 +25,11 @@ interface Cam { cx: number; cy: number; scale: number; rot: number }
 function mix(a: number[], b: number[], t: number): number[] {
   return [a[0]! + (b[0]! - a[0]!) * t, a[1]! + (b[1]! - a[1]!) * t, a[2]! + (b[2]! - a[2]!) * t];
 }
+function hash01(x: number, y: number): number {
+  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
 const hex = (s: string): number[] => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
 
 class FlatView implements WorldView {
@@ -100,7 +105,9 @@ class FlatView implements WorldView {
     this.cam.cx = world.terrain.w / 2;
     this.cam.cy = world.terrain.h / 2;
     this.cam.rot = 0;
-    this.cam.scale = Math.max(this.minScale(), Math.min(10, Math.max(this.w, this.h) / 70));
+    this.cam.scale = Math.max(this.minScale(), Math.min(13, Math.max(this.w, this.h) / 64));
+    this.cam.cx = 46;
+    this.cam.cy = 37;
   }
 
   afterTick(): void {
@@ -319,7 +326,15 @@ class FlatView implements WorldView {
     const img = g.createImageData(cv.width, cv.height);
     let lo = Infinity, hi = -Infinity;
     for (const v of t.corners) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
-    const meadowLo = hex('#3f4a31'), meadowHi = hex('#6f7550'), forest = hex('#2f3a2c'), field = hex('#8a7752');
+    const meadowLo = hex('#3f4a31'), meadowHi = hex('#6f7550'), forest = hex('#2a3427'), forestHi = hex('#3d4a35'), field = hex('#8a7752');
+    const bil = (arr: number[], fx: number, fy: number): number => {
+      const x = fx - 0.5, y = fy - 0.5;
+      const x0 = Math.max(0, Math.min(t.w - 1, Math.floor(x))), y0 = Math.max(0, Math.min(t.h - 1, Math.floor(y)));
+      const x1 = Math.min(t.w - 1, x0 + 1), y1 = Math.min(t.h - 1, y0 + 1);
+      const tx = Math.min(1, Math.max(0, x - x0)), ty = Math.min(1, Math.max(0, y - y0));
+      const a = arr[y0 * t.w + x0] ?? 0, b = arr[y0 * t.w + x1] ?? 0, c = arr[y1 * t.w + x0] ?? 0, d = arr[y1 * t.w + x1] ?? 0;
+      return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty;
+    };
     const water = hex('#4c5b5c'), waterDeep = hex('#3e4b4d');
     const W1 = t.w + 1;
     const hAt = (fx: number, fy: number): number => {
@@ -341,17 +356,22 @@ class FlatView implements WorldView {
         const dy = hAt(fx, fy + 0.5) - hAt(fx, fy - 0.5);
         const shade = Math.max(0.55, Math.min(1.25, 1 - (dx + dy) * 0.22));
         let col: number[];
+        const noise = hash01(px, py);
         if (t.water[ci]) {
           col = mix(water, waterDeep, Math.min(1, (t.waterLevel - hgt + 0.5) * 0.6));
-          col = mix(col, hex('#c9c6bb'), 0.05 + 0.04 * Math.sin(px * 0.21 + py * 0.05));
+          col = mix(col, hex('#c9c6bb'), 0.04 + 0.05 * hash01(Math.floor(px / 5), py));
         } else {
           const n = (hgt - lo) / Math.max(1, hi - lo);
           col = mix(meadowLo, meadowHi, Math.min(1, n * 1.3));
-          if (t.field[ci]) col = mix(col, field, (Math.floor(fy * 2.5) % 2 === 0 ? 0.55 : 0.4));
-          const f = t.forest[ci] ?? 0;
-          if (f > 0) {
-            const speck = ((px * 73856093) ^ (py * 19349663)) & 7;
-            col = mix(col, forest, Math.min(1, f * 0.95) * (speck < 6 ? 1 : 0.6));
+          col = mix(col, meadowLo, (noise - 0.5) * 0.18);
+          const fd = bil(t.field, fx, fy);
+          if (fd > 0.05) col = mix(col, field, Math.min(1, fd * 1.2) * (Math.floor(fy * 3) % 2 === 0 ? 0.55 : 0.38));
+          const f = bil(t.forest, fx, fy);
+          if (f > 0.02) {
+            // tree crowns as clumped stipple: dense forest -> mostly crowns, edges -> scattered trees
+            const clump = hash01(Math.floor(px / 3), Math.floor(py / 3)) * 0.6 + noise * 0.4;
+            if (clump < f * 1.05) col = mix(forest, forestHi, hash01(Math.floor(px / 3) + 7, Math.floor(py / 3)) * 0.5);
+            else col = mix(col, forest, f * 0.35);
           }
           col = col.map((v) => v * shade);
         }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>World view harness</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #2b2620; overflow: hidden; }
+      canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+      #info {
+        position: fixed; left: 8px; top: 8px; color: #c9c6bb; font: 11px/1.35 monospace;
+        background: rgba(43, 38, 32, 0.72); padding: 6px 8px; white-space: pre; pointer-events: none;
+      }
+      #info.hidden { display: none; }
+      #mark { position: fixed; width: 10px; height: 10px; margin: -5px 0 0 -5px; border: 2px solid #8c4a2f; border-radius: 50%; pointer-events: none; display: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="info"></div>
+    <div id="mark"></div>
+    <script type="module" src="./view-harness.ts"></script>
+  </body>
+</html>

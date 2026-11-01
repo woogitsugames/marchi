@@ -93,7 +93,8 @@ export const pl = {
   'hud.rain': 'Deszcz — błoto spowalnia wozy na gruncie',
   'hud.saved': 'Zapisano',
 
-  'menu.contractSub': '30 desek i 20 bochenków dla zamku',
+  'menu.contractItem': 'Kontrakt',
+  'menu.contractSub': 'Chleb i deski dla zamku przed zimą',
   'menu.sandboxSub': 'bez terminu, więcej srebra',
   'menu.continueSub': '{what}, {time}',
   'menu.resume': 'Wróć do gry',

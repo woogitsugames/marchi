@@ -32,7 +32,7 @@ const cloth = (color: string): Opts => ({ color, vary: 0.04, noise: 0.08, ao: 0.
  * Add a human to a builder. `m` places the figure: origin between the feet (stand/work) or at
  * the seat surface under the pelvis (sit); facing +Z.
  */
-export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: HumanPose = 'stand', seg = 7): void {
+export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: HumanPose = 'stand', seg = 6): void {
   const P = (x: number, y: number, z: number) => v3(x, y, z).applyMatrix4(m);
   const sit = pose === 'sit';
   // key heights (standing): hip 0.9, waist 1.04, shoulder 1.40, chin 1.50, head centre 1.60
@@ -60,7 +60,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
       const knee = T(hx * 1.15, 0.95, 0.44);
       rod(b, 'cloth', T(hx, 0.92, 0.02), knee, 0.085, 0.065, seg, cloth(style.tunic));
       const ankle = P(hx * 1.2, -0.38, 0.52);
-      rod(b, 'cloth', knee, ankle, 0.06, 0.045, seg, cloth(style.hose));
+      rod(b, 'cloth', knee, ankle, 0.06, 0.045, seg, cloth(style.hose), true);
       shoe(b, ankle, m, style);
     } else {
       const work = pose === 'work';
@@ -68,7 +68,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
       const knee = P(hx * 1.05, 0.5, fz * 0.55 + 0.02);
       rod(b, 'cloth', P(hx, 0.88, 0), knee, 0.08, 0.06, seg, cloth(style.hose));
       const ankle = P(hx * 1.1, 0.08, fz);
-      rod(b, 'cloth', knee, ankle, 0.058, 0.043, seg, cloth(style.hose));
+      rod(b, 'cloth', knee, ankle, 0.058, 0.043, seg, cloth(style.hose), true);
       shoe(b, ankle, m, style);
     }
   }
@@ -88,34 +88,32 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
       wrist = T(0.23 * s, 0.84, 0.04);
     }
     rod(b, 'cloth', sh, elbow, 0.06, 0.05, seg - 1, cloth(style.tunic));
-    rod(b, 'cloth', elbow, wrist, 0.05, 0.042, seg - 1, cloth(style.tunic));
+    rod(b, 'cloth', elbow, wrist, 0.05, 0.042, seg - 1, cloth(style.tunic), true);
     const hand = wrist.clone().add(new Vector3().subVectors(wrist, elbow).normalize().multiplyScalar(0.06));
-    b.add('skin', new SphereGeometry(0.045, 6, 5), { color: style.skin, m: new Matrix4().makeTranslation(hand.x, hand.y, hand.z).multiply(new Matrix4().makeScale(0.8, 1.15, 1)), ao: 0, dirt: 0 });
+    b.add('skin', new SphereGeometry(0.045, 4, 3), { color: style.skin, m: new Matrix4().makeTranslation(hand.x, hand.y, hand.z).multiply(new Matrix4().makeScale(0.8, 1.15, 1)), ao: 0, dirt: 0 });
   }
 
   // --- neck + head
-  rod(b, 'skin', T(0, 1.44, 0), T(0, 1.53, 0.01), 0.05, 0.048, 6, { color: style.skin, ao: 0, dirt: 0 });
+  rod(b, 'skin', T(0, 1.44, 0), T(0, 1.53, 0.01), 0.05, 0.048, 5, { color: style.skin, ao: 0, dirt: 0 }, true);
   const head = m.clone().multiply(trs(0, 1.61 + dy, 0.015, 0, 0, 0, 0.088, 0.112, 0.1));
-  b.add('skin', new SphereGeometry(1, 10, 8), { color: style.skin, m: head, ao: 0, dirt: 0 });
-  // nose hint
-  b.add('skin', new SphereGeometry(1, 5, 4), { color: style.skin, m: m.clone().multiply(trs(0, 1.6 + dy, 0.105, 0, 0, 0, 0.018, 0.03, 0.03)), ao: 0, dirt: 0 });
+  b.add('skin', new SphereGeometry(1, 7, 5), { color: style.skin, m: head, ao: 0, dirt: 0 });
   if (style.hooded) {
     // hood: sphere shell slightly larger, open at the face, + shoulder cape
-    b.add('cloth', new SphereGeometry(1, 10, 7, Math.PI * 0.62, Math.PI * 1.76, 0, Math.PI * 0.62), {
+    b.add('cloth', new SphereGeometry(1, 8, 5, Math.PI * 0.86, Math.PI * 1.28, 0, Math.PI * 0.6), {
       ...cloth(style.hood),
       m: m.clone().multiply(trs(0, 1.625 + dy, 0.0, 0, 0, 0, 0.113, 0.135, 0.125)),
     });
-    lathe(b, 'cloth', [[0.001, 1.32], [0.25, 1.3], [0.23, 1.38], [0.16, 1.45], [0.1, 1.52], [0.001, 1.53]], seg + 3, m.clone().multiply(trs(0, dy, -0.01, 0, 0, 0, 1, 1, 0.8)), cloth(style.hood));
+    lathe(b, 'cloth', [[0.001, 1.32], [0.25, 1.3], [0.23, 1.38], [0.16, 1.45], [0.1, 1.52], [0.001, 1.53]], seg + 2, m.clone().multiply(trs(0, dy, -0.01, 0, 0, 0, 1, 1, 0.8)), cloth(style.hood));
   } else {
     // hair cap + felt cap
-    b.add('cloth', new SphereGeometry(1, 9, 5, 0, Math.PI * 2, 0, Math.PI * 0.5), {
+    b.add('cloth', new SphereGeometry(1, 8, 3, 0, Math.PI * 2, 0, Math.PI * 0.5), {
       color: style.hood,
       m: m.clone().multiply(trs(0, 1.65 + dy, 0.0, -0.1, 0, 0, 0.1, 0.085, 0.11)),
       ao: 0,
       dirt: 0,
     });
-    b.add('cloth', new CylinderGeometry(0.12, 0.125, 0.02, 10), { color: style.hood, m: m.clone().multiply(trs(0, 1.655 + dy, 0.0, -0.1)), ao: 0, dirt: 0 });
-    b.add('cloth', new SphereGeometry(1, 8, 5, Math.PI * 0.75, Math.PI * 1.5, Math.PI * 0.35, Math.PI * 0.3), {
+    b.add('cloth', new CylinderGeometry(0.12, 0.125, 0.02, 8, 1, true), { color: style.hood, m: m.clone().multiply(trs(0, 1.655 + dy, 0.0, -0.1)), ao: 0, dirt: 0 });
+    b.add('cloth', new SphereGeometry(1, 6, 2, Math.PI * 0.75, Math.PI * 1.5, Math.PI * 0.35, Math.PI * 0.3), {
       color: style.hair,
       m: head.clone().multiply(new Matrix4().makeScale(1.04, 1.04, 1.04)),
       ao: 0,
@@ -128,7 +126,7 @@ function shoe(b: PartBuilder, ankle: Vector3, m: Matrix4, style: HumanStyle): vo
   const fwd = new Vector3(0, 0, 1).transformDirection(m);
   const c = ankle.clone().addScaledVector(fwd, 0.06).add(new Vector3(0, -0.035, 0));
   const ry = Math.atan2(fwd.x, fwd.z);
-  b.add('hide', new SphereGeometry(1, 7, 5), { color: '#3b3027', m: trs(c.x, c.y, c.z, 0, ry, 0, 0.055, 0.045, 0.13), dirt: 0.5 });
+  b.add('hide', new SphereGeometry(1, 5, 3), { color: '#3b3027', m: trs(c.x, c.y, c.z, 0, ry, 0, 0.055, 0.045, 0.13), dirt: 0.5 });
   void style;
 }
 

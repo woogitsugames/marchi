@@ -23,7 +23,7 @@ import {
   Vector2,
   Vector3,
 } from 'three';
-import { type ModelPart, PartBuilder, trs, v3 } from './kit';
+import { fnoise, type ModelPart, PartBuilder, trs, v3 } from './kit';
 import { addHuman, HUMAN_STYLES } from './people';
 import {
   beam,
@@ -37,6 +37,9 @@ import {
   rod,
   type RoofSpec,
   ridgeY,
+  thatchRoof,
+  type ThatchSpec,
+  thatchUnderY,
   timberFrame,
   wattleRun,
   windowHole,
@@ -79,16 +82,34 @@ const C = {
   boards: '#5a4f43',
   boardsDark: '#3a322a',
   daub: '#a99f88',
-  thatch: '#8d7550',
-  thatchRidge: '#6f5d42',
+  thatch: '#776549',
+  thatchRidge: '#5c4f3e',
   shingle: '#5a5248',
-  stone: '#8a8478',
-  stoneDark: '#6f6a60',
+  stone: '#7b766b',
+  stoneDark: '#646057',
   hay: '#9a8058',
   clay: '#8c4a2f',
 };
 
-const stoneO = (color = C.stone): Opts => ({ color, jitter: 0.04, jitterFreq: 2.2, noise: 0.16, noiseFreq: 1.3, vary: 0.05, dirt: 0.35 });
+const STREAK = new Color('#4f4b44');
+const stoneO = (color = C.stone): Opts => ({
+  color,
+  jitter: 0.04,
+  jitterFreq: 2.2,
+  noise: 0.2,
+  noiseFreq: 1.6,
+  vary: 0.05,
+  dirt: 0.35,
+  shade: (p, n, c) => {
+    // vertical rain streaks and lichen-dark patches on walls, lighter weathered tops
+    if (Math.abs(n.y) < 0.5) {
+      const st = fnoise(p.x * 2.6 + p.z * 2.6, p.y * 0.18, 0.3, 41);
+      if (st > 0.1) c.lerp(STREAK, Math.min(0.55, (st - 0.1) * 1.4));
+    } else if (n.y > 0.5) c.multiplyScalar(1.08);
+    const blot = fnoise(p.x * 0.6, p.y * 0.6, p.z * 0.6, 42);
+    if (blot > 0.2) c.multiplyScalar(1 - (blot - 0.2) * 0.6);
+  },
+});
 
 // -------------------------------------------------------------------------------------------
 // Generic house
@@ -108,11 +129,12 @@ interface HouseSpec {
   door?: { u: number; w: number; h: number; open?: boolean };
   windows?: { side: 'front' | 'back' | 'left' | 'right'; u: number; y: number }[];
   overhang?: number;
-  frontOverhang?: number;
   roofColor?: string;
+  /** Thatch gable treatment (default half-hip). */
+  hip?: 'gable' | 'half' | 'full';
 }
 
-function house(b: PartBuilder, s: HouseSpec): RoofSpec {
+function house(b: PartBuilder, s: HouseSpec): void {
   const x0 = s.cx - s.len / 2, x1 = s.cx + s.len / 2;
   const z0 = s.cz - s.dep / 2, z1 = s.cz + s.dep / 2;
   const pt = s.plinth;
@@ -197,15 +219,20 @@ function house(b: PartBuilder, s: HouseSpec): RoofSpec {
     }
   }
 
-  // gable boards for framed/board houses (logs make their own gables)
-  if (s.walls !== 'logs') {
+  const hip = s.hip ?? 'half';
+  const thatchSpec: ThatchSpec = {
+    x0, x1, z0, z1, eaveY: s.wallH, pitchDeg: s.pitch, overhang: s.overhang ?? 0.6, hip,
+    thickness: 0.42, ragged: 0.2, color: s.roofColor ?? C.thatch, ridgeColor: C.thatchRidge,
+  };
+  // gable boards for framed/board houses (logs make their own gables), clipped under the roof
+  if (s.walls !== 'logs' && !(s.roof === 'thatch' && hip === 'full')) {
     const tanP = Math.tan((s.pitch * Math.PI) / 180);
     const half = s.dep / 2;
     for (const [x, sx] of [[x0, -1], [x1, 1]] as const) {
       const n = Math.round(s.dep / 0.26);
       for (let i = 0; i < n; i++) {
         const z = z0 + (i + 0.5) * (s.dep / n);
-        const top = s.wallH + (half - Math.abs(z - s.cz)) * tanP;
+        const top = s.roof === 'thatch' ? thatchUnderY(thatchSpec, x, z) : s.wallH + (half - Math.abs(z - s.cz)) * tanP;
         const hh = top - s.wallH + 0.05;
         if (hh < 0.08) continue;
         box(b, 'wood', 0.04, hh, s.dep / n - 0.01, trs(x + sx * 0.03, s.wallH - 0.05 + hh / 2, z), { color: C.boards, vary: 0.14, noise: 0.08, ao: 0 });
@@ -231,25 +258,28 @@ function house(b: PartBuilder, s: HouseSpec): RoofSpec {
     windowHole(b, c, out);
   }
 
+  if (s.roof === 'thatch') {
+    thatchRoof(b, thatchSpec);
+    return;
+  }
   const roof: RoofSpec = {
     x0,
     x1,
-    z0: z0 - (s.frontOverhang ?? 0) * 0,
+    z0,
     z1,
     eaveY: s.wallH,
     pitchDeg: s.pitch,
-    thickness: s.roof === 'thatch' ? 0.38 : 0.08,
-    overhang: s.overhang ?? (s.roof === 'thatch' ? 0.65 : 0.45),
-    gableOverhang: s.roof === 'thatch' ? 0.38 : 0.3,
-    ragged: s.roof === 'thatch' ? 0.22 : 0,
-    jitter: s.roof === 'thatch' ? 0.05 : 0.012,
-    color: s.roofColor ?? (s.roof === 'thatch' ? C.thatch : C.shingle),
-    ridgeColor: s.roof === 'thatch' ? C.thatchRidge : '#4a443c',
-    ridge: s.roof === 'thatch' ? 'roll' : 'board',
-    segLen: s.roof === 'thatch' ? 0.6 : 0.9,
+    thickness: 0.08,
+    overhang: s.overhang ?? 0.45,
+    gableOverhang: 0.3,
+    ragged: 0,
+    jitter: 0.012,
+    color: s.roofColor ?? C.shingle,
+    ridgeColor: '#4a443c',
+    ridge: 'board',
+    segLen: 0.9,
   };
-  gableRoof(b, s.roof === 'thatch' ? 'thatch' : 'wood', roof);
-  return roof;
+  gableRoof(b, 'wood', roof);
 }
 
 const r0 = () => 0.14;
@@ -656,19 +686,10 @@ function stable(b: PartBuilder): Partial<BuildingModel> {
     }
   }
   beam(b, 'wood', v3(x0 - 0.2, H, z1), v3(x1 + 0.2, H, z1), 0.22, 0.24, { color: C.timber });
-  gableRoof(b, 'thatch', {
-    x0, x1, z0, z1, eaveY: H, pitchDeg: 45, thickness: 0.36, overhang: 0.75, gableOverhang: 0.35,
-    ragged: 0.2, color: C.thatch, ridgeColor: C.thatchRidge, ridge: 'roll', segLen: 0.6, jitter: 0.05,
+  thatchRoof(b, {
+    x0, x1, z0, z1, eaveY: H, pitchDeg: 47, overhang: 0.75, hip: 'full', thickness: 0.4, ragged: 0.2,
+    color: C.thatch, ridgeColor: C.thatchRidge,
   });
-  // gables boarded
-  const tanP = 1;
-  for (const [x, sx] of [[x0, -1], [x1, 1]] as const) {
-    for (let i = 0; i < 18; i++) {
-      const z = z0 + (i + 0.5) * (dep / 18);
-      const hh = (dep / 2 - Math.abs(z - cz)) * tanP + 0.05;
-      box(b, 'wood', 0.04, hh, dep / 18 - 0.01, trs(x + sx * 0.07, H - 0.05 + hh / 2, z), { color: C.boards, vary: 0.14, ao: 0 });
-    }
-  }
   // water trough + hay stack by the side
   box(b, 'wood', 2.0, 0.45, 0.55, trs(-2.5, 0.22, 2.0), { color: C.timber });
   box(b, 'stone', 1.85, 0.03, 0.4, trs(-2.5, 0.44, 2.0), { color: '#4c5b5c', ao: 0, dirt: 0, noise: 0 });
@@ -694,6 +715,35 @@ function curtain(b: PartBuilder, a: Vector3, c: Vector3, h: number, t: number): 
     box(b, 'stone', 0.7, 0.8, 0.45, m.clone().multiply(trs(u, h / 2 + 0.4, t / 2 - 0.22)), { ...stoneO(), jitter: 0.03 });
   }
   box(b, 'stone', len, 0.5, 0.45, m.clone().multiply(trs(0, h / 2 - 0.0, t / 2 - 0.22)), stoneO(), 0.8);
+  putlogs(b, m, len, h, t / 2 + 0.005);
+}
+
+/** Alternating proud corner stones on a rectangular tower (x, z centre; w × d plan). */
+function quoins(b: PartBuilder, cx: number, cz: number, w: number, d: number, y0: number, y1: number): void {
+  const h = 0.48;
+  const n = Math.floor((y1 - y0) / h);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    for (let i = 0; i < n; i++) {
+      const long = i % 2 === 0;
+      const y = y0 + (i + 0.5) * h;
+      const lx = long ? 0.75 : 0.42, lz = long ? 0.42 : 0.75;
+      box(b, 'stone', lx, h - 0.03, lz, trs(cx + sx * (w / 2 - lx / 2 + 0.035), y, cz + sz * (d / 2 - lz / 2 + 0.035)), {
+        ...stoneO('#837e73'),
+        jitter: 0.015,
+      });
+    }
+  }
+}
+
+/** Rows of small dark putlog (scaffold) holes on a wall face — reads as masonry at distance. */
+function putlogs(b: PartBuilder, m: Matrix4, len: number, h: number, off: number, rows = [0.35, 0.68]): void {
+  for (const fy of rows) {
+    const n = Math.floor(len / 1.6);
+    for (let i = 0; i < n; i++) {
+      const u = -len / 2 + (i + 0.5) * (len / n) + b.r(-0.1, 0.1);
+      box(b, 'stone', 0.16, 0.16, 0.02, m.clone().multiply(trs(u, -h / 2 + fy * h, off)), { color: '#2a2622', noise: 0, ao: 0, dirt: 0, vary: 0 });
+    }
+  }
 }
 
 function castle(b: PartBuilder): Partial<BuildingModel> {
@@ -716,6 +766,7 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
     sh.holes.push(hole);
     const g = new ExtrudeGeometry(sh, { depth: d, bevelEnabled: false, curveSegments: 10 });
     b.add('stone', g, { ...stoneO(), jitter: 0.03, m: trs(0, 0, zf - d / 2 + 0.3) });
+    quoins(b, 0, zf + 0.3 - d / 2 + d / 2 - 0.0, w, d, 0.6, gh);
     // arch voussoir ring (slightly proud) on the outer face
     b.add('stone', new TorusGeometry(1.42, 0.17, 4, 12, Math.PI), { ...stoneO(C.stoneDark), m: trs(0, 2.6, zf + 1.55, 0, 0, 0, 1, 1, 0.6) });
     for (let i = 0; i < 4; i++) {
@@ -737,6 +788,13 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
   {
     const kx = -3.9, kz = -4.0, kw = 5.6, kh = 15.5;
     box(b, 'stone', kw, kh, kw, trs(kx, kh / 2, kz), { ...stoneO(), jitter: 0.05 }, 0.9);
+    for (let sd = 0; sd < 4; sd++) {
+      const fm = trs(kx, kh / 2, kz, 0, (sd * Math.PI) / 2);
+      putlogs(b, fm, kw, kh, kw / 2 + 0.005, [0.22, 0.42, 0.62, 0.82]);
+    }
+    // string course and corner quoins
+    box(b, 'stone', kw + 0.12, 0.18, kw + 0.12, trs(kx, kh * 0.5, kz), stoneO(C.stoneDark), 1);
+    quoins(b, kx, kz, kw, kw, 1.2, kh);
     box(b, 'stone', kw + 0.6, 1.2, kw + 0.6, trs(kx, 0.6, kz), stoneO(C.stoneDark), 0.8);
     // corbelled parapet
     box(b, 'stone', kw + 0.5, 0.35, kw + 0.5, trs(kx, kh + 0.1, kz), stoneO(C.stoneDark), 0.8);
@@ -776,8 +834,6 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
   fenceRun(b, v3(7.4, 0, yz0), v3(7.4, 0, yz1));
   fenceRun(b, v3(-7.4, 0, yz1), v3(-2.2, 0, yz1));
   fenceRun(b, v3(2.2, 0, yz1), v3(7.4, 0, yz1));
-  // packed gravel floor of the yard (thin, so the terrain decal can override it)
-  box(b, 'stone', 14.6, 0.04, 7.0, trs(0, 0.02, (yz0 + yz1) / 2), { color: '#77705f', noise: 0.15, noiseFreq: 0.8, ao: 0, dirt: 0.25 }, 1.2);
   banner(b, 2.6, yz1 + 0.05, 6);
   // tally table with a steward
   box(b, 'wood', 1.6, 0.06, 0.8, trs(-3.6, 0.8, 2.2), { color: C.timberLight });

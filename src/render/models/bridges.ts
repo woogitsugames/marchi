@@ -75,8 +75,8 @@ function woodSegment(b: PartBuilder): void {
 function stoneSegment(b: PartBuilder): void {
   const Y = BRIDGE.stoneDeckY, W = BRIDGE.stoneWidth, L = BRIDGE.cell;
   const span = 2.9; // clear opening per cell, half-piers of 0.55 m at each end
-  const rise = 1.25;
-  const spring = -1.15; // springing line height
+  const rise = 1.15;
+  const spring = -1.6; // springing line height (crown at −0.45, water ≈ −1.2)
   const rad = (span * span / 4 + rise * rise) / (2 * rise);
   const cy = spring + rise - rad;
   const a0 = Math.asin(span / 2 / rad);
@@ -114,7 +114,7 @@ function stoneSegment(b: PartBuilder): void {
     for (let i = 0; i < 11; i++) {
       const a = -a0 + (2 * a0 * (i + 0.5)) / 11;
       const r = rad + 0.22;
-      box(b, 'stone', 0.06, 0.45, 2 * a0 * rad / 11 - 0.03, trs(s * (W / 2 + 0.02), cy + Math.cos(a) * r, Math.sin(a) * r, -a, 0, 0), { ...stoneO, color: '#7a756a' });
+      box(b, 'stone', 0.06, 0.45, 2 * a0 * rad / 11 - 0.03, trs(s * (W / 2 + 0.02), cy + Math.cos(a) * r, Math.sin(a) * r, a, 0, 0), { ...stoneO, color: '#7a756a' });
     }
     // cutwater on the half-piers (pointed), both faces
     for (const zc of [-L / 2, L / 2]) {

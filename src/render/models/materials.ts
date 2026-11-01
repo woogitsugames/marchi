@@ -24,7 +24,7 @@ export type MatKey =
   | 'hide' // horse coat, leather
   | 'skin'
   | 'metal' // iron fittings that need a sheen
-  | 'needles' // conifer crowns (solid)
+  | 'needles' // conifer branch sprays (alpha cards; right half of the texture is solid)
   | 'leaves' // alpha-tested leaf cards
   | 'billboard'; // far-tree impostor cards (map baked by `bakeTreeBillboards`)
 
@@ -33,6 +33,7 @@ interface MatSpec {
   metalness?: number;
   side?: 'double';
   alphaLeaf?: boolean;
+  alphaNeedle?: boolean;
 }
 
 const SPECS: Record<MatKey, MatSpec> = {
@@ -45,7 +46,7 @@ const SPECS: Record<MatKey, MatSpec> = {
   hide: { roughness: 0.62 },
   skin: { roughness: 0.7 },
   metal: { roughness: 0.55, metalness: 0.6 },
-  needles: { roughness: 0.92 },
+  needles: { roughness: 0.92, side: 'double', alphaNeedle: true },
   leaves: { roughness: 0.85, side: 'double', alphaLeaf: true },
   billboard: { roughness: 0.95, side: 'double' },
 };
@@ -78,6 +79,11 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
     // keep shading on both sides of the card lit like the crown, not dark on the back face
     m.shadowSide = DoubleSide;
   }
+  if (s.alphaNeedle) {
+    m.map = needleTexture();
+    m.alphaTest = 0.5;
+    m.shadowSide = DoubleSide;
+  }
   cache.set(key, m);
   return m;
 }
@@ -88,7 +94,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
  */
 export function applyTextures(key: MatKey, set: TextureSet): void {
   const m = modelMaterial(key);
-  if (set.map !== undefined && !SPECS[key].alphaLeaf) {
+  if (set.map !== undefined && !SPECS[key].alphaLeaf && !SPECS[key].alphaNeedle) {
     m.map = set.map;
     if (m.map) m.map.colorSpace = SRGBColorSpace;
   }
@@ -137,4 +143,61 @@ export function leafTexture(): CanvasTexture {
   leafTex.colorSpace = SRGBColorSpace;
   leafTex.anisotropy = 2;
   return leafTex;
+}
+
+let needleTex: CanvasTexture | null = null;
+
+/**
+ * Conifer spray texture (256×128): left half a branch spray with needles along a stem that runs
+ * along U (u 0→0.5, v = 0.5), right half solid (for opaque crown cores that share the material).
+ */
+export function needleTexture(): CanvasTexture {
+  if (needleTex) return needleTex;
+  const W = 256, H = 128;
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = H;
+  const g = cv.getContext('2d');
+  if (!g) throw new Error('2d canvas unavailable');
+  g.clearRect(0, 0, W, H);
+  let s = 777;
+  const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const stem = (x0: number, y0: number, x1: number, y1: number, width: number, needle: number) => {
+    const n = Math.floor(Math.hypot(x1 - x0, y1 - y0) / 1.6);
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      const x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t;
+      const len = needle * (1 - t * 0.55) * (0.7 + r() * 0.5);
+      const tone = 150 + Math.floor(r() * 105);
+      g.strokeStyle = `rgb(${tone},${tone},${tone})`;
+      g.lineWidth = 1.3;
+      const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy);
+      const nx = -dy / L, ny = dx / L;
+      for (const sd of [-1, 1]) {
+        g.beginPath();
+        g.moveTo(x, y);
+        g.lineTo(x + (nx * sd * 0.9 + (dx / L) * 0.5) * len, y + (ny * sd * 0.9 + (dy / L) * 0.5) * len);
+        g.stroke();
+      }
+    }
+    g.strokeStyle = 'rgb(110,100,90)';
+    g.lineWidth = width;
+    g.beginPath();
+    g.moveTo(x0, y0);
+    g.lineTo(x1, y1);
+    g.stroke();
+  };
+  // main stem + side shoots (a flat spruce/pine spray)
+  stem(2, H / 2, W / 2 - 6, H / 2 + 4, 2.4, 13);
+  for (let i = 0; i < 7; i++) {
+    const x = 14 + i * 15;
+    const sd = i % 2 ? 1 : -1;
+    stem(x, H / 2 + 1, x + 22 - i * 1.5, H / 2 + sd * (40 - i * 4), 1.4, 9 - i * 0.6);
+  }
+  g.fillStyle = 'rgb(220,220,220)';
+  g.fillRect(W / 2 + 4, 4, W / 2 - 8, H - 8);
+  needleTex = new CanvasTexture(cv);
+  needleTex.colorSpace = SRGBColorSpace;
+  needleTex.anisotropy = 2;
+  return needleTex;
 }

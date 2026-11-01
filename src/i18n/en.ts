@@ -94,7 +94,8 @@ export const en: Dict = {
   'hud.rain': 'Rain — mud slows wagons on tracks',
   'hud.saved': 'Saved',
 
-  'menu.contractSub': '30 planks and 20 loaves for the castle',
+  'menu.contractItem': 'Contract',
+  'menu.contractSub': 'Bread and planks for the castle before winter',
   'menu.sandboxSub': 'no deadline, more silver',
   'menu.continueSub': '{what}, {time}',
   'menu.resume': 'Back to the game',

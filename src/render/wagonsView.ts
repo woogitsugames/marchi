@@ -1,0 +1,370 @@
+// Wagons: horse + wagon + driver + cargo, fully instanced (one InstancedMesh per part, shared
+// by up to MAX_WAGONS rigs). Positions interpolate between the previous and current sim tick,
+// heading is damped, wagons keep to the right of two-way roads (centred on one-lane wooden
+// bridges), wheels turn with the odometer, waiting wagons queue back from the node they wait at.
+import {
+  BufferGeometry,
+  Frustum,
+  Group,
+  InstancedBufferAttribute,
+  InstancedMesh,
+  type Material,
+  Matrix4,
+  type PerspectiveCamera,
+  Sphere,
+  Vector3,
+} from 'three';
+import type { Good, Wagon, World } from '../sim/index';
+import { edgeLength, MAX_WAGONS } from '../sim/index';
+import { CELL, type Heightfield } from './heightfield';
+import { CARGO_GOODS, type CargoGood, cargoSlots, cargoUnitParts } from './models/cargo';
+import type { ModelPart } from './models/kit';
+import { modelMaterial } from './models/materials';
+import { createHorseWalkMaterial, type HorseWalkMaterial, WAGON, wagonLod1, wagonModel } from './models/wagon';
+
+/** Lateral offset from the road centreline (keep right). */
+const LANE = 1.05;
+
+interface Snap {
+  id: number;
+  init: boolean;
+  px: number; pz: number; py: number; podo: number;
+  cx: number; cz: number; cy: number; codo: number;
+  /** Edge direction of the current snapshot (unit, xz). */
+  dx: number; dz: number;
+  moving: boolean;
+  bridge: boolean;
+  /** 0 on a one-lane wooden bridge, 1 elsewhere. */
+  lane: number;
+  pitch: number;
+  heading: number;
+  laneS: number;
+  /** Opposing traffic close by on the same road. */
+  opp: boolean;
+  /** Last frame's rendered rig origin (world) and visibility. */
+  fx: number; fy: number; fz: number;
+  visible: boolean;
+  seen: number;
+}
+
+class Parts {
+  readonly meshes: InstancedMesh[];
+  count = 0;
+  constructor(parts: ModelPart[], cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
+    this.meshes = parts.map((p) => {
+      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
+      m.count = 0;
+      m.frustumCulled = false;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.name = name;
+      group.add(m);
+      return m;
+    });
+  }
+  begin(): void { this.count = 0; }
+  push(mat: Matrix4): number {
+    const i = this.count++;
+    for (const m of this.meshes) m.setMatrixAt(i, mat);
+    return i;
+  }
+  end(): void {
+    for (const m of this.meshes) {
+      m.count = this.count;
+      m.visible = this.count > 0;
+      if (this.count) m.instanceMatrix.needsUpdate = true;
+    }
+  }
+  setShadow(on: boolean): void { for (const m of this.meshes) m.castShadow = on; }
+}
+
+const _M = new Matrix4();
+const _R = new Matrix4();
+const _W = new Matrix4();
+const _v = new Vector3();
+const _frustum = new Frustum();
+const _pm = new Matrix4();
+const _sphere = new Sphere(new Vector3(), 5);
+
+export class WagonsView {
+  readonly group = new Group();
+  private snaps = new Map<number, Snap>();
+  private body: Parts;
+  private wheelF: Parts;
+  private wheelR: Parts;
+  private horse: Parts;
+  private driver: Parts;
+  private lod1: Parts;
+  private cargo = new Map<CargoGood, Parts>();
+  private slots = new Map<CargoGood, Matrix4[]>();
+  private walk: HorseWalkMaterial;
+  private walkAttr: InstancedBufferAttribute;
+  private stack = new Map<number, number>();
+  private order: Wagon[] = [];
+  /** Distance beyond which the low-detail rig is used. */
+  lodDist = 110;
+  /** Estimated sim speed (ticks per real second / TICK_HZ), drives the leg animation. */
+  simSpeed = 1;
+  private tickTimes: number[] = [];
+  private head = new Int32Array(0);
+  private link = new Int32Array(MAX_WAGONS * 2 + 8);
+  private item = new Int32Array(MAX_WAGONS * 2 + 8);
+  private touched: number[] = [];
+
+  constructor(private readonly hf: Heightfield) {
+    const cap = MAX_WAGONS;
+    const wm = wagonModel();
+    this.body = new Parts(wm.body, cap, this.group, 'wagon-body');
+    this.wheelF = new Parts(wm.wheelFront, cap * 2, this.group, 'wagon-wheelF');
+    this.wheelR = new Parts(wm.wheelRear, cap * 2, this.group, 'wagon-wheelR');
+    this.walk = createHorseWalkMaterial(true);
+    this.walkAttr = new InstancedBufferAttribute(new Float32Array(cap), 1);
+    this.horse = new Parts(wm.horse, cap, this.group, 'wagon-horse', () => this.walk.material, (g) => {
+      const c = g.clone();
+      c.setAttribute('instanceWalk', this.walkAttr);
+      return c;
+    });
+    this.driver = new Parts(wm.driver, cap, this.group, 'wagon-driver');
+    this.lod1 = new Parts(wagonLod1(), cap, this.group, 'wagon-lod1');
+    for (const g of CARGO_GOODS) {
+      this.cargo.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
+      this.slots.set(g, cargoSlots(g));
+    }
+  }
+
+  setShadows(near: boolean, far: boolean): void {
+    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver]) p.setShadow(near);
+    this.lod1.setShadow(far);
+    for (const p of this.cargo.values()) p.setShadow(near);
+  }
+
+  private centre(world: World, c: number, out: Vector3): Vector3 {
+    const w = world.terrain.w;
+    const x = c % w, y = (c - x) / w;
+    return out.set((x + 0.5) * CELL, 0, (y + 0.5) * CELL);
+  }
+
+  private surf(world: World, c: number): number {
+    const t = world.terrain;
+    if (t.water[c]) return t.cellH[c]!;
+    const w = t.w, x = c % w, y = (c - x) / w;
+    return this.hf.height((x + 0.5) * CELL, (y + 0.5) * CELL);
+  }
+
+  /** Snapshot current sim positions; previous ones become the interpolation start. */
+  afterTick(world: World, nowMs: number): void {
+    this.tickTimes.push(nowMs);
+    while (this.tickTimes.length > 1 && nowMs - this.tickTimes[0]! > 1000) this.tickTimes.shift();
+    const t = world.terrain;
+    const A = _v;
+    for (const w of world.state.wagons) {
+      let s = this.snaps.get(w.id);
+      if (!s) {
+        s = {
+          id: w.id, init: false, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1,
+          moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
+        };
+        this.snaps.set(w.id, s);
+      }
+      s.px = s.cx; s.pz = s.cz; s.py = s.cy; s.podo = s.codo;
+      if (w.next >= 0) {
+        this.centre(world, w.at, A);
+        const ax = A.x, az = A.z;
+        this.centre(world, w.next, A);
+        const bx = A.x, bz = A.z;
+        const len = edgeLength(t, w.at, w.next);
+        const f = Math.min(1, w.edgeT / len);
+        s.cx = ax + (bx - ax) * f;
+        s.cz = az + (bz - az) * f;
+        const l = Math.hypot(bx - ax, bz - az) || 1;
+        s.dx = (bx - ax) / l; s.dz = (bz - az) / l;
+        const wa = t.water[w.at] === 1, wb = t.water[w.next] === 1;
+        s.bridge = wa || wb;
+        const ha = this.surf(world, w.at), hb = this.surf(world, w.next);
+        s.cy = ha + (hb - ha) * f;
+        s.pitch = s.bridge ? Math.atan2(hb - ha, l) : 0;
+        const woodA = wa && world.state.roads[w.at] === 1, woodB = wb && world.state.roads[w.next] === 1;
+        s.lane = woodA && woodB ? 0 : woodA ? Math.min(1, f * 2 - 0.4) : woodB ? Math.min(1, (1 - f) * 2 - 0.4) : 1;
+        if (s.lane < 0) s.lane = 0;
+        s.moving = true;
+      } else {
+        this.centre(world, w.at, A);
+        s.cx = A.x; s.cz = A.z;
+        s.cy = this.surf(world, w.at);
+        s.bridge = t.water[w.at] === 1;
+        s.lane = s.bridge && world.state.roads[w.at] === 1 ? 0 : 1;
+        s.moving = false;
+      }
+      s.codo = w.odometer;
+      s.opp = false;
+      if (!s.init) {
+        s.init = true;
+        s.px = s.cx; s.pz = s.cz; s.py = s.cy; s.podo = s.codo;
+        s.heading = Math.atan2(s.dx, s.dz);
+        s.laneS = s.lane;
+      }
+    }
+    this.markOpposing(world);
+  }
+
+  /** Wagons keep to the centre of the track unless meeting opposing traffic nearby. */
+  private markOpposing(world: World): void {
+    const ws = world.state.wagons;
+    const n = world.terrain.w * world.terrain.h;
+    if (this.head.length !== n) this.head = new Int32Array(n).fill(-1);
+    const head = this.head, link = this.link, item = this.item;
+    let k = 0;
+    const touched: number[] = this.touched;
+    touched.length = 0;
+    const ins = (cell: number, i: number) => {
+      if (cell < 0 || k >= link.length) return;
+      if (head[cell] === -1) touched.push(cell);
+      item[k] = i; link[k] = head[cell]!; head[cell] = k++;
+    };
+    for (let i = 0; i < ws.length; i++) {
+      const w = ws[i]!;
+      if (w.next < 0) continue;
+      ins(w.at, i);
+      ins(w.next, i);
+    }
+    for (let i = 0; i < ws.length; i++) {
+      const w = ws[i]!;
+      const s = this.snaps.get(w.id);
+      if (!s || w.next < 0) continue;
+      let opp = false;
+      const cells = [w.at, w.next, w.path[0] ?? -1, w.path[1] ?? -1];
+      for (const c of cells) {
+        if (c < 0 || opp) continue;
+        for (let e = head[c]!; e !== -1; e = link[e]!) {
+          const j = item[e]!;
+          if (j === i) continue;
+          const o = this.snaps.get(ws[j]!.id);
+          if (o && o.dx * s.dx + o.dz * s.dz < -0.3) { opp = true; break; }
+        }
+      }
+      s.opp = opp;
+      if (!opp) s.lane = 0;
+    }
+    for (const c of touched) head[c] = -1;
+  }
+
+  /** Forget wagons that no longer exist (call on setWorld). */
+  reset(): void {
+    this.snaps.clear();
+  }
+
+  get(id: number): Snap | undefined {
+    return this.snaps.get(id);
+  }
+
+  frame(world: World, alpha: number, dt: number, camera: PerspectiveCamera, time: number): void {
+    const hf = this.hf;
+    if (this.tickTimes.length > 1) {
+      const span = (this.tickTimes[this.tickTimes.length - 1]! - this.tickTimes[0]!) / 1000;
+      const est = span > 0.2 ? (this.tickTimes.length - 1) / span / 10 : 1;
+      this.simSpeed += (est - this.simSpeed) * Math.min(1, dt * 2);
+    }
+    if (this.tickTimes.length && performance.now() - this.tickTimes[this.tickTimes.length - 1]! > 400) this.simSpeed *= 0.9; // paused
+    this.walk.uniforms.uWalkTime.value += (dt * Math.max(0.15, this.simSpeed)) / 1;
+    void time;
+    _pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    _frustum.setFromProjectionMatrix(_pm);
+    const camPos = camera.position;
+    const lod2 = this.lodDist * this.lodDist;
+    const kTurn = 1 - Math.exp(-dt * 7);
+    const kLane = 1 - Math.exp(-dt * 3);
+
+    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver, this.lod1]) p.begin();
+    for (const p of this.cargo.values()) p.begin();
+    this.stack.clear();
+    // stable order: moving first doesn't matter; queue index by id order
+    this.order.length = 0;
+    for (const w of world.state.wagons) this.order.push(w);
+
+    const home = new Set<number>();
+    for (const b of world.state.buildings) if (b.type === 'stable') home.add(b.gate);
+
+    for (const w of this.order) {
+      const s = this.snaps.get(w.id);
+      if (!s) continue;
+      const a = alpha;
+      let x = s.px + (s.cx - s.px) * a;
+      let z = s.pz + (s.cz - s.pz) * a;
+      const odo = s.podo + (s.codo - s.podo) * a;
+      // heading
+      if (s.moving) {
+        const target = Math.atan2(s.dx, s.dz);
+        let d = target - s.heading;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        s.heading += d * kTurn;
+      }
+      s.laneS += (s.lane - s.laneS) * kLane;
+      const fx = Math.sin(s.heading), fz = Math.cos(s.heading);
+      let hidden = false;
+      if (!s.moving) {
+        const k = this.stack.get(w.at) ?? 0;
+        this.stack.set(w.at, k + 1);
+        if (k > 0) {
+          // queue back along the approach direction
+          x -= fx * k * 8;
+          z -= fz * k * 8;
+        }
+        if (w.status.k === 'IDLE' && home.has(w.at) && k >= 3) hidden = true;
+      }
+      // keep right
+      const off = LANE * s.laneS;
+      x += -fz * off;
+      z += fx * off;
+      let y: number;
+      let pitch: number;
+      if (s.bridge) {
+        y = s.py + (s.cy - s.py) * a;
+        pitch = s.pitch;
+      } else {
+        const hF = hf.height(x + fx * 1.6, z + fz * 1.6);
+        const hB = hf.height(x - fx * 1.6, z - fz * 1.6);
+        y = Math.max(hf.height(x, z), (hF + hB) * 0.5);
+        pitch = Math.atan2(hF - hB, 3.2);
+      }
+      s.fx = x; s.fy = y; s.fz = z;
+      s.visible = !hidden;
+      if (hidden) continue;
+      _sphere.center.set(x + fx * 1.8, y + 1.2, z + fz * 1.8);
+      if (!_frustum.intersectsSphere(_sphere)) continue;
+      _M.makeRotationY(s.heading).multiply(_R.makeRotationX(-pitch)).setPosition(x, y, z);
+      const ddx = x - camPos.x, ddy = y - camPos.y, ddz = z - camPos.z;
+      const near = ddx * ddx + ddy * ddy + ddz * ddz < lod2;
+      if (near) {
+        this.body.push(_M);
+        const hi = this.horse.push(_M);
+        this.walkAttr.setX(hi, s.moving && w.next >= 0 ? 1 : 0);
+        this.driver.push(_M);
+        for (const wh of WAGON.wheels) {
+          _W.copy(_M).multiply(_R.makeTranslation(wh.position.x, wh.position.y, wh.position.z)).multiply(_R.makeRotationX(odo / wh.radius));
+          (wh.kind === 'front' ? this.wheelF : this.wheelR).push(_W);
+        }
+      } else {
+        this.lod1.push(_M);
+      }
+      if (w.cargoGood && w.cargoQty > 0) {
+        const g = w.cargoGood as Good as CargoGood;
+        const parts = this.cargo.get(g)!;
+        const slots = this.slots.get(g)!;
+        const n = Math.min(slots.length, Math.round(w.cargoQty));
+        for (let i = 0; i < n; i++) {
+          _W.multiplyMatrices(_M, slots[i]!);
+          parts.push(_W);
+        }
+      }
+    }
+    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver, this.lod1]) p.end();
+    for (const p of this.cargo.values()) p.end();
+    this.walkAttr.needsUpdate = true;
+  }
+
+  dispose(): void {
+    for (const c of this.group.children) (c as InstancedMesh).dispose();
+    this.walk.material.dispose();
+  }
+}
