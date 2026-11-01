@@ -1,0 +1,67 @@
+{
+ "name": "stuck-fuzz-1055",
+ "status": "known-failing",
+ "expect": "stuck",
+ "review": "F-01",
+ "note": "Found by tools/fuzz.ts seed 1055 (9000 ticks), shrunk: a diagonal river crossing (one-cell spans) + a mill + one wagon; opposing wagons deadlock on adjacent one-cell spans.",
+ "failure": {
+  "kind": "stuck",
+  "tick": 7601,
+  "detail": "wagon 9 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3300,\"blocker\":10,\"since\":4556} at 3493 for 3044 ticks (job {\"id\":32,\"good\":\"wood\",\"qty\":6,\"from\":1,\"to\":7,\"phase\":\"pickup\"}); wagon 10 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3493,\"blocker\":9,\"since\":4508} at 3396 for 3092 ticks (job {\"id\":34,\"good\":\"bread\",\"qty\":6,\"from\":6,\"to\":7,\"phase\":\"pickup\"}); wagon 11 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3300,\"blocker\":10,\"since\":4508} at 3493 for 3092 ticks (job {\"id\":33,\"good\":\"planks\",\"qty\":6,\"from\":2,\"to\":7,\"phase\":\"pickup\"}); wagon 30 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3493,\"blocker\":9,\"since\":4562} at 3396 for 303"
+ },
+ "scenario": {
+  "mission": "sandbox",
+  "coins": null,
+  "ticks": 7602,
+  "saveAt": -1,
+  "commands": [
+   {
+    "tick": 359,
+    "cmd": {
+     "t": "road",
+     "cells": [
+      2336,
+      2432,
+      2529,
+      2625,
+      2722,
+      2818,
+      2914,
+      3011,
+      3107,
+      3204,
+      3300,
+      3396,
+      3493,
+      3589,
+      3686,
+      3782,
+      3878,
+      3975,
+      4071,
+      4168,
+      4264
+     ],
+     "surface": 1
+    }
+   },
+   {
+    "tick": 977,
+    "cmd": {
+     "t": "place",
+     "type": "mill",
+     "x": 73,
+     "y": 49,
+     "facing": 3
+    }
+   },
+   {
+    "tick": 4235,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   }
+  ]
+ }
+}

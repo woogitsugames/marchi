@@ -1,0 +1,106 @@
+{
+ "name": "stuck-diagonal-bridge",
+ "status": "known-failing",
+ "expect": "stuck",
+ "review": "F-01",
+ "note": "Diagonal road over water creates several one-cell wooden spans; two opposing wagons on adjacent spans block each other forever (BRIDGE_JAM cycle).",
+ "failure": {
+  "kind": "stuck",
+  "tick": 10501,
+  "detail": "wagon 11 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3385,\"blocker\":12,\"since\":7491} at 3290 for 3009 ticks (job {\"id\":75,\"good\":\"planks\",\"qty\":6,\"from\":2,\"to\":7,\"phase\":\"dropoff\"}); wagon 14 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3290,\"blocker\":11,\"since\":7493} at 3385 for 3007 ticks (job {\"id\":84,\"good\":\"wood\",\"qty\":5,\"from\":1,\"to\":7,\"phase\":\"pickup\"})"
+ },
+ "scenario": {
+  "mission": "m1",
+  "coins": 5000,
+  "ticks": 10502,
+  "saveAt": -1,
+  "commands": [
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "road",
+     "surface": 1,
+     "cells": [
+      2334,
+      2430,
+      2526,
+      2622,
+      2718,
+      2814,
+      2910,
+      3005,
+      3100,
+      3195,
+      3290,
+      3385,
+      3481,
+      3577,
+      3673,
+      3769,
+      3865,
+      3961,
+      4057,
+      4153,
+      4249
+     ]
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   },
+   {
+    "tick": 0,
+    "cmd": {
+     "t": "buyWagon",
+     "stable": 3
+    }
+   }
+  ]
+ }
+}
