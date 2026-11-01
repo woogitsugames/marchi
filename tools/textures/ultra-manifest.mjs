@@ -23,7 +23,7 @@ const totalBytes = files.reduce((n, f) => n + f.bytes, 0);
 const manifest = {
   pack: 'marchia-textures-ultra',
   version,
-  description: '4096 px albedo + ORM KTX2 (Basis ETC1S q255, mips, Y-flipped) for the ultra tier; normals stay 2048 in the APK.',
+  description: '4096 px KTX2 (Basis ETC1S q255, mips) for the ultra tier: albedo + ORM of the five terrain sets (not Y-flipped, array layers), ORM of four model sets (Y-flipped); models ship no albedo, bark stays 2048, normals stay 1024 in the APK.',
   licence: 'CC0 1.0 (Poly Haven), see docs/ASSETS.md',
   totalBytes,
   files,

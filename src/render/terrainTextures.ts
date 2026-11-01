@@ -3,11 +3,12 @@
 // (mobile GPUs often expose only 16 texture units). Layers are loaded asynchronously from the
 // CC0 sets in public/assets/textures; until they arrive, flat palette colours are used.
 //
-// Tiers (D-14): 'low' decodes the 512 px JPGs into RGBA8 DataArrayTextures (as before);
-// 'high' / 'ultra' stitch the per-layer KTX2 files (2048 / 4096 albedo + ORM, 2048 normals) into
-// CompressedArrayTextures so the GPU keeps them block-compressed (ETC2 / ASTC / BC*). A 4k RGBA8
-// array would be ~1.3 GB of VRAM; compressed it is ~140 MB (ETC2) for all three arrays.
-// If a KTX2 layer cannot be loaded, that map falls back to the 1024 px JPG path.
+// Tiers (D-20, D-21): 'low' decodes the 512 px JPGs into RGBA8 DataArrayTextures;
+// 'high' / 'ultra' stitch the per-layer KTX2 files (2048 / 4096 albedo + ORM, 1024 UASTC normals)
+// into CompressedArrayTextures so the GPU keeps them block-compressed (ETC2 / ASTC / BC*). A 4k
+// RGBA8 array set would be ~1.3 GB of VRAM; compressed it is ~120 MB (ETC2 + ASTC).
+// Without a KTX2 loader, or if a KTX2 map cannot be loaded, that map falls back to the 512 JPGs
+// (the only JPGs the terrain sets ship).
 import {
   CompressedArrayTexture,
   type CompressedTexture,
@@ -23,6 +24,9 @@ import {
 } from 'three';
 import type { Quality } from './api';
 import { NORMAL_TIER_SIZE, TIER_ANISOTROPY, anisotropyFor, getKtx2Loader, ultraUrl } from './textures';
+
+/** Size of the terrain JPGs (low tier + the no-KTX2 fallback of every tier). */
+export const TERRAIN_JPG_SIZE = 512;
 
 export const TERRAIN_LAYERS = ['meadow', 'mud_track', 'forest_floor', 'riverbank', 'cobblestone'] as const;
 export type TerrainLayer = (typeof TERRAIN_LAYERS)[number];
@@ -71,6 +75,13 @@ function arrayBytes(t: TerrainArray): number {
   }
   const img = (t as DataArrayTexture).image;
   return Math.round((img.width * img.height * img.depth * 4 * (t.generateMipmaps ? 4 : 3)) / 3);
+}
+
+/** Free the GPU memory of a set (the arrays must not be bound any more). */
+export function disposeTerrainTextures(t: TerrainTextureSet): void {
+  t.albedo.dispose();
+  t.normal.dispose();
+  t.orm.dispose();
 }
 
 /** Tiny flat arrays used until the real textures are decoded. */
@@ -197,13 +208,15 @@ async function loadKtx2Array(map: MapKind, size: number, aniso: number): Promise
 /**
  * Load all terrain layers.
  *  - `loadTerrainTextures('ultra' | 'high')`: KTX2 compressed arrays (4096 / 2048 albedo + ORM,
- *    2048 normals). Ultra reads the 4096 files from the pack set with setUltraBase(); without it
- *    (or on any 4K error) it uses the 2048 files, then the 1024 JPGs.
+ *    1024 normals). Ultra reads the 4096 files from the pack set with setUltraBase(); without it
+ *    (or on any 4K error) it uses the 2048 files. Any map whose KTX2 fails (or no KTX2 loader)
+ *    falls back to the 512 JPGs.
  *  - `loadTerrainTextures('low')`: 512 JPGs as RGBA8 arrays.
- *  - `loadTerrainTextures(512 | 1024)` (legacy): JPGs at that size, anisotropy 4.
- * Resolves with a complete set; layers that fail stay flat.
+ *  - `loadTerrainTextures(512)` (legacy): JPGs at that size, anisotropy 4 (only 512 JPGs ship).
+ * Resolves with a complete set; layers that fail stay flat. The caller owns the result
+ * (TerrainView.setTextures takes it over; otherwise free it with disposeTerrainTextures).
  */
-export async function loadTerrainTextures(sizeOrQuality: number | Quality = 512): Promise<TerrainTextureSet> {
+export async function loadTerrainTextures(sizeOrQuality: number | Quality = TERRAIN_JPG_SIZE): Promise<TerrainTextureSet> {
   if (typeof sizeOrQuality === 'number') {
     const size = sizeOrQuality;
     const ctx = jpgContext(size);
@@ -217,12 +230,9 @@ export async function loadTerrainTextures(sizeOrQuality: number | Quality = 512)
   const quality: Quality = sizeOrQuality in TIER_ANISOTROPY ? sizeOrQuality : 'high';
   const aniso = anisotropyFor(quality);
   let ctx: CanvasRenderingContext2D | null = null;
-  const jpg = async (map: MapKind, s: number) => loadJpgArray(map, s, (ctx ??= jpgContext(1024)), aniso);
+  const jpg = (map: MapKind) => loadJpgArray(map, TERRAIN_JPG_SIZE, (ctx ??= jpgContext(TERRAIN_JPG_SIZE)), aniso);
   const one = async (map: MapKind): Promise<TerrainArray> => {
-    if (quality === 'low') {
-      if (!ctx || ctx.canvas.width !== 512) ctx = jpgContext(512);
-      return loadJpgArray(map, 512, ctx, aniso);
-    }
+    if (quality === 'low' || !getKtx2Loader()) return jpg(map);
     const sizes = map === 'normal' ? [NORMAL_TIER_SIZE] : quality === 'ultra' && ultraUrl('meadow', 'albedo') ? [4096, 2048] : [2048];
     for (const s of sizes) {
       try {
@@ -231,7 +241,7 @@ export async function loadTerrainTextures(sizeOrQuality: number | Quality = 512)
         console.warn(`[terrainTextures] KTX2 ${map} ${s} failed, trying a smaller fallback`, err);
       }
     }
-    return jpg(map, 1024);
+    return jpg(map);
   };
   // Sequential: keeps the transient transcoded data (~56 MB per 4k ETC2 map) bounded.
   const albedo = await one('albedo');

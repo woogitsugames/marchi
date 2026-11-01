@@ -26,11 +26,14 @@ async function open(q, w = 412, h = 915) {
   page.on('pageerror', (e) => errors.push(`${q}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`${q}: ${m.text()}`); });
   await page.goto(`${base}?quality=low&dynres=0&${q}`);
-  await page.waitForFunction(() => window.__marchia?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => window.__marchia?.ready, null, { timeout: 180000 });
   await page.waitForTimeout(900);
   return { page, ctx };
 }
-const shot = async (page, name) => { await page.screenshot({ path: resolve(out, `ui2-${name}.png`) }); console.log('  ui2-' + name); };
+const shot = async (page, name) => {
+  try { await page.screenshot({ path: resolve(out, `ui2-${name}.png`), timeout: 90000 }); console.log('  ui2-' + name); }
+  catch (e) { console.log('  FAILED ui2-' + name, e.message.split('\n')[0]); }
+};
 const step = (page) => page.evaluate(() => window.__marchia.app.tutorial?.current ?? 0);
 
 async function tutorial(w, h) {
@@ -74,11 +77,11 @@ if (want('gap')) {
     const { page, ctx } = await open('play=m1&ff=60&speed=0&open=mill', w, h);
     await page.waitForTimeout(600);
     await shot(page, `gap-mill-${w}x${h}`);
+    await ctx.close();
     if (w === 412) {
       const { page: p2, ctx: c2 } = await open('play=m1&ff=60&speed=0&open=bakery', w, h);
       await shot(p2, `gap-bakery-${w}x${h}`); await c2.close();
     }
-    await ctx.close();
   }
 }
 if (want('end')) {

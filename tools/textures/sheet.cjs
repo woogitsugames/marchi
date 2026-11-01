@@ -1,7 +1,8 @@
 // usage: node sheet.cjs <textures_root> <out_png> [raw_dir]
 // With raw_dir (process.py --tiers output) the tiles come from the graded 4k sources
 // (<raw>/<set>__albedo_preview.jpg) and each set also shows a 1:1 crop of its largest size
-// (<raw>/<set>__albedo_crop.png); without it, from the shipped 1k JPGs.
+// (<raw>/<set>__albedo_crop.png); without it, from the shipped 512 terrain JPGs (model sets ship
+// no albedo since D-21 and are skipped).
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
@@ -10,13 +11,13 @@ const out = path.resolve(process.argv[3]);
 const names = ['meadow','mud_track','cobblestone','riverbank','forest_floor','wood_planks','thatch','fieldstone_wall','bark','plaster_daub'];
 const palette = [['Torf','#2b2620'],['Błoto','#5a4a39'],['Strzecha','#9a8058'],['Łąka','#56603f'],['Bór','#2f3a2c'],['Kamień polny','#8a8478'],['Rzeka','#4c5b5c'],['Mgła','#c9c6bb'],['Glina','#8c4a2f'],['Ochra','#b8893a']];
 const raw = process.argv[4] ? path.resolve(process.argv[4]) : null;
-const v = fs.statSync(path.join(root, names[0], 'albedo.jpg')).mtimeMs;
+const v = fs.statSync(path.join(root, names[0], 'albedo_512.jpg')).mtimeMs;
 const big = (n) => (n === 'bark' ? 2048 : 4096);
-const cells = names.map(n => raw
+const cells = names.filter(n => raw || fs.existsSync(path.join(root, n, 'albedo_512.jpg'))).map(n => raw
   ? `<figure><div class="t" style="background-image:url('file://${raw}/${n}__albedo_preview.jpg?${v}')"></div>` +
     `<div class="t crop" style="background-image:url('file://${raw}/${n}__albedo_crop.png?${v}')"></div>` +
     `<figcaption>${n} · ${big(n)} px<br><small>top: 2×2 tiles · bottom: 1:1 pixels</small></figcaption></figure>`
-  : `<figure><div class="t" style="background-image:url('file://${root}/${n}/albedo.jpg?${v}')"></div><figcaption>${n}</figcaption></figure>`).join('');
+  : `<figure><div class="t" style="background-image:url('file://${root}/${n}/albedo_512.jpg?${v}')"></div><figcaption>${n}</figcaption></figure>`).join('');
 const sw = palette.map(([n,h]) => `<div class="sw"><span style="background:${h}"></span>${n}</div>`).join('');
 const html = `<!doctype html><meta charset="utf-8"><style>
 body{margin:0;padding:24px;background:#2b2620;color:#c9c6bb;font:14px Georgia,serif;width:1352px}

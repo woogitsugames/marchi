@@ -22,7 +22,7 @@ import { CELL, Heightfield } from './heightfield';
 import { noiseTexture } from './noiseTex';
 import type { OverlayData } from './overlay';
 import { ROAD_MAXD, type RoadField } from './roads';
-import { placeholderTerrainTextures, type TerrainTextureSet } from './terrainTextures';
+import { disposeTerrainTextures, placeholderTerrainTextures, type TerrainTextureSet } from './terrainTextures';
 
 const SUB = 3;
 const CHUNKS_X = 3, CHUNKS_Z = 2;
@@ -39,6 +39,8 @@ export class TerrainView {
   readonly groundTex: DataTexture;
   private readonly groundData: Uint8Array;
   private chunks: Mesh[] = [];
+  /** Splat arrays currently bound (owned: disposed when replaced or on dispose()). */
+  private tex: TerrainTextureSet | null;
 
   constructor(readonly hf: Heightfield, roads: RoadField, overlay: OverlayData) {
     const { w, h } = hf;
@@ -47,6 +49,7 @@ export class TerrainView {
     this.groundTex.magFilter = LinearFilter;
     this.groundTex.minFilter = LinearFilter;
     const tx = placeholderTerrainTextures();
+    this.tex = tx;
     this.uniforms = {
       tAlb: { value: tx.albedo },
       tNrm: { value: tx.normal },
@@ -80,10 +83,26 @@ export class TerrainView {
     this.material.needsUpdate = true;
   }
 
+  /** Bind a texture set; the terrain takes ownership and disposes the previous arrays. */
   setTextures(t: TerrainTextureSet): void {
+    const old = this.tex;
+    this.tex = t;
     this.uniforms.tAlb!.value = t.albedo;
     this.uniforms.tNrm!.value = t.normal;
     this.uniforms.tOrm!.value = t.orm;
+    if (old && old !== t) disposeTerrainTextures(old);
+  }
+
+  /** The bound set, handed over (e.g. to the next TerrainView): dispose() will no longer free it. */
+  detachTextures(): TerrainTextureSet | null {
+    const t = this.tex;
+    this.tex = null;
+    return t;
+  }
+
+  /** The bound set (placeholder until the real textures arrive). */
+  get textures(): TerrainTextureSet | null {
+    return this.tex;
   }
 
   /** Per-cell ground classes; rebuilt when buildings change. */
@@ -161,6 +180,8 @@ export class TerrainView {
     for (const c of this.group.children) (c as Mesh).geometry.dispose();
     this.material.dispose();
     this.groundTex.dispose();
+    if (this.tex) disposeTerrainTextures(this.tex);
+    this.tex = null;
   }
 }
 

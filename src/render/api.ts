@@ -9,8 +9,13 @@ export type PickResult =
   | null;
 
 export type Overlay = 'none' | 'traffic';
-/** 'ultra' = 4k textures (large high-DPI phones, foldables), 'high' = 2k (default), 'low' = 512/1k. */
+/**
+ * 'ultra' = 4k albedo/ORM from the downloadable pack (large high-DPI phones, foldables; 2k when the
+ * pack is not installed), 'high' = 2k (default), 'low' = 512/1k. Normals are 1k in every tier.
+ */
 export type Quality = 'ultra' | 'high' | 'low';
+/** Tiers this render layer implements (src/ui/tier.ts offers 'ultra' because it is listed). */
+export const QUALITIES = ['low', 'high', 'ultra'] as const satisfies readonly Quality[];
 
 export interface ScreenAnchor {
   /** CSS pixels relative to the canvas' top-left. */

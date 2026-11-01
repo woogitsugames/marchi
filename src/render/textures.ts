@@ -1,20 +1,23 @@
 // PBR texture manifest + loader. Files live in public/assets/textures/<name>/ (see docs/ASSETS.md).
 //
 // Per set: albedo (sRGB), normal (OpenGL / +Y, as three.js expects), orm (R = AO, G = roughness,
-// B = 0). Three quality tiers (D-14):
-//   low   — terrain sets 512 px, other sets 1024 px: KTX2 (ETC1S) albedo/orm + JPG normals.
-//   high  — 2048 px: KTX2 ETC1S albedo/orm + KTX2 UASTC normals. Anisotropy min(8, GPU max).
-//   ultra — 4096 px albedo/orm (bark stays 2048) + the same 2048 UASTC normals.
-//           Anisotropy min(16, GPU max). The 4096 files are NOT in the APK / public/ (D-17):
-//           they form a downloadable pack (repo: assets-ultra/, manifest.json) whose location is
-//           handed in at runtime with setUltraBase(). Without it, or if a 4K file fails, 'ultra'
-//           uses the 2048 files from the APK.
-// All KTX2 files carry their own mip chain and are encoded Y-flipped so they match the default
-// flipY = true orientation of the JPGs — except the 2048/4096 files of the five terrain sets,
-// which are only used as array layers (uploaded unflipped, like the canvas-decoded JPG arrays). They are transcoded to a GPU block format (ETC2 / ASTC /
-// BC*) — 2k / 4k textures are never uploaded as uncompressed RGBA unless the GPU has no
-// compressed format at all. JPGs exist only at 1024 / 512 px: without a KTX2 loader (or when a
-// KTX2 file fails) every tier falls back to them.
+// B = 0). Three quality tiers (D-20, sizes per D-21):
+//   low   — model sets: 1024 ETC1S ORM + 1024 UASTC normal (KTX2). Terrain: 512 JPG arrays.
+//   high  — 2048 ETC1S albedo / ORM + the same 1024 UASTC normals. Anisotropy min(8, GPU max).
+//   ultra — 4096 albedo / ORM (bark stays 2048) + the same 1024 normals. Anisotropy min(16, GPU).
+//           The 4096 files are NOT in the APK / public/ (D-17): they form a downloadable pack
+//           (repo: assets-ultra/, manifest.json) whose location is handed in at runtime with
+//           setUltraBase(). Without it, or if a 4K file fails, 'ultra' uses the 2048 files.
+// Model materials take their colour from vertex colours, so the model sets ship no albedo at all
+// (load them with { albedo: false }); the terrain sets ship albedo for the splat arrays.
+// All KTX2 files carry their own mip chain. Model-set KTX2 are encoded Y-flipped to match the
+// default flipY = true orientation of the JPGs; the terrain-set KTX2 are NOT flipped, because
+// they are only used as array layers (src/render/terrainTextures.ts, uploaded unflipped like the
+// canvas-decoded JPG arrays) — do not use loadPbrSet for terrain sets. KTX2 is transcoded to a GPU
+// block format (ETC2 / ASTC / BC*): nothing above 1k is ever uploaded as uncompressed RGBA unless
+// the GPU has no compressed format at all.
+// JPG fallback (no KTX2 loader, or a KTX2 file fails): model sets 1024 normal + ORM JPG, terrain
+// sets 512 JPG — one fallback path for every tier.
 import {
   DataTexture,
   LinearMipmapLinearFilter,
@@ -42,7 +45,7 @@ export type TextureName =
   | 'plaster_daub';
 
 export interface PbrPaths {
-  /** JPG fallbacks (1024 or 512 px). */
+  /** JPG fallbacks (1024 or 512 px). Model sets have no albedo JPG (see PbrLoadOptions). */
   albedo: string;
   normal: string;
   orm: string;
@@ -58,7 +61,7 @@ export interface PbrPaths {
 }
 
 export interface TextureEntry {
-  /** Terrain splat layers: tileable, have 512 px low-quality variants. */
+  /** Terrain splat layers: array-only (unflipped KTX2), 512 px JPGs for low / fallback. */
   terrain: boolean;
   /** Real-world edge length of one tile in metres (from the source scan). */
   tileMetres: number;
@@ -75,29 +78,31 @@ const TRANSCODER_PATH = `${import.meta.env.BASE_URL}vendor/basis/`;
 export const TIER_ANISOTROPY: Readonly<Record<Quality, number>> = { low: 2, high: 8, ultra: 16 };
 /** Albedo / ORM edge length per tier for the terrain array textures. */
 export const TERRAIN_TIER_SIZE: Readonly<Record<Quality, number>> = { low: 512, high: 2048, ultra: 4096 };
-/** Normal maps ship at 2048 for high and ultra (see D-14: 4k normals cost 10–16 MB each). */
-export const NORMAL_TIER_SIZE = 2048;
+/** KTX2 UASTC normals: 1024 for every tier that uses KTX2 (D-21: 2048 normals were 45 MB of the APK). */
+export const NORMAL_TIER_SIZE = 1024;
 
 const sfx = (size: number) => (size === 1024 ? '' : `_${size}`);
 
-function legacy(name: TextureName, size: 512 | 1024): PbrPaths {
+/** JPG fallbacks: 512 for terrain sets, 1024 (no suffix) for model sets. */
+function jpgs(name: TextureName, terrain: boolean): Pick<PbrPaths, 'albedo' | 'normal' | 'orm'> {
   const dir = `${BASE}${name}/`;
-  const s = sfx(size);
-  return {
-    albedo: `${dir}albedo${s}.jpg`,
-    normal: `${dir}normal${s}.jpg`,
-    orm: `${dir}orm${s}.jpg`,
-    albedoKtx2: `${dir}albedo${s}.ktx2`,
-    ormKtx2: `${dir}orm${s}.ktx2`,
-    size,
-  };
+  const s = terrain ? sfx(512) : '';
+  return { albedo: `${dir}albedo${s}.jpg`, normal: `${dir}normal${s}.jpg`, orm: `${dir}orm${s}.jpg` };
 }
 
-function tier(name: TextureName, size: number): PbrPaths {
+function low(name: TextureName, terrain: boolean): PbrPaths {
+  const dir = `${BASE}${name}/`;
+  // terrain sets: the 512 JPGs are the low tier itself (arrays); model sets: 1k ETC1S ORM
+  if (terrain) return { ...jpgs(name, true), size: 512 };
+  return { ...jpgs(name, false), ormKtx2: `${dir}orm.ktx2`, normalKtx2: `${dir}normal${sfx(NORMAL_TIER_SIZE)}.ktx2`, size: 1024 };
+}
+
+function tier(name: TextureName, terrain: boolean, size: number): PbrPaths {
   const dir = `${BASE}${name}/`;
   return {
-    ...legacy(name, 1024),
-    albedoKtx2: `${dir}albedo${sfx(size)}.ktx2`,
+    ...jpgs(name, terrain),
+    // model sets ship no albedo (vertex colours); only terrain sets have albedo_2048
+    albedoKtx2: terrain ? `${dir}albedo${sfx(size)}.ktx2` : undefined,
     ormKtx2: `${dir}orm${sfx(size)}.ktx2`,
     normalKtx2: `${dir}normal${sfx(NORMAL_TIER_SIZE)}.ktx2`,
     size,
@@ -109,8 +114,8 @@ function entry(name: TextureName, terrain: boolean, tileMetres: number, maxSize 
     terrain,
     tileMetres,
     maxSize,
-    high: tier(name, Math.min(2048, maxSize)),
-    low: legacy(name, terrain ? 512 : 1024),
+    high: tier(name, terrain, Math.min(2048, maxSize)),
+    low: low(name, terrain),
   };
 }
 
@@ -132,23 +137,25 @@ let ultraBase: string | null = null;
 /**
  * Where the downloaded 4K pack lives: a URL / WebView-servable path of the folder that holds
  * `textures/<set>/<map>_4096.ktx2` (the root of assets-ultra/, same layout as its manifest
- * paths). null = pack not installed: 'ultra' then loads the 2048 files. Already-loaded ultra
- * sets are dropped from the cache (call disposeTextures() + reload to apply to a live scene).
+ * paths). null = pack not installed: 'ultra' then loads the 2048 files. The cache key includes
+ * the base, so later loads pick it up; a live view reloads on its next setQuality('ultra')
+ * (the view compares the base it loaded with getUltraBase()).
  */
 export function setUltraBase(url: string | null): void {
-  const next = url ? (url.endsWith('/') ? url : `${url}/`) : null;
-  if (next === ultraBase) return;
-  ultraBase = next;
-  for (const k of [...cache.keys()]) if (k.includes(':ultra:')) cache.delete(k);
+  ultraBase = url ? (url.endsWith('/') ? url : `${url}/`) : null;
 }
 
 export function getUltraBase(): string | null {
   return ultraBase;
 }
 
-/** URL of a 4K file in the ultra pack, or null when the pack is not set / the set has no 4K. */
+/**
+ * URL of a 4K file in the ultra pack, or null when the pack is not set / the set has no 4K.
+ * The pack holds orm_4096 for every set except bark, albedo_4096 only for the terrain sets.
+ */
 export function ultraUrl(name: TextureName, map: 'albedo' | 'orm'): string | null {
-  if (!ultraBase || TEXTURES[name].maxSize < 4096) return null;
+  const e = TEXTURES[name];
+  if (!ultraBase || e.maxSize < 4096 || (map === 'albedo' && !e.terrain)) return null;
   return `${ultraBase}textures/${name}/${map}_4096.ktx2`;
 }
 
@@ -157,13 +164,13 @@ export function texturePaths(name: TextureName, quality: Quality): PbrPaths {
   const e = TEXTURES[name];
   if (quality === 'low') return e.low;
   if (quality !== 'ultra') return e.high;
-  const a = ultraUrl(name, 'albedo'), o = ultraUrl(name, 'orm');
-  if (!a || !o) return e.high;
+  const a = ultraUrl(name, 'albedo') ?? undefined, o = ultraUrl(name, 'orm');
+  if (!o) return e.high;
   return {
     ...e.high,
     albedoKtx2: a,
     ormKtx2: o,
-    albedoKtx2Fallback: e.high.albedoKtx2,
+    albedoKtx2Fallback: a ? e.high.albedoKtx2 : undefined,
     ormKtx2Fallback: e.high.ormKtx2,
     size: 4096,
   };
@@ -188,7 +195,13 @@ export interface PbrLoadOptions {
 const jpgLoader = new TextureLoader();
 let ktx2Loader: KTX2Loader | null = null;
 let maxAnisotropy = 4;
-const cache = new Map<string, Promise<PbrSet>>();
+interface CacheEntry {
+  quality: Quality;
+  /** Ultra base the set was loaded with ('' for low / high). */
+  base: string;
+  p: Promise<PbrSet>;
+}
+const cache = new Map<string, CacheEntry>();
 let white: DataTexture | null = null;
 
 /**
@@ -249,13 +262,16 @@ function whiteTexture(): DataTexture {
 /**
  * Load (and cache) one PBR set. Textures are shared between callers: set `repeat` on a
  * clone (`tex.clone()`) if a material needs a different tiling, and do not dispose them
- * directly — use disposeTextures(). Quality 'ultra' / 'high' / 'low' picks the tier; any other
+ * directly — use disposeTextures() / disposeTexturesExcept(). Model sets have no albedo files:
+ * load them with { albedo: false }. Quality 'ultra' / 'high' / 'low' picks the tier; any other
  * value is treated as 'high'.
  */
-export function loadPbrSet(name: TextureName, quality: Quality, opts: PbrLoadOptions = {}): Promise<PbrSet> {
+export function loadPbrSet(name: TextureName, q: Quality, opts: PbrLoadOptions = {}): Promise<PbrSet> {
+  const quality: Quality = q in TIER_ANISOTROPY ? q : 'high';
   const withAlbedo = opts.albedo !== false;
-  const key = `${name}:${quality}:${withAlbedo ? 'a' : '-'}:${quality === 'ultra' ? ultraBase ?? '' : ''}`;
-  let p = cache.get(key);
+  const base = quality === 'ultra' ? ultraBase ?? '' : '';
+  const key = `${name}|${quality}|${withAlbedo ? 'a' : '-'}|${base}`;
+  let p = cache.get(key)?.p;
   if (!p) {
     const src = texturePaths(name, quality);
     const aniso = anisotropyFor(quality);
@@ -264,22 +280,37 @@ export function loadPbrSet(name: TextureName, quality: Quality, opts: PbrLoadOpt
       loadOne(src.normal, src.normalKtx2, false, aniso),
       loadOne(src.orm, src.ormKtx2, false, aniso, src.ormKtx2Fallback),
     ]).then(([map, normalMap, orm]) => ({ map, normalMap, roughnessMap: orm, aoMap: orm }));
-    p.catch(() => cache.delete(key));
-    cache.set(key, p);
+    const entry: CacheEntry = { quality, base, p };
+    p.catch(() => { if (cache.get(key) === entry) cache.delete(key); });
+    cache.set(key, entry);
   }
   return p;
 }
 
-/** Dispose every cached texture (e.g. on quality switch or teardown). */
+function disposeSet(s: PbrSet): void {
+  if (s.map !== white) s.map.dispose();
+  s.normalMap.dispose();
+  s.roughnessMap.dispose();
+}
+
+/** Dispose every cached texture (teardown). */
 export async function disposeTextures(): Promise<void> {
-  const sets = await Promise.allSettled([...cache.values()]);
+  const sets = await Promise.allSettled([...cache.values()].map((e) => e.p));
   cache.clear();
-  for (const s of sets) {
-    if (s.status !== 'fulfilled') continue;
-    if (s.value.map !== white) s.value.map.dispose();
-    s.value.normalMap.dispose();
-    s.value.roughnessMap.dispose();
-  }
+  for (const s of sets) if (s.status === 'fulfilled') disposeSet(s.value);
+}
+
+/**
+ * Dispose every cached set except those of `keep` (quality switch: call after the new tier's
+ * sets are bound to the materials). For 'ultra', sets loaded with a different ultra base
+ * (pack installed / removed since) are disposed too. In-flight loads are awaited first.
+ */
+export async function disposeTexturesExcept(keep: Quality): Promise<void> {
+  const base = keep === 'ultra' ? ultraBase ?? '' : '';
+  const drop = [...cache.entries()].filter(([, e]) => e.quality !== keep || e.base !== base);
+  for (const [k] of drop) cache.delete(k);
+  const sets = await Promise.allSettled(drop.map(([, e]) => e.p));
+  for (const s of sets) if (s.status === 'fulfilled') disposeSet(s.value);
 }
 
 /**

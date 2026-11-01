@@ -8,7 +8,8 @@
  *   menu=1           main-menu cinematic mode
  *   overlay=traffic  road-load overlay
  *   rain=1           force rain (harness-only override of state.rain)
- *   quality=low      low quality preset
+ *   quality=low|high|ultra  quality tier (default high). Ultra loads the 4K pack from
+ *                    /assets-ultra/ on the dev server (2K without it)
  *   cam=x,z,dist,yaw camera preset (cells for x/z, metres, radians)
  *   tod=0..1         force time of day
  *   follow=1         follow the first moving loaded wagon
@@ -18,10 +19,12 @@
  *   hud=0            hide the stats box
  *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
  * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
- * window.__harness exposes { world, view, loop } for scripted screenshots.
+ * window.__harness exposes { world, view, loop, internals, frames(), setQuality(q) } for scripted
+ * screenshots; setQuality(q) switches the tier and resolves when its textures are bound.
  */
 import { GameLoop, type Speed } from '../src/game/loop';
 import { applyCommand, createWorld, lineCells, step, TICK_HZ, validateRoad, type Command } from '../src/sim/index';
+import { QUALITIES, type Quality } from '../src/render/api';
 import { createWorldView, viewInternals } from '../src/render/view';
 import { bridgeA, stableId } from './bot';
 
@@ -63,8 +66,10 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const view = createWorldView();
 const internals = viewInternals(view);
 if (q.has('tod')) internals.debug.forceTime = num('tod', 0.3);
+const qualityParam = q.get('quality') ?? 'high';
+const quality: Quality = (QUALITIES as readonly string[]).includes(qualityParam) ? (qualityParam as Quality) : 'high';
 view.mount(canvas);
-if (q.get('quality') === 'low') view.setQuality('low');
+view.setQuality(quality);
 view.setMenuMode(q.get('menu') === '1');
 view.setWorld(world);
 if (q.get('overlay') === 'traffic') view.setOverlay('traffic');
@@ -187,4 +192,9 @@ function tick(now: number): void {
 if (maxFrames) void internals.ready().then(() => requestAnimationFrame(tick));
 else requestAnimationFrame(tick);
 
-(window as unknown as { __harness: unknown }).__harness = { world, view, loop, internals, frames: () => frames };
+async function setQuality(next: Quality): Promise<void> {
+  view.setQuality(next);
+  await internals.ready();
+}
+
+(window as unknown as { __harness: unknown }).__harness = { world, view, loop, internals, frames: () => frames, setQuality };

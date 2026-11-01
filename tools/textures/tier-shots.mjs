@@ -1,4 +1,4 @@
-// Texture tier comparison: renders the same close-up with 1k, 2k (high) and 4k (ultra) texture
+// Texture tier comparison: renders the same close-up with the low, high (2k) and ultra (4k) texture
 // sets and writes side-by-side crops to docs/shots/tex-tier-<scene>.png.
 // Start a dev server first:  npx vite --port 5176   then:  node tools/textures/tier-shots.mjs [baseUrl]
 // Uses the view harness; textures are swapped in the page through the real loaders
@@ -23,7 +23,7 @@ const SCENES = {
   building: { q: 'cam=55,47,18,-0.5&t=300&tod=0.36', crop: [0.15, 0.30, 0.45, 0.45] },
 };
 const TIERS = [
-  ['1k', 1024],
+  ['low', 'low'],
   ['2k', 'high'],
   ['4k', 'ultra'],
 ];
@@ -56,8 +56,8 @@ for (const [scene, { q, crop }] of Object.entries(SCENES)) {
       tx.setUltraBase('/assets-ultra/');
       const t0 = performance.now();
       const set = await tt.loadTerrainTextures(tier);
-      h.view.terrain.setTextures(set);
-      const q = typeof tier === 'number' ? 'low' : tier;
+      h.internals.terrain().setTextures(set); // disposes the previously bound arrays
+      const q = tier;
       for (const [key, name] of model) {
         const s = await tx.loadPbrSet(name, q, { albedo: false });
         mats.applyTextures(key, { normalMap: s.normalMap, roughnessMap: s.roughnessMap });

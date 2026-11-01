@@ -1,9 +1,9 @@
 {
  "pack": "marchia-textures-ultra",
- "version": 1,
- "description": "4096 px albedo + ORM KTX2 (Basis ETC1S q255, mips, Y-flipped) for the ultra tier; normals stay 2048 in the APK.",
+ "version": 2,
+ "description": "4096 px KTX2 (Basis ETC1S q255, mips) for the ultra tier: albedo + ORM of the five terrain sets (not Y-flipped, array layers), ORM of four model sets (Y-flipped); models ship no albedo, bark stays 2048, normals stay 1024 in the APK.",
  "licence": "CC0 1.0 (Poly Haven), see docs/ASSETS.md",
- "totalBytes": 58975258,
+ "totalBytes": 44865222,
  "files": [
   {
    "path": "textures/cobblestone/albedo_4096.ktx2",
@@ -14,11 +14,6 @@
    "path": "textures/cobblestone/orm_4096.ktx2",
    "bytes": 2889276,
    "sha256": "502976f8aac36db26eaa0a4cb69ab275995606c110824b3fa60549484bd84eb3"
-  },
-  {
-   "path": "textures/fieldstone_wall/albedo_4096.ktx2",
-   "bytes": 3506399,
-   "sha256": "e3577a820934081023b4ab38c55cb0b1f07ebdef0197f0ccb70450b6be785ed9"
   },
   {
    "path": "textures/fieldstone_wall/orm_4096.ktx2",
@@ -56,11 +51,6 @@
    "sha256": "5095ad75978367fbf2da6259779c6269847c1d706418bb5e0eb90cb3da8f61fa"
   },
   {
-   "path": "textures/plaster_daub/albedo_4096.ktx2",
-   "bytes": 3613033,
-   "sha256": "763321f1a03242cad04a7b8e6321f2baafae47883e7ccb8727811de017637723"
-  },
-  {
    "path": "textures/plaster_daub/orm_4096.ktx2",
    "bytes": 2874451,
    "sha256": "d9e892c01a8b15a696463d8e4d98b19bb87137ee5d4ca8e3985225cb59e75b38"
@@ -76,19 +66,9 @@
    "sha256": "bcf772a63bcb03811f571546bba1cf48e754e984df669aeea1cb6c2a7ac58a7a"
   },
   {
-   "path": "textures/thatch/albedo_4096.ktx2",
-   "bytes": 3878697,
-   "sha256": "f6e42f3e27f1c6984e05d6c3aea790b3ead2fd516a9a2ab51d5fcfadf110b40e"
-  },
-  {
    "path": "textures/thatch/orm_4096.ktx2",
    "bytes": 3540361,
    "sha256": "5594dd8708e12a88675e21d0c353adf9113042ad75beae5482bbc551b148cdb9"
-  },
-  {
-   "path": "textures/wood_planks/albedo_4096.ktx2",
-   "bytes": 3111907,
-   "sha256": "f7012360faf9db03f843b3b7596b8f006b5e75971f648aaa5c5c1984b50c110d"
   },
   {
    "path": "textures/wood_planks/orm_4096.ktx2",

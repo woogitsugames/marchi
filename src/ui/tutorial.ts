@@ -199,7 +199,7 @@ export class Tutorial {
     }
     if (this.step === 4) {
       if (tool === 'road') this.go(5);
-      else if (this.closeAt >= 0 && this.active >= this.closeAt) {
+      else if (this.closeAt >= 0 && performance.now() >= this.closeAt) {
         this.closeAt = -1;
         // only if the card actually hides the Track button (portrait); docked side sheets stay
         if (this.covered(document.querySelector('.rail [data-tool="road"]'))) this.host.closeSheets();
@@ -224,7 +224,7 @@ export class Tutorial {
   private afterChain(fromTap: boolean): void {
     if (this.connected()) { this.go(6); return; }
     this.go(4);
-    this.closeAt = fromTap ? this.active + CLOSE_SHEET_DELAY_MS : this.active;
+    this.closeAt = performance.now() + (fromTap ? CLOSE_SHEET_DELAY_MS : 0);
   }
 
   private castleKey(): string {

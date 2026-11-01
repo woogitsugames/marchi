@@ -28,11 +28,22 @@ import { OverlayData } from './overlay';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
 import { TerrainView } from './terrain';
-import { loadTerrainTextures } from './terrainTextures';
-import { initTextureLoaders, loadPbrSet, type TextureName } from './textures';
+import { disposeTerrainTextures, loadTerrainTextures, type TerrainTextureSet } from './terrainTextures';
+import {
+  disposeTextures,
+  disposeTexturesExcept,
+  getUltraBase,
+  initTextureLoaders,
+  loadPbrSet,
+  setUltraBase,
+  type TextureName,
+} from './textures';
 import { VegetationView } from './vegetation';
 import { WaterView } from './water';
 import { WagonsView } from './wagonsView';
+
+/** Drawing-buffer pixel-ratio cap per quality (the UI caps low at 1 itself, src/ui/tier.ts). */
+const DPR_CAP: Readonly<Record<Quality, number>> = { low: 1.25, high: 2, ultra: 3 };
 
 /** Menu: dawn at the river crossing. */
 const MENU_TIME = 0.262;
@@ -92,7 +103,13 @@ class View implements WorldView {
   private selection: PickResult = null;
   private trafficTimer = 0;
   private emitterTimer = 0;
-  private texturesRequested = false;
+  /** Bumped on every texture (re)load; results of an older generation are discarded. */
+  private texGen = 0;
+  /** Tier (and ultra pack base) of the last texture load started; null = none yet. */
+  private texQuality: Quality | null = null;
+  private texUltraBase: string | null = null;
+  /** Terrain arrays that arrived before a TerrainView existed. */
+  private pendingTerrainTex: TerrainTextureSet | null = null;
   texturesReady: Promise<void> = Promise.resolve();
   private baked = false;
   private menu = false;
@@ -110,6 +127,10 @@ class View implements WorldView {
     return this.rig;
   }
 
+  get terrainView(): TerrainView | null {
+    return this.terrain;
+  }
+
   mount(canvas: HTMLCanvasElement): void {
     const r = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     r.outputColorSpace = SRGBColorSpace;
@@ -124,35 +145,66 @@ class View implements WorldView {
     } catch (e) {
       console.warn('[view] KTX2 loader unavailable, using JPG textures', e);
     }
+    // Dev server: the 4K pack is served from the repo (assets-ultra/ is not in public/), so
+    // 'ultra' can be tested. Production gets the base from the pack downloader (D-17).
+    if (import.meta.env.DEV && getUltraBase() === null) setUltraBase(`${import.meta.env.BASE_URL}assets-ultra/`);
     this.applyQuality();
     this.resize(canvas.clientWidth || 1, canvas.clientHeight || 1, window.devicePixelRatio || 1);
-    this.loadTextures();
+    // Deferred: a setQuality() right after mount() (the app does that) picks the tier first,
+    // so the default tier is not downloaded only to be thrown away.
+    queueMicrotask(() => this.loadTextures());
     if (this.vegetation && !this.baked) { this.vegetation.bake(r); this.baked = true; }
   }
 
+  /**
+   * Load the textures of the current tier if they differ from the last load (tier, or the ultra
+   * pack base). The new sets are bound when complete; only then are the old ones disposed, so
+   * the scene never samples a freed texture. Overlapping switches: only the newest load binds.
+   */
   private loadTextures(): void {
-    if (this.texturesRequested) return;
-    this.texturesRequested = true;
-    const all: Promise<unknown>[] = [];
-    all.push(
-      loadTerrainTextures(512)
-        .then((t) => this.terrain?.setTextures(t))
-        .catch((e) => console.warn('[view] terrain textures', e)),
-    );
-    for (const [key, name] of MODEL_TEXTURES) {
-      all.push(
-        loadPbrSet(name, this.quality)
-          .then((s) => applyTextures(key, { normalMap: s.normalMap, roughnessMap: s.roughnessMap }))
-          .catch((e) => console.warn('[view] model textures', name, e)),
-      );
+    if (!this.renderer) return;
+    const q = this.quality;
+    const base = q === 'ultra' ? getUltraBase() : null;
+    if (this.texQuality === q && this.texUltraBase === base) return;
+    this.texQuality = q;
+    this.texUltraBase = base;
+    const gen = ++this.texGen;
+    const terrain = loadTerrainTextures(q)
+      .then((t) => {
+        if (gen !== this.texGen) disposeTerrainTextures(t);
+        else this.bindTerrainTextures(t);
+      })
+      .catch((e) => console.warn('[view] terrain textures', e));
+    const models = Promise.all(
+      MODEL_TEXTURES.map(([key, name]) =>
+        loadPbrSet(name, q, { albedo: false })
+          .then((s) => ({ key, s }))
+          .catch((e) => { console.warn('[view] model textures', name, e); return null; }),
+      ),
+    ).then(async (sets) => {
+      if (gen !== this.texGen) return; // a newer load binds (and disposes these with the rest)
+      for (const it of sets) if (it) applyTextures(it.key, { normalMap: it.s.normalMap, roughnessMap: it.s.roughnessMap });
+      await disposeTexturesExcept(q);
+    });
+    this.texturesReady = Promise.all([terrain, models]).then(() => undefined);
+  }
+
+  private bindTerrainTextures(t: TerrainTextureSet): void {
+    if (this.terrain) {
+      this.terrain.setTextures(t); // disposes the previous arrays
+      return;
     }
-    this.texturesReady = Promise.all(all).then(() => undefined);
+    if (this.pendingTerrainTex && this.pendingTerrainTex !== t) disposeTerrainTextures(this.pendingTerrainTex);
+    this.pendingTerrainTex = t;
   }
 
   setWorld(world: World): void {
     const sameTerrain = this.world && this.world.terrain === world.terrain && this.hf;
     this.world = world;
     if (!sameTerrain) {
+      // the loaded splat arrays survive a world change: hand them to the new TerrainView
+      const carried = this.terrain?.detachTextures() ?? this.pendingTerrainTex;
+      this.pendingTerrainTex = null;
       this.disposeWorld();
       const hf = new Heightfield(world.terrain);
       this.hf = hf;
@@ -160,6 +212,7 @@ class View implements WorldView {
       this.roads = new RoadField(hf.w, hf.h);
       this.overlay = new OverlayData(hf.w, hf.h);
       this.terrain = new TerrainView(hf, this.roads, this.overlay);
+      if (carried) this.terrain.setTextures(carried);
       this.water = new WaterView(hf);
       this.vegetation = new VegetationView(hf, this.treeGroup);
       this.cover = new GroundCover(hf);
@@ -362,7 +415,7 @@ class View implements WorldView {
     this.dpr = dpr;
     this.rig.resize(this.cssW, this.cssH);
     if (!this.renderer) return;
-    this.renderer.setPixelRatio(Math.min(dpr, this.quality === 'low' ? 1.25 : 2));
+    this.renderer.setPixelRatio(Math.min(dpr, DPR_CAP[this.quality] ?? 2));
     this.renderer.setSize(this.cssW, this.cssH, false);
   }
 
@@ -477,14 +530,19 @@ class View implements WorldView {
     ov.selRing.set(s.fx + Math.sin(s.heading) * 1.8, s.fz + Math.cos(s.heading) * 1.8, 4.6, 1);
   }
 
+  /** Switch tier: view settings at once, textures reloaded in the background (old ones freed after). */
   setQuality(q: Quality): void {
-    this.quality = q;
+    this.quality = q in DPR_CAP ? q : 'high';
     this.applyQuality();
     this.resize(this.cssW, this.cssH, this.dpr);
+    this.loadTextures();
   }
 
   private applyQuality(): void {
-    const high = this.quality === 'high';
+    // 'high' and 'ultra' share the view settings; ultra differs in textures, anisotropy and the
+    // pixel-ratio cap. Shadow map stays 2048 for ultra: 4096 would add ~96 MB of render targets
+    // and 4× the shadow-pass fill, while the shadow frustum is fitted to the zoom (28–320 m).
+    const high = this.quality !== 'low';
     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
     this.vegetation?.setShadows(high);
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
@@ -526,7 +584,12 @@ class View implements WorldView {
   }
 
   dispose(): void {
+    this.texGen++;
+    this.texQuality = null;
     this.disposeWorld();
+    if (this.pendingTerrainTex) disposeTerrainTextures(this.pendingTerrainTex);
+    this.pendingTerrainTex = null;
+    void disposeTextures();
     this.bridges.dispose();
     this.fx.dispose();
     this.lighting.dispose();
@@ -540,7 +603,22 @@ export function createWorldView(): WorldView {
 }
 
 /** Dev/harness access to internals (rig, debug overrides). Not part of the UI contract. */
-export function viewInternals(v: WorldView): { rig: CameraRig; debug: WorldViewDebug; ready: () => Promise<void>; scene: Scene } {
+export function viewInternals(v: WorldView): {
+  rig: CameraRig;
+  debug: WorldViewDebug;
+  /** Resolves when the textures of the current tier are bound (waits through later switches). */
+  ready: () => Promise<void>;
+  scene: Scene;
+  terrain: () => TerrainView | null;
+} {
   const x = v as View;
-  return { rig: x.rig, debug: x.debug, ready: () => x.texturesReady, scene: x.scene };
+  const ready = async (): Promise<void> => {
+    for (;;) {
+      await Promise.resolve(); // let a deferred first load start
+      const p = x.texturesReady;
+      await p;
+      if (p === x.texturesReady) return;
+    }
+  };
+  return { rig: x.rig, debug: x.debug, ready, scene: x.scene, terrain: () => x.terrainView };
 }
