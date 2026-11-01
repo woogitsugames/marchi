@@ -2,6 +2,8 @@
 // Usage: npm run shots            (starts its own Vite server on :5175, or reuses one)
 //        SHOTS_URL=http://localhost:5173/ npm run shots
 //        npm run shots -- menu why  (only screens whose name contains one of the args)
+//        npm run shots -- --fold [class...]  foldable set -> docs/shots/fold-<class>-<screen>.png
+//                                            plus the live fold/unfold sequence fold-seq-<n>-<state>.png
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -62,9 +64,11 @@ async function ensureServer() {
   return { url: `http://127.0.0.1:${addr.port}/`, close: () => server.close() };
 }
 
-const filters = process.argv.slice(2);
+const FOLD = process.argv.includes('--fold');
+const filters = process.argv.slice(2).filter((a) => a !== '--fold');
 const { url, close } = await ensureServer();
-const launch = () => chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// experimental web platform features: Viewport Segments emulation (window.viewport.segments, env(viewport-segment-*))
+const launch = () => chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-experimental-web-platform-features'] });
 let browser = await launch();
 const errors = [];
 
@@ -89,6 +93,157 @@ async function shoot(s, size) {
   } finally {
     await ctx.close();
   }
+}
+
+// ---------------------------------------------------------------- foldables (D-14)
+// CSS px at the devices' default display scale. Sources: Samsung spec sheets (Z Fold 8 / Fold 8 Ultra:
+// 8.0" inner, 6.5" 2520x1080 cover; Z Flip 7: 6.9" 2520x1080 main, 4.1" 948x1048 FlexWindow),
+// older Fold 5/6 cover 904x2316. Heights already exclude nothing: the game runs edge-to-edge.
+const FOLD_CLASSES = [
+  { id: 'fold-cover', w: 412, h: 960, dpr: 2.625 },            // Fold 8 / 8 Ultra cover, 21:9
+  { id: 'fold-cover-old', w: 344, h: 882, dpr: 2.625 },        // Fold 5/6 cover, 23:9, narrow
+  { id: 'fold-inner-land', w: 874, h: 787, dpr: 2.5 },         // Fold 8 inner 2184x1968, landscape
+  { id: 'fold-inner-port', w: 787, h: 874, dpr: 2.5 },         // same, book orientation
+  { id: 'fold-ultra-land', w: 911, h: 820, dpr: 2.75 },        // Fold 8 Ultra inner ~2504x2256
+  { id: 'fold-flex', w: 874, h: 787, dpr: 2.5, hinge: 393 },   // Flex mode: half-folded, horizontal hinge
+  { id: 'flip-main', w: 412, h: 1004, dpr: 2.625 },            // Flip main 22:9
+  { id: 'flip-flex', w: 412, h: 1004, dpr: 2.625, hinge: 502 }, // Flip in Flex mode
+  { id: 'flip-cover', w: 360, h: 380, dpr: 2.625 },            // Flip FlexWindow ~4"
+  { id: 'phone', w: 412, h: 915, dpr: 2.625 },
+  { id: 'phone-land', w: 915, h: 412, dpr: 2.625 },
+  { id: 'tablet', w: 904, h: 1000, dpr: 2 },
+];
+const FOLD_Q = 'quality=low&dynres=0&lang=pl';
+const FOLD_SCREENS = [
+  { name: 'menu', q: '' },
+  { name: 'hud', q: 'play=m1&bot=1&ff=120&speed=0' },
+  { name: 'why', q: 'play=m1&ff=90&speed=0&open=bakery' },
+  { name: 'wagon', q: 'play=m1&bot=1&ff=150&speed=0&wagon=1' },
+];
+
+async function metrics(cdp, c) {
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: c.w, height: c.h, deviceScaleFactor: c.dpr, mobile: true,
+    ...(c.hinge ? { displayFeature: { orientation: 'horizontal', offset: c.hinge, maskLength: 0 } } : {}),
+  });
+}
+
+async function foldPage(c) {
+  const ctx = await browser.newContext({ viewport: { width: c.w, height: c.h }, deviceScaleFactor: c.dpr, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  const cdp = await ctx.newCDPSession(page);
+  await metrics(cdp, c);
+  return { ctx, page, cdp };
+}
+
+async function state(page) {
+  return page.evaluate(() => {
+    const cv = document.getElementById('scene');
+    const sh = document.querySelector('.sheet');
+    const r = sh ? sh.getBoundingClientRect() : null;
+    return {
+      vp: `${innerWidth}x${innerHeight}@${devicePixelRatio}`,
+      body: document.body.className, screen: document.body.dataset.screen,
+      canvas: `${cv.width}x${cv.height} css ${cv.clientWidth}x${cv.clientHeight}`,
+      segs: window.viewport?.segments?.length ?? 0,
+      sheet: r ? `${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}x${Math.round(r.height)}` : null,
+    };
+  });
+}
+
+async function foldShoot(c, s) {
+  const { ctx, page } = await foldPage(c);
+  try {
+    page.on('pageerror', (e) => errors.push(`${c.id} ${s.name}: ${e.message}`));
+    page.on('console', (m) => { if (m.type() === 'error') errors.push(`${c.id} ${s.name}: ${m.text()}`); });
+    await page.goto(url + '?' + [s.q, FOLD_Q].filter(Boolean).join('&'), { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 120000 });
+    await page.waitForTimeout(Number(process.env.SHOTS_SETTLE ?? 1500));
+    const file = resolve(outDir, `fold-${c.id}-${s.name}.png`);
+    await page.screenshot({ path: file, timeout: 180000, scale: 'css' });
+    console.log('shot', file.replace(root + '/', ''), JSON.stringify(await state(page)));
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** One session: cover -> unfold (DPR change, open sheet, road draft in progress) -> Flex -> flat -> cover. */
+async function foldSequence() {
+  const cover = FOLD_CLASSES.find((c) => c.id === 'fold-cover');
+  const inner = FOLD_CLASSES.find((c) => c.id === 'fold-inner-port');
+  const flex = FOLD_CLASSES.find((c) => c.id === 'fold-flex');
+  const innerLand = FOLD_CLASSES.find((c) => c.id === 'fold-inner-land');
+  const { ctx, page, cdp } = await foldPage(cover);
+  try {
+    page.on('pageerror', (e) => errors.push(`seq: ${e.message}`));
+    await page.goto(url + '?play=m1&bot=1&ff=150&speed=0&wagon=1&' + FOLD_Q, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 120000 });
+    await page.waitForTimeout(1500);
+    let n = 0;
+    const snap = async (label) => {
+      await page.waitForTimeout(700);
+      const file = resolve(outDir, `fold-seq-${++n}-${label}.png`);
+      await page.screenshot({ path: file, timeout: 180000, scale: 'css' });
+      console.log('shot', file.replace(root + '/', ''), JSON.stringify(await state(page)));
+    };
+    await snap('cover-wagon');
+    // start a road draft on the cover screen and unfold mid-gesture
+    await page.evaluate(() => document.querySelector('[data-tool="road"]')?.click());
+    await page.mouse.move(150, 300);
+    await page.mouse.down();
+    await page.mouse.move(200, 340, { steps: 4 });
+    await snap('cover-drafting');
+    await metrics(cdp, inner);
+    await snap('unfolded-inner');
+    await page.mouse.move(400, 420, { steps: 4 }); // finger keeps moving: must not resume the draft
+    await page.mouse.up();
+    const draftShown = await page.evaluate(() => document.querySelector('.draft-tag')?.classList.contains('is-shown'));
+    console.log('  draft label after unfold:', draftShown ? 'SHOWN (bug)' : 'hidden (ok)');
+    await page.evaluate(() => document.querySelector('[data-tool="road"]')?.click());
+    await metrics(cdp, innerLand);
+    await snap('inner-landscape');
+    await metrics(cdp, flex);
+    await snap('flex');
+    // native fallback path: no segments, MainActivity's event instead
+    await metrics(cdp, innerLand);
+    await page.evaluate(() => {
+      window.__marchiaFold = { state: 'HALF_OPENED', orientation: 'HORIZONTAL', x: 0, y: 393, w: 874, h: 0 };
+      window.dispatchEvent(new CustomEvent('marchia:fold', { detail: window.__marchiaFold }));
+    });
+    await snap('flex-native-event');
+    await page.evaluate(() => {
+      window.__marchiaFold = { state: 'FLAT', orientation: 'HORIZONTAL', x: 0, y: 393, w: 874, h: 0 };
+      window.dispatchEvent(new CustomEvent('marchia:fold', { detail: window.__marchiaFold }));
+    });
+    await snap('flat-again');
+    await metrics(cdp, cover);
+    await snap('folded-cover');
+  } finally {
+    await ctx.close();
+  }
+}
+
+if (FOLD) {
+  try {
+    for (const c of FOLD_CLASSES) {
+      if (filters.length && !filters.some((f) => c.id === f || f === 'seq')) continue;
+      for (const s of FOLD_SCREENS) {
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try { await foldShoot(c, s); break; } catch (e) {
+            console.warn(`  ${c.id} ${s.name} attempt ${attempt} failed: ${String(e.message ?? e).split('\n')[0]}`);
+            if (!browser.isConnected()) browser = await launch();
+            if (attempt === 2) errors.push(`${c.id} ${s.name}: ${String(e.message ?? e).split('\n')[0]}`);
+          }
+        }
+      }
+    }
+    if (!filters.length || filters.includes('seq')) await foldSequence();
+  } finally {
+    await browser.close();
+    await close();
+  }
+  if (errors.length) { console.log('PAGE ERRORS:\n' + errors.join('\n')); process.exitCode = 1; }
+  process.exit();
 }
 
 try {
