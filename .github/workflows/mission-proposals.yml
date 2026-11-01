@@ -1,0 +1,35 @@
+name: Missions 2 and 3 proposals
+
+on:
+  push:
+    branches:
+      - feat/mission-design-m2-m3-04
+  pull_request:
+    paths:
+      - 'docs/missions/**'
+      - 'src/sim/missions-proposed.ts'
+      - 'tools/bot-m2.ts'
+      - 'tools/bot-m3.ts'
+      - '.github/workflows/mission-proposals.yml'
+
+jobs:
+  verify-missions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Check original mission 1 map
+        run: npx tsx tools/ascii-map.ts > /tmp/map-m1.txt
+      - name: Check original mission 1 scripted bot
+        run: npm run bot
+      - name: Typecheck simulations and application
+        run: npm run typecheck
+      - name: Check mission 2 bot
+        run: npx tsx tools/bot-m2.ts
+      - name: Check mission 3 bot
+        run: npx tsx tools/bot-m3.ts
