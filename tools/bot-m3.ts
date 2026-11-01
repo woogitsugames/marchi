@@ -37,7 +37,7 @@ function run(): void {
 
   // Prioritise the long, busy middle/eastern section rather than paving all roads.
   requireCommand(w, { t: 'road', surface: 2, cells: row(w, 40, 32, 80) });
-  if (w.state.roads[dirtCell] !== 2) throw new Error('paved corridor missing');
+  if (Number(w.state.roads[dirtCell]) !== 2) throw new Error('paved corridor missing');
 
   let checked = 0, warehouseJobs = 0, rainyTicks = 0;
   const deadline = w.state.mission.contract!.deadlineTick;
