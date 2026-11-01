@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <base href="/" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b2620" />
+  <title>Marchia — test wydajności urządzenia</title>
+  <style>
+    :root { color-scheme: dark; font-family: "Alegreya Sans", system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #2b2620; color: #ece4d4; }
+    #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    #panel {
+      position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left));
+      width: min(480px, calc(100% - 20px)); max-height: min(84dvh, 760px);
+      overflow: auto; overscroll-behavior: contain; background: rgba(35, 29, 23, .94);
+      border: 1px solid #947856; padding: 14px; font-size: 15px; line-height: 1.4;
+    }
+    h1 { margin: 0 0 3px; font-size: 24px; font-family: Georgia, serif; font-weight: 600; }
+    .hint { margin: 0 0 12px; font-size: 13px; color: #cfbda3; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+    label { display: flex; flex-direction: column; flex: 1 1 125px; gap: 4px; color: #e1d3bf; }
+    select, button {
+      min-height: 48px; border: 1px solid #9a805b; border-radius: 2px;
+      padding: 9px 12px; font: inherit; color: #fff0dc; background: #544534;
+    }
+    button { cursor: pointer; flex: 1 1 auto; }
+    button.primary { background: #80613a; border-color: #d6ac68; font-weight: 700; }
+    button:disabled { opacity: .46; cursor: default; }
+    select:focus-visible, button:focus-visible { outline: 2px solid #e9c47f; outline-offset: 2px; }
+    #status { margin: 12px 0 5px; min-height: 20px; white-space: normal; }
+    progress { width: 100%; height: 8px; accent-color: #c9a367; }
+    #results { margin-top: 14px; }
+    h2 { margin: 8px 0; font-size: 18px; }
+    .table-scroll { overflow-x: auto; max-width: 100%; border: 1px solid #67533c; }
+    table { border-collapse: collapse; min-width: 760px; font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    th, td { border-bottom: 1px solid #62503c; padding: 6px 8px; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: #ead4ac; background: #43382c; }
+    .export { margin-top: 8px; }
+    details { margin-top: 8px; }
+    summary { cursor: pointer; min-height: 40px; padding: 8px 0; }
+    pre { max-height: 260px; overflow: auto; padding: 10px; background: #1b1916; white-space: pre; font-size: 11px; user-select: text; }
+    [hidden] { display: none !important; }
+    @media (max-width: 540px) {
+      #panel { padding: 10px; max-height: min(66dvh, 660px); }
+      h1 { font-size: 20px; }
+      .hint { font-size: 12px; }
+      #results { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scene" aria-label="Scena testowa WebGL"></canvas>
+  <main id="panel">
+    <h1>Marchia — benchmark telefonu</h1>
+    <p class="hint">50 / 100 / 200 wozów, ×4, po 60 s. Kamera: 20 s blisko, 20 s średnio, 20 s daleko. Nie zmieniaj orientacji podczas pomiaru.</p>
+    <div class="actions">
+      <label for="quality">Jakość
+        <select id="quality">
+          <option value="low">Low</option>
+          <option value="high" selected>High</option>
+          <option value="ultra">Ultra</option>
+          <option value="all">Wszystkie (9 przebiegów)</option>
+        </select>
+      </label>
+      <button class="primary" id="run" type="button">Uruchom pomiar</button>
+      <button id="stop" type="button" disabled>Zatrzymaj</button>
+    </div>
+    <p id="status" role="status" aria-live="polite">Gotowy do pomiaru.</p>
+    <progress id="progress" value="0" max="100" aria-label="Postęp bieżącego przebiegu"></progress>
+    <section id="results" hidden>
+      <h2>Wyniki</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Jakość</th><th>Wozy</th><th>FPS śr.</th><th>1% low</th><th>CPU sim ms/kl.</th><th>CPU render ms/kl.</th><th>Draw</th><th>Tris</th><th>Tex</th><th>Δ heap MB</th><th>× rzeczywiste</th></tr></thead>
+          <tbody id="result-rows"></tbody>
+        </table>
+      </div>
+      <div class="actions export">
+        <button id="copy" type="button" disabled>Kopiuj JSON</button>
+        <button id="save" type="button" disabled>Zapisz JSON</button>
+      </div>
+      <details><summary>Podgląd surowego JSON</summary><pre id="json-preview"></pre></details>
+    </section>
+  </main>
+  <script type="module" src="/tools/device-bench.ts"></script>
+</body>
+</html>
