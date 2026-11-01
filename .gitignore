@@ -13,3 +13,4 @@ android/local.properties
 ios/App/build/
 ios/DerivedData/
 .cache/
+/art/store/screens/
