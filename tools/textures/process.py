@@ -1,11 +1,21 @@
-"""Build shipping PBR textures from Poly Haven 1k JPG downloads.
-usage: python3 -I process.py <src_dir> <out_root> <raw_dir>
+"""Build shipping PBR textures from Poly Haven JPG downloads (see fetch.py).
+usage:
+  python3 -I process.py <src_dir> <out_root> <raw_dir>              # 1k sources -> 1024 (+512 terrain) JPG + PNG
+  python3 -I process.py <src_dir> <out_root> <raw_dir> --tiers      # 4k sources -> 4096 / 2048 raw RGBA for ktx.mjs
+The --tiers mode writes no JPGs (KTX2 only, see docs/ASSETS.md): raw files are
+<raw_dir>/<set>__<map>_<size>.rgba (Y not flipped; ktx.mjs flips at encode time).
+Grading is identical in both modes; thatch crop/cross-fade lengths scale with the source size.
 """
 import sys, os, json
 import numpy as np
 from PIL import Image
 
 SRC, OUT, RAW = sys.argv[1], sys.argv[2], sys.argv[3]
+TIERS = '--tiers' in sys.argv[4:]
+ONLY = [a for a in sys.argv[4:] if not a.startswith('--')]
+# --tiers: sizes per set. Bark stays 2k (thin trunks, never fills the screen).
+TIER_SIZES = {'bark': [2048]}
+DEFAULT_TIER_SIZES = [4096, 2048]
 
 def hx(h):
     h = h.lstrip('#'); return np.array([int(h[i:i+2], 16) for i in (0, 2, 4)], float) / 255
@@ -25,7 +35,7 @@ SETS = {
 }
 
 def load(p):
-    return np.asarray(Image.open(p).convert('RGB')).astype(np.float64) / 255
+    return np.asarray(Image.open(p).convert('RGB')).astype(np.float32) / 255
 
 def thatch_fix(a, crop=96, n=96):
     """Drop the ridge band at the top, then cross-fade to make V seamless."""
@@ -42,6 +52,10 @@ def to_img(a, size):
         im = im.resize((size, size), Image.LANCZOS)
     return im
 
+def write_rgba(im, path):
+    with open(path, 'wb') as f:
+        f.write(im.convert('RGBA').tobytes())
+
 def renorm(a):
     v = a * 2 - 1
     v /= np.maximum(np.linalg.norm(v, axis=2, keepdims=True), 1e-6)
@@ -54,14 +68,18 @@ def sat_stats(a):
 
 report = {}
 for name, (pid, terrain, sscale, k, target) in SETS.items():
+    if ONLY and name not in ONLY:
+        continue
     d = load(f'{SRC}/{pid}_diff.jpg')
     n = load(f'{SRC}/{pid}_nor_gl.jpg')
     arm = load(f'{SRC}/{pid}_arm.jpg')
+    sc = d.shape[0] / 1024                       # 1 for 1k sources, 4 for 4k
     if name == 'thatch':
-        d, n, arm = thatch_fix(d), renorm(thatch_fix(n)), thatch_fix(arm)
+        c_ = int(round(96 * sc))
+        d, n, arm = thatch_fix(d, c_, c_), renorm(thatch_fix(n, c_, c_)), thatch_fix(arm, c_, c_)
         # flatten the low-frequency top-to-bottom shading so V tiling shows no band
         rm = d.mean(axis=1)                      # (h, 3) per-row mean
-        k_ = 81; pad = np.concatenate([rm[-k_:], rm, rm[:k_]])
+        k_ = int(round(81 * sc)) | 1; pad = np.concatenate([rm[-k_:], rm, rm[:k_]])
         ker = np.ones(k_) / k_
         sm = np.stack([np.convolve(pad[:, c], ker, 'same') for c in range(3)], 1)[k_:-k_]
         d = d * (d.reshape(-1, 3).mean(0) / sm)[:, None, :]
@@ -73,6 +91,23 @@ for name, (pid, terrain, sscale, k, target) in SETS.items():
     after = (g.reshape(-1, 3).mean(0), sat_stats(g))
     orm = arm.copy(); orm[..., 2] = 0
     od = f'{OUT}/{name}'; os.makedirs(od, exist_ok=True)
+    if TIERS:
+        for s in TIER_SIZES.get(name, DEFAULT_TIER_SIZES):
+            write_rgba(to_img(g, s), f'{RAW}/{name}__albedo_{s}.rgba')
+            nim = to_img(n, s)
+            if nim.size[0] < n.shape[1]:          # downsampled normals get shorter: renormalise
+                nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), s)
+            write_rgba(nim, f'{RAW}/{name}__normal_{s}.rgba')
+            write_rgba(to_img(orm, s), f'{RAW}/{name}__orm_{s}.rgba')
+            if s == max(TIER_SIZES.get(name, DEFAULT_TIER_SIZES)):   # preview for the contact sheet
+                to_img(g, 1024).save(f'{RAW}/{name}__albedo_preview.jpg', quality=92)
+                to_img(g, s).crop((0, 0, 1024, 1024)).save(f'{RAW}/{name}__albedo_crop.png')
+        report[name] = {'source': pid, 'src_px': d.shape[1], 'sizes': TIER_SIZES.get(name, DEFAULT_TIER_SIZES),
+                        'mean_before': '#%02x%02x%02x' % tuple((before[0] * 255).astype(int)),
+                        'mean_after': '#%02x%02x%02x' % tuple((after[0] * 255).astype(int)),
+                        'sat_before': round(before[1][0], 3), 'sat_after': round(after[1][0], 3)}
+        print(name, report[name], flush=True)
+        continue
     sizes = [1024] + ([512] if terrain else [])
     for s in sizes:
         suf = '' if s == 1024 else f'_{s}'
