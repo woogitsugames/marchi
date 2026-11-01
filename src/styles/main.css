@@ -622,7 +622,6 @@ body.is-side .sheet {
   left: auto;
   right: calc(var(--safe-r) + 10px);
   width: min(380px, 46vw);
-  max-height: none;
 }
 body.is-side:not(.is-landscape) .sheet { max-height: calc(100% - var(--rail-h) - var(--safe-b) - var(--safe-t) - 20px); }
 body.is-side.is-landscape .sheet { right: auto; left: calc(var(--safe-l) + 10px); width: min(380px, calc(100vw - var(--rail-w) - 40px)); }
