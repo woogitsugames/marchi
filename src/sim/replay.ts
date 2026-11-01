@@ -1,0 +1,364 @@
+// Replay reports ("Copy report"): a versioned, allowlisted record of one play session that
+// tools/replay.ts can re-run headless and compare hash by hash. Pure sim code: no DOM, no
+// clock, no compression (see src/platform/reportCodec.ts for the transport encoding).
+//
+// Ordering contract (mirrors src/game/loop.ts):
+//   - a journal entry {tick, cmd} was applied when state.tick === tick, BEFORE step() ran
+//     for that tick (several entries per tick keep their journal order);
+//   - a checkpoint {tick, hash} is the state hash right after the step that reached `tick`,
+//     i.e. before any command of that tick (GameLoop.onTick fires there); tick 0 is the
+//     freshly created world;
+//   - finalHash is taken at report time: state.tick === finalTick, including commands
+//     applied at finalTick while paused.
+import { applyCommand, type Command, type CommandResult } from './commands';
+import { BUILDINGS, STATE_VERSION, TICK_HZ } from './defs';
+import { MISSIONS } from './missions';
+import { createWorld, stateHash, step, type World } from './sim';
+import type { BuildingType } from './types';
+
+export const REPORT_VERSION = 1;
+/** Default checkpoint spacing: one sim minute. */
+export const CHECKPOINT_EVERY = 60 * TICK_HZ;
+
+export const REPORT_LIMITS = {
+  journal: 50_000,
+  checkpoints: 50_000,
+  /** 24 h of sim time. */
+  finalTick: 24 * 3600 * TICK_HZ,
+  roadCells: 4096,
+  /** Upper bound for any cell index / entity id / coordinate in a command. */
+  maxInt: 1 << 24,
+  /** Upper bound for the raw report text (JSON) accepted by parseReportText. */
+  textBytes: 16 * 1024 * 1024,
+} as const;
+
+export interface TimedCmd {
+  tick: number;
+  cmd: Command;
+}
+
+export interface Checkpoint {
+  tick: number;
+  hash: string;
+}
+
+export interface ReplayReport {
+  version: 1;
+  /** App version string (e.g. "0.1.0"); restricted charset, no free text. */
+  game: string;
+  missionId: string;
+  seed: number;
+  stateVersion: number;
+  journal: TimedCmd[];
+  checkpoints: Checkpoint[];
+  finalTick: number;
+  finalHash: string;
+}
+
+export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };
+
+// ---------------------------------------------------------------------------------------------
+// Field allowlist. Every Command variant declares each of its fields with a type check. The
+// mapped types make this exhaustive at compile time: a new variant or a new field in `Command`
+// fails typecheck here until someone declares (and thereby reviews) it. There is deliberately
+// no free-text field type.
+
+type Variant<K extends Command['t']> = Extract<Command, { t: K }>;
+type FieldCheck = (v: unknown) => unknown | undefined; // returns the clean value or undefined
+type CommandDecl = { [K in Command['t']]: { [F in Exclude<keyof Variant<K>, 't'>]-?: FieldCheck } };
+
+const isInt = (v: unknown, lo: number, hi: number): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
+const int = (lo: number, hi: number): FieldCheck => (v) => (isInt(v, lo, hi) ? v : undefined);
+const oneOf = <T>(values: readonly T[]): FieldCheck => (v) => (values.includes(v as T) ? v : undefined);
+const intArray = (minLen: number, maxLen: number, lo: number, hi: number): FieldCheck => (v) => {
+  if (!Array.isArray(v) || v.length < minLen || v.length > maxLen) return undefined;
+  for (const x of v) if (!isInt(x, lo, hi)) return undefined;
+  return v.slice();
+};
+
+const ID = int(0, REPORT_LIMITS.maxInt);
+const BUILDING_TYPES = Object.keys(BUILDINGS) as BuildingType[];
+
+export const COMMAND_FIELDS: CommandDecl = {
+  road: { cells: intArray(1, REPORT_LIMITS.roadCells, 0, REPORT_LIMITS.maxInt), surface: oneOf([1, 2]) },
+  demolish: { cell: ID },
+  buyWagon: { stable: ID },
+  sellWagon: { wagon: ID },
+  place: { type: oneOf(BUILDING_TYPES), x: ID, y: ID, facing: int(0, 3) },
+};
+
+/**
+ * Re-serialize a command from its declaration: only declared fields are copied, each one
+ * type-checked. `strict` (used when parsing a report) also rejects undeclared keys; when
+ * building a report from the live journal, extra keys are dropped instead.
+ */
+export function cleanCommand(raw: unknown, strict: boolean): ParseResult<Command> {
+  if (!isPlainObject(raw)) return fail('cmd is not an object');
+  const t = raw.t;
+  if (typeof t !== 'string' || !Object.prototype.hasOwnProperty.call(COMMAND_FIELDS, t)) return fail('unknown command type');
+  const decl = COMMAND_FIELDS[t as Command['t']] as Record<string, FieldCheck>;
+  const out: Record<string, unknown> = { t };
+  for (const f of Object.keys(decl)) {
+    if (!Object.prototype.hasOwnProperty.call(raw, f)) return fail(`${t}.${f} missing`);
+    const v = decl[f]!(raw[f]);
+    if (v === undefined) return fail(`${t}.${f} invalid`);
+    out[f] = v;
+  }
+  if (strict) {
+    for (const k of Object.keys(raw)) if (k !== 't' && !(k in decl)) return fail(`${t}: unknown key "${k.slice(0, 32)}"`);
+  }
+  return { ok: true, value: out as Command };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Recording
+
+/** Plain-data recorder the game loop feeds after every tick (GameLoop.onTick). */
+export interface Recorder {
+  missionId: string;
+  seed: number;
+  /** Tick at which recording started; a report is only replayable when this is 0. */
+  startTick: number;
+  every: number;
+  checkpoints: Checkpoint[];
+}
+
+export function createRecorder(world: World, every: number = CHECKPOINT_EVERY): Recorder {
+  const st = world.state;
+  return {
+    missionId: st.mission.id, seed: st.seed, startTick: st.tick, every: Math.max(1, Math.floor(every)),
+    checkpoints: [{ tick: st.tick, hash: stateHash(world) }],
+  };
+}
+
+/** Call after each step(). Records a checkpoint every `rec.every` ticks. */
+export function recordTick(rec: Recorder, world: World): void {
+  const t = world.state.tick;
+  if (t % rec.every !== 0 || rec.checkpoints.length >= REPORT_LIMITS.checkpoints) return;
+  const last = rec.checkpoints[rec.checkpoints.length - 1];
+  if (last && last.tick >= t) return;
+  rec.checkpoints.push({ tick: t, hash: stateHash(world) });
+}
+
+/**
+ * Build a report from a recorder, the loop journal and the live world (for finalTick and
+ * finalHash). Commands are re-serialized through the allowlist; anything undeclared is dropped.
+ */
+export function buildReport(rec: Recorder, journal: readonly TimedCmd[], world: World, game: string): ParseResult<ReplayReport> {
+  const errors: string[] = [];
+  if (rec.startTick !== 0) errors.push('recording did not start at tick 0 (session was loaded from a save)');
+  if (journal.length > REPORT_LIMITS.journal) errors.push(`journal too long (${journal.length})`);
+  if (world.state.tick > REPORT_LIMITS.finalTick) errors.push('session too long');
+  const cleanJournal: TimedCmd[] = [];
+  for (let i = 0; i < journal.length && errors.length === 0; i++) {
+    const e = journal[i]!;
+    const c = cleanCommand(e.cmd, false);
+    if (!c.ok) errors.push(`journal[${i}]: ${c.errors[0]}`);
+    else cleanJournal.push({ tick: e.tick, cmd: c.value });
+  }
+  const report: ReplayReport = {
+    version: REPORT_VERSION,
+    game: GAME_RE.test(game) ? game : 'unknown',
+    missionId: rec.missionId,
+    seed: rec.seed,
+    stateVersion: STATE_VERSION,
+    journal: cleanJournal,
+    checkpoints: rec.checkpoints.filter((c) => c.tick <= world.state.tick).map((c) => ({ tick: c.tick, hash: c.hash })),
+    finalTick: world.state.tick,
+    finalHash: stateHash(world),
+  };
+  if (errors.length) return { ok: false, errors };
+  // Self-check: the report must pass the same strict parser the replay tool uses.
+  return parseReport(report);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Parsing (strict, never throws)
+
+const REPORT_KEYS = ['version', 'game', 'missionId', 'seed', 'stateVersion', 'journal', 'checkpoints', 'finalTick', 'finalHash'] as const;
+const GAME_RE = /^[0-9A-Za-z.+_-]{1,32}$/;
+const MISSION_RE = /^[a-z0-9_-]{1,32}$/;
+const HASH_RE = /^[0-9a-f]{16}$/;
+
+/** Parse report text (plain JSON). Never throws. */
+export function parseReportText(text: string): ParseResult<ReplayReport> {
+  if (typeof text !== 'string') return fail('not text');
+  if (text.length > REPORT_LIMITS.textBytes) return fail('report too large');
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return fail('not valid JSON');
+  }
+  return parseReport(raw);
+}
+
+/** Validate an already-parsed value and rebuild it field by field. Never throws. */
+export function parseReport(raw: unknown): ParseResult<ReplayReport> {
+  try {
+    return parseReportUnsafe(raw);
+  } catch {
+    return fail('malformed report');
+  }
+}
+
+function parseReportUnsafe(raw: unknown): ParseResult<ReplayReport> {
+  if (!isPlainObject(raw)) return fail('report is not an object');
+  const errors: string[] = [];
+  for (const k of Object.keys(raw)) {
+    if (!(REPORT_KEYS as readonly string[]).includes(k)) errors.push(`unknown key "${k.slice(0, 32)}"`);
+  }
+  for (const k of REPORT_KEYS) if (!Object.prototype.hasOwnProperty.call(raw, k)) errors.push(`missing key "${k}"`);
+  if (errors.length) return { ok: false, errors };
+
+  if (raw.version !== REPORT_VERSION) errors.push('unsupported report version');
+  if (typeof raw.game !== 'string' || !GAME_RE.test(raw.game)) errors.push('game invalid');
+  if (typeof raw.missionId !== 'string' || !MISSION_RE.test(raw.missionId)) errors.push('missionId invalid');
+  if (!isInt(raw.seed, -0x80000000, 0xffffffff)) errors.push('seed invalid');
+  if (!isInt(raw.stateVersion, 0, 1_000_000)) errors.push('stateVersion invalid');
+  if (!isInt(raw.finalTick, 0, REPORT_LIMITS.finalTick)) errors.push('finalTick invalid');
+  if (typeof raw.finalHash !== 'string' || !HASH_RE.test(raw.finalHash)) errors.push('finalHash invalid');
+  if (!Array.isArray(raw.journal)) errors.push('journal is not an array');
+  else if (raw.journal.length > REPORT_LIMITS.journal) errors.push('journal too long');
+  if (!Array.isArray(raw.checkpoints)) errors.push('checkpoints is not an array');
+  else if (raw.checkpoints.length > REPORT_LIMITS.checkpoints) errors.push('too many checkpoints');
+  if (errors.length) return { ok: false, errors };
+  const finalTick = raw.finalTick as number;
+
+  const journal: TimedCmd[] = [];
+  let prevTick = 0;
+  for (let i = 0; i < (raw.journal as unknown[]).length; i++) {
+    const e = (raw.journal as unknown[])[i];
+    if (!isPlainObject(e) || !sameKeys(e, ['tick', 'cmd'])) return fail(`journal[${i}]: expected {tick, cmd}`);
+    if (!isInt(e.tick, prevTick, finalTick)) return fail(`journal[${i}]: tick out of order or range`);
+    const c = cleanCommand(e.cmd, true);
+    if (!c.ok) return fail(`journal[${i}]: ${c.errors[0]}`);
+    journal.push({ tick: e.tick, cmd: c.value });
+    prevTick = e.tick;
+  }
+
+  const checkpoints: Checkpoint[] = [];
+  let prevCp = -1;
+  for (let i = 0; i < (raw.checkpoints as unknown[]).length; i++) {
+    const c = (raw.checkpoints as unknown[])[i];
+    if (!isPlainObject(c) || !sameKeys(c, ['tick', 'hash'])) return fail(`checkpoints[${i}]: expected {tick, hash}`);
+    if (!isInt(c.tick, prevCp + 1, finalTick)) return fail(`checkpoints[${i}]: tick out of order or range`);
+    if (typeof c.hash !== 'string' || !HASH_RE.test(c.hash)) return fail(`checkpoints[${i}]: hash invalid`);
+    checkpoints.push({ tick: c.tick, hash: c.hash });
+    prevCp = c.tick;
+  }
+
+  return {
+    ok: true,
+    value: {
+      version: REPORT_VERSION, game: raw.game as string, missionId: raw.missionId as string, seed: raw.seed as number,
+      stateVersion: raw.stateVersion as number, journal, checkpoints, finalTick, finalHash: raw.finalHash as string,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Replay
+
+export interface CheckpointResult {
+  tick: number;
+  expected: string;
+  actual: string;
+  ok: boolean;
+}
+
+export interface Divergence {
+  tick: number;
+  expected: string;
+  actual: string;
+}
+
+export interface ReplayResult {
+  ok: boolean;
+  /** Set when the report cannot be replayed at all (unknown mission, other state version). */
+  error: string | null;
+  firstDivergence: Divergence | null;
+  checkpoints: CheckpointResult[];
+  finalHash: string;
+  finalOk: boolean;
+}
+
+export interface ReplayOptions {
+  /** Stop at the first mismatching checkpoint (default false: run to finalTick). */
+  stopAtFirst?: boolean;
+  /** Called for every journal command with its result (e.g. verbose CLI output). */
+  onCommand?: (tick: number, cmd: Command, r: CommandResult, world: World) => void;
+  /** Called at each checkpoint after comparing (before the commands of that tick). */
+  onCheckpoint?: (cp: CheckpointResult, world: World) => void;
+  /** Stop once state.tick reaches this tick (inclusive of its commands); for bisecting. */
+  untilTick?: number;
+  /** Receives the world at the end (for state summaries). */
+  onEnd?: (world: World) => void;
+}
+
+/** Re-run a parsed report from the mission start and compare hashes. */
+export function replay(report: ReplayReport, opts: ReplayOptions = {}): ReplayResult {
+  const res: ReplayResult = { ok: false, error: null, firstDivergence: null, checkpoints: [], finalHash: '', finalOk: false };
+  if (!Object.prototype.hasOwnProperty.call(MISSIONS, report.missionId)) {
+    res.error = `unknown mission "${report.missionId}"`;
+    return res;
+  }
+  if (report.stateVersion !== STATE_VERSION) {
+    res.error = `state version ${report.stateVersion} differs from this build (${STATE_VERSION})`;
+    return res;
+  }
+  const world = createWorld(report.missionId, report.seed);
+  const end = Math.min(report.finalTick, opts.untilTick ?? report.finalTick);
+  let ji = 0, ci = 0;
+  for (;;) {
+    const t = world.state.tick;
+    while (ci < report.checkpoints.length && report.checkpoints[ci]!.tick < t) ci++;
+    if (ci < report.checkpoints.length && report.checkpoints[ci]!.tick === t) {
+      const exp = report.checkpoints[ci]!.hash;
+      const act = stateHash(world);
+      const cp = { tick: t, expected: exp, actual: act, ok: exp === act };
+      res.checkpoints.push(cp);
+      opts.onCheckpoint?.(cp, world);
+      if (!cp.ok && !res.firstDivergence) {
+        res.firstDivergence = { tick: t, expected: exp, actual: act };
+        if (opts.stopAtFirst) break;
+      }
+      ci++;
+    }
+    while (ji < report.journal.length && report.journal[ji]!.tick === t) {
+      const e = report.journal[ji++]!;
+      const r = applyCommand(world, e.cmd);
+      opts.onCommand?.(t, e.cmd, r, world);
+    }
+    if (t >= end) break;
+    step(world);
+  }
+  res.finalHash = stateHash(world);
+  if (world.state.tick === report.finalTick && !(opts.stopAtFirst && res.firstDivergence)) {
+    res.finalOk = res.finalHash === report.finalHash;
+    if (!res.finalOk && !res.firstDivergence) {
+      res.firstDivergence = { tick: report.finalTick, expected: report.finalHash, actual: res.finalHash };
+    }
+  }
+  res.ok = res.firstDivergence === null && res.finalOk;
+  opts.onEnd?.(world);
+  return res;
+}
+
+// ---------------------------------------------------------------------------------------------
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  const proto = Object.getPrototypeOf(v);
+  return proto === Object.prototype || proto === null;
+}
+
+function sameKeys(o: Record<string, unknown>, keys: readonly string[]): boolean {
+  const k = Object.keys(o);
+  return k.length === keys.length && keys.every((x) => Object.prototype.hasOwnProperty.call(o, x));
+}
+
+function fail<T>(msg: string): ParseResult<T> {
+  return { ok: false, errors: [msg] };
+}

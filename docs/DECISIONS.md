@@ -175,3 +175,17 @@ pack. Files restart from byte 0 on failure (no HTTP Range; 2–4 MB each). Nativ
 and falls back to the network URL without one. Hosting: Cloudflare R2 + custom domain recommended (CORS, free
 egress); GitHub Releases rejected (no CORS headers). Production URL is still a placeholder. Details:
 docs/ASSET_PACK.md. (decided: mechanism; proposed: hosting — owner to confirm)
+**D-24 — Replay reports: allowlisted journal + checkpoint hashes, copy to clipboard only.** "Copy report"
+produces `{version, game, missionId, seed, stateVersion, journal, checkpoints, finalTick, finalHash}`
+(`src/sim/replay.ts`, format in `docs/REPLAY.md`). (1) Commands are re-serialized from a per-variant field
+declaration (`COMMAND_FIELDS`, a mapped type over `Command`, so new fields fail typecheck until declared);
+no free-text field type exists, so no personal data can enter. (2) A checkpoint hash is taken after the step
+that reached its tick and before that tick's commands (where `GameLoop.onTick` fires), every 600 ticks plus
+tick 0; the final hash includes commands applied at the final tick while paused. This needs no change to the
+sim or to `GameLoop`. (3) Compression (deflate-raw + base64url, `MR1.` prefix) lives in
+`src/platform/reportCodec.ts`, never in the sim. (4) No network: the player copies the text. (5) Only sessions
+recorded from tick 0 are reportable; the journal is not persisted in saves, so a continued mission cannot be
+reported yet (open: store journal + recorder in the save envelope, or start reports from a saved state hash).
+(6) The UI keys were not added in this change: every locale file is typed `Dict` and tested for identical keys,
+so adding keys only to pl/en would break typecheck; they are listed in `docs/REPLAY.md` and land with the
+pause-menu button. (decided)
