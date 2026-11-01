@@ -97,5 +97,6 @@ Metoda: względna luminancja sRGB według WCAG; współczynnik (Ljaśniejszy+0,0
 ## Załączniki
 
 - [VIEWER.html](VIEWER.html) — oryginał i trzy symulacje dla każdego z 61 zrzutów (otwierać po pobraniu repozytorium, z folderem docs/shots).
+- [standalone/](standalone/) — **9 samodzielnych SVG z osadzonym PNG**: trzy symulacje dla UI/HUD, błędnej drogi i Flip cover; obrazy nie wymagają sąsiednich zrzutów źródłowych.
 - [simulations/](simulations/) — 183 pliki SVG (3×61), każdy wskazuje odpowiedni PNG z docs/shots; obrazy nie są samodzielnymi rasterami.
 - [README.md](README.md) — metoda, obsługa i ograniczenia wizualizacji.
