@@ -122,7 +122,7 @@ export class Sheets {
     const side = (): boolean => document.body.classList.contains('is-side');
     const sideSign = (): number => {
       const b = document.body.classList;
-      if (!b.contains('is-landscape')) return 1;
+      if (!b.contains('is-landscape') || b.contains('mode-menu')) return 1;
       return b.contains('left-handed') ? 1 : -1;
     };
     for (const z of zones) {

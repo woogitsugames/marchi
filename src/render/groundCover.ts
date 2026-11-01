@@ -115,7 +115,7 @@ export class GroundCover {
     const hf = this.hf, WL = hf.waterLevel;
     if (this.reeds) { this.group.remove(this.reeds); this.reeds.dispose(); this.reeds.geometry.dispose(); }
     const items: number[] = [];
-    const S = 1.25;
+    const S = 1.0;
     for (let z = 0; z < hf.sizeZ; z += S) for (let x = 0; x < hf.sizeX; x += S) {
       const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
       if (hf.waterDist[cz * hf.w + cx]! > 2.5) continue;
@@ -127,11 +127,11 @@ export class GroundCover {
       const patch = vnoise(jx / 11, jz / 9, 0.5, 61) + (vnoise(jx / 3, jz / 3, 1.5, 62) - 0.5) * 0.3;
       if (patch < 0.5) continue;
       if (roads.distAt(jx, jz) < 3.6) continue; // (field saturates at ROAD_MAXD = 4 m)
-      const s = 0.65 + 0.6 * Math.min(1, (patch - 0.5) * 3) * (0.7 + hash3(Math.round(jx * 3), Math.round(jz * 3), 3, 5) * 0.5);
+      const s = 0.75 + 0.6 * Math.min(1, (patch - 0.5) * 3) * (0.7 + hash3(Math.round(jx * 3), Math.round(jz * 3), 3, 5) * 0.5);
       items.push(jx, hf.height(jx, jz) - 0.05, jz, hash3(Math.round(jx * 5), 0, Math.round(jz * 5), 7) * 6.28, s);
     }
     const n = items.length / 5;
-    const g = bladeClump(18, 0.8, 1.7, 0.35, 0.22, '#3d3c2b', '#988659', 9, '#626541');
+    const g = bladeClump(30, 0.7, 1.6, 0.45, 0.28, '#3a3a29', '#8c7b50', 9, '#5b5e3c');
     const m = new InstancedMesh(g, modelMaterial('grass') as Material, Math.max(1, n));
     for (let i = 0; i < n; i++) {
       const k = i * 5;

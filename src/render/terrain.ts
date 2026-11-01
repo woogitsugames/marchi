@@ -324,11 +324,11 @@ const FRAG_MAIN = /* glsl */ `
   float nearW = 1.0 - smoothstep(0.4, 2.2, hW);
   // large patches of dark, wet grass (more of them in the river meadows)
   float wetP = smoothstep(0.52, 0.78, nzL.r + nearW * 0.22 + (nzP.b - 0.5) * 0.25);
-  A = mix(A, A * vec3(0.7, 0.8, 0.74), wetP * 0.7);
+  A = mix(A, A * vec3(0.62, 0.74, 0.68), wetP * 0.75);
   // dry, yellowed tussock grass in large drifts, mottled at tussock scale
-  float dryP = smoothstep(0.5, 0.75, nzL.g + (nzP.r - 0.5) * 0.3) * (1.0 - nearW);
+  float dryP = smoothstep(0.48, 0.72, nzL.g + (nzP.r - 0.5) * 0.3) * (1.0 - nearW * 0.7);
   float tus = smoothstep(0.35, 0.75, nzS.b);
-  A = mix(A, A * vec3(1.32, 1.14, 0.74), dryP * (0.35 + 0.45 * tus));
+  A = mix(A, A * vec3(1.42, 1.18, 0.7), dryP * (0.4 + 0.5 * tus));
   // small-scale tussock mottling everywhere
   A *= 0.9 + 0.2 * smoothstep(0.3, 0.8, nzS.b);
   // stubble / trampled verge around ploughed fields

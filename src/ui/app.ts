@@ -63,7 +63,7 @@ export class App implements PanelNav {
     this.params = o.params;
     const layer = (id: string): HTMLElement => h('div', { id });
     this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), menu: layer('menu'), overlay: layer('overlay') };
-    o.ui.append(this.layers.markers, this.layers.hud, this.layers.sheets, this.layers.menu, this.layers.overlay);
+    o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.overlay);
     this.layers.markers.append(this.markers.root);
     this.markers.onBubble = (kind, id) => this.go(kind, id, false);
     this.sheets = new Sheets(this.layers.sheets);
