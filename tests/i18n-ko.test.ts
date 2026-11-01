@@ -1,6 +1,6 @@
-import { en } from '../src/i18n/en';
+import { en } from './i18n-keys';
 import { ko } from '../src/i18n/ko';
-import { pl, type MessageKey } from '../src/i18n/pl';
+import { pl, type MessageKey } from './i18n-keys';
 import { assert, test } from './harness';
 
 function placeholders(value: string): string[] {

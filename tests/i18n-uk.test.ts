@@ -1,5 +1,5 @@
-import { pl, type MessageKey } from '../src/i18n/pl';
-import { en } from '../src/i18n/en';
+import { pl, type MessageKey } from './i18n-keys';
+import { en } from './i18n-keys';
 import { uk } from '../src/i18n/uk';
 import { assert, eq, test } from './harness';
 

@@ -239,7 +239,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'hud.showUi',
   'tutorial.m1.from',
   'tutorial.m1.skip',
   'tutorial.m1.step1',

@@ -1,6 +1,6 @@
 import { assert, test } from './harness';
-import { pl } from '../src/i18n/pl';
-import { en } from '../src/i18n/en';
+import { pl } from './i18n-keys';
+import { en } from './i18n-keys';
 import { tr } from '../src/i18n/tr';
 
 function placeholders(value: string): string[] {
