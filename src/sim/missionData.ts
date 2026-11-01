@@ -100,7 +100,8 @@ class Reader {
     const riverHalfWidth = this.array(obj.riverHalfWidth, path + '.riverHalfWidth', 2, 512).map((v, i) =>
       this.number(v, path + '.riverHalfWidth[' + i + ']', 0.01, h));
     if (riverHalfWidth.length !== riverY.length) this.fail(path + '.riverHalfWidth', 'must match riverY length');
-    if (riverY.length < Math.ceil(w / spacing) + 1) {
+    // Integer ceil without Math.ceil (sim may use only floor/round/min/max/abs/sqrt).
+    if (riverY.length < Math.floor((w + spacing - 1) / spacing) + 1) {
       this.fail(path + '.riverY', 'not enough control points to span the map width');
     }
     const hills = this.array(obj.hills, path + '.hills', 0, 256).map((item, i) => {
