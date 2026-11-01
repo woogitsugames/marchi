@@ -41,6 +41,7 @@ export function command(world: World, cmd: Command): CommandResult {
 /** Advance exactly one fixed tick. */
 export function step(world: World): void {
   const st = world.state;
+  world.queue = null; // derived penalties must not depend on reads made between ticks (UI ETAs)
   stepWagons(world);
   produce(world);
   if (st.tick % DISPATCH_INTERVAL === 0) dispatch(world);
