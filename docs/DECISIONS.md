@@ -58,3 +58,8 @@ enters a wooden span: 9 s per wagon queued there (BRIDGE_JAM) + 4 s per wagon on
 each tick (not saved), so determinism and save/load are unaffected. *Without it a second wooden bridge
 did not relieve the first (found by GPT-6 in the mission 2 proposal); stress test max wait fell from
 279 s to 52 s, moving wagons at 200 rose from 74 to 109.* (decided)
+
+**D-15 — Music as Opus 48 kbps in WebM, loudness-normalised.** 14 tracks from the publisher's own score,
+-18 LUFS, ~13 MB total (AAC 96 kbps was 25 MB). Opus at 48 kbps stereo is transparent enough for background
+music on phone speakers/earbuds. Supported by Android WebView and iOS 17+; on older engines music stays
+silent (feature-detected) rather than failing. *Keep the APK small; the music plays under ambience anyway.* (decided)

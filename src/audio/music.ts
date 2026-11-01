@@ -47,9 +47,12 @@ export class MusicPlayer {
     });
   }
 
+  /** Opus-in-WebM support (Android WebView, iOS 17+). Without it the game stays silent instead of erroring. */
+  readonly supported = typeof document !== 'undefined' && document.createElement('audio').canPlayType('audio/webm; codecs="opus"') !== '';
+
   /** Call from a trusted user gesture (first tap). */
   unlock(): void {
-    if (this.unlocked) return;
+    if (this.unlocked || !this.supported) return;
     this.unlocked = true;
     if (this.mood !== 'none') this.startTrack(this.mood, true);
   }
@@ -80,7 +83,7 @@ export class MusicPlayer {
   private startTrack(m: MusicMood, immediate: boolean): void {
     if (m === 'none') return;
     const next = this.els[1 - this.cur]!;
-    next.src = BASE + this.pick(m) + '.m4a';
+    next.src = BASE + this.pick(m) + '.webm';
     next.loop = m === 'menu';
     next.volume = 0;
     next.currentTime = 0;

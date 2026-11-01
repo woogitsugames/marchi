@@ -276,24 +276,24 @@ differences, so final listening/measurements are still recommended.
 
 ## Music — owner's own medieval score
 
-Source: the owner's repository `woogitsu/osadale` (`music/*.mp3`), **© the game's owner, used with
-permission; not CC0, not for redistribution outside the game.** Transcoded with FFmpeg to AAC-LC 96 kbps
-stereo 44.1 kHz `.m4a` (faststart) into `public/assets/music/` (14 tracks, ~25 MB). Streamed through
+Source: the owner's repository `woogitsu/osadale` (`music/*.mp3`), **rights held by the game's publisher; not CC0, not for redistribution outside the game.** Transcoded with
+FFmpeg: `loudnorm I=-18 LUFS, TP -1.5 dB`, Opus 48 kbps constrained VBR stereo 48 kHz in WebM (`.webm`) into
+`public/assets/music/` (14 tracks, ~13 MB; was 25 MB as AAC 96 kbps). Streamed through
 `<audio>` (`src/audio/music.ts`), never decoded to buffers.
 
 | File | Original title | Use |
 |---|---|---|
-| menu-hush-before-sunrise.m4a | Hush Before Sunrise | main menu |
-| menu-first-light.m4a | First Light Over Greystone | main menu |
-| play-wheatmill-path.m4a | Wheatmill Path | gameplay |
-| play-millpond-crossing.m4a | Millpond Crossing | gameplay |
-| play-harvest-lane.m4a | Harvest Lane | gameplay |
-| play-wheatfield-lane.m4a | Wheatfield Lane | gameplay |
-| play-granary-at-stonegate.m4a | Granary at Stonegate | gameplay |
-| play-oven-hearth-morning.m4a | Oven Hearth Morning | gameplay |
-| play-bakers-hearth-glow.m4a | Bakers Hearth Glow | gameplay |
-| play-gleaning-at-dusk.m4a | Gleaning at Dusk | gameplay |
-| rain-drizzle-on-the-square.m4a | Drizzle on the Square | gameplay while raining |
-| rain-on-cobblestone.m4a | Rain on Cobblestone | gameplay while raining |
-| won-silver-pennant-fanfare.m4a | Silver Pennant Fanfare | contract fulfilled |
-| lost-frost-on-the-rooftops.m4a | Frost on the Rooftops | first snow, contract lost |
+| menu-hush-before-sunrise.webm | Hush Before Sunrise | main menu |
+| menu-first-light.webm | First Light Over Greystone | main menu |
+| play-wheatmill-path.webm | Wheatmill Path | gameplay |
+| play-millpond-crossing.webm | Millpond Crossing | gameplay |
+| play-harvest-lane.webm | Harvest Lane | gameplay |
+| play-wheatfield-lane.webm | Wheatfield Lane | gameplay |
+| play-granary-at-stonegate.webm | Granary at Stonegate | gameplay |
+| play-oven-hearth-morning.webm | Oven Hearth Morning | gameplay |
+| play-bakers-hearth-glow.webm | Bakers Hearth Glow | gameplay |
+| play-gleaning-at-dusk.webm | Gleaning at Dusk | gameplay |
+| rain-drizzle-on-the-square.webm | Drizzle on the Square | gameplay while raining |
+| rain-on-cobblestone.webm | Rain on Cobblestone | gameplay while raining |
+| won-silver-pennant-fanfare.webm | Silver Pennant Fanfare | contract fulfilled |
+| lost-frost-on-the-rooftops.webm | Frost on the Rooftops | first snow, contract lost |
