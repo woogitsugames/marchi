@@ -17,6 +17,10 @@ const GOLDEN: Record<string, string> = {
   'valley1:1301': 't1-f621e2ecdd692c90',
   'valley-m2:2402': 't1-7283d964dc7e3e43',
   'valley-m3:3303': 't1-6eef9e9158b4173c',
+  // Missions IV-VI (claude/s2-missions) reuse the mission II/III generator input under their own map ids.
+  'valley-m4:2402': 't1-7283d964dc7e3e43',
+  'valley-m5:3303': 't1-6eef9e9158b4173c',
+  'valley-m6:3303': 't1-6eef9e9158b4173c',
 };
 
 const HELP = 'terrain generator output changed — see the header of tests/terrain-golden.test.ts before touching GOLDEN';
