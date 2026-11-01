@@ -37,6 +37,8 @@ echo "==> npx cap sync android"
 npx cap sync android
 
 echo "==> gradlew assembleDebug"
+# Incremental packaging keeps holes where deleted assets used to be (98 MB vs 50 MB): always repackage.
+rm -rf android/app/build/outputs/apk android/app/build/intermediates/apk
 # First run downloads AGP + deps; Maven Central sometimes answers 429, so retry.
 for attempt in 1 2 3; do
   if (cd android && ./gradlew --no-daemon assembleDebug); then break; fi
