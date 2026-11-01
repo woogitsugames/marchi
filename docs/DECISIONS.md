@@ -51,3 +51,10 @@ Capacitor 8 SwiftPM template (no CocoaPods). Debug APKs are built in the Linux c
 JDK 21), installed by `npm run setup:android`. Manifest: no orientation lock,
 `resizeableActivity="true"` for foldables / multi-window. *Owner asked for SDK 36; Capacitor 7
 targets 35, and staying on 7 would mean patching a template that 8 already ships.* (decided)
+
+**D-13 — Queue-aware routing at one-lane bridges.** Path cost adds a derived penalty when a route
+enters a wooden span: 9 s per wagon queued there (BRIDGE_JAM) + 4 s per wagon on it. Wagons queued
+≥ 10 s re-plan every 3 s and take a detour when it is cheaper. Penalties are recomputed from state
+each tick (not saved), so determinism and save/load are unaffected. *Without it a second wooden bridge
+did not relieve the first (found by GPT-6 in the mission 2 proposal); stress test max wait fell from
+279 s to 52 s, moving wagons at 200 rose from 74 to 109.* (decided)

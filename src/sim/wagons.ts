@@ -7,6 +7,9 @@ import { dijkstra, edgeLength, edgeSpeedAt, findPath, hasEdge, isRaining, net, t
 import type { Building, Good, Wagon } from './types';
 
 const REPLAN_RETRY_TICKS = 50;
+/** A wagon queued at a one-lane bridge this long starts looking for another route. */
+const JAM_RECONSIDER_TICKS = 10 * 10;
+const JAM_RECONSIDER_EVERY = 30;
 
 export function stepWagons(world: World): void {
   for (const w of world.state.wagons) stepWagon(world, w);
@@ -51,6 +54,15 @@ function stepWagon(world: World, w: Wagon): void {
       if (blocker) {
         const since = w.status.k === 'BRIDGE_JAM' && w.status.span === blocker.span ? w.status.since : st.tick;
         w.status = { k: 'BRIDGE_JAM', span: blocker.span, blocker: blocker.wagon, since };
+        // After a while in the queue, look for a way around (queue-aware routing).
+        const waited = st.tick - since;
+        if (waited >= JAM_RECONSIDER_TICKS && waited % JAM_RECONSIDER_EVERY === 0) {
+          const alt = findPath(world, w.at, w.dest, w.cargoQty > 0);
+          if (alt && alt.length > 0 && alt[0] !== n2) {
+            w.path = alt;
+            w.pathVer = st.netVersion;
+          }
+        }
         return;
       }
       w.path.shift();

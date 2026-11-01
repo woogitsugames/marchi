@@ -16,6 +16,6 @@ test('stress 120 wagons over one-lane bridges: no starvation, invariants hold', 
     }
   }
   console.log(`     max bridge wait ${(maxWait / TICK_HZ).toFixed(0)} s`);
-  // Two one-lane bridges for 120 wagons are deliberately overloaded: queues are long, but bounded.
-  assert(maxWait < 330 * TICK_HZ, 'a wagon waited more than 5.5 minutes at a bridge: ' + maxWait / TICK_HZ);
+  // Two one-lane bridges for 120 wagons are overloaded; queue-aware routing keeps waits bounded.
+  assert(maxWait < 120 * TICK_HZ, 'a wagon waited more than 2 minutes at a bridge: ' + maxWait / TICK_HZ);
 });

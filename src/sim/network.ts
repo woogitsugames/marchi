@@ -30,6 +30,8 @@ export interface World {
   terrain: Terrain;
   state: SimState;
   cache: NetCache | null;
+  /** Derived per-tick bridge queue penalties (seconds per span). Not saved; recomputed from state. */
+  queue?: { tick: number; ver: number; penalty: Map<number, number> } | null;
   /** Scratch buffers for pathfinding (reused). */
   scratch: PathScratch | null;
 }
@@ -98,6 +100,34 @@ export function edgeCosts(world: World, loaded: boolean, rain: boolean): Float64
   }
   c.costs[k] = tab;
   return tab;
+}
+
+/** Expected extra seconds per wagon waiting at / crossing a one-lane bridge. */
+export const QUEUE_SECONDS_WAITING = 9;
+export const QUEUE_SECONDS_ON_SPAN = 4;
+
+/**
+ * Seconds a wagon should expect to lose entering each wooden one-lane span right now,
+ * derived from wagons queued at it (BRIDGE_JAM) and wagons on it. Routing adds this when
+ * a path enters a span, so a second bridge actually relieves the first.
+ */
+export function spanPenalties(world: World): Map<number, number> {
+  const st = world.state;
+  const q = world.queue;
+  if (q && q.tick === st.tick && q.ver === st.netVersion) return q.penalty;
+  const c = net(world);
+  const penalty = new Map<number, number>();
+  for (const wg of st.wagons) {
+    let span = -1, secs = 0;
+    if (wg.status.k === 'BRIDGE_JAM') { span = wg.status.span; secs = QUEUE_SECONDS_WAITING; }
+    else if (wg.bridgeFrom >= 0) {
+      span = c.span[wg.at]! >= 0 ? c.span[wg.at]! : wg.next >= 0 ? c.span[wg.next]! : -1;
+      secs = QUEUE_SECONDS_ON_SPAN;
+    }
+    if (span >= 0) penalty.set(span, (penalty.get(span) ?? 0) + secs);
+  }
+  world.queue = { tick: st.tick, ver: st.netVersion, penalty };
+  return penalty;
 }
 
 export function isRaining(st: SimState): boolean {
@@ -230,6 +260,8 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   };
   const rain = isRaining(world.state);
   const costs = edgeCosts(world, loaded, rain);
+  const pen = spanPenalties(world);
+  const spanOf = net(world).span;
   dist[start] = 0;
   push(start, 0);
   sc.curStamp = (sc.curStamp + 1) >>> 0 || 1;
@@ -247,8 +279,14 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
       if (vx < 0 || vy < 0 || vx >= w || vy >= h) continue;
       const v = vy * w + vx;
       if (done[v] === mark) continue;
-      const cost = reverse ? costs[v * 8 + OPP[d]!]! : costs[u * 8 + d]!;
+      let cost = reverse ? costs[v * 8 + OPP[d]!]! : costs[u * 8 + d]!;
       if (cost === Infinity) continue;
+      if (pen.size > 0) {
+        // entering a span: forward u -> v, reverse the real move is v -> u
+        const from = reverse ? v : u, to = reverse ? u : v;
+        const sp = spanOf[to]!;
+        if (sp >= 0 && spanOf[from] !== sp) cost += pen.get(sp) ?? 0;
+      }
       const nd = dist[u]! + cost;
       if (nd < dist[v]!) {
         dist[v] = nd;
