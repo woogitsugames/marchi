@@ -92,12 +92,16 @@ export class VegetationView {
     this.lastZ = camPos.z;
     this.lastR = this.nearDist;
     const r2 = this.nearDist * this.nearDist;
+    // shrubs are cheap and read badly as cross-quads from above: keep full models further out
+    const bushK = K('bush');
+    const rb = Math.max(this.nearDist, this.nearDist * 1.9);
+    const rb2 = rb * rb;
     const counts = new Int32Array(TREE_KINDS.length);
     const fcounts = new Int32Array(TREE_KINDS.length);
     const cy = camPos.y;
     for (const t of this.trees) {
       const ddx = t.x - camPos.x, ddy = t.y - cy, ddz = t.z - camPos.z;
-      const near = ddx * ddx + ddy * ddy + ddz * ddz < r2;
+      const near = ddx * ddx + ddy * ddy + ddz * ddz < (t.kind === bushK ? rb2 : r2);
       if (near) {
         const list = this.near[t.kind]!;
         const i = counts[t.kind]!++;

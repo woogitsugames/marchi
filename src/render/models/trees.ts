@@ -20,6 +20,7 @@ import {
   Float32BufferAttribute,
   Group,
   HemisphereLight,
+  LinearMipmapLinearFilter,
   Mesh,
   MeshBasicMaterial,
   OrthographicCamera,
@@ -345,13 +346,16 @@ let atlas: WebGLRenderTarget | null = null;
 export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGLRenderTarget {
   if (atlas) return atlas;
   const rt = new WebGLRenderTarget(cellPx * ATLAS_COLS, cellPx * 2, { samples: 4 });
+  // mipmapped so distant crowns stay solid instead of sparkling into thin sticks
+  rt.texture.generateMipmaps = true;
+  rt.texture.minFilter = LinearMipmapLinearFilter;
   const scene = new Scene();
   scene.add(new HemisphereLight(0xffffff, 0xffffff, 1));
   const prevTarget = renderer.getRenderTarget();
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
   renderer.setRenderTarget(rt);
-  renderer.setClearColor(0x000000, 0);
+  renderer.setClearColor(0x6a6244, 0); // olive-brown under the alpha, so mip fringes are not black
   renderer.clear();
   const leafMat = new MeshBasicMaterial({ vertexColors: true, map: leafTexture(), alphaTest: 0.5, side: DoubleSide });
   const solidMat = new MeshBasicMaterial({ vertexColors: true });
@@ -379,7 +383,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGL
   renderer.setViewport(0, 0, renderer.domElement.width / renderer.getPixelRatio(), renderer.domElement.height / renderer.getPixelRatio());
   const m = modelMaterial('billboard');
   m.map = rt.texture;
-  m.alphaTest = 0.5;
+  m.alphaTest = 0.4;
   m.needsUpdate = true;
   atlas = rt;
   return rt;

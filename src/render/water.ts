@@ -123,7 +123,7 @@ void main() {
   float r = length(vUv);
   float soft = 1.0 - smoothstep(0.2, 1.0, r);
   float n = texture2D(tNoise, vW.xz / 37.0 + vec2(uTime * 0.004, vSeed)).a;
-  float camFade = smoothstep(12.0, 70.0, distance(cameraPosition, vW));
+  float camFade = smoothstep(18.0, 90.0, distance(cameraPosition, vW));
   float a = soft * soft * (0.3 + 0.9 * n) * uOpacity * 0.09 * camFade;
   gl_FragColor = vec4(uColor, a);
   #include <tonemapping_fragment>
