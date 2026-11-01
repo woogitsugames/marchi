@@ -58,7 +58,9 @@ export type IconId =
   | 'wagon'
   | 'sun'
   | 'rain'
-  | 'back';
+  | 'back'
+  | 'snow'
+  | 'follow';
 
 // ---------------------------------------------------------------------------
 // Geometry kit
@@ -1516,6 +1518,45 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     ] as const) {
       d.inkFine(band(seg([x, y], [x - l * 0.42, y + l], 3), taper(1.25, 0.45)));
     }
+  },
+
+  snow(d) {
+    // six-armed flake, each arm a tapered band with two pairs of side barbs
+    const c = 12;
+    for (let i = 0; i < 6; i++) {
+      const a = (i * 60 - 90) * DEG;
+      const ux = Math.cos(a);
+      const uy = Math.sin(a);
+      const tip: Pt = [c + ux * 10.6, c + uy * 10.6];
+      d.ink(band(seg([c, c], tip, 8), lerpW(2.3, 1.1)));
+      for (const [r, l] of [[5.2, 3.0], [8.0, 2.2]] as const) {
+        for (const sgn of [-1, 1]) {
+          const b = a + sgn * 50 * DEG;
+          const p0: Pt = [c + ux * r, c + uy * r];
+          const p1: Pt = [p0[0] + Math.cos(b) * l, p0[1] + Math.sin(b) * l];
+          d.inkFine(band(seg(p0, p1, 3), lerpW(1.2, 0.6)));
+        }
+      }
+    }
+    d.ink(circ(c, c, 2.6));
+    d.cut(circ(c, c, 1.1));
+  },
+
+  follow(d) {
+    // an open eye: almond lids, iris with hatching, one gouged highlight
+    const top = cubic([1.8, 12], [6.5, 4.6], [17.5, 4.6], [22.2, 12], 14);
+    const bot = cubic([22.2, 12], [17.5, 19], [6.5, 19], [1.8, 12], 14);
+    const almond: Poly = [...top, ...bot.slice(1, -1)];
+    d.ink(almond);
+    d.cut(shrink(almond, 1.6));
+    d.layer();
+    d.ink(circ(12, 11.9, 4.6));
+    d.hatchCut(clipHalf(circ(12, 11.9, 3.8), 1, 1, 23), -45, 1.5, 0.55);
+    d.cut(circ(12, 11.9, 1.5));
+    d.ink(circ(12, 11.9, 0.9));
+    d.cut(gouge([9.6, 9.8], [10.9, 8.9], 0.9));
+    // lashes on the upper lid
+    for (const x of [6.2, 9.4, 12.6, 15.8]) d.inkFine(band(seg([x + 0.3, 6.6], [x - 0.4, 3.6], 3), lerpW(1.1, 0.5)));
   },
 
   back(d) {
