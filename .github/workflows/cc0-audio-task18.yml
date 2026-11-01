@@ -1,0 +1,63 @@
+name: CC0 audio task 18 (Freesound)
+
+on:
+  push:
+    branches:
+      - gpt/task-18-cc0-recordings
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-recordings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out task branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Install audio codec tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Test Freesound metadata safety
+        run: python3 -m unittest tools/test_process_audio.py -v
+
+      - name: Render only verified CC0 Freesound recordings
+        run: python3 tools/process_audio.py --only-freesound --fetch
+
+      - name: Verify complete audio catalogue and hashes
+        run: python3 tools/process_audio.py --check
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Simulation tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Commit source previews, hashes and runtime assets to PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/audio-src/*.ogg docs/audio-provenance.json public/assets/audio/sfx/*.ogg public/assets/audio/sfx/*.m4a
+          if git diff --cached --quiet; then
+            echo "All verified audio assets are already committed."
+          else
+            git commit -m "audio: bundle verified CC0 Freesound recordings and hashed OGG/M4A"
+            git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          fi
