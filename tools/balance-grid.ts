@@ -71,7 +71,7 @@ function physicalOf(def: MissionDef): Physical {
 }
 function grid(def: MissionDef): Physical[] {
   const p = physicalOf(def);
-  const factors = quick ? [0.8, 1] : [0.8, 1, 1.2];
+  const factors = def.id === 'm1' ? (quick ? [0.5, 1] : [0.5, 0.67, 0.8, 1]) : (quick ? [0.8, 1] : [0.8, 1, 1.2]);
   const cOffsets = quick ? [0, 30] : [-30, 0, 30];
   const wOffsets = def.id === 'm1' ? (quick ? [0, 2, 4] : [-1, 0, 1, 2, 3, 4]) : (quick ? [0, 1] : [-1, 0, 1]);
   const result: Physical[] = [];
@@ -262,7 +262,7 @@ function missionSearch(id: string): MissionResult {
       console.log(id + ': physical grid ' + (i + 1) + '/' + phys.length);
   }
   baseCandidates.sort((a, b) => b.ranking.objective - a.ranking.objective);
-  const finalists = baseCandidates.slice(0, quick ? 4 : 10);
+  const finalists = baseCandidates.slice(0, quick ? 4 : (id === 'm1' ? 20 : 10));
   if (!finalists.some((c) => JSON.stringify(c.physical) === JSON.stringify(baseline))) {
     const found = baseCandidates.find((c) => JSON.stringify(c.physical) === JSON.stringify(baseline));
     if (found) finalists.push(found);
@@ -297,9 +297,9 @@ function render(results: MissionResult[], missing: string[]): string {
       ' srebra), **właściwa naprawa**, **naprawa +2 wozy**. Interwencja M1: drewniany most §x=41,y=24..44§ na starcie; M2: kamienna modernizacja mostu §x=51,y=30..42§ po 45 s; M3: bruk §x=32..80,y=40§ po 25 s.',
     '- Cel: **nic = 0–1 pieczęć**, **częściowa strategia (same wozy albo sama naprawa) = 2**, **pełna interwencja (naprawa + wozy) = 3**, zwycięstwa w przedziale **5–12 min**.',
     '- Wyniki czterech strategii na tym samym seedzie są porównywane bez zmian AI, tras, terenu ani zasad produkcji. Nieudane komendy i błędy inicjalizacji dyskwalifikują wariant.',
-    '- Siatka fizyczna: ilości desek/chleba × srebro × początkowe wozy (warianty 80%, 100%, 120% ilości; srebro −30/0/+30; wozy −1/0/+1, a dla M1 również +2/+3/+4). Termin kontraktu: **7–12 min co 0,5 min**; pieczęcie: próg 3 od 5 min co 0,25 min, próg 2 co 0,25 min z warunkiem §5 ≤ 3★ < 2★ < termin§.',
+    '- Siatka fizyczna: ilości desek/chleba × srebro × początkowe wozy (warianty 80%, 100%, 120% ilości, a dla M1 50%, 67%, 80%, 100%; srebro −30/0/+30; wozy −1/0/+1, a dla M1 również +2/+3/+4). Termin kontraktu: **7–12 min co 0,5 min**; pieczęcie: próg 3 od 5 min co 0,25 min, próg 2 co 0,25 min z warunkiem §5 ≤ 3★ < 2★ < termin§.',
     '- Dla każdej konfiguracji symulacja trwa maksymalnie 12 min (10 ticków/s). Terminy i progi pieczęci są przeszukiwane **analitycznie** z uzyskanych czasów zwycięstwa — nie zmieniają zachowania dyspozytora przed końcem kontraktu.',
-    '- Każda konfiguracja fizyczna jest sprawdzana na seedzie misji. **10** najlepszych kandydatów + ustawienia pierwotne są oceniane na sześciu seedach: bazowy oraz przesunięcia **+1, +7, +19, +41, +73**. Finalista wygrywa według liczby seedów spełniających wszystkie warunki, następnie sumy zgodnych kryteriów i odległości od danych obecnych.',
+    '- Każda konfiguracja fizyczna jest sprawdzana na seedzie misji. **10** najlepszych kandydatów (M1: 20) + ustawienia pierwotne są oceniane na sześciu seedach: bazowy oraz przesunięcia **+1, +7, +19, +41, +73**. Finalista wygrywa według liczby seedów spełniających wszystkie warunki, następnie sumy zgodnych kryteriów i odległości od danych obecnych.',
     '- Reprodukowalność: zwycięski wariant jest uruchamiany jeszcze raz na bazowym seedzie dla każdej z czterech strategii, z porównaniem wyników i hasza stanu.',
     '',
     '## Rekomendowane ustawienia (bez modyfikacji kodu misji)',
