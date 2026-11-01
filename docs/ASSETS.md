@@ -149,7 +149,10 @@ Settings (`tools/textures/ktx.mjs`, npm **`ktx2-encoder@0.5.4`** in a temp folde
 dependency — 0.6.x / Basis 2.5 refuses sources over ~12 Mpix, so it cannot encode 4096²):
 albedo `ETC1S qualityLevel 255, compressionLevel 2, perceptual, sRGB transfer`; orm `ETC1S q255
 clevel 2, linear`; normal `UASTC, isNormalMap, uastc level 2, RDO λ 3, zstd, linear`; all with
-mipmaps and Y-flip. Equivalent `toktx`: `--encode etc1s --qlevel 255 --clevel 2` /
+mipmaps. Y-flip on, **except** the 2048/4096 files of the five terrain sets (meadow, mud_track,
+forest_floor, riverbank, cobblestone): they are only used as `CompressedArrayTexture` layers, which
+upload with flipY = false like the canvas-decoded JPG arrays, and the terrain shader's normal-Y sign
+assumes that orientation. Equivalent `toktx`: `--encode etc1s --qlevel 255 --clevel 2` /
 `--encode uastc --uastc_quality 2 --uastc_rdo_l 3 --zcmp`.
 
 **Sizes**

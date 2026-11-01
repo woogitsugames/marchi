@@ -10,7 +10,8 @@
 //           handed in at runtime with setUltraBase(). Without it, or if a 4K file fails, 'ultra'
 //           uses the 2048 files from the APK.
 // All KTX2 files carry their own mip chain and are encoded Y-flipped so they match the default
-// flipY = true orientation of the JPGs. They are transcoded to a GPU block format (ETC2 / ASTC /
+// flipY = true orientation of the JPGs — except the 2048/4096 files of the five terrain sets,
+// which are only used as array layers (uploaded unflipped, like the canvas-decoded JPG arrays). They are transcoded to a GPU block format (ETC2 / ASTC /
 // BC*) — 2k / 4k textures are never uploaded as uncompressed RGBA unless the GPU has no
 // compressed format at all. JPGs exist only at 1024 / 512 px: without a KTX2 loader (or when a
 // KTX2 file fails) every tier falls back to them.
