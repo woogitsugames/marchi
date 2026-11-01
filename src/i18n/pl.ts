@@ -127,6 +127,10 @@ export const pl = {
   'menu.off': 'Nie',
   'quality.high': 'Wysoka',
   'quality.low': 'Niska',
+  'quality.auto': 'Auto',
+  'quality.ultra': 'Ultra',
+  'menu.qualityDetected': 'Auto wybrało: {q}. Rozdzielczość sceny dopasowuje się sama, gdy gra zwalnia.',
+  'hud.openPhone': 'Otwórz telefon, by budować drogi',
   'lang.pl': 'Polski',
   'lang.en': 'English',
 

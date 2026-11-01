@@ -20,7 +20,14 @@ interface Ptr { id: number; x: number; y: number; sx: number; sy: number; t0: nu
 const TAP_SLOP = 9;
 const TAP_MS = 350;
 
-export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraControl, hd: InputHandlers): () => void {
+export interface InputHandle {
+  /** Drop every in-flight gesture (fold/unfold, rotation): a road draft is cancelled, a pinch or
+   *  pan just stops. Fingers still down are ignored until they lift. */
+  cancel(): void;
+  detach(): void;
+}
+
+export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraControl, hd: InputHandlers): InputHandle {
   const ptrs = new Map<number, Ptr>();
   let mode: 'idle' | 'pending' | 'pan' | 'draft' | 'multi' | 'rotate' | 'drain' = 'idle';
   let multi = { dist: 0, ang: 0, cx: 0, cy: 0, t0: 0, moved: false };
@@ -162,7 +169,16 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
   canvas.addEventListener('pointercancel', up);
   canvas.addEventListener('wheel', wheel, { passive: false });
   canvas.addEventListener('contextmenu', ctx);
-  return () => {
+  const cancel = (): void => {
+    if (mode === 'draft') hd.draftCancel();
+    for (const id of ptrs.keys()) {
+      try { canvas.releasePointerCapture?.(id); } catch { /* already released */ }
+    }
+    ptrs.clear();
+    mode = 'idle';
+  };
+  const detach = (): void => {
+    cancel();
     canvas.removeEventListener('pointerdown', down);
     canvas.removeEventListener('pointermove', move);
     canvas.removeEventListener('pointerup', up);
@@ -170,4 +186,5 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
     canvas.removeEventListener('wheel', wheel);
     canvas.removeEventListener('contextmenu', ctx);
   };
+  return { cancel, detach };
 }

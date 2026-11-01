@@ -1,19 +1,24 @@
 // Per-device UI preferences (localStorage, best effort).
-import type { Quality } from '../render/api';
+import { isQualityPref, type QualityPref } from './tier';
 
 export interface Prefs {
-  quality: Quality;
+  /** 'auto' = pick from the device tier (src/ui/tier.ts). */
+  quality: QualityPref;
   leftHanded: boolean;
   waybillCollapsed: boolean;
 }
 
 const KEY = 'marchia.prefs';
-const DEFAULTS: Prefs = { quality: 'high', leftHanded: false, waybillCollapsed: false };
+const DEFAULTS: Prefs = { quality: 'auto', leftHanded: false, waybillCollapsed: false };
 
 export function loadPrefs(): Prefs {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Prefs>) };
+    if (raw) {
+      const p = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Prefs>) };
+      if (!isQualityPref(p.quality)) p.quality = 'auto';
+      return p;
+    }
   } catch { /* storage unavailable */ }
   return { ...DEFAULTS };
 }

@@ -25,6 +25,7 @@ export interface Sheet {
 export class Sheets {
   private stack: Sheet[] = [];
   private suppressPop = 0;
+  private gestureCancels = new WeakMap<Sheet, () => void>();
   onChange: (() => void) | null = null;
 
   constructor(private host: HTMLElement) {
@@ -98,6 +99,16 @@ export class Sheets {
     }
   }
 
+  /** Screen changed shape (fold/unfold, rotation): drop drags, snap sheets to their new dock
+   *  without animating across the screen. The dock itself (bottom vs side) is pure CSS. */
+  relayout(): void {
+    for (const s of this.stack) {
+      this.gestureCancels.get(s)?.();
+      s.el.classList.remove('is-dragging', 'is-entering');
+      s.el.style.transform = '';
+    }
+  }
+
   private build(content: SheetContent): Sheet {
     const icon = h('div.sh-icon');
     const kicker = h('div.kicker');
@@ -162,5 +173,6 @@ export class Sheets {
     };
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
+    this.gestureCancels.set(sheet, () => { start = null; d = 0; });
   }
 }

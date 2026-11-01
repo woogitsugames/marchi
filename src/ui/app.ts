@@ -1,19 +1,22 @@
 // App shell: main menu over a live scene, the game screen (HUD, sheets, markers, tools),
 // autosave, end-of-mission letter, debug params for screenshots.
 import { AudioEngine } from '../audio/audio';
+import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
   TICK_HZ, applyCommand, buildingById, createWorld, grade, lineCells, net, stars, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
+  isRaining,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
-import type { PickResult, Quality, WorldView } from '../render/api';
+import type { PickResult, WorldView } from '../render/api';
 import { listSaves, loadGame, saveGame, deleteSave } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
 import { bridgeA, stableId } from '../../tools/bot';
 import { h } from './dom';
 import { Hud, type Tool } from './hud';
-import { attachInput } from './input';
+import { attachInput, type InputHandle } from './input';
+import { applyLayoutClasses, computeLayout, devicePosture, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { buildEndLetter, buildMainMenu, gameMenuSheet, settingsSheet, type SaveInfo } from './menu';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -21,15 +24,17 @@ import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import type { IconId } from './icons';
+import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
 
 const audio = new AudioEngine();
+const music = new MusicPlayer();
 bindAudioEngine(audio);
 let audioUnlockArmed = false;
 /** Web Audio may only start from a trusted gesture: unlock on the first touch/click/key. */
 function armAudioUnlock(): void {
   if (audioUnlockArmed) return;
   audioUnlockArmed = true;
-  const unlock = (): void => { void audio.init(); };
+  const unlock = (): void => { void audio.init(); music.unlock(); };
   window.addEventListener('pointerdown', unlock, { capture: true, once: true });
   window.addEventListener('keydown', unlock, { capture: true, once: true });
 }
@@ -73,6 +78,13 @@ export class App implements PanelNav {
   private perfAt = 0;
   private save: SaveInfo | null = null;
   private speedBeforeMenu: Speed = 1;
+  private input: InputHandle;
+  private layout: LayoutInfo | null = null;
+  private layoutQueued = false;
+  private dprQuery: MediaQueryList | null = null;
+  private dynres = new DynamicResolution();
+  /** Session-only quality override from ?quality= (screenshots, tests). */
+  private qualityParam: QualityPref | null = null;
 
   constructor(o: AppOptions) {
     this.view = o.view;
@@ -91,13 +103,15 @@ export class App implements PanelNav {
     this.loop = new GameLoop(this.world);
     this.draft = new RoadDraft(() => this.view, () => this.world, this.markers, (cells, surface) => this.enqueue({ t: 'road', cells, surface }));
 
-    this.applyLayout();
-    window.addEventListener('resize', () => this.applyLayout());
-    window.visualViewport?.addEventListener('resize', () => this.applyLayout());
+    const qp = this.params.get('quality');
+    this.qualityParam = isQualityPref(qp) ? qp : null;
+    this.dynres.enabled = this.params.get('dynres') !== '0';
     document.body.classList.toggle('left-handed', this.prefs.leftHanded);
-    this.view.setQuality(this.prefs.quality);
+    this.view.setQuality(renderQuality(this.view, this.effectiveQuality()));
+    this.applyLayout();
+    this.watchLayout();
 
-    attachInput(this.canvas, () => this.view.camera, {
+    this.input = attachInput(this.canvas, () => this.view.camera, {
       tap: (x, y) => this.onTap(x, y),
       draftMode: () => this.mode === 'game' && (this.tool === 'road' || this.tool === 'cobble'),
       draftStart: (x, y) => { this.draft.surface = (this.tool === 'cobble' ? 2 : 1) as SurfaceKind; this.draft.start(x, y); },
@@ -152,6 +166,8 @@ export class App implements PanelNav {
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
     this.loop.speed = 1;
     this.view.setMenuMode(true);
+    music.setMood('menu');
+    armAudioUnlock();
     try {
       const saves = await listSaves();
       const s = saves.find((x) => x.slot === SAVE_SLOT);
@@ -210,6 +226,7 @@ export class App implements PanelNav {
     document.body.classList.remove('mode-menu', 'is-clear');
     document.body.classList.add('mode-game');
     this.view.setMenuMode(false);
+    music.setMood(isRaining(w.state) ? 'rain' : 'play');
     this.setWorld(w);
     this.loop.speed = 1;
     this.overlay = false;
@@ -240,6 +257,7 @@ export class App implements PanelNav {
     this.layers.hud.append(this.hud.root);
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
+    this.hud.setCompact(!!this.layout?.mini);
     this.hud.update(this.world);
     requestAnimationFrame(() => this.measureRail());
   }
@@ -264,6 +282,7 @@ export class App implements PanelNav {
   private frame(now: number): void {
     const dt = Math.min(250, now - this.lastFrame);
     this.lastFrame = now;
+    if (document.visibilityState === 'visible' && this.dynres.sample(dt, now)) this.applyRenderSize();
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {
@@ -280,7 +299,9 @@ export class App implements PanelNav {
       const s = this.view.stats();
       const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
       this.perfEl.textContent = `fps ${s.fps.toFixed(0)}  draw ${s.drawCalls}  tri ${(s.triangles / 1000).toFixed(0)}k\n` +
-        `${t('why.wagons', { n: this.world.state.wagons.length })}  tick ${this.world.state.tick}` + (mem ? `  heap ${(mem.usedJSHeapSize / 1048576).toFixed(0)} MB` : '');
+        `${t('why.wagons', { n: this.world.state.wagons.length })}  tick ${this.world.state.tick}` + (mem ? `  heap ${(mem.usedJSHeapSize / 1048576).toFixed(0)} MB` : '') +
+        `\n${this.effectiveQuality()}  dpr ${this.renderDpr().toFixed(2)}/${(window.devicePixelRatio || 1).toFixed(2)}  scale ${this.dynres.scale}` +
+        `  ${this.layout?.cls ?? ''}${this.layout?.flex ? ' flex' : ''}`;
     }
     requestAnimationFrame((t) => this.frame(t));
   }
@@ -295,6 +316,7 @@ export class App implements PanelNav {
       });
     }
     this.prevAudio = captureAudioState(this.world.state);
+    if (this.mode === 'game' && this.world.state.mission.result === 'running') music.setMood(isRaining(this.world.state) ? 'rain' : 'play');
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
   }
 
@@ -306,6 +328,7 @@ export class App implements PanelNav {
 
   private showEnd(): void {
     this.endShown = true;
+    music.setMood(this.world.state.mission.result === 'won' ? 'won' : 'lost');
     this.loop.speed = 0;
     this.hud?.setSpeed(0);
     this.sheets.closeAll();
@@ -444,8 +467,16 @@ export class App implements PanelNav {
 
   private openSettings(): void {
     this.sheets.open(settingsSheet({
-      quality: () => this.prefs.quality,
-      setQuality: (q: Quality) => { this.prefs.quality = q; savePrefs(this.prefs); this.view.setQuality(q); this.applyLayout(); },
+      quality: () => this.qualityParam ?? this.prefs.quality,
+      autoQuality: () => detectTier().tier,
+      setQuality: (q: QualityPref) => {
+        this.prefs.quality = q;
+        this.qualityParam = null;
+        savePrefs(this.prefs);
+        this.view.setQuality(renderQuality(this.view, this.effectiveQuality()));
+        this.dynres.reset();
+        this.applyRenderSize();
+      },
       leftHanded: () => this.prefs.leftHanded,
       setLeftHanded: (v) => {
         this.prefs.leftHanded = v;
@@ -473,14 +504,81 @@ export class App implements PanelNav {
 
   // ------------------------------------------------------------------ layout
 
+  private effectiveQuality(): QualityChoice {
+    const q = this.qualityParam ?? this.prefs.quality;
+    return q === 'auto' ? detectTier().tier : q;
+  }
+
+  /** Drawing-buffer pixel ratio: device DPR, capped per quality, times the adaptive scale.
+   *  Never below 0.75 (blur) and never above the device DPR. The DOM UI is unaffected. */
+  private renderDpr(): number {
+    const dev = window.devicePixelRatio || 1;
+    const base = Math.min(dev, dprCap(this.effectiveQuality()));
+    return Math.max(Math.min(0.75, base), base * this.dynres.scale);
+  }
+
+  private applyRenderSize(): void {
+    const l = this.layout ?? computeLayout();
+    this.view.resize(l.w, l.sceneH, this.renderDpr());
+  }
+
+  /** Coalesce bursts of resize / visualViewport / ResizeObserver / posture / fold events into one layout per frame. */
+  private scheduleLayout = (): void => {
+    if (this.layoutQueued) return;
+    this.layoutQueued = true;
+    requestAnimationFrame(() => {
+      this.layoutQueued = false;
+      this.applyLayout();
+    });
+  };
+
+  private watchLayout(): void {
+    window.addEventListener('resize', this.scheduleLayout);
+    window.addEventListener('orientationchange', this.scheduleLayout);
+    window.visualViewport?.addEventListener('resize', this.scheduleLayout);
+    try { new ResizeObserver(this.scheduleLayout).observe(document.getElementById('app') ?? document.body); } catch { /* old WebView */ }
+    devicePosture()?.addEventListener('change', this.scheduleLayout);
+    // native fallback from MainActivity (androidx.window FoldingFeature)
+    window.addEventListener('marchia:fold', this.scheduleLayout);
+    this.watchDpr();
+  }
+
+  /** DPR differs between the cover and the inner screen: a resolution query fires once per change. */
+  private watchDpr(): void {
+    try {
+      this.dprQuery?.removeEventListener('change', this.onDprChange);
+      this.dprQuery = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+      this.dprQuery.addEventListener('change', this.onDprChange);
+    } catch { /* matchMedia unsupported */ }
+  }
+
+  private onDprChange = (): void => {
+    this.watchDpr();
+    this.scheduleLayout();
+  };
+
   private applyLayout(): void {
-    const w = window.innerWidth, hgt = window.innerHeight;
-    const land = w > hgt && hgt < 700;
-    document.body.classList.toggle('is-landscape', land);
-    document.body.classList.toggle('is-side', land || w >= 840);
-    const dpr = Math.min(window.devicePixelRatio || 1, this.prefs.quality === 'low' ? 1 : 2);
-    this.view.resize(w, hgt, dpr);
-    requestAnimationFrame(() => this.measureRail());
+    const prev = this.layout;
+    const l = computeLayout();
+    const abrupt = isAbrupt(prev, l);
+    if (abrupt) {
+      // fold/unfold or rotation: snap, do not animate panels across the new screen,
+      // and never let a half-drawn road or a pinch continue on a different geometry
+      document.body.classList.add('is-relayout');
+      this.input.cancel();
+      this.draft.cancel();
+      this.sheets.relayout();
+      this.dynres.reset();
+      requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('is-relayout')));
+    }
+    this.layout = l;
+    applyLayoutClasses(l);
+    if (l.mini && this.tool !== 'none') this.setTool('none');
+    this.hud?.setCompact(l.mini);
+    if (prev && prev.dpr !== l.dpr) this.watchDpr();
+    // The camera orbits a target at the canvas centre, so the subject stays centred through any resize.
+    this.view.resize(l.w, l.sceneH, this.renderDpr());
+    requestAnimationFrame(() => { this.measureRail(); this.hud?.relayout(); });
   }
 
   private measureRail(): void {
@@ -489,7 +587,15 @@ export class App implements PanelNav {
     const r = rail.getBoundingClientRect();
     const st = getComputedStyle(document.documentElement);
     const safeB = parseFloat(st.getPropertyValue('--safe-b')) || 0;
-    if (!document.body.classList.contains('is-landscape')) document.documentElement.style.setProperty('--rail-h', `${Math.max(0, r.height - safeB)}px`);
+    const b = document.body.classList;
+    const root = document.documentElement.style;
+    if (b.contains('is-mini')) {
+      root.setProperty('--rail-h', '0px');
+      root.setProperty('--rail-top', `${r.height}px`);
+    } else {
+      root.setProperty('--rail-top', '0px');
+      if (!b.contains('is-landscape')) root.setProperty('--rail-h', `${Math.max(0, r.height - safeB)}px`);
+    }
   }
 
   // ------------------------------------------------------------------ debug (screenshots, bots)

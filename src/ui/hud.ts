@@ -66,6 +66,8 @@ export class Hud {
   private lastSig = '';
   private wasRaining = false;
   private collapsed: boolean;
+  /** Watch mode on tiny screens (Flip cover): seal only, no building tools. */
+  private compact = false;
 
   constructor(private act: HudActions, collapsed: boolean) {
     this.collapsed = collapsed;
@@ -75,7 +77,10 @@ export class Hud {
     this.sealOnly = h('button.seal-only', { 'aria-label': t('hud.expand') });
     this.waybillWrap = h('div.waybill-wrap', null, this.waybillBody, this.sealOnly);
     this.waybillWrap.classList.toggle('is-collapsed', collapsed);
-    this.sealOnly.addEventListener('click', () => this.setCollapsed(false));
+    this.sealOnly.addEventListener('click', () => {
+      if (this.compact) this.act.openCastle();
+      else this.setCollapsed(false);
+    });
     this.waybillBody.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest('[data-wb]');
       if (!el) return;
@@ -120,7 +125,8 @@ export class Hud {
     }
     tools.append(menuBtn('tool.menu-slot'));
     this.caption = h('div.tool-caption');
-    const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, line, tools);
+    const hint = h('div.rail-hint', null, t('hud.openPhone'));
+    const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, line, tools, hint);
 
     this.toasts = h('div.toasts', { 'aria-live': 'polite' });
     this.root = h('div', null, this.waybillWrap, rail, this.toasts, this.caption);
@@ -133,9 +139,23 @@ export class Hud {
 
   private setCollapsed(c: boolean): void {
     this.collapsed = c;
-    this.waybillWrap.classList.toggle('is-collapsed', c);
+    this.waybillWrap.classList.toggle('is-collapsed', c || this.compact);
     this.act.waybillCollapsed(c);
     this.lastSig = '';
+  }
+
+  /** Tiny screen (Flip cover): show only the seal, keep the player's own collapse preference. */
+  setCompact(c: boolean): void {
+    if (this.compact === c) return;
+    this.compact = c;
+    this.waybillWrap.classList.toggle('is-collapsed', this.collapsed || c);
+    this.lastSig = '';
+  }
+
+  /** Re-place the floating active-tool caption after a layout change. */
+  relayout(): void {
+    const active = [...this.toolBtns.values()].find((b) => b.classList.contains('is-on') && b.dataset.tool !== 'overlay');
+    if (active) requestAnimationFrame(() => this.placeCaption(active));
   }
 
   setTool(tool: Tool, overlay: boolean): void {
@@ -193,13 +213,14 @@ export class Hud {
     const have = goods.map((g) => Math.min(castle ? castle.stock[g] : 0, c.need[g]));
     const left = Math.max(0, c.deadlineTick - st.tick);
     const leftSec = Math.floor(left / TICK_HZ);
-    const sig = `${have.join(',')}|${leftSec}|${this.collapsed}`;
+    const folded = this.collapsed || this.compact;
+    const sig = `${have.join(',')}|${leftSec}|${folded}`;
     if (sig === this.lastSig) return;
     this.lastSig = sig;
     const total = goods.reduce((a, g) => a + c.need[g], 0);
     const frac = have.reduce((a, v) => a + v, 0) / Math.max(1, total);
     const late = left < 120 * TICK_HZ;
-    if (this.collapsed) {
+    if (folded) {
       setHtml(this.sealOnly, `${sealStack(frac, 52)}<span class="seal-time num">${ticksClock(left)}</span>`);
       return;
     }

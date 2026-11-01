@@ -1,12 +1,12 @@
 // Main menu strip over the live scene, the settings sheet, the in-game menu sheet and the
 // end-of-mission sealed letter.
 import { getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
-import type { Quality } from '../render/api';
 import { GOODS, MISSIONS, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
 import { goodName, ticksClock } from './format';
 import { iconSvg } from './icons';
 import type { Sheet, SheetContent } from './sheets';
+import type { QualityChoice, QualityPref } from './tier';
 
 export interface MenuActions {
   continueGame(): void;
@@ -45,8 +45,10 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null): HTMLElem
 }
 
 export interface SettingsActions {
-  quality(): Quality;
-  setQuality(q: Quality): void;
+  quality(): QualityPref;
+  setQuality(q: QualityPref): void;
+  /** What 'auto' resolved to on this device. */
+  autoQuality(): QualityChoice;
   leftHanded(): boolean;
   setLeftHanded(v: boolean): void;
 }
@@ -65,8 +67,8 @@ export function settingsSheet(act: SettingsActions): SheetContent {
         <div class="setting"><span class="s-label">${esc(t('menu.language'))}</span>
           ${seg('lang', [['pl', t('lang.pl')], ['en', t('lang.en')]], getLang())}</div>
         <div class="setting"><span class="s-label">${esc(t('menu.quality'))}</span>
-          ${seg('quality', [['high', t('quality.high')], ['low', t('quality.low')]], act.quality())}
-          <div class="s-hint">${esc(t('menu.qualityHint'))}</div></div>
+          ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality())}
+          <div class="s-hint">${esc(act.quality() === 'auto' ? t('menu.qualityDetected', { q: t(`quality.${act.autoQuality()}` as MessageKey) }) : t('menu.qualityHint'))}</div></div>
         <div class="setting"><span class="s-label">${esc(t('menu.leftHanded'))}</span>
           ${seg('left', [['0', t('menu.off')], ['1', t('menu.on')]], act.leftHanded() ? '1' : '0')}</div>
         <div class="setting"><div class="s-hint">${esc(t('hud.clearHint'))}</div></div>`;
@@ -74,7 +76,7 @@ export function settingsSheet(act: SettingsActions): SheetContent {
         sheet.body.querySelectorAll<HTMLElement>('[data-set]').forEach((b) => b.addEventListener('click', () => {
           const [k, v] = (b.dataset.set ?? '').split(':');
           if (k === 'lang') setLang(v as Lang);
-          if (k === 'quality') act.setQuality(v as Quality);
+          if (k === 'quality') act.setQuality(v as QualityPref);
           if (k === 'left') act.setLeftHanded(v === '1');
           (sheet.body as HTMLElement & { __html?: string }).__html = undefined;
           this.update(sheet);

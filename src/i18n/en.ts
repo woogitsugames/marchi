@@ -128,6 +128,10 @@ export const en: Dict = {
   'menu.off': 'No',
   'quality.high': 'High',
   'quality.low': 'Low',
+  'quality.auto': 'Auto',
+  'quality.ultra': 'Ultra',
+  'menu.qualityDetected': 'Auto picked: {q}. Scene resolution adjusts itself when the game slows down.',
+  'hud.openPhone': 'Unfold the phone to build roads',
   'lang.pl': 'Polski',
   'lang.en': 'English',
 
