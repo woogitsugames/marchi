@@ -1,0 +1,33 @@
+name: Mission IV proposal
+
+on:
+  pull_request:
+    paths:
+      - 'src/sim/proposals/ice.ts'
+      - 'src/sim/proposals/m4.ts'
+      - 'tests/m4-ice.test.ts'
+      - 'tools/bot-m4.ts'
+      - 'docs/missions/m4.md'
+      - '.github/workflows/mission-m4-proposal.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-m4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Unit tests for the ice proposal
+        run: npx tsx tests/run.ts m4-ice
+      - name: Mission IV traversability WITHOUT integrated ice
+        run: npx tsx tools/bot-m4.ts
+      - name: Mission IV stone upgrade WITHOUT integrated ice
+        run: npx tsx tools/bot-m4.ts --stone
