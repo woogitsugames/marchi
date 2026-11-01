@@ -23,6 +23,21 @@ npm run shots          # Playwright screenshots at 412x915, 915x412, 904x1000 ->
 npx cap sync           # copy dist/ into android/ and ios/
 ```
 
+### Android APK (debug)
+
+```bash
+npm run setup:android     # once per fresh container: Android SDK -> /opt/android-sdk
+                          # (cmdline-tools, platform-tools, platforms;android-36, build-tools;36.1.0)
+npm run apk               # web build + cap sync + gradlew assembleDebug
+npm run apk -- --skip-web # package the existing dist/ as-is
+```
+
+Output: `dist-apk/marchia-debug-<git short sha>.apk` (gitignored). Needs JDK 21 on PATH;
+`ANDROID_HOME` defaults to `/opt/android-sdk`. Capacitor 8.6, compile/target SDK 36, AGP 8.13,
+Gradle 8.14.3 wrapper (see D-12). First Gradle run downloads dependencies; Maven Central may
+answer 429 — the script retries. Build outputs under `android/` and `ios/` are gitignored by
+the platform `.gitignore` files; commit the rest of `android/` and `ios/`.
+
 ## Architecture (hard rules)
 
 - `src/sim/` — **pure TypeScript simulation**. No `three`, no DOM, no `Math.random`, no

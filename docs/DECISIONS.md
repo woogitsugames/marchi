@@ -42,3 +42,12 @@ latin-ext (Polish diacritics). *IM Fell English was considered but lacks latin-e
 
 **D-11 — i18n as typed TS dictionaries** (`pl.ts` is the source of keys, `en.ts` must satisfy
 the same type). *Missing translations become compile errors, no runtime JSON loading.* (decided)
+
+**D-12 — Capacitor 8.6 with Android compileSdk/targetSdk 36.** Upgraded `@capacitor/*` from 7.6
+to 8.6.0 (latest stable): its Android template already targets SDK 36 (AGP 8.13.0, Gradle
+8.14.3 wrapper, minSdk 24), so no hand-edited `variables.gradle` is needed. iOS uses the
+Capacitor 8 SwiftPM template (no CocoaPods). Debug APKs are built in the Linux container with
+`npm run apk` against an SDK in `/opt/android-sdk` (platform android-36, build-tools 36.1.0,
+JDK 21), installed by `npm run setup:android`. Manifest: no orientation lock,
+`resizeableActivity="true"` for foldables / multi-window. *Owner asked for SDK 36; Capacitor 7
+targets 35, and staying on 7 would mean patching a template that 8 already ships.* (decided)
