@@ -10,6 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
+- [ ] P2 — UI dla szukacza przerwy: w „Dlaczego stoi?” przy NO_ROAD / NO_WAGON(NONE_CAN_REACH) / NO_ROUTE pokazać `suggestLinkToStable` (podgląd drogi na mapie przez setRoadPreview + „Zbuduj: N srebra” jednym dotknięciem) — po zakończeniu pracy agenta Fold w src/ui.
 - [ ] P1 — (D-17) 4K jako pakiet do pobrania: w APK tylko 2K (+low); pobieranie 4K po wyborze Ultra (Play Asset Delivery lub własne pobieranie do pamięci aplikacji), pasek postępu, weryfikacja SHA-256, możliwość usunięcia.
 - [ ] P2 — (D-17 kolejność) Samouczek misji I (docs/tutorial/m1.md) + gotowość do playtestu (docs/playtest).
 - [ ] P4 — (D-17 kolejność) Misje IV–VI (po samouczku) → budowanie w wolnej dolinie.
@@ -102,6 +103,7 @@ Wnioski z rozbioru gatunku (Mini Metro/Motorways: ciągły wzrost popytu zmusza 
 - [ ] P3 — Wydanie AAB: archiwum z SHA256, `mapping.txt` R8, versionCode i commit; odmowa plików z sekretami; ciężkie zrzuty tylko nocą/na PR (źródło: osadale, tools/create_release_rollback.py, tools/release_provenance.py, .github/workflows/ci.yml)
 
 ## Zrobione
+- 2026-11-01 — Szukacz przerwy w sim: `suggestConnection` / `suggestLinkToStable` (najtańsza droga/most w srebrze, zgodna z validateRoad; test na m1).
 - 2026-11-01 — (research P2) Fałszywe alarmy na starcie: nowy status `WAITING_UPSTREAM` (dostawca pracuje lub sam czeka na dostawę) bez dymka; NO_INPUT wskazuje najpierw zablokowanego producenta, nie najniższe id.
 - 2026-11-01 — Przegląd symulacji (PR #8): naprawione F-01 (zakleszczenie na moście ukośnym), F-02, F-03, F-04.
 - 2026-11-01 — (research P1) Soft-lock m1: dodana komenda `sellWagon` (zwrot 15 srebra) — wyjście z braku srebra; przycisk w karcie wozu (agent Fold). Wczesne wykrycie „brak drogi do zwycięstwa” nadal otwarte.

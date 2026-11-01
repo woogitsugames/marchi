@@ -8,3 +8,4 @@ export { isRaining, edgeLength, findPath, pathTime, net, hasEdge, grade, type Wo
 export { buildingById, gateConnected } from './logistics';
 export { explainBuilding, explainWagon, wagonEta, wagonSlowdown, timeOfDay, type ReasonLink, type Slowdown } from './diagnose';
 export { hashState } from './hash';
+export { suggestConnection, suggestLinkToStable, type RoadSuggestion } from './repair';
