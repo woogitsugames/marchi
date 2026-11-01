@@ -213,6 +213,7 @@ is royalty-free under its own conditions, **not CC0**, and has not been bundled.
 A pair of 24-kHz OGG Vorbis + M4A/AAC-LC files is shipped for each ID.
 The existing paths and all identifiers in src/audio/sounds.ts stay unchanged.
 Stereo for ambience; mono for SFX/UI. The combined 46 files must be **under 4 MiB**.
+**Shipped, measured total (after CC0 render): 1,400,728 bytes (1.34 MiB, 46 files)**.
 The full manifest (including licensing and exact URLs) is tools/audio_sources.json.
 The renderer is tools/process_audio.py; source hashes and actual output byte count
 are written at render time to docs/audio-provenance.json.
@@ -227,26 +228,28 @@ are written at render time to docs/audio-provenance.json.
 | public/assets/audio/ambient/evening.* | [park_ambience_wind.wav](https://opengameart.org/sites/default/files/park_ambience_wind.wav) from [Park ambiences](https://opengameart.org/content/park-ambiences) | Thimras | CC0 1.0 | Genuine winter wind; 30 s / 1.5 s crossfade, stereo, −24 LUFS. No owl included without a verified suitable recording. |
 | public/assets/audio/sfx/bridge-wood.* | [steps in wood floor.wav](https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav) from [Steps in wood floor](https://opengameart.org/content/steps-in-wood-floor) | mikeask | CC0 1.0 | 1.3-s extracted mono recording of footfalls on wooden planks, fade-in/out, high/low-pass, −6 dBFS peak. Provisional bridge-thump proxy, not a recording of wheels on bridge. |
 
-**Important:** the source catalogue above is not proof that an OGG/M4A binary has
-already been replaced. Confirm docs/audio-provenance.json exists, the generated
-files are in the Git commit, and the processing CI job passed before describing
-the installed audio as field recordings.
+**Verification:** five recording-based tracks (10 output binaries) are committed on
+\`gpt/07-realistic-recordings\`. The GitHub Actions audio workflow and npm tests
+passed; SHA-256 hashes of the six source recordings are in \`docs/audio-provenance.json\`.
+Historical suitability still requires a listening review before merge.
 
 ### Effects deliberately retained from task 02 (synthetic)
 
 The following files remain the **original procedural CC0 sound design by the MARCHIA
 project author**, rendered by tools/generate_audio.py. They are not documentary
-field recordings. No suitably authenticated and period-appropriate CC0 source
-was established for the following six task-07 target sounds:
+field recordings. Some CC0 candidates were found on Freesound, but raw master
+files were not anonymously retrievable for processing and listening verification.
+No suitable, inspected, period-appropriate recording was actually imported for
+the following six task-07 sounds:
 
 | Original (both .ogg and .m4a) | Why not replaced |
 |---|---|
 | sfx/cart-dirt | No verified recording of wooden wagon wheels over earth, suitable for looping |
 | sfx/cart-cobble | No verified recording of wooden wagon wheels on cobbles |
-| sfx/horse-snort | Horse-like foley and synthetic imitations rejected as not genuine snorting |
-| sfx/axe | No adequately verified actual wood-chopping field sample |
-| sfx/saw | Available samples imitate a saw by rubbing wood; not an actual human-powered frame saw |
-| sfx/mill-wheel | No verified mechanical waterwheel recording suitable for a loop |
+| sfx/horse-snort | [o_ciz horse snort](https://freesound.org/people/o_ciz/sounds/475483/) is a CC0 candidate, but master not acquired/listened to |
+| sfx/axe | [ldezem chopping wood](https://freesound.org/people/ldezem/sounds/386223/) is a CC0 candidate, but master not acquired/listened to |
+| sfx/saw | [Kate_is_yellow manual sawing](https://freesound.org/people/Kate_is_yellow/sounds/708202/) is a CC0 candidate, but not verified as a period-appropriate frame saw; master not acquired |
+| sfx/mill-wheel | [SamuelGremaud real waterwheel](https://freesound.org/people/SamuelGremaud/sounds/544840/) is a CC0 candidate, but master not acquired/listened to |
 
 The other 12 untouched original synthetic IDs (all variants as OGG + M4A) are:
 sfx/load-sack, sfx/unload-sack, sfx/load-plank, sfx/unload-plank,
