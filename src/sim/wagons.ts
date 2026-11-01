@@ -49,7 +49,8 @@ function stepWagon(world: World, w: Wagon): void {
       const n2 = w.path[0]!;
       const blocker = bridgeBlocker(world, w, n2);
       if (blocker) {
-        w.status = { k: 'BRIDGE_JAM', span: blocker.span, blocker: blocker.wagon };
+        const since = w.status.k === 'BRIDGE_JAM' && w.status.span === blocker.span ? w.status.since : st.tick;
+        w.status = { k: 'BRIDGE_JAM', span: blocker.span, blocker: blocker.wagon, since };
         return;
       }
       w.path.shift();
@@ -115,24 +116,46 @@ function arriveNode(world: World, w: Wagon): void {
   if (w.bridgeFrom >= 0 && c.span[w.at] === -1) w.bridgeFrom = -1;
 }
 
-/** If entering `to` puts the wagon on a one-lane bridge against traffic, return who blocks it. */
+/** A same-direction convoy is cut off once someone at the other bridgehead has waited this long. */
+const BRIDGE_YIELD_TICKS = 30 * 10;
+
+/**
+ * If entering `to` puts the wagon on a one-lane bridge against traffic, return who blocks it.
+ * Rules: one direction at a time, at most WOOD_BRIDGE_MAX_WAGONS on the span; a wagon that has
+ * waited at the opposite bridgehead for BRIDGE_YIELD_TICKS stops new entries from this side; when the
+ * span is empty the side with the longest-waiting wagon goes first (ties by wagon id).
+ */
 function bridgeBlocker(world: World, w: Wagon, to: number): { span: number; wagon: number } | null {
   const c = net(world);
   const span = c.span[to]!;
   if (span < 0 || c.span[w.at] === span) return null;
-  let count = 0;
-  let opposing = -1;
-  for (const o of world.state.wagons) {
+  const st = world.state;
+  let count = 0, opposing = -1, anyOn = -1;
+  // longest waiter at the other side of this span
+  let rival: Wagon | null = null;
+  for (const o of st.wagons) {
     if (o === w) continue;
     const onSpan = c.span[o.at] === span || (o.next >= 0 && c.span[o.next] === span);
-    if (!onSpan || o.bridgeFrom < 0) continue;
-    count++;
-    if (o.bridgeFrom !== w.at && opposing === -1) opposing = o.id;
+    if (onSpan && o.bridgeFrom >= 0) {
+      count++;
+      if (anyOn === -1) anyOn = o.id;
+      if (o.bridgeFrom !== w.at && opposing === -1) opposing = o.id;
+    } else if (o.status.k === 'BRIDGE_JAM' && o.status.span === span && o.at !== w.at && o.next < 0) {
+      if (!rival || (rival.status as { since: number }).since > o.status.since ||
+        ((rival.status as { since: number }).since === o.status.since && rival.id > o.id)) rival = o;
+    }
   }
   if (opposing >= 0) return { span, wagon: opposing };
-  if (count >= WOOD_BRIDGE_MAX_WAGONS) {
-    for (const o of world.state.wagons) {
-      if (o !== w && (c.span[o.at] === span || (o.next >= 0 && c.span[o.next] === span))) return { span, wagon: o.id };
+  if (count >= WOOD_BRIDGE_MAX_WAGONS) return { span, wagon: anyOn };
+  if (rival) {
+    const rs = (rival.status as { since: number }).since;
+    const mine = w.status.k === 'BRIDGE_JAM' && w.status.span === span ? w.status.since : st.tick;
+    if (count === 0) {
+      // empty bridge: longest waiter goes first
+      if (rs < mine || (rs === mine && rival.id < w.id)) return { span, wagon: rival.id };
+    } else if (st.tick - rs >= BRIDGE_YIELD_TICKS) {
+      // same-direction convoy must yield to someone who has waited long enough
+      return { span, wagon: rival.id };
     }
   }
   return null;

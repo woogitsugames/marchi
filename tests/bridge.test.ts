@@ -1,5 +1,5 @@
 import {
-  applyCommand, buildingById, checkInvariants, createWorld, explainBuilding, net, step, unexplainedStalls, type World,
+  applyCommand, checkInvariants, createWorld, explainBuilding, net, step, unexplainedStalls, type World,
 } from '../src/sim/index';
 import { bridgeA, bridgeB, stableId } from '../tools/bot';
 import { assert, eq, test } from './harness';

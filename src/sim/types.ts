@@ -47,7 +47,7 @@ export type WagonStatus =
   | { k: 'UNLOADING' }
   | { k: 'RETURNING' }
   /** Waiting at a bridgehead for opposing traffic to clear the one-lane bridge. */
-  | { k: 'BRIDGE_JAM'; span: number; blocker: number }
+  | { k: 'BRIDGE_JAM'; span: number; blocker: number; since: number }
   /** The road to the target is broken. target: building id or -1 for home. */
   | { k: 'NO_ROUTE'; target: number; since: number };
 
