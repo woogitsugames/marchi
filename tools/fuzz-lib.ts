@@ -129,9 +129,19 @@ export function genCommand(w: World, rng: RngState): Command {
 }
 
 /** Generate a scenario by running the sim and drawing commands from the live state. */
-export function generateScenario(fuzzSeed: number, opts: { ticks: number; minCmds?: number; maxCmds?: number }): Scenario {
+/** Missions the short fuzz in `npm test` uses (kept stable so its seeds keep their scenarios). */
+export const DEFAULT_FUZZ_MISSIONS = ['m1', 'sandbox'];
+/** Every playable map: the long mode (`tools/fuzz.ts`) fuzzes all of them by default. */
+export const ALL_FUZZ_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'sandbox'];
+
+export function generateScenario(
+  fuzzSeed: number,
+  opts: { ticks: number; minCmds?: number; maxCmds?: number; missions?: readonly string[] },
+): Scenario {
   const rng = seedRng(fuzzSeed ^ 0x5eed);
-  const mission = nextFloat(rng) < 0.5 ? 'm1' : 'sandbox';
+  const pool = opts.missions ?? DEFAULT_FUZZ_MISSIONS;
+  // one draw, same as before: with the default pool f < 0.5 picks m1, otherwise sandbox
+  const mission = pool[Math.min(pool.length - 1, Math.floor(nextFloat(rng) * pool.length))]!;
   const coins = nextFloat(rng) < 0.6 ? 4000 : null;
   const n = nextInt(rng, opts.minCmds ?? 8, opts.maxCmds ?? 40);
   const ticks: number[] = [];
