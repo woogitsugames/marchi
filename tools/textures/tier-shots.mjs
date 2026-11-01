@@ -31,7 +31,9 @@ const MODEL = [['wood', 'wood_planks'], ['thatch', 'thatch'], ['stone', 'fieldst
 const browser = await chromium.launch({
   args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
 });
-const W = 904, H = 1000, DPR = 2; // Fold inner-screen-like CSS size; renderer caps DPR at 2
+// Fold-inner-like CSS size. DPR 1: SwiftShader needs minutes per frame at DPR 2 with 4K arrays;
+// the crops are shown at 2× (nearest neighbour) instead.
+const W = 904, H = 1000, DPR = 1, ZOOM = 2;
 const report = [];
 for (const [scene, { q, crop }] of Object.entries(SCENES)) {
   if (only && !only.split(',').includes(scene)) continue;
@@ -82,9 +84,10 @@ for (const [scene, { q, crop }] of Object.entries(SCENES)) {
   const pw = Math.round(W * DPR * cw), ph = Math.round(H * DPR * ch);
   const cells = shots.map(([label, f]) => {
     const b64 = fs.readFileSync(f).toString('base64');
-    return `<figure><div style="width:${pw}px;height:${ph}px;background:url(data:image/png;base64,${b64}) -${Math.round(W * DPR * cx)}px -${Math.round(H * DPR * cy)}px"></div><figcaption>${label}</figcaption></figure>`;
+    const bg = `url(data:image/png;base64,${b64}) -${Math.round(W * DPR * cx) * ZOOM}px -${Math.round(H * DPR * cy) * ZOOM}px / ${W * DPR * ZOOM}px ${H * DPR * ZOOM}px`;
+    return `<figure><div style="width:${pw * ZOOM}px;height:${ph * ZOOM}px;background:${bg};image-rendering:pixelated"></div><figcaption>${label}</figcaption></figure>`;
   }).join('');
-  const page = await browser.newPage({ viewport: { width: 3 * pw + 80, height: ph + 80 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: 3 * pw * ZOOM + 80, height: ph * ZOOM + 80 }, deviceScaleFactor: 1 });
   await page.setContent(`<style>body{margin:0;padding:16px;background:#2b2620;color:#c9c6bb;font:16px Georgia,serif;display:flex;gap:16px}figure{margin:0}figcaption{margin-top:6px}</style>${cells}`);
   await page.screenshot({ path: path.join(OUT, `tex-tier-${scene}.png`), fullPage: true });
   await page.close();
