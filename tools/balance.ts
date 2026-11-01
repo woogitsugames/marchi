@@ -11,6 +11,11 @@ const buy = (w: World, n: number): Command[] => Array.from({ length: n }, () => 
 const granaryLink = (w: World): Command => ({ t: 'road', surface: 1, cells: col(w, 37, 38, 39) });
 
 export const plans: Record<string, Strat[]> = {
+  m1: [
+    { name: 'nothing (no crossing)', at: 0, cmds: () => [] },
+    { name: 'wooden bridge x=41 @0:10', at: 10, cmds: (w) => [{ t: 'road', surface: 1, cells: col(w, 41, 24, 44) }] },
+    { name: 'bridge + 2 wagons @0:10', at: 10, cmds: (w) => [{ t: 'road', surface: 1, cells: col(w, 41, 24, 44) }, ...buy(w, 2)] },
+  ],
   m2: [
     { name: 'nothing', at: 0, cmds: () => [] },
     { name: 'buy 2 wagons', at: 0, cmds: (w) => buy(w, 2) },

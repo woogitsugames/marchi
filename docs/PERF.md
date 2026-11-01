@@ -8,10 +8,19 @@ from 15 stocked granaries across the river, two wooden one-lane bridges (deliber
 
 | wagons | avg ms/tick | p99 ms | max ms | ms/frame at ×4 (60 fps) | moving | heap Δ MB | save KB | invariant errors |
 |---|---|---|---|---|---|---|---|---|
-| 50 | 0.330 | 4.62 | 51.77* | 0.22 | 40 | 0.8 | 63 | 0 |
-| 100 | 0.133 | 1.65 | 6.93 | 0.09 | 48 | -0.4 | 85 | 0 |
-| 200 | 0.122 | 1.20 | 5.97 | 0.08 | 74 | 3.4 | 114 | 0 |
+| 50 | 0.250 | 2.05–2.35 | 5.53 | 0.17 | 45 | ±1 | 62 | 0 |
+| 100 | 0.120 | 1.18–1.38 | 4.32 | 0.08 | 95 | ±3 | 85 | 0 |
+| 200 | 0.085 | 0.87–0.88 | 3.16 | 0.06 | 109 | ±2 | 108 | 0 |
 
+Measured 2026-11-01 on `claude/s2-integration` (missions IV–VI, STATE_VERSION 3, save gate, replay),
+three runs, ranges shown where they differ. Previous table (before D-13 queue-aware routing landed in
+the measurement): 50 → p99 4.62, 100 → 1.65, 200 → 1.20 ms.
+
+**Dispatch spreading (brief 03, task B): not needed.** The trigger was p99 > 1.5 ms at 200 wagons; it is
+0.87 ms. With many wagons most are busy, so each dispatch matches few demands. The worst p99 is now at
+**50 wagons (≈ 2.2 ms)**: many free wagons mean more Dijkstra runs per dispatch tick. If the device
+benchmark confirms that case is a problem on phones (×3–5 → ~7–11 ms on a dispatch tick), spread
+demands over the 5 ticks of a dispatch interval, or cache DistMaps per network version between dispatches.
 \* first run in the process includes JIT warm-up.
 
 Notes:
