@@ -1,0 +1,68 @@
+name: Icon v2 asset staging
+on:
+  push:
+    branches: [gpt/06-app-icon-v2-20261101]
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing project dependencies
+        run: npm ci
+      - name: Unpack source changes from verified branch-local payload
+        shell: bash
+        run: |
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const zlib = require('node:zlib');
+          const b64 = fs.readFileSync('tools/icon-v2-payload.br64', 'utf8').trim();
+          const json = zlib.brotliDecompressSync(Buffer.from(b64, 'base64')).toString('utf8');
+          const files = JSON.parse(json);
+          const allowed = new Set([
+            'art/app-icon.svg',
+            'art/app-icon-horse.svg',
+            'art/app-icon-wheel-seal.svg',
+            'tools/make-icons.mjs',
+            'tools/check-icons.mjs',
+          ]);
+          if (Object.keys(files).length !== allowed.size ||
+              Object.keys(files).some(file => !allowed.has(file))) {
+            throw Error('Staged source payload contains unexpected paths');
+          }
+          for (const [name, source] of Object.entries(files)) {
+            if (typeof source !== 'string' || !source.length) throw Error('Empty source: ' + name);
+            fs.mkdirSync(path.dirname(name), {recursive: true});
+            fs.writeFileSync(name, source, 'utf8');
+            console.log('Unpacked', name, source.length, 'chars');
+          }
+          NODE
+      - name: Regenerate Android and iOS icons, splash and two sheets
+        run: npm run icons
+      - name: Verify icon dimensions, alpha and Android safe zone
+        run: npm run icons:check
+      - name: Commit generated assets on icon v2 branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add art/app-icon.svg art/app-icon-horse.svg art/app-icon-wheel-seal.svg
+          git add art/app-icon-foreground.svg art/app-icon-monochrome.svg
+          git add tools/make-icons.mjs tools/check-icons.mjs
+          git add docs/shots/app-icon.png docs/shots/app-icon-variants.png
+          git add -A android/app/src/main/res ios/App/App/Assets.xcassets
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: app icon v2 wheel + wax seal with generated native assets"
+            git push origin HEAD:gpt/06-app-icon-v2-20261101
+          else
+            echo "Icon v2 assets are up to date"
+          fi
