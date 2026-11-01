@@ -4,6 +4,8 @@
 // Uses the view harness; textures are swapped in the page through the real loaders
 // (loadTerrainTextures / loadPbrSet), view settings stay at 'high' so only textures differ.
 // Ultra reads the 4K pack from <repo>/assets-ultra via setUltraBase('/assets-ultra/').
+// Restart the dev server after editing src/render/textures.ts: HMR gives the view a ?t= copy of
+// the module, and setUltraBase() on the copy imported here would not reach it.
 // SwiftShader software GL: slow, each shot takes a while.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';

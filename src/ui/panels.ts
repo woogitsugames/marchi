@@ -1,13 +1,13 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, wagonEta, wagonSlowdown, WAGON_PRICE,
-  type Building, type Good, type ReasonLink, type World,
+  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, suggestLinkToStable, wagonEta, wagonSlowdown,
+  WAGON_PRICE, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  buildingStatusIcon, buildingStatusText, clock, goodName, isStall, linkIcon, linkSubject, linkText, ticksClock, wagonName,
-  wagonStatusText,
+  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, goodName, isStall, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
@@ -20,6 +20,44 @@ export interface PanelNav {
   sellWagon(wagon: number): void;
   toggleFollow(wagon: number): void;
   following(): number | null;
+  /** Enqueue a dirt road (wooden bridge over water) along these cells. */
+  buildRoad(cells: number[]): void;
+  /** Ghost road on the map for the gap finder (null clears it). */
+  setGhost(cells: number[] | null): void;
+}
+
+// ---------------------------------------------------------------- gap finder
+
+/** Building whose missing link to the stable is the root of this chain, or -1. */
+export function gapTarget(world: World, chain: ReasonLink[]): number {
+  const root = chain[chain.length - 1];
+  if (!root) return -1;
+  if (root.kind === 'building') {
+    const s = root.status;
+    if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
+    return -1;
+  }
+  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0 && buildingById(world, root.status.target)) return root.status.target;
+  return -1;
+}
+
+let gapCache: { key: string; s: RoadSuggestion | null } | null = null;
+/** suggestLinkToStable runs a whole-grid Dijkstra: compute once per road network version. */
+export function gapSuggestion(world: World, target: number): RoadSuggestion | null {
+  const key = `${target}:${world.state.netVersion}:${world.state.buildings.length}`;
+  if (gapCache?.key !== key) gapCache = { key, s: suggestLinkToStable(world, target) };
+  return gapCache.s;
+}
+
+function fixHtml(world: World, target: number, s: RoadSuggestion): string {
+  const short = s.cost - world.state.coins;
+  const label = tHtml(s.bridgeCells > 0 ? 'fix.bridge' : 'fix.road', { n: fmtInt(s.cost) });
+  const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="fix:${target}" aria-disabled="${short > 0}">${
+    iconSvg('road_dirt', 26)}<span>${label}</span></button>`;
+  const hint = short > 0
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
+  return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
 }
 
 /** Delegated clicks: [data-go="building:12"], [data-act="buy:3"]. */
@@ -40,6 +78,10 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
+    if (act === 'fix' && !el.classList.contains('is-disabled')) {
+      const s = gapSuggestion(nav.world, Number(arg));
+      if (s && s.cost <= nav.world.state.coins) nav.buildRoad(s.cells);
+    }
   });
 }
 
@@ -56,19 +98,19 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
     return `<li data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
       <span class="l-icon">${linkIcon(world, l, 32)}</span>
       <span><span class="l-who">${esc(linkSubject(world, l))}${tag}</span><span class="l-why">${esc(linkText(world, l))}</span></span>
-      <span class="l-go">${self ? '' : iconSvg('back', 18)}</span></button></li>`;
+      <span class="l-go fwd">${self ? '' : iconSvg('back', 18)}</span></button></li>`;
   }).join('')}</ol>`;
 }
 
 function chip(g: Good, have: number, cap: number | null, extra: string, empty = false): string {
   return `<div class="good-chip cf${empty ? ' is-empty' : ''}">${iconSvg(g, 28, goodName(g))}
-    <span><b class="num">${have}</b>${cap !== null ? `<span class="cap num">/${cap}</span>` : ''}${extra}</span></div>`;
+    <span><bdi class="num"><b>${fmtInt(have)}</b>${cap !== null ? `<span class="cap">/${fmtInt(cap)}</span>` : ''}</bdi>${extra}</span></div>`;
 }
 
 function stockHtml(world: World, b: Building): string {
   const def = BUILDINGS[b.type];
   const parts: string[] = [];
-  const inc = (g: Good): string => (b.incoming[g] > 0 ? `<span class="inc num">${esc(t('why.inbound', { n: b.incoming[g] }))}</span>` : '');
+  const inc = (g: Good): string => (b.incoming[g] > 0 ? `<span class="inc">${tHtml('why.inbound', { n: fmtInt(b.incoming[g]) })}</span>` : '');
   if (def.recipe) {
     const ins = inputGoods(b.type), outs = outputGoods(b.type);
     if (ins.length) {
@@ -76,13 +118,13 @@ function stockHtml(world: World, b: Building): string {
         chip(g, b.stock[g], def.inCap, inc(g), b.stock[g] === 0 && b.incoming[g] === 0)).join('')}</div>`);
     }
     parts.push(`<div class="section-h">${esc(t('why.makes'))}</div><div class="goods">${outs.map((g) =>
-      chip(g, b.stock[g], def.outCap, b.reservedOut[g] > 0 ? `<span class="inc num">${esc(t('why.reserved', { n: b.reservedOut[g] }))}</span>` : '')).join('')}</div>`);
+      chip(g, b.stock[g], def.outCap, b.reservedOut[g] > 0 ? `<span class="inc">${tHtml('why.reserved', { n: b.reservedOut[g] })}</span>` : '')).join('')}</div>`);
     if (b.progress >= 0) {
       const pct = Math.min(100, (b.progress / def.recipe.ticks) * 100);
       parts.push(`<div class="progress" title="${esc(t('why.cycle'))}"><i style="width:${pct.toFixed(1)}%"></i></div>`);
     }
   } else if (b.type === 'warehouse') {
-    parts.push(`<div class="section-h">${esc(t('why.holds'))} <span class="num">${GOODS.reduce((a, g) => a + b.stock[g], 0)}/${def.storeCap}</span></div>
+    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { n: fmtInt(GOODS.reduce((a, g) => a + b.stock[g], 0)), cap: fmtInt(def.storeCap) })}</span></div>
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
   } else if (b.type === 'castle') {
     const c = world.state.mission.contract;
@@ -94,7 +136,7 @@ function stockHtml(world: World, b: Building): string {
   } else if (b.type === 'stable') {
     const n = world.state.wagons.filter((w) => w.home === b.id).length;
     parts.push(`<div class="section-h">${esc(t('why.wagons', { n }))}</div>
-      <div class="sheet-actions"><button class="btn primary cf" data-act="buy:${b.id}">${iconSvg('buy_wagon', 26)}<span>${esc(t('tool.wagon'))}</span><span class="num">−30</span></button></div>`);
+      <div class="sheet-actions"><button class="btn primary cf" data-act="buy:${b.id}">${iconSvg('buy_wagon', 26)}<span>${esc(t('tool.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button></div>`);
   }
   return parts.join('');
 }
@@ -112,7 +154,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       sheet.kicker.textContent = stalled ? t('why.title') : '';
       sheet.title.textContent = t(`building.${b.type}` as MessageKey);
       const chain = explainBuilding(world, id);
-      const since = b.stalledTicks > 0 ? `<span class="since num">${esc(t('why.stalledFor', { time: ticksClock(b.stalledTicks) }))}</span>` : '';
+      const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;
       if (chain.length > 1) {
         top = `<div class="section-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id)}`;
@@ -120,9 +162,14 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status))}</span>${since}</div>`;
       }
-      setHtml(sheet.body, top + stockHtml(world, b));
+      // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build
+      const target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);
+      const fix = target >= 0 ? gapSuggestion(world, target) : null;
+      nav.setGhost(fix ? fix.cells : null);
+      setHtml(sheet.body, top + (fix ? fixHtml(world, target, fix) : '') + stockHtml(world, b));
       return true;
     },
+    onClose() { nav.setGhost(null); },
   };
 }
 
@@ -140,7 +187,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       const eta = wagonEta(world, id);
       const waiting = w.status.k === 'BRIDGE_JAM' || w.status.k === 'NO_ROUTE';
       const cargo = w.cargoGood && w.cargoQty > 0
-        ? `${iconSvg(w.cargoGood, 26, goodName(w.cargoGood))}<span class="num">× ${w.cargoQty}</span><span>${esc(goodName(w.cargoGood))}</span>`
+        ? `${iconSvg(w.cargoGood, 26, goodName(w.cargoGood))}${bdi(`× ${fmtInt(w.cargoQty)}`)}<span>${esc(goodName(w.cargoGood))}</span>`
         : esc(t('wagon.empty'));
       const job = w.job;
       const destId = eta && eta.destBuilding >= 0 ? eta.destBuilding : job ? (job.phase === 'pickup' ? job.from : job.to) : -1;
@@ -158,30 +205,36 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         const slow = w.next >= 0 ? wagonSlowdown(world, id) : null;
         if (slow && slow.factor < 0.93) {
           const pct = Math.round(slow.factor * 100);
-          const why = slow.mud ? t('wagon.slowMud', { pct }) : slow.grade > 0.02 ? t('wagon.slowUphill', { pct }) : t('wagon.slowOther', { pct });
-          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud ? 'rain' : 'road_dirt', 20)}<span>${esc(why)}</span></dd>`);
+          const why = tHtml(slow.mud ? 'wagon.slowMud' : slow.grade > 0.02 ? 'wagon.slowUphill' : 'wagon.slowOther', { pct: fmtInt(pct) });
+          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud ? 'rain' : 'road_dirt', 20)}<span>${why}</span></dd>`);
         }
         if (job && job.phase === 'pickup') {
           const to = buildingById(world, job.to);
-          if (to) rows.push(`<dt>&nbsp;</dt><dd style="font-weight:500">${iconSvg(job.good, 20)}<span>${esc(goodName(job.good))} →</span><button class="linkish" data-go="building:${to.id}">${esc(t(`building.${to.type}` as MessageKey))}</button></dd>`);
+          if (to) rows.push(`<dt>&nbsp;</dt><dd style="font-weight:500">${iconSvg(job.good, 20)}<span>${esc(goodName(job.good))}</span><span class="fwd" aria-hidden="true">${iconSvg('back', 16)}</span><button class="linkish" data-go="building:${to.id}">${esc(t(`building.${to.type}` as MessageKey))}</button></dd>`);
         }
       }
       const follow = nav.following() === id;
       let html = `<div class="status-line${waiting ? ' bad' : ''}">${waiting ? linkIcon(world, { kind: 'wagon', id, status: w.status }, 28) : ''}<span>${esc(wagonStatusText(world, w.status))}</span>${
-        w.status.k === 'NO_ROUTE' ? `<span class="since num">${esc(t('why.stalledFor', { time: ticksClock(world.state.tick - w.status.since) }))}</span>` : ''}</div>`;
+        w.status.k === 'NO_ROUTE' ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(world.state.tick - w.status.since) })}</span>` : ''}</div>`;
       html += `<dl class="kv" style="margin-top:10px">${rows.join('')}</dl>`;
+      let fix: RoadSuggestion | null = null, target = -1;
       if (waiting) {
         const chain = explainWagon(world, id);
         if (chain.length > 1) html += `<div class="section-h">${esc(t('wagon.chain'))}</div>${chainHtml(world, chain, 'wagon', id)}`;
+        target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
+        fix = target >= 0 ? gapSuggestion(world, target) : null;
+        if (fix) html += fixHtml(world, target, fix);
       }
+      nav.setGhost(fix ? fix.cells : null);
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still
       const canSell = !w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0;
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
-        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${esc(t('wagon.sell', { n: Math.floor(WAGON_PRICE * 0.5) }))}</span></button></div>` +
+        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(Math.floor(WAGON_PRICE * 0.5)) })}</span></button></div>` +
         (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
       setHtml(sheet.body, html);
       return true;
     },
+    onClose() { nav.setGhost(null); },
   };
 }
 

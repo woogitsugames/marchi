@@ -8,6 +8,11 @@ import { buildingStatusIcon, clock, isCritical, isStall, wagonStatusIcon } from 
 import { iconSvg } from './icons';
 
 const MIN_STALL_TICKS = 20; // 2 s: avoid flicker on short hiccups
+/** "Stall fixed" wax stamp: pressed in (120 ms), held, then faded (220 ms). No bounce. */
+const STAMP_HOLD_MS = 650;
+const STAMP_FADE_MS = 220;
+
+interface Stamp { el: HTMLElement; id: number; bornAt: number; out: boolean }
 
 interface Bubble { el: HTMLElement; icon: HTMLElement; key: string; sig: string; used: boolean; shownAt: number }
 
@@ -21,6 +26,11 @@ export class Markers {
   private draftMain: HTMLElement;
   private draftSub: HTMLElement;
   onBubble: ((kind: 'building' | 'wagon', id: number) => void) | null = null;
+  /** A building's stall bubble went away because it is WORKING again. */
+  onFixed: ((buildingId: number) => void) | null = null;
+  /** Buildings with a stall bubble on screen in the previous frame. */
+  private shownStalls = new Set<number>();
+  private stamps: Stamp[] = [];
 
   constructor() {
     this.etaText = h('span.num');
@@ -59,6 +69,7 @@ export class Markers {
 
   update(world: World, view: WorldView, selectedWagon: number | null, hidden: boolean): void {
     for (const b of this.pool) b.used = false;
+    const shown = new Set<number>();
     if (!hidden) {
       for (const bd of world.state.buildings) {
         if (!isStall(bd.status) && bd.status.k !== 'NO_INPUT') continue;
@@ -68,6 +79,7 @@ export class Markers {
         const crit = isCritical(bd.status, bd.stalledTicks);
         const sig = JSON.stringify(bd.status) + crit;
         const b = this.take('building:' + bd.id);
+        shown.add(bd.id);
         b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP');
         this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
       }
@@ -86,6 +98,28 @@ export class Markers {
         b.el.classList.remove('is-shown');
         b.el.style.visibility = 'hidden';
       }
+    }
+
+    // stall fixed: the bubble left because the building resumed WORKING -> a quiet wax stamp in its place
+    const now = performance.now();
+    if (!hidden) {
+      for (const id of this.shownStalls) {
+        if (shown.has(id)) continue;
+        const bd = world.state.buildings.find((q) => q.id === id);
+        if (bd && bd.status.k === 'WORKING' && view.anchorOf('building', id).visible) this.stamp(id, now);
+      }
+    }
+    this.shownStalls = shown;
+    for (const st of [...this.stamps]) {
+      const age = now - st.bornAt;
+      const a = view.anchorOf('building', st.id);
+      if (age > STAMP_HOLD_MS + STAMP_FADE_MS + 40 || !a.visible || hidden) {
+        st.el.remove();
+        this.stamps.splice(this.stamps.indexOf(st), 1);
+        continue;
+      }
+      if (!st.out && age > STAMP_HOLD_MS) { st.out = true; st.el.classList.add('is-out'); }
+      st.el.style.transform = `translate3d(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`;
     }
 
     // ETA tag beside the selected wagon
@@ -120,6 +154,15 @@ export class Markers {
     b.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
   }
 
+  private stamp(id: number, now: number): void {
+    if (this.stamps.some((s) => s.id === id)) return;
+    const el = h('div.fix-stamp', { 'aria-hidden': 'true' }, h('div.fs-in', { html: iconSvg('seal', 30) }));
+    this.root.append(el);
+    this.stamps.push({ el, id, bornAt: now, out: false });
+    requestAnimationFrame(() => el.classList.add('is-in'));
+    this.onFixed?.(id);
+  }
+
   /** Road draft label near the finger: main line + sub line, bad = clay. */
   setDraft(x: number, y: number, main: string, sub: string, bad: boolean): void {
     this.draft.classList.add('is-shown');
@@ -140,6 +183,9 @@ export class Markers {
   reset(): void {
     for (const b of this.pool) { b.el.remove(); }
     this.pool = [];
+    for (const st of this.stamps) st.el.remove();
+    this.stamps = [];
+    this.shownStalls.clear();
     this.byKey.clear();
     this.clearDraft();
     this.eta.classList.remove('is-shown');

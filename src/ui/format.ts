@@ -1,29 +1,89 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
 import { BUILDINGS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
-import { getLang, t, type MessageKey } from '../i18n/index';
+import { RTL_LANGS, getLang, t, type MessageKey } from '../i18n/index';
+import { esc } from './dom';
+
+export function isRtl(): boolean {
+  return RTL_LANGS.has(getLang());
+}
 import { iconSvg, struckIconSvg, type IconId } from './icons';
+
+// Numbers and times go through Intl for the current language (D-18). Latin digits everywhere
+// ("-u-nu-latn"): HUD counters keep a stable width and read the same in ar / hi; grouping and
+// separators still follow the language. Formatters are cached per language.
+const nfCache = new Map<string, Intl.NumberFormat>();
+function nf(two = false): Intl.NumberFormat {
+  const key = getLang() + (two ? ':2' : '');
+  let f = nfCache.get(key);
+  if (!f) {
+    f = new Intl.NumberFormat(`${getLang()}-u-nu-latn`, two ? { minimumIntegerDigits: 2, useGrouping: false } : { maximumFractionDigits: 0 });
+    nfCache.set(key, f);
+  }
+  return f;
+}
+
+/** Whole number in the current language (grouping, Latin digits). */
+export function fmtInt(n: number): string {
+  return nf().format(Math.round(n));
+}
 
 /** m:ss (or h:mm:ss) from seconds. */
 export function clock(sec: number): string {
   const s = Math.max(0, Math.round(sec));
   const m = Math.floor(s / 60);
   const r = s % 60;
-  if (m >= 60) return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
-  return `${m}:${String(r).padStart(2, '0')}`;
+  const two = nf(true), one = nf();
+  if (m >= 60) return `${one.format(Math.floor(m / 60))}:${two.format(m % 60)}:${two.format(r)}`;
+  return `${one.format(m)}:${two.format(r)}`;
 }
 
 export function ticksClock(ticks: number): string {
   return clock(ticks / TICK_HZ);
 }
 
-/** 24 h clock for a day fraction (0 = midnight). */
+const dtCache = new Map<string, Intl.DateTimeFormat>();
+/** Time of day for a day fraction (0 = midnight); 24 h cycle so the rail line never grows an AM/PM. */
 export function dayClock(f: number): string {
   const mins = Math.floor(f * 24 * 60);
-  return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, '0')}`;
+  let df = dtCache.get(getLang());
+  if (!df) {
+    df = new Intl.DateTimeFormat(`${getLang()}-u-nu-latn`, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
+    dtCache.set(getLang(), df);
+  }
+  return df.format(new Date(Date.UTC(2000, 0, 1, Math.floor(mins / 60) % 24, mins % 60)));
+}
+
+/** Short list joined the way the language joins units ("a, b" / "a、b" / "a وb"). */
+export function joinList(parts: string[]): string {
+  const p = parts.filter(Boolean);
+  try { return new Intl.ListFormat(getLang(), { type: 'unit', style: 'short' }).format(p); } catch { return p.join(' · '); }
+}
+
+/** Bidi-isolate a number/time inside a plain-text sentence (FSI … PDI) when the UI is right-to-left. */
+export function iso(s: string | number): string {
+  return isRtl() ? `\u2068${s}\u2069` : String(s);
+}
+
+/** <bdi> around a number/time for HTML: keeps "3:05" and "12/30" in reading order inside Arabic text. */
+export function bdi(s: string | number, cls = 'num'): string {
+  return `<bdi class="${cls}">${esc(String(s))}</bdi>`;
+}
+
+/**
+ * A whole-sentence message as escaped HTML with its parameters wrapped in <bdi> (numbers, times,
+ * names keep their own direction). Plural parameters are resolved as numbers first.
+ */
+export function tHtml(key: MessageKey, params: Record<string, string | number>): string {
+  const raw = t(key);
+  const marks: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(params)) marks[k] = raw.includes(`{${k}, plural,`) ? v : `\u0000${k}\u0000`;
+  let s = esc(t(key, marks));
+  for (const [k, v] of Object.entries(params)) s = s.split(`\u0000${k}\u0000`).join(bdi(v));
+  return s;
 }
 
 export function capFirst(s: string): string {
-  return s.length ? s[0]!.toLocaleUpperCase() + s.slice(1) : s;
+  return s.length ? s[0]!.toLocaleUpperCase(getLang()) + s.slice(1) : s;
 }
 
 /** Count word for cells with Polish plural rules (1 pole, 2-4 pola, 5+ pól); English uses one/other. */

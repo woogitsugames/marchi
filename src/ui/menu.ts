@@ -1,9 +1,9 @@
 // Main menu strip over the live scene, the settings sheet, the in-game menu sheet and the
 // end-of-mission sealed letter.
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
-import { GOODS, MISSIONS, type World } from '../sim/index';
+import { GOODS, MISSIONS, topStallCauses, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
-import { goodName, ticksClock } from './format';
+import { bdi, buildingName, clock, fmtInt, goodName, iso, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
@@ -28,7 +28,7 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: '
   };
   if (save) {
     const what = save.missionId === 'sandbox' ? t('menu.sandbox') : save.missionId === 'm2' ? t('menu.m2') : save.missionId === 'm3' ? t('menu.m3') : t('menu.m1');
-    item(t('menu.continue'), t('menu.continueSub', { what, time: ticksClock(save.tick) }), act.continueGame, true);
+    item(t('menu.continue'), t('menu.continueSub', { what, time: iso(ticksClock(save.tick)) }), act.continueGame, true);
   }
   item(t('menu.m1'), t('menu.contractSub'), () => act.newGame('m1'), !save);
   item(t('menu.m2'), t('menu.m2Sub'), () => act.newGame('m2'));
@@ -151,6 +151,31 @@ export function gameMenuSheet(act: GameMenuActions, world: World): SheetContent 
 
 export interface EndActions { again(): void; menu(): void }
 
+/** Who a ledger key ('building:5:NO_ROAD', 'wagon:9:NO_ROUTE', 'span:812:BRIDGE_JAM') is about. */
+function causeSubject(world: World, kind: string, id: number): string {
+  if (kind === 'building') return buildingName(world, id);
+  if (kind === 'wagon') return wagonName(id);
+  return t('ledger.bridge');
+}
+
+/** Reason text for a ledger status string ('K' or 'K.cause'): its own short key, else the base key. */
+function causeReason(status: string): string {
+  const key = `cause.${status}` as MessageKey;
+  const base = `cause.${status.split('.')[0]}` as MessageKey;
+  const s = t(key);
+  return s !== key ? s : t(base) !== base ? t(base) : status;
+}
+
+/** The three root causes that cost the most time, as a short ledger (subject — reason ...... m:ss). */
+function causesHtml(world: World): string {
+  const top = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
+  const rows = top.length
+    ? top.map((c) => `<li><span class="lg-what"><b>${esc(causeSubject(world, c.kind, c.id))}</b> <span>${esc(causeReason(c.status))}</span></span>` +
+      `<span class="lg-dots" aria-hidden="true"></span>${bdi(clock(c.seconds), 'lg-time num')}</li>`).join('')
+    : `<li class="lg-none">${esc(t('contract.noStalls'))}</li>`;
+  return `<div class="ledger"><div class="lg-h">${esc(t('contract.causes'))}</div><ol>${rows}</ol></div>`;
+}
+
 /** The sealed letter at the end of a contract. seals = stars(world) 0..3. */
 export function buildEndLetter(world: World, seals: number, act: EndActions): HTMLElement {
   const st = world.state;
@@ -158,7 +183,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const c = st.mission.contract;
   const castle = c ? st.buildings.find((b) => b.id === c.castle) : null;
   const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
-    `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px">${iconSvg(g, 20)}<span class="num">${Math.min(castle?.stock[g] ?? 0, c.need[g])}/${c.need[g]}</span> ${esc(goodName(g))}</span>`).join('') : '';
+    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { have: fmtInt(Math.min(castle?.stock[g] ?? 0, c.need[g])), need: fmtInt(c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
   const def = MISSIONS[st.mission.id];
   const sealRow = [0, 1, 2].map((i) => `<span class="s${i < seals ? '' : ' off'}">${iconSvg('seal', 52)}</span>`).join('');
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
@@ -168,10 +193,11 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
     <p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">
-      <dt>${esc(t('contract.time'))}</dt><dd class="num">${ticksClock(st.mission.endTick >= 0 ? st.mission.endTick : st.tick)}${def ? ` <span style="font-weight:400;color:var(--ink-soft)">/ ${def.deadlineMin}:00</span>` : ''}</dd>
+      <dt>${esc(t('contract.time'))}</dt><dd>${bdi(ticksClock(st.mission.endTick >= 0 ? st.mission.endTick : st.tick))}${def ? `<span class="of-limit">${bdi(`/ ${clock(def.deadlineMin * 60)}`)}</span>` : ''}</dd>
       <dt>${esc(t('contract.delivered'))}</dt><dd>${delivered}</dd>
-      <dt>${esc(t('contract.left'))}</dt><dd class="num">${st.coins}</dd>
+      <dt>${esc(t('contract.left'))}</dt><dd>${bdi(fmtInt(st.coins))}</dd>
     </dl>
+    ${c ? causesHtml(world) : ''}
     <div class="actions">
       <button class="btn primary cf" data-a="again">${esc(t('contract.again'))}</button>
       <button class="btn cf" data-a="menu">${esc(t('contract.menu'))}</button>

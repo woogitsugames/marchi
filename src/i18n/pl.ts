@@ -104,6 +104,7 @@ export const pl = {
   'contract.again': 'Jeszcze raz',
   'contract.menu': 'Do menu',
 
+  'hud.showUi': 'Pokaż przyciski',
   'hud.coins': '{n} srebra',
   'hud.rain': 'Deszcz — wozy zwalniają na drogach gruntowych',
   'hud.saved': 'Zapisano',
@@ -194,7 +195,87 @@ export const pl = {
   'contract.time': 'Czas',
   'contract.delivered': 'Dostarczono',
   'contract.left': 'Srebro',
+
+  // UI round 2 (tutorial, gap finder, end-letter ledger, i18n hygiene): see PENDING_KEYS
+  'tutorial.m1.from': 'Pismo od kasztelana',
+  'tutorial.m1.skip': 'Pomiń',
+  'tutorial.m1.step1': 'Kasztelan zamawia 30 desek i 20 chlebów. Dotknij pozycji na liście przewozowym, by sprawdzić stan zamku.',
+  'tutorial.m1.step2': 'Brak dostawy to skutek. Dotknij kolejnego ogniwa w łańcuchu przyczyn — sprawdzisz, gdzie zatrzymał się szlak.',
+  'tutorial.m1.step3': 'Zajrzyj poziom głębiej: dotknij następnej przyczyny. Wóz pokaże cel i czas dostawy, budynek — swój brak.',
+  'tutorial.m1.step4': 'Tartak i zamek dzieli rzeka. Wybierz trakt, by połączyć istniejące drogi przeprawą.',
+  'tutorial.m1.step5': 'Przeciągnij trakt przez rzekę, od północnej drogi do południowej. Most powstanie na wodzie sam.',
+  'tutorial.m1.step6': 'Szlak jest połączony. Otwórz ponownie kartę zamku z listu i odczytaj obecny powód — może się zmieniać.',
+  'fix.title': 'Naprawa',
+  'fix.road': 'Zbuduj drogę: {n} srebra',
+  'fix.bridge': 'Zbuduj drogę i most: {n} srebra',
+  'fix.shown': 'Brakujący odcinek zaznaczono na mapie.',
+  'fix.short': 'Brakuje {n} srebra',
+  'contract.causes': 'Gdzie stracono czas',
+  'contract.noStalls': 'Żaden szlak nie stanął na dłużej.',
+  'contract.deliveredItem': '{have}/{need} {good}',
+  'cause.NO_ROAD': 'brak drogi do bramy',
+  'cause.NO_INPUT.NONE_AVAILABLE': 'brak zapasów do przywiezienia',
+  'cause.NO_INPUT.UNREACHABLE': 'brak dojazdu do zapasów',
+  'cause.NO_WAGON.ALL_BUSY': 'wszystkie wozy zajęte',
+  'cause.NO_WAGON.NONE_CAN_REACH': 'żaden wóz nie dojedzie',
+  'cause.OUTPUT_FULL.NO_WAGON': 'pełny magazyn, brak wozu',
+  'cause.OUTPUT_FULL.NO_DESTINATION': 'pełny magazyn, nie ma dokąd wieźć',
+  'cause.WAITING_PICKUP': 'czekał na odbiór',
+  'cause.STORAGE_FULL': 'spichlerz pełny',
+  'cause.BRIDGE_JAM': 'korek na moście',
+  'cause.NO_ROUTE': 'brak drogi do celu',
+  'ledger.bridge': 'Most',
+  'app.valley': 'Dolina',
+  'app.docTitle': 'Marchia — Szlaki Królestwa',
+  'why.holdsCount': 'W spichlerzu: {n}/{cap}',
+  'hud.stallFixed': 'Znów pracuje: {name}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
-export type Dict = Record<MessageKey, string>;
+
+/**
+ * Keys added after the last translation round. Dictionaries other than pl/en may omit them
+ * (English fallback per key, D-18); tests/i18n-*.test.ts skip them. Remove a key from this list
+ * once every language has it.
+ */
+export const PENDING_KEYS = [
+  'hud.showUi',
+  'tutorial.m1.from',
+  'tutorial.m1.skip',
+  'tutorial.m1.step1',
+  'tutorial.m1.step2',
+  'tutorial.m1.step3',
+  'tutorial.m1.step4',
+  'tutorial.m1.step5',
+  'tutorial.m1.step6',
+  'fix.title',
+  'fix.road',
+  'fix.bridge',
+  'fix.shown',
+  'fix.short',
+  'contract.causes',
+  'contract.noStalls',
+  'contract.deliveredItem',
+  'cause.NO_ROAD',
+  'cause.NO_INPUT.NONE_AVAILABLE',
+  'cause.NO_INPUT.UNREACHABLE',
+  'cause.NO_WAGON.ALL_BUSY',
+  'cause.NO_WAGON.NONE_CAN_REACH',
+  'cause.OUTPUT_FULL.NO_WAGON',
+  'cause.OUTPUT_FULL.NO_DESTINATION',
+  'cause.WAITING_PICKUP',
+  'cause.STORAGE_FULL',
+  'cause.BRIDGE_JAM',
+  'cause.NO_ROUTE',
+  'ledger.bridge',
+  'app.valley',
+  'app.docTitle',
+  'why.holdsCount',
+  'hud.stallFixed',
+  'hud.showUi',
+] as const satisfies readonly MessageKey[];
+export type PendingKey = (typeof PENDING_KEYS)[number];
+/** Complete dictionary (pl, en). */
+export type FullDict = Record<MessageKey, string>;
+/** A translated dictionary: every key except the pending ones. */
+export type Dict = Omit<FullDict, PendingKey> & Partial<Record<PendingKey, string>>;

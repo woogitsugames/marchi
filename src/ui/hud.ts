@@ -3,7 +3,7 @@ import { GOODS, WAGON_PRICE, isRaining, timeOfDay, TICK_HZ, type Good, type Worl
 import type { Speed } from '../game/loop';
 import { t } from '../i18n/index';
 import { deckle, h, setHtml, setText } from './dom';
-import { dayClock, goodName, ticksClock } from './format';
+import { bdi, dayClock, fmtInt, goodName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish';
@@ -63,6 +63,7 @@ export class Hud {
   private toasts: HTMLElement;
   private notice: HTMLElement | null = null;
   private caption: HTMLElement;
+  private live: HTMLElement;
   private lastSig = '';
   private wasRaining = false;
   private collapsed: boolean;
@@ -92,7 +93,7 @@ export class Hud {
     this.coins = h('span.num');
     this.day = h('span.num');
     this.dayIcon = h('span', { html: iconSvg('sun', 20) });
-    const coinStat = h('div.rail-stat', { title: t('hud.coins', { n: '' }) }, h('span', { html: iconSvg('coin', 20) }), this.coins);
+    const coinStat = h('div.rail-stat', { title: t('contract.left') }, h('span', { html: iconSvg('coin', 20) }), this.coins);
     const dayStat = h('div.rail-stat.sep', { title: t('hud.day') }, this.dayIcon, this.day);
     const speed = h('div.speed', { role: 'group', 'aria-label': t('tool.speed') });
     const sp: [Speed, IconId, string][] = [[0, 'pause', t('speed.pause')], [1, 'speed1', t('speed.x1')], [2, 'speed2', t('speed.x2')], [4, 'speed4', t('speed.x4')]];
@@ -129,7 +130,8 @@ export class Hud {
     const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, line, tools, hint);
 
     this.toasts = h('div.toasts', { 'aria-live': 'polite' });
-    this.root = h('div', null, this.waybillWrap, rail, this.toasts, this.caption);
+    this.live = h('div.sr-only', { 'aria-live': 'polite', role: 'status' });
+    this.root = h('div', null, this.waybillWrap, rail, this.toasts, this.caption, this.live);
     rail.classList.add('hit');
   }
 
@@ -190,7 +192,7 @@ export class Hud {
   /** Cheap; call every frame — only touches the DOM when numbers change. */
   update(world: World): void {
     const st = world.state;
-    setText(this.coins, String(st.coins));
+    setText(this.coins, fmtInt(st.coins));
     const wagonBtn = this.toolBtns.get('wagon');
     if (wagonBtn) wagonBtn.classList.toggle('is-disabled', st.coins < WAGON_PRICE);
     const raining = isRaining(st);
@@ -221,16 +223,21 @@ export class Hud {
     const frac = have.reduce((a, v) => a + v, 0) / Math.max(1, total);
     const late = left < 120 * TICK_HZ;
     if (folded) {
-      setHtml(this.sealOnly, `${sealStack(frac, 52)}<span class="seal-time num">${ticksClock(left)}</span>`);
+      setHtml(this.sealOnly, `${sealStack(frac, 52)}${bdi(ticksClock(left), 'seal-time num')}`);
       return;
     }
     const lines = goods.map((g, i) => `<div class="wb-line${have[i]! >= c.need[g] ? ' done' : ''}" data-wb="castle">
         ${iconSvg(g, 24, goodName(g))}${tallySvg(have[i]!, c.need[g], i + 1)}
-        <span class="count num">${have[i]}<small>/${c.need[g]}</small></span></div>`).join('');
+        <bdi class="count num">${fmtInt(have[i]!)}<small>/${fmtInt(c.need[g])}</small></bdi></div>`).join('');
     setHtml(this.waybillBody, `<h2>${t('contract.title')}</h2>
       <button class="seal-btn" data-wb="fold" aria-label="${t('hud.collapse')}">${sealStack(frac, 40)}</button>
       <p class="wb-to">${t('contract.to')}</p>${lines}
-      <div class="wb-time num${late ? ' late' : ''}">${iconSvg('snow', 20)}<span>${t('contract.timeLeft', { time: ticksClock(left) })}</span></div>`);
+      <div class="wb-time num${late ? ' late' : ''}">${iconSvg('snow', 20)}<span>${tHtml('contract.timeLeft', { time: ticksClock(left) })}</span></div>`);
+  }
+
+  /** Screen-reader only announcement (quiet confirmations that have no visible text). */
+  announce(text: string): void {
+    this.live.textContent = text;
   }
 
   toast(text: string, kind: 'info' | 'err' = 'info', icon: IconId | null = null, ms = 2600): void {
@@ -240,7 +247,7 @@ export class Hud {
       const st = first.__toast;
       st.n++;
       const c = first.querySelector('.toast-n');
-      if (c) c.textContent = `×${st.n}`;
+      if (c) c.textContent = `×${fmtInt(st.n)}`;
       window.clearTimeout(st.timer);
       st.timer = this.dismiss(first, ms);
       return;

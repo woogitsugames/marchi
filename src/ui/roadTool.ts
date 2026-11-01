@@ -3,13 +3,13 @@ import { lineCells, roadCellCost, validateRoad, type CommandError, type SurfaceK
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
 import type { Markers } from './markers';
-import { cellsWord } from './format';
+import { cellsWord, fmtInt, iso, joinList } from './format';
 
 export function errorText(err: CommandError): string {
   const key = `err.${err.k}` as MessageKey;
   switch (err.k) {
-    case 'TOO_STEEP': return t(key, { grade: Math.round(err.grade * 100), max: Math.round(err.max * 100) });
-    case 'NO_COINS': return t(key, { need: err.need, have: err.have });
+    case 'TOO_STEEP': return t(key, { grade: iso(fmtInt(err.grade * 100)), max: iso(fmtInt(err.max * 100)) });
+    case 'NO_COINS': return t(key, { need: iso(fmtInt(err.need)), have: iso(fmtInt(err.have)) });
     default: return t(key);
   }
 }
@@ -26,6 +26,11 @@ export class RoadDraft {
   ) {}
 
   surface: SurfaceKind = 1;
+
+  /** A draft is on screen (being drawn, or a rejected one still showing its reason). */
+  get busy(): boolean {
+    return this.active || this.cells.length > 0;
+  }
 
   start(x: number, y: number): void {
     const c = this.view().cellAt(x, y);
@@ -85,15 +90,15 @@ export class RoadDraft {
     let cost = 0;
     const seen = new Set<number>();
     for (const c of this.cells) if (!seen.has(c)) { seen.add(c); cost += roadCellCost(world, c, this.surface); }
-    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: water, cells: cellsWord(water) }) : '';
-    const costText = cost > 0 ? t('road.cost', { n: cost }) : t('road.free');
+    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: iso(fmtInt(water)), cells: cellsWord(water) }) : '';
+    const costText = cost > 0 ? t('road.cost', { n: iso(fmtInt(cost)) }) : t('road.free');
     if (r.ok) {
       view.setRoadPreview({ cells: this.cells, valid: true, badCell: -1 });
-      this.markers.setDraft(x, y, costText, [bridge, t('road.cells', { n: seen.size, cells: cellsWord(seen.size) })].filter(Boolean).join(' · '), false);
+      this.markers.setDraft(x, y, costText, joinList([bridge, t('road.cells', { n: iso(fmtInt(seen.size)), cells: cellsWord(seen.size) })]), false);
     } else {
       const bad = 'cell' in r.err ? r.err.cell : -1;
       view.setRoadPreview({ cells: this.cells, valid: false, badCell: bad });
-      this.markers.setDraft(x, y, errorText(r.err), [costText, bridge].filter(Boolean).join(' · '), true);
+      this.markers.setDraft(x, y, errorText(r.err), joinList([costText, bridge]), true);
     }
   }
 }

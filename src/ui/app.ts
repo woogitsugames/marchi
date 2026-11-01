@@ -23,6 +23,8 @@ import { buildingSheet, wagonSheet, type PanelNav } from './panels';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
+import { Tutorial } from './tutorial';
+import { fmtInt, iso, buildingName } from './format';
 import type { IconId } from './icons';
 import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
 
@@ -37,6 +39,21 @@ function armAudioUnlock(): void {
   const unlock = (): void => { void audio.init(); music.unlock(); };
   window.addEventListener('pointerdown', unlock, { capture: true, once: true });
   window.addEventListener('keydown', unlock, { capture: true, once: true });
+}
+
+/** Clear-screen mode: only the scene stays, plus one small button to bring the UI back. */
+let restoreBtn: HTMLButtonElement | null = null;
+function setClear(on: boolean): void {
+  document.body.classList.toggle('is-clear', on);
+  if (!restoreBtn) {
+    restoreBtn = document.createElement('button');
+    restoreBtn.className = 'clear-restore';
+    restoreBtn.type = 'button';
+    restoreBtn.addEventListener('click', () => setClear(false));
+    document.body.append(restoreBtn);
+  }
+  restoreBtn.textContent = t('hud.showUi');
+  restoreBtn.setAttribute('aria-label', t('hud.showUi'));
 }
 
 type MissionKey = 'm1' | 'm2' | 'm3' | 'sandbox';
@@ -65,7 +82,7 @@ export class App implements PanelNav {
   readonly view: WorldView;
   private canvas: HTMLCanvasElement;
   private params: URLSearchParams;
-  private layers: { markers: HTMLElement; hud: HTMLElement; sheets: HTMLElement; menu: HTMLElement; overlay: HTMLElement };
+  private layers: { markers: HTMLElement; hud: HTMLElement; sheets: HTMLElement; tutorial: HTMLElement; menu: HTMLElement; overlay: HTMLElement };
   world: World;
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
@@ -98,16 +115,27 @@ export class App implements PanelNav {
   private menuToken = 0;
   private foldSig = '';
   private foldCheckAt = 0;
+  private tutorial: Tutorial | null = null;
+  /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
+  private debugStart = false;
+  /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
+  private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
+  private ghostKey = '';
 
   constructor(o: AppOptions) {
     this.view = o.view;
     this.canvas = o.canvas;
     this.params = o.params;
     const layer = (id: string): HTMLElement => h('div', { id });
-    this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), menu: layer('menu'), overlay: layer('overlay') };
-    o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.overlay);
+    this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), tutorial: layer('tutorial'), menu: layer('menu'), overlay: layer('overlay') };
+    o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.tutorial, this.layers.overlay);
     this.layers.markers.append(this.markers.root);
     this.markers.onBubble = (kind, id) => this.go(kind, id, false);
+    this.markers.onFixed = (id) => {
+      if (this.mode !== 'game') return;
+      if (audio.ready) void audio.play('ui.paper');
+      this.hud?.announce(t('hud.stallFixed', { name: buildingName(this.world, id) }));
+    };
     this.sheets = new Sheets(this.layers.sheets);
     this.sheets.onChange = () => this.syncSelection();
 
@@ -132,7 +160,7 @@ export class App implements PanelNav {
       draftMove: (x, y) => this.draft.move(x, y),
       draftEnd: (x, y) => this.draft.end(x, y),
       draftCancel: () => this.draft.cancel(),
-      twoFingerTap: () => document.body.classList.toggle('is-clear'),
+      twoFingerTap: () => setClear(!document.body.classList.contains('is-clear')),
       cameraTouched: () => this.stopFollow(),
     });
     window.addEventListener('keydown', (e) => this.onKey(e));
@@ -154,6 +182,7 @@ export class App implements PanelNav {
   async start(): Promise<void> {
     const play = this.params.get('play');
     if (play === 'm1' || play === 'm2' || play === 'm3' || play === 'sandbox') {
+      this.debugStart = this.params.get('tut') !== '1';
       this.newGame(play);
       this.applyDebug();
     } else {
@@ -220,11 +249,60 @@ export class App implements PanelNav {
     this.followId = null;
     this.view.setSelection(null);
     this.view.setRoadPreview(null);
+    this.ghosts = { gap: null, tut: null };
+    this.ghostKey = '';
   }
 
   newGame(id: MissionKey): void {
     this.missionId = id;
     this.enterGame(createWorld(id));
+    const forced = this.params.get('tut') === '1';
+    if (id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'))) this.startTutorial();
+  }
+
+  // ------------------------------------------------------------------ tutorial (mission I)
+
+  private startTutorial(): void {
+    this.tutorial?.dispose();
+    const app = this;
+    const tut = new Tutorial({
+      get world() { return app.world; },
+      topKey: () => this.sheets.top?.content.key ?? null,
+      tool: () => this.tool,
+      closeSheets: () => this.sheets.closeAll(),
+      setGhost: (cells) => { this.ghosts.tut = cells; },
+      finish: (r) => {
+        this.prefs.tutorialM1 = r;
+        savePrefs(this.prefs);
+        if (this.tutorial === tut) this.tutorial = null;
+      },
+    });
+    this.tutorial = tut;
+    this.layers.tutorial.append(tut.root);
+  }
+
+  private stopTutorial(): void {
+    this.tutorial?.dispose();
+    this.tutorial = null;
+    this.ghosts.tut = null;
+  }
+
+  /** PanelNav: the gap finder's ghost road while its sheet is open. */
+  setGhost(cells: number[] | null): void {
+    this.ghosts.gap = cells;
+  }
+
+  buildRoad(cells: number[]): void {
+    this.enqueue({ t: 'road', cells, surface: 1 });
+  }
+
+  private applyGhost(): void {
+    if (this.draft.busy) { this.ghostKey = '#draft'; return; }
+    const c = this.ghosts.gap ?? this.ghosts.tut;
+    const k = c ? c.join(',') : '';
+    if (k === this.ghostKey) return;
+    this.ghostKey = k;
+    this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1 } : null);
   }
 
   private async continueGame(): Promise<void> {
@@ -244,6 +322,7 @@ export class App implements PanelNav {
   }
 
   private enterGame(w: World): void {
+    this.stopTutorial();
     this.mode = 'game';
     this.sheets.closeAll();
     this.layers.menu.innerHTML = '';
@@ -288,6 +367,7 @@ export class App implements PanelNav {
   }
 
   private clearGameUi(): void {
+    this.stopTutorial();
     this.layers.hud.innerHTML = '';
     this.layers.overlay.querySelector('.scrim')?.remove();
     this.markers.reset();
@@ -318,6 +398,8 @@ export class App implements PanelNav {
     if (this.mode === 'game') {
       this.hud?.update(this.world);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false);
+      this.tutorial?.update(dt);
+      this.applyGhost();
       if (now - this.lastSheetUpdate > 250) {
         this.lastSheetUpdate = now;
         this.sheets.update();
@@ -358,6 +440,7 @@ export class App implements PanelNav {
 
   private showEnd(): void {
     this.endShown = true;
+    this.stopTutorial();
     music.setMood(this.world.state.mission.result === 'won' ? 'won' : 'lost');
     this.loop.speed = 0;
     this.hud?.setSpeed(0);
@@ -386,10 +469,11 @@ export class App implements PanelNav {
       this.hud.toast(errorText(r.err), 'err', icon);
       return;
     }
-    if (cmd.t === 'road') this.hud.toast(t('hud.built', { n: r.cost }), 'info', icon, 1800);
-    else if (cmd.t === 'demolish') this.hud.toast(t('hud.demolished', { n: -r.cost }), 'info', icon, 1800);
-    else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n: r.cost }), 'info', icon, 1800);
-    else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n: -r.cost }), 'info', icon, 1800);
+    const n = iso(fmtInt(Math.abs(r.cost)));
+    if (cmd.t === 'road') this.hud.toast(t('hud.built', { n }), 'info', icon, 1800);
+    else if (cmd.t === 'demolish') this.hud.toast(t('hud.demolished', { n }), 'info', icon, 1800);
+    else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n }), 'info', icon, 1800);
+    else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n }), 'info', icon, 1800);
   }
 
   private buyWagonFromRail(): void {
@@ -400,6 +484,7 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ PanelNav
 
   go(kind: 'building' | 'wagon', id: number, focus = true): void {
+    const prevTop = this.sheets.top?.content.key ?? null;
     if (kind === 'building') {
       const b = buildingById(this.world, id);
       if (!b) return;
@@ -412,6 +497,7 @@ export class App implements PanelNav {
       this.sheets.open(wagonSheet(this, id));
     }
     this.select({ kind, id });
+    this.tutorial?.onOpen(kind, id, prevTop);
   }
 
   buyWagon(stable: number): void {

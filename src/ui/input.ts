@@ -1,5 +1,5 @@
 // Pointer input on the scene canvas: tap, one-finger pan or road draft, pinch zoom,
-// two-finger twist rotate, two-finger tap (clear screen), mouse wheel / right-drag.
+// two-finger twist rotate, three-finger tap (clear screen), mouse wheel / right-drag.
 import type { CameraControl } from '../render/api';
 
 export interface InputHandlers {
@@ -30,7 +30,7 @@ export interface InputHandle {
 export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraControl, hd: InputHandlers): InputHandle {
   const ptrs = new Map<number, Ptr>();
   let mode: 'idle' | 'pending' | 'pan' | 'draft' | 'multi' | 'rotate' | 'drain' = 'idle';
-  let multi = { dist: 0, ang: 0, cx: 0, cy: 0, t0: 0, moved: false };
+  let multi = { dist: 0, ang: 0, cx: 0, cy: 0, t0: 0, moved: false, maxPtrs: 2 };
 
   const local = (e: PointerEvent | WheelEvent): [number, number] => {
     const r = canvas.getBoundingClientRect();
@@ -51,6 +51,7 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
       cy: (a.y + b.y) / 2,
       t0: Math.min(a.t0, b.t0),
       moved: Math.hypot(a.x - a.sx, a.y - a.sy) > TAP_SLOP,
+      maxPtrs: ptrs.size,
     };
   };
 
@@ -65,6 +66,8 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
       if (mode === 'draft') hd.draftCancel();
       mode = 'multi';
       startMulti();
+    } else if (mode === 'multi') {
+      multi.maxPtrs = Math.max(multi.maxPtrs, ptrs.size);
     }
   };
 
@@ -143,7 +146,9 @@ export function attachInput(canvas: HTMLCanvasElement, camera: () => CameraContr
       else hd.draftEnd(x, y);
       mode = 'idle';
     } else if (mode === 'multi') {
-      if (!multi.moved && !cancelled && performance.now() - multi.t0 < TAP_MS && ptrs.size === 1) {
+      // Clear screen = deliberate THREE-finger tap. A two-finger tap fired by accident at the start of
+      // pinch/rotate on big screens (owner report on a Fold), hiding the whole HUD.
+      if (!multi.moved && !cancelled && multi.maxPtrs >= 3 && performance.now() - multi.t0 < TAP_MS * 1.5 && ptrs.size === 2) {
         hd.twoFingerTap();
       }
       mode = ptrs.size ? 'drain' : 'idle';

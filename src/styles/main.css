@@ -98,7 +98,7 @@ svg { display: block; fill: currentColor; flex: none; }
 #ui > * { pointer-events: none; }
 #ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter { pointer-events: auto; }
 
-/* Clear screen (two-finger tap): only the scene stays. */
+/* Clear screen (three-finger tap): only the scene stays; a small button brings the UI back. */
 body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear #menu .menu-wrap {
   opacity: 0;
   visibility: hidden;
@@ -1056,4 +1056,21 @@ body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px))
 :root[data-script='devanagari'] {
   --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
   --font-body: 'Noto Sans Devanagari', sans-serif;
+}
+
+.clear-restore { display: none; }
+body.is-clear .clear-restore {
+  display: block;
+  position: fixed;
+  inset-block-end: calc(12px + env(safe-area-inset-bottom));
+  inset-inline-end: calc(12px + env(safe-area-inset-right));
+  min-width: 48px; min-height: 48px;
+  padding: 0 14px;
+  font: 500 15px var(--font-body);
+  color: var(--parchment);
+  background: var(--oak);
+  border: 1.5px solid var(--iron);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  opacity: .9;
+  z-index: 50;
 }

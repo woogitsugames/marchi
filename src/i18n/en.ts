@@ -1,6 +1,6 @@
-import type { Dict } from './pl';
+import type { FullDict } from './pl';
 
-export const en: Dict = {
+export const en: FullDict = {
   'app.title': 'Marchia',
   'app.subtitle': 'Roads of the Kingdom',
   'menu.continue': 'Continue',
@@ -105,6 +105,7 @@ export const en: Dict = {
   'contract.again': 'Play again',
   'contract.menu': 'Main menu',
 
+  'hud.showUi': 'Show controls',
   'hud.coins': '{n} silver',
   'hud.rain': 'Rain — wagons slow on unpaved roads',
   'hud.saved': 'Saved',
@@ -195,4 +196,37 @@ export const en: Dict = {
   'contract.time': 'Time',
   'contract.delivered': 'Delivered',
   'contract.left': 'Silver',
+
+  'tutorial.m1.from': 'A letter from the castellan',
+  'tutorial.m1.skip': 'Skip',
+  'tutorial.m1.step1': 'The castellan orders 30 planks and 20 loaves. Tap an entry on the waybill to inspect the castle.',
+  'tutorial.m1.step2': 'A missing delivery is the symptom. Tap the next link in the cause chain to see where the route stalled.',
+  'tutorial.m1.step3': 'Follow one more cause. A wagon shows its destination and ETA; a building shows what it lacks.',
+  'tutorial.m1.step4': 'The river separates sawmill and castle. Select Track to join the existing roads with a crossing.',
+  'tutorial.m1.step5': 'Drag a track across the river, from the north road to the south road. The bridge forms over water.',
+  'tutorial.m1.step6': 'The route is connected. Open the castle from the waybill again and read its current reason. It may change.',
+  'fix.title': 'Repair',
+  'fix.road': 'Build the road: {n} silver',
+  'fix.bridge': 'Build road and bridge: {n} silver',
+  'fix.shown': 'The missing stretch is marked on the map.',
+  'fix.short': 'Short by {n} silver',
+  'contract.causes': 'Where the time went',
+  'contract.noStalls': 'No route stood still for long.',
+  'contract.deliveredItem': '{have}/{need} {good}',
+  'cause.NO_ROAD': 'no road to the gate',
+  'cause.NO_INPUT.NONE_AVAILABLE': 'nothing in stock to fetch',
+  'cause.NO_INPUT.UNREACHABLE': 'stock out of reach',
+  'cause.NO_WAGON.ALL_BUSY': 'every wagon busy',
+  'cause.NO_WAGON.NONE_CAN_REACH': 'no wagon can get there',
+  'cause.OUTPUT_FULL.NO_WAGON': 'store full, no wagon',
+  'cause.OUTPUT_FULL.NO_DESTINATION': 'store full, nowhere to deliver',
+  'cause.WAITING_PICKUP': 'waiting for pickup',
+  'cause.STORAGE_FULL': 'granary full',
+  'cause.BRIDGE_JAM': 'jam on the bridge',
+  'cause.NO_ROUTE': 'no road to the destination',
+  'ledger.bridge': 'Bridge',
+  'app.valley': 'The valley',
+  'app.docTitle': 'Marchia — Roads of the Kingdom',
+  'why.holdsCount': 'In the granary: {n}/{cap}',
+  'hud.stallFixed': '{name} is working again',
 };
