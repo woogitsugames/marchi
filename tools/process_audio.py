@@ -14,6 +14,8 @@ import argparse
 import hashlib
 import json
 import re
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
 import shutil
 import subprocess
 import tempfile
@@ -25,7 +27,138 @@ BASE = Path(__file__).resolve().parents[1]
 MANIFEST = BASE / "tools/audio_sources.json"
 OUT = BASE / "public/assets/audio"
 PROVENANCE = BASE / "docs/audio-provenance.json"
+FREESOUND_SOURCES = BASE / "tools/audio-src"
 MAX_BYTES = 4 * 1024 * 1024
+
+
+
+class FreesoundPage(HTMLParser):
+    """Read the CC0 licence and public audio metadata from a sound page."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.preview: str | None = None
+        self.cc0_link = False
+        self.cc0_label = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == "meta" and (
+            values.get("property") == "og:audio"
+            or values.get("name") == "twitter:player:stream"
+        ):
+            self.preview = values.get("content") or self.preview
+        if tag == "a" and "creativecommons.org/publicdomain/zero/1.0" in (
+            values.get("href") or ""
+        ):
+            self.cc0_link = True
+
+    def handle_data(self, data: str) -> None:
+        if "Creative Commons 0" in data:
+            self.cc0_label = True
+
+
+def freesound_preview(source: dict) -> str:
+    """Discover the official HQ OGG preview (original files require OAuth).
+
+    All files must be CC0, verified on their individual page. The downloaded
+    audio is Freesound's lossy preview, not the original lossless recording.
+    """
+    page = source["page"]
+    sid = source["sound_id"]
+    parsed = urlsplit(page)
+    if parsed.scheme != "https" or parsed.netloc != "freesound.org":
+        raise ValueError(f"Invalid Freesound sound page: {page}")
+    if not re.fullmatch(rf"/people/[^/]+/sounds/{sid}/", parsed.path):
+        raise ValueError(f"Freesound page/ID mismatch: {page}")
+    if source["author"].lower() != parsed.path.split("/")[2].lower():
+        raise ValueError(f"Freesound author/page mismatch: {page}")
+    request = urllib.request.Request(
+        page, headers={"User-Agent": "Mozilla/5.0 (MARCHIA CC0 asset review)"}
+    )
+    with urllib.request.urlopen(request, timeout=45) as response:
+        if urlsplit(response.url).netloc != "freesound.org":
+            raise ValueError("Unexpected Freesound page redirect")
+        html = response.read(2_000_001)
+        if len(html) > 2_000_000:
+            raise ValueError("Freesound page exceeded size limit")
+    reader = FreesoundPage()
+    reader.feed(html.decode("utf-8", errors="replace"))
+    if not (reader.cc0_link and reader.cc0_label):
+        raise ValueError(f"CC0 not independently confirmed on {page}")
+    if not reader.preview or not reader.preview.endswith("-lq.mp3"):
+        raise ValueError(f"No public Freesound preview found on {page}")
+    p = urlsplit(reader.preview)
+    if (p.scheme != "https" or p.netloc != "cdn.freesound.org"
+            or p.query or p.fragment or not re.fullmatch(
+                rf"/previews/\d+/{sid}_[^/]+-lq\.mp3", p.path
+            )):
+        raise ValueError(f"Untrusted Freesound preview URL: {reader.preview}")
+    return reader.preview[:-7] + "-hq.ogg"
+
+
+def fetch_freesound(source: dict, dest: Path) -> str:
+    url = freesound_preview(source)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_name(dest.name + ".part")
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "MARCHIA-audio-assets/2.0 (CC0)"}
+        )
+        with urllib.request.urlopen(req, timeout=90) as response, tmp.open("wb") as fh:
+            landed = urlsplit(response.url)
+            if landed.scheme != "https" or landed.netloc != "cdn.freesound.org":
+                raise ValueError(f"Untrusted Freesound CDN redirect: {response.url}")
+            total = 0
+            while chunk := response.read(1024 * 1024):
+                total += len(chunk)
+                if total > 40 * 1024 * 1024:
+                    raise ValueError("Freesound preview exceeded 40 MiB")
+                fh.write(chunk)
+        if total < 1000:
+            raise ValueError(f"Preview looks empty: {url}")
+        tmp.replace(dest)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return url
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_manifest(manifest: dict) -> None:
+    ids = [t["id"] for t in manifest["tracks"]]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Duplicate audio asset ID in manifest")
+    for track in manifest["tracks"]:
+        if track["kind"] not in ("ambient", "sfx"):
+            raise ValueError(f"Invalid kind for {track['id']}")
+        if track["source"] not in manifest["sources"]:
+            raise ValueError(f"Missing source for {track['id']}")
+        if track["seconds"] <= 0 or track.get("start", 0) < 0:
+            raise ValueError(f"Invalid timing for {track['id']}")
+        if "loop_crossfade" in track and not (
+            0 < track["loop_crossfade"] < track["seconds"] / 2
+        ):
+            raise ValueError(f"Invalid crossfade for {track['id']}")
+    for key, source in manifest["sources"].items():
+        if source["license"] != "CC0-1.0":
+            raise ValueError(f"Non-CC0 audio source: {key}")
+        if source.get("provider") == "freesound":
+            sid = source["sound_id"]
+            if not isinstance(sid, int) or sid <= 0:
+                raise ValueError(f"Invalid Freesound ID: {key}")
+            if source.get("preview") != "ogg-hq":
+                raise ValueError(f"Unsupported Freesound preview quality: {key}")
+            if source["filename"] != f"{sid}-hq.ogg":
+                raise ValueError(f"Unexpected Freesound filename: {key}")
+        elif source.get("provider", "opengameart") != "opengameart":
+            raise ValueError(f"Unsupported provider: {key}")
 
 
 def run(cmd: list[str], *, capture: bool = False) -> str:
