@@ -129,3 +129,14 @@ without the pack or on a 4K error, ultra falls back to 2K, then to the 1k JPGs.
 *Measured: UASTC+RDO albedo was 3.4× larger than ETC1S q255 and scored lower PSNR on these noisy
 scans; 4K UASTC normals were 10–16 MB each while 2048 normals already give ~3 texels per pixel at the closest zoom, so
 they are not worth the download. ETC1S → ETC2 RGB also halves VRAM versus ASTC.* (decided)
+
+**D-19 — 4K pack: own download, per-version folders, CDN hosting proposed.** The Ultra pack (D-17 / D-18) is
+fetched by `src/platform/assetPack.ts`, not Play Asset Delivery: PAD needs Play/AAB distribution (we ship
+sideloaded debug APKs), a custom native plugin and has no iOS counterpart. Each pack version installs into its
+own folder (native `Directory.Data/ultra-pack/v<N>`, web cache `marchia-ultra-v<N>`); the active version
+switches only after every file passed its SHA-256 check, so an interrupted upgrade never breaks the installed
+pack. Files restart from byte 0 on failure (no HTTP Range; 2–4 MB each). Native serves files via
+`Capacitor.convertFileSrc`; web serves Cache Storage through a tiny service worker (`public/ultra-pack-sw.js`)
+and falls back to the network URL without one. Hosting: Cloudflare R2 + custom domain recommended (CORS, free
+egress); GitHub Releases rejected (no CORS headers). Production URL is still a placeholder. Details:
+docs/ASSET_PACK.md. (decided: mechanism; proposed: hosting — owner to confirm)

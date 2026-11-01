@@ -158,7 +158,7 @@ function joinUrl(base: string, path: string): string {
   return (base.endsWith('/') ? base : `${base}/`) + path;
 }
 
-/** Downloads and validates `<base>manifest.json` (no-store: always the newest version). */
+/** Downloads and validates `<base>manifest.json`. */
 export async function fetchManifest(base: string, opts: { fetch?: FetchFn; signal?: AbortSignal } = {}): Promise<PackManifest> {
   const fetchFn = opts.fetch ?? (globalThis.fetch as FetchFn);
   checkAbort(opts.signal);
