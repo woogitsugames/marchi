@@ -75,9 +75,13 @@ export function settingsSheet(act: SettingsActions): SheetContent {
       const seg = (name: string, opts: [string, string][], cur: string): string =>
         `<div class="seg" role="group">${opts.map(([v, l]) =>
           `<button class="btn cf${v === cur ? ' is-on' : ''}" data-set="${name}:${v}" aria-pressed="${v === cur}">${esc(l)}</button>`).join('')}</div>`;
+      // 17 languages: a 2-3 column grid of native names, each in its own language (lang/dir for fonts & screen readers)
+      const langGrid = (cur: string): string =>
+        `<div class="lang-grid" role="group" aria-label="${esc(t('menu.language'))}">${availableLangs().map((l) =>
+          `<button class="btn cf${l === cur ? ' is-on' : ''}" data-set="lang:${l}" lang="${l}" dir="auto" aria-pressed="${l === cur}">${esc(LANG_NAMES[l])}</button>`).join('')}</div>`;
       const html = `
         <div class="setting"><span class="s-label">${esc(t('menu.language'))}</span>
-          ${seg('lang', availableLangs().map((l) => [l, LANG_NAMES[l]] as [string, string]), getLang())}</div>
+          ${langGrid(getLang())}</div>
         <div class="setting"><span class="s-label">${esc(t('menu.quality'))}</span>
           ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality())}
           <div class="s-hint">${esc(act.quality() === 'auto' ? t('menu.qualityDetected', { q: t(`quality.${act.autoQuality()}` as MessageKey) }) : t('menu.qualityHint'))}</div></div>

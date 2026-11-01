@@ -18,8 +18,7 @@ const OUT = path.resolve('docs/shots');
 // cam = x,z (cells), dist (m), yaw. 16 m = MIN_DIST (closest the player can zoom).
 const SCENES = {
   road: { q: 'cam=41,34,16,-0.95&t=306&tod=0.36', crop: [0.30, 0.42, 0.40, 0.30] },
-  roadmacro: { q: 'cam=41,34,6,-0.95&t=306&tod=0.36', crop: [0.30, 0.40, 0.40, 0.30] },
-  building: { q: 'cam=55,44,16,-0.5&t=300&tod=0.36', crop: [0.25, 0.25, 0.50, 0.40] },
+  building: { q: 'cam=55,47,18,-0.5&t=300&tod=0.36', crop: [0.15, 0.30, 0.45, 0.45] },
 };
 const TIERS = [
   ['1k', 1024],
