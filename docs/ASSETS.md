@@ -229,8 +229,8 @@ are written at render time to docs/audio-provenance.json.
 | public/assets/audio/sfx/bridge-wood.* | [steps in wood floor.wav](https://opengameart.org/sites/default/files/steps%20in%20wood%20floor.wav) from [Steps in wood floor](https://opengameart.org/content/steps-in-wood-floor) | mikeask | CC0 1.0 | 1.3-s extracted mono recording of footfalls on wooden planks, fade-in/out, high/low-pass, −6 dBFS peak. Provisional bridge-thump proxy, not a recording of wheels on bridge. |
 
 **Verification:** five recording-based tracks (10 output binaries) are committed on
-\`gpt/07-realistic-recordings\`. The GitHub Actions audio workflow and npm tests
-passed; SHA-256 hashes of the six source recordings are in \`docs/audio-provenance.json\`.
+`gpt/07-realistic-recordings`. The GitHub Actions audio workflow and npm tests
+passed; SHA-256 hashes of the six source recordings are in `docs/audio-provenance.json`.
 Historical suitability still requires a listening review before merge.
 
 ### Effects deliberately retained from task 02 (synthetic)
