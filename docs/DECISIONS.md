@@ -101,4 +101,5 @@ covered none of them well.* (decided)
 ID3 comments, e.g. `made with suno; created=…; id=…`). Rights are held by the publisher (owner, 2026-11-01).
 `docs/legal/music_provenance.json` records source path, source SHA-256, Suno id and shipped-file SHA-256,
 because transcoding drops ID3. Before store release: confirm the Suno plan that applied at generation time
-and answer the stores' AI-generated-content questions accordingly (Google Play / App Store). (decided; release check open)
+and answer the stores' AI-generated-content questions accordingly (Google Play / App Store). Owner confirmed
+2026-11-01: the Suno plan was paid at generation time. (decided; store AI-content answers remain a release step)

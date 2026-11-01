@@ -10,7 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
-- [ ] P1 — Przed wydaniem: potwierdzić plan Suno dla 14 utworów i odpowiedzieć na pytania sklepów o treści AI (D-16, docs/legal/music_provenance.json) — decyzja właściciela.
+- [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
 - [ ] P2 — Wczesne wykrycie „brak drogi do zwycięstwa” (brak ścieżki do zamku i srebro < koszt najtańszej przeprawy, a wozów nie ma do sprzedania) → list z przyczyną.
 - [ ] P2 — Drogi z daleka prawie niewidoczne (view-far-*.png): łamie zasadę „drogi są rysunkiem” z ART_DIRECTION — zwiększyć kontrast/szerokość toru przy dalekim zoomie (src/render/terrain.ts) (źródło: claude).
 - [ ] P3 — Daleki widok: rozrzucone brązowe plamy krzewów/dalekich drzew wyglądają jak latające liście nad polami (view-far-landscape.png) — ograniczyć krzewy na polach, poprawić karty dalekich drzew (src/render/vegetation.ts).
