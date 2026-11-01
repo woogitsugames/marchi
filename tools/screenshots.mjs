@@ -192,7 +192,8 @@ async function foldSequence() {
     await page.waitForTimeout(1500);
     let n = 0;
     const snap = async (label) => {
-      await page.waitForTimeout(700);
+      // layout follows within one frame + the 500 ms fold poll; software GL frames are slow
+      await page.waitForTimeout(1600);
       const file = resolve(outDir, `fold-seq-${++n}-${label}.png`);
       await cdpShot(cdp, page, file);
       console.log('shot', file.replace(root + '/', ''), JSON.stringify(await state(page)));
@@ -237,7 +238,7 @@ async function foldSequence() {
 if (FOLD) {
   try {
     for (const c of FOLD_CLASSES) {
-      if (filters.length && !filters.some((f) => c.id === f || f === 'seq')) continue;
+      if (filters.length && !filters.includes(c.id)) continue;
       for (const s of FOLD_SCREENS) {
         for (let attempt = 1; attempt <= 2; attempt++) {
           try { await foldShoot(c, s); break; } catch (e) {

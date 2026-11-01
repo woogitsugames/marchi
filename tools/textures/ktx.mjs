@@ -7,7 +7,11 @@
 // Settings (docs/ASSETS.md, D-14):
 //   1k / 512 (low tier, legacy): albedo + orm ETC1S q160 clevel 2.
 //   2k / 4k (high / ultra):      albedo + orm ETC1S q255 clevel 2; normal UASTC level 2,
-//                                RDO lambda 3, zstd.  All: mipmaps, Y-flip (matches flipY JPGs).
+//                                RDO lambda 3, zstd.  All: mipmaps.
+// Orientation: model sets (and all 1k/512 files) are Y-flipped to match three's flipY = true
+// JPG textures. The 2048/4096 files of the five TERRAIN sets are NOT flipped: they are stitched
+// into array textures, which upload with flipY = false like the canvas-decoded JPG arrays
+// (top row first), and the terrain shader's normal Y sign assumes that orientation.
 import fs from 'node:fs';
 import path from 'node:path';
 const [enc, rawDir, outRoot, only] = process.argv.slice(2);
@@ -16,6 +20,7 @@ const decoder = async (buf) => {
   const n = Math.round(Math.sqrt(buf.length / 4));
   return { width: n, height: n, data: buf };
 };
+const TERRAIN = new Set(['meadow', 'mud_track', 'forest_floor', 'riverbank', 'cobblestone']);
 const files = fs.readdirSync(rawDir).filter((f) => f.endsWith('.rgba') && (!only || f.includes(only))).sort();
 for (const f of files) {
   const [name, map] = f.replace('.rgba', '').split('__');
@@ -23,7 +28,8 @@ for (const f of files) {
   const kind = map.split('_')[0];
   const size = Math.round(Math.sqrt(buf.length / 4));
   const tier = size >= 2048;
-  const base = { generateMipmap: true, isYFlip: true, imageDecoder: decoder, isKTX2File: true };
+  const flip = !(tier && TERRAIN.has(name));
+  const base = { generateMipmap: true, isYFlip: flip, imageDecoder: decoder, isKTX2File: true };
   const q = tier ? 255 : 160;
   const opts = kind === 'normal'
     ? { ...base, isUASTC: true, isNormalMap: true, isPerceptual: false, isSetKTX2SRGBTransferFunc: false,

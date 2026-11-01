@@ -735,7 +735,7 @@ body.is-side .sheet-grip::before { display: none; }
 .seg .btn.is-on::after { content: ''; width: 8px; height: 8px; background: var(--clay); transform: rotate(45deg); order: -1; }
 .setting { margin-bottom: 16px; }
 .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 4px; }
-.lang-grid .btn { font-size: 15px; padding: 0 8px; justify-content: flex-start; min-width: 0; }
+.lang-grid .btn { font-size: 15px; padding: 0 8px; justify-content: flex-start; min-width: 0; white-space: normal; text-align: start; line-height: 1.1; }
 .lang-grid .btn > * { min-width: 0; }
 .lang-grid .btn.is-on { --frame: var(--clay); --fill: var(--parchment-dim); color: var(--ink); font-weight: 700; }
 .lang-grid .btn.is-on::after { content: ''; width: 8px; height: 8px; background: var(--clay); transform: rotate(45deg); order: -1; flex: none; }
