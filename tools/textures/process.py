@@ -1,9 +1,11 @@
 """Build shipping PBR textures from Poly Haven JPG downloads (see fetch.py).
 usage:
   python3 -I process.py <src_dir> <out_root> <raw_dir>              # 1k sources -> 1024 (+512 terrain) JPG + PNG
-  python3 -I process.py <src_dir> <out_root> <raw_dir> --tiers      # 4k sources -> 4096 / 2048 raw RGBA for ktx.mjs
+  python3 -I process.py <src_dir> <out_root> <raw_dir> --tiers      # 4k sources -> 4096 / 2048 albedo+orm, 1024 normals (raw RGBA for ktx.mjs)
+  python3 -I process.py <src_dir> <out_root> <raw_dir> --tiers --normals   # only the 1024 tier normals
 The --tiers mode writes no JPGs (KTX2 only, see docs/ASSETS.md): raw files are
 <raw_dir>/<set>__<map>_<size>.rgba (Y not flipped; ktx.mjs flips at encode time).
+Tier normals are 1024 px for high AND ultra (APK budget, D-21); ktx.mjs names them normal.ktx2.
 Grading is identical in both modes; thatch crop/cross-fade lengths scale with the source size.
 """
 import sys, os, json
@@ -12,6 +14,8 @@ from PIL import Image
 
 SRC, OUT, RAW = sys.argv[1], sys.argv[2], sys.argv[3]
 TIERS = '--tiers' in sys.argv[4:]
+NORMALS_ONLY = '--normals' in sys.argv[4:]
+NORMAL_TIER_SIZE = 1024   # high + ultra normals (D-21: 2048 UASTC normals were 45 MB of the APK)
 ONLY = [a for a in sys.argv[4:] if not a.startswith('--')]
 # --tiers: sizes per set. Bark stays 2k (thin trunks, never fills the screen).
 TIER_SIZES = {'bark': [2048]}
@@ -92,13 +96,16 @@ for name, (pid, terrain, sscale, k, target) in SETS.items():
     orm = arm.copy(); orm[..., 2] = 0
     od = f'{OUT}/{name}'; os.makedirs(od, exist_ok=True)
     if TIERS:
+        ns = NORMAL_TIER_SIZE                     # one normal size for high + ultra (D-21)
+        nim = to_img(n, ns)
+        if nim.size[0] < n.shape[1]:              # downsampled normals get shorter: renormalise
+            nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), ns)
+        write_rgba(nim, f'{RAW}/{name}__normal_{ns}.rgba')
+        if NORMALS_ONLY:
+            print(name, 'normal', ns, flush=True)
+            continue
         for s in TIER_SIZES.get(name, DEFAULT_TIER_SIZES):
             write_rgba(to_img(g, s), f'{RAW}/{name}__albedo_{s}.rgba')
-            if s == 2048:                         # normals ship at 2k only (ultra reuses them, D-14)
-                nim = to_img(n, s)
-                if nim.size[0] < n.shape[1]:      # downsampled normals get shorter: renormalise
-                    nim = to_img(renorm(np.asarray(nim).astype(np.float32) / 255), s)
-                write_rgba(nim, f'{RAW}/{name}__normal_{s}.rgba')
             write_rgba(to_img(orm, s), f'{RAW}/{name}__orm_{s}.rgba')
             if s == max(TIER_SIZES.get(name, DEFAULT_TIER_SIZES)):   # preview for the contact sheet
                 to_img(g, 1024).save(f'{RAW}/{name}__albedo_preview.jpg', quality=92)

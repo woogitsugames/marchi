@@ -38,16 +38,16 @@ async function tutorial(w, h) {
   const { page, ctx } = await open('play=m1&tut=1', w, h);
   await shot(page, `tut1-${tag}`);
   await page.locator('.wb-line').first().click();
-  await page.waitForTimeout(1600);
+  await page.waitForTimeout(2600);
   console.log('   step', await step(page));
   await shot(page, `tut2-${tag}`);
   await page.locator('#sheets .chain button[data-go]:not([disabled])').first().click();
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(2200);
   console.log('   step', await step(page));
   await shot(page, `tut3-${tag}`);
   const link = page.locator('#sheets .chain button[data-go]:not([disabled])').first();
   if (await link.count()) await link.click();
-  await page.waitForTimeout(3300);
+  await page.waitForTimeout(4500);
   console.log('   step', await step(page));
   await shot(page, `tut4-${tag}`);
   await page.locator('.rail [data-tool="road"]').click();
@@ -61,14 +61,14 @@ async function tutorial(w, h) {
   console.log('   step', await step(page));
   await shot(page, `tut6-${tag}`);
   await page.locator('.wb-line').first().click();
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(1300);
   await shot(page, `tut6-coda-${tag}`);
   await page.waitForTimeout(2600);
   console.log('   after coda', await step(page), await page.evaluate(() => localStorage.getItem('marchia.prefs')));
   await ctx.close();
 }
 
-if (want('tut')) { await tutorial(412, 915); await tutorial(915, 412); await tutorial(874, 787); }
+if (want('tut')) { await tutorial(412, 915); await tutorial(915, 412); }
 if (want('gap')) {
   for (const [w, h] of [[412, 915], [915, 412], [904, 1000]]) {
     const { page, ctx } = await open('play=m1&ff=60&speed=0&open=mill', w, h);

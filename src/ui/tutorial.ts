@@ -38,7 +38,7 @@ const CHAIN_WAIT_MS = 5000;
 /** Step 3: a chain link must appear this soon after the card opened, else the step is skipped. */
 const LINK_WAIT_MS = 900;
 /** Step 4 in portrait: the card covers the tool rail; let the player read it, then fold it away. */
-const CLOSE_SHEET_DELAY_MS = 2600;
+const CLOSE_SHEET_DELAY_MS = 2000;
 /** After the last tap: outline the current reason briefly, then end. */
 const CODA_MS = 2600;
 const NOTE_MAX_W = 340;
@@ -329,7 +329,9 @@ export class Tutorial {
     }
 
     const tg = this.target();
-    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 4) : null;
+    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 6) : null;
+    // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
+    const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();
     if (now - this.placeAt > 150) { this.placeAt = now; this.placeNote(box); }
 
@@ -347,7 +349,7 @@ export class Tutorial {
     }
 
     // arrow: on the free side of the target that does not cross the note
-    const dir = box ? this.arrowDir(box) : null;
+    const dir = box && !inSheet ? this.arrowDir(box) : null;
     this.arrow.classList.toggle('is-shown', !!dir);
     if (box && dir) {
       const gap = 6;
