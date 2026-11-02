@@ -441,3 +441,13 @@ in `PENDING_KEYS`; XII renamed "Wielkie warzenie" (more natural than "piwowarstw
 to the new numbers (docs/content/letters-10-12.md). Rejected: changing the dispatcher (load splitting, surplus
 priority) — it would move every mission hash. Open: X still reads "wood on the way" most of the time (BACKLOG);
 X repeats IX's lesson in isolation; results are sensitive to the action second (dispatcher chaos). (decided)
+
+**D-40 — The castellan's letters are shown in game.** The authored letters of `src/content/letters.ts` (missions
+I–XII) now open and close each contract. *Opening*: a letter over the paused scene when a contract starts from the
+menu (`buildOpeningLetter`, `src/ui/menu.ts`): mission title, the letter, "Do dzieła"; one gesture closes it (a tap
+anywhere, the button, Escape or Enter), then the game runs at ×1 and mission I's tutorial starts. Not shown for
+debug `?play=` starts (screenshots, bots) nor on the end letter's "Again" (the player has just read it).
+*End*: the letter by seals (won 1–3) or the loss replaces the generic sentence; missions without letters keep it.
+A language without authored letters falls back to English (D-18) and the paragraphs carry `dir="auto"`, so an
+English letter keeps its punctuation in the Arabic UI. (decided)
+

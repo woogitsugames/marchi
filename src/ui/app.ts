@@ -22,7 +22,7 @@ import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import {
-  buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+  buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
 import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
@@ -360,12 +360,24 @@ export class App implements PanelNav {
   }
 
   /** slot: the valley ledger to play in (free valley only; default the first ledger). */
-  newGame(id: MissionKey, slot: string | null = null): void {
+  /** letter: show the castellan's opening letter (not for debug ?play= starts, not on "Again"). */
+  newGame(id: MissionKey, slot: string | null = null, letter = true): void {
     this.missionId = id;
     this.slot = slotFor(id, slot);
     this.enterGame(createWorld(id));
     const forced = this.params.get('tut') === '1';
-    if (id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'))) this.startTutorial();
+    const tutorial = id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'));
+    const opening = letter && !this.debugStart ? buildOpeningLetter(id, () => {
+      // the game waits paused under the letter; the tutorial (mission I) starts once it is read
+      this.loop.speed = 1;
+      this.hud?.setSpeed(1);
+      if (tutorial) this.startTutorial();
+    }) : null;
+    if (opening) {
+      this.loop.speed = 0;
+      this.hud?.setSpeed(0);
+      this.layers.overlay.append(opening);
+    } else if (tutorial) this.startTutorial();
   }
 
   // ------------------------------------------------------------------ tutorial (mission I)
@@ -592,7 +604,7 @@ export class App implements PanelNav {
     this.setTool('none');
     void deleteSave(this.slot).catch(() => undefined);
     const letter = buildEndLetter(this.world, stars(this.world), {
-      again: () => this.newGame(this.missionId, this.slot),
+      again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
     });
     this.layers.overlay.append(letter);
