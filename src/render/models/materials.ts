@@ -328,7 +328,28 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
  * texture as `null` removes it. Safe to call before or after meshes are created.
  */
 export function applyTextures(key: MatKey, set: TextureSet): void {
+  assignMaps(modelMaterial(key), key, set);
+}
+
+/**
+ * A detached copy of a kind's material with `set` applied (same shader hooks and program cache
+ * key): lets the renderer compile the textured variant before `applyTextures` binds it.
+ */
+export function texturedVariant(key: MatKey, set: TextureSet): MeshStandardMaterial {
   const m = modelMaterial(key);
+  const c = m.clone();
+  c.onBeforeCompile = m.onBeforeCompile;
+  c.customProgramCacheKey = m.customProgramCacheKey;
+  assignMaps(c, key, set);
+  return c;
+}
+
+/** Every material kind (shader pre-warm draws one stand-in mesh per kind). */
+export function materialKinds(): MatKey[] {
+  return Object.keys(SPECS) as MatKey[];
+}
+
+function assignMaps(m: MeshStandardMaterial, key: MatKey, set: TextureSet): void {
   if (set.map !== undefined && !SPECS[key].alphaLeaf && !SPECS[key].alphaNeedle) {
     m.map = set.map;
     if (m.map) m.map.colorSpace = SRGBColorSpace;

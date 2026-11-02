@@ -88,3 +88,63 @@ node tools/frame-cost.mjs http://127.0.0.1:5202 new sandbox high 2 98 1 20   # l
 ```
 
 Surowe wyniki: 20 przebiegów (10 par przed/po) + 8 przebiegów dpr0.5 (w tym 4 z profilem).
+
+## Follow-up 2026-11-02: wykonane (1) pre-warm shaderów i (2) `markOpposing` (gałąź `claude/w-perf`)
+
+### (1) Pre-warm shaderów — `src/render/prewarm.ts`, wywołanie w `src/render/view.ts`
+
+- Po `setWorld`, po `setQuality` i po podpięciu tekstur widok ustawia flagę; pre-warm startuje w `setTimeout`
+  **po narysowaniu klatki** (pierwsza klatka świata nie czeka na nic więcej niż dziś; w menu kompiluje się w tle
+  podczas kadru z mostem).
+- Kompilacja: `renderer.compile` (bez `compileAsync`: jego pętla czytania gotowości rzuca `TypeError`, gdy materiał
+  zostanie zwolniony w trakcie, np. zmiana świata — złapane w pierwszej wersji) + własne `settle` pytające programy o
+  `COMPLETION_STATUS` (KHR_parallel_shader_compile: linkowanie poza głównym wątkiem), potem „pierwsze użycie”
+  (`getUniforms` = tabela uniformów + `getProgramInfoLog`) po 4 programy na makrozadanie, poza klatkami.
+- Zakres: cała scena, także niewidoczne (puste instancje wozów/koni/ładunków w obu LOD, drzewa blisko/daleko/impostor
+  z crossfade, trawa, duch budowy w obu kolorach, woda, mgła, deszcz, dym); po jednej siatce na każdy rodzaj materiału
+  (`materialKinds()`: budynki i mosty postawione później); wariant **cieni** każdej siatki (materiał głębi jak w
+  `WebGLShadowMap`: własne `customDepthMaterial` konia i impostora, klony dla kart z alpha-test/A2C, strona
+  odwrócona, kompilacja z podpiętym render targetem = ten sam klucz programu); **zmiana tekstur**
+  (`texturedVariant`: klon materiału z nowymi mapami kompiluje się, zanim `applyTextures` podepnie je do wspólnych
+  materiałów — wcześniej to była główna kompilacja w oknie gry: `model-trunk`/`model-wood` z normal/roughness).
+- Pomiar (`tools/frame-cost.mjs`, nowy argument `early=1`: throttle 4x od nawigacji, okno 20 s od `ready`; liczniki
+  WebGL z init script: `linkProgram` i ms `getProgramInfoLog` **wewnątrz `App.frame`**, czasy pierwszych klatek).
+  Średnie z 2 przebiegów przed / po (SwiftShader, obciążony kontener — JS/klatkę ma rozrzut ±30%):
+
+| scena | JS/klatkę ms | render ms | linkProgram w klatce | getProgramInfoLog w klatce ms | programy (start okna -> koniec) | 1. klatka ms |
+|---|---|---|---|---|---|---|
+| m1 low dpr2, early | 23.3 / 19.5 | 19.7 / 15.2 | 2, 2 / 0, 0 | 58 / 0 | 12->14 / 36->40 | 338 / 333 |
+| m1 high dpr0.5, early | 32.5 / 28.5 | 26.5 / 15.2 | 3, 3 / 0, 0 | 66 / 0 | 18->21 / 39->43 | 528 / 548 |
+| m1 high dpr2, early | 22.0 / 13.2 | 14.5 / 11.1 | 0 / 0 | 0 / 0 | 18->18 / 39->39 | 528 / 478 |
+| m1 high dpr0.5, okno po 1.5 s (jak w tabeli wyżej) | 39.8 / 23.5 | 33.5 / 17.3 | 3, 3 / 0, 0 | 98 / 0 | 18->21 / 39->43 | 392 / 366 |
+| sandbox ~50 w. low dpr2, early | 22.6 / 22.1 | 15.3 / 14.1 | 2, 2 / 0, 0 | 40 / 0 | 12->14 / 36->40 | — |
+| sandbox ~100 w. high dpr2, early | 31.0 / 26.8 | 19.2 / 19.4 | 0 / 0 | 0 / 0 | 18->18 / 39->39 | — |
+| sandbox ~100 w. high dpr2, po 1.5 s | 26.0 / 28.9 | 13.6 / 16.1 | 0 / 0 | 0 / 0 | 18->18 / 39->43 | — |
+
+  „Programy po” w oknie rosną o 4, ale to warianty z teksturami kompilowane **asynchronicznie przed** podpięciem
+  (0 w klatce). Średnio po 7 scenach JS/klatkę 28.2 -> 23.2 ms; pewny wynik to **0 kompilacji w klatkach** we
+  wszystkich scenach (przed: 2-3 na przebieg, 40-98 ms blokady w `getProgramInfoLog`). Pierwsza klatka bez zmian
+  (330-550 ms w obu wersjach, w szumie).
+- Warianty pojawiające się później (sandbox low, 12 s po starcie na rozgrzanie, potem throttle 4x; linki w klatce
+  przed / po): duch budowy 2 / 0, budowa 33 budynków + mosty + 20 wozów 2 / 0, deszcz 1 / 0, zmiana low->high 3 (90 ms) /
+  4 (33 ms), powrót high->low 0 / 0.
+- Koszt: low 14 -> 40 programów, high 21 -> 43 (cienie każdej siatki, rodzaje materiałów nieobecne jeszcze w świecie).
+  Pre-warm w menu: ok. 2-3 s ściany (async, równolegle z kadrem menu), na wywołanie bez nowych programów 2 ms.
+- Zostaje: przełączenie jakości w ustawieniach nadal kompiluje w klatce 4 programy (A2C liści/igieł, teren bez
+  wariantu low) — jednorazowo, po geście gracza; dałoby się jak teksturami (klon -> kompilacja -> przełączenie), ale
+  `customProgramCacheKey` terenu czyta `userData` oryginału (klon dałby zły klucz). Nie zrobione.
+
+### (2) `markOpposing` — `src/render/wagonsView.ts`
+
+- Korekta diagnozy: `markOpposing` **nie** szło co klatkę — wołane było z `afterTick`, czyli po każdym ticku
+  (przy x4 lub wolnej klatce kilka razy na klatkę, a liczy się tylko ostatni wynik). Teraz `afterTick` ustawia flagę,
+  a `frame` liczy raz przed rysowaniem, jeśli od ostatniej klatki był tick (czyli najwyżej raz na tick i raz na
+  klatkę). Wynik zależy tylko od migawek ostatniego ticku (`dx/dz`, surowy `lane`), więc jest identyczny.
+  Dodatkowo bez alokacji: bez domknięcia `ins`, bez iteratora `for..of`, migawki po indeksie (jeden lookup `Map` na wóz
+  zamiast jednego na każdego sąsiada).
+- Pomiar (sandbox 100 wozów, dpr 0.5, throttle 4x, 20 s): przy x4 360 -> 36 wywołań, łącznie 6.5 -> 3.1 ms
+  (0.18 -> 0.09 ms/klatkę); przy x1 90 -> 34 wywołań, 4.0 -> 2.8 ms. Zysk mały, bo samo wywołanie kosztuje
+  0.02-0.09 ms (szacunek 0.5-1 ms/klatkę z profilu był zawyżony).
+- Obraz identyczny: `tools/jam-diff.mjs` (harness widoku, `frames=90` stałe kroki 1/30 s, sim x4), 30 wozów:
+  korek przy moście (`stress=1&t=20`, 19 w ruchu, 1 para z naprzeciwka) i kolejka (`t=90`) — 0 różnych pikseli
+  z 376 980 w obu scenach. `tests/wagon-spacing` zielone (`npm test`: 329 / 0).
