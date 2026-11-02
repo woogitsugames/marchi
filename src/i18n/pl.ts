@@ -356,6 +356,11 @@ export const pl = {
   'rank.4': 'Gród',
   'rank.5': 'Stolica',
   'town.unlockCastle': 'rozbudowa zamku',
+  // UI round 5 (valley chains): see PENDING_KEYS
+  'status.NO_INPUT.CONTESTED.to': '{good} idzie do: {rival}',
+  'road.stone': '{n, plural, one {# kamień} few {# kamienie} many {# kamieni} other {# kamienia}} (masz {have})',
+  'why.stoneReserve': 'Rezerwa kamienia na bruk i mosty: {n} z {max}',
+  'why.stoneAll': 'Kamień do budowy we wszystkich spichlerzach: {n}',
   // missions VII-IX (D-32): see PENDING_KEYS
   'menu.m7': 'VII. Ryby na post',
   'menu.m7Sub': 'Rybak nad wodą, zamek za mostem',
@@ -423,6 +428,10 @@ export const PENDING_KEYS = [
   'err.NO_STONE.mining',
   'err.NO_STONE.noQuarry',
   'why.waitsCustomer',
+  'status.NO_INPUT.CONTESTED.to',
+  'road.stone',
+  'why.stoneReserve',
+  'why.stoneAll',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

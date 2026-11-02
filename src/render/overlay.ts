@@ -25,6 +25,12 @@ export class OverlayData {
   readonly ghostOn = new Vector2(0, 0);
   /** 1 = the road preview is a proposed connection (hatched), 0 = a drawn road (solid). */
   previewDash = { value: 0 };
+  /** Suitable ground for the building being placed (quarry: rock, fisher: by the water), R channel. */
+  readonly siteTexture: DataTexture;
+  private readonly siteData: Uint8Array;
+  /** 1 while site cells are shown. */
+  siteOn = { value: 0 };
+  private sites: number[] = [];
   private preview: RoadPreview | null = null;
   private trafficMax = 1;
 
@@ -34,6 +40,21 @@ export class OverlayData {
     this.texture.magFilter = LinearFilter;
     this.texture.minFilter = LinearFilter;
     this.texture.needsUpdate = true;
+    this.siteData = new Uint8Array(w * h * 4);
+    this.siteTexture = new DataTexture(this.siteData, w, h, RGBAFormat, UnsignedByteType);
+    this.siteTexture.magFilter = LinearFilter;
+    this.siteTexture.minFilter = LinearFilter;
+    this.siteTexture.needsUpdate = true;
+  }
+
+  /** Show (or with null hide) the cells where the building being placed may stand. */
+  setSites(cells: readonly number[] | null): void {
+    const d = this.siteData, n = this.w * this.h;
+    for (const c of this.sites) d[c * 4] = 0;
+    this.sites = [];
+    if (cells) for (const c of cells) if (c >= 0 && c < n) { d[c * 4] = 255; this.sites.push(c); }
+    this.siteOn.value = this.sites.length > 0 ? 1 : 0;
+    this.siteTexture.needsUpdate = true;
   }
 
   /** Refresh the traffic channel from sim state (cheap; call ~1 Hz). */

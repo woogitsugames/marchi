@@ -1,5 +1,5 @@
 // Road drafting: drag over the map, cells joined with lineCells, live validation and cost.
-import { lineCells, roadCellCost, validateRoad, type CommandError, type SurfaceKind, type World } from '../sim/index';
+import { lineCells, roadCellCost, roadStoneCost, stoneAvailable, validateRoad, type CommandError, type SurfaceKind, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
 import type { Markers } from './markers';
@@ -100,7 +100,12 @@ export class RoadDraft {
     const seen = new Set<number>();
     for (const c of this.cells) if (!seen.has(c)) { seen.add(c); cost += roadCellCost(world, c, this.surface); }
     const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: iso(fmtInt(water)), cells: cellsWord(water) }) : '';
-    const costText = cost > 0 ? t('road.cost', { n: iso(fmtInt(cost)) }) : t('road.free');
+    // free valley: cobbles and stone bridges also take stone from the granaries ("4 kamienie (masz 2)")
+    const stone = roadStoneCost(world, this.cells, this.surface);
+    const silverText = cost > 0 ? t('road.cost', { n: iso(fmtInt(cost)) }) : t('road.free');
+    const costText = stone > 0
+      ? `${silverText} · ${t('road.stone', { n: stone, have: iso(fmtInt(stoneAvailable(world))) })}`
+      : silverText;
     if (r.ok) {
       view.setRoadPreview({ cells: this.cells, valid: true, badCell: -1 });
       this.markers.setDraft(x, y, costText, joinList([bridge, t('road.cells', { n: iso(fmtInt(seen.size)), cells: cellsWord(seen.size) })]), false);

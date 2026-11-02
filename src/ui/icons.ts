@@ -75,7 +75,9 @@ export type IconId =
   | 'build'
   | 'rotate'
   | 'undo'
-  | 'bridge_ice';
+  | 'bridge_ice'
+  // valley chains (UI round 5)
+  | 'contested';
 
 // ---------------------------------------------------------------------------
 // Geometry kit
@@ -1952,6 +1954,24 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     }
     d.hatchInk([[9.6, 17.6], [15.4, 16.6], [15.8, 17.4], [9.6, 18.4]], -30, 1.2, 0.5);
     d.hatchInk([[4.4, 21.4], [10.8, 20.6], [11.2, 21.6], [4.6, 22.2]], -30, 1.2, 0.5);
+  },
+
+  contested(d) {
+    // a cart track forking in two: the right fork is worn deep (the rival takes the goods),
+    // the left fork fades out with gaps before it reaches its post
+    const stem = seg([12, 23], [12, 14.6], 8);
+    d.ink(band(stem, taper(3.2, 2.6)));
+    const right = cubic([12, 15.2], [12.4, 10.6], [16.6, 8.4], [19.6, 4.8], 24);
+    d.ink(band(right, taper(2.6, 1.9)));
+    // arrowhead on the taken fork
+    d.ink([[17.2, 3.6], [22.4, 1.4], [21.2, 6.8]]);
+    // the faint fork: three dashes thinning out
+    const left = cubic([11.6, 15.2], [11.2, 10.8], [7.4, 8.6], [4.4, 5.6], 24);
+    for (const [a, b] of [[1, 7], [10, 15], [18, 22]] as const) d.inkFine(band(left.slice(a, b + 1), taper(1.5, 0.8)));
+    // empty post at the end of the faint fork
+    d.inkFine(band(seg([3.4, 6], [3.4, 1.2], 3), 0.9), circ(3.4, 1.6, 1.1));
+    // wheel ruts gouged into the worn stem and fork
+    d.cut(band(stem.slice(1, 7), taper(0.55, 0.2)), band(right.slice(3, 19), taper(0.5, 0.15)));
   },
 
   back(d) {

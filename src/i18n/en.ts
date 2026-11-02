@@ -354,6 +354,11 @@ export const en: FullDict = {
   'rank.4': 'Stronghold',
   'rank.5': 'Capital',
   'town.unlockCastle': 'castle upgrade',
+  // UI round 5 (valley chains): see PENDING_KEYS
+  'status.NO_INPUT.CONTESTED.to': '{good} goes to: {rival}',
+  'road.stone': '{n, plural, one {# stone} other {# stone}} (you have {have})',
+  'why.stoneReserve': 'Stone kept for cobbles and bridges: {n} of {max}',
+  'why.stoneAll': 'Stone for building in all granaries: {n}',
   // missions VII-IX (D-32): see PENDING_KEYS
   'menu.m7': 'VII. Fish for the fast',
   'menu.m7Sub': 'The fisher needs the shore, the castle a bridge',

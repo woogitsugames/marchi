@@ -8,7 +8,7 @@
 // Views without those hooks (2D fallback) get the footprint as a cell preview and the labels are
 // placed by inverting view.cellAt (locateCell).
 import {
-  BUILDINGS, canPlace, gateCell, lastUndoable, net, suggestConnection, unlockRank, validatePlace,
+  BUILDINGS, SITE_RULE, canPlace, gateCell, isRockCell, lastUndoable, net, suggestConnection, unlockRank, validatePlace,
   type BuildingType, type Command, type CommandError, type CommandResult, type World,
   missionBuildable,
 } from '../sim/index';
@@ -103,6 +103,36 @@ function projectCell(view: WorldView, W: number, cell: number): Located | null {
   return { x: a.x, y: a.y, px: Math.min(200, Math.max(3, px)) };
 }
 
+const siteCache = new WeakMap<object, Map<string, number[]>>();
+/**
+ * Ground the building may stand on, for the site hint under the ghost: rock for the quarry (the ridge
+ * and the hills, sim isRockCell), dry cells beside water for the fisher. [] for unrestricted types.
+ */
+export function siteCells(world: World, type: BuildingType): number[] {
+  const rule = SITE_RULE[type];
+  if (!rule) return [];
+  const t = world.terrain;
+  let byRule = siteCache.get(t);
+  if (!byRule) { byRule = new Map(); siteCache.set(t, byRule); }
+  let cells = byRule.get(rule);
+  if (!cells) {
+    cells = [];
+    for (let c = 0; c < t.w * t.h; c++) {
+      if (rule === 'ON_ROCK') { if (isRockCell(t, c)) cells.push(c); continue; }
+      if (t.water[c] === 1) continue;
+      const x = c % t.w, y = (c - x) / t.w;
+      let wet = false;
+      for (let dy = -1; dy <= 1 && !wet; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const xx = x + dx, yy = y + dy;
+        if (xx >= 0 && yy >= 0 && xx < t.w && yy < t.h && t.water[yy * t.w + xx] === 1) { wet = true; break; }
+      }
+      if (wet) cells.push(c);
+    }
+    byRule.set(rule, cells);
+  }
+  return cells;
+}
+
 /** Why a placement is refused, in plain words (water / road / building / gate) when the sim names a cell. */
 function placeError(world: World, err: CommandError, gate: number, foot: Set<number>): string {
   if (err.k === 'BLOCKED') {
@@ -134,6 +164,8 @@ export class BuildTool {
   private manualFacing = false;
   private result: CommandResult | null = null;
   private previewKey = '';
+  /** Building type whose site hint (rock / waterside cells) is on the ground. */
+  private siteType: BuildingType | null = null;
   private shelfSig = '';
   private undoSig = '';
   private centreGuess: [number, number] = [200, 300];
@@ -347,6 +379,11 @@ export class BuildTool {
     if (key !== this.previewKey) {
       this.previewKey = key;
       const view = this.host.view();
+      if (this.siteType !== this.type) {
+        this.siteType = this.type;
+        const sites = siteCells(world, this.type);
+        view.setSiteHighlight?.(sites.length ? sites : null);
+      }
       if (view.setPlacementGhost) {
         view.setPlacementGhost({ type: this.type, x: this.gx, y: this.gy, facing: this.facing, valid: r.ok, badCell: bad });
         const link = onRoad ? null : this.accessRoad(world, gate, cells);
@@ -429,6 +466,8 @@ export class BuildTool {
       view.setRoadPreview(null);
       view.setPlacementGhost?.(null);
     }
+    if (this.siteType) this.host.view().setSiteHighlight?.(null);
+    this.siteType = null;
     this.previewKey = '';
     this.result = null;
     this.tag.parentElement!.hidden = true;

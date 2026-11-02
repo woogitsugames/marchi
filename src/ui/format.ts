@@ -1,5 +1,5 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
-import { BUILDINGS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
+import { BUILDINGS, RANKS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
 import { RTL_LANGS, getLang, t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
 
@@ -38,9 +38,9 @@ export function fmtDec(n: number, digits = 2): string {
   return f.format(n);
 }
 
-/** Name of a town rank (0..3). */
+/** Name of a town rank (0..RANKS.length-1: Osada … Stolica). */
 export function rankName(rank: number): string {
-  return t(`rank.${Math.max(0, Math.min(3, rank))}` as MessageKey);
+  return t(`rank.${Math.max(0, Math.min(RANKS.length - 1, rank))}` as MessageKey);
 }
 
 /** m:ss (or h:mm:ss) from seconds. */
@@ -124,7 +124,11 @@ export function wagonName(id: number): string {
 }
 
 /** Status keys: 'status.<k>' or 'status.<k>.<cause>'. */
-export function buildingStatusText(s: BuildingStatus): string {
+export function buildingStatusText(s: BuildingStatus, world?: World): string {
+  // contested input: name the consumer that takes it ("Drewno idzie do: Tartak"), the chain links to it
+  if (s.k === 'NO_INPUT' && s.cause === 'CONTESTED' && world && s.blockedBy >= 0 && buildingById(world, s.blockedBy)) {
+    return capFirst(t('status.NO_INPUT.CONTESTED.to', { good: goodName(s.good), rival: buildingName(world, s.blockedBy) }));
+  }
   const cause = 'cause' in s ? s.cause : null;
   const key = (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
   const params: Record<string, string | number> = {};
@@ -151,7 +155,7 @@ export function linkText(world: World, l: ReasonLink): string {
     const g = l.status.good;
     return capFirst(t('why.waitsCustomer', { good: goodName(g), goodGen: t(`goodGen.${g}` as MessageKey) }));
   }
-  return l.kind === 'building' ? buildingStatusText(l.status) : wagonStatusText(world, l.status);
+  return l.kind === 'building' ? buildingStatusText(l.status, world) : wagonStatusText(world, l.status);
 }
 
 export function linkSubject(world: World, l: ReasonLink): string {
@@ -191,7 +195,7 @@ export function isCritical(s: BuildingStatus, stalledTicks: number, calm = false
 export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof typeof BUILDINGS): string {
   switch (s.k) {
     case 'NO_ROAD': return iconSvg('no_road', size);
-    case 'NO_INPUT': return struckIconSvg(s.good, size);
+    case 'NO_INPUT': return s.cause === 'CONTESTED' ? iconSvg('contested', size) : struckIconSvg(s.good, size);
     case 'NO_WAGON': return iconSvg('no_wagon', size);
     case 'OUTPUT_FULL': return iconSvg('output_full', size);
     case 'WAITING_PICKUP': return iconSvg('waiting', size);

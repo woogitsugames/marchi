@@ -59,7 +59,9 @@ export function marketSheet(world: () => World): SheetContent {
       // rank history
       const hist = `<div class="section-h">${esc(t('market.history'))}</div><ol class="ms-hist">${RANKS.map((_, i) => {
         const at = sb.rankTicks[i] ?? -1;
-        return `<li class="${at >= 0 ? 'is-reached' : ''}"><span class="mh-n">${esc(rankName(i))}</span><span class="lg-dots" aria-hidden="true"></span>${
+        const opens = unlockList(i);
+        return `<li class="${at >= 0 ? 'is-reached' : ''}"><span class="mh-n">${esc(rankName(i))}${
+          i > 0 && opens ? `<small class="mh-u">${esc(opens)}</small>` : ''}</span><span class="lg-dots" aria-hidden="true"></span>${
           at >= 0 ? `<span class="mh-t">${tHtml('market.reached', { time: ticksClock(at) })}</span>` : `<span class="mh-t is-not">${esc(t('market.notYet'))}</span>`}</li>`;
       }).join('')}</ol>`;
 
