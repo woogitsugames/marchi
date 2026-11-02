@@ -93,3 +93,10 @@ Godzinny cykl autonomicznego rozwoju MARCHIA (właściciel zlecił ciągłą pra
   Po wznowieniu: sprawdź obie gałęzie, scal (konflikty zwykle BACKLOG/DECISIONS/i18n PENDING_KEYS), testy, smoke I–XII.
 - GPT: oddane 44/47/57/58/59/55/56; czeka 60 (korekta PL, paczka 09R) i paczka 10 (61 grafiki sklepu, 62 opisy).
 - Następne decyzje od **D-56**.
+
+## Stan 2026-11-02 ~22:50
+- Baza po scaleniu zdarzeń doliny (D-54, STATE_VERSION 8) i HUD P3 (D-55). Testy 374/374, smoke I–XII OK.
+- GPT: 62 przyjęte; 61 bez grafik (przyjęty tylko skrypt `tools/store-shots-v2.mjs`, workflow z pushem odrzucony) —
+  rano wygenerować zrzuty sklepu tym skryptem; 60 (korekta PL) nadal czeka.
+- Rano: jedno APK (od 8b59953: zdarzenia doliny, HUD P3, opisy sklepu), zrzuty sklepu, P2 karta wieści zwinięta.
+- Następne decyzje od **D-56**.

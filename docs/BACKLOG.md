@@ -9,6 +9,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [ ] P2 — (D-54) Karta „Wieści z doliny” w pionie przy 3–4 zdarzeniach zajmuje ~40 % ekranu: domyślnie zwinięta do nagłówka z licznikiem (rozwija dotknięcie), pokazywać max 1 zamówienie rozwinięte; sprawdzić obcięcie etykiety „Kup wóz” z plakietką 30 (zgłoszone przy zrzutach).
 - [x] P3 — (D-53, D-55) Arkusz boczny w poziomie przykrywał kompaktowy kontrakt i karty narzędzi — zrobione 2026-11-02: arkusz dokuje po stronie przeciwnej do kontraktu, między paskiem żetonów a dolnym rzędem (D-55, `docs/shots/hud5-*`).
 - [ ] P3 — (D-53) Polerka HUD: sprawdzić na urządzeniu kontrast rowka paska przy jasnym słońcu i kartę-przycisk rozciągniętą na całą szerokość arkusza (ozdobne krawędzie `card-normal`).
 - [ ] P1 — (research 2026-11-02-frame-cost.md) Optymalizacje CPU: (5) audyt alokacji pod GC. (1) i (2) zrobione (follow-up w raporcie); (3) cache `rankStalls` na tick zrobione 2026-11-02 (`StallRanking` w `src/ui/stalls.ts`, gałąź `claude/w-hudp3`).
