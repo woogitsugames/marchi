@@ -18,6 +18,10 @@ Slottets kontrakt är korta uppdrag för spelsessioner på 5–12 minuter. Lever
 
 Den fria dalen är ett lugnt stadsbyggarläge med tre separata sparplatser. Utveckla din bosättning genom olika nivåer ända till en huvudstad. Lås upp fiske, stenbrott för stenlagda vägar och stenbroar, träkolsframställning, mältning och ölbryggning. Varje produktionskedja kräver fortfarande riktiga leveranser med vagnar.
 
+Tolv uppdrag (I–XII) omfattar köer på bron, islossning, delleveranser, litet spannmålsmagasin, fisk, stenläggning före stormen, tvist om virke samt träkol, malt och öl. Tryck på det värsta stoppet för att hitta orsaken.
+
+Den fria dalen har tre bosättningsböcker, nivåer till huvudstad, årstider och marknad. Kungliga beställningar, säsongsmarknader och en resande köpman är frivilliga.
+
 Fem viktiga funktioner:
 - Förklaringar till stillastående byggnader och vagnar med ett tryck, inklusive orsakskedjan.
 - Synlig last, destinationer och beräknade ankomsttider.
@@ -25,7 +29,7 @@ Fem viktiga funktioner:
 - Kontrakt på 5–12 minuter och en öppen dal utan tidsgräns.
 - Fysiska leveranser av stockar, plankor, säd, mjöl och bröd — ingen omedelbar teleportering.
 
-Alla sex uppdrag (I–VI) och den fria dalen är gratis. Inga annonser, köp i appen, energisystem, betalda fördelar eller konstgjorda väntetider. Framstegen sparas lokalt på din enhet.
+Alla tolv uppdrag (I–XII) och den fria dalen är gratis. Inga annonser, köp i appen, prenumerationer, betalda fördelar eller konstgjorda väntetider. Spelet fungerar offline utan internet. Sparningar finns lokalt; systembackup kan överföra dem.
 
 ## Nyckelord — ASO-referens (Google Play har inget separat sökordsfält)
 medeltida logistik, strategi, vagnar, leveranser, försörjningskedjor, vägbygge, broar, handel, kontrakt, ekonomispel
