@@ -48,7 +48,7 @@ Prowadzący tworzy przed sesjami tabelkę `P01–P08 → ścieżka + planowane s
 2. Zainstaluj na urządzeniu: `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`. Wyłącz powiadomienia/rozmowy, zapewnij stabilną orientację i naładowaną baterię.
 3. **Parametry URL są obsługiwane w `src/ui/app.ts`, ale APK nie udostępnia pola adresu ani udokumentowanego deep linku.** Przy debugowym WebView spróbuj `chrome://inspect/#devices` (telefon z włączonym debugowaniem USB i zezwoleniem na inspekcję WebView). W konsoli właściwej karty aplikacji:
    ```js
-   location.replace(location.pathname + '?play=m1&ff=90&speed=0');
+   location.replace(location.pathname + '?play=m1&ff=90&speed=0&lang=pl&debug=1');
    ```
    Użyj odpowiedniego URL z tabeli poniżej. **Nie zakładaj**, że `adb shell am start ... ?play=` działa: brak takiej ścieżki w kodzie. Jeżeli WebView nie daje się zdalnie inspekcjonować, przygotuj debugowy ekran wyboru fixtur albo wariant APK z ustalonym adresem startowym **przed rekrutacją**. Scenariusze bez możliwości przygotowania nie są „zaliczone”.
 4. Sprawdź `window.__marchia?.ready === true` oraz (w debug) `window.__marchia.app.world.state.mission.id`. **D-51:** pełny uchwyt `app` jest dostępny w release tylko przy `?debug=1`; w Vite dev również bez flagi (`import.meta.env.DEV`). Bez niej w release zostaje wyłącznie `ready`. Do konsolowych preflightów dodaj `debug=1` na stanowisku prowadzącego, nie pokazując konsoli uczestnikowi. Przed oddaniem telefonu zamknij panel diagnostyczny na komputerze i nie zostawiaj otwartego arkusza „Dlaczego stoi?”.
@@ -388,51 +388,66 @@ Przed pierwszym zadaniem: „Mów na głos, co widzisz, co Cię dziwi i co chces
 - **Brak podpowiedzi przez 60 s.** Nie mów: „spójrz na most”, „kliknij wóz”, „użyj przycisku Dlaczego stoi?”, „zobacz łańcuch”, „to błoto”. Nie wskazuj palcem, nie naprowadzaj wzrokiem, nie potwierdzaj zgadywanek słowami „tak, właśnie”. Na „co mam zrobić?” odpowiadaj neutralnie: „Zrób to, co wydaje Ci się naturalne”. Pomoc wyłącznie po limicie, oznacz `assistance=1`; nie licz późniejszej odpowiedzi jako samodzielnego sukcesu.
 - **Zapisuj fakty, nie interpretacje:** dosłowny krótki cytat bez danych osobowych, przebieg kliknięć, błędną hipotezę, lokalizację/powód pomyłki. Nie zgaduj kodów błędów z samej animacji.
 
-**Klucz odpowiedzi (dla prowadzącego):** `S1=NO_BRIDGE`, `S2=BRIDGE_CUT/NO_ROUTE`, `S3=NO_WAGON/ALL_BUSY`, `S4=BRIDGE_JAM`, `S5=RAIN_MUD_SLOW`, `S6=STORAGE_FULL`. Odpowiedź o samym **objawie** („nie ma desek”, „stoi”, „wolno jedzie”) jest błędna. Odpowiedź wskazująca przyczynę własnymi słowami jest prawidłowa nawet bez technicznej nazwy.
+**Klucz odpowiedzi (dla prowadzącego):** `S1=NO_BRIDGE`; `S2=BRIDGE_CUT/NO_ROUTE`; `S3=NO_WAGON/ALL_BUSY`; `S4=BRIDGE_JAM`; `S5=RAIN_MUD_SLOW`; `S6=STORAGE_FULL`; `S7=BRIDGE_CLOSED`; `S8=TRANCHE/OUTPUT_FULL`; `S9=CAP12/STORAGE_FULL`; `S10=FISH/FORECAST`; `S11=STONE_BEFORE_RAIN`; `S12=SHARED_WOOD`; `S13=WOOD_SOURCE_NOT_WAGONS`; `S14=LONG_GRAIN_ROUTE`; `S15=WAREHOUSE_BUFFER`. **Nie wszystkie to statusy `SimState`:** część nazw to etykiety dla prowadzącego służące ocenie zadania planowania. Odpowiedź o samym objawie („nie ma desek”, „stoi”, „wolno jedzie”) jest błędna w diagnozie; trafna przyczyna może być sformułowana własnymi słowami bez technicznej nazwy.
 
-## 4A. Zakresy pomiaru i rozdzielenie efektów nauki (v2)
+## 4A. Miary, timeouty, czystość preflightu i efekt nauki
 
-- Dla **S1–S4, S6–S9 oraz T2**: `time_s` = czas od pierwszego słowa neutralnego pytania do pierwszej **prawidłowej diagnozy przyczyny** (0–60 s); `correct=1` tylko przy trafnym wyjaśnieniu. Odpowiedź poprawna po 30 s to `correct=1`, ale **nie** sukces `<30`. W S8 pomiar diagnozy jest ważny tylko, gdy aktywny preflight B pokazuje `OUTPUT_FULL`. `S5` nadal liczy się osobno jako spowolnienie, nie przestój.
-- Dla **T1, czytania transzy w S8, V1–V4 i F1–F3**: `task_time_s` oznacza czas wykonania danego zadania (limit w protokole prowadzącego: T1 110 s aktywnego czasu; S8 transza 120 s; V/F maksymalnie 180 s). `task_success` nie zastępuje `correct`. Puste pole oznacza „nie mierzono”, a nie zero.
-- Nieważna próba: `preflight_ok=0` lub `invalid_setup=1`; zostaw `time_s`, `correct`, `task_time_s` i `task_success` **puste**, zapisz przyczynę w `notes_no_pii`. Brak sprzętu Fold/Flip to `not_run` w dzienniku rekrutacji, **nie** porażka użytkownika i nie wiersz udający wynik.
-- Przed każdą próbą odnotuj `cohort`, `prior_training`, APK commit i ekran. Diagnostyka bez samouczka oraz diagnoza po T1 **nie są równoważnymi próbami**. Dla tego samego uczestnika nie licz dwóch załadowań tej samej sytuacji jako dwóch niezależnych obserwacji.
-- Zadania konstrukcyjne/sprzętowe oceniaj z logiem błędnych dotknięć i zachowania UI; żadne przyspieszenie `ff` ani syntetyczna modyfikacja konsolą nie może być przedstawiane jako spontaniczny wybór testera.
+**Zasady dla diagnozy (S1–S4, S6–S9, T2 oraz S12/S13/S15 wyłącznie w potwierdzonym stanie; S5 jako osobne spowolnienie):**
 
-## 5. Arkusz danych i ankieta po sesji
+1. `T0` = początek pierwszego słowa neutralnego pytania *po* przekazaniu przygotowanego stanu; `T1` = pierwsze samodzielne **poprawne wyjaśnienie przyczyny**. `time_s = T1−T0`, maks. 60 s. Przy braku trafnej odpowiedzi w 60 s: `time_s=60`, `correct=0`, `timeout=1`. Przy poprawnej odpowiedzi po 30 s i przed 60 s: `correct=1`, ale próg **`time_s < 30` niezaliczony**; dokładnie `30.0` także niezaliczone.
+2. `taps` to dotknięcia (pinch/drag liczone jako jeden gest), `opened_why` / `opened_wagon` / `followed_chain` / `chain_steps` / `action_correct` to odrębne obserwacje. Świadome użycie panelu nie jest konieczne do trafnej diagnozy, jeśli badany wyjaśni przyczynę na podstawie mapy.
+3. `preflight_ok=0` lub `invalid_setup=1`: **nie wpisuj** `correct`, `time_s`, `task_success`, `task_time_s` ani zer rzekomych umiejętności. Powód w `notes_no_pii`. Nie licz tej próby w mianowniku; ujmij ją w liczbie technicznych niepowodzeń.
+4. **S8 podziel na dwa niezależne zadania i wiersze**: `scenario_id=S8_TRANCHE` (prawidłowy odczyt bieżącego listu, `task_time_s` do 120 s + `tranche_read_correct`), `scenario_id=S8_BUFFER` (rzeczywiste `OUTPUT_FULL`/odcięty spichlerz, `time_s` do 60 s + `correct`). Każdy ma własny preflight i `setup_url`, więc niezdatny bufor nie unieważnia prawidłowego odczytu transzy.
+5. **T1:** aktywny tutorial ma limit **110 s** (`task_time_s`) i może przeskakiwać kroki; `tutorial_result=completed|skipped|time_limit|not_shown` jest kodem obserwatora, a nie dosłownym `TutorialResult` (`done|skipped`). Od pierwszego neutralnego pytania **po liście** mierz niezależnie `first_diagnosis_s` i `first_diagnosis_correct` (60 s limit). Nie wliczaj tego wyniku do baseline S1.
+6. **Zadania zamiast diagnoz**: S10 (prognoza), S11 (bruk), S14 (odległość), V1–V6, F0–F3, P1 oraz części T2/H1–H4 używają `task_time_s` / `task_success`, dedykowanych pól i maks. 180 s na V/F, jeśli nie wskazano innego limitu. Nie wymuszaj `correct=0`, jeżeli w świecie **nie ma** przestoju.
+7. **H1:** od pierwszego pytania mierz `hud_find_s` do wskazania właściwej karty/obiektu i `hud_cause_s` do trafnej przyczyny, maks. 60 s; `hud_found=1|0` mówi, czy cel rzeczywiście znaleziono, nawet przy timeout. Cel `hud_found=1 && hud_find_s < 30` jest **inny** niż trafna diagnoza. Przy `stalls_count=0` nie oceniaj H1/H2. Przejście pieczęcią wymaga `stalls_count>=2`.
+8. **P1:** skale 1–5 dla odczucia płynności i ciepła, `0|1` dla kroku konia; rozdziel ×1 i ×4. Nie mieszaj FPS z szybkością symulacji; nie wyciągaj wniosków o długim nagrzewaniu z krótkiego testu.
 
-Wpisuj **jeden wiersz na uczestnika × scenariusz** do kopii `docs/playtest/results-template.csv` (30–48 wierszy **tylko dla S1–S6** przy pełnych próbach, a dla B1/B2 dodatkowe wiersze według faktycznie wykonanych zadań). Zapisz także nieudane technicznie przygotowania w osobnym dzienniku moderacji; w CSV mają `invalid_setup=1` i puste wyniki poznawcze. Nie umieszczaj w repo prawdziwych danych osobowych ani surowych nagrań.
+Przy każdej próbie zapisz `cohort`, `prior_training` (`0|1`), `apk_commit`, `device_class`, `screen_mode`, `orientation` i `setup_method`. Pierwszy kontakt, powtórne przeładowanie, wcześniejszy tutorial i zmiana rozmiaru ekranu są **konfunderami**: raportuj je osobno. Dla pojedynczej osoby i jednego stanu H1 oraz S1 nie są dwiema niezależnymi diagnozami, nawet jeśli wpisano dwa wiersze techniczne. Brak fizycznego Fold/Flex/Flip wpisz jako `not_run` w dzienniku rekrutacji, **nie** jako zerową ocenę użytkownika.
 
-**Znaczenie pól CSV:**
-- `participant_id`, `segment` (`strategy|casual|non_gamer`), `device`, `apk_commit`, `scenario_id`, `order_index`, `setup_url`, `setup_method` (`url|manual|devtools`);
-- `preflight_ok` (`1|0`), `invalid_setup` (`1|0`), `time_s` (0–60, liczba), `correct` (`1|0`), `timeout` (`1|0`), `taps`, `opened_why`, `opened_wagon`, `followed_chain`, `chain_steps`, `action_correct`, `assistance` (`1|0`);
-- `issue_codes` (wiele kodów rozdzielonych `|`), `quote_anonymized`, `notes_no_pii` (bez przecinków nieucieczonych lub poprawnie w cudzysłowie CSV).
+## 5. Dane wyników i ankieta po sesji
 
-**Ankieta — 6 pytań w skali 1–5** (`1=zupełnie nie`, `5=zdecydowanie tak`; brak odpowiedzi pozostaw pusty):
-1. Szybko zauważyłem(-am), że gdzieś występuje problem.
-2. Łatwo znalazłem(-am) budynek lub wóz, którego dotyczy problem.
-3. Komunikaty o stanie budynków i wozów były zrozumiałe.
-4. Potrafiłem(-am) prześledzić, skąd bierze się problem.
-5. Po znalezieniu przyczyny wiedziałem(-am), co zrobić dalej.
-6. Tekst, ikony i przyciski były czytelne na tym telefonie.
+Dla **każdej wykonanej próby** (`S1–S15`, warianty `S8_TRANCHE` / `S8_BUFFER`, `T1–T2`, `V1–V6`, `H1–H4`, `F0–F3`, `P1`) dodaj **jeden wiersz uczestnika × zadanie** do prywatnej kopii `docs/playtest/results-template.csv`. Nie twórz pustych wierszy dla zadań, których nie wykonano. Jeśli przygotowanie technicznie się nie powiodło, zachowaj wiersz z `invalid_setup=1` i **pustymi wynikami poznawczymi**, zamiast fałszować `correct=0`. Gdy tego samego uczestnika dotyczy kilka prób przygotowania, odnotuj to w `notes_no_pii` i nie licz tych prób jako niezależnych.
 
-**3 pytania otwarte:**
-1. „W którym momencie najbardziej się zgubiłeś(-aś) i dlaczego?”
-2. „Który element ekranu najbardziej pomógł Ci ustalić przyczynę?”
-3. „Jaką **jedną rzecz** zmienił(a)byś, żeby szybciej wyjaśniać takie sytuacje?”
+**Kolumny bazowe (zachowane w tej samej kolejności co v1):** `participant_id` (anonimowy P01–P08), `segment` (`strategy|casual|non_gamer`), `device`, `android_version`, `apk_commit` (rzeczywisty SHA buildu), `scenario_id`, `order_index` (kolejność podjętych prób), `setup_url` (cały **faktyczny** query string), `setup_method` (`url|manual|devtools`), `preflight_ok`, `invalid_setup`, `time_s`, `correct`, `timeout`, `taps`, `opened_why`, `opened_wagon`, `followed_chain`, `chain_steps`, `action_correct`, `assistance`, `issue_codes`, `quote_anonymized` i `notes_no_pii`.
 
-Odpowiedzi ankietowe zbierz osobno pod `participant_id`, np. w prywatnym arkuszu — **nie dopisuj 9 pól do każdego z 6 wierszy**, bo policzyłoby to tę samą odpowiedź sześciokrotnie. Nie publikuj dosłownych wypowiedzi umożliwiających rozpoznanie osoby.
+**Format:** liczniki i wskaźniki `0|1` **tylko przy rzeczywiście wykonanemu pomiarze**; pusty = nie dotyczy / brak pomiaru, nie zero. Czas w sekundach, 0–60 dla diagnozy; dotknięcia i błędne gesty jako liczby całkowite >=0. `issue_codes` łącz pionową kreską `|`. Pola tekstowe z przecinkami, cudzysłowami lub końcami linii zapisuj prawidłowo w CSV (cudzysłowy podwajaj). W repozytorium jest **wyłącznie szablon**, nie rzeczywiste dane, nagrania, numery telefonów ani cytaty umożliwiające rozpoznanie osoby.
 
-## 5A. Rozszerzone CSV i ankieta v2
+**Ankieta raz na uczestnika**, w osobnym `docs/playtest/survey-template.csv`. Pytania 1–12 w skali `1=zupełnie nie` do `5=zdecydowanie tak` (nie wykonano modułu = komórka pusta):
 
-W `docs/playtest/results-template.csv` zachowano oryginalne kolumny S1–S6 i dodano pola modułów v2: `cohort` (`baseline|onboarding|extended|fold`), `prior_training` (`0|1`), `task_time_s`, `task_success` (`0|1`), `letter_understood`, `tutorial_step` (1–6), `tutorial_result` (`completed|skipped|time_limit|not_shown` — **kod obserwatora**, nie wynik zwracany przez klasę `Tutorial`), `repair_offered`, `repair_seen`, `repair_used`, `tranche_read_correct`, `save_ok`, `fold_state`, `layout_ok`. Puste pole = nie dotyczy albo nie mierzono (wyjaśnij w `notes_no_pii`). Zmienna `repair_used=0` przy niedostępnych środkach nie oznacza porażki: porównuj ją tylko przy rzeczywiście aktywnej propozycji naprawy. W `setup_url` wpisuj rzeczywisty ciąg zapytania, w tym `slot`, nigdy nie używaj sztucznego `fixture=...` jako istniejącej funkcji.
+| Nr | Stwierdzenie po sesji |
+| --- | --- |
+| 1 | Szybko zauważyłem(-am), że gdzieś występuje problem. |
+| 2 | Łatwo znalazłem(-am) budynek lub wóz, którego dotyczy problem. |
+| 3 | Komunikaty o stanie budynków i wozów były zrozumiałe. |
+| 4 | Potrafiłem(-am) prześledzić, skąd bierze się problem. |
+| 5 | Po znalezieniu przyczyny wiedziałem(-am), co zrobić dalej. |
+| 6 | Tekst, ikony i przyciski były czytelne na tym telefonie. |
+| 7 | Rozumiałem(-am), do czego służy list kasztelana i jaki jest następny krok. |
+| 8 | Proponowana automatyczna naprawa była łatwa do zauważenia i zrozumienia. |
+| 9 | Zrozumiałem(-am), co ogranicza rozwój Wolnej doliny i jak działa targ. |
+| 10 | Na składanym ekranie bez problemu znajdowałem(-am) karty, tekst i sterowanie. |
+| 11 | Karta najgorszego zastoju, pieczęć alarmu i podświetlenie działania pomagały mi znaleźć problem. |
+| 12 | Przy ×4 gra działała płynnie, a ruch koni wyglądał naturalnie. |
 
-Kwestionariusz sesji **raz na osobę** zapisuj w osobnym `docs/playtest/survey-template.csv` (`participant_id` jako klucz; bez danych osobowych). Pierwsze sześć pytań w skali 1–5 jest niezmienione z sekcji 5. Dla osoby, która wykonała odpowiednie moduły, dodaj:
-7. „Rozumiałem(-am), do czego służy list kasztelana i jaki jest następny krok”.
-8. „Proponowana automatyczna naprawa była łatwa do zauważenia i zrozumienia”.
-9. „Zrozumiałem(-am), co ogranicza rozwój Wolnej doliny i jak działa targ”.
-10. „Na składanym ekranie bez problemu znajdowałem(-am) karty, tekst i sterowanie”.
+**Pytania otwarte:** (1) „W którym momencie najbardziej się zgubiłeś(-aś) i dlaczego?”, (2) „Który element ekranu najbardziej pomógł Ci ustalić przyczynę?”, (3) „Jaką jedną rzecz zmienił(a)byś, żeby szybciej wyjaśniać takie sytuacje?”. Krótkie, pozbawione danych osobowych odpowiedzi wpisz **raz** w `open_1`–`open_3`. Nigdy nie powielaj ankiety na każdy wiersz scenariusza — zawyżyłoby to średnie.
 
-Skala `1=zupełnie nie`, `5=zdecydowanie tak`, brak testu danej funkcji lub brak odpowiedzi → puste pole, **nie zero**. Trzy oryginalne pytania otwarte zachowaj bez zmian; krótkie wypowiedzi zapisuj w `open_1`–`open_3` po anonimizacji. Dla prób technicznych Flex dopisz faktyczne urządzenie do wyniku scenariusza, nie próbuj dopowiadać go z subiektywnej ankiety.
+## 5A. Słownik dodatkowych kolumn CSV v2
+
+Starsze pola `cohort` (`baseline|onboarding|extended|fold`), `prior_training` (`0|1`), `task_time_s`, `task_success`, `letter_understood`, `tutorial_step` (ostatni faktycznie zaobserwowany 1–6), `tutorial_result` (`completed|skipped|time_limit|not_shown`), `repair_offered`, `repair_seen`, `repair_used`, `tranche_read_correct`, `save_ok`, `fold_state` i `layout_ok` zachowano dla porównywalności. `repair_used=0` ma sens tylko przy **aktywnym i opłacalnym** przycisku; przy braku środków pozostaw puste.
+
+| Dodane kolumny | Jednostka / zasady kodowania |
+| --- | --- |
+| `session_id`, `device_class`, `screen_mode`, `orientation`, `layout_classes`, `device_unsupported` | ID bez danych osobowych; `phone|fold|flip`; `normal|cover|inner|book|flex|flip_cover`; `portrait|landscape`; **zaobserwowane** klasy `is-split|is-flex|is-book|is-mini` (rozdziel `|`); brak obsługi ekranu `0|1` |
+| `ff_seconds`, `speed_mode`, `stalls_count`, `worst_stall_id`, `observed_status` | Wartości z moderatorskiego preflightu: sekundy przewinięcia, `0|1|2|4`, liczba aktualnych zastojów, ID najgorszego budynku (nigdy zgadywane), rzeczywiście zaobserwowany status/kod przyczyny |
+| `first_diagnosis_s`, `first_diagnosis_correct` | **T1**, 0–60 sekund od neutralnego pytania po zamknięciu listu, `1|0`; timeout: 60 s i 0 |
+| `pace_seen`, `pace_understood`, `road_stone_understood`, `ix_x_new_lesson`, `buffer_understood` | `1|0`, tylko jeśli temat rzeczywiście pokazano/badano; `ix_x_new_lesson` dopiero po **obu** IX/X |
+| `hud_find_s`, `hud_found`, `hud_cause_s`, `hud_show_used`, `alarm_count_understood`, `alarm_cycle_used`, `tool_cards_understood`, `cure_highlight_seen`, `wagon_shortfall_understood` | Czas znalezienia/korygowania przyczyny 0–60 s, flagi `1|0` przy ważnej próbie; znalezienie = `hud_found=1 && hud_find_s <30`, przy 1 zastoju `alarm_cycle_used` puste |
+| `rank_understood`, `season_understood`, `goods_identified` | `1|0` przy badanym pytaniu; liczba poprawnie rozpoznanych **spośród 10** towarów (`0..10`) |
+| `misclicks`, `unintended_commands`, `clipped_ui` | Zliczone błędne dotknięcia, niezamierzone akcje i widoczne ucięcia tekstu/karty; 0, gdy obserwator **sprawdził** i nie było problemu |
+| `perceived_smoothness_x1`, `perceived_smoothness_x4`, `horse_step_x1_ok`, `horse_step_x4_ok`, `heat_before`, `heat_after`, `perf_fps_note` | Subiektywna płynność i temperatura **1–5**, krok konia `1|0`, ewentualnie zaobserwowany FPS/warunki renderowania jako tekst; niczego nie wpisuj bez obserwacji |
+
+**Ważne rozróżnienie:** `fold_state` to starszy skrót stanu, natomiast `screen_mode`/`layout_classes` podają konkretne warunki; `is-split` nie oznacza automatycznie wykrytego zawiasu. Przy S8 używaj `S8_TRANCHE` i `S8_BUFFER`, a w obu wpisz niezależny `preflight_ok`. W `setup_url` nie wymyślaj `fixture`. Ankieta pozostaje oddzielna od danych prób, połączona tylko anonimowym `participant_id`.
 
 ## 6. Analiza i decyzje UI
 
