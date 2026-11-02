@@ -41,8 +41,9 @@ Preview: `npx vite preview --port 5197` (po buildzie; zatrzymany po PID).
 | `?play=sandbox&quality=high` | brak | OK |
 | `?play=m1&quality=auto` | brak | OK |
 
-Zrzuty: `docs/research/shots-water/` (`m1-low`, `m1-medium`, `m1-high`, `m1-ultra`, `m2-high`, `m7-high`,
-`sandbox-high`, `m1-auto`). Wszystkie pokazują poprawną wodę z mgłą/odbiciem nieba.
+Zrzuty: `docs/research/shots-water/` — w repo zostawiono `m1-ultra` i `sandbox-high` (pozostałe 6: `m1-low`,
+`m1-medium`, `m1-high`, `m2-high`, `m7-high`, `m1-auto` usunięto ze względu na rozmiar; wyglądały tak samo).
+Wszystkie pokazywały poprawną wodę z mgłą/odbiciem nieba.
 
 ### Uwagi poboczne
 - Wartości jakości w kodzie: `auto | low | high | ultra` (`src/ui/tier.ts`, `src/render/api.ts` `QUALITIES`).

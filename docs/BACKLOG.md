@@ -18,7 +18,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] — Sklep/płatności/release: odłożone (D-17).
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
 - [ ] P2 — Wczesne wykrycie „brak drogi do zwycięstwa” (brak ścieżki do zamku i srebro < koszt najtańszej przeprawy, a wozów nie ma do sprzedania) → list z przyczyną.
-- [ ] P0 — Błąd kompilacji shadera wody raz zgłoszony (`'z' : vector field selection out of range`), rzeka różowa na jednym zrzucie (src/render/water.ts) — zweryfikować po poprawkach grafiki.
+- [ ] P2 — (nieodtwarzalny 2026-11-02, docs/research/2026-11-02-water-shader.md) Błąd shadera wody `'z' : vector field selection out of range` — 8 scen (low/high/ultra/auto, m1/m2/m7/dolina) bez błędów; przy ponownym zgłoszeniu z urządzenia dodać `renderer.debug.onShaderError` z logiem programu. Uwaga: `quality=medium` nie istnieje (cichy powrót do auto).
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
 - [ ] P2 — Kamera po otwarciu panelu chowa obiekt pod arkuszem: `camera.focusCell(cell, screenOffset)`.
 - [ ] P2 — Przeprowadzić 5–8 sesji playtestu na Androidzie wg `docs/playtest/PROTOCOL.md`, zebrać CSV, policzyć mediany i odsetek poprawnych diagnoz <30 s oraz zastąpić hipotezy H1–H5 rzeczywistymi TOP 5 problemów z licznikami (źródło: owner, docs/playtest/PROTOCOL.md).
