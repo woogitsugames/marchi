@@ -237,7 +237,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // just placed: the same undo as the floating button, here because the sheet covers it
       const u = lastUndoable(world);
       const undo = u && u.building === id
-        ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}">${iconSvg('undo', 24)}<span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
+        ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}"><span class="rtl-flip">${iconSvg('undo', 24)}</span><span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
       // a winter-slowed supplier is the real root of a missing input: say so above the chain
       const upSeason = upstreamSeasonHtml(world, b.id);
       const lead = b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason;

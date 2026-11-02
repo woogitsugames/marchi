@@ -1,7 +1,7 @@
 // Sheet stack: bottom sheet in portrait, side sheet in landscape / >= 720 px (src/ui/layout.ts).
 // Closes with: close button, swipe down (or sideways on side sheets), Escape, Android back
 // (history entry per open sheet), tap on the empty map (handled by the app).
-import { h } from './dom';
+import { h, isRtl } from './dom';
 import { iconSvg } from './icons';
 import { t } from '../i18n/index';
 
@@ -144,8 +144,10 @@ export class Sheets {
     const side = (): boolean => document.body.classList.contains('is-side');
     const sideSign = (): number => {
       const b = document.body.classList;
-      if (!b.contains('is-landscape') || b.contains('mode-menu')) return 1;
-      return b.contains('left-handed') ? 1 : -1;
+      // side sheets dock at the inline start (game) or end (menu); RTL mirrors which way that is
+      const rtl = isRtl() ? -1 : 1;
+      if (!b.contains('is-landscape') || b.contains('mode-menu')) return rtl;
+      return (b.contains('left-handed') ? 1 : -1) * rtl;
     };
     for (const z of zones) {
       z.addEventListener('pointerdown', (e) => {

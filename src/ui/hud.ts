@@ -8,7 +8,7 @@ import {
 } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { t, type MessageKey } from '../i18n/index';
-import { deckle, esc, h, setHtml, setText } from './dom';
+import { deckle, esc, h, railOnLeft, setHtml, setText } from './dom';
 import { bdi, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 
@@ -263,7 +263,7 @@ export class Hud {
 
   private placeCaption(btn: HTMLElement): void {
     const r = btn.getBoundingClientRect();
-    const left = document.body.classList.contains('left-handed');
+    const left = railOnLeft();
     this.caption.style.top = `${r.top + r.height / 2 - 17}px`;
     if (left) { this.caption.style.left = `${r.right + 8}px`; this.caption.style.right = ''; }
     else { this.caption.style.right = `${window.innerWidth - r.left + 8}px`; this.caption.style.left = ''; }

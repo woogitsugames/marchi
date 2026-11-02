@@ -525,7 +525,7 @@ export class BuildTool {
     document.body.classList.toggle('has-undo', !!u);
     if (!u) return;
     const name = t(`building.${u.type}` as MessageKey);
-    setHtml(this.undoBtn, `<span>${iconSvg('undo', 24)}</span><span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>`);
+    setHtml(this.undoBtn, `<span class="rtl-flip">${iconSvg('undo', 24)}</span><span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>`);
     this.undoBtn.setAttribute('aria-label', t('undo.place', { name, n: fmtInt(u.refund) }));
     this.undoBtn.title = t('undo.place', { name, n: fmtInt(u.refund) });
   }
@@ -552,7 +552,7 @@ export class BuildTool {
       setHtml(this.shelf, `<div class="pb-card">${iconSvg(b as IconId, 36)}<span class="pb-t"><b>${esc(t(`building.${b}` as MessageKey))}</b><span class="pb-m">${price(b)}${size(b)}</span></span></div>
         <div class="pb-hint">${esc(t('build.hint'))}</div>
         <div class="pb-actions">
-          <button class="btn cf pb-back" data-b="back">${iconSvg('back', 20)}<span>${esc(t('build.back'))}</span></button>
+          <button class="btn cf pb-back" data-b="back"><span class="rtl-flip">${iconSvg('back', 20)}</span><span>${esc(t('build.back'))}</span></button>
           <button class="btn primary cf pb-place" data-b="place">${iconSvg('build', 24)}<span>${esc(t('build.place'))}</span></button>
         </div>`);
       this.shelf.setAttribute('aria-label', t('build.place'));
