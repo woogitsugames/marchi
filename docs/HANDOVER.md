@@ -12,11 +12,8 @@ Nowa sesja przejmuje autonomiczny rozwój gry od poprzedniej (kończy się jej l
 - **Nie zamykaj PR-ów na GitHubie bez prośby właściciela.** Integracja = scalenie lokalne do bazy + push.
 
 ## Rytm pracy (ustalony przez właściciela)
-- Praca autonomiczna, ciągła. Godzinny cykl: trigger `trig_01SwgazrMdHdqEiC5auRn2wN` („MARCHIA – godzinny cykl
-  rozwoju”, :42 UTC) jest przypięty do STAREJ sesji — **przepnij go**: utwórz nowy godzinny trigger dla swojej sesji
-  (create_trigger, ten sam prompt — skopiuj przez get_trigger) i wyłącz stary (`update_trigger enabled=false`).
-  Jest też jednorazowe przypomnienie `trig_01P49fCFBZDqHQeYdxmuNVnQ` (13:30 UTC, dzienne APK) w starej sesji —
-  usuń je i zrób APK sam.
+- Praca autonomiczna, ciągła. Poprzedni godzinny cykl (stare konto) jest **wyłączony**, przypomnienie o APK usunięte.
+  Utwórz własny godzinny trigger dla swojej sesji (create_trigger) — prompt cyklu: sekcja „Prompt cyklu” na końcu pliku.
 - Maks. **3 agentów Opus** naraz + osobno researcher Sonnet (wąskie tematy, raport do `docs/research/`).
   Agentów uruchamiaj w ręcznych worktree: `git worktree add -B <gałąź> /workspace/marchi-<x> HEAD` +
   `ln -s /workspace/marchi/node_modules …` (izolacja `worktree` w Agent nie działa — /workspace nie jest repo).
@@ -58,3 +55,12 @@ Nowa sesja przejmuje autonomiczny rozwój gry od poprzedniej (kończy się jej l
 ## Decyzje właściciela z dziś
 3 sloty doliny; bez reklam na razie; rangi Gród/Stolica; pory roku łagodnie (tylko dolina); nazwa „Marchia” wszędzie;
 odstęp wozów zostaje tylko w obrazie (D-35); druga sesja → RTL arabski.
+
+## Prompt cyklu (do create_trigger, co godzinę)
+Godzinny cykl autonomicznego rozwoju MARCHIA (właściciel zlecił ciągłą pracę; ten cykl wznawia sesję także po limicie/restarcie). Limit: najwyżej 3 agentów Opus naraz (researcher Sonnet osobno). Kontynuuj:
+1. Zbierz wyniki agentów (przerwanych — wznów; zakończonych: przejrzyj zrzuty, zintegruj, `npm test`, `npm run typecheck`, `npm run build`, commit + push na claude/eager-cori-08wt8e).
+2. PR-y GPT i drugiej sesji Claude (claude/s*-*, gpt/*): przejrzyj, scal lokalnie, testy, popraw drobiazgi, odrzuć szkodliwe elementy, wypchnij; raport: przyjęto / poprawiono / odrzucono. Nie zamykaj PR-ów bez prośby właściciela.
+3. docs/BACKLOG.md: 1–3 najważniejsze pozycje (błędy > wydajność/Fold > czytelność przyczyn < 30 s > grafika > treść); kolejność wg D-17, D-21, D-29. Realizuj sam albo przez agentów, aktualizuj backlog.
+4. Jeśli researcher Sonnet nie pracuje, uruchom go z nowym, wąskim tematem.
+5. APK: w dzień (7:00–23:00 Europe/Brussels) gdy jest istotnie lepsza wersja, nie częściej niż co ~3 h (typecheck, testy, smoke test bez błędów konsoli). W nocy nie — jedno APK rano.
+6. Krótki raport po polsku. Decyzje właściciela — klikalnie (AskUserQuestion) z rekomendacją. Zasady z CLAUDE.md.
