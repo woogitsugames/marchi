@@ -91,3 +91,21 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
     assert(runs[2]!.seals >= runs[1]!.seals, 'correct repair earns at least as many seals as partial');
   });
 }
+
+
+// TEMP: gather exact engine times for alternate partial repairs; remove after tuning.
+test('probe alternative partial repairs', () => {
+  const stableWagon = (w: Parameters<(typeof STRATEGIES)['m10'][number]['cmds']>[0]) =>
+    [{ t: 'buyWagon' as const, stable: w.state.buildings.find((b) => b.type === 'stable')!.id }];
+  for (const [id, seconds] of [
+    ['m10', [0, 20, 30, 60, 90, 120, 180]],
+    ['m11', [330, 360, 390, 420]],
+    ['m12', [60, 90, 120, 150, 180]],
+  ] as const) {
+    for (const after of seconds) {
+      const r = runProposed(id, { name: 'probe wagon at ' + after, after, cmds: stableWagon });
+      console.log('PROBE ' + id + ' at ' + after + 's: ' + r.result + ', ' +
+        r.minutes.toFixed(4) + ' min, ' + r.seals + ' seals');
+    }
+  }
+});
