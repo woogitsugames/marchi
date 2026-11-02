@@ -111,6 +111,28 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. Build a detour around the obstacle.
 - **Chain:** Mill holds flour → bridge to bakery is broken → bakery stalls.
 
+## `status.NO_INPUT.CONTESTED`
+
+### PL — Surowiec jedzie do innego odbiorcy
+
+- **Co to znaczy:** Towar jest u dostawcy, ale wozy wiozą go do budynku innego rodzaju, który też go zużywa.
+- **Jak sprawdzić:** Dotknij budynku; w łańcuchu przyczyn widać rywala (np. tartak), do którego jedzie drewno.
+- **Naprawy / działania:**
+  1. Postaw drugiego dostawcę tego surowca.
+  2. Kup wóz, żeby oba budynki dostawały ładunki na zmianę.
+  3. Rozbierz lub przenieś mniej ważnego odbiorcę.
+- **Łańcuch:** Drwal ma drewno → wóz wiezie je do tartaku → węglarnia czeka.
+
+### EN — Input goes to another customer
+
+- **Meaning:** The supplier has the goods, but wagons take them to a different kind of building that also uses them.
+- **How to check:** Tap the building; the cause chain shows the rival (e.g. the sawmill) the wood goes to.
+- **Fixes / next steps:**
+  1. Build a second producer of this input.
+  2. Buy a wagon so both buildings get loads in turn.
+  3. Demolish or move the less important customer.
+- **Chain:** Woodcutter has wood → wagon takes it to the sawmill → charcoal burner waits.
+
 ## `status.WAITING_UPSTREAM`
 
 ### PL — Czeka na dostawcę

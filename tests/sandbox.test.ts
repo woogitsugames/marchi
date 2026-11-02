@@ -2,7 +2,7 @@
 // conserved, placement validation is pure, fresh buildings undo with a full refund, ranks gate
 // building types and latch, and the whole thing is deterministic and survives save/load.
 import {
-  BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, MARKET, RANKS, TICK_HZ, UNDO_TICKS, applyCommand, checkInvariants,
+  BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, GOODS, MARKET, RANKS, TICK_HZ, UNDO_TICKS, applyCommand, checkInvariants,
   createWorld, deserialize, lineCells, serialize, stateHash, step, unexplainedStalls, type BuildingType, type World,
 } from '../src/sim/index';
 import { validatePlace } from '../src/sim/commands';
@@ -221,8 +221,9 @@ test('ranks latch on renown + distinct goods + best flow and never go down', () 
   const s = sandboxStatus(w);
   eq(s.rank, 1, 'status rank');
   assert(s.next !== null && s.next.rank === 2 && s.next.renown === RANKS[2]!.renown, 'next goal');
-  assert(s.unlocked.includes('mill') && s.locked.length === 0, 'unlocked list: ' + JSON.stringify(s));
-  eq(s.prices.length, 5, 'prices for every good');
+  assert(s.unlocked.includes('mill') && s.locked.every((l) => l.rank > 1), 'unlocked list: ' + JSON.stringify(s));
+  eq(s.locked.map((l) => l.type).join(','), 'fisher,quarry,charcoalBurner,malthouse,brewery', 'chains of ranks 2-4 still locked');
+  eq(s.prices.length, GOODS.length, 'prices for every good');
 });
 
 test('flow window: best silver/min latches from the 18 x 10 s ring', () => {

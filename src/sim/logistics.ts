@@ -1,6 +1,6 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
-import { BUILDINGS, GOODS, MARKET, WAGON_CAPACITY, inputGoods, outputGoods, sumGoods } from './defs';
+import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { dijkstra, hasEdge, net, DX, DY, type DistMap, type World } from './network';
@@ -96,7 +96,21 @@ export function dispatch(world: World): void {
       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
   }
-  demands.sort((a, c) => a.prio - c.prio || a.fill - c.fill || a.b.id - c.b.id || GOODS.indexOf(a.good) - GOODS.indexOf(c.good));
+  // free valley: granaries keep a stone reserve for cobbles and stone bridges (design S5), after
+  // every producer input and before the market (full loads only)
+  if (marketOpen(world)) {
+    for (const b of st.buildings) {
+      if (b.type !== 'warehouse') continue;
+      const want = Math.min(STONE_RESERVE - b.stock.stone - b.incoming.stone, warehouseSpace(b));
+      if (want >= capacityOf('stone')) demands.push({ b, good: 'stone', want, prio: 2, fill: (b.stock.stone + b.incoming.stone) / STONE_RESERVE });
+    }
+  }
+  // Ties (two empty consumers) go to the lower id in contract missions. In the free valley, where
+  // one source often feeds two kinds of consumer (wood: sawmill + charcoal burner, grain: mill +
+  // malthouse), the consumer stalled longer goes first, so a contested input alternates fairly.
+  const fair = marketOpen(world);
+  demands.sort((a, c) => a.prio - c.prio || a.fill - c.fill || (fair ? c.b.stalledTicks - a.b.stalledTicks : 0) ||
+    a.b.id - c.b.id || GOODS.indexOf(a.good) - GOODS.indexOf(c.good));
 
   const sourcesOf = (g: Good): Building[] =>
     st.buildings.filter((s) => (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0);
@@ -114,8 +128,10 @@ export function dispatch(world: World): void {
 
   for (const d of demands) {
     // Full loads by default; a starving producer accepts a small first load to restart.
-    const starving = d.prio > 0 && d.b.stock[d.good] === 0 && d.b.incoming[d.good] === 0;
-    const minQty = Math.min(d.want, starving ? 2 : WAGON_CAPACITY);
+    const cap = capacityOf(d.good);
+    // starving = cannot start one more cycle and nothing is on the way (input 1: an empty stock)
+    const starving = d.prio === 1 && d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1) && d.b.incoming[d.good] === 0;
+    const minQty = Math.min(d.want, starving ? 2 : cap);
     let best: Building | null = null, bestT = Infinity, anyAvail = -1;
     for (const s of sourcesOf(d.good)) {
       if (s.id === d.b.id) continue;
@@ -140,7 +156,7 @@ export function dispatch(world: World): void {
       unmet.set(key, { k: 'NO_WAGON', cause: 'NONE_CAN_REACH' });
       continue;
     }
-    const qty = Math.min(d.want, best.stock[d.good] - best.reservedOut[d.good], WAGON_CAPACITY);
+    const qty = Math.min(d.want, best.stock[d.good] - best.reservedOut[d.good], cap);
     assignJob(world, wagon, best, d.b, d.good, qty);
     free.splice(free.indexOf(wagon), 1);
   }
@@ -157,17 +173,20 @@ export function dispatch(world: World): void {
     for (const m of markets) {
       for (const g of goods) {
         if (slots <= 0 || free.length === 0) break;
-        if (MARKET.inflightPerGood - m.incoming[g] < WAGON_CAPACITY) continue;
+        const cap = capacityOf(g);
+        if (MARKET.inflightPerGood - m.incoming[g] < cap) continue;
         let best: Building | null = null, bestT = Infinity;
         for (const s of sourcesOf(g)) {
-          if (s.stock[g] - s.reservedOut[g] < WAGON_CAPACITY) continue;
+          if (s.stock[g] - s.reservedOut[g] < cap) continue;
+          // stone in a granary is building material (cobbles, stone bridges), not for sale
+          if (g === 'stone' && s.type === 'warehouse') continue;
           const t = dc.from(s.gate).dist[m.gate]!;
           if (t < bestT) { bestT = t; best = s; }
         }
         if (!best) continue;
         const wagon = pickWagon(best);
         if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) continue;
-        assignJob(world, wagon, best, m, g, WAGON_CAPACITY);
+        assignJob(world, wagon, best, m, g, cap);
         free.splice(free.indexOf(wagon), 1);
         slots--;
       }
@@ -181,7 +200,8 @@ export function dispatch(world: World): void {
     for (const g of outputGoods(b.type)) {
       const avail = b.stock[g] - b.reservedOut[g];
       // only when nearly full: consumers get first call on output
-      if (avail < Math.max(WAGON_CAPACITY / 2, def.outCap - 2)) continue;
+      const cap = capacityOf(g);
+      if (avail < Math.max(cap / 2, def.outCap - 2)) continue;
       let best: Building | null = null, bestT = Infinity, fullWh = -1, cutOffWh = -1;
       const fwd = dc.from(b.gate);
       for (const wh of st.buildings) {
@@ -199,7 +219,7 @@ export function dispatch(world: World): void {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
         continue;
       }
-      const qty = Math.min(avail, WAGON_CAPACITY, warehouseSpace(best));
+      const qty = Math.min(avail, cap, warehouseSpace(best));
       assignJob(world, wagon, b, best, g, qty);
       free.splice(free.indexOf(wagon), 1);
     }
@@ -271,7 +291,28 @@ function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unme
   const u = unmet.get(b.id + ':' + g);
   if (u && u.k === 'NO_WAGON') return { k: 'NO_WAGON', good: g, cause: u.cause };
   if (u && u.k === 'NO_INPUT' && u.cause === 'UNREACHABLE') return { k: 'NO_INPUT', good: g, cause: u.cause, blockedBy: u.blockedBy };
+  const rival = contestedBy(world, b, g, dc);
+  if (rival >= 0) return { k: 'NO_INPUT', good: g, cause: 'CONTESTED', blockedBy: rival };
   return upstreamReason(world, b, g, dc);
+}
+
+/**
+ * Competition for an input (free valley chains, e.g. wood for the sawmill and the charcoal burner):
+ * the good exists and `b` could reach it, but it is promised to a consumer of another kind. Returns
+ * that consumer (the first such job in wagon order), or -1. Consumers of the same kind (two mills)
+ * and granaries do not count: that is ordinary sharing, explained by WAITING_UPSTREAM.
+ */
+function contestedBy(world: World, b: Building, g: Good, dc: DistCache): number {
+  for (const w of world.state.wagons) {
+    const j = w.job;
+    if (!j || j.good !== g || j.to === b.id) continue;
+    const to = buildingById(world, j.to);
+    if (!to || to.type === b.type || !inputGoods(to.type).includes(g)) continue;
+    const from = buildingById(world, j.from);
+    if (!from || dc.from(from.gate).dist[b.gate]! === Infinity) continue;
+    return to.id;
+  }
+  return -1;
 }
 
 function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, dc: DistCache): BuildingStatus {

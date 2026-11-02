@@ -1,6 +1,6 @@
 // Wagon actors: movement along the road graph, bridge lanes, loading/unloading, re-routing.
 import {
-  BUILDINGS, DT, LOAD_TICKS, NO_ROUTE_CANCEL_TICKS, UNLOAD_TICKS, WAGON_CAPACITY, WOOD_BRIDGE_MAX_WAGONS, inputGoods, sumGoods,
+  BUILDINGS, DT, LOAD_TICKS, NO_ROUTE_CANCEL_TICKS, UNLOAD_TICKS, WOOD_BRIDGE_MAX_WAGONS, capacityOf, emptyGoods, inputGoods, sumGoods,
 } from './defs';
 import { contractTarget, iceUntil, storeCapOf } from './contract';
 import { buildingById } from './logistics';
@@ -279,7 +279,7 @@ function alternativeDestination(world: World, w: Wagon, except: number): Buildin
 export function acceptsUpTo(world: World, b: Building, g: Good): number {
   const def = BUILDINGS[b.type];
   if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
-  if (isMarket(world, b)) return WAGON_CAPACITY; // the market buys whatever arrives
+  if (isMarket(world, b)) return capacityOf(g); // the market buys whatever arrives
   if (b.type === 'castle') {
     const m = world.state.mission;
     if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
@@ -362,7 +362,7 @@ function finishBusy(world: World, w: Wagon): void {
     const to = buildingById(world, j.to);
     if (to && qty === j.qty) {
       const spare = from.stock[j.good] - from.reservedOut[j.good];
-      const extra = Math.min(WAGON_CAPACITY - qty, spare, acceptsUpTo(world, to, j.good));
+      const extra = Math.min(capacityOf(j.good) - qty, spare, acceptsUpTo(world, to, j.good));
       if (extra > 0) {
         from.stock[j.good] -= extra;
         to.incoming[j.good] += extra;
@@ -392,7 +392,7 @@ function finishBusy(world: World, w: Wagon): void {
 
 /** All goods currently loaded on wagons. */
 export function cargoTotals(world: World): Record<Good, number> {
-  const out = { wood: 0, planks: 0, grain: 0, flour: 0, bread: 0 };
+  const out = emptyGoods();
   for (const w of world.state.wagons) if (w.cargoGood) out[w.cargoGood] += w.cargoQty;
   return out;
 }

@@ -21,6 +21,11 @@ export type IconId =
   | 'grain'
   | 'flour'
   | 'bread'
+  | 'fish'
+  | 'stone'
+  | 'charcoal'
+  | 'malt'
+  | 'beer'
   // buildings
   | 'woodcutter'
   | 'sawmill'
@@ -30,6 +35,11 @@ export type IconId =
   | 'warehouse'
   | 'stable'
   | 'castle'
+  | 'fisher'
+  | 'quarry'
+  | 'charcoalBurner'
+  | 'malthouse'
+  | 'brewery'
   // stall reasons
   | 'no_road'
   | 'no_wagon'
@@ -621,6 +631,151 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.cut(gouge([4.4, 17.3], [19.6, 17.3], 0.75));
   },
 
+  // ---- D-29 chain goods ----------------------------------------------------
+  fish(d) {
+    // body: blunt head at the left, deep back, narrowing to the tail root
+    const body: Poly = [
+      ...cubic([2, 12.6], [3.2, 8.6], [8.6, 6.8], [12.6, 7.4], 10),
+      ...cubic([12.6, 7.4], [15.4, 7.9], [16.8, 10], [17.8, 11.6], 6).slice(1),
+      [17.8, 13.4],
+      ...cubic([17.8, 13.4], [15.6, 16], [11, 17.6], [7.4, 16.8], 8).slice(1),
+      ...cubic([7.4, 16.8], [4.8, 16.2], [2.8, 14.8], [2, 13.2], 6).slice(1),
+    ];
+    d.ink(body);
+    // forked tail
+    d.ink([
+      [16.8, 12.5],
+      [22.6, 6.6],
+      [21.4, 10.4],
+      [20.4, 12.5],
+      [21.4, 14.6],
+      [22.6, 18.4],
+    ]);
+    // dorsal and belly fins
+    d.ink([[8.6, 7.6], [10.4, 4.2], [12.2, 4.8], [14.6, 8.2]]);
+    d.ink([[10, 16.6], [11.2, 19.6], [12.8, 19.2], [13.2, 16.4]]);
+    // eye, mouth, gill arc, lateral line
+    d.cut(circ(5.4, 11.2, 1));
+    d.ink(circ(5.5, 11.3, 0.42));
+    d.cut(gouge([2.3, 13], [4.4, 13.3], 0.55));
+    d.cut(band(arcPts(5.2, 12.2, 3, 4.2, -55, 60, 8), taper(0.8, 0.25)));
+    d.cut(gouge([9.4, 12.6], [17, 12.5], 0.5));
+    // scales: short white arcs in rows on the lit back
+    for (const [y, x0, x1] of [
+      [9.6, 9.4, 15.2],
+      [11.2, 9, 16.4],
+    ] as const) {
+      for (let x = x0; x <= x1; x += 1.9) d.cut(band(arcPts(x, y, 0.8, 0.8, 100, 260, 4), taper(0.55, 0.2)));
+    }
+    // fin rays
+    d.cut(gouge([10.6, 6.4], [11.2, 7.6], 0.4), gouge([12.2, 6.2], [12.6, 7.6], 0.4));
+  },
+
+  stone(d) {
+    // a rough-hewn block in three-quarter view: lit top, chiselled left face, dark right face
+    const top: Pt[] = [[3.2, 8.4], [13.2, 4.8], [21.2, 8.2], [11.2, 12]];
+    d.ink([[3.2, 8.4], [13.2, 4.8], [21.2, 8.2], [21, 17.8], [11, 21.6], [3.4, 17.6]]);
+    // edges between the faces
+    d.cut(gouge([3.8, 8.8], [11.2, 12.2], 0.6), gouge([11.2, 12.2], [20.6, 8.6], 0.6));
+    d.cut(gouge([11.2, 12.6], [11, 20.8], 0.6));
+    // top face: close white hatching (lit)
+    d.hatchCut(shrink(top, 0.9), 22, 1.4, 0.65);
+    // left face: chisel strokes
+    for (const [x, y] of [
+      [5.4, 12.2],
+      [8, 13.6],
+      [5.6, 15.6],
+      [8.4, 17.2],
+    ] as const) {
+      d.cut(gouge([x, y], [x + 1.6, y + 0.9], 0.6));
+    }
+    // a split-off chip on the ground
+    d.ink([[17.4, 20.6], [19.8, 19.6], [21.6, 20.6], [20.6, 22], [17.8, 22]]);
+    d.cut(gouge([18.4, 20.8], [20.2, 20.2], 0.4));
+  },
+
+  charcoal(d) {
+    // heap of angular lumps, each with a glint cut on its upper-left facet
+    const lumps: Poly[] = [
+      [[1.6, 21.6], [2.2, 17.6], [5.2, 15.8], [8.2, 17], [8.6, 21.6]],
+      [[9.4, 21.6], [9.2, 17.8], [11.8, 15.6], [15, 16.4], [15.6, 21.6]],
+      [[16.4, 21.6], [16.2, 17.2], [19.2, 15.4], [22.2, 17.4], [22.4, 21.6]],
+      [[4.6, 15], [5.6, 11.4], [8.8, 10], [11.2, 12], [10.6, 15]],
+      [[12, 15], [12.4, 11.6], [15.4, 10.2], [18.4, 12.2], [18, 15]],
+      [[8.2, 9.4], [9.6, 5.4], [12.8, 4.2], [15.4, 6.4], [14.6, 9.4]],
+    ];
+    for (const l of lumps) {
+      d.ink(l);
+      const [a, b] = [l[1]!, l[2]!];
+      d.cut([
+        [a[0] + 0.7, a[1] + 0.6],
+        [b[0] + 0.1, b[1] + 0.9],
+        [a[0] + (b[0] - a[0]) * 0.4 + 0.6, a[1] + 2.1],
+      ]);
+    }
+    // ground
+    d.hatchInk([[1, 22.4], [23, 22.4], [23, 23.4], [1, 23.4]], 0, 1.2, 0.6);
+  },
+
+  malt(d) {
+    // heap of malted grain on the kiln floor, its crest broken into grains; a malt shovel stuck in it
+    const crest: Pt[] = [];
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      const x = 1.8 + t * 20.4;
+      const y = 21.4 - Math.sin(Math.PI * t) * 9.4;
+      crest.push([x, y + (i % 2 ? 0.55 : -0.25)]);
+    }
+    d.ink([...crest, [22.4, 21.6], [1.6, 21.6]]);
+    // white seeds: rows of small slanted grains
+    let row = 0;
+    for (let y = 19.8; y > 13.2; y -= 1.7, row++) {
+      const half = Math.max(0, (Math.asin(Math.min(1, (21.4 - y) / 9.4)) / Math.PI) * 20.4);
+      const x0 = 1.8 + half + 1.3, x1 = 22.2 - half - 1.3;
+      for (let x = x0 + (row % 2) * 0.9; x <= x1; x += 1.85) d.cut(ell(x, y, 0.64, 0.32, row % 2 ? 30 : -30));
+    }
+    // a few loose grains with rootlets on the floor
+    for (const [x, a] of [
+      [3.2, -20],
+      [20.6, 25],
+    ] as const) {
+      d.ink(ell(x, 22.6, 0.7, 0.36, a));
+    }
+    // malt shovel: handle out of the crest, T-grip
+    d.layer();
+    d.ink(band(seg([14.4, 12.6], [19.6, 2.6], 4), lerpW(1.5, 1.2)));
+    d.ink(band(seg([18, 2.2], [21.6, 3.6], 2), 1.3));
+    d.cut(gouge([15.6, 10.6], [18.6, 4.8], 0.4));
+  },
+
+  beer(d) {
+    // stave tankard with two hoops, a handle, and a head of foam over the rim
+    d.ink([
+      [5.6, 9],
+      [16.4, 9],
+      [17, 21.6],
+      [5, 21.6],
+    ]);
+    for (const y of [11.2, 18.6]) d.cut(gouge([5.6, y], [16.6, y], 0.6), gouge([5.6, y + 1.3], [16.7, y + 1.3], 0.6));
+    for (const x of [7.6, 9.8]) d.cut(gouge([x, 13.2], [x - 0.15, 17.6], 0.6));
+    // handle
+    d.ink(band(cubic([16.4, 11], [22.4, 10.4], [22.4, 18], [16.8, 18], 10), 1.9));
+    // foam: bumpy crown spilling over the rim on one side
+    d.ink([
+      [4.4, 9.8],
+      ...arcPts(6.4, 7.4, 2.4, 2.4, 160, 290, 6),
+      ...arcPts(10.6, 5.4, 3, 2.8, 210, 330, 6),
+      ...arcPts(15, 6.6, 2.6, 2.4, 250, 380, 6),
+      [17.4, 9.8],
+      [16.6, 10.4],
+      [6.2, 10.4],
+      [5.6, 12.8],
+      [4.4, 12.6],
+    ]);
+    d.cut(circ(8.4, 6.6, 0.7), circ(12, 4.6, 0.55), circ(14.6, 7, 0.6), circ(10.6, 8, 0.45));
+    d.cut(gouge([6, 9.8], [16.6, 9.8], 0.5));
+  },
+
   // ---- buildings ---------------------------------------------------------
   woodcutter(d) {
     // stump
@@ -946,6 +1101,176 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.cut(gouge([9.4, 13.8], [9.4, 14.4], 0.5));
     // ground
     d.hatchInk([[3, 22.4], [21, 22.4], [21, 23.4], [3, 23.4]], 0, 1.2, 0.6);
+  },
+
+  // ---- D-29 chain buildings ------------------------------------------------
+  fisher(d) {
+    // hut on stilts: gable roof, board walls, door
+    d.ink([
+      [2.6, 9.8],
+      [9.6, 2.6],
+      [16.6, 9.8],
+      [15.2, 9.8],
+      [15.2, 15.2],
+      [4, 15.2],
+      [4, 9.8],
+    ]);
+    d.cut(band([[3.8, 9.2], [9.6, 3.6], [15.4, 9.2]], 0.5));
+    d.hatchCut(clipHalf(shrink([[4, 8.8], [9.6, 4], [15.2, 8.8]], 0.5), 0, 1, 8.6), -90, 1.6, 0.55);
+    d.cut(rect(10.6, 11, 2.4, 4.2));
+    for (const x of [5.8, 7.6]) d.cut(gouge([x, 10.6], [x, 14.4], 0.5));
+    // stilts and a ladder
+    for (const x of [4.8, 9.4, 14.2]) d.inkFine(band(seg([x, 15], [x, 20.6], 3), 1.1));
+    // water
+    d.layer();
+    for (const [y, x0, x1] of [
+      [19.4, 1, 23],
+      [21.8, 2.4, 21.4],
+    ] as const) {
+      const pts: Pt[] = [];
+      for (let x = x0; x <= x1 + 0.01; x += 0.5) pts.push([x, y + Math.sin((x - x0) * 1.3) * 0.4]);
+      d.inkFine(band(pts, 1));
+    }
+    // net hung on a pole at the right
+    d.layer();
+    d.inkFine(band(seg([19.6, 3.4], [19.6, 18.4], 4), 1.1));
+    d.inkFine(band(seg([19.6, 4.2], [23, 6.2], 3), 0.8));
+    const net: Poly = [[19.8, 5], [22.8, 6.6], [22.2, 15.4], [19.8, 16.4]];
+    d.hatchInk(net, 45, 1.5, 0.5);
+    d.hatchInk(net, -45, 1.5, 0.5);
+  },
+
+  quarry(d) {
+    // stepped quarry face of coursed blocks
+    d.ink([
+      [1.4, 22],
+      [1.4, 16.2],
+      [8.2, 16.2],
+      [8.2, 12.4],
+      [14.8, 12.4],
+      [14.8, 8.6],
+      [22.6, 8.6],
+      [22.6, 22],
+    ]);
+    // bedding joints and vertical joints, staggered
+    d.cut(gouge([9, 16.2], [22, 16.2], 0.6), gouge([15.6, 12.4], [22, 12.4], 0.6), gouge([2, 19.2], [22, 19.2], 0.6));
+    for (const [x, y0, y1] of [
+      [5, 16.8, 18.6],
+      [11.4, 16.8, 18.6],
+      [18.4, 16.8, 18.6],
+      [8.2, 19.8, 21.4],
+      [15, 19.8, 21.4],
+      [11.4, 13, 15.6],
+      [18.6, 13, 15.6],
+      [18.6, 9.2, 11.8],
+    ] as const) {
+      d.cut(gouge([x, y0], [x, y1], 0.55));
+    }
+    // lit tops of the steps
+    d.hatchCut(rect(1.8, 16.6, 6, 2.2), -45, 1.6, 0.55);
+    // shear-legs standing on the steps, a block hanging from the apex
+    d.layer();
+    d.inkFine(band(seg([2.2, 16], [6.6, 1.8], 5), lerpW(1.3, 0.9)), band(seg([12, 12.2], [7.2, 1.8], 5), lerpW(1.3, 0.9)));
+    d.ink(circ(6.9, 1.9, 1));
+    d.inkFine(band(seg([6.9, 2.6], [6.9, 6.6], 2), 0.55));
+    d.inkFine(band(seg([6.9, 6.4], [4.9, 7.8], 2), 0.5), band(seg([6.9, 6.4], [8.9, 7.8], 2), 0.5));
+    d.ink([[4.2, 7.8], [9.6, 7.6], [9.8, 11], [4.4, 11.2]]);
+    d.cut(gouge([5, 9.4], [9, 9.3], 0.45));
+  },
+
+  charcoalBurner(d) {
+    // the kiln mound: a low earth cone with a rounded crown
+    d.ink([
+      [1.2, 20.8],
+      ...cubic([1.2, 20.8], [5, 14], [8.4, 8.6], [11, 8], 10).slice(1),
+      [13, 8],
+      ...cubic([13, 8], [15.6, 8.6], [19, 14], [22.8, 20.8], 10).slice(1),
+    ]);
+    // turf courses on the lit side and two rings of vent holes
+    for (const [y, x0, x1] of [
+      [12, 8.4, 10.8],
+      [14.6, 5.6, 9.2],
+      [17.2, 3.8, 8.2],
+    ] as const) {
+      d.cut(gouge([x0, y], [x1, y - 0.6], 0.6));
+    }
+    for (const x of [6.4, 10, 13.6, 17.2]) d.cut(rect(x, 18.6, 0.9, 0.9));
+    for (const x of [9.6, 12.8, 15.4]) d.cut(rect(x, 14.4, 0.8, 0.8));
+    // smoke from the crown
+    d.layer();
+    d.inkFine(band(cubic([12, 7.4], [10.4, 5.4], [14.4, 4], [12.8, 0.6], 10), taper(1.7, 0.5)));
+    // ladder leaning on the right flank (cut a gap first so it reads)
+    d.layer();
+    d.inkFine(band(seg([16.2, 21.6], [19.4, 11.6], 4), 0.95), band(seg([18.4, 21.6], [21.2, 12.6], 4), 0.95));
+    for (const t of [0.25, 0.5, 0.75]) {
+      const a: Pt = [16.2 + 3.2 * t, 21.6 - 10 * t];
+      const b: Pt = [18.4 + 2.8 * t, 21.6 - 9 * t];
+      d.inkFine(band(seg(a, b, 2), 0.7));
+    }
+    // ground
+    d.hatchInk([[0.8, 21.4], [23.2, 21.4], [23.2, 22.6], [0.8, 22.6]], 0, 1.2, 0.6);
+  },
+
+  malthouse(d) {
+    // long low malting floor, thatched
+    d.ink([
+      [1.2, 21.6],
+      [1.2, 13.6],
+      [0.4, 13.8],
+      [4.2, 8.8],
+      [14, 8.8],
+      [14, 21.6],
+    ]);
+    d.hatchCut(clipHalf(shrink([[1.4, 13], [4.6, 9.6], [13.6, 9.6], [13.6, 13]], 0.5), 0, 1, 12.8), -90, 1.6, 0.55);
+    d.cut(gouge([1.6, 13.6], [13.6, 13.6], 0.5));
+    d.cut(rect(7.4, 16, 2.6, 5.6));
+    for (const x of [2.8, 11]) d.cut(rect(x, 15.4, 1.4, 1.2));
+    // stone kiln with a pyramid roof and a louvred cowl
+    d.layer();
+    d.ink(rect(14.8, 10.8, 7.6, 10.8));
+    d.ink([[14, 11.2], [18.6, 4.6], [23.2, 11.2]]);
+    d.ink(rect(17.2, 1.6, 2.8, 3.6));
+    d.ink([[16.6, 2.2], [18.6, 0.4], [20.6, 2.2]]);
+    d.cut(gouge([17.6, 2.8], [19.6, 2.8], 0.45), gouge([17.6, 4], [19.6, 4], 0.45));
+    for (const y of [13.4, 16, 18.6]) d.cut(gouge([15.4, y], [21.8, y], 0.55));
+    for (const [x, y] of [
+      [18.2, 11.4],
+      [16.6, 14],
+      [20.2, 14],
+      [18.4, 16.6],
+    ] as const) {
+      d.cut(gouge([x, y + 0.2], [x, y + 2], 0.45));
+    }
+    // stoke hole
+    d.cut([...arcPts(18.6, 20, 1.4, 1.4, 180, 360, 6), [20, 21.6], [17.2, 21.6]]);
+    d.hatchCut(clipHalf(shrink([[14.8, 10.6], [18.6, 5.2], [22.4, 10.6]], 0.6), 1, 0, 18.4), -45, 1.4, 0.5);
+  },
+
+  brewery(d) {
+    // copper on a furnace: a wide bowl with a rolled rim, the hearth below
+    d.ink([
+      [2.6, 9.6],
+      [21.4, 9.6],
+      [21.4, 11.2],
+      [20, 11.4],
+      ...arcPts(12, 11.4, 8, 6.6, 0, 180, 18).slice(1, -1),
+      [4, 11.4],
+      [2.6, 11.2],
+    ]);
+    d.cut(gouge([3.4, 10.5], [20.6, 10.5], 0.45));
+    // hammered texture on the lit side
+    d.hatchCut(clipHalf(shrink([...arcPts(12, 11.6, 7.2, 5.6, 0, 180, 14)], 0.6), 1, 0.4, 13), -45, 1.6, 0.6);
+    // furnace
+    d.ink([[4.8, 17.4], [19.2, 17.4], [19.8, 21.8], [4.2, 21.8]]);
+    d.cut(gouge([5, 17.6], [19, 17.6], 0.7));
+    d.cut([...arcPts(12, 20.2, 2.4, 1.8, 180, 360, 8), [14.4, 21.8], [9.6, 21.8]]);
+    d.ink([[10.4, 21.7], [11.2, 19.6], [12, 20.6], [12.8, 19.2], [13.6, 21.7]]);
+    // mash paddle
+    d.layer();
+    d.inkFine(band(seg([15.2, 9.2], [20.6, 1.4], 4), lerpW(1.4, 1)));
+    // steam
+    d.inkFine(band(cubic([7, 8.8], [5.6, 7], [8.6, 5.4], [7, 2.4], 8), taper(1.2, 0.4)));
+    d.inkFine(band(cubic([11.4, 8.6], [10.2, 6.6], [13, 5], [11.6, 1.8], 8), taper(1.2, 0.4)));
   },
 
   // ---- stall reasons -----------------------------------------------------
@@ -1756,7 +2081,7 @@ export const ICONS: Record<IconId, string> = BUILT.icons;
 export const ICON_IDS = Object.keys(ICONS) as IconId[];
 
 /** Goods icons, in production-chain order. */
-export const GOOD_ICONS = ['wood', 'planks', 'grain', 'flour', 'bread'] as const satisfies readonly IconId[];
+export const GOOD_ICONS = ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone', 'charcoal', 'malt', 'beer'] as const satisfies readonly IconId[];
 
 function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

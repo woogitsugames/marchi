@@ -1,7 +1,7 @@
 /**
  * Standalone preview of the procedural models (`src/render/models/`).
  * Run `npx vite` at the repo root and open /tools/model-preview.html?view=overview
- * Views: overview, wagons, close, far, buildings, castle, trees, bridges.
+ * Views: overview, wagons, close, far, buildings, castle, trees, bridges, chains (D-29 buildings and loads).
  */
 import {
   ACESFilmicToneMapping,
@@ -24,11 +24,11 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { CARGO_GOODS, cargoParts } from '../src/render/models/cargo';
+import { CARGO_GOODS, type CargoGood, cargoParts } from '../src/render/models/cargo';
 import { fnoise, type ModelPart, triangles, trs } from '../src/render/models/kit';
 import { modelMaterial } from '../src/render/models/materials';
 import { createHorseWalkMaterial, wagonLod1, wagonModel } from '../src/render/models/wagon';
-import { BUILDING_KINDS, buildingModel, PROP_KINDS, propParts } from '../src/render/models/buildings';
+import { BUILDING_KINDS, buildingModel, CHAIN_KINDS, PROP_KINDS, propParts } from '../src/render/models/buildings';
 import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS } from '../src/render/models/trees';
 import { bridgeParts } from '../src/render/models/bridges';
 import { workerParts } from '../src/render/models/people';
@@ -107,6 +107,8 @@ scene.add(sun, sun.target);
 
 // ---------------------------------------------------------------- helpers
 const stats: string[] = [];
+/** Scene children up to here (lights, ground, water) stay visible in every view. */
+const baseChildren = scene.children.length;
 
 function addParts(parts: ModelPart[], m: Matrix4, shadow = true): void {
   for (const p of parts) {
@@ -131,7 +133,9 @@ function addInstanced(parts: ModelPart[], ms: Matrix4[], material?: MeshStandard
 // ---------------------------------------------------------------- wagons (convoy on the road)
 const wm = wagonModel();
 const walk = createHorseWalkMaterial();
-const goods = [null, ...CARGO_GOODS] as const;
+const BASE_GOODS: CargoGood[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
+const CHAIN_GOODS: CargoGood[] = CARGO_GOODS.filter((g) => !BASE_GOODS.includes(g));
+const goods = [null, ...BASE_GOODS] as const;
 {
   const rigs: Matrix4[] = [];
   goods.forEach((good, i) => {
@@ -156,13 +160,13 @@ const goods = [null, ...CARGO_GOODS] as const;
   const rig = t(wm.body) + t(wm.driver) + t(wm.horse) + 2 * t(wm.wheelFront) + 2 * t(wm.wheelRear);
   stats.push(`wagon LOD0 rig ${rig} tris (body ${t(wm.body)}, wheel F ${t(wm.wheelFront)} R ${t(wm.wheelRear)}, horse ${t(wm.horse)}, driver ${t(wm.driver)})`);
   stats.push(`wagon LOD1 ${t(wagonLod1())} tris`);
-  stats.push('cargo x6: ' + CARGO_GOODS.map((g) => `${g} ${t(cargoParts(g, 6))}`).join(', '));
+  stats.push('cargo x6: ' + BASE_GOODS.map((g) => `${g} ${t(cargoParts(g, 6))}`).join(', '));
 }
 
 // ---------------------------------------------------------------- buildings
 {
   let x = -30;
-  for (const kind of BUILDING_KINDS) {
+  for (const kind of BUILDING_KINDS.filter((k) => !CHAIN_KINDS.includes(k))) {
     const bm = buildingModel(kind);
     const w = bm.cells[0] * 4, d = bm.cells[1] * 4;
     const z = -16 - d / 2;
@@ -187,6 +191,60 @@ const goods = [null, ...CARGO_GOODS] as const;
   for (let i = 0; i < 4; i++) addParts(workerParts(i, i === 3 ? 'work' : 'stand'), trs(px + i * 1.2, 0, 6.5, 0, -0.6 + i * 0.5));
   stats.push(`worker: ${triangles(workerParts(0))} tris`);
 }
+
+// ---------------------------------------------------------------- D-29 chains: buildings in a row at z≈22
+// facing the camera (+Z), a pond behind the fisher, and a convoy with the new loads in front
+const chainFrom = scene.children.length;
+{
+  let x = -30;
+  for (const kind of CHAIN_KINDS) {
+    const bm = buildingModel(kind);
+    const w = bm.cells[0] * 4, d = bm.cells[1] * 4;
+    const z = 22;
+    const plate = new Mesh(new PlaneGeometry(w - 0.1, d - 0.1), new MeshStandardMaterial({ color: '#5a4a39', roughness: 1 }));
+    plate.rotation.x = -Math.PI / 2;
+    plate.position.set(x + w / 2, 0.02, z);
+    plate.receiveShadow = true;
+    scene.add(plate);
+    addParts(bm.parts, trs(x + w / 2, 0, z));
+    if (kind === 'fisher') {
+      const pond = new Mesh(new PlaneGeometry(6.5, 7), new MeshStandardMaterial({ color: '#4c5b5c', roughness: 0.25 }));
+      pond.rotation.x = -Math.PI / 2;
+      pond.position.set(x + w / 2 + 3.4, 0.06, z - 4.2);
+      pond.receiveShadow = true;
+      scene.add(pond);
+    }
+    const tris = triangles(bm.parts);
+    stats.push(`${kind} ${w}x${d} m: ${tris} tris, gate ${bm.gate.toArray().map((v) => v.toFixed(1)).join(',')}${bm.smoke ? ', smoke' : ''}`);
+    x += w + 3;
+  }
+  const rigs: Matrix4[] = [];
+  CHAIN_GOODS.forEach((good, i) => {
+    const m = trs(-23 + i * 10.5, 0, 33, 0, Math.PI / 2 + 0.25, 0);
+    rigs.push(m);
+    addParts(cargoParts(good, good === 'stone' ? 4 : 6), m);
+  });
+  // partial loads (a stone wagon takes 4) and the crate fallback for goods without a load model
+  const ramps: [CargoGood, number][][] = [
+    [['stone', 1], ['stone', 2], ['stone', 3], ['beer', 2], ['beer', 4], ['crate', 6]],
+    [['fish', 2], ['charcoal', 3], ['malt', 2], ['malt', 4], ['charcoal', 5], ['fish', 4]],
+  ];
+  ramps.forEach((row, r) => row.forEach(([g, q], i) => {
+    const m = trs(-25 + i * 9 + r * 2, 0, 40 + r * 7, 0, Math.PI / 2 + 0.25, 0);
+    rigs.push(m);
+    addParts(cargoParts(g, q), m);
+  }));
+  addInstanced(wm.body, rigs);
+  addInstanced(wm.driver, rigs);
+  addInstanced(wm.horse, rigs, walk.material);
+  for (const w of wm.wheels) {
+    const parts = w.kind === 'front' ? wm.wheelFront : wm.wheelRear;
+    addInstanced(parts, rigs.map((r, i) => r.clone().multiply(new Matrix4().makeTranslation(w.position)).multiply(new Matrix4().makeRotationX(i * 0.7))));
+  }
+  stats.push('chain cargo: ' + CHAIN_GOODS.map((g) => `${g} x${g === 'stone' ? 4 : 6} ${triangles(cargoParts(g, g === 'stone' ? 4 : 6))}`).join(', '));
+}
+
+const chainTo = scene.children.length;
 
 // ---------------------------------------------------------------- trees
 bakeTreeBillboards(renderer);
@@ -227,8 +285,18 @@ const views: Record<string, [Vector3, Vector3]> = {
   bridges: [new Vector3(-28, 14, 12), new Vector3(-44, 0, -12)],
   props: [new Vector3(2, 5, 16), new Vector3(-2, 0.8, 6)],
   mill: [new Vector3(25, 8, -9), new Vector3(12, 2, -20)],
+  chains: [new Vector3(0, 31, 86), new Vector3(0, 0, 34)],
+  chainsW: [new Vector3(-17, 13, 42), new Vector3(-17, 1.5, 21)],
+  chainsE: [new Vector3(17, 16, 44), new Vector3(17, 1.5, 22)],
+  chaincargo: [new Vector3(-14, 10, 50), new Vector3(-12, 1, 36)],
 };
 const [eye, target] = views[view] ?? views.overview;
+// the chain views show only the D-29 set, without the older rows behind it
+if (view.startsWith('chain')) {
+  scene.children.forEach((c, i) => {
+    if (i >= baseChildren && (i < chainFrom || i >= chainTo)) c.visible = false;
+  });
+}
 camera.position.copy(eye);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.copy(target);

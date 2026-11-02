@@ -1,5 +1,5 @@
 // Simulation entry points: create, step, save/load, invariants.
-import { BUILDINGS, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TICK_HZ, TRAFFIC_DECAY_TICKS, emptyGoods, inputGoods, outputGoods } from './defs';
+import { BUILDINGS, capacityOf, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TICK_HZ, TRAFFIC_DECAY_TICKS, emptyGoods, inputGoods, outputGoods } from './defs';
 import { applyCommand, type Command, type CommandResult } from './commands';
 import { hashState } from './hash';
 import { dispatch } from './logistics';
@@ -187,25 +187,30 @@ export interface GoodsBalance {
 export function goodsBalance(world: World): GoodsBalance {
   const st = world.state;
   const inStock = emptyGoods(), onWagons = emptyGoods();
-  for (const b of st.buildings) for (const g of GOODS) inStock[g] += b.stock[g];
+  for (const b of st.buildings) for (const g of GOODS) inStock[g] += n0(b.stock[g]);
   for (const w of st.wagons) if (w.cargoGood) onWagons[w.cargoGood] += w.cargoQty;
   return { produced: st.ledger.produced, consumed: st.ledger.consumed, destroyed: st.ledger.destroyed, inStock, onWagons };
 }
 
-/** Returns a list of violated invariants (empty = all good). */
+/** A good count that may be missing (the save gate checks pre-v5 states, which lack the newer goods). */
+function n0(v: number | undefined): number {
+  return v ?? 0;
+}
+
+/** Returns a list of violated invariants (empty = all good). Iterates every good in GOODS. */
 export function checkInvariants(world: World): string[] {
   const st = world.state;
   const errs: string[] = [];
   const bal = goodsBalance(world);
   for (const g of GOODS) {
-    const lhs = bal.produced[g] - bal.consumed[g] - bal.destroyed[g];
+    const lhs = n0(bal.produced[g]) - n0(bal.consumed[g]) - n0(bal.destroyed[g]);
     const rhs = bal.inStock[g] + bal.onWagons[g];
     if (lhs !== rhs) errs.push(`conservation ${g}: produced-consumed-destroyed=${lhs} but stock+cargo=${rhs}`);
   }
   // market fields arrived with state v4; the save gate runs this on older states before migrating
   if (st.market && st.ledger.sold) for (const g of GOODS) {
-    if (st.ledger.sold[g] > st.ledger.consumed[g]) errs.push(`ledger sold ${g}=${st.ledger.sold[g]} > consumed ${st.ledger.consumed[g]}`);
-    const sat = st.market.saturation[g];
+    if (n0(st.ledger.sold[g]) > n0(st.ledger.consumed[g])) errs.push(`ledger sold ${g}=${st.ledger.sold[g]} > consumed ${st.ledger.consumed[g]}`);
+    const sat = n0(st.market.saturation[g]);
     if (sat < 0 || sat > MARKET.cap) errs.push(`market saturation ${g}=${sat} outside 0..${MARKET.cap}`);
   }
   if (st.market && (st.market.cents < 0 || st.market.cents > 99)) errs.push(`market cents ${st.market.cents} outside 0..99`);
@@ -214,6 +219,7 @@ export function checkInvariants(world: World): string[] {
   for (const w of st.wagons) {
     if (w.cargoQty < 0) errs.push(`wagon ${w.id} negative cargo`);
     if (w.cargoQty > 0 && !w.cargoGood) errs.push(`wagon ${w.id} cargo without good`);
+    if (w.cargoGood && w.cargoQty > capacityOf(w.cargoGood)) errs.push(`wagon ${w.id} carries ${w.cargoQty} ${w.cargoGood} > capacity ${capacityOf(w.cargoGood)}`);
     const j = w.job;
     if (!j) {
       if (w.cargoQty > 0) errs.push(`wagon ${w.id} has cargo but no job`);
@@ -229,10 +235,11 @@ export function checkInvariants(world: World): string[] {
   }
   for (const b of st.buildings) {
     for (const g of GOODS) {
-      if (b.stock[g] < 0) errs.push(`building ${b.id} negative stock ${g}`);
-      if (b.reservedOut[g] !== (resOut.get(b.id + ':' + g) ?? 0)) errs.push(`building ${b.id} reservedOut ${g}=${b.reservedOut[g]} != jobs ${resOut.get(b.id + ':' + g) ?? 0}`);
-      if (b.incoming[g] !== (inc.get(b.id + ':' + g) ?? 0)) errs.push(`building ${b.id} incoming ${g}=${b.incoming[g]} != jobs ${inc.get(b.id + ':' + g) ?? 0}`);
-      if (b.reservedOut[g] > b.stock[g]) errs.push(`building ${b.id} reserved ${g} more than stock`);
+      const stock = n0(b.stock[g]), res = n0(b.reservedOut[g]), incoming = n0(b.incoming[g]);
+      if (stock < 0) errs.push(`building ${b.id} negative stock ${g}`);
+      if (res !== (resOut.get(b.id + ':' + g) ?? 0)) errs.push(`building ${b.id} reservedOut ${g}=${res} != jobs ${resOut.get(b.id + ':' + g) ?? 0}`);
+      if (incoming !== (inc.get(b.id + ':' + g) ?? 0)) errs.push(`building ${b.id} incoming ${g}=${incoming} != jobs ${inc.get(b.id + ':' + g) ?? 0}`);
+      if (res > stock) errs.push(`building ${b.id} reserved ${g} more than stock`);
     }
   }
   return errs;

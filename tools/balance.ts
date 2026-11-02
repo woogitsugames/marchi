@@ -1,7 +1,8 @@
 // Balance check: compare strategies per mission. npx tsx tools/balance.ts [m2 m3 m4 m5 m6 sandbox]
 // Target per mission: no action = 1 seal, partial fix = 2, the lesson's fix = 3, 5-12 minutes.
-// The free valley ('sandbox') runs a fixed 30-minute horizon instead (docs/design/sandbox.md §4.5):
-// target rank 1 at 8-12 min and rank 2 at 20-30 min for the decent plan, rank 0 for "nothing".
+// The free valley ('sandbox') runs a fixed horizon instead (docs/design/sandbox.md §4.5, D-29):
+// the decent plan plays 150 minutes and must reach rank 1 at 8-12 min, rank 2 at 20-30, rank 3 at
+// 40-50, rank 4 at 70-90 and rank 5 at 105-135; "nothing" stays at rank 0.
 import { applyCommand, createWorld, lineCells, step, stars, TICK_HZ, type Command, type World } from '../src/sim/index';
 import { DECENT, report, runSandbox, type BotStep } from './bot-sandbox';
 
@@ -55,14 +56,14 @@ export const plans: Record<string, Strat[]> = {
 // cut the third farm off the network (redirecting grain away from the small granary)
 plans.m6![4]!.cmds = (w) => [{ t: 'demolish', cell: 46 * w.terrain.w + 39 }];
 
-/** Free valley strategies (30 sim-minutes). `want` = [rank reached at the end, earliest minute, latest minute] per rank. */
-export type SandboxStrat = { name: string; plan: BotStep[]; endRank?: number; rank1?: [number, number]; rank2?: [number, number] };
+/** Free valley strategies. `windows[i]` = [earliest, latest] minute for rank i (index 0 unused). */
+export type SandboxStrat = { name: string; plan: BotStep[]; minutes?: number; endRank?: number; windows?: ([number, number] | null)[] };
 const sbStable = (w: World) => w.state.buildings.find((b) => b.type === 'stable')!.id;
 const sbBuy = (n: number): BotStep[] => Array.from({ length: n }, () => ({ name: 'buy wagon', cmds: (w: World) => [{ t: 'buyWagon', stable: sbStable(w) } as Command] }));
 export const sandboxPlans: SandboxStrat[] = [
   { name: 'nothing', plan: [], endRank: 0 },
   { name: 'only wagons (5 more)', plan: sbBuy(5) },
-  { name: 'decent: wagons, farm, mill+bakery', plan: DECENT, rank1: [8, 12], rank2: [20, 30] },
+  { name: 'decent: all chains (150 min)', plan: DECENT, minutes: 150, endRank: 5, windows: [null, [8, 12], [20, 30], [40, 50], [70, 90], [105, 135]] },
   { name: '3 wagons + cobble @2:00 (locked)', plan: [...sbBuy(3), { name: 'cobble', after: 120, cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 24, 30, 46) }] }] },
 ];
 
@@ -87,9 +88,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const ids = process.argv.slice(2).length ? process.argv.slice(2) : [...Object.keys(plans), 'sandbox'];
   if (ids.includes('sandbox')) {
     for (const s of sandboxPlans) {
-      const r = runSandbox(s.plan, 30, { checkEvery: 10 });
-      const inRange = (m: number, w?: [number, number]) => !w || (m >= w[0] && m <= w[1]);
-      const ok = (s.endRank === undefined || r.rank === s.endRank) && inRange(r.rankMin[1]!, s.rank1) && inRange(r.rankMin[2]!, s.rank2) &&
+      const r = runSandbox(s.plan, s.minutes ?? 30, { checkEvery: 10 });
+      const inRange = (m: number, w: [number, number] | null | undefined) => !w || (m >= w[0] && m <= w[1]);
+      const ok = (s.endRank === undefined || r.rank === s.endRank) && (s.windows ?? []).every((w, i) => inRange(r.rankMin[i]!, w)) &&
         r.violations.filter((v) => !v.includes('"LOCKED"')).length === 0;
       if (!ok) bad++;
       console.log(`sandbox | ${s.name.padEnd(36)} | ${report(r).split('\n').join(' | ')}${r.violations.length ? ' | ' + r.violations.slice(0, 2).join('; ') : ''}${ok ? '' : '  <-- OFF'}`);

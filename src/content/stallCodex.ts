@@ -141,6 +141,30 @@ const CONTENT = {
       "chain": "Mill holds flour → bridge to bakery is broken → bakery stalls."
     }
   },
+  "status.NO_INPUT.CONTESTED": {
+    "pl": {
+      "name": "Surowiec jedzie do innego odbiorcy",
+      "meaning": "Towar jest u dostawcy, ale wozy wiozą go do budynku innego rodzaju, który też go zużywa.",
+      "check": "Dotknij budynku; w łańcuchu przyczyn widać rywala (np. tartak), do którego jedzie drewno.",
+      "fixes": [
+        "Postaw drugiego dostawcę tego surowca.",
+        "Kup wóz, żeby oba budynki dostawały ładunki na zmianę.",
+        "Rozbierz lub przenieś mniej ważnego odbiorcę."
+      ],
+      "chain": "Drwal ma drewno → wóz wiezie je do tartaku → węglarnia czeka."
+    },
+    "en": {
+      "name": "Input goes to another customer",
+      "meaning": "The supplier has the goods, but wagons take them to a different kind of building that also uses them.",
+      "check": "Tap the building; the cause chain shows the rival (e.g. the sawmill) the wood goes to.",
+      "fixes": [
+        "Build a second producer of this input.",
+        "Buy a wagon so both buildings get loads in turn.",
+        "Demolish or move the less important customer."
+      ],
+      "chain": "Woodcutter has wood → wagon takes it to the sawmill → charcoal burner waits."
+    }
+  },
   "status.WAITING_UPSTREAM": {
     "pl": {
       "name": "Czeka na dostawcę",

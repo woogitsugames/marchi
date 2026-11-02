@@ -5,20 +5,33 @@
  *  - grain  : upright round sacks with tied necks (straw colour)
  *  - flour  : pale square sacks lying flat, stacked in two layers
  *  - bread  : wide wicker baskets heaped with ochre loaves
+ *  - fish   : tall narrow wicker creels with fish tails sticking out of the open tops
+ *  - stone  : rough grey blocks, low and heavy (a wagon carries 4), two-by-two on the floor
+ *  - charcoal: black sacks standing open, heaped with dull lumps
+ *  - malt   : small pale tied bags lying in pairs, necks opposite (smaller than grain/flour)
+ *  - beer   : barrels lying lengthwise, four on the floor and two nested on top
+ *  - crate  : fallback for a good without its own load (plain crates)
  *
  * Everything is in wagon rig space (see `WAGON` in `wagon.ts`): bed floor at y = 1.0, cargo
  * area z ∈ [−1.55, 1.0]. `cargoParts(good, qty)` gives a merged mesh per quantity (1..6, cache
  * these 30 variants and swap them per wagon); `cargoUnitParts` + `cargoSlots` support
  * per-unit instancing instead.
  */
-import { Color, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
+import { BoxGeometry, Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
+import { creel, fishGeom } from './chains';
 import { type ModelPart, PartBuilder, trs } from './kit';
 import { box, logGeom } from './shapes';
 import { WAGON } from './wagon';
 
-export type CargoGood = 'wood' | 'planks' | 'grain' | 'flour' | 'bread';
-export const CARGO_GOODS: CargoGood[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
+export type CargoGood = 'wood' | 'planks' | 'grain' | 'flour' | 'bread' | 'fish' | 'stone' | 'charcoal' | 'malt' | 'beer' | 'crate';
+/** Every load the wagon can draw (goods in chain order, then the `crate` fallback). */
+export const CARGO_GOODS: CargoGood[] = ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone', 'charcoal', 'malt', 'beer', 'crate'];
 export const CARGO_MAX = 6;
+
+/** The load drawn for a sim good id; unknown goods get plain crates instead of nothing. */
+export function cargoFor(good: string): CargoGood {
+  return (CARGO_GOODS as string[]).includes(good) ? (good as CargoGood) : 'crate';
+}
 
 const Y = WAGON.bedTopY;
 const CRUST = new Color('#b8893a');
@@ -38,7 +51,9 @@ export function cargoSlots(good: CargoGood): Matrix4[] {
       for (let i = 0; i < CARGO_MAX; i++) out.push(trs(0, Y + i * 0.125, -0.5));
       break;
     case 'grain':
-    case 'bread': {
+    case 'bread':
+    case 'fish':
+    case 'charcoal': {
       const zs = [-1.18, -0.42, 0.34];
       for (let i = 0; i < CARGO_MAX; i++) out.push(trs(i % 2 ? 0.31 : -0.31, Y, zs[Math.floor(i / 2)], 0, i * 1.7));
       break;
@@ -49,6 +64,25 @@ export function cargoSlots(good: CargoGood): Matrix4[] {
       for (const [x, z] of bottom) out.push(trs(x, Y + 0.13, z, 0, 0.03 * x));
       out.push(trs(0, Y + 0.38, -0.95 + 0.25, 0, Math.PI / 2 + 0.05));
       out.push(trs(0, Y + 0.38, 0.0 + 0.1, 0, Math.PI / 2 - 0.06));
+      break;
+    }
+    case 'stone': {
+      // heavy load: 2×2 low on the floor over the axles, extras (never more than 4 in the sim) between
+      const pts: [number, number, number][] = [[-0.3, Y, -1.0], [0.3, Y, -1.0], [-0.3, Y, 0.1], [0.3, Y, 0.1], [0, Y + 0.5, -0.45], [0, Y, 0.85]];
+      pts.forEach(([x, y, z], i) => out.push(trs(x, y, z, 0, (i % 3) * 0.06 - 0.06)));
+      break;
+    }
+    case 'malt':
+    case 'crate': {
+      const pts: [number, number, number][] = [[-0.3, Y, -1.1], [0.3, Y, -1.1], [-0.3, Y, -0.35], [0.3, Y, -0.35], [-0.3, Y, 0.4], [0.3, Y, 0.4]];
+      pts.forEach(([x, y, z], i) => out.push(trs(x, y, z, 0, good === 'crate' ? 0 : i * 0.9)));
+      break;
+    }
+    case 'beer': {
+      // lying barrels along Z: 2×2 on the floor, then two nested in the grooves on top
+      const r = 0.31, top = Y + r + Math.sqrt((2 * r) ** 2 - r * r) * 0.98;
+      const pts: [number, number, number][] = [[-r, Y + r, -1.05], [r, Y + r, -1.05], [-r, Y + r, -0.15], [r, Y + r, -0.15], [0, top, -1.05], [0, top, -0.15]];
+      for (const [x, y, z] of pts) out.push(trs(x, y, z));
       break;
     }
   }
@@ -69,6 +103,7 @@ function pillow(w: number, h: number, d: number, ws = 8, hs = 6): SphereGeometry
 
 /** Add one unit of a good at transform `m`. */
 function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
+  if (addChainUnit(b, good, m)) return;
   switch (good) {
     case 'wood': {
       const len = 3.0 + b.r(-0.15, 0.2);
@@ -167,6 +202,128 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
       }
       break;
     }
+  }
+}
+
+/** A unit of the D-29 chain goods (and the crate fallback); returns false for other goods. */
+function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
+  switch (good) {
+    case 'fish': {
+      // tall creel, three or four tails poking up out of it at angles
+      creel(b, m.clone().multiply(trs(0, 0, 0, b.r(-0.05, 0.05), 0, b.r(-0.05, 0.05))), 0.6 + b.r(-0.03, 0.03), 0.25, '#6a573d');
+      const n = 3;
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2 + b.r(0, 1);
+        // head down in the basket, tail out: fishGeom grows along +Y from its nose
+        fishGeom(b, m.clone().multiply(trs(Math.cos(a) * 0.09, 0.32, Math.sin(a) * 0.09, Math.sin(a) * 0.45, b.r(0, 3), -Math.cos(a) * 0.45)), 0.42);
+      }
+      return true;
+    }
+    case 'stone': {
+      const w = 0.56 + b.r(-0.05, 0.03), h = 0.5 + b.r(-0.04, 0.04), d = 0.66 + b.r(-0.06, 0.06);
+      b.add('stone', new BoxGeometry(w, h, d, 2, 2, 2), {
+        color: '#5f5e59',
+        m: m.clone().multiply(trs(0, h / 2, 0, b.r(-0.04, 0.04), 0, b.r(-0.04, 0.04))),
+        jitter: 0.075,
+        jitterFreq: 2.8,
+        renormal: true,
+        noise: 0.22,
+        noiseFreq: 5,
+        ao: 0,
+        dirt: 0,
+        shade: (_p, n, c) => {
+          if (n.y > 0.6) c.multiplyScalar(1.08); // top catches the light
+          else if (n.y < -0.3) c.multiplyScalar(0.65);
+          else c.multiplyScalar(0.88);
+        },
+      });
+      return true;
+    }
+    case 'charcoal': {
+      // upright black sack, mouth rolled open, heaped with lumps
+      const h = 0.58 + b.r(-0.03, 0.03);
+      const prof = [[0.001, 0], [0.21, 0.02], [0.26, 0.16], [0.25, 0.4], [0.22, h - 0.04], [0.25, h], [0.2, h + 0.02], [0.001, h - 0.02]].map(([r, y]) => new Vector2(r, y));
+      b.add('cloth', new LatheGeometry(prof, 9), {
+        color: '#2c2926',
+        m: m.clone().multiply(trs(0, 0, 0, b.r(-0.06, 0.06), 0, b.r(-0.06, 0.06))),
+        jitter: 0.02,
+        jitterFreq: 4,
+        renormal: true,
+        noise: 0.12,
+        ao: 0,
+        dirt: 0,
+      });
+      b.add('stone', new SphereGeometry(1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
+        color: '#1f1d1c',
+        m: m.clone().multiply(trs(0, h - 0.04, 0, 0, b.r(0, 3), 0, 0.2, 0.12, 0.2)),
+        jitter: 0.03,
+        jitterFreq: 14,
+        noise: 0.35,
+        noiseFreq: 12,
+        ao: 0,
+        dirt: 0,
+      });
+      return true;
+    }
+    case 'malt': {
+      // three small pale bags, tied at the neck, two lying and one propped on them
+      const bag = (mm: Matrix4) => {
+        const inv = mm.clone().invert();
+        const prof = [[0.001, 0], [0.15, 0.03], [0.17, 0.14], [0.11, 0.28], [0.04, 0.32], [0.07, 0.38], [0.001, 0.37]].map(([r, y]) => new Vector2(r, y));
+        b.add('cloth', new LatheGeometry(prof, 7), {
+          color: '#8f8467',
+          m: mm,
+          jitter: 0.012,
+          jitterFreq: 6,
+          renormal: true,
+          noise: 0.08,
+          ao: 0,
+          dirt: 0,
+          shade: (p, _n, c) => {
+            const q = p.clone().applyMatrix4(inv);
+            if (q.y > 0.29 && q.y < 0.34) c.set('#4f4232'); // twine
+          },
+        });
+      };
+      bag(m.clone().multiply(trs(-0.11, 0.15, -0.05, Math.PI / 2 - 0.1, 0, 0)));
+      bag(m.clone().multiply(trs(0.12, 0.15, 0.06, Math.PI / 2 - 0.1, Math.PI * 0.9, 0)));
+      return true;
+    }
+    case 'beer': {
+      // barrel on its side along Z: bulging staves, two dark iron hoops each end, a bung
+      const prof = [[0.001, 0], [0.25, 0], [0.25, 0.03], [0.29, 0.2], [0.31, 0.415], [0.29, 0.63], [0.25, 0.8], [0.25, 0.83], [0.001, 0.83]].map(([r, y]) => new Vector2(r * 0.97, y * 0.95));
+      const mm = m.clone().multiply(trs(0, 0, -0.39, Math.PI / 2, b.r(0, 3), 0));
+      b.add('wood', new LatheGeometry(prof, 12), {
+        color: '#6a5641',
+        m: mm,
+        noise: 0.12,
+        noiseFreq: 9,
+        ao: 0,
+        dirt: 0,
+        shade: (_p, n, c) => {
+          if (Math.abs(n.z) > 0.9) c.set('#5a4836'); // heads
+        },
+      });
+      const rAt = (y: number): number => {
+        for (let i = 1; i < prof.length; i++) {
+          const p0 = prof[i - 1]!, p1 = prof[i]!;
+          if (y <= p1.y) return p0.x + ((p1.x - p0.x) * (y - p0.y)) / Math.max(1e-6, p1.y - p0.y);
+        }
+        return prof[prof.length - 1]!.x;
+      };
+      for (const f of [0.12, 0.27, 0.73, 0.88]) {
+        const y = f * 0.83 * 0.95, r = rAt(y) + 0.006;
+        b.add('metal', new CylinderGeometry(r, r, 0.035, 12, 1, true), { color: '#34302c', m: mm.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
+      }
+      return true;
+    }
+    case 'crate': {
+      box(b, 'wood', 0.55, 0.45, 0.6, m.clone().multiply(trs(0, 0.225, 0)), { color: '#5e4e3d', ao: 0, dirt: 0, shade: (_p, n, c) => { if (n.y > 0.6) c.multiplyScalar(1.15); } });
+      for (const s of [-1, 1]) box(b, 'wood', 0.6, 0.07, 0.05, m.clone().multiply(trs(0, 0.3, s * 0.3)), { color: '#74624b', ao: 0, dirt: 0 });
+      return true;
+    }
+    default:
+      return false;
   }
 }
 

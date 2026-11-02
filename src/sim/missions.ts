@@ -1,5 +1,5 @@
 // Mission definitions: map spec, pre-placed buildings and roads, contract.
-import { STATE_VERSION, TICK_HZ, emptyGoods } from './defs';
+import { GOODS, STATE_VERSION, TICK_HZ, emptyGoods, goodsOf } from './defs';
 import { lineCells, place, spawnWagon } from './commands';
 import { nextInt, seedRng } from './rng';
 import { generateValley, type ValleySpec } from './terrain';
@@ -7,7 +7,7 @@ import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
 import { S2_MISSIONS } from './missions-s2';
 import { freshMarket, freshTown } from './town';
 import type { World } from './network';
-import type { BuildingType, GoodMap, RainSpell, SimState, Terrain } from './types';
+import type { BuildingType, Good, GoodMap, RainSpell, SimState, Terrain } from './types';
 
 export const VALLEY_W = 96;
 export const VALLEY_H = 72;
@@ -79,7 +79,7 @@ interface Placement {
 }
 
 /** A contract tranche as authored: goods due by `dueMin` mission minutes. */
-export interface TrancheDef { need: GoodMap; dueMin: number }
+export interface TrancheDef { need: Partial<GoodMap>; dueMin: number }
 
 export interface MissionDef {
   id: string;
@@ -90,7 +90,8 @@ export interface MissionDef {
   buildings: Placement[];
   /** Road polylines as waypoint lists [x,y][]. */
   roads: [number, number][][];
-  contract: GoodMap | null;
+  /** Goods the castle orders (missing goods = 0), or null for no contract. */
+  contract: Partial<GoodMap> | null;
   deadlineMin: number;
   star3Min: number;
   star2Min: number;
@@ -242,7 +243,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     const b = state.buildings[state.buildings.length - 1]!;
     if (p.cap !== undefined) b.capOverride = p.cap;
     if (p.stock) {
-      for (const [g, v] of Object.entries(p.stock) as [keyof GoodMap, number][]) {
+      for (const [g, v] of Object.entries(p.stock) as [Good, number][]) {
         b.stock[g] += v;
         state.ledger.produced[g] += v; // initial stock counts as produced (conservation)
       }
@@ -262,21 +263,21 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
   const castle = state.buildings.find((b) => b.type === 'castle');
   if (def.contract && castle) {
     state.mission.contract = {
-      need: { ...def.contract },
+      need: goodsOf(def.contract),
       castle: castle.id,
       // ticks are integers (8.45 min * 600 is 5069.999… in floating point)
       deadlineTick: Math.round(def.deadlineMin * 60 * TICK_HZ),
       star3Tick: Math.round(def.star3Min * 60 * TICK_HZ),
       star2Tick: Math.round(def.star2Min * 60 * TICK_HZ),
       tranches: (def.tranches ?? []).map((t) => ({
-        need: { ...t.need }, deadlineTick: Math.round(t.dueMin * 60 * TICK_HZ), doneTick: -1, missed: false,
+        need: goodsOf(t.need), deadlineTick: Math.round(t.dueMin * 60 * TICK_HZ), doneTick: -1, missed: false,
       })),
     };
     if (def.tranches) {
-      for (const g of Object.keys(def.contract) as (keyof GoodMap)[]) {
+      for (const g of GOODS) {
         let sum = 0;
-        for (const t of def.tranches) sum += t.need[g];
-        if (sum !== def.contract[g]) throw new Error(`mission ${def.id}: tranches of ${g} sum to ${sum}, contract says ${def.contract[g]}`);
+        for (const t of def.tranches) sum += t.need[g] ?? 0;
+        if (sum !== (def.contract[g] ?? 0)) throw new Error(`mission ${def.id}: tranches of ${g} sum to ${sum}, contract says ${def.contract[g]}`);
       }
     }
   }

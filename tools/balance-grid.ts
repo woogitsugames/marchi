@@ -67,7 +67,7 @@ function qty(n: number, scale: number): number {
 }
 function physicalOf(def: MissionDef): Physical {
   if (!def.contract) throw new Error('Mission without a contract: ' + def.id);
-  return { planks: def.contract.planks, bread: def.contract.bread, coins: def.coins, wagons: def.wagons };
+  return { planks: def.contract.planks ?? 0, bread: def.contract.bread ?? 0, coins: def.coins, wagons: def.wagons };
 }
 function grid(def: MissionDef): Physical[] {
   const p = physicalOf(def);

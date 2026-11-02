@@ -1544,3 +1544,73 @@ body.build-open .tool-caption { display: none !important; }
 /* Flex mode on the Fold: the middle column is narrow — card, actions and hint stack */
 body.is-flex.build-placing .build-shelf { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "actions" "hint"; }
 body.is-flex.build-placing .pb-actions .btn { flex: 1; }
+
+/* ---------------------------------------------------------------- free valley ledgers (D-29) */
+/* Three ruled entries in a steward's book: a folio numeral in the margin, the town's rank as the
+   entry title, a small-caps tally underneath. No cards: rules and the margin line do the grouping. */
+.slots { list-style: none; margin: 0; padding: 0; border-top: var(--hair) solid var(--iron); }
+.slot-row {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: 12px;
+  padding: 12px 0 14px;
+  border-bottom: 1px solid rgb(74 72 67 / .45);
+  transition: background-color var(--t-mid) var(--ease);
+}
+.slot-no {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ink-soft);
+  text-align: center;
+  align-self: start;
+  padding-top: 2px;
+  border-inline-end: var(--hair) solid rgb(140 74 47 / .55); /* the margin line of a ledger page */
+  min-height: 100%;
+}
+.slot-main { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.slot-name { font-family: var(--font-head); font-weight: 600; font-size: 24px; line-height: 1.05; color: var(--ink); }
+.slot-sub { display: block; font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+.slot-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; margin: 2px 0 4px; }
+.slot-meta > div { display: flex; flex-direction: column; min-width: 0; }
+.slot-meta dt { font-size: 13px; color: var(--ink-soft); font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
+.slot-meta dd { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.slot-meta dd .when { font-size: 15px; font-weight: 500; }
+.slot-meta .coin { display: inline-grid; color: var(--ochre); --icon-halo: var(--parchment); }
+.slot-acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.slot-acts .btn { font-size: 15px; padding: 0 12px; }
+.slot-acts .slot-play { flex: 1 1 96px; font-size: 17px; }
+.slot-acts .slot-small { flex: 0 0 auto; }
+.slot-acts.two .btn { flex: 1 1 0; min-height: 48px; }
+/* empty ledger: the whole entry is one 56 px target */
+.slot-row.is-empty { padding: 0; }
+.slot-new {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 40px 1fr 24px;
+  column-gap: 12px;
+  align-items: center;
+  min-height: 64px;
+  padding: 10px 0;
+  text-align: start;
+  color: var(--ink);
+}
+.slot-new .slot-no { color: #8f887a; min-height: 0; padding: 0; border-inline-end-color: rgb(140 74 47 / .3); }
+.slot-new .slot-name { color: var(--ink-soft); }
+.slot-new .slot-go { color: var(--ink-soft); }
+.slot-new:active { background: rgb(207 197 176 / .6); }
+.slot-new:active .slot-main { transform: translateY(1px); }
+/* asking before a delete / start over: the entry is struck through by a wax-clay rule on the margin */
+.slot-row.is-asking { background: #e2d3c2; }
+.slot-row.is-asking .slot-no { color: var(--clay); border-inline-end-color: var(--clay); border-inline-end-width: 3px; }
+.slot-ask { margin: 2px 0 2px; font-size: 15px; font-weight: 700; color: #6e3520; }
+/* damaged ledger: the reason in plain words, and the only way out (delete) */
+.slot-row.is-broken .slot-no { color: var(--clay); }
+.slot-row.is-broken .slot-name { color: #6e3520; }
+.slot-err { margin: 0; font-size: 15px; color: var(--ink); }
+.slot-loading { font-size: 15px; color: var(--ink-soft); font-style: italic; margin: 8px 0; }
+.slot-fail { margin-top: 0; }
+/* pause menu: which ledger the free valley is written to */
+.slot-note { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 15px; color: var(--ink-soft); }
+.slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding: 0 8px 0 0; }

@@ -1,7 +1,7 @@
 // Versioned, dependency-free JSON mission decoding and map validation.
 // The caller owns loading the JSON; this module stays platform-independent.
 import { lineCells } from './commands';
-import { BUILDINGS, GOODS, MAX_WAGONS } from './defs';
+import { BUILDINGS, GOODS, GOODS_V4, MAX_WAGONS } from './defs';
 import { generateValley, type ValleySpec } from './terrain';
 import type { MissionDef } from './missions';
 import type { BuildingType, GoodMap, RainSpell } from './types';
@@ -70,11 +70,12 @@ class Reader {
     return value;
   }
 
-  goods(value: unknown, path: string, full: true): GoodMap;
+  goods(value: unknown, path: string, full: true): Partial<GoodMap>;
   goods(value: unknown, path: string, full: false): Partial<GoodMap>;
   goods(value: unknown, path: string, full: boolean): GoodMap | Partial<GoodMap> {
     const obj = this.object(value, path);
-    this.keys(obj, path, full ? GOODS : [], full ? [] : GOODS);
+    // a full map needs the goods of the mission format (state v4 goods); later goods are optional
+    this.keys(obj, path, full ? GOODS_V4 : [], full ? GOODS.filter((g) => !GOODS_V4.includes(g)) : GOODS);
     const result: Partial<GoodMap> = {};
     for (const good of GOODS) {
       if (Object.prototype.hasOwnProperty.call(obj, good)) {
@@ -179,7 +180,7 @@ class Reader {
     const star3Min = this.number(obj.star3Min, path + '.star3Min', 0, 1440);
     const star2Min = this.number(obj.star2Min, path + '.star2Min', 0, 1440);
     if (contract) {
-      if (GOODS.every((good) => contract[good] === 0)) this.fail(path + '.contract', 'at least one good must be required');
+      if (GOODS.every((good) => (contract[good] ?? 0) === 0)) this.fail(path + '.contract', 'at least one good must be required');
       if (buildings.filter((b) => b.type === 'castle').length !== 1) {
         this.fail(path + '.buildings', 'a contract requires exactly one castle');
       }

@@ -13,7 +13,7 @@
 // inside state objects are tolerated (a newer schema may add e.g. mission.tranches or
 // building.capOverride). Only the fields this module knows are validated; size and depth are capped
 // for everything.
-import { BUILDINGS, FLOW_BUCKETS, GOODS, MARKET, MAX_WAGONS, RANKS, STATE_VERSION, WAGON_CAPACITY } from '../sim/defs';
+import { BUILDINGS, FLOW_BUCKETS, GOODS, GOODS_V4, MARKET, MAX_WAGONS, RANKS, RANKS_V4, STATE_VERSION, WAGON_CAPACITY, capacityOf, isGood } from '../sim/defs';
 import { isMapId, mapSize, terrainFor } from '../sim/missions';
 import { checkInvariants } from '../sim/sim';
 import { terrainHash } from '../sim/terrainHash';
@@ -237,6 +237,8 @@ interface Ctx {
   cells: number;
   W: number;
   H: number;
+  /** Goods every goods map of this state version carries (v1-v4: GOODS_V4, v5: GOODS). */
+  goods: readonly string[];
 }
 
 function int(c: Ctx, o: Obj, k: string, path: string, min: number, max: number): number | null {
@@ -284,14 +286,14 @@ function cell(c: Ctx, o: Obj, k: string, path: string, allowNone: boolean): numb
 function goodMap(c: Ctx, o: Obj, k: string, path: string): Obj | null {
   const g = obj(c, o, k, path);
   if (!g) return null;
-  for (const good of GOODS) int(c, g, good, `${path}.${k}`, 0, LIMITS.maxInt);
+  for (const good of c.goods) int(c, g, good, `${path}.${k}`, 0, LIMITS.maxInt);
   return g;
 }
 
 function goodField(c: Ctx, o: Obj, k: string, path: string, nullable: boolean): void {
   const v = o[k];
   if (nullable && v === null) return;
-  if (typeof v !== 'string' || !GOOD_SET.has(v)) c.e.add('BAD_TYPE', `${path}.${k}`, `unknown good ${show(v)}`);
+  if (typeof v !== 'string' || !GOOD_SET.has(v) || !c.goods.includes(v)) c.e.add('BAD_TYPE', `${path}.${k}`, `unknown good ${show(v)}`);
 }
 
 /** Status objects: known `k`; every other known-shaped field must be a finite integer / known good / string. */
@@ -324,7 +326,8 @@ function cellArray(c: Ctx, o: Obj, k: string, path: string, maxValue: number): v
 function gateStateInner(s: unknown, version: number, e: Errs): void {
   const P = 'state';
   if (!isObj(s)) { e.add('BAD_TYPE', P, `expected object, got ${show(s)}`); return; }
-  const c0: Ctx = { e, cells: 0, W: 0, H: 0 };
+  const goods: readonly string[] = version >= 5 ? GOODS : GOODS_V4;
+  const c0: Ctx = { e, cells: 0, W: 0, H: 0, goods };
   const v = int(c0, s, 'version', P, 1, STATE_VERSION);
   if (v !== null && v !== version) e.add('INCONSISTENT', `${P}.version`, `state.version ${v} != envelope stateVersion ${version}`);
   const mapId = str(c0, s, 'mapId', P);
@@ -332,7 +335,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
   const size = isMapId(mapId) ? mapSize(mapId) : null;
   if (!size) { e.add('UNKNOWN_MAP', `${P}.mapId`, `unknown map ${show(mapId)}`); return; }
   if (size.w * size.h > LIMITS.maxCells) { e.add('BUDGET', `${P}.mapId`, 'map larger than the cell budget'); return; }
-  const c: Ctx = { e, cells: size.w * size.h, W: size.w, H: size.h };
+  const c: Ctx = { e, cells: size.w * size.h, W: size.w, H: size.h, goods };
 
   int(c, s, 'seed', P, -(2 ** 32), 2 ** 32);
   int(c, s, 'tick', P, 0, LIMITS.maxInt);
@@ -392,7 +395,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     const stock = goodMap(c, b, 'stock', bp);
     const res = goodMap(c, b, 'reservedOut', bp);
     goodMap(c, b, 'incoming', bp);
-    if (stock && res) for (const g of GOODS) {
+    if (stock && res) for (const g of c.goods) {
       const sv = stock[g], rv = res[g];
       if (typeof sv === 'number' && typeof rv === 'number' && rv > sv) e.add('INCONSISTENT', `${bp}.reservedOut.${g}`, `reserved ${rv} > stock ${sv}`);
     }
@@ -438,7 +441,8 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
       if (typeof n !== 'number' || !Number.isInteger(n) || n < 0 || n >= c.cells) e.add('OUT_OF_RANGE', `${wp}.path[${j}]`, `expected cell 0..${c.cells - 1}, got ${show(n)}`);
     });
     goodField(c, w, 'cargoGood', wp, true);
-    const cargoQty = int(c, w, 'cargoQty', wp, 0, WAGON_CAPACITY);
+    // per-good load (state v5: stone 4); an unknown good was reported above
+    const cargoQty = int(c, w, 'cargoQty', wp, 0, isGood(w.cargoGood) ? capacityOf(w.cargoGood) : WAGON_CAPACITY);
     if (cargoQty && w.cargoGood === null) e.add('INCONSISTENT', `${wp}.cargoQty`, 'cargo without a good');
     status(c, w, wp, WAGON_STATUS);
     // jobs and references are checked after all ids are known
@@ -458,7 +462,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     if (!isObj(job)) { e.add('BAD_TYPE', jp, `expected object or null, got ${show(job)}`); return; }
     int(c, job, 'id', jp, 0, LIMITS.maxInt);
     goodField(c, job, 'good', jp, false);
-    int(c, job, 'qty', jp, 1, WAGON_CAPACITY);
+    int(c, job, 'qty', jp, 1, isGood(job.good) ? capacityOf(job.good) : WAGON_CAPACITY);
     const phase = job.phase;
     if (phase !== 'pickup' && phase !== 'dropoff') e.add('BAD_TYPE', `${jp}.phase`, `unknown phase ${show(phase)}`);
     const from = int(c, job, 'from', jp, -1, LIMITS.maxInt);
@@ -547,7 +551,7 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
       const mp = `${P}.market`;
       if (typeof mk.open !== 'boolean') e.add('BAD_TYPE', `${mp}.open`, `expected boolean, got ${show(mk.open)}`);
       const sat = obj(c, mk, 'saturation', mp);
-      if (sat) for (const g of GOODS) int(c, sat, g, `${mp}.saturation`, 0, MARKET.cap);
+      if (sat) for (const g of c.goods) int(c, sat, g, `${mp}.saturation`, 0, MARKET.cap);
       int(c, mk, 'cents', mp, 0, 99);
     }
   }
@@ -556,11 +560,13 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     if (tw) {
       const tp = `${P}.town`;
       int(c, tw, 'renown', tp, 0, LIMITS.maxInt);
-      int(c, tw, 'rank', tp, 0, RANKS.length - 1);
+      // state v5 added ranks 4-5 (D-29)
+      const ranks = version >= 5 ? RANKS.length : RANKS_V4;
+      int(c, tw, 'rank', tp, 0, ranks - 1);
       int(c, tw, 'bestFlow', tp, 0, LIMITS.maxInt);
-      const rt = arr(c, tw, 'rankTicks', tp, RANKS.length);
+      const rt = arr(c, tw, 'rankTicks', tp, ranks);
       if (rt) {
-        if (rt.length !== RANKS.length) e.add('BAD_TYPE', `${tp}.rankTicks`, `expected ${RANKS.length} entries, got ${rt.length}`);
+        if (rt.length !== ranks) e.add('BAD_TYPE', `${tp}.rankTicks`, `expected ${ranks} entries, got ${rt.length}`);
         rt.forEach((v, i) => { if (typeof v !== 'number' || !Number.isInteger(v) || v < -1 || v > LIMITS.maxInt) e.add('OUT_OF_RANGE', `${tp}.rankTicks[${i}]`, `expected tick or -1, got ${show(v)}`); });
       }
       const fl = arr(c, tw, 'flow', tp, FLOW_BUCKETS);

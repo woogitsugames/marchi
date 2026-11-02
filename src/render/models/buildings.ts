@@ -24,6 +24,7 @@ import {
   Vector3,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, trs, v3 } from './kit';
+import { brewery, charcoalBurner, fisher, malthouse, quarry } from './chains';
 import { addHuman, HUMAN_STYLES } from './people';
 import {
   beam,
@@ -45,8 +46,24 @@ import {
   windowHole,
 } from './shapes';
 
-export type BuildingKind = 'woodcutter' | 'sawmill' | 'farm' | 'mill' | 'bakery' | 'warehouse' | 'stable' | 'castle';
-export const BUILDING_KINDS: BuildingKind[] = ['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable', 'castle'];
+export type BuildingKind =
+  | 'woodcutter'
+  | 'sawmill'
+  | 'farm'
+  | 'mill'
+  | 'bakery'
+  | 'warehouse'
+  | 'stable'
+  | 'castle'
+  // D-29 production chains (models in `chains.ts`)
+  | 'fisher'
+  | 'quarry'
+  | 'charcoalBurner'
+  | 'malthouse'
+  | 'brewery';
+/** The D-29 chain buildings (fish, stone, charcoal, malt → beer). */
+export const CHAIN_KINDS: BuildingKind[] = ['fisher', 'quarry', 'charcoalBurner', 'malthouse', 'brewery'];
+export const BUILDING_KINDS: BuildingKind[] = ['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable', 'castle', ...CHAIN_KINDS];
 
 export type PropKind = 'fence' | 'haystack' | 'barrel' | 'crate';
 export const PROP_KINDS: PropKind[] = ['fence', 'haystack', 'barrel', 'crate'];
@@ -73,10 +90,15 @@ export const BUILDING_CELLS: Record<BuildingKind, [number, number]> = {
   warehouse: [3, 2],
   stable: [3, 2],
   castle: [4, 4],
+  fisher: [2, 2],
+  quarry: [3, 2],
+  charcoalBurner: [2, 2],
+  malthouse: [2, 2],
+  brewery: [3, 2],
 };
 
 // palette (sRGB)
-const C = {
+export const C = {
   timber: '#4e4134',
   timberLight: '#6a5a48',
   boards: '#5a4f43',
@@ -92,8 +114,8 @@ const C = {
 };
 
 const STREAK = new Color('#4f4b44');
-const SOOT = new Color('#2e2a26');
-const stoneO = (color = C.stone): Opts => ({
+export const SOOT = new Color('#2e2a26');
+export const stoneO = (color = C.stone): Opts => ({
   color,
   jitter: 0.04,
   jitterFreq: 2.2,
@@ -116,7 +138,7 @@ const stoneO = (color = C.stone): Opts => ({
 // Generic house
 // -------------------------------------------------------------------------------------------
 
-interface HouseSpec {
+export interface HouseSpec {
   cx: number;
   cz: number;
   /** Length along X (ridge direction) and depth along Z. */
@@ -133,14 +155,26 @@ interface HouseSpec {
   roofColor?: string;
   /** Thatch gable treatment (default half-hip). */
   hip?: 'gable' | 'half' | 'full';
+  /** Raise the floor on timber stilts (plinth height) instead of a stone plinth. */
+  stilts?: boolean;
 }
 
-function house(b: PartBuilder, s: HouseSpec): void {
+export function house(b: PartBuilder, s: HouseSpec): void {
   const x0 = s.cx - s.len / 2, x1 = s.cx + s.len / 2;
   const z0 = s.cz - s.dep / 2, z1 = s.cz + s.dep / 2;
   const pt = s.plinth;
-  // stone plinth
-  box(b, 'stone', s.len + 0.24, pt + 0.15, s.dep + 0.24, trs(s.cx, (pt - 0.15) / 2, s.cz), stoneO(), 0.45);
+  if (s.stilts) {
+    // plank floor on a grid of round posts, with a sill beam on top
+    const nx = Math.max(2, Math.round(s.len / 1.4)), nz = Math.max(2, Math.round(s.dep / 1.4));
+    for (let i = 0; i <= nx; i++) for (let j = 0; j <= nz; j++) {
+      const x = x0 + 0.1 + (i / nx) * (s.len - 0.2), z = z0 + 0.1 + (j / nz) * (s.dep - 0.2);
+      rod(b, 'wood', v3(x + b.r(-0.03, 0.03), -0.3, z), v3(x, pt - 0.1, z), 0.11, 0.09, 6, { color: C.timber, vary: 0.12, jitter: 0.01 });
+    }
+    box(b, 'wood', s.len + 0.3, 0.12, s.dep + 0.3, trs(s.cx, pt - 0.06, s.cz), { color: C.timberLight, ao: 0.1, noise: 0.12 }, 0.4);
+  } else {
+    // stone plinth
+    box(b, 'stone', s.len + 0.24, pt + 0.15, s.dep + 0.24, trs(s.cx, (pt - 0.15) / 2, s.cz), stoneO(), 0.45);
+  }
   const h = s.wallH - pt;
   const openFront = s.door ? [{ u0: s.door.u + s.len / 2 - s.door.w / 2, u1: s.door.u + s.len / 2 + s.door.w / 2, v0: 0, v1: s.door.h }] : [];
   const winOpenings = (side: string, length: number) =>
@@ -249,8 +283,16 @@ function house(b: PartBuilder, s: HouseSpec): void {
     if (s.door.open) {
       box(b, 'wood', s.door.w, s.door.h, 0.05, trs(dc.x, dc.y, dc.z - 0.02), { color: '#1d1813', vary: 0, ao: 0, dirt: 0 });
     } else door(b, dc, v3(0, 0, 1), s.door.w, s.door.h);
-    // threshold stone
-    box(b, 'stone', s.door.w + 0.4, 0.12, 0.5, trs(dc.x, 0.06, z1 + 0.3), stoneO(C.stoneDark));
+    // threshold stone, or plank steps up to a raised floor
+    if (!s.stilts) box(b, 'stone', s.door.w + 0.4, 0.12, 0.5, trs(dc.x, 0.06, z1 + 0.3), stoneO(C.stoneDark));
+    else {
+      const n = Math.max(2, Math.round(pt / 0.3));
+      for (let i = 0; i < n; i++) {
+        const y = pt - (i + 1) * (pt / (n + 0.4));
+        box(b, 'wood', s.door.w + 0.2, 0.06, 0.3, trs(dc.x, y, z1 + 0.25 + i * 0.27), { color: C.timberLight, ao: 0.1 });
+      }
+      for (const sx of [-1, 1]) beam(b, 'wood', v3(dc.x + sx * (s.door.w / 2 + 0.12), pt, z1 + 0.05), v3(dc.x + sx * (s.door.w / 2 + 0.12), 0, z1 + 0.3 + n * 0.27), 0.07, 0.16, { color: C.timber });
+    }
   }
   for (const w of s.windows ?? []) {
     const out = w.side === 'front' ? v3(0, 0, 1) : w.side === 'back' ? v3(0, 0, -1) : w.side === 'left' ? v3(-1, 0, 0) : v3(1, 0, 0);
@@ -295,7 +337,7 @@ function logBetween(b: PartBuilder, xa: number, xb: number, y: number, z: number
 // Yard pieces
 // -------------------------------------------------------------------------------------------
 
-function choppingBlock(b: PartBuilder, x: number, z: number): void {
+export function choppingBlock(b: PartBuilder, x: number, z: number): void {
   b.add('bark', new CylinderGeometry(0.3, 0.34, 0.55, 10), {
     color: '#584a3a',
     m: trs(x, 0.27, z),
@@ -317,7 +359,7 @@ function choppingBlock(b: PartBuilder, x: number, z: number): void {
 }
 
 /** Neat stack of split firewood (billets) against a wall, along X. */
-function firewoodStack(b: PartBuilder, cx: number, cz: number, len: number, h: number): void {
+export function firewoodStack(b: PartBuilder, cx: number, cz: number, len: number, h: number): void {
   const nx = Math.round(len / 0.13), ny = Math.round(h / 0.12);
   for (let j = 0; j < ny; j++) {
     for (let i = 0; i < nx; i++) {
@@ -337,7 +379,7 @@ function firewoodStack(b: PartBuilder, cx: number, cz: number, len: number, h: n
   box(b, 'wood', len + 0.3, 0.04, 0.6, trs(cx, h + 0.3, cz + 0.05, 0.35), { color: C.boards });
 }
 
-function plankStack(b: PartBuilder, cx: number, cz: number, ry: number, len: number, courses: number): void {
+export function plankStack(b: PartBuilder, cx: number, cz: number, ry: number, len: number, courses: number): void {
   const base = trs(cx, 0, cz, 0, ry);
   for (let k = 0; k < courses; k++) {
     // stickers
@@ -354,7 +396,7 @@ function plankStack(b: PartBuilder, cx: number, cz: number, ry: number, len: num
   }
 }
 
-function sack(b: PartBuilder, x: number, z: number, ry: number, color = '#9c8458', lying = false): void {
+export function sack(b: PartBuilder, x: number, z: number, ry: number, color = '#9c8458', lying = false): void {
   const prof = [[0.001, 0], [0.17, 0.01], [0.23, 0.08], [0.24, 0.22], [0.2, 0.4], [0.1, 0.52], [0.05, 0.56], [0.08, 0.62], [0.001, 0.6]].map(([r, y]) => new Vector2(r, y));
   b.add('cloth', new LatheGeometry(prof, 10), {
     color,
@@ -366,7 +408,7 @@ function sack(b: PartBuilder, x: number, z: number, ry: number, color = '#9c8458
   });
 }
 
-function barrelGeom(b: PartBuilder, m: Matrix4): void {
+export function barrelGeom(b: PartBuilder, m: Matrix4): void {
   const prof = [[0.001, 0], [0.25, 0], [0.25, 0.03], [0.29, 0.2], [0.31, 0.42], [0.29, 0.64], [0.25, 0.81], [0.25, 0.84], [0.22, 0.83], [0.001, 0.83]].map(([r, y]) => new Vector2(r, y));
   const inv = m.clone().invert();
   b.add('wood', new LatheGeometry(prof, 14), {
@@ -382,7 +424,7 @@ function barrelGeom(b: PartBuilder, m: Matrix4): void {
   });
 }
 
-function crateGeom(b: PartBuilder, m: Matrix4, s = 0.6): void {
+export function crateGeom(b: PartBuilder, m: Matrix4, s = 0.6): void {
   box(b, 'wood', s - 0.04, s - 0.04, s - 0.04, m, { color: '#4a3e32', ao: 0.2 });
   for (const [ax, ay] of [[0, 0], [0, 1], [1, 0], [1, 1]]) {
     for (const dir of [0, 1, 2]) {
@@ -399,7 +441,7 @@ function crateGeom(b: PartBuilder, m: Matrix4, s = 0.6): void {
   }
 }
 
-function haystack(b: PartBuilder, x: number, z: number, scale = 1): void {
+export function haystack(b: PartBuilder, x: number, z: number, scale = 1): void {
   const prof = [[0.001, 0], [1.25, 0], [1.35, 0.35], [1.32, 0.9], [1.18, 1.6], [0.9, 2.3], [0.55, 2.85], [0.18, 3.15], [0.001, 3.2]].map(([r, y]) => new Vector2(r * scale, y * scale));
   b.add('thatch', new LatheGeometry(prof, 16), {
     color: C.hay,
@@ -863,14 +905,30 @@ const BUILDERS: Record<BuildingKind, (b: PartBuilder) => Partial<BuildingModel>>
   warehouse,
   stable,
   castle,
+  fisher,
+  quarry,
+  charcoalBurner,
+  malthouse,
+  brewery,
 };
 
 const cache = new Map<BuildingKind, BuildingModel>();
 
-/** Build (once) and return the model for a building kind. */
+/** Model used for a building type this module does not know (scaled to its footprint). */
+export const FALLBACK_KIND: BuildingKind = 'warehouse';
+
+/**
+ * Build (once) and return the model for a building kind. A type without a model of its own
+ * (e.g. new in the sim, not drawn yet) gets the `FALLBACK_KIND` model instead of throwing.
+ */
 export function buildingModel(kind: BuildingKind): BuildingModel {
   const hit = cache.get(kind);
   if (hit) return hit;
+  if (!(kind in BUILDERS)) {
+    const fb = buildingModel(FALLBACK_KIND);
+    cache.set(kind, fb);
+    return fb;
+  }
   const b = new PartBuilder({ seed: 300 + BUILDING_KINDS.indexOf(kind) * 11, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
   const extra = BUILDERS[kind](b);
   const cells = BUILDING_CELLS[kind];

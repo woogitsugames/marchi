@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { ICON_IDS, iconSvg, struckIconSvg, type IconId } from '../src/ui/icons';
+import { GOOD_ICONS, ICON_IDS, iconSvg, struckIconSvg, type IconId } from '../src/ui/icons';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'docs/shots');
@@ -18,7 +18,7 @@ const cell = (id: IconId): string => `
     <figcaption>${id}</figcaption>
   </figure>`;
 
-const struck: IconId[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
+const struck: IconId[] = [...GOOD_ICONS];
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>MARCHIA icons</title>
 <style>

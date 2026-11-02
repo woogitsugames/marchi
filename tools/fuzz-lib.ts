@@ -56,7 +56,11 @@ export const DEFAULT_STUCK_TICKS = 5 * 60 * 10; // 5 sim-minutes
 
 // --- generation --------------------------------------------------------------
 
-const PLACEABLE: BuildingType[] = ['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable'];
+const PLACEABLE: BuildingType[] = [
+  'woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable',
+  // free valley chains (D-29); locked below their rank in 'sandbox', see the 'sandbox@5' pseudo-mission
+  'fisher', 'quarry', 'charcoalBurner', 'malthouse', 'brewery',
+];
 
 function pick<T>(rng: RngState, xs: readonly T[]): T | undefined {
   if (xs.length === 0) return undefined;
@@ -163,8 +167,18 @@ export function generateScenario(
   return { mission, coins, ticks: opts.ticks, saveAt, commands };
 }
 
+/**
+ * `mission` may carry a rank suffix, e.g. 'sandbox@5': the free valley with every rank up to 5
+ * already reached (all chains unlocked), so the fuzzer can place the new buildings.
+ */
 export function makeWorld(mission: string, coins: number | null): World {
-  const w = createWorld(mission);
+  const at = mission.indexOf('@');
+  const w = createWorld(at < 0 ? mission : mission.slice(0, at));
+  if (at >= 0) {
+    const t = w.state.town;
+    t.rank = Math.min(t.rankTicks.length - 1, Number(mission.slice(at + 1)));
+    for (let i = 0; i <= t.rank; i++) t.rankTicks[i] = 0;
+  }
   if (coins !== null) w.state.coins = coins;
   return w;
 }

@@ -1,13 +1,13 @@
 // Player commands. The only way input reaches the simulation. Applied at tick boundaries.
 import {
   BUILDINGS, COST_COBBLE, COST_DIRT, COST_STONE_BRIDGE, COST_WOOD_BRIDGE, DEMOLISH_REFUND, MAX_GRADE,
-  MAX_WAGONS, WAGON_PRICE, emptyGoods, GOODS, inputGoods,
+  MAX_WAGONS, QUARRY_MIN_HEIGHT, SITE_RULE, STONE_COBBLE, STONE_STONE_BRIDGE, WAGON_PRICE, emptyGoods, GOODS, inputGoods,
 } from './defs';
 import { buildingById, upstreamOf } from './logistics';
 import { grade, net, type World } from './network';
 import { cancelJob } from './wagons';
-import { canPlace, canSurface, demolishQuote } from './town';
-import type { BuildingStatus, BuildingType, SurfaceKind } from './types';
+import { canPlace, canSurface, demolishQuote, rankGated } from './town';
+import type { BuildingStatus, BuildingType, SurfaceKind, Terrain } from './types';
 
 export type Command =
   | { t: 'road'; cells: number[]; surface: SurfaceKind }
@@ -34,9 +34,16 @@ export type CommandError =
   /** Free valley: this building type / road surface needs a higher town rank. */
   | { k: 'LOCKED'; rank: number }
   /** Free valley: the player cannot build this type at all (the castle). */
-  | { k: 'NOT_PLACEABLE' };
+  | { k: 'NOT_PLACEABLE' }
+  /** A fisher's hut needs water next to its footprint or its gate. */
+  | { k: 'NOT_NEAR_WATER' }
+  /** A quarry needs high, rocky ground (hills, the ridge): QUARRY_MIN_HEIGHT above the water. */
+  | { k: 'NOT_ON_ROCK' }
+  /** Free valley: cobbles / stone bridges also need stone lying in the granaries (or castle). */
+  | { k: 'NO_STONE'; need: number; have: number };
 
-export type CommandResult = { ok: true; cost: number } | { ok: false; err: CommandError };
+/** `stone`: units of stone the command takes from the granaries (free valley roads), 0 otherwise. */
+export type CommandResult = { ok: true; cost: number; stone?: number } | { ok: false; err: CommandError };
 
 export function roadCellCost(world: World, cell: number, surface: SurfaceKind): number {
   const cur = world.state.roads[cell]!;
@@ -78,7 +85,55 @@ export function validateRoad(world: World, cells: readonly number[], surface: Su
     if (!gate.ok) return gate;
   }
   if (cost > world.state.coins) return { ok: false, err: { k: 'NO_COINS', need: cost, have: world.state.coins } };
+  const stone = roadStoneCost(world, cells, surface);
+  if (stone > 0) {
+    const have = stoneAvailable(world);
+    if (stone > have) return { ok: false, err: { k: 'NO_STONE', need: stone, have } };
+    return { ok: true, cost, stone };
+  }
   return { ok: true, cost };
+}
+
+/**
+ * Stone a road command needs (free valley only, design S5): STONE_COBBLE per newly cobbled land
+ * cell, STONE_STONE_BRIDGE per new stone-bridge cell. Missions build with silver alone.
+ */
+export function roadStoneCost(world: World, cells: readonly number[], surface: SurfaceKind): number {
+  if (surface !== 2 || !rankGated(world)) return 0;
+  const seen = new Set<number>();
+  let n = 0;
+  for (const cell of cells) {
+    if (seen.has(cell) || !(cell >= 0 && cell < world.state.roads.length)) continue;
+    seen.add(cell);
+    if (world.state.roads[cell]! >= 2) continue;
+    n += world.terrain.water[cell] === 1 ? STONE_STONE_BRIDGE : STONE_COBBLE;
+  }
+  return n;
+}
+
+/** Stone the player can build with: unreserved stone in every granary and the castle. */
+export function stoneAvailable(world: World): number {
+  let n = 0;
+  for (const b of world.state.buildings) {
+    if (b.type === 'warehouse' || b.type === 'castle') n += b.stock.stone - b.reservedOut.stone;
+  }
+  return n;
+}
+
+/** Take `n` unreserved stone from the granaries (then the castle), lowest id first; it is consumed. */
+function takeStone(world: World, n: number): void {
+  const st = world.state;
+  for (const pass of ['warehouse', 'castle'] as const) {
+    for (const b of st.buildings) {
+      if (n <= 0) return;
+      if (b.type !== pass) continue;
+      const k = Math.min(n, b.stock.stone - b.reservedOut.stone);
+      if (k <= 0) continue;
+      b.stock.stone -= k;
+      st.ledger.consumed.stone += k;
+      n -= k;
+    }
+  }
 }
 
 export function applyCommand(world: World, cmd: Command): CommandResult {
@@ -89,6 +144,7 @@ export function applyCommand(world: World, cmd: Command): CommandResult {
       if (!r.ok) return r;
       for (const cell of cmd.cells) if (st.roads[cell]! < cmd.surface) st.roads[cell] = cmd.surface;
       st.coins -= r.cost;
+      if (r.stone) takeStone(world, r.stone);
       st.netVersion++;
       return r;
     }
@@ -209,9 +265,37 @@ export function validatePlace(world: World, type: BuildingType, x: number, y: nu
   }
   if (t.water[gate] || c.occupied[gate] !== -1) return { ok: false, err: { k: 'BLOCKED', cell: gate } };
   if (hi - lo > 2.5) return { ok: false, err: { k: 'NOT_FLAT', cell: y * t.w + x } };
+  const rule = SITE_RULE[type];
+  if (rule === 'NEAR_WATER' && !nearWater(t, x, y, def.w, def.h, gate)) return { ok: false, err: { k: 'NOT_NEAR_WATER' } };
+  if (rule === 'ON_ROCK' && !onRock(t, x, y, def.w, def.h)) return { ok: false, err: { k: 'NOT_ON_ROCK' } };
   const cost = free ? 0 : def.price;
   if (cost > st.coins) return { ok: false, err: { k: 'NO_COINS', need: cost, have: st.coins } };
   return { ok: true, cost };
+}
+
+/** Is any cell 8-adjacent to the footprint, or to the gate, water? (fisher's hut) */
+export function nearWater(t: Terrain, x: number, y: number, w: number, h: number, gate: number): boolean {
+  const gx = gate % t.w, gy = (gate - gx) / t.w;
+  const wet = (x0: number, y0: number, x1: number, y1: number): boolean => {
+    for (let yy = Math.max(0, y0); yy <= Math.min(t.h - 1, y1); yy++) {
+      for (let xx = Math.max(0, x0); xx <= Math.min(t.w - 1, x1); xx++) if (t.water[yy * t.w + xx] === 1) return true;
+    }
+    return false;
+  };
+  return wet(x - 1, y - 1, x + w, y + h) || wet(gx - 1, gy - 1, gx + 1, gy + 1);
+}
+
+/** Is a cell rock: dry land at least QUARRY_MIN_HEIGHT above the water level? (render/UI overlay) */
+export function isRockCell(t: Terrain, cell: number): boolean {
+  return t.water[cell] !== 1 && t.cellH[cell]! - t.waterLevel >= QUARRY_MIN_HEIGHT;
+}
+
+/** Quarry ground: some rock cell in the footprint or the one-cell ring around it (hills, the ridge). */
+export function onRock(t: Terrain, x: number, y: number, w: number, h: number): boolean {
+  for (let yy = Math.max(0, y - 1); yy <= Math.min(t.h - 1, y + h); yy++) {
+    for (let xx = Math.max(0, x - 1); xx <= Math.min(t.w - 1, x + w); xx++) if (isRockCell(t, yy * t.w + xx)) return true;
+  }
+  return false;
 }
 
 /** Place a building. `free` skips cost and the rank gate (map setup). */

@@ -10,7 +10,7 @@ import {
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, WorldView } from '../render/api';
-import { listSaves, loadGame, saveGame, deleteSave } from '../platform/save';
+import { CONTRACT_SLOT, VALLEY_SLOTS, adoptLegacyValley, deleteSave, isValleySlot, listSaves, loadGame, readSlots, saveGame } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
 import { bridgeA, stableId } from '../../tools/bot';
 import { h } from './dom';
@@ -18,7 +18,7 @@ import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
-import { buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, settingsSheet, type MissionKey, type SaveInfo } from './menu';
+import { buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, settingsSheet, valleySheet, type MissionKey, type SaveInfo } from './menu';
 import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -68,7 +68,6 @@ function applyVolumes(p: Prefs): void {
 /** Music level at slider 100 %; the default slider (0.8) gives ~0.56, the player's built-in level. */
 const MUSIC_FULL = 0.7;
 
-const SAVE_SLOT = 'auto';
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
 
 export interface AppOptions {
@@ -87,6 +86,8 @@ export class App implements PanelNav {
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
   private missionId: MissionKey = 'm1';
+  /** Save slot of the running game: CONTRACT_SLOT for contracts, a valley ledger in the free valley (D-29). */
+  private slot: string = CONTRACT_SLOT;
   private prevAudio: AudioSnapshot | null = null;
   private sheets: Sheets;
   private hud: Hud | null = null;
@@ -235,14 +236,40 @@ export class App implements PanelNav {
     // "Continue" is added when the save list arrives
     this.save = null;
     this.renderMenu();
+    await this.refreshSaves(true);
+  }
+
+  /** "Continue" = the most recently played save of any kind (contract or any valley ledger). */
+  private async refreshSaves(adopt = false): Promise<void> {
     const token = ++this.menuToken;
+    let save: SaveInfo | null = null;
     try {
+      if (adopt) await adoptLegacyValley().catch((e: unknown) => console.warn('legacy valley save not moved', e));
       const saves = await listSaves();
-      const s = saves.find((x) => x.slot === SAVE_SLOT);
-      this.save = s ? { missionId: s.missionId, tick: s.tick } : null;
-    } catch { this.save = null; }
+      const s = saves.find((x) => x.slot === CONTRACT_SLOT || isValleySlot(x.slot));
+      save = s ? { missionId: s.missionId, tick: s.tick, slot: s.slot } : null;
+    } catch { save = null; }
     if (token !== this.menuToken || this.mode !== 'menu') return;
-    if (this.save) this.renderMenu();
+    const changed = JSON.stringify(save) !== JSON.stringify(this.save);
+    this.save = save;
+    if (changed) this.renderMenu();
+  }
+
+  /** Free valley ledger picker (over the menu scene). */
+  private openValley(): void {
+    if (this.mode !== 'menu') return;
+    this.sheets.open(valleySheet({
+      read: () => readSlots(),
+      play: (slot) => void this.continueGame(slot),
+      fresh: (slot) => {
+        void deleteSave(slot).catch(() => undefined);
+        this.newGame('sandbox', slot);
+      },
+      remove: async (slot) => {
+        await deleteSave(slot);
+        void this.refreshSaves();
+      },
+    }));
   }
 
   private renderMenu(broken: MissionKey | null = null): void {
@@ -251,6 +278,7 @@ export class App implements PanelNav {
     this.layers.menu.append(buildMainMenu({
       continueGame: () => void this.continueGame(),
       newGame: (m) => this.newGame(m),
+      openValley: () => this.openValley(),
       openSettings: () => this.openSettings(),
     }, broken ? null : this.save, broken));
   }
@@ -274,8 +302,10 @@ export class App implements PanelNav {
     this.ghostKey = '';
   }
 
-  newGame(id: MissionKey): void {
+  /** slot: the valley ledger to play in (free valley only; default the first ledger). */
+  newGame(id: MissionKey, slot: string = VALLEY_SLOTS[0]): void {
     this.missionId = id;
+    this.slot = id === 'sandbox' && isValleySlot(slot) ? slot : CONTRACT_SLOT;
     this.enterGame(createWorld(id));
     const forced = this.params.get('tut') === '1';
     if (id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'))) this.startTutorial();
@@ -332,18 +362,28 @@ export class App implements PanelNav {
     this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1 } : null);
   }
 
-  private async continueGame(): Promise<void> {
+  /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */
+  private async continueGame(slot: string | null = null): Promise<void> {
+    const from = slot ?? this.save?.slot ?? CONTRACT_SLOT;
     try {
-      const st: SimState | null = await loadGame(SAVE_SLOT);
+      const st: SimState | null = await loadGame(from);
       if (!st) throw new Error('save slot is empty');
+      if (this.mode !== 'menu') return; // a second tap already started a game
       this.missionId = isMissionKey(st.mission.id) ? st.mission.id : 'm1';
+      this.slot = from;
       this.enterGame(worldFromState(st));
     } catch (e) {
-      // damaged / incompatible save: say so and offer the same contract afresh
+      // damaged / incompatible save: say so; a contract is offered afresh, a valley ledger in the picker
       console.error('continue failed', e);
       if (this.mode !== 'menu') return;
-      const m: MissionKey = isMissionKey(this.save?.missionId) ? this.save!.missionId as MissionKey : 'm1';
       if (audio.ready) void audio.play('ui.error');
+      if (isValleySlot(from)) {
+        this.sheets.closeAll();
+        this.renderMenu('sandbox');
+        this.openValley();
+        return;
+      }
+      const m: MissionKey = isMissionKey(this.save?.missionId) ? this.save!.missionId as MissionKey : 'm1';
       this.renderMenu(m);
     }
   }
@@ -474,7 +514,7 @@ export class App implements PanelNav {
   private async autosave(): Promise<void> {
     if (this.mode !== 'game' || this.world.state.mission.result !== 'running') return;
     this.lastSaveTick = this.world.state.tick;
-    try { await saveGame(SAVE_SLOT, this.world.state); } catch (e) { console.warn('autosave failed', e); }
+    try { await saveGame(this.slot, this.world.state); } catch (e) { console.warn('autosave failed', e); }
   }
 
   private showEnd(): void {
@@ -485,9 +525,9 @@ export class App implements PanelNav {
     this.hud?.setSpeed(0);
     this.sheets.closeAll();
     this.setTool('none');
-    void deleteSave(SAVE_SLOT).catch(() => undefined);
+    void deleteSave(this.slot).catch(() => undefined);
     const letter = buildEndLetter(this.world, stars(this.world), {
-      again: () => this.newGame(this.missionId),
+      again: () => this.newGame(this.missionId, this.slot),
       menu: () => void this.showMenu(),
     });
     this.layers.overlay.append(letter);
@@ -716,9 +756,9 @@ export class App implements PanelNav {
     const content = gameMenuSheet({
       resume: () => { this.sheets.closeTop(); },
       settings: () => this.openSettings(),
-      restart: () => { void deleteSave(SAVE_SLOT).catch(() => undefined); this.newGame(this.missionId); },
+      restart: () => { void deleteSave(this.slot).catch(() => undefined); this.newGame(this.missionId, this.slot); },
       toMenu: () => { void this.autosave().then(() => this.showMenu()); },
-    }, this.world);
+    }, this.world, isValleySlot(this.slot) ? this.slot : null);
     content.onClose = resume;
     // Settings opened from here replace this content in the same sheet: stay paused until the sheet closes
     content.closeWithSheet = true;

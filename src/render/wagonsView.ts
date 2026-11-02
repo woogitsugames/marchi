@@ -17,10 +17,10 @@ import {
   Sphere,
   Vector3,
 } from 'three';
-import type { Good, Wagon, World } from '../sim/index';
+import type { Wagon, World } from '../sim/index';
 import { edgeLength, MAX_WAGONS } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { CARGO_GOODS, type CargoGood, cargoSlots, cargoUnitParts } from './models/cargo';
+import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts } from './models/cargo';
 import type { ModelPart } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { createHorseWalkMaterial, type HorseWalkMaterial, WAGON, wagonLod1, wagonModel } from './models/wagon';
@@ -398,7 +398,7 @@ export class WagonsView {
         this.lod1.push(_M);
       }
       if (w.cargoGood && w.cargoQty > 0) {
-        const g = w.cargoGood as Good as CargoGood;
+        const g = cargoFor(w.cargoGood);
         const parts = this.cargo.get(g)!;
         const slots = this.slots.get(g)!;
         const n = Math.min(slots.length, Math.round(w.cargoQty));

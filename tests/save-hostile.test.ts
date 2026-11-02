@@ -8,7 +8,7 @@ import {
 import { MISSIONS, terrainFor } from '../src/sim/missions';
 import { terrainHash } from '../src/sim/terrainHash';
 import {
-  STATE_VERSION, applyCommand, checkInvariants, createWorld, step, worldFromState, type SimState, type World,
+  GOODS_V4, STATE_VERSION, applyCommand, checkInvariants, createWorld, step, worldFromState, type SimState, type World,
 } from '../src/sim/index';
 import { bridgeA, stableId } from '../tools/bot';
 import { generateScenario, makeWorld } from '../tools/fuzz-lib';
@@ -307,6 +307,13 @@ test('old format-1 envelope with a v1 state upgrades (trust-on-first-load) and m
   const s = clone(BASE_ENV.state) as J;
   s.version = 1;
   delete s.ledger.stallSeconds;
+  // a v1 state had no market / town yet (state v4) and only the five v4 goods (state v5)
+  delete s.market;
+  delete s.town;
+  const v4goods = (m: J): J => Object.fromEntries(Object.entries(m).filter(([g]) => (GOODS_V4 as readonly string[]).includes(g)));
+  for (const b of s.buildings) for (const k of ['stock', 'reservedOut', 'incoming']) b[k] = v4goods(b[k]);
+  for (const k of ['produced', 'consumed', 'destroyed', 'sold']) if (s.ledger[k]) s.ledger[k] = v4goods(s.ledger[k]);
+  if (s.mission.contract) s.mission.contract.need = v4goods(s.mission.contract.need);
   const v1 = deepFreeze({ format: 1, stateVersion: 1, slot: 'auto', savedAt: 1, missionId: 'm1', tick: s.tick, state: s });
   const before = JSON.stringify(v1);
   const r = prepareLoad(v1);

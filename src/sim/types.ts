@@ -2,8 +2,10 @@
 // no classes, no Maps, no undefined values (use null / -1), so that
 // JSON.stringify(state) is a canonical, hashable, saveable snapshot.
 
-export type Good = 'wood' | 'planks' | 'grain' | 'flour' | 'bread';
-export type GoodMap = { wood: number; planks: number; grain: number; flour: number; bread: number };
+/** A good id; the list (and its order) lives in `GOODS` in defs.ts. */
+export type Good = (typeof import('./defs'))['GOODS'][number];
+/** Units per good: a plain object with every good as a key, in GOODS order (see emptyGoods). */
+export type GoodMap = Record<Good, number>;
 
 export type BuildingType =
   | 'woodcutter'
@@ -13,7 +15,13 @@ export type BuildingType =
   | 'bakery'
   | 'warehouse'
   | 'stable'
-  | 'castle';
+  | 'castle'
+  // free valley chains (D-29)
+  | 'fisher'
+  | 'quarry'
+  | 'charcoalBurner'
+  | 'malthouse'
+  | 'brewery';
 
 /** Road surface per cell. 0 = none. Water cells with a road are bridges. */
 export const SURFACE_NONE = 0;
@@ -26,8 +34,11 @@ export type BuildingStatus =
   | { k: 'WORKING' }
   | { k: 'IDLE' }
   | { k: 'NO_ROAD' }
-  /** Input missing and nothing on the way. cause tells what the dispatcher saw. */
-  | { k: 'NO_INPUT'; good: Good; cause: 'NONE_AVAILABLE' | 'UNREACHABLE'; blockedBy: number }
+  /**
+   * Input missing and nothing on the way. cause tells what the dispatcher saw. CONTESTED: the good
+   * exists but goes to another kind of consumer; `blockedBy` is that consumer (free valley chains).
+   */
+  | { k: 'NO_INPUT'; good: Good; cause: 'NONE_AVAILABLE' | 'UNREACHABLE' | 'CONTESTED'; blockedBy: number }
   /** Input missing, but a reachable producer is making it right now: not a stall (start-up, slow supply). */
   | { k: 'WAITING_UPSTREAM'; good: Good; from: number }
   /** Input is on its way on a wagon. */

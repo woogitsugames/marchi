@@ -124,6 +124,13 @@ function updateRank(world: World): void {
   }
 }
 
+/** Castle appearance level reached so far (RANKS[].castleLevel, latched like the rank). For render. */
+export function castleLevel(st: Pick<SimState, 'town'>): number {
+  let lvl = 0;
+  for (let i = 0; i <= st.town.rank && i < RANKS.length; i++) lvl = Math.max(lvl, RANKS[i]!.castleLevel);
+  return lvl;
+}
+
 /** Ranks gate placement only in the free valley; missions keep everything open. */
 export function rankGated(world: World): boolean {
   return world.state.mission.id === 'sandbox';
@@ -228,6 +235,8 @@ export interface SandboxStatus {
   silverEarned: number;
   /** Tick each rank was reached (-1 = not yet). */
   rankTicks: number[];
+  /** Castle appearance level (0 plain, 1 upgraded at the top rank). */
+  castleLevel: number;
   unlocked: BuildingType[];
   locked: { type: BuildingType; rank: number }[];
   prices: PriceInfo[];
@@ -253,6 +262,7 @@ export function sandboxStatus(world: World): SandboxStatus {
     flowNow: flowPerMinute(st),
     silverEarned: st.ledger.silverEarned,
     rankTicks: t.rankTicks.slice(),
+    castleLevel: castleLevel(st),
     unlocked,
     locked,
     prices: GOODS.map((g) => ({
