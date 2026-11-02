@@ -1,0 +1,46 @@
+name: Render and verify task 59 alert sounds
+
+on:
+  push:
+    branches: ['gpt/59-alert-sounds']
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install FFmpeg and synthesis dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python3 -m pip install numpy scipy
+      - name: Save originals and generate only two UI cues
+        run: |
+          mkdir -p "$RUNNER_TEMP/alerts-before"
+          cp public/assets/audio/ui/{stall,error}.{ogg,m4a} "$RUNNER_TEMP/alerts-before/"
+          python3 tools/generate_audio.py --only-ui-alerts
+      - name: Measure all codec pairs, update provenance, validate 72-file catalogue
+        run: |
+          python3 tools/report_alert_sounds.py --before "$RUNNER_TEMP/alerts-before" --update-provenance
+          python3 tools/process_audio.py --check
+          python3 -m unittest tools/test_process_audio.py
+          git diff --check
+      - name: Commit and push generated OGG/M4A, manifest and report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/audio/ui/{stall,error}.{ogg,m4a} docs/audio-provenance.json docs/research/2026-11-02-alert-sounds.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(audio): render and measure phone-audible stall/error cues"
+            git push origin HEAD:gpt/59-alert-sounds
+          fi
