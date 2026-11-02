@@ -9,6 +9,8 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [ ] P2 — Misja X: „drewno w drodze — wóz N” maskuje niedobór drewna. Tartak ma `WAITING_DELIVERY`, gdy wóz stoi u drwala i czeka, aż drewno powstanie; `NO_INPUT.CONTESTED` widać tylko 6,4 % gry (głównie pierwsze 20 s). Łagodzi to „drewno zasila też węglarza” (D-38) — 68,6 % gry na karcie tartaku. Do rozważenia: łańcuch WAITING_DELIVERY → wóz w załadunku → producent pracuje (diagnose.ts), bez zmiany hasha. Też: X powtarza lekcję IX (tartak vs węglarz) — po playteście ocenić, czy zostawić (D-39).
+- [ ] P3 — Listy kasztelana (`src/content/letters.ts`, misje I–XII) nie są jeszcze pokazywane w UI (list końcowy ma ogólny tekst); misje X–XII używają wspólnego id mapy `valley-m3`.
 - [ ] P3 — Buduj: doliczyć koszt drogi dojazdowej do etykiety kosztu (nowe klucze i18n); etykieta czasem nachodzi na ducha.
 - [ ] P3 — Pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki? (do sprawdzenia). Odstęp wozów: zostaje w obrazie (D-35, decyzja właściciela 2026-11-02).
 - [ ] P2 — Narzędzie raportu pokrycia tłumaczeń (klucze dodane po paczce 04) + paczka uzupełnień dla GPT; zrzuty `?lang=ar|ja|de|ru` (długość, RTL, glify).

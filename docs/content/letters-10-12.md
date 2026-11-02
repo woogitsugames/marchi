@@ -1,248 +1,190 @@
 # Listy kasztelana — misje X–XII / Castellan's Letters — Missions X–XII
 
-Teksty PL/EN do podłączenia w warstwie treści gry; nie są automatycznie wprowadzane
-do kluczy UI ani tłumaczeń innych języków. Każda misja ma nazwę, podtytuł, list
-otwierający oraz osobne listy końcowe dla 1/2/3 pieczęci i porażki.
+Teksty w grze: nazwy i podtytuły w `src/i18n/pl.ts` / `en.ts` (`menu.m10…m12Sub`, w `PENDING_KEYS`),
+listy w `src/content/letters.ts`. Wersja dopasowana do balansu D-39 (X: drugi drwal, nie wozy; XI: 22 piwa;
+XII: spichlerz przechowuje piwo). Pierwotne propozycje GPT (zlecenie 49) są w historii gita.
 
-## X — Węgiel dla kowala / Charcoal for the Smith
+## X — Węgiel dla kowala / Charcoal for the smith
 
-**PL — Nazwa:** Węgiel dla kowala
+**PL — Nazwa:** X. Węgiel dla kowala
 
-**PL — Podtytuł:** Jeden drwal, dwa warsztaty i dwie pilne dostawy.
+**PL — Podtytuł:** Jeden drwal na dwa warsztaty
 
 **PL — List otwierający:**
 
-> Kowal czeka na węgiel drzewny, a cieśle żądają desek. Potrzebujemy
-> 48 desek i 8 miar węgla przed dwunastą minutą.
-> Węglarz i tartak korzystają z drewna od tego samego drwala.
-> Gdy wóz obieca ładunek jednemu warsztatowi, drugi może zostać bez
-> surowca. Zajrzyj do przyczyny przestoju — „konkurencyjny odbiorca”
-> oznacza, że drewno istnieje, ale już ktoś je zamówił.
-> Drugi drwal i wozy dla obu odbiorców pomogą uniknąć kolejki.
+> Kowal czeka na węgiel drzewny, a cieśle na deski: potrzeba 48 desek i 8 miar węgla. Tartak i węglarz biorą drewno od jednego drwala, a on nie nadąży za oboma. Gdy tartak pisze, że drewno idzie do węglarza, nie winię wozów — drewna jest za mało. Postaw drugiego drwala; więcej wozów nie zetnie ani jednego drzewa.
+> — Wszebor
 
 **PL — 1 pieczęć:**
 
-> Dostawy dotarły, lecz zbyt długo czekaliśmy na opał i deski.
-> Oba warsztaty dzieliły jedną dostawę drewna. Przed kolejnym
-> zleceniem sprawdź, komu wozy przydzielają surowiec.
+> Deski i węgiel dotarły, choć tartak długo czekał na każde polano. Jedna pieczęć; drugi drwal skróciłby tę kolejkę.
+> — Wszebor
 
 **PL — 2 pieczęcie:**
 
-> Kowal otrzymał swój węgiel, a cieśle deski z zapasem czasu.
-> Rozwiązałeś część sporu o drewno; sprawniejszy przewóz
-> pozwoliłby jeszcze lepiej wykorzystać pracę obu warsztatów.
+> Drugi drwal uspokoił spór o drewno, ale stanął późno. Dwie pieczęcie; następnym razem zwiększ podaż od razu.
+> — Wszebor
 
 **PL — 3 pieczęcie:**
 
-> Kuźnia i tartak pracowały bez długiej kolejki po to samo drewno.
-> Dodatkowy drwal zwiększył podaż, a wozy dowiozły ją do obu
-> odbiorców. Tak wygląda rozwiązanie przestoju u źródła.
+> Drewna starczyło dla kuźni i dla tartaku. Trzy pieczęcie za naprawę u źródła, a nie na drodze.
+> — Wszebor
 
 **PL — Porażka:**
 
-> Termin minął, a kuźnia lub cieśle nie otrzymali całego zamówienia.
-> Samo przyspieszanie tartaku nie pomoże, jeśli węglarz odbiera
-> drewno pierwszy. Zwiększ podaż i sprawdź rozdział transportu.
+> Termin minął, a desek zabrakło: węglarz spalał drewno, którego potrzebował tartak. Postaw drugiego drwala; dodatkowe wozy nie dadzą więcej drewna.
+> — Wszebor
 
-**EN — Title:** Charcoal for the Smith
+**EN — Title:** X. Charcoal for the smith
 
-**EN — Subtitle:** One woodcutter, two workshops, and two urgent orders.
+**EN — Subtitle:** One woodcutter, two workshops
 
 **EN — Opening letter:**
 
-> The smith needs charcoal, and the carpenters require planks.
-> Deliver 48 planks and 8 units of charcoal before the twelfth minute.
-> Both the charcoal burner and the sawmill depend on one woodcutter.
-> When a wagon reserves timber for one workshop, the other may
-> have no input. Read the stall explanation: “contested” means
-> timber exists but has been promised elsewhere.
-> A second woodcutter and enough wagons can keep both workshops supplied.
+> The smith waits for charcoal and the carpenters for planks: we need 48 planks and 8 charcoal. The sawmill and the charcoal burner draw on one woodcutter, and he cannot keep up with both. When the sawmill reports its wood going to the burner, do not blame the wagons — there is too little wood. Build a second woodcutter; more wagons will not fell a single tree.
+> — Wszebor
 
 **EN — 1 seal:**
 
-> The goods arrived, but the forge and sawmill waited too long.
-> Both drew from the same scarce supply. Next time, inspect
-> which workshop receives the wood before the wagons depart.
+> The planks and charcoal arrived, though the sawmill waited long for every log. One seal; a second woodcutter would have shortened the wait.
+> — Wszebor
 
 **EN — 2 seals:**
 
-> The smith and carpenters have their supplies with time to spare.
-> You reduced the competition for timber; smoother deliveries
-> could still keep both workshops working more steadily.
+> A second woodcutter settled the quarrel over timber, but he came late. Two seals; next time, raise the supply at once.
+> — Wszebor
 
 **EN — 3 seals:**
 
-> The forge and the sawmill no longer fought over each load.
-> More timber reached both consumers because the extra woodcutter
-> and the wagons worked together. You repaired the true bottleneck.
+> There was wood for the forge and for the sawmill. Three seals for mending the source rather than the road.
+> — Wszebor
 
 **EN — Loss:**
 
-> The deadline passed before all charcoal and planks reached the castle.
-> A faster sawmill cannot solve a shortage when the charcoal burner
-> claims the same timber. Increase supply and inspect wagon assignments.
+> The deadline passed and planks fell short: the burner turned to charcoal the wood the sawmill needed. Build a second woodcutter; extra wagons bring no extra wood.
+> — Wszebor
 
 ---
 
-## XI — Słód na zimę / Malt for Winter
+## XI — Słód na zimę / Malt for winter
 
-**PL — Nazwa:** Słód na zimę
+**PL — Nazwa:** XI. Słód na zimę
 
-**PL — Podtytuł:** Daleka słodownia zajmuje wozy na całe kursy.
+**PL — Podtytuł:** Daleka słodownia zajmuje wozy
 
 **PL — List otwierający:**
 
-> Browar musi uwarzyć 26 miar piwa do dwunastej minuty.
-> Zboże dojrzewa na zachodnich polach, lecz słodownia stoi
-> daleko na wschodzie. Trzy wozy mają obsłużyć gospodarstwo,
-> słodownię, browar i zamek. Gdy słodownia czeka na dostawę,
-> sprawdź wóz w drodze; gdy wszystkie są zajęte, sprawdź
-> długość ich tras. Dokupienie wozów skraca kolejkę, choć
-> nie przesuwa budynków bliżej siebie.
+> Na zimę zamek potrzebuje 22 miar piwa. Zboże rośnie na zachodnich polach, a słodownia stoi daleko na wschodzie. Trzy wozy mają obsłużyć gospodarstwo, słodownię, browar i zamek. Gdy browar pisze, że wszystkie wozy są zajęte, a ziarno czeka na polu, kup wozy w stajni: trasa się nie skróci, ale więcej kursów pójdzie naraz.
+> — Wszebor
 
 **PL — 1 pieczęć:**
 
-> Piwo dotarło, ale wozy pokonały zbyt wiele pustych i pełnych
-> kilometrów. Odległość zajmuje czas nawet wtedy, gdy zakłady
-> produkują bez przestojów.
+> Piwo dotarło, ale wozy spędziły zbyt wiele czasu w drodze. Jedna pieczęć; długi szlak potrzebuje większej floty.
+> — Wszebor
 
 **PL — 2 pieczęcie:**
 
-> Dodatkowy transport pomógł słodowni, choć kilka kursów
-> nadal czekało na wolne wozy. W długim łańcuchu
-> zaopatrzenia liczba pojazdów jest częścią mocy produkcyjnej.
+> Dodatkowy wóz pomógł słodowni, choć część kursów wciąż czekała. Dwie pieczęcie; na tak długim szlaku przydałoby się więcej koni.
+> — Wszebor
 
 **PL — 3 pieczęcie:**
 
-> Browar otrzymywał słód na czas, a zamek piwo bez zwłoki.
-> Dobrze rozpoznałeś przyczynę: to nie brak zboża, tylko
-> długie kursy i zajęta flota spowalniały warzenie.
+> Słód szedł do browaru, a piwo do zamku bez zwłoki. Trzy pieczęcie: nie brakowało zboża, tylko wozów na długie kursy.
+> — Wszebor
 
 **PL — Porażka:**
 
-> Zima przyszła przed ostatnim transportem piwa.
-> Sprawdź statusy „w drodze” i „wszystkie wozy zajęte”.
-> Krótka kolejka do produkcji nie pomoże bez pojazdu,
-> który dowiezie surowiec na drugi koniec doliny.
+> Zima przyszła przed ostatnią beczką. Sprawdź, czy wszystkie wozy są zajęte, a zboże czeka na polu. Dokup wozy, nim długa trasa pochłonie cały czas.
+> — Wszebor
 
-**EN — Title:** Malt for Winter
+**EN — Title:** XI. Malt for winter
 
-**EN — Subtitle:** A distant malthouse ties up the wagon fleet.
+**EN — Subtitle:** A distant malthouse ties up wagons
 
 **EN — Opening letter:**
 
-> The brewery must send 26 units of beer before the twelfth minute.
-> Grain grows in the western fields, but the malthouse is far to the east.
-> Three wagons must serve the farm, malthouse, brewery and castle.
-> When malt is waiting for delivery, follow the loaded wagon.
-> When every wagon is busy, check how long each journey takes.
-> More wagons can shorten the queue even if the road stays long.
+> For the winter the castle needs 22 beer. Grain grows in the western fields, but the malthouse stands far to the east. Three wagons must serve the farm, the malthouse, the brewery and the castle. When the brewery reports every wagon busy while grain waits in the field, buy wagons at the stable: the road stays long, but more journeys run at once.
+> — Wszebor
 
 **EN — 1 seal:**
 
-> The beer reached the castle, but the fleet spent too long
-> on loaded and empty journeys. Distance costs time even
-> while every workshop is ready to produce.
+> The beer arrived, but the wagons spent too long on the road. One seal; a long route needs a larger fleet.
+> — Wszebor
 
 **EN — 2 seals:**
 
-> Extra transport helped the malthouse, although some journeys
-> still had to wait. On a long supply chain, the fleet itself
-> determines how much work can be completed on time.
+> An extra wagon helped the malthouse, though some journeys still waited. Two seals; so long a road wanted more horses.
+> — Wszebor
 
 **EN — 3 seals:**
 
-> Malt reached the brewery steadily, and beer arrived without delay.
-> You identified the real cause: grain was available, but
-> distant journeys occupied all the wagons.
+> Malt reached the brewery and beer the castle without delay. Three seals: grain was never short, only wagons for the long journeys.
+> — Wszebor
 
 **EN — Loss:**
 
-> Winter came before the final beer shipment.
-> Follow the “waiting for delivery” and “all wagons busy”
-> explanations. Production cannot finish a contract
-> unless transport completes the entire chain.
+> Winter came before the last barrel. Check whether every wagon is busy while grain waits in the field. Buy wagons before the long road eats all the time.
+> — Wszebor
 
 ---
 
-## XII — Wielkie piwowarstwo / The Grand Brewing
+## XII — Wielkie warzenie / The great brewing
 
-**PL — Nazwa:** Wielkie piwowarstwo
+**PL — Nazwa:** XII. Wielkie warzenie
 
-**PL — Podtytuł:** Pełny spichlerz nie przyjmie kolejnego worka słodu.
+**PL — Podtytuł:** Zapas piwa na kolejny list
 
 **PL — List otwierający:**
 
-> Na wielkie warzenie potrzebujemy 40 chlebów i 48 miar piwa,
-> dostarczanych w trzech listach. Najpierw 32 chleby do 06:00;
-> potem 8 chlebów i 12 piw do 09:00; na koniec 36 piw do 12:00.
-> Zamek odbiera tylko bieżącą część zamówienia.
-> Mały spichlerz jest już pełen zboża, a wielki stoi
-> bez połączenia z traktem. Zanim browar zacznie wysyłać piwo,
-> słód potrzebuje wolnego miejsca na przechowanie.
-> Połącz duży spichlerz, aby nie zatrzymać łańcucha produkcji.
+> Na wielkie warzenie potrzeba 40 chlebów i 48 miar piwa w trzech listach: 32 chleby do 6:00, potem 8 chlebów i 12 piw do 9:00, na koniec 36 piw do 12:00. Zamek przyjmuje tylko bieżący list, więc browar szybko zapełni półki. Mały spichlerz jest pełen zboża, a duży stoi dwa pola od traktu. Połącz go od razu — przechowa piwo na kolejne listy.
+> — Wszebor
 
 **PL — 1 pieczęć:**
 
-> Ostatnie beczki dotarły, ale brak wolnego miejsca w spichlerzu
-> kosztował nas cenny czas. Gdy zamek nie zamawia towaru
-> z następnego listu, magazyn powinien przyjąć nadwyżkę.
+> Ostatnie beczki dotarły, ale browar długo stał z pełnymi półkami. Jedna pieczęć; wolny spichlerz pozwoliłby warzyć na zapas.
+> — Wszebor
 
 **PL — 2 pieczęcie:**
 
-> Warzenie ruszyło szybciej, a kolejne listy dotarły niemal
-> bez zwłoki. Zapas słodu chronił browar przed postojem.
-> Następnym razem przygotuj miejsce jeszcze wcześniej.
+> Duży spichlerz przyjął część piwa, choć połączyłeś go późno. Dwie pieczęcie; im wcześniej magazyn, tym większy zapas.
+> — Wszebor
 
 **PL — 3 pieczęcie:**
 
-> Wszystkie trzy listy wypełniono w porę. Duży spichlerz
-> działał jak bufor: przyjmował słód, gdy browar nie mógł
-> go jeszcze zużyć, i oddawał go, gdy ruszyły dostawy piwa.
+> Wszystkie listy wypełniono w porę. Spichlerz przyjmował piwo, gdy zamek go nie chciał, i oddał je, gdy przyszła pora. Trzy pieczęcie.
+> — Wszebor
 
 **PL — Porażka:**
 
-> Zamówienie nie zostało ukończone przed ostatnim terminem.
-> Pełny spichlerz zatrzymał odbiór słodu, a zatrzymana
-> produkcja nie nadrobiła straconego czasu. Połącz magazyn
-> zanim łańcuch zapełni własne składy.
+> Ostatni termin minął bez całego zamówienia. Browar stał, bo pełny spichlerz nie przyjmował nadwyżek. Połącz duży spichlerz, zanim półki się zapełnią.
+> — Wszebor
 
-**EN — Title:** The Grand Brewing
+**EN — Title:** XII. The great brewing
 
-**EN — Subtitle:** A full granary has no room for more malt.
+**EN — Subtitle:** Store the beer for the next letter
 
 **EN — Opening letter:**
 
-> The great brewing order requires 40 loaves and 48 units of beer,
-> delivered in three letters. First, 32 loaves by 06:00;
-> then 8 loaves and 12 beer by 09:00; finally 36 beer by 12:00.
-> The castle requests only the current part of the contract.
-> Our small granary is already full of grain, and the large
-> granary is cut off from the road. Malt needs storage while
-> the brewery waits for the next letter. Connect the large
-> granary before the production chain is blocked.
+> The great brewing needs 40 loaves and 48 beer in three letters: 32 loaves by 6:00, then 8 loaves and 12 beer by 9:00, and last 36 beer by 12:00. The castle takes only the current letter, so the brewery will soon fill its shelves. The small granary is full of grain, and the large one stands two cells from the road. Connect it at once — it will keep the beer for the later letters.
+> — Wszebor
 
 **EN — 1 seal:**
 
-> The final barrels arrived, but the full granary cost us time.
-> When the castle has not yet requested the next shipment,
-> stored surplus should keep workshops moving.
+> The last barrels arrived, but the brewery stood long with full shelves. One seal; a free granary would have let it brew ahead.
+> — Wszebor
 
 **EN — 2 seals:**
 
-> Brewing moved sooner, and the later letters nearly arrived
-> without delay. A buffer of stored malt protected the brewery.
-> Prepare the space earlier next time.
+> The large granary took some of the beer, though you connected it late. Two seals; the sooner the store, the larger the reserve.
+> — Wszebor
 
 **EN — 3 seals:**
 
-> All three letters were fulfilled on time. The large granary
-> acted as a buffer: it received malt while the brewery
-> could not use it and supplied the next batch when orders resumed.
+> Every letter was filled on time. The granary took the beer while the castle did not want it and gave it back when the time came. Three seals.
+> — Wszebor
 
 **EN — Loss:**
 
-> The last deadline passed without the whole order.
-> A full granary left malt with nowhere to go and the
-> stalled chain could not recover the time. Connect storage
-> before the workshops fill their own output shelves.
+> The last deadline passed without the whole order. The brewery stood idle because the full granary took no surplus. Connect the large granary before the shelves fill.
+> — Wszebor
+
