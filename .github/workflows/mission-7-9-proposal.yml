@@ -1,0 +1,42 @@
+name: Mission VII-IX proposals
+
+on:
+  pull_request:
+    paths:
+      - 'src/sim/proposals/missions-7-9.ts'
+      - 'src/sim/commands.ts'
+      - 'src/sim/logistics.ts'
+      - 'tools/bot-m?.ts'
+      - 'tools/bot-missions-7-9.ts'
+      - 'tests/missions-7-9.test.ts'
+      - 'docs/missions/m?.md'
+      - 'docs/content/letters-7-9.md'
+      - '.github/workflows/mission-7-9-proposal.yml'
+  push:
+    branches:
+      - 'gpt/missions-7-9-42-*'
+
+permissions:
+  contents: read
+
+jobs:
+  balance-proposals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Typecheck proposals
+        run: npm run typecheck
+      - name: Acceptance tests
+        run: npx tsx tests/run.ts missions-7-9
+      - name: Mission VII three plans
+        run: npx tsx tools/bot-m7.ts
+      - name: Mission VIII three plans
+        run: npx tsx tools/bot-m8.ts
+      - name: Mission IX three plans
+        run: npx tsx tools/bot-m9.ts
