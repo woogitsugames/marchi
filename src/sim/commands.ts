@@ -95,11 +95,12 @@ export function validateRoad(world: World, cells: readonly number[], surface: Su
 }
 
 /**
- * Stone a road command needs (free valley only, design S5): STONE_COBBLE per newly cobbled land
- * cell, STONE_STONE_BRIDGE per new stone-bridge cell. Missions build with silver alone.
+ * Stone a road command needs (free valley, design S5, and missions with `roadStone`, D-32):
+ * STONE_COBBLE per newly cobbled land cell, STONE_STONE_BRIDGE per new stone-bridge cell. Other
+ * missions build with silver alone.
  */
 export function roadStoneCost(world: World, cells: readonly number[], surface: SurfaceKind): number {
-  if (surface !== 2 || !rankGated(world)) return 0;
+  if (surface !== 2 || !(rankGated(world) || world.state.mission.roadStone)) return 0;
   const seen = new Set<number>();
   let n = 0;
   for (const cell of cells) {

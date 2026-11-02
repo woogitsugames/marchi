@@ -1,7 +1,7 @@
-// Save migrations run as a chain 1 -> 2 -> 3 -> 4 -> 5 behind the save gate, and the gate checks the
-// state v3 fields (ice windows, contract tranches, per-building capOverride, D-26, D-23), the
-// state v4 fields (free valley market, town ranks, placedTick; docs/design/sandbox.md) and the
-// state v5 shape (ten goods in every goods map, six ranks; D-29).
+// Save migrations run as a chain 1 -> 2 -> 3 -> 4 -> 5 -> 6 behind the save gate, and the gate checks
+// the state v3 fields (ice windows, contract tranches, per-building capOverride, D-26, D-23), the
+// state v4 fields (free valley market, town ranks, placedTick; docs/design/sandbox.md), the
+// state v5 shape (ten goods in every goods map, six ranks; D-29) and v6 `mission.roadStone` (D-32).
 import { migrate } from '../src/platform/save';
 import { gateEnvelope, makeEnvelope, prepareLoad, type GateResult } from '../src/platform/saveGate';
 import { GOODS_V4, RANKS_V4, STATE_VERSION, createWorld, deserialize, emptyGoods, serialize, stateHash, step } from '../src/sim/index';
@@ -16,9 +16,12 @@ function v4goods(m: J): J {
 }
 
 /** The same state as an older schema version (fields of later versions removed). */
-function downgrade(v5: J, to: 1 | 2 | 3 | 4): J {
-  const s = JSON.parse(JSON.stringify(v5)) as J;
+function downgrade(v6: J, to: 1 | 2 | 3 | 4 | 5): J {
+  const s = JSON.parse(JSON.stringify(v6)) as J;
   s.version = to;
+  // v6 -> v5: no road stone flag
+  delete s.mission.roadStone;
+  if (to === 5) return s;
   // v5 -> v4: five goods per goods map, four ranks
   for (const b of s.buildings) for (const k of ['stock', 'reservedOut', 'incoming']) b[k] = v4goods(b[k]);
   for (const k of ['produced', 'consumed', 'destroyed', 'sold']) s.ledger[k] = v4goods(s.ledger[k]);
@@ -49,9 +52,10 @@ function mid(id: string, ticks: number) {
 }
 
 /** What a fresh state looks like after the migration semantics (fields an old save could not hold). */
-function expectedAfterMigration(fresh: J, from: 1 | 2 | 3 | 4): J {
+function expectedAfterMigration(fresh: J, from: 1 | 2 | 3 | 4 | 5): J {
   const s = JSON.parse(JSON.stringify(fresh)) as J;
-  if (from === 4) return s; // the new goods are still 0 and ranks 4-5 not reached yet
+  s.mission.roadStone = false; // no mission before v6 built with stone
+  if (from >= 4) return s; // the new goods are still 0 and ranks 4-5 not reached yet
   for (const b of s.buildings) b.placedTick = -1;
   s.ledger.silverEarned = 0;
   s.ledger.sold = emptyGoods();
@@ -67,7 +71,7 @@ function expectedAfterMigration(fresh: J, from: 1 | 2 | 3 | 4): J {
 
 // Missions IV-VI did not exist before state v3, so only m1-m3 can have v1/v2 saves. The free
 // valley ('sandbox', market open after migration) can have saves of every version.
-for (const from of [1, 2, 3, 4] as const) {
+for (const from of [1, 2, 3, 4, 5] as const) {
   for (const id of from >= 3 ? ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'sandbox'] : ['m1', 'm2', 'm3', 'sandbox']) {
     test(`save chain ${from} -> ${STATE_VERSION} on ${id}: gate, migrate, identical to a fresh state, same continuation`, () => {
       const w = mid(id, 2400);
@@ -152,5 +156,24 @@ test('save gate checks state v4 fields: market, town, ledger income, placedTick'
     const r = gateV4(f);
     assert(!r.ok, `${what}: rejected`);
     if (!r.ok) assert(r.errors.some((e) => e.code === code), `${what}: expected ${code}, got ${r.errors.map((e) => e.code + '@' + e.path).join(', ')}`);
+  }
+});
+
+test('save gate checks state v6 mission.roadStone; mission VIII saves keep it through save/load', () => {
+  const w = mid('m8', 1200);
+  eq(w.state.mission.roadStone, true, 'mission VIII builds with stone');
+  eq(mid('m1', 1).state.mission.roadStone, false, 'mission I does not');
+  const env = JSON.parse(JSON.stringify(makeEnvelope('auto', w.state, 0))) as J;
+  assert(gateEnvelope(env).ok, 'valid v6 save');
+  const back = deserialize(JSON.stringify(env.state));
+  eq(back.state.mission.roadStone, true, 'flag survives a load');
+  for (const [what, f] of [
+    ['roadStone missing in v6', (s: J) => { delete s.mission.roadStone; }],
+    ['roadStone not boolean', (s: J) => { s.mission.roadStone = 1; }],
+  ] as [string, (s: J) => void][]) {
+    const bad = JSON.parse(JSON.stringify(env)) as J;
+    f(bad.state);
+    const r = gateEnvelope(bad);
+    assert(!r.ok && r.errors.some((e) => e.code === 'BAD_TYPE' && e.path.endsWith('mission.roadStone')), `${what}: rejected`);
   }
 });

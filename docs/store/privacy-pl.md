@@ -14,9 +14,9 @@ Postęp rozgrywki, stan mapy, zasoby i ustawienia zapisu są przechowywane **wy�
 
 Możesz usunąć lokalne zapisy przez wyczyszczenie danych aplikacji lub usunięcie aplikacji z urządzenia. Nie wystarczy jedynie odciążyć aplikacji, jeśli system zachowuje jej dane. Ewentualne kopie wykonywane przez system operacyjny podlegają ustawieniom urządzenia i zasadom jego dostawcy.
 
-## 3. Zakup pełnej wersji
+## 3. Darmowa gra, bez reklam i zakupów w aplikacji
 
-Dostęp do dodatkowej zawartości może zostać odblokowany jednorazowym zakupem w Google Play lub App Store. Transakcję i płatność obsługuje operator odpowiedniego sklepu zgodnie z własnymi zasadami prywatności. Gra nie zbiera danych kart płatniczych. Sam sklep może przetwarzać informacje o zakupie i koncie użytkownika niezależnie od nas.
+Cała gra, w tym misje I–VI i Wolna dolina, jest darmowa, bez reklam i zakupów w aplikacji. Wolna dolina oferuje trzy lokalne sloty zapisu oraz łańcuchy produkcji ryb, kamienia, węgla drzewnego, słodu i piwa. Dane tych rozgrywek i zasobów pozostają na urządzeniu zgodnie z opisem powyżej. Gra nie zbiera danych o zakupach ani płatnościach.
 
 ## 4. Udostępnianie i bezpieczeństwo
 

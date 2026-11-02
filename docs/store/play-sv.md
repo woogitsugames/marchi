@@ -16,6 +16,8 @@ Lasten syns på varje lastad vagn. Granska destination och beräknad leveranstid
 
 Slottets kontrakt är korta uppdrag för spelsessioner på 5–12 minuter. Leverera varorna före tidsgränsen och få sigill för effektivt arbete. Föredrar du ett lugnare tempo? Bygg ditt transportnät fritt i en dal utan kontraktstid.
 
+Den fria dalen är ett lugnt stadsbyggarläge med tre separata sparplatser. Utveckla din bosättning genom olika nivåer ända till en huvudstad. Lås upp fiske, stenbrott för stenlagda vägar och stenbroar, träkolsframställning, mältning och ölbryggning. Varje produktionskedja kräver fortfarande riktiga leveranser med vagnar.
+
 Fem viktiga funktioner:
 - Förklaringar till stillastående byggnader och vagnar med ett tryck, inklusive orsakskedjan.
 - Synlig last, destinationer och beräknade ankomsttider.
@@ -23,7 +25,7 @@ Fem viktiga funktioner:
 - Kontrakt på 5–12 minuter och en öppen dal utan tidsgräns.
 - Fysiska leveranser av stockar, plankor, säd, mjöl och bröd — ingen omedelbar teleportering.
 
-Börja gratis med uppdrag 1–3 och en liten fri dal. Ett engångsköp låser upp hela versionen. Ingen reklam, inga energisystem, köp för spelfördelar eller konstgjorda väntetider för påfyllning. Dina framsteg sparas lokalt på enheten.
+Alla sex uppdrag (I–VI) och den fria dalen är gratis. Inga annonser, köp i appen, energisystem, betalda fördelar eller konstgjorda väntetider. Framstegen sparas lokalt på din enhet.
 
 ## Nyckelord — ASO-referens (Google Play har inget separat sökordsfält)
 medeltida logistik, strategi, vagnar, leveranser, försörjningskedjor, vägbygge, broar, handel, kontrakt, ekonomispel

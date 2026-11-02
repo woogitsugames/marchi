@@ -1,4 +1,4 @@
-// Drawn spacing between wagons going the same way (D-31). Render-only and three.js-free so it can be
+// Drawn spacing between wagons going the same way (D-34). Render-only and three.js-free so it can be
 // tested headless: the sim lets several wagons share a stretch of road (positions are not changed),
 // the view draws each follower at least DRAW_GAP metres behind the wagon ahead.
 import { edgeLength, type Wagon, type World } from '../sim/index';

@@ -14,9 +14,9 @@ Spelvoortgang, kaartstatus, middelen en opgeslagen spelgegevens worden **alleen 
 
 Je kunt opgeslagen spellen verwijderen door de opslag van de app te wissen of de app van je apparaat te verwijderen. Bij het alleen uitladen van de app kunnen gegevens achterblijven. Eventuele back-ups van je besturingssysteem vallen onder de instellingen van je apparaat en de voorwaarden van de aanbieder van het besturingssysteem.
 
-## 3. Eenmalige aankoop van de volledige versie
+## 3. Gratis spel zonder advertenties of in-app-aankopen
 
-Aanvullende inhoud kan worden ontgrendeld met een eenmalige aankoop via Google Play of de App Store. De betreffende winkelbeheerder verwerkt betalingen onder zijn eigen privacyvoorwaarden. De game verzamelt geen betaalkaartgegevens. De winkel kan zelfstandig aankoop- en accountgegevens verwerken.
+Het hele spel, inclusief missies I–VI en de vrije vallei, is gratis en bevat geen advertenties of in-app-aankopen. De vrije vallei heeft drie lokale opslagslots en productieketens voor vis, steen, houtskool, mout en bier. Spelgegevens en grondstoffen blijven zoals hierboven beschreven op je apparaat. Het spel verzamelt geen aankoop- of betaalgegevens.
 
 ## 4. Delen en beveiliging
 

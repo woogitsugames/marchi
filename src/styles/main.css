@@ -1258,6 +1258,8 @@ bdi { unicode-bidi: isolate; }
 .pl-req li.is-met .pl-bar > i { background: var(--meadow); }
 .pl-income { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 15px; font-weight: 700; color: #7d5d23; }
 .plaque-wrap .seal-only .seal-time { color: #f0e6d2; }
+.pl-season { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.pl-season.is-winter { color: var(--iron); }
 body.is-narrow .plaque { width: 196px; }
 
 /* ---- rank-up: a short sealed letter (slide 200 ms, wax pressed 120 ms after it; no bounce) */
@@ -1616,3 +1618,4 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding: 0 8px 0 0; }
 .pause-ask { padding: 10px 10px 12px 6px; border-bottom: 0; }
 .pause-ask .slot-no { font-size: 22px; }
+.slot-row.is-asking { padding-inline-end: 10px; }

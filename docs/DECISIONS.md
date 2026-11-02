@@ -271,7 +271,56 @@ Measured with the extended decent bot (tools/bot-sandbox.ts, 150 min): ranks at 
 Missions I-VI run bit-identically to state v4 with the new fields stripped (all 26 balance runs compared;
 golden hashes in tests/chains.test.ts). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox)
 
-**D-31 — Wagon spacing is drawn, not simulated.** Wagons going the same way are drawn at least 5 m apart
+**D-31 — Owner decisions 2026-11-02 (day).** (1) Rank names 4–5: **Gród** and **Stolica**. (2) **Seasons** in the
+free valley, gently: announced in advance, change conditions (winter: river ice, lower farm yields; spring: thaw slows
+dirt roads) and teach new stall causes, never destroy the settlement. (3) Next after the chains UI, all in order:
+missions VII–IX → valley events (royal orders, fairs, merchants, soft goals) → playtest + polish; GPT designs part of
+it (pack 06). (4) The title is **„Marchia” in every language**; the subtitle is translated. (decided)
+
+**D-32 — Missions VII–IX in the menu; road stone as mission data (STATE_VERSION 6).** Missions VII–IX
+(order 42, docs/missions/m7–m9.md) are registered in `MISSIONS` from `src/sim/proposals/missions-7-9.ts`
+under own map ids `valley-m7` / `valley-m8` / `valley-m9` (the mission II river, the original valley, the
+mission III valley; same generator input, so the golden terrain hashes equal those maps'). Mission VIII's
+lesson (stone must be hauled to a granary before it can pave) is a data field, never a mission id in sim
+code: `MissionDef.roadStone?: boolean` is copied into `state.mission.roadStone` at build, and the sim reads the
+state. With it set, `roadStoneCost` charges stone for cobbles / stone bridges exactly as in the free valley
+(D-30 (4): `stoneAvailable`, `takeStone`, `NO_STONE{need, have}`) and granaries pull the `STONE_RESERVE`
+before the market. The free valley keeps getting this through rank gating and its flag stays false, so
+pre-v6 valley saves behave the same after migration. Migration v5 → v6 appends `mission.roadStone: false`
+(no earlier mission used stone); the gate requires a boolean from v6 on. Missions I–VI, the lab and the free
+valley run bit-identically with the flag stripped and the version zeroed (final hashes of every balance plan
+and four sandbox plans compared before/after; `tools/balance.ts` output unchanged; golden v4 hashes in
+tests/chains.test.ts). Measured seals (tools/bot-m7…m9.ts): VII 10.90 / 8.04 / 6.41 min → 1/2/3, VIII 10.50 /
+10.11 / 9.48 min → 1/2/3 (repair paves 12 cells after 12 stone reached the granary at 2:59.7), IX 11.22 /
+10.06 / 8.70 min → 1/2/3. Menu names, subtitles and castellan letters PL/EN; the six new i18n keys are in
+`PENDING_KEYS` until the next translation round. (decided)
+
+**D-33 — Seasons wired into the free valley (no state change).** Implements D-31 (2) from docs/design/seasons.md.
+(1) *Switch*: `MissionDef.seasons` (only `sandbox: true`), read by `missionSeasons(id)` and copied by `createWorld` /
+`worldFromState` into `World.seasons` — derived like the terrain, never saved. The date is the tick (15-min seasons,
+60-min year from tick 0 = spring). So **no STATE_VERSION bump and no migration**: an old free-valley save loads with
+seasons at the date its tick implies (a midwinter save opens with the ice window it is in), contract saves never get
+them. Rejected: a `state.seasons` field — it would change every contract state's JSON (hash) and collide with the
+parallel v6 bump for missions VII–IX for no behavioural gain. Cost: a free-valley replay recorded before this build
+diverges after minute 4 (replays are local text, only from tick 0; acceptable). (2) *Hooks* (`src/sim/seasons.ts`,
+allocation-free, agree with `effectsAt` — tested over two years): `produce()` uses `cycleTicks()`: farm/fisher cycle =
+ceil(ticks·100/pct) via `Math.floor`, whole-item output kept, progress carries over a season change (completes once);
+wooden spans close via `bridgeIceUntil()` = max(authored `state.ice`, winter window) in wagons and Dijkstra — existing
+`BRIDGE_CLOSED{span,until}`, nothing written into `state.ice`; thaw = land dirt ×0.55 (`RAIN_DIRT`), once when it rains
+too, cobble and both bridge kinds untouched, own cost-table variants (`NetCache.costs` 4 → 8, key loaded+2·rain+4·thaw);
+fair = `fairPercent(world, good)` → `unitCents/quoteCents(…, fairPct)`, per unit floor(c·125/100) on the saturation price,
+used by `sellAt`, the dispatcher's price sort and the market sheet. (3) *Diagnosis*: `Slowdown.thaw` ("roztopy … bruk nie
+rozmięka"), `seasonNote()` on farm/fisher/castle cards, a consumer waiting on a winter-slowed farm says "slower supply,
+not a stall" (WAITING_UPSTREAM stays non-stalling), winter BRIDGE_CLOSED adds "ice recedes on its own". No new
+StallReason — a slower rate is not a stall (design §3). (4) *UI*: plaque line "Zima · dzień N" (existing icons stand in for
+the season icons), notices from `nextChange()` 2 game minutes ahead (once per event) and when a season / the thaw starts;
+terrain gets one `uWinter` uniform (frost, roads and the river bed excluded) and the thaw keeps the ground half wet.
+New PL/EN keys are in `PENDING_KEYS`. (5) *Proof*: m1–m9 and lab state hashes identical to the base build for every
+balance strategy, sampled every minute (29 runs); free-valley decent bot ranks 10.1 / 26.6 / 45.4 / 78.1 / 123.4 min
+(before 9.8 / 25.3 / 44.4 / 75.6 / 120.5; all inside the windows), earned 17 118 vs 17 488 silver; fuzz 40 runs and a
+3-run full-year sandbox fuzz without failures. (decided — numbers as in the design proposal; retune after playtest)
+
+**D-34 — Wagon spacing is drawn, not simulated.** Wagons going the same way are drawn at least 5 m apart
 (`src/render/wagonSpacing.ts`, used by `wagonsView`): on each directed edge, from the front wagon back, a
 follower is drawn behind the one ahead (also across the next node); the drawn lag grows at once, shrinks at
 0.35 m per tick so nothing jumps, may put the wagon back on its previous edge, and is capped at 8 m (one

@@ -14,9 +14,9 @@ El progreso, el estado del mapa, los recursos y la información de las partidas 
 
 Puedes eliminar las partidas locales borrando los datos de la aplicación o desinstalándola del dispositivo. La simple retirada de la aplicación sin borrar sus datos puede conservarlos. Las copias de seguridad que pueda realizar tu sistema operativo se rigen por la configuración del dispositivo y las condiciones del proveedor del sistema operativo.
 
-## 3. Compra única de la versión completa
+## 3. Juego gratuito sin anuncios ni compras integradas
 
-Se puede desbloquear contenido adicional mediante una compra única en Google Play o App Store. El operador de la tienda correspondiente gestiona las transacciones de pago conforme a sus propias condiciones de privacidad. El juego no recopila datos de tarjetas de pago. La tienda puede tratar por su cuenta información sobre la compra y la cuenta.
+Todo el juego, incluidas las misiones I–VI y el Valle Libre, es gratuito y no contiene anuncios ni compras integradas. El Valle Libre ofrece tres espacios de guardado locales y cadenas de producción de pescado, piedra, carbón vegetal, malta y cerveza. Los datos de partida y los recursos permanecen en tu dispositivo, como se indica arriba. El juego no recopila datos de compras ni pagos.
 
 ## 4. Comunicación de datos y seguridad
 

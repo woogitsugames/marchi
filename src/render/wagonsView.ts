@@ -39,7 +39,7 @@ const QUEUE_GAP = 8;
 interface Snap {
   id: number;
   init: boolean;
-  /** Metres the drawn position stays behind the sim position (spacing, D-31). */
+  /** Metres the drawn position stays behind the sim position (spacing, D-34). */
   lag: number;
   /** Edge the wagon was on before the current one (to draw it there while lagging), -1 if none. */
   prevAt: number; prevNext: number; curAt: number; curNext: number;

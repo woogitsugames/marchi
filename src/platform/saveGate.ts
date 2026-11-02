@@ -497,6 +497,10 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     str(c, m, 'id', mp);
     if (typeof m.result !== 'string' || !RESULTS.has(m.result)) e.add('BAD_TYPE', `${mp}.result`, `unknown result ${show(m.result)}`);
     int(c, m, 'endTick', mp, -1, LIMITS.maxInt);
+    // state v6 (D-32): road stone in a contract mission
+    if ((version >= 6 || has(m, 'roadStone')) && typeof m.roadStone !== 'boolean') {
+      e.add('BAD_TYPE', `${mp}.roadStone`, `expected boolean, got ${show(m.roadStone)}`);
+    }
     if (!has(m, 'contract')) e.add('BAD_TYPE', `${mp}.contract`, 'missing');
     else if (m.contract !== null) {
       const ct = obj(c, m, 'contract', mp);

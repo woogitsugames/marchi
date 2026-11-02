@@ -1,4 +1,4 @@
-// Drawn spacing between wagons (D-31): render-only, never touches the sim.
+// Drawn spacing between wagons (D-34): render-only, never touches the sim.
 import { step, stateHash, type World } from '../src/sim/index';
 import { DRAW_GAP, MAX_DRAW_LAG, wagonDrawLag } from '../src/render/wagonSpacing';
 import { applyCommand, createWorld } from '../src/sim/index';

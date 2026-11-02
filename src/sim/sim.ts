@@ -5,10 +5,11 @@ import { hashState } from './hash';
 import { dispatch } from './logistics';
 import { trancheCovered } from './contract';
 import { explainBuilding } from './diagnose';
-import { buildMission, terrainFor } from './missions';
+import { buildMission, missionSeasons, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
 import { stepTown } from './town';
+import { cycleTicks } from './seasons';
 import { MARKET } from './defs';
 import type { GoodMap, SimState } from './types';
 
@@ -16,12 +17,15 @@ export type { World } from './network';
 
 export function createWorld(missionId: string, seed?: number): World {
   const { terrain, state } = buildMission(missionId, seed);
-  return { terrain, state, cache: null, scratch: null };
+  return { terrain, state, cache: null, scratch: null, seasons: missionSeasons(state.mission.id) };
 }
 
-/** Rebuild a world from a saved state (terrain is regenerated from mapId + seed). */
+/**
+ * Rebuild a world from a saved state (terrain is regenerated from mapId + seed, the seasonal flag
+ * from the mission definition: an old free-valley save gets seasons at the date its tick implies).
+ */
 export function worldFromState(state: SimState): World {
-  return { terrain: terrainFor(state.mapId, state.seed), state, cache: null, scratch: null };
+  return { terrain: terrainFor(state.mapId, state.seed), state, cache: null, scratch: null, seasons: missionSeasons(state.mission.id) };
 }
 
 export function serialize(world: World): string {
@@ -70,7 +74,9 @@ function produce(world: World): void {
     if (!r) continue;
     if (b.progress >= 0) {
       b.progress++;
-      if (b.progress >= r.ticks) {
+      // seasons (free valley) stretch or shorten the cycle of farms and fishers; progress carries
+      // over a season change, so an interrupted cycle completes exactly once
+      if (b.progress >= cycleTicks(world, b.type, r.ticks)) {
         for (const g of outputGoods(b.type)) {
           const n = r.outputs[g] ?? 0;
           b.stock[g] += n;

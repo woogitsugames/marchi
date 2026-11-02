@@ -5,6 +5,7 @@ import { nextInt, seedRng } from './rng';
 import { generateValley, type ValleySpec } from './terrain';
 import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
 import { S2_MISSIONS } from './missions-s2';
+import { PROPOSED_MISSIONS_7_9 } from './proposals/missions-7-9';
 import { freshMarket, freshTown } from './town';
 import type { World } from './network';
 import type { BuildingType, Good, GoodMap, RainSpell, SimState, Terrain } from './types';
@@ -44,6 +45,10 @@ const MAP_SPECS: Record<string, (seed: number) => ValleySpec> = {
   'valley-m4': (seed) => ({ ...M2_VALLEY, seed }),
   'valley-m5': (seed) => ({ ...M3_VALLEY, seed }),
   'valley-m6': (seed) => ({ ...M3_VALLEY, seed }),
+  // Missions VII-IX reuse the mission II river, the original valley and the mission III valley.
+  'valley-m7': (seed) => ({ ...M2_VALLEY, seed }),
+  'valley-m8': (seed) => valleySpec(seed),
+  'valley-m9': (seed) => ({ ...M3_VALLEY, seed }),
 };
 
 const terrainCache = new Map<string, Terrain>();
@@ -107,6 +112,18 @@ export interface MissionDef {
   market?: boolean;
   /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
   buildable?: BuildingType[];
+  /**
+   * Cobbles and stone bridges take stone from the granaries, which keep a stone reserve (mission VIII,
+   * D-32). Copied into `state.mission.roadStone`; the free valley does this through rank gating.
+   */
+  roadStone?: boolean;
+  /** The seasonal calendar runs (free valley, D-33): derived into World.seasons, never stored in the state. */
+  seasons?: boolean;
+}
+
+/** Does this mission run the seasonal calendar? */
+export function missionSeasons(missionId: string): boolean {
+  return MISSIONS[missionId]?.seasons === true;
 }
 
 /** Building types the player may place in a mission, or 'ranked' for the sandbox (rank gating applies). */
@@ -170,6 +187,7 @@ export const MISSIONS: Record<string, MissionDef> = {
     deadlineMin: 0,
     star3Min: 0,
     star2Min: 0,
+    seasons: true,
   },
   // Test bench (not in the menu): the mission I layout without a contract and with a closed
   // market, i.e. the free valley as it was before the market (state v3). Tests and tools/bench use it.
@@ -193,6 +211,9 @@ MISSIONS.m3 = PROPOSED_MISSIONS.m3;
 MISSIONS.m4 = S2_MISSIONS.m4;
 MISSIONS.m5 = S2_MISSIONS.m5;
 MISSIONS.m6 = S2_MISSIONS.m6;
+MISSIONS.m7 = PROPOSED_MISSIONS_7_9.m7;
+MISSIONS.m8 = PROPOSED_MISSIONS_7_9.m8;
+MISSIONS.m9 = PROPOSED_MISSIONS_7_9.m9;
 MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 
@@ -229,7 +250,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     nextId: 1,
     rain: [],
     ice: (def.ice ?? []).map((r) => ({ ...r })),
-    mission: { id: def.id, contract: null, result: 'running', endTick: -1 },
+    mission: { id: def.id, contract: null, result: 'running', endTick: -1, roadStone: def.roadStone ?? false },
     ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods(), stallSeconds: {}, silverEarned: 0, sold: emptyGoods() },
     market: freshMarket(def.market ?? def.contract === null),
     town: freshTown(),

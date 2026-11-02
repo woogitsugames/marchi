@@ -5,6 +5,7 @@ import {
   BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, GOODS, MARKET, RANKS, TICK_HZ, UNDO_TICKS, emptyGoods, sumGoods,
 } from './defs';
 import type { World } from './network';
+import { fairPercent } from './seasons';
 import type { Building, BuildingType, Good, MarketState, SimState, TownState } from './types';
 
 // --- State -------------------------------------------------------------------------------------
@@ -36,16 +37,26 @@ export function pricePct(saturation: number): number {
   return Math.max(MARKET.floorPct, 100 - drop);
 }
 
-/** Price of the next unit of g in hundredths of a silver coin. */
-export function unitCents(st: Pick<SimState, 'market'>, g: Good): number {
-  return MARKET.base[g] * pricePct(st.market.saturation[g]);
+/**
+ * Price of one unit at a saturation level, in hundredths of a silver coin. `fairPct` (100 = none) is
+ * the seasonal fair bonus from seasons.ts fairPercent(): applied per unit on the saturation-adjusted
+ * price and rounded down, so market.cents keeps collecting the fractions.
+ */
+function centsAt(g: Good, saturation: number, fairPct: number): number {
+  const c = MARKET.base[g] * pricePct(saturation);
+  return fairPct === 100 ? c : Math.floor((c * fairPct) / 100);
+}
+
+/** Price of the next unit of g in hundredths of a silver coin (fairPct: see fairPercent). */
+export function unitCents(st: Pick<SimState, 'market'>, g: Good, fairPct = 100): number {
+  return centsAt(g, st.market.saturation[g], fairPct);
 }
 
 /** What selling `qty` units of g right now would pay, in hundredths (each unit saturates the next). */
-export function quoteCents(st: Pick<SimState, 'market'>, g: Good, qty: number): number {
+export function quoteCents(st: Pick<SimState, 'market'>, g: Good, qty: number, fairPct = 100): number {
   let sat = st.market.saturation[g], cents = 0;
   for (let i = 0; i < qty; i++) {
-    cents += MARKET.base[g] * pricePct(sat);
+    cents += centsAt(g, sat, fairPct);
     sat = Math.min(MARKET.cap, sat + 1);
   }
   return cents;
@@ -60,7 +71,7 @@ export function sellAt(world: World, b: Building, g: Good): number {
   const qty = b.stock[g];
   if (qty <= 0) return 0;
   const m = st.market;
-  m.cents += quoteCents(st, g, qty);
+  m.cents += quoteCents(st, g, qty, fairPercent(world, g));
   m.saturation[g] = Math.min(MARKET.cap, m.saturation[g] + qty);
   b.stock[g] = 0;
   st.ledger.consumed[g] += qty;
@@ -205,8 +216,10 @@ export interface PriceInfo {
   base: number;
   /** Current price, percent of base (MARKET.floorPct..100). */
   pct: number;
-  /** Current price of the next unit in hundredths of silver. */
+  /** Current price of the next unit in hundredths of silver (including a seasonal fair bonus). */
   cents: number;
+  /** Seasonal fair bonus in percent of the price (100 = none). */
+  fairPct: number;
   saturation: number;
   /** Units sold so far. */
   sold: number;
@@ -266,7 +279,7 @@ export function sandboxStatus(world: World): SandboxStatus {
     unlocked,
     locked,
     prices: GOODS.map((g) => ({
-      good: g, base: MARKET.base[g], pct: pricePct(st.market.saturation[g]), cents: unitCents(st, g),
+      good: g, base: MARKET.base[g], pct: pricePct(st.market.saturation[g]), cents: unitCents(st, g, fairPercent(world, g)), fairPct: fairPercent(world, g),
       saturation: st.market.saturation[g], sold: st.ledger.sold[g],
     })),
   };

@@ -14,9 +14,9 @@ O progresso, o estado do mapa, os recursos e as informações dos jogos salvos s
 
 Você pode remover os jogos salvos limpando o armazenamento do aplicativo ou excluindo-o do dispositivo. Apenas descarregar o aplicativo pode deixar seus dados intactos. Eventuais backups feitos pelo sistema operacional seguem as configurações do dispositivo e os termos do fornecedor do sistema.
 
-## 3. Compra única da versão completa
+## 3. Jogo gratuito, sem anúncios nem compras no aplicativo
 
-Conteúdo adicional pode ser desbloqueado por uma compra única no Google Play ou na App Store. O operador da loja correspondente processa os pagamentos conforme seus próprios termos de privacidade. O jogo não coleta dados de cartão de pagamento. A loja pode processar independentemente informações de compra e de conta.
+Todo o jogo, incluindo as missões I–VI e o Vale Livre, é gratuito e não tem anúncios nem compras no aplicativo. O Vale Livre oferece três espaços de salvamento locais e cadeias de produção de peixe, pedra, carvão vegetal, malte e cerveja. Os dados e recursos permanecem no dispositivo, como descrito acima. O jogo não coleta informações de compras ou pagamentos.
 
 ## 4. Compartilhamento e segurança
 

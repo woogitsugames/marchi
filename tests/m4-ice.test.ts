@@ -10,7 +10,7 @@ import { M4_MISSION, M4_VALLEY } from '../src/sim/proposals/m4';
 function sample(roads: number[], tick: number, id = 'm4'): Pick<SimState, 'roads' | 'tick' | 'mission'> {
   return {
     tick, roads,
-    mission: { id, contract: null, result: 'running', endTick: -1 },
+    mission: { id, contract: null, result: 'running', endTick: -1, roadStone: false },
   };
 }
 
