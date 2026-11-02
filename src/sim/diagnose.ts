@@ -246,3 +246,48 @@ export function seasonNote(world: World, id: number): SeasonNote | null {
   if (b.type === 'castle' && season === 'autumn' && world.state.mission.contract === null) return { k: 'FAIR', good: AUTUMN_FAIR_GOOD, pct: 125 };
   return null;
 }
+
+/**
+ * One input shared by consumers of different kinds (mission IX: wood for the sawmill and the
+ * charcoal burner). The sim says CONTESTED only while nothing else explains the wait; most of the
+ * time a wagon is already on the way or every wagon is busy, which hides the lesson. This is the
+ * card's read-only view of the same fact: `id` waits for its input `good` (WAITING_DELIVERY,
+ * NO_WAGON, WAITING_UPSTREAM, NO_INPUT except UNREACHABLE) while that good is promised to a
+ * consumer of another kind or already held by one. `rival`: the one with most of it held or on
+ * the way (`there`, lowest id on ties); `here`: the same count for `id`; `producers` /
+ * `consumers`: buildings that make / use the good (granaries excluded). Null when no consumer of
+ * another kind holds or awaits the good right now.
+ */
+export interface SharedInput {
+  good: Good;
+  rival: number;
+  there: number;
+  here: number;
+  producers: number;
+  /** Lowest-id producer of the good, −1 when none. */
+  producer: number;
+  consumers: number;
+}
+
+export function sharedInput(world: World, id: number): SharedInput | null {
+  const b = buildingById(world, id);
+  if (!b) return null;
+  const s = b.status;
+  let g: Good;
+  if (s.k === 'WAITING_DELIVERY' || s.k === 'NO_WAGON' || s.k === 'WAITING_UPSTREAM') g = s.good;
+  else if (s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE') g = s.good;
+  else return null;
+  if (!inputGoods(b.type).includes(g)) return null;
+  let rival = -1, there = 0, producers = 0, producer = -1, consumers = 1;
+  for (const o of world.state.buildings) {
+    if (o.id === b.id) continue;
+    if (outputGoods(o.type).includes(g)) { producers++; if (producer < 0) producer = o.id; }
+    if (!inputGoods(o.type).includes(g)) continue;
+    consumers++;
+    if (o.type === b.type) continue;
+    const n = o.incoming[g] + o.stock[g];
+    if (n > there) { there = n; rival = o.id; }
+  }
+  if (rival < 0) return null;
+  return { good: g, rival, there, here: b.incoming[g] + b.stock[g], producers, producer, consumers };
+}
