@@ -1,7 +1,7 @@
 // UI round 3 verification shots -> docs/shots/ui3-*.png: menu with missions IV–VI, mission V waybill in
 // tranches, mission IV ice on the bridge, mission VI small granary, free valley plaque + market sheet,
 // build shelf, placement ghost (valid / invalid), undo, rank-up letter.
-// Usage: node tools/ui3-shots.mjs [filter...]   (filters match scenario or device names)
+// Usage: node tools/ui3-shots.mjs [filter...]   (scenario or device name, or scenario@device)
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -108,7 +108,7 @@ const SCENARIOS = {
     await o.page.keyboard.press('Escape');
     await o.page.waitForTimeout(1500);
     await o.page.evaluate(() => window.__marchia.rankUp(1));
-    await o.page.waitForTimeout(2500);
+    await o.page.waitForTimeout(3800);
     await shot(o, `rankup-${d.id}`);
     await o.ctx.close();
   },
@@ -152,7 +152,8 @@ const SCENARIOS = {
 
 for (const d of DEVICES) {
   for (const [name, fn] of Object.entries(SCENARIOS)) {
-    if (filters.length && !filters.some((f) => name.includes(f) || d.id.includes(f))) continue;
+    const match = (f) => (f.includes('@') ? name.includes(f.split('@')[0]) && d.id.includes(f.split('@')[1]) : name.includes(f) || d.id.includes(f));
+    if (filters.length && !filters.some(match)) continue;
     if (d.hinge && !['build', 'plaque', 'menu'].includes(name)) continue;
     console.log(`${name} @ ${d.id}`);
     try { await fn(d); } catch (e) { console.log('  ERROR', e.message.split('\n')[0]); }

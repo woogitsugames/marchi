@@ -11,7 +11,7 @@ import { CELL } from './heightfield';
 /** Field resolution: texels per metre. */
 export const ROAD_RES = 2;
 /** Encoded distance range in metres (8-bit channel covers 0..ROAD_MAXD). */
-export const ROAD_MAXD = 4;
+export const ROAD_MAXD = 6;
 
 export interface BridgeCell {
   cell: number;
@@ -29,6 +29,14 @@ export interface BridgeCell {
 const DX8 = [1, 0, -1, 0, 1, -1, -1, 1];
 const DY8 = [0, 1, 0, -1, 1, 1, -1, -1];
 
+/** A point on the drawn road centreline with its unit tangent (xz, metres). */
+export interface RoadPoint {
+  x: number;
+  z: number;
+  tx: number;
+  tz: number;
+}
+
 export class RoadField {
   readonly tw: number;
   readonly th: number;
@@ -38,6 +46,9 @@ export class RoadField {
   readonly junc: Float32Array;
   readonly texture: DataTexture;
   private readonly data: Uint8Array;
+  /** Per cell: bit d set when the drawn centreline runs toward neighbour d (DX8/DY8). */
+  readonly links: Uint8Array;
+  private water: ArrayLike<number> | null = null;
   bridges: BridgeCell[] = [];
   version = -1;
 
@@ -47,6 +58,7 @@ export class RoadField {
     this.dirt = new Float32Array(this.tw * this.th);
     this.cobble = new Float32Array(this.tw * this.th);
     this.junc = new Float32Array(this.tw * this.th);
+    this.links = new Uint8Array(w * h);
     this.data = new Uint8Array(this.tw * this.th * 4);
     this.texture = new DataTexture(this.data, this.tw, this.th, RGBAFormat, UnsignedByteType);
     this.texture.magFilter = LinearFilter;
@@ -70,6 +82,8 @@ export class RoadField {
     this.dirt.fill(ROAD_MAXD);
     this.cobble.fill(ROAD_MAXD);
     this.junc.fill(ROAD_MAXD);
+    this.links.fill(0);
+    this.water = t.water;
     const roads = st.roads;
     const isRoad = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && roads[y * w + x]! > 0 && occ[y * w + x] === -1;
     const nb: number[] = [];
@@ -88,6 +102,7 @@ export class RoadField {
             if (occ[y * w + nx] !== -1 || occ[ny * w + x] !== -1) continue;
           }
           nb.push(d);
+          this.links[c]! |= 1 << d;
         }
         const cx = (x + 0.5) * CELL, cz = (y + 0.5) * CELL;
         if (nb.length === 2) {
@@ -132,6 +147,110 @@ export class RoadField {
     }
     this.texture.needsUpdate = true;
     this.version = st.netVersion;
+  }
+
+  /**
+   * The point a wagon at fraction `f` of the edge a -> b (adjacent cells) is drawn at, on the same
+   * curve the road mask uses: through a degree-2 cell the centreline is the quadratic Bézier
+   * between its edge midpoints (control point = cell centre); junctions, dead ends, bridges and
+   * links the mask does not draw stay straight. Tangent points from a toward b. Render-only.
+   */
+  pointOnEdge(a: number, b: number, f: number, out: RoadPoint): RoadPoint {
+    if (f < 0.5) {
+      this.cellPoint(a, b, f, out);
+    } else {
+      this.cellPoint(b, a, 1 - f, out);
+      out.tx = -out.tx; out.tz = -out.tz;
+    }
+    return out;
+  }
+
+  /** Where a wagon standing at node `c` is drawn (on the curve through a degree-2 cell). */
+  nodePoint(c: number, out: RoadPoint): RoadPoint {
+    const w = this.w, m = this.links[c]!;
+    const x = c % w, y = (c - x) / w;
+    let N = c;
+    for (let d = 0; d < 8; d++) if (m & (1 << d)) { N = (y + DY8[d]!) * w + x + DX8[d]!; break; }
+    this.cellPoint(c, N, 0, out);
+    return out;
+  }
+
+  /** Point at `t` (0..0.5 of the centre-to-centre edge) from cell X's centre toward neighbour N; tangent toward N. */
+  private cellPoint(X: number, N: number, t: number, out: RoadPoint): void {
+    const w = this.w;
+    const x = X % w, y = (X - x) / w, nx = N % w, ny = (N - nx) / w;
+    const ddx = nx - x, ddy = ny - y;
+    const cx = (x + 0.5) * CELL, cz = (y + 0.5) * CELL;
+    const bx = cx + ddx * CELL * 0.5, bz = cz + ddy * CELL * 0.5;
+    let dN = -1;
+    for (let d = 0; d < 8; d++) if (DX8[d] === ddx && DY8[d] === ddy) { dN = d; break; }
+    const m = this.links[X]!;
+    let other = -1;
+    if (dN >= 0 && m & (1 << dN) && !(this.water && this.water[X])) {
+      let n = 0;
+      for (let d = 0; d < 8; d++) if (m & (1 << d)) { n++; if (d !== dN) other = d; }
+      if (n !== 2) other = -1;
+    }
+    if (other < 0) {
+      const k = t * 2;
+      out.x = cx + (bx - cx) * k;
+      out.z = cz + (bz - cz) * k;
+      const l = Math.hypot(bx - cx, bz - cz) || 1;
+      out.tx = (bx - cx) / l; out.tz = (bz - cz) / l;
+      return;
+    }
+    const ax = cx + DX8[other]! * CELL * 0.5, az = cz + DY8[other]! * CELL * 0.5;
+    const u = 0.5 + t, iu = 1 - u;
+    out.x = iu * iu * ax + 2 * iu * u * cx + u * u * bx;
+    out.z = iu * iu * az + 2 * iu * u * cz + u * u * bz;
+    const gx = iu * (cx - ax) + u * (bx - cx), gz = iu * (cz - az) + u * (bz - cz);
+    const l = Math.hypot(gx, gz) || 1;
+    out.tx = gx / l; out.tz = gz / l;
+  }
+
+  /**
+   * Walk `dist` metres back along the drawn road from cell `at`, leaving it against the
+   * direction (hx, hz) (the way a waiting wagon faces). Returns the point and the tangent
+   * pointing toward `at` (the queue's facing). Stops at a dead end.
+   */
+  walkBack(at: number, hx: number, hz: number, dist: number, out: RoadPoint): RoadPoint {
+    const w = this.w;
+    let X = at, prev = -1;
+    // desired direction of travel (away from the head of the queue)
+    let vx = -hx, vz = -hz;
+    let left = dist;
+    this.cellPoint(X, X, 0, out); // centre (straight case)
+    for (let guard = 0; guard < 64; guard++) {
+      const m = this.links[X]!;
+      const x = X % w, y = (X - x) / w;
+      let best = -1, bestDot = -2;
+      for (let d = 0; d < 8; d++) {
+        if (!(m & (1 << d))) continue;
+        const N = (y + DY8[d]!) * w + x + DX8[d]!;
+        if (N === prev) continue;
+        const l = Math.hypot(DX8[d]!, DY8[d]!);
+        const dot = (DX8[d]! * vx + DY8[d]! * vz) / l;
+        if (dot > bestDot) { bestDot = dot; best = d; }
+      }
+      // (at the head node any link will do: a queue lines up along the road, never into a yard)
+      if (best < 0) break;
+      const N = (y + DY8[best]!) * w + x + DX8[best]!;
+      const len = CELL * (best >= 4 ? Math.SQRT2 : 1);
+      if (left <= len) {
+        this.pointOnEdge(X, N, left / len, out);
+        out.tx = -out.tx; out.tz = -out.tz;
+        return out;
+      }
+      left -= len;
+      this.pointOnEdge(X, N, 1, out);
+      vx = out.tx; vz = out.tz;
+      prev = X; X = N;
+    }
+    // dead end: continue straight past the last point
+    const tx = -vx, tz = -vz;
+    out.x -= tx * left; out.z -= tz * left;
+    out.tx = tx; out.tz = tz;
+    return out;
   }
 
   private segment(f: Float32Array, ax: number, az: number, bx: number, bz: number): void {

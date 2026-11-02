@@ -1,13 +1,25 @@
 // Trees from terrain.forest density: instanced full models near the camera, cross-quad
 // billboards (atlas baked from the same models) further away and on the apron hills.
 // Placement is deterministic per cell and skips water, fields, buildings and roads.
-import { InstancedMesh, Matrix4, type Material, Quaternion, Vector3, type WebGLRenderer } from 'three';
+import {
+  CustomBlending,
+  DstColorFactor,
+  InstancedMesh,
+  Matrix4,
+  type Material,
+  PlaneGeometry,
+  Quaternion,
+  ShaderMaterial,
+  Vector3,
+  type WebGLRenderer,
+  ZeroFactor,
+} from 'three';
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { rng, vnoise } from './models/kit';
 import { modelMaterial } from './models/materials';
-import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, type TreeKind } from './models/trees';
+import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, type TreeKind } from './models/trees';
 import type { RoadField } from './roads';
 import { apronHeight } from './terrain';
 
@@ -17,6 +29,46 @@ interface Tree {
   z: number;
   kind: number;
   m: Matrix4;
+  /** Contact-shadow decal under a far card (flat, crown-sized). */
+  blob: Matrix4;
+}
+
+// Soft contact shadow under far-tree cards: a flat quad multiplied onto the ground (darkening
+// toward its centre), so a distant clump reads as standing on the meadow. Unlit, no depth write;
+// fades out with distance where the fog takes over.
+const BLOB_VERT = /* glsl */ `
+varying vec2 vP;
+varying float vFar;
+void main() {
+  vP = position.xy;
+  vec4 wp = modelMatrix * instanceMatrix * vec4(position.x, 0.0, -position.y, 1.0);
+  vFar = distance(cameraPosition, wp.xyz);
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+const BLOB_FRAG = /* glsl */ `
+varying vec2 vP;
+varying float vFar;
+void main() {
+  float r = length(vP);
+  float a = 1.0 - smoothstep(0.15, 1.0, r);
+  a *= a * (1.0 - smoothstep(320.0, 700.0, vFar));
+  gl_FragColor = vec4(vec3(1.0 - 0.5 * a), 1.0);
+}`;
+
+function blobMaterial(): ShaderMaterial {
+  return new ShaderMaterial({
+    vertexShader: BLOB_VERT,
+    fragmentShader: BLOB_FRAG,
+    transparent: true,
+    depthWrite: false,
+    blending: CustomBlending,
+    blendSrc: DstColorFactor,
+    blendDst: ZeroFactor,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+    fog: false,
+  });
 }
 
 const _q = new Quaternion();
@@ -30,6 +82,11 @@ export class VegetationView {
   private apron: Tree[] = [];
   private near: InstancedMesh[][] = [];
   private far: InstancedMesh[] = [];
+  /** Contact shadows under far cards (one draw call; off in low quality). */
+  private blobs: InstancedMesh | null = null;
+  private blobGeo = new PlaneGeometry(2, 2);
+  private blobMat = blobMaterial();
+  private blobsOn = true;
   private lastX = Infinity;
   private lastZ = Infinity;
   private lastR = 0;
@@ -47,6 +104,8 @@ export class VegetationView {
 
   setShadows(on: boolean): void {
     this.castShadows = on;
+    // the contact-shadow decals belong to the shadowed (high/ultra) look; low stays as cheap
+    if (this.blobsOn !== on) { this.blobsOn = on; this.lastX = Infinity; }
     for (const l of this.near) for (const m of l) m.castShadow = on;
     for (const m of this.far) m.castShadow = on;
   }
@@ -56,8 +115,15 @@ export class VegetationView {
     // (re)allocate instanced meshes sized to the counts
     for (const l of this.near) for (const m of l) { this.group.remove(m); m.dispose(); }
     for (const m of this.far) { this.group.remove(m); m.dispose(); }
+    if (this.blobs) { this.group.remove(this.blobs); this.blobs.dispose(); }
     this.near = [];
     this.far = [];
+    this.blobs = new InstancedMesh(this.blobGeo, this.blobMat, Math.max(1, this.trees.length + this.apron.length));
+    this.blobs.count = 0;
+    this.blobs.name = 'tree-blob';
+    this.blobs.renderOrder = 1;
+    this.blobs.frustumCulled = false;
+    this.group.add(this.blobs);
     TREE_KINDS.forEach((kind, k) => {
       const n = this.trees.filter((t) => t.kind === k).length;
       const na = this.apron.filter((t) => t.kind === k).length;
@@ -77,6 +143,7 @@ export class VegetationView {
       fm.count = 0;
       fm.castShadow = this.castShadows;
       fm.receiveShadow = true;
+      fm.customDepthMaterial = billboardDepthMaterial();
       fm.name = `tree-bb-${kind}`;
       this.group.add(fm);
       this.far.push(fm);
@@ -98,6 +165,8 @@ export class VegetationView {
     const rb2 = rb * rb;
     const counts = new Int32Array(TREE_KINDS.length);
     const fcounts = new Int32Array(TREE_KINDS.length);
+    const blobs = this.blobsOn ? this.blobs : null;
+    let nb = 0;
     const cy = camPos.y;
     for (const t of this.trees) {
       const ddx = t.x - camPos.x, ddy = t.y - cy, ddz = t.z - camPos.z;
@@ -108,9 +177,18 @@ export class VegetationView {
         for (const m of list) m.setMatrixAt(i, t.m);
       } else {
         this.far[t.kind]!.setMatrixAt(fcounts[t.kind]!++, t.m);
+        if (blobs) blobs.setMatrixAt(nb++, t.blob);
       }
     }
-    for (const t of this.apron) this.far[t.kind]!.setMatrixAt(fcounts[t.kind]!++, t.m);
+    for (const t of this.apron) {
+      this.far[t.kind]!.setMatrixAt(fcounts[t.kind]!++, t.m);
+      if (blobs) blobs.setMatrixAt(nb++, t.blob);
+    }
+    if (this.blobs) {
+      this.blobs.count = nb;
+      this.blobs.visible = nb > 0;
+      if (nb) this.blobs.instanceMatrix.needsUpdate = true;
+    }
     TREE_KINDS.forEach((_k, i) => {
       for (const m of this.near[i]!) {
         m.count = counts[i]!;
@@ -129,13 +207,19 @@ export class VegetationView {
   dispose(): void {
     for (const l of this.near) for (const m of l) m.dispose();
     for (const m of this.far) m.dispose();
+    this.blobs?.dispose();
+    this.blobGeo.dispose();
+    this.blobMat.dispose();
   }
 }
 
 function makeTree(x: number, y: number, z: number, kind: number, rot: number, scale: number): Tree {
   _q.setFromAxisAngle(_up, rot);
   const m = new Matrix4().compose(_v.set(x, y - 0.15, z), _q, _s.set(scale, scale * (0.9 + Math.abs((x * 13.7 + z * 7.1) % 1) * 0.2), scale));
-  return { x, y, z, kind, m };
+  // contact shadow: shrubs a full crown wide, trees a pool around the trunk foot
+  const r = TREE_SIZE[TREE_KINDS[kind]!].radius * scale * (TREE_KINDS[kind] === 'bush' ? 1.1 : 0.7);
+  const blob = new Matrix4().compose(_v.set(x, y + 0.05, z), _q, _s.set(r, 1, r));
+  return { x, y, z, kind, m, blob };
 }
 
 const K = (k: TreeKind) => TREE_KINDS.indexOf(k);
@@ -191,12 +275,27 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
   const blocked = (i: number) => !!(t.water[i] || t.field[i] || occ[i] !== -1 || st.roads[i] || yard[i]);
   const fd = cellDistance(W, H, (i) => t.forest[i]! > 0.3, 8);
   const rd = cellDistance(W, H, (i) => st.roads[i]! > 0 || occ[i] !== -1, 8);
+  /** Is (px, pz) at least `need` metres from every tilled field cell? */
+  const fieldClear = (px: number, pz: number, need: number): boolean => {
+    const cx = Math.floor(px / CELL), cz = Math.floor(pz / CELL), rr = Math.ceil(need / CELL);
+    for (let y = cz - rr; y <= cz + rr; y++) for (let x = cx - rr; x <= cx + rr; x++) {
+      if (x < 0 || y < 0 || x >= W || y >= H || !t.field[y * W + x]) continue;
+      const dx = Math.max(x * CELL - px, 0, px - (x + 1) * CELL), dz = Math.max(y * CELL - pz, 0, pz - (y + 1) * CELL);
+      if (dx * dx + dz * dz < need * need) return false;
+    }
+    return true;
+  };
   const put = (px: number, pz: number, kind: number, scale: number, rot: number) => {
-    const clear = (kind === K('bush') ? 1.9 : 2.6) + TREE_SIZE[TREE_KINDS[kind]!].radius * scale * 0.35;
+    const bush = kind === K('bush');
+    const crown = TREE_SIZE[TREE_KINDS[kind]!].radius * scale;
+    // shrubs keep their whole crown off the track and its verge; trees may overhang a little
+    const clear = bush ? Math.min(5.8, 2.7 + crown * 0.8) : 2.6 + crown * 0.35;
     if (roads.distAt(px, pz) < clear) return;
     if (!hf.inside(px, pz)) return;
     const cx = Math.floor(px / CELL), cz = Math.floor(pz / CELL);
     if (blocked(cz * W + cx)) return;
+    // nothing grows out over ploughed soil: shrubs keep their crown off it, trees their trunk
+    if (!fieldClear(px, pz, bush ? crown * 0.75 : 1.6)) return;
     const py = hf.height(px, pz);
     if (py < hf.waterLevel + (kind === K('bush') ? 0.3 : 0.45)) return;
     out.push(makeTree(px, py, pz, kind, rot, scale));
@@ -221,12 +320,14 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
         // understorey shrubs thicken toward the edge of the wood
         if (f < 0.6 && r() < 0.9 - f) bushes(x, y, 1 + (r() < 0.5 ? 1 : 0), r);
       } else {
-        // scrub belt: shrubs and young trees thinning out away from the forest
+        // scrub belt: shrubs and young trees thinning out away from the forest, in clumps
+        // (noise-gated) rather than an even sprinkle over the meadow
         const d = fd[i]!;
-        if (d < 4.5) {
-          const p = Math.pow(1 - d / 4.5, 1.4);
-          if (r() < p * 0.95) bushes(x, y, 1 + (r() < p ? 1 : 0) + (r() < p * 0.5 ? 1 : 0), r, 0.6);
-          if (r() < p * 0.35) put((x + 0.2 + r() * 0.6) * CELL, (y + 0.2 + r() * 0.6) * CELL, r() < 0.6 ? K('birch') : y < 22 ? K('spruce') : K('pine'), 0.55 + r() * 0.3, r() * 6.28);
+        if (d < 3.5) {
+          const p = Math.pow(1 - d / 3.5, 1.4);
+          const clump = vnoise(x / 3, y / 3, 2.5, 85) + p * 0.45;
+          if (clump > 0.62 && r() < p + 0.25) bushes(x, y, 1 + (r() < p ? 1 : 0) + (r() < p * 0.5 ? 1 : 0), r, 0.6);
+          if (clump > 0.55 && r() < p * 0.35) put((x + 0.2 + r() * 0.6) * CELL, (y + 0.2 + r() * 0.6) * CELL, r() < 0.6 ? K('birch') : y < 22 ? K('spruce') : K('pine'), 0.55 + r() * 0.3, r() * 6.28);
         }
         // hedgerow along field edges, with gaps
         const fieldN = (x > 0 && t.field[i - 1]) || (x < W - 1 && t.field[i + 1]) || (y > 0 && t.field[i - W]) || (y < H - 1 && t.field[i + W]);
@@ -248,7 +349,7 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
   const G = 12;
   for (let by = 0; by < H; by += G) for (let bx = 0; bx < W; bx += G) {
     const r = rng((by * 131 + bx) * 7 + 99);
-    if (r() > 0.55) continue;
+    if (r() > 0.42) continue;
     const cx = bx + Math.floor(r() * G), cy = by + Math.floor(r() * G);
     if (cx >= W || cy >= H) continue;
     const ci = cy * W + cx;
@@ -261,9 +362,10 @@ function placeTrees(world: World, hf: Heightfield, roads: RoadField): Tree[] {
       const q = r();
       put(ox + Math.cos(a) * d, oz + Math.sin(a) * d, q < 0.5 ? K('oak') : q < 0.88 ? K('birch') : K('pine'), 0.65 + r() * 0.45, r() * 6.28);
     }
-    const nB = 4 + Math.floor(r() * 6);
+    // a tight rim of shrubs hugging the copse, not a scatter around it
+    const nB = 3 + Math.floor(r() * 4);
     for (let k = 0; k < nB; k++) {
-      const a = r() * 6.28, d = spread * (0.7 + r() * 0.6);
+      const a = r() * 6.28, d = spread * (0.65 + r() * 0.35);
       put(ox + Math.cos(a) * d, oz + Math.sin(a) * d, K('bush'), 0.6 + r() * 0.6, r() * 6.28);
     }
   }
@@ -281,7 +383,9 @@ function placeApron(hf: Heightfield): Tree[] {
       const px = x + r() * S, pz = z + r() * S;
       if (hf.inside(px, pz)) continue;
       const north = pz < 60;
-      const dens = north ? 0.8 : 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(px * 0.021 + Math.cos(pz * 0.017) * 3));
+      // groves with open ground between them (no even sprinkle of lone trees on the hills)
+      const grove = 0.5 + 0.5 * Math.sin(px * 0.021 + Math.cos(pz * 0.017) * 3);
+      const dens = north ? 0.8 : grove > 0.55 ? 0.3 + 0.55 * (grove - 0.55) / 0.45 : 0.03;
       if (r() > dens) continue;
       const y = apronHeight(hf, px, pz);
       if (y < hf.waterLevel + 0.6) continue;

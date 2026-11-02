@@ -1530,3 +1530,17 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .ms-hist .lg-dots { flex: 1; min-width: 16px; border-bottom: 1.5px dotted rgb(74 72 67 / .55); transform: translateY(-4px); }
 .ms-hist .mh-t { font-weight: 700; }
 .ms-hist .mh-t.is-not { font-weight: 400; color: var(--ink-soft); font-style: italic; }
+
+/* short landscape screens: seven entries no longer fit one column — two columns on a wider strip */
+@media (max-height: 520px) and (min-width: 640px) {
+  body.mode-menu:not(.is-flex) .menu-strip { width: min(600px, 68vw); padding-top: calc(var(--safe-t) + 18px); padding-bottom: 24px; }
+  body.mode-menu:not(.is-flex) .menu-strip .title { font-size: 40px; }
+  body.mode-menu:not(.is-flex) .menu-strip .rule { margin: 10px 0 2px; }
+  body.mode-menu:not(.is-flex) .menu-list { columns: 2; column-gap: 22px; }
+  body.mode-menu:not(.is-flex) .menu-list li { break-inside: avoid; }
+  body.mode-menu:not(.is-flex) .menu-item { font-size: 21px; min-height: 52px; padding: 5px 0; }
+}
+body.build-open .tool-caption { display: none !important; }
+/* Flex mode on the Fold: the middle column is narrow — card, actions and hint stack */
+body.is-flex.build-placing .build-shelf { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "actions" "hint"; }
+body.is-flex.build-placing .pb-actions .btn { flex: 1; }

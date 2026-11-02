@@ -218,7 +218,7 @@ class View implements WorldView {
       this.cover = new GroundCover(hf);
       this.worldGroup.add(this.cover.group);
       this.buildings = new BuildingsView(hf);
-      this.wagons = new WagonsView(hf);
+      this.wagons = new WagonsView(hf, this.roads);
       this.worldGroup.add(this.terrain.group, this.water.mesh, this.water.mist, this.buildings.group, this.wagons.group);
       if (this.renderer && !this.baked) { this.vegetation.bake(this.renderer); this.baked = true; }
       this.applyQuality();
@@ -333,7 +333,9 @@ class View implements WorldView {
     (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
     tu.uTraffic!.value = this.overlayMode === 'traffic' ? 1 : 0;
-    this.water!.update(this.time, this.rain, env.mist * (this.menu ? 1 : 0.85));
+    // morning mist thins out at close zoom so the river stays dark and clear up close
+    const mistZoom = this.menu ? 1 : 0.85 * (0.3 + 0.7 * Math.min(1, Math.max(0, (dist - 30) / 90)));
+    this.water!.update(this.time, this.rain, env.mist * mistZoom);
     const wu = this.water!.material.uniforms;
     wu.uLight!.value = env.light;
     (wu.uSkyH!.value as Color).copy(env.skyH);

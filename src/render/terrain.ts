@@ -436,16 +436,23 @@ const FRAG_MAIN = /* glsl */ `
 #else
   float eN = (nzS.a - 0.5) * 0.7 + (texture(tNoise, wxz / 2.7 + 0.47).b - 0.5) * 0.45 * (1.0 - smoothstep(0.05, 0.2, fw));
 #endif
+  // 0 close up .. 1 at mid/far zoom (metres per pixel): the road turns into one worn, darker
+  // mud track with a lighter trampled verge, so it stays the most legible line in the frame
+  float farK = smoothstep(0.07, 0.4, fw);
+  eN *= 1.0 - 0.6 * farK;
   // width varies along the road; a bit wider where it is worn at junctions
-  float halfW = 1.85 + (nzM.a - 0.5) * 0.9 + jn * 1.1;
-  // at far zoom keep roads at least a couple of pixels wide (they are the drawing)
-  float grow = clamp(fw * 1.6 - 0.4, 0.0, 2.5);
-  float wDirt = 1.0 - smoothstep(halfW - 0.35 + eN + grow, halfW + 0.45 + eN + grow, dD);
-  float wCob = 1.0 - smoothstep(1.95 + eN * 0.3 + grow, 2.25 + eN * 0.3 + grow, dC);
+  float halfW = 1.85 + (nzM.a - 0.5) * 0.9 * (1.0 - 0.5 * farK) + jn * 1.1;
+  // at far zoom keep roads a few pixels wide (they are the drawing); the field holds 6 m
+  float grow = min(farK * (0.35 + fw * 0.9), 1.9);
+  float wDirt = 1.0 - smoothstep(halfW - 0.35 + eN + grow, halfW + 0.45 + eN + grow + fw * 0.6, dD);
+  float wCob = 1.0 - smoothstep(1.95 + eN * 0.3 + grow, 2.25 + eN * 0.3 + grow + fw * 0.6, dC);
   float roadCover = max(wDirt, wCob);
-  // trampled, browned verge just outside the track
-  float verge = (1.0 - smoothstep(halfW + 0.2 + grow, halfW + 1.6 + grow, dD)) * (1.0 - wDirt);
-  A = mix(A, A * vec3(0.92, 0.86, 0.76), verge * 0.6);
+  // trampled verge just outside the track: browned close up, a pale dry-grass rim from afar
+  float vergeW = mix(1.4, max(1.4, fw * 2.2), farK);
+  float verge = (1.0 - smoothstep(halfW + 0.2 + grow, halfW + 0.2 + grow + vergeW, max(dD, 0.0))) * (1.0 - wDirt);
+  verge = max(verge, (1.0 - smoothstep(2.1 + grow, 2.1 + grow + vergeW, dC)) * (1.0 - wCob) * farK);
+  vec3 vergeTint = mix(vec3(0.92, 0.86, 0.76), vec3(1.3, 1.22, 0.98), farK);
+  A = mix(A, A * vergeTint, verge * mix(0.6, 0.75, farK));
   vec3 bumpW = vec3(0.0);
   if (wDirt > 0.003 && hW > -0.2) {
     MUD(1.0)
@@ -453,6 +460,8 @@ const FRAG_MAIN = /* glsl */ `
     // worn centre/hoof line and wheel lanes merge into one track when far
     float wear = 1.0 - smoothstep(0.4, 1.6, dD);
     a2 *= mix(0.92, 0.84, wear * (1.0 - rutK));
+    // from afar: one dark, wet-looking worn track (Błoto), darkest along the wheel lanes
+    a2 *= mix(vec3(1.0), vec3(0.62, 0.57, 0.51) - 0.08 * wear, farK);
     a2 *= (0.88 + 0.24 * nzP.g) - 0.24 * rut;
     ro2.x = mix(ro2.x, 0.55, rut * 0.5);
     // grass strip between the ruts, only close up and patchy
@@ -481,7 +490,8 @@ const FRAG_MAIN = /* glsl */ `
   }
   if (wCob > 0.003 && hW > -0.2) {
     sampleLayer(4.0, uv, 1.6, a2, n2, ro2);
-    a2 *= 1.0 - 0.2 * uWet;
+    // cobbles read lighter than the meadow, more so from afar
+    a2 *= mix(1.05, 1.3, farK) * (1.0 - 0.2 * uWet);
     ro2.x = mix(ro2.x, 0.35, uWet * 0.8);
     BLEND(wCob, a2, n2, ro2);
   }

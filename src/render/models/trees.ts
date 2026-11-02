@@ -8,8 +8,8 @@
  *
  * Origin at the trunk base, unit scale ≈ a mature tree (spruce 15 m, pine 16 m, oak 12 m,
  * birch 11 m); vary per instance with a uniform scale of 0.7–1.2 and random Y rotation.
- * Far LOD: `treeBillboard(kind)` cross-quads textured from an atlas baked once at start-up with
- * `bakeTreeBillboards(renderer)`.
+ * Far LOD: `treeBillboard(kind)` camera-facing cards textured from an atlas baked once at
+ * start-up with `bakeTreeBillboards(renderer)`; they cast blob shadows (`billboardDepthMaterial`).
  */
 import {
   BufferAttribute,
@@ -23,7 +23,9 @@ import {
   LinearMipmapLinearFilter,
   Mesh,
   MeshBasicMaterial,
+  MeshDepthMaterial,
   OrthographicCamera,
+  RGBADepthPacking,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -300,8 +302,11 @@ const ATLAS_COLS = TREE_KINDS.length;
 const bbCache = new Map<TreeKind, ModelPart[]>();
 
 /**
- * Two crossed quads (4 triangles) sized to the tree, UV-mapped into the shared billboard atlas
- * column for `kind`. Material key `billboard`; call `bakeTreeBillboards` once to fill its map.
+ * One card (2 triangles) sized to the tree, UV-mapped into the shared billboard atlas column for
+ * `kind`. The `billboard` material swings it about its vertical axis to face the camera; it
+ * casts a soft blob (`billboardDepthMaterial`) instead of the card's silhouette. Vertex colour
+ * darkens toward the base so a card reads as a clump standing on the ground, not a floating
+ * leaf. Material key `billboard`; call `bakeTreeBillboards` once to fill its map.
  */
 export function treeBillboard(kind: TreeKind): ModelPart[] {
   const hit = bbCache.get(kind);
@@ -311,20 +316,19 @@ export function treeBillboard(kind: TreeKind): ModelPart[] {
   const col = TREE_KINDS.indexOf(kind);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], color: number[] = [], idx: number[] = [];
   const top = H * 1.05;
-  for (const ang of [0, Math.PI / 2]) {
-    const dx = Math.cos(ang) * (W / 2), dz = Math.sin(ang) * (W / 2);
-    const base = pos.length / 3;
-    const corners: [number, number, number, number][] = [[-dx, 0, -dz, 0], [dx, 0, dz, 1], [dx, top, dz, 1], [-dx, top, -dz, 0]];
-    for (const [x, y, z, u] of corners) {
-      pos.push(x, y - 0.2, z);
-      // soft "dome" normals so the card shades like a volume, not a flat sheet
-      const n = v3(x / (W / 2), 0.9 + y / top, z / (W / 2)).normalize();
-      nor.push(n.x, n.y, n.z);
-      uv.push((col + u) / ATLAS_COLS, y / top);
-      color.push(1, 1, 1);
-    }
-    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  const dx = W / 2;
+  const corners: [number, number, number][] = [[-dx, 0, 0], [dx, 0, 1], [dx, top, 1], [-dx, top, 0]];
+  for (const [x, y, u] of corners) {
+    pos.push(x, y - 0.2, 0);
+    // soft "dome" normals so the card shades like a volume, not a flat sheet
+    const n = v3(x / (W / 2), 0.9 + y / top, 0).normalize();
+    nor.push(n.x, n.y, n.z);
+    uv.push((col + u) / ATLAS_COLS, y / top);
+    // ground occlusion: shrubs darken a lot at the base, tall trees only around the trunk foot
+    const k = y > 0 ? 1 : kind === 'bush' ? 0.5 : 0.7;
+    color.push(k, k, k);
   }
+  idx.push(0, 1, 2, 0, 2, 3);
   const g = new BufferGeometry();
   g.setAttribute('position', new Float32BufferAttribute(pos, 3));
   g.setAttribute('normal', new Float32BufferAttribute(nor, 3));
@@ -335,6 +339,42 @@ export function treeBillboard(kind: TreeKind): ModelPart[] {
   const parts: ModelPart[] = [{ geometry: g, material: 'billboard' }];
   bbCache.set(kind, parts);
   return parts;
+}
+
+let bbDepth: MeshDepthMaterial | null = null;
+
+/**
+ * Shadow-pass material for far-tree cards (set as `customDepthMaterial`): the card turns to face
+ * the light and its alpha is read from a coarse mip of the atlas, so each far tree casts one
+ * soft, rounded blob instead of the hard cross of two cut-out cards.
+ */
+export function billboardDepthMaterial(): MeshDepthMaterial {
+  if (bbDepth) return bbDepth;
+  const m = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
+  m.name = 'billboard-depth';
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace(
+      '#include <begin_vertex>',
+      /* glsl */ `vec3 transformed = vec3(position);
+#ifdef USE_INSTANCING
+  // face the light: the shadow camera's backward axis (exact for the orthographic sun camera)
+  vec3 bbF = normalize(vec3(viewMatrix[0][2], 0.0, viewMatrix[2][2]) + vec3(1e-4, 0.0, 0.0));
+  vec3 bbR = vec3(bbF.z, 0.0, -bbF.x);
+  vec3 bbLR = normalize(transpose(mat3(instanceMatrix)) * bbR);
+  transformed = bbLR * position.x + vec3(0.0, position.y, 0.0);
+#endif`,
+    );
+    sh.fragmentShader = sh.fragmentShader.replace(
+      '#include <map_fragment>',
+      /* glsl */ `#ifdef USE_MAP
+  // blurred silhouette (coarse mip) -> one rounded blob per crown
+  diffuseColor.a = textureLod(map, vMapUv, 4.5).a * 1.7;
+#endif`,
+    );
+  };
+  m.customProgramCacheKey = () => 'billboard-depth-1';
+  bbDepth = m;
+  return m;
 }
 
 let atlas: WebGLRenderTarget | null = null;

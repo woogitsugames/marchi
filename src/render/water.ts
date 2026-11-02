@@ -72,6 +72,9 @@ void main() {
   vec3 body = mix(uShallow, uDeep, smoothstep(0.0, 1.0, d));
   body *= 0.9 + 0.2 * big.g;
   body *= uLight;
+  // close to the camera the surface is clearer: darker body, more of the bed shows through
+  float near = 1.0 - smoothstep(30.0, 140.0, distance(cameraPosition, vW));
+  body *= 1.0 - 0.3 * near;
   // current: streaks stretched along the flow (river runs roughly along +x)
   float st = texture2D(tNoise, vec2(p.x / 55.0 - uTime * 0.012, p.y / 5.0 + big.b * 0.6)).a;
   float streak = smoothstep(0.5, 0.9, st) * (1.0 - uRain * 0.6) * smoothstep(0.15, 0.5, vDepth);
@@ -82,7 +85,7 @@ void main() {
   float edge = smoothstep(0.02, 0.1, vDepth) * (1.0 - smoothstep(0.12, 0.32, vDepth));
   float brk = texture2D(tNoise, p / 6.0).r;
   col = mix(col, uSkyH * 0.62 * uLight, edge * smoothstep(0.45, 0.75, brk) * 0.45);
-  float alpha = smoothstep(0.0, 0.3, vDepth) * mix(0.62, 0.96, d);
+  float alpha = smoothstep(0.0, 0.3, vDepth) * mix(0.62, 0.96, d) * (1.0 - 0.3 * near * (1.0 - fres));
   gl_FragColor = vec4(col, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -123,7 +126,8 @@ void main() {
   float r = length(vUv);
   float soft = 1.0 - smoothstep(0.2, 1.0, r);
   float n = texture2D(tNoise, vW.xz / 37.0 + vec2(uTime * 0.004, vSeed)).a;
-  float camFade = smoothstep(18.0, 90.0, distance(cameraPosition, vW));
+  // thin out near the camera: mist is seen across the valley, not as a veil over the water at your feet
+  float camFade = smoothstep(35.0, 150.0, distance(cameraPosition, vW));
   float a = soft * soft * (0.3 + 0.9 * n) * uOpacity * 0.09 * camFade;
   gl_FragColor = vec4(uColor, a);
   #include <tonemapping_fragment>

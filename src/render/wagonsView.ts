@@ -1,7 +1,10 @@
 // Wagons: horse + wagon + driver + cargo, fully instanced (one InstancedMesh per part, shared
-// by up to MAX_WAGONS rigs). Positions interpolate between the previous and current sim tick,
-// heading is damped, wagons keep to the right of two-way roads (centred on one-lane wooden
-// bridges), wheels turn with the odometer, waiting wagons queue back from the node they wait at.
+// by up to MAX_WAGONS rigs). Positions interpolate between the previous and current sim tick;
+// the drawn position follows the smoothed road centreline of the road mask (RoadField
+// pointOnEdge: render-only, the sim position stays authoritative), heading aims at a point a
+// little further along that curve and is damped, wagons keep to the right of two-way roads when
+// meeting traffic (centred on one-lane wooden bridges), wheels turn with the odometer, waiting
+// wagons queue back along the drawn road from the node they wait at.
 import {
   BufferGeometry,
   Frustum,
@@ -21,9 +24,14 @@ import { CARGO_GOODS, type CargoGood, cargoSlots, cargoUnitParts } from './model
 import type { ModelPart } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { createHorseWalkMaterial, type HorseWalkMaterial, WAGON, wagonLod1, wagonModel } from './models/wagon';
+import type { RoadField, RoadPoint } from './roads';
 
 /** Lateral offset from the road centreline (keep right). */
 const LANE = 1.05;
+/** Heading aims this far ahead along the drawn road (≈ rear axle to the horse's shoulders). */
+const LOOKAHEAD = 2.4;
+/** Spacing of wagons queuing at one node. */
+const QUEUE_GAP = 8;
 
 interface Snap {
   id: number;
@@ -32,6 +40,8 @@ interface Snap {
   cx: number; cz: number; cy: number; codo: number;
   /** Edge direction of the current snapshot (unit, xz). */
   dx: number; dz: number;
+  /** Heading target of the current snapshot: toward a point LOOKAHEAD m further along the road. */
+  hx: number; hz: number;
   moving: boolean;
   bridge: boolean;
   /** 0 on a one-lane wooden bridge, 1 elsewhere. */
@@ -97,6 +107,8 @@ const _v = new Vector3();
 const _frustum = new Frustum();
 const _pm = new Matrix4();
 const _sphere = new Sphere(new Vector3(), 5);
+const _p: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
+const _q: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
 
 export class WagonsView {
   readonly group = new Group();
@@ -128,7 +140,7 @@ export class WagonsView {
   private homeVer = -1;
   private cells = [0, 0, 0, 0];
 
-  constructor(private readonly hf: Heightfield) {
+  constructor(private readonly hf: Heightfield, private readonly roads: RoadField) {
     const cap = MAX_WAGONS;
     const wm = wagonModel();
     this.body = new Parts(wm.body, cap, this.group, 'wagon-body');
@@ -178,7 +190,7 @@ export class WagonsView {
       let s = this.snaps.get(w.id);
       if (!s) {
         s = {
-          id: w.id, init: false, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1,
+          id: w.id, init: false, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
         };
         this.snaps.set(w.id, s);
@@ -191,10 +203,22 @@ export class WagonsView {
         const bx = A.x, bz = A.z;
         const len = edgeLength(t, w.at, w.next);
         const f = Math.min(1, w.edgeT / len);
-        s.cx = ax + (bx - ax) * f;
-        s.cz = az + (bz - az) * f;
         const l = Math.hypot(bx - ax, bz - az) || 1;
         s.dx = (bx - ax) / l; s.dz = (bz - az) / l;
+        // drawn on the road mask's curve; heading toward a point a little further along it
+        const p = this.roads.pointOnEdge(w.at, w.next, f, _p);
+        s.cx = p.x; s.cz = p.z;
+        const ahead = (1 - f) * l;
+        let q: RoadPoint;
+        if (LOOKAHEAD <= ahead) q = this.roads.pointOnEdge(w.at, w.next, f + LOOKAHEAD / l, _q);
+        else if (w.path.length) {
+          const n2 = w.path[0]!;
+          this.centre(world, n2, A);
+          const l2 = Math.hypot(A.x - bx, A.z - bz) || 1;
+          q = this.roads.pointOnEdge(w.next, n2, Math.min(1, (LOOKAHEAD - ahead) / l2), _q);
+        } else q = this.roads.pointOnEdge(w.at, w.next, 1, _q);
+        const hx = q.x - p.x, hz = q.z - p.z, hl = Math.hypot(hx, hz);
+        if (hl > 0.4) { s.hx = hx / hl; s.hz = hz / hl; } else { s.hx = p.tx; s.hz = p.tz; }
         const wa = t.water[w.at] === 1, wb = t.water[w.next] === 1;
         s.bridge = wa || wb;
         const ha = this.surf(world, w.at), hb = this.surf(world, w.next);
@@ -205,8 +229,8 @@ export class WagonsView {
         if (s.lane < 0) s.lane = 0;
         s.moving = true;
       } else {
-        this.centre(world, w.at, A);
-        s.cx = A.x; s.cz = A.z;
+        const p = this.roads.nodePoint(w.at, _p);
+        s.cx = p.x; s.cz = p.z;
         s.cy = this.surf(world, w.at);
         s.bridge = t.water[w.at] === 1;
         s.lane = s.bridge && world.state.roads[w.at] === 1 ? 0 : 1;
@@ -217,7 +241,7 @@ export class WagonsView {
       if (!s.init) {
         s.init = true;
         s.px = s.cx; s.pz = s.cz; s.py = s.cy; s.podo = s.codo;
-        s.heading = Math.atan2(s.dx, s.dz);
+        s.heading = Math.atan2(s.hx, s.hz);
         s.laneS = s.lane;
       }
     }
@@ -315,22 +339,26 @@ export class WagonsView {
       const odo = s.podo + (s.codo - s.podo) * a;
       // heading
       if (s.moving) {
-        const target = Math.atan2(s.dx, s.dz);
+        const target = Math.atan2(s.hx, s.hz);
         let d = target - s.heading;
         while (d > Math.PI) d -= 2 * Math.PI;
         while (d < -Math.PI) d += 2 * Math.PI;
         s.heading += d * kTurn;
       }
       s.laneS += (s.lane - s.laneS) * kLane;
-      const fx = Math.sin(s.heading), fz = Math.cos(s.heading);
+      let fx = Math.sin(s.heading), fz = Math.cos(s.heading);
       let hidden = false;
       if (!s.moving) {
         const k = this.stack.get(w.at) ?? 0;
         this.stack.set(w.at, k + 1);
         if (k > 0) {
-          // queue back along the approach direction
-          x -= fx * k * 8;
-          z -= fz * k * 8;
+          // queue back along the drawn road, facing the node waited at
+          const p = this.roads.walkBack(w.at, fx, fz, k * QUEUE_GAP, _p);
+          x = p.x; z = p.z;
+          if (p.tx !== 0 || p.tz !== 0) {
+            fx = p.tx; fz = p.tz;
+            s.heading = Math.atan2(fx, fz);
+          }
         }
         if (w.status.k === 'IDLE' && home.has(w.at) && k >= 3) hidden = true;
       }
