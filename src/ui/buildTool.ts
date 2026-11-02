@@ -7,6 +7,7 @@
 import {
   BUILDINGS, canPlace, gateCell, lastUndoable, net, unlockRank, validatePlace,
   type BuildingType, type Command, type CommandError, type CommandResult, type World,
+  missionBuildable,
 } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
@@ -18,21 +19,15 @@ import { errorText } from './roadTool';
 /** How far above the finger the ghost's centre sits while dragging (CSS px ≈ dp). */
 export const GHOST_LIFT = 72;
 
-/** Contract missions that let the player build, and what (UI-side until missions carry a flag). */
-const MISSION_BUILDS: Record<string, BuildingType[]> = {
-  // VI: "a new granary by the mill" is one of the measured winning strategies (docs/missions/m6.md)
-  m6: ['warehouse'],
-};
-
 /** Building types the player may place in this world; empty = no build tool. */
 export function buildTypes(world: World): BuildingType[] {
-  const id = world.state.mission.id;
-  if (id === 'sandbox') {
+  const allowed = missionBuildable(world.state.mission.id);
+  if (allowed === 'ranked') {
     const all = (Object.keys(BUILDINGS) as BuildingType[]).filter((b) => unlockRank(b) >= 0);
     // shelf order: what is open now first, then by the rank that unlocks it (stable sort keeps chain order)
     return all.sort((a, b) => unlockRank(a) - unlockRank(b));
   }
-  return MISSION_BUILDS[id] ?? [];
+  return allowed;
 }
 
 export interface BuildHost {

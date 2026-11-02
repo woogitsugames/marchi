@@ -236,6 +236,6 @@ saves start trading) and `town`; contract missions run byte-identically apart fr
 m1–m6 after 10 min). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox after changes)
 
 **D-28 — Building inside contract missions is per mission.** Missions I–V hide the build tool; mission VI
-offers only the granary (its 3-seal strategy). Implemented UI-side as `MISSION_BUILDS` in `src/ui/buildTool.ts`
-for now; to move into `MissionDef.buildable` in the sim. Sandbox subtitle uses the new key `menu.valleySub`
+offers only the granary (its 3-seal strategy). Now data: `MissionDef.buildable` (sim), read via `missionBuildable(id)`
+(sandbox → 'ranked'). Sandbox subtitle uses the new key `menu.valleySub`
 ("Rozbuduj miasteczko, bez terminów"); the old `menu.sandboxSub` stays until translations are refreshed. (decided)

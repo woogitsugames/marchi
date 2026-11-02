@@ -104,6 +104,14 @@ export interface MissionDef {
   tranches?: TrancheDef[];
   /** The castle buys goods (default: open when there is no contract). Test maps close it. */
   market?: boolean;
+  /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
+  buildable?: BuildingType[];
+}
+
+/** Building types the player may place in a mission, or 'ranked' for the sandbox (rank gating applies). */
+export function missionBuildable(missionId: string): BuildingType[] | 'ranked' {
+  if (missionId === 'sandbox') return 'ranked';
+  return MISSIONS[missionId]?.buildable ?? [];
 }
 
 export const MISSIONS: Record<string, MissionDef> = {

@@ -12,7 +12,6 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 ## Do zrobienia
 - [ ] P2 — Render: `view.setPlacementGhost({type,x,y,facing,valid,badCell})` (półprzezroczysty model + obrys) i `view.cellToScreen(cell)` zamiast ~140 ray-marchów na klatkę w narzędziu Buduj; podgląd drogi dojazdowej przed postawieniem.
 - [ ] P3 — Buduj: po postawieniu niepodłączonego budynku nie zamykać narzędzia; podwójny przycisk Cofnij w układach bocznych.
-- [ ] P3 — Sim: pole `MissionDef.buildable?: BuildingType[]` zamiast `MISSION_BUILDS` w UI (D-28).
 - [ ] P2 — Tłumaczenia: ~100 kluczy z PENDING_KEYS dla 15 języków (paczka GPT 05).
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render); pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki.
 - [ ] P2 — (D-21) Tryb swobodny jako spokojny city builder: UI stawiania budynków (sim ma `place`; podgląd footprintu, brama, koszt, płaskość), sandbox bez terminu, więcej srebra/dochód z dostaw do zamku lub targu, zapis postępów; bez life-simu osadników.

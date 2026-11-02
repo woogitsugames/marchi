@@ -57,6 +57,8 @@ export const S2_MISSIONS: Record<'m4' | 'm5' | 'm6', MissionDef> = {
     rain: [],
   },
   m6: {
+    // VI: "a new granary by the mill" is one of the measured winning strategies (docs/missions/m6.md)
+    buildable: ['warehouse'],
     // Cramped granary: three farms out-produce the single mill and fill the small granary (20 units)
     // with grain. Between the two letters the sawmill has nowhere to put its planks and stops.
     // The large granary across the road is not connected yet.
