@@ -28,7 +28,7 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
 }
 
 test('m10: competing wood consumers and repair building are authored', () => {
-  eq(missionBuildable('m10').join(','), 'woodcutter', 'only woodcutter can be built');
+  eq(JSON.stringify(missionBuildable('m10')), '["woodcutter"]', 'only woodcutter can be built');
   const w = createWorld('m10');
   const kinds = w.state.buildings.map((b) => b.type);
   assert(kinds.includes('sawmill') && kinds.includes('charcoalBurner'), 'rival wood consumers');
@@ -53,7 +53,7 @@ test('m11: long farm-to-malthouse haul competes for the same wagons', () => {
 });
 
 test('m12: full granary and connected alternative are different', () => {
-  eq(missionBuildable('m12').join(','), 'warehouse', 'extra granaries allowed');
+  eq(JSON.stringify(missionBuildable('m12')), '["warehouse"]', 'extra granaries allowed');
   const w = createWorld('m12');
   const granaries = w.state.buildings.filter((b) => b.type === 'warehouse');
   const small = granaries.find((b) => b.capOverride === 12)!;
@@ -82,6 +82,11 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
       eq(r.commandErrors.length, 0, r.strategy + ' commands: ' + r.commandErrors.join('; '));
       eq(r.invariantErrors.length, 0, r.strategy + ' invariants: ' + r.invariantErrors.join('; '));
     }
+    eq(runs.map((x) => x.seals).join('/'), '1/2/3', 'measured seal ladder');
+    for (const r of runs) {
+      eq(r.result, 'won', r.strategy + ': must finish the contract');
+      assert(r.minutes >= 5 && r.minutes <= 12, r.strategy + ': finish in 5-12 minutes');
+    }
     assert(runs[0]!.seals <= 1, 'no action <=1 seal: ' + JSON.stringify(runs.map((x) => [x.minutes, x.seals, x.result])));
     eq(runs[2]!.result, 'won', 'correct fix must win');
     assert(runs[2]!.minutes >= 5 && runs[2]!.minutes <= 12, 'correct fix is 5-12min: ' + runs[2]!.minutes);
@@ -90,5 +95,3 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
     assert(runs[2]!.seals >= runs[1]!.seals, 'correct repair earns at least as many seals as partial');
   });
 }
-
-
