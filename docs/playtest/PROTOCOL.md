@@ -1,10 +1,10 @@
-# Playtest MARCHIA v2 — diagnoza w < 30 s, onboarding i nowe tryby
+# Playtest MARCHIA v2 — misje I–XII, Wolna dolina i HUD v3
 
-**Status:** protokół v2 do przeprowadzenia przez właściciela; **nie jest raportem z badań**. Nowe sceny są propozycjami badań, nie wynikami pomiarów.  
-**Badani:** 5–8 osób na kohortę, Android, **APK debug**. **Czas:** 25 min na dotychczasowy blok diagnostyczny A; moduły v2 realizuj w osobnym bloku B (ok. 25–35 min) i opcjonalnym teście urządzeń składanych (10–15 min). Nie przedstawiaj sumy modułów jako 25-minutowej sesji.  
-**Cel główny:** czy osoba bez pomocy prowadzącego poprawnie nazywa **rzeczywistą przyczynę** zastoju w mniej niż 30 sekund od pytania? Sprawdzamy osobno, czy potrafi otworzyć „Dlaczego stoi?”, przejść łańcuch przyczyn i zaproponować adekwatne działanie.
+**Status:** protokół badań, **nie wynik sesji**. Źródła prawdy (2026-11-02): `src/ui/app.ts`, `src/ui/menu.ts`, `src/ui/hud.ts`, `src/ui/layout.ts`, `src/sim/missions*.ts`, `src/sim/proposals/missions-*.ts`, `src/sim/defs.ts` i `src/sim/seasons.ts` na gałęzi `claude/eager-cori-08wt8e`; zweryfikuj w docelowym APK. URL `ff` to przyspieszenie symulacji, a **nie** gwarancja określonego zastoju.
 
-Podstawa implementacji (gałąź `claude/eager-cori-08wt8e`): `src/sim/missions.ts`, `src/sim/missions-proposed.ts`, `src/sim/missions-s2.ts`, `src/sim/types.ts`, `src/sim/town.ts`, `src/ui/tutorial.ts`, `src/ui/panels.ts`, `src/ui/menu.ts`, `src/ui/buildTool.ts`, `src/ui/marketSheet.ts`, `src/ui/layout.ts`, `src/platform/save.ts`, `src/ui/app.ts` i narzędzia botów. **Źródłem prawdy jest kod oraz zweryfikowany stan w APK, nie starszy opis projektu; nie zakładaj, że hipotetyczne parametry/fixtury zostały wdrożone.**
+**5–8 uczestników, 30–40 minut na osobę**. Scenariusze rotują pomiędzy sesjami — nie da się rzetelnie sprawdzić wszystkich misji I–XII, Wolnej doliny, HUD, Fold/Flip i wydajności podczas jednej sesji. Pierwszy kontakt z samouczkiem i test diagnozy **bez** samouczka należą do odrębnych prób.
+
+**Główny cel diagnostyczny:** poprawna przyczyna zastoju bez pomocy w **ściśle mniej niż 30 s** od neutralnego pytania, z osobnym czasem na znalezienie karty „Najgorszy zastój” i użycie „Pokaż”. Rozumienie listu, transz, prognozy „Przy tym tempie”, planowania infrastruktury, ergonomii i wydajności ma oddzielne wskaźniki. Brak poprawnego preflightu = `invalid_setup=1`, a nie błąd gracza.
 
 ## 1. Rekrutacja, zgoda i organizacja
 
@@ -19,20 +19,28 @@ Nie zapraszaj osób, które widziały wcześniej te misje, projektowały interfe
 
 **Tekst zgody, przeczytany przed sesją:**
 
-> „Badamy grę, nie Ciebie. Sesja trwa około 25 minut. Możesz odmówić odpowiedzi lub przerwać ją w dowolnej chwili. Zapiszę anonimowy kod, czasy, liczbę dotknięć i krótkie uwagi; nie zapisuję Twoich danych osobowych. Nagranie ekranu/dźwięku wykonam tylko za Twoją osobną zgodą. Czy zgadzasz się na taki test?”
+> „Badamy grę, nie Ciebie. Sesja trwa około 30–40 minut. Możesz odmówić odpowiedzi lub przerwać ją w dowolnej chwili. Zapiszę anonimowy kod, czasy, liczbę dotknięć i krótkie uwagi; nie zapisuję Twoich danych osobowych. Nagranie ekranu/dźwięku wykonam tylko za Twoją osobną zgodą. Czy zgadzasz się na taki test?”
 
 Zanotuj `consent=yes`; gdy brak zgody, nie rozpoczynaj sesji i nie twórz wierszy z wynikami. Nagranie jest **opcjonalne**, osobna zgoda wymagana także na dźwięk/wypowiedzi. Przed sesją ustal termin usunięcia surowych notatek/nagrań (proponowane 30 dni po analizie); opublikuj tylko agregaty bez cytatów identyfikujących osobę.
 
-**Rozkład bloku A (25 minut, scenariusze S1–S6):**
-- **0:00–2:30:** zgoda, jedno neutralne objaśnienie sterowania mapą (przesuwanie/powiększanie), bez nauki diagnozy;
-- **2:30–20:30:** 6 scenariuszy × maks. 3 min (reset ~45 s, diagnoza do 60 s, omówienie i ewentualna akcja ~75 s);
-- **20:30–23:30:** 6 ocen w skali + 3 pytania otwarte;
-- **23:30–25:00:** uwagi i zakończenie.
+**Przebieg 30–40 minut na osobę (stany przygotowane przed wejściem uczestnika):**
 
-Ustal kolejność przed testem, żeby ograniczyć efekt nauki: dla osób nieparzystych `S1,S3,S4,S2,S5,S6`, dla parzystych `S3,S1,S2,S4,S6,S5`. Scenariusze i nazwy stanów **są wyłącznie dla prowadzącego** — nie pokazuj tabeli uczestnikowi.
+| Minuty | Czynność |
+| --- | --- |
+| 0–3 | Zgoda, kod P01–P08, urządzenie/Android, doświadczenie i neutralne pokazanie przesuwania/powiększania |
+| 3–9 | A: pierwszy S1/S3 bez tutoriala; B: list i T1 (musi być **pierwsze**); C: pierwszy niepodpowiadany przypadek m9–m12 |
+| 9–21 | 3–4 scenariusze z przydzielonej ścieżki: 60 s bez podpowiedzi + kontrolowany reset + ewentualna akcja |
+| 21–29 | H1–H4 + 1–2 wybrane zadania Wolnej doliny / dalszych misji, lub jeden test Fold/Flip |
+| 29–33 | P1: ×1/×4, odczuwalna płynność, krok konia, nagrzewanie |
+| 33–38 | Ankieta i 3 pytania otwarte; 38–40 min to bufor techniczny |
 
-**Bloki v2:** B1 (T1/T2 i S7–S9, do 25 min) oraz B2 (V1–V4, do 10 min); F1–F3 tylko na odpowiednim sprzęcie, osobno 10–15 min. Zrób przerwę po bloku A. Aby ocenić **pierwsze spotkanie** z samouczkiem, T1 wykonują osoby, które nie widziały jeszcze gry; po wykonaniu S1–S6 ten warunek nie jest spełniony. W praktyce przygotuj odrębną kohortę `onboarding` albo oznacz `prior_training=1` i raportuj takie próby oddzielnie. W B1 naprzemiennie stosuj kolejność `S7,S8,S9` i `S9,S7,S8`, nie zmieniając preflightów. Warianty sprzętowe zbieraj tylko u uczestników z dostępem do danego Fold/Flip; nie imputuj brakujących prób.
+**Rotacja ścieżek w grupie 5–8 osób:**
+- **A — `cohort=baseline`:** S1–S6, maks. 4 z nich w jednej sesji, naprzemiennie porządek `S1,S3,S4,S2,S5,S6` / `S3,S1,S2,S4,S6,S5`. H1/H2 i P1. `prior_training=0` przed pierwszym przypadkiem.
+- **B — `cohort=onboarding`:** T1 jako pierwsze, T2, S7–S11 (m4–m8), H1–H4 i wybrane V; po T1 `prior_training=1`. Nie scalaj wyników osoby już uczonej z baseline.
+- **C — `cohort=extended`:** S12–S15 (m9–m12), V1–V6 rotacyjnie i P1. Parę IX/X zrób w **przeciwnej kolejności** u następnej osoby, bez naprowadzania na podobieństwo.
+- **Sprzęt:** F0 na zwykłym telefonie, F1–F3 tylko na rzeczywistych Fold/Flip; wiersz z `not_run` w dzienniku nie jest niepowodzeniem gracza.
 
+Prowadzący tworzy przed sesjami tabelkę `P01–P08 → ścieżka + planowane sceny`, by każdą misję I–XII obejrzeć co najmniej raz. Przy `n=1–2` wyniki scen są jakościowe, nie dowodem skuteczności; dla każdej sceny raportuj rzeczywisty mianownik i liczbę nieudanych preflightów. Jeśli stan nie wystąpi, zastąp go innym przygotowanym, nie wytwarzaj „błędu” uczestnika.
 
 ## 2. Przygotowanie APK i uruchamianie stanu
 
