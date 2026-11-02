@@ -31,8 +31,8 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       [[47, 37], [47, 40]],
       [[76, 40], [76, 41]],
     ],
-    contract: { planks: 54, charcoal: 10 },
-    deadlineMin: 12, star3Min: 7.5, star2Min: 9.5, rain: [],
+    contract: { planks: 48, charcoal: 8 },
+    deadlineMin: 12, star3Min: 9, star2Min: 10.5, rain: [],
   },
   m11: {
     id: 'm11', mapId: 'valley-m3', seed: M3_VALLEY.seed,
@@ -54,7 +54,7 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       [[81, 39], [81, 40]],
     ],
     contract: { beer: 26 },
-    deadlineMin: 12, star3Min: 10.5, star2Min: 11.3, rain: [],
+    deadlineMin: 12, star3Min: 10.75, star2Min: 11.55, rain: [],
   },
   m12: {
     id: 'm12', mapId: 'valley-m3', seed: M3_VALLEY.seed,

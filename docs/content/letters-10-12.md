@@ -13,7 +13,7 @@ otwierający oraz osobne listy końcowe dla 1/2/3 pieczęci i porażki.
 **PL — List otwierający:**
 
 > Kowal czeka na węgiel drzewny, a cieśle żądają desek. Potrzebujemy
-> 54 desek i 10 miar węgla przed dwunastą minutą.
+> 48 desek i 8 miar węgla przed dwunastą minutą.
 > Węglarz i tartak korzystają z drewna od tego samego drwala.
 > Gdy wóz obieca ładunek jednemu warsztatowi, drugi może zostać bez
 > surowca. Zajrzyj do przyczyny przestoju — „konkurencyjny odbiorca”
@@ -51,7 +51,7 @@ otwierający oraz osobne listy końcowe dla 1/2/3 pieczęci i porażki.
 **EN — Opening letter:**
 
 > The smith needs charcoal, and the carpenters require planks.
-> Deliver 54 planks and 10 units of charcoal before the twelfth minute.
+> Deliver 48 planks and 8 units of charcoal before the twelfth minute.
 > Both the charcoal burner and the sawmill depend on one woodcutter.
 > When a wagon reserves timber for one workshop, the other may
 > have no input. Read the stall explanation: “contested” means
