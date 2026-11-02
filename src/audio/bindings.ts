@@ -54,6 +54,7 @@ const WORK_SOUND: Partial<Record<Building['type'], readonly SoundId[]>> = {
   quarry: ['work.quarry', 'work.quarryRock'], fisher: ['work.fisher', 'work.fisherSplash'],
   charcoalBurner: ['work.charcoal'], malthouse: ['work.malt'], brewery: ['work.brewery'],
 };
+const WORK_REPEAT_TICKS = 25 * TICK_HZ;
 const ACTIVE_WAGON = new Set<Wagon['status']['k']>(['TO_PICKUP', 'TO_DROPOFF', 'RETURNING']);
 
 function cellPos(cell: number, camera: SimAudioCamera): PlayOptions {
@@ -123,6 +124,13 @@ export function observeSim(prevState: AudioSnapshot, state: Readonly<SimState>, 
         const ids = WORK_SOUND[b.type];
         // alternate variants per building and work cycle (audio only; the sim never sees this)
         if (ids) play(ids[(b.id + (state.tick >> 6)) % ids.length]!, p);
+      } else {
+        // a workshop that keeps working repeats its accent now and then (staggered per building),
+        // otherwise a busy quarry stays silent for minutes (audio-mix research 2026-11-02)
+        const ids = WORK_SOUND[b.type];
+        const off = b.id * 37;
+        // crossing test, not equality: at ×4 several ticks pass between two observations
+        if (ids && Math.floor((state.tick + off) / WORK_REPEAT_TICKS) !== Math.floor((prevState.tick + off) / WORK_REPEAT_TICKS)) play(ids[(b.id + (state.tick >> 6)) % ids.length]!, p);
       }
     }
     if (old && STALLED.has(b.status.k) && !STALLED.has(old.status)) stalledNow = true;
