@@ -234,3 +234,8 @@ granary, castle on the same bank (≈ 200 m haul, ~60 s each way). The old sandb
 appends `placedTick: -1`, `ledger.silverEarned/sold`, fresh `market` (open iff no contract: old free-valley
 saves start trading) and `town`; contract missions run byte-identically apart from the new fields (checked on
 m1–m6 after 10 min). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox after changes)
+
+**D-28 — Building inside contract missions is per mission.** Missions I–V hide the build tool; mission VI
+offers only the granary (its 3-seal strategy). Implemented UI-side as `MISSION_BUILDS` in `src/ui/buildTool.ts`
+for now; to move into `MissionDef.buildable` in the sim. Sandbox subtitle uses the new key `menu.valleySub`
+("Rozbuduj miasteczko, bez terminów"); the old `menu.sandboxSub` stays until translations are refreshed. (decided)
