@@ -11,14 +11,14 @@
 | 3 | **Misja II:** prawdziwy status `BRIDGE_JAM` po ruchu wozów przez drewniany most; panel wybranego wozu pokazuje oczekiwanie. | Odetkaj most, uwolnij dostawy | Clear the bridge, free deliveries | nie |
 | 4 | **Misja IV:** aktywne, rzeczywiste okno kry na rzece. Pokazać zamkniętą drewnianą przeprawę i realną planszę. | Kra zamyka drewniany most | River ice closes the wooden bridge | nie |
 | 5 | **Wolna dolina:** ranga osady w HUD, rzeczywisty otwarty targ, pory roku; trzy Księgi osad dokumentować osobnym kadrem pomocniczym, nie udawać ich obecności na scenie. | Wolna dolina. Targ i ranga | Free Valley. Market and rank | tak |
-| 6 | **Misja I:** autentyczny list kasztelana z pieczęcią; nie dodawać wymyślonych pieczęci ani podrabianych nagród. | List kasztelana i królewski kontrakt | A castellan's letter and contract | nie |
+| 6 | **Misja I po rzeczywistym zwycięstwie bota:** autentyczny końcowy list kasztelana z trzema miejscami na zdobyte pieczęcie. Nie przyznawać wymyślonych nagród ani nie ingerować w wynik. | List kasztelana i królewski kontrakt | A castellan's letter and contract | nie |
 
 ## Rozmiary i lokalizacje
 
 - **Google Play:** w każdym języku 6 PNG **1080 × 1920** i 2 PNG **1920 × 1080** (kadry 1 oraz 5).
 - **Google Play — grafika wyróżniająca:** **1024 × 500** w PL i EN; wycinek autentycznej sceny #1 z napisem „Marchia” i odpowiednio „Szlaki Królestwa” / „Roads of the Kingdom”.
 - **Apple App Store:** w każdym języku 6 PNG **1290 × 2796** (6,7 cala).
-- **Łącznie:** 30 plików PNG (15 PL i 15 EN), rozmiar sumaryczny nie większy niż **25 MiB**.
+- **Łącznie:** 30 plików PNG (15 PL i 15 EN), rozmiar sumaryczny nie większy niż **25 MB (25 000 000 bajtów)**.
 - Nazwy: `docs/store/shots/<lang>/<nr>-<szerokość>x<wysokość>.png`, np. `docs/store/shots/pl/03-1080x1920.png`. Dodatkowo `feature-1024x500.png`.
 - Ewidencja autentycznych scen, aktywnych okien i błędów: `docs/store/shots/manifest.json`.
 
@@ -35,7 +35,7 @@ node tools/store-shots-v2.mjs --lang=pl --shot=3 --orientation=portrait
 
 Skrypt uruchamia `npm run build` oraz własny `vite preview`, następnie wyświetla **faktyczne WebGL** i sprawdza warunki w stanie prawdziwej symulacji, zanim zapisze PNG. Nie nadpisuje statusów, poziomu osady, zasobów ani treści w UI. W misji II dokupuje dwa wozy istniejącą komendą gry, zgodnie z `tools/bot-m2.ts`.
 
-**Ciężar i jakość:** podpisy wykorzystują lokalne fonty gry (Grenze Gotisch + Alegreya Sans), a PNG są optymalizowane paletowo przez `sharp`; przekroczenie limitu 25 MiB przerywa zadanie. Bez makiet, ramek telefonów, „Welcome!” i strzałek-emoji. Przy miniaturze zweryfikować czytelność napisów.
+**Ciężar i jakość:** podpisy wykorzystują lokalne fonty gry (Grenze Gotisch + Alegreya Sans), a PNG są optymalizowane paletowo przez `sharp`; przekroczenie limitu 25 MB przerywa zadanie. Bez makiet, ramek telefonów, „Welcome!” i strzałek-emoji. Przy miniaturze zweryfikować czytelność napisów.
 
 ## QA i wiarygodność
 
