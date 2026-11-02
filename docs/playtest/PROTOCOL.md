@@ -290,6 +290,70 @@ W V1–V4 wpisuj `task_time_s` i `task_success`; w V4 również `save_ok`. `time
 
 **Preflight urządzeń:** `is-split` oznacza szeroki layout, **nie** dowód fizycznego zawiasu; `is-book` wymaga wykrycia pionowego segmentu, `is-flex` poziomego z dwiema częściami o wysokości >=200 CSS px, `is-mini` małego viewportu. Zapisz rzeczywiste klasy, orientację i źródło informacji o zawiasie (segments/CSS/natywne) lub `unsupported`. **Preflight F2:** rzeczywisty `document.body.classList.contains('is-flex') === true`; przy fałszu nie udawaj Flex i wpisz `invalid_setup=1` lub `device_unsupported` w `notes_no_pii`. Zapisuj `fold_state` (`cover|inner|book|flex|flip_cover`), `layout_ok`, `task_success`, liczbę błędnych dotknięć, niezamierzone komendy, ucięcia UI i konkretną sekwencję reprodukcji. **Nie** porównuj czasów z Fold/Flip do płaskich telefonów bez rozdzielenia typu ekranu.
 
+
+## 3E. Misje VII–XII (S10–S15): sprawdź, czy scenariusze uczą czegoś nowego
+
+**Ogólne przygotowanie:** `?play=m7` do `?play=m12` są obsługiwane w `src/ui/menu.ts` oraz `src/ui/app.ts`. `ff` poniżej to **kandydaci**, nie fixtury gwarantujące blokadę. Przed każdą diagnozą sprawdź `mission.result='running'`, status wozów i budynków, dostępność zasobów oraz kartę HUD. **Sceny planowania (S10, S11) nie muszą zawierać zastoju**, dlatego używaj w nich `task_success`, `task_time_s` i pól zrozumienia, nie wymyślonego `correct`.
+
+### S10 — VII: ryby, most i „Przy tym tempie”
+
+**Start:** `?play=m7&ff=120&speed=0&lang=pl&debug=1`, ewentualnie inny `ff` po kontroli. Misja zamawia **54 ryby** (termin 12:00), ma **jednego istniejącego rybaka**, **4 wozy**, jedną drewnianą przeprawę `x=51` i pozwala zbudować **rybaka**. `forecastFor(world,pace)` działa dla pojedynczego kontraktu (nie transzy), ale prognoza może nie być gotowa bez dostatecznych próbek tempa.
+
+**Preflight:** rybak i most istnieją, karta listu przewozowego lub zamku faktycznie pokazuje `Przy tym tempie: gotowe za …` albo spóźnienie (a nie pusty placeholder); jeżeli prognoza niegotowa, zmień `ff`/przygotowanie, odnotuj to jako `invalid_setup=1` dla testu prognozy.
+
+**Polecenie:** „Co będzie dostarczone, kiedy i co najbardziej ogranicza postęp?”. Zaliczenie `pace_seen=1` za samodzielne odnalezienie komunikatu, `pace_understood=1` za poprawne wyjaśnienie, że to **przewidywanie na podstawie dotychczasowego tempa**, a nie gwarantowany termin. Osobno oceń, czy gracz łączy liczbę rybaków, podaż i przeprawę oraz proponuje sensowną zmianę. Mierz `task_time_s` (maks. 120 s); `correct/time_s` tylko przy osobnym, zweryfikowanym zastoju.
+
+### S11 — VIII: bruk z kamienia **przed** burzą
+
+**Start:** `?play=m8&ff=60&speed=0&lang=pl&debug=1`. Deszcz zaczyna się przy **ticku 1000** (01:40 sim), `roadStone=true`, w mapie stoją kamieniołom `(57,7)` i spichlerz; 6 wozów, gracz może budować kamieniołom. Południowy gruntowy trakt będzie wolniejszy podczas deszczu.
+
+**Preflight:** jesteśmy przed opadem, sprawdź w magazynie `stock.stone` i w kartach faktyczną możliwość układania bruku. Kamień musi zostać **dostarczony do spichlerza**, nie wystarczy, że leży w kamieniołomie. Nie podpowiadaj narzędzia kamiennej nawierzchni.
+
+**Pytanie:** „Co przygotujesz przed zmianą pogody, żeby dostawy nie zwolniły?”. `road_stone_understood=1` za zrozumienie kosztu w kamieniu z magazynu; `task_success=1` za samodzielny poprawny plan bruku na ważnym odcinku. `task_time_s` i `issue_codes=STONE` przy rzeczywistym błędzie, bez wymogu rozgrywania całej burzy.
+
+### S12 — IX: wspólne drewno dla tartaku i węglarza
+
+**Start:** `?play=m9&ff=120&speed=0&lang=pl&debug=1`. Jeden drwal, tartak oraz węglarz konkurują o drewno; równolegle istnieje łańcuch piwa (słodownia, browar). Można postawić drugiego drwala. Kontrakt to 36 desek, 8 węgla i 26 piwa.
+
+**Preflight:** sprawdź `sharedInput(world, id)` albo potwierdzone `NO_INPUT/WAITING_UPSTREAM` z korzeniem niedostatecznej podaży; jeśli brak niedoboru, nie wymuszaj diagnozy. **Pytanie:** „Skąd bierze się opóźnienie w dostawie drewna do różnych zakładów?”. Poprawne: **jedno źródło i dwóch odbiorców**, a nie z definicji za mało wozów. Wpisz `correct/time_s` dla ważnej próby diagnozy, `action_correct`, czy proponuje dodatkowego drwala lub sensowne zwiększenie podaży.
+
+### S13 — X: czy gracz odczuwa powtórkę z IX?
+
+**Start:** `?play=m10&ff=120&speed=0&lang=pl&debug=1`. Tutaj **jeden drwal** ponownie obsługuje tartak i węglarza, ale **stajnia jest przy drwalu**, a 4 wozy w założeniu usuwają flotę jako główne ograniczenie; nie ma pobocznego łańcucha piwa. Kontrakt: 48 desek i 8 węgla. Istnieje podpowiedź **cienkich dostaw drewna** (`thinDelivery`).
+
+**Preflight:** problem leży w podaży drewna, nie w `NO_WAGON/ALL_BUSY`; sprawdź status i liczbę/ładunek wozów. **Polecenie:** „Co jest przyczyną, a co naprawisz w pierwszej kolejności?”. Rozpoznanie braku surowca i propozycja kolejnego drwala jest trafna; samo „kup więcej wozów” nie.
+
+**Pomiary porównawcze IX/X:** po **obu** próbach zapytaj neutralnie: „Czy druga sytuacja nauczyła Cię czegoś nowego? Czego konkretnie?”. `ix_x_new_lesson=1` tylko przy **konkretnym** nowym rozróżnieniu (np. wolna flota vs cienka dostawa / krótszy łańcuch), `0` gdy uczestnik uważa sytuację za powtórzenie. Zmień kolejność IX→X i X→IX u kolejnej osoby; nie uznawaj dwóch prób jednej osoby za niezależne wyniki. Raportuj cytaty, a nie ocenę projektanta.
+
+### S14 — XI: odległa słodownia (62 pola zboża)
+
+**Start:** `?play=m11&ff=120&speed=0&lang=pl&debug=1`. Farma `x=18`, słodownia `x=80`, browar `x=56`, tylko **3 wozy**. Długi odcinek przewozu zboża (~62 pól) jest zamierzonym ograniczeniem przepustowości. Nie można stawiać budynków (`buildable=[]`), kontrakt to 22 piwa.
+
+**Preflight:** droga jest ciągła, zboże istnieje, są trwające dalekie przewozy/oczekiwania; nie koduj wymyślonego `NO_ROAD`. **Pytanie:** „Czemu browar nie może szybko zakończyć produkcji, choć mamy zboże?”. Poprawne: daleki transport do słodowni i mała flota, a nie brak surowca lub konieczność budowy nowego browaru. Jeśli stan zawiera naprawdę `NO_WAGON/ALL_BUSY`, mierz `time_s/correct`; w przeciwnym razie `task_time_s/task_success` za wyjaśnienie pojemności przewozowej.
+
+### S15 — XII: magazyn jako bufor, nie brak kolejnego wozu
+
+**Start:** `?play=m12&ff=180&speed=0&lang=pl&debug=1` (dla obserwacji magazynu sprawdź również `ff=0/120/240`). Na starcie **12 wozów**; mały magazyn `capOverride=12` pełen zboża, większy pusty spichlerz przy `(36,35)` **dwie komórki** od połączenia z drogą (kandydat `x=37,y=38–39`); można budować magazyny. Trzy transze: 32 chleby do 06:00, 8 chlebów i 12 piwa do 09:00, 36 piwa do 12:00.
+
+**Preflight:** sprawdź `STORAGE_FULL`/`OUTPUT_FULL` oraz trasę do dużego spichlerza. Sam pełny magazyn **nie gwarantuje**, że w bieżącej chwili blokuje konkretny zakład. **Pytanie:** „Co ogranicza produkcję mimo tylu wozów i co zmieni połączenie magazynu?”. Trafna przyczyna: niedostępny **bufor połączony z drogą**, a nie brak wozu. `buffer_understood=1` przy wyjaśnieniu roli zapasowej pojemności; `correct/time_s` tylko z faktyczną blokadą, inaczej `task_success` za sensowny plan dwóch pól drogi / nowego spichlerza.
+
+**Konsolowy preflight S10–S15 (prowadzący; po dodaniu `?debug=1`):**
+
+```js
+const a = window.__marchia?.app;
+if (!a) throw Error('Brak uchwytu debug (D-51)');
+const s = a.world.state;
+console.log({ mission: s.mission.id, tick: s.tick, result: s.mission.result,
+  need: s.mission.contract?.need, tranches: s.mission.contract?.tranches,
+  roadStone: s.mission.roadStone });
+console.table(s.buildings.map(b => ({
+  id: b.id, type: b.type, status: b.status.k, cause: b.status.cause ?? '',
+  cap: b.capOverride, wood: b.stock.wood, grain: b.stock.grain,
+  stone: b.stock.stone, inStone: b.incoming.stone
+})));
+console.table(s.wagons.map(w => ({ id: w.id, status: w.status.k })));
+```
+
 ## 4. Prowadzenie: think-aloud i pomiar
 
 Przed pierwszym zadaniem: „Mów na głos, co widzisz, co Cię dziwi i co chcesz zrobić. Nie musisz tłumaczyć mi zasad ani zgadywać moich oczekiwań”. Przy każdej scenie przeczytaj tylko **wspólne pytanie** z sekcji 3.
