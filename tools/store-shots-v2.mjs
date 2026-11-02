@@ -16,7 +16,7 @@ const SCENES = [
   { id: 3, slug: 'bridge-jam', q: 'play=m2&speed=0' },
   { id: 4, slug: 'river-ice', q: 'play=m4&ff=240&speed=0' },
   { id: 5, slug: 'free-valley-market', q: 'play=sandbox&ff=240&speed=0&market=1' },
-  { id: 6, slug: 'castellan-letter', q: 'play=m1&tut=1&speed=0' },
+  { id: 6, slug: 'castellan-letter', q: 'play=m1&bot=1&ff=900&speed=0' },
 ];
 const SIZES = {
   portrait: { cssW: 412, cssH: 732, dpr: 2, w: 1080, h: 1920 },
@@ -24,7 +24,7 @@ const SIZES = {
   app: { cssW: 430, cssH: 932, dpr: 2, w: 1290, h: 2796 },
 };
 const FEATURE = { w: 1024, h: 500 };
-const BUDGET = 25 * 1024 * 1024;
+const BUDGET = 25_000_000;
 const FEATURE_SUBTITLE = { pl: 'Szlaki Królestwa', en: 'Roads of the Kingdom' };
 
 function parseOptions() {
@@ -148,6 +148,8 @@ async function seekEvidence(page, id) {
     const loaded = () => s.wagons.filter((w) => w.cargoQty > 0 && w.cargoGood);
     const jam = () => s.wagons.find((w) => w.status.k === 'BRIDGE_JAM');
     const valid = () => {
+      if (scene === 6) return s.mission.id === 'm1' && s.mission.result === 'won' &&
+        !!document.querySelector('.letter .seals .kseal');
       if (s.mission.result !== 'running') return false;
       switch (scene) {
         case 1: return s.mission.id === 'm1' && !!s.mission.contract && loaded().length > 0;
@@ -157,7 +159,7 @@ async function seekEvidence(page, id) {
         case 4: return s.mission.id === 'm4' && s.ice.some((w) => s.tick >= w.start && s.tick < w.end);
         case 5: return s.mission.id === 'sandbox' && Number.isInteger(s.town.rank) &&
           !!document.querySelector('.ms-prices');
-        case 6: return s.mission.id === 'm1' && !!document.querySelector('.letter');
+        case 6: return false; // checked before 'running' guard: completion letter
         default: return false;
       }
     };
@@ -212,8 +214,11 @@ async function prepareScene(page, id, evidence) {
     if (!present) throw new Error('Real Free Valley market and rank HUD must both exist');
   }
   if (id === 6) {
-    const letter = await page.evaluate(() => document.querySelector('.letter')?.textContent?.trim() ?? '');
-    if (letter.length < 40) throw new Error('Castellan opening letter is not shown');
+    const letter = await page.evaluate(() => ({
+      text: document.querySelector('.letter')?.textContent?.trim() ?? '',
+      seals: document.querySelectorAll('.letter .seals .kseal').length,
+    }));
+    if (letter.text.length < 40 || letter.seals !== 3) throw new Error('Castellan victory letter does not show three genuine seals');
   }
   await page.waitForTimeout(750);
   const issues = await page.evaluate(() => ({
@@ -334,7 +339,7 @@ async function main() {
     browser = await chromium.launch({ args: [
       '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage',
     ] });
-    for (const lang of langs) for (const kind of kinds) for (const scene of scenes) {
+    captures: for (const lang of langs) for (const kind of kinds) for (const scene of scenes) {
       if (kind === 'landscape' && ![1, 5].includes(scene.id)) continue;
       const dims = SIZES[kind];
       const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
@@ -371,6 +376,7 @@ async function main() {
         const msg = lang + '/' + kind + '/#' + scene.id + ': ' + (e.stack ?? e);
         console.error(msg);
         failures.push(msg);
+        if (process.env.CI) break captures; // stop at first missing real scene on CI; write manifest below
       } finally { await game?.context.close(); }
     }
   } finally { await browser?.close(); preview.stop(); }
