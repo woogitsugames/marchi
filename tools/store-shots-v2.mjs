@@ -233,35 +233,31 @@ function htmlEscape(value) {
 
 // The frames from order #20 are not yet in this branch. This fallback uses the
 // actual UI_STYLE colours, chamfered edges, and locally bundled game typefaces.
-function frameHtml(png, caption, kind, fonts) {
-  const portrait = kind !== 'landscape';
-  const dims = SIZES[kind];
-  const box = kind === 'app'
-    ? { x: 60, y: 215, w: 1170, h: 2520, capY: 30, capH: 150 }
-    : kind === 'portrait'
-      ? { x: 54, y: 174, w: 972, h: 1728, capY: 18, capH: 142 }
-      : { x: 120, y: 120, w: 1680, h: 945, capY: 15, capH: 91 };
-  const captionSize = kind === 'app' ? 60 : portrait ? 54 : 46;
-  return `<!doctype html><html lang="pl"><head><meta charset="utf-8"><style>
+function storeFrame(kind) {
+  if (kind === 'app') return { x: 60, y: 215, w: 1170, h: 2520, capY: 30, capH: 150 };
+  if (kind === 'portrait') return { x: 54, y: 174, w: 972, h: 1728, capY: 18, capH: 142 };
+  return { x: 120, y: 120, w: 1680, h: 945, capY: 15, capH: 91 };
+}
+
+function captionHtml(caption, kind, fonts) {
+  const box = storeFrame(kind);
+  const portrait = kind !== 'landscape', capSize = kind === 'app' ? 60 : portrait ? 54 : 46;
+  return `<!doctype html><html><meta charset="utf-8"><style>
     ${fonts}
-    *{box-sizing:border-box}html,body{margin:0;width:${dims.w}px;height:${dims.h}px;overflow:hidden;background:#2b2620}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:${box.w}px;height:${box.capH}px;overflow:hidden;background:transparent}
     body{font-family:StoreSans,serif}
-    .caption{position:absolute;left:${box.x}px;top:${box.capY}px;width:${box.w}px;height:${box.capH}px;
-      background:#e4dccb;color:#2b2620;padding:${portrait ? '15px 26px' : '10px 24px'};
+    .caption{position:absolute;inset:0;background:#e4dccb;color:#2b2620;
+      padding:${portrait ? '15px 26px' : '10px 24px'};
       clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px);
-      box-shadow:5px 5px 0 #4a4843;display:flex;align-items:center;gap:22px}
+      display:flex;align-items:center;gap:22px}
     .seal{width:${portrait ? 32 : 30}px;height:${portrait ? 32 : 30}px;flex:0 0 auto;
       background:#8c4a2f;clip-path:polygon(7% 3%,79% 0,100% 22%,95% 90%,47% 100%,4% 88%,0 43%)}
     .copy{min-width:0;display:flex;flex-direction:column;justify-content:center}
     .brand{font:700 ${portrait ? 20 : 16}px StoreGothic,serif;letter-spacing:3px;color:#8c4a2f;line-height:1.1}
-    .heading{font:700 ${captionSize}px/1.04 StoreSans,serif;letter-spacing:-.4px}
-    .shot{position:absolute;left:${box.x}px;top:${box.y}px;width:${box.w}px;height:${box.h}px;
-      border:5px solid #4a4843;outline:2px solid #cfc5b0;box-shadow:7px 7px 0 #15120f;overflow:hidden;background:#15120f}
-    .shot img{width:100%;height:100%;object-fit:fill;display:block}
-    </style></head><body>
-    <div class="caption"><i class="seal"></i><div class="copy"><div class="brand">MARCHIA</div><div class="heading">${htmlEscape(caption)}</div></div></div>
-    <div class="shot"><img src="data:image/png;base64,${png.toString('base64')}" alt=""></div>
-    </body></html>`;
+    .heading{font:700 ${capSize}px/1.04 StoreSans,serif;letter-spacing:-.4px}
+    </style><body><div class="caption"><i class="seal"></i><div class="copy">
+    <div class="brand">MARCHIA</div><div class="heading">${htmlEscape(caption)}</div></div></div></body></html>`;
 }
 
 // Direct screenshot of the actual Chromium compositor frame. This bypasses
@@ -283,15 +279,35 @@ async function captureFrame(page) {
   }
 }
 
-async function compose(browser, rawPng, caption, orientation, fonts, target) {
-  const { w, h } = SIZES[orientation];
-  const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+async function compose(browser, rawPng, caption, kind, fonts, target) {
+  const { w, h } = SIZES[kind], box = storeFrame(kind);
+  // Capture only the small, static caption in Chromium. Compose the large game
+  // screenshot with libvips/Sharp; screenshotting a 2796px HTML frame stalls GPU CI.
+  const ctx = await browser.newContext({
+    viewport: { width: box.w, height: box.capH }, deviceScaleFactor: 1,
+  });
+  let captionPng;
   try {
     const page = await ctx.newPage();
-    await page.setContent(frameHtml(rawPng, caption, orientation, fonts), { waitUntil: 'load' });
+    await page.setContent(captionHtml(caption, kind, fonts), { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
-    writeFileSync(target, await captureFrame(page));
+    captionPng = await captureFrame(page);
   } finally { await ctx.close(); }
+  const border = Buffer.from(`<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="${box.x + 7}" y="${box.y + 7}" width="${box.w}" height="${box.h}" fill="#15120f"/>
+    <rect x="${box.x - 2}" y="${box.y - 2}" width="${box.w + 4}" height="${box.h + 4}" fill="#cfc5b0"/>
+    <rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="#4a4843"/>
+  </svg>`);
+  const inner = await sharp(rawPng)
+    .resize(box.w - 10, box.h - 10, { fit: 'fill', kernel: 'lanczos3' })
+    .png({ compressionLevel: 3 }).toBuffer();
+  await sharp({ create: { width: w, height: h, channels: 4, background: '#2b2620' } })
+    .composite([
+      { input: border, left: 0, top: 0 },
+      { input: inner, left: box.x + 5, top: box.y + 5 },
+      { input: captionPng, left: box.x, top: box.capY },
+    ])
+    .png({ compressionLevel: 5 }).toFile(target);
 }
 
 async function compress(file, colors = 160) {
@@ -352,21 +368,19 @@ async function main() {
   const { chromium } = await import('playwright');
   const preview = await runPreview();
   let browser;
-  const manifest = [];
-  const failures = [];
+  const manifest = [], failures = [];
   try {
     browser = await chromium.launch({ args: [
       '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage',
     ] });
-    // One actual deterministic simulation per scene and language. Resizing the SAME game
-    // context renders the real responsive UI for Play, landscape and App Store.
-    // In particular, do not fast-forward or reassign the mission for each output size.
-    captures: for (const lang of langs) for (const scene of scenes) {
-      const variants = kinds.filter((kind) => kind !== 'landscape' || [1, 5].includes(scene.id));
-      if (!variants.length) continue;
+    captures: for (const lang of langs) for (const kind of kinds) for (const scene of scenes) {
+      if (kind === 'landscape' && ![1, 5].includes(scene.id)) continue;
+      const dims = SIZES[kind];
       let game;
       try {
-        game = await openGame(browser, preview.url, scene, lang, SIZES[variants[0]]);
+        // Never resize a live Three.js canvas in the software GPU runner.
+        // It deadlocks Page.captureScreenshot, so each orientation starts fresh.
+        game = await openGame(browser, preview.url, scene, lang, dims);
         if (scene.id === 3) {
           await game.page.evaluate(() => {
             const app = window.__marchia.app;
@@ -378,39 +392,30 @@ async function main() {
         }
         const evidence = await seekEvidence(game.page, scene.id);
         await prepareScene(game.page, scene.id, evidence);
-        if (game.errors.length) throw new Error('Page errors: ' + game.errors.join('; '));
-        for (const kind of variants) {
-          const dims = SIZES[kind];
-          const viewport = game.page.viewportSize();
-          if (viewport.width !== dims.cssW || viewport.height !== dims.cssH) {
-            await game.page.setViewportSize({ width: dims.cssW, height: dims.cssH });
-            await game.page.waitForTimeout(1150);
-          }
-          if (game.errors.length) throw new Error('Page errors after resize: ' + game.errors.join('; '));
-          const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
-          console.log('[store-shots-v2] ' + lang + ' scene #' + scene.id + ' / ' + kind);
-          const raw = await captureFrame(game.page);
-          mkdirSync(dirname(file), { recursive: true });
-          await compose(browser, raw, captions.get(scene.id)[lang], kind, fonts, file);
-          const meta = await sharp(file).metadata();
-          if (meta.width !== dims.w || meta.height !== dims.h) throw new Error('Unexpected PNG dimensions');
-          await compress(file);
+        if (game.errors.length) throw new Error('Game page errors: ' + game.errors.join('; '));
+        console.log('[store-shots-v2] ' + lang + ' scene #' + scene.id + ' / ' + kind);
+        const raw = await captureFrame(game.page);
+        const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
+        mkdirSync(dirname(file), { recursive: true });
+        await compose(browser, raw, captions.get(scene.id)[lang], kind, fonts, file);
+        const meta = await sharp(file).metadata();
+        if (meta.width !== dims.w || meta.height !== dims.h) throw new Error('Unexpected PNG dimensions');
+        await compress(file);
+        manifest.push({
+          file: file.slice(root.length + 1).replaceAll('\\', '/'),
+          lang, kind, caption: captions.get(scene.id)[lang], ...evidence,
+        });
+        if (scene.id === 1 && kind === 'landscape') {
+          const feature = join(outRoot, lang, 'feature-1024x500.png');
+          await composeFeature(browser, raw, lang, fonts, feature);
+          await compress(feature);
           manifest.push({
-            file: file.slice(root.length + 1).replaceAll('\\', '/'), lang, kind,
-            caption: captions.get(scene.id)[lang], ...evidence,
+            file: feature.slice(root.length + 1).replaceAll('\\', '/'),
+            lang, kind: 'feature', source: 'actual mission I landscape screenshot',
           });
-          if (scene.id === 1 && kind === 'landscape') {
-            const feature = join(outRoot, lang, 'feature-1024x500.png');
-            await composeFeature(browser, raw, lang, fonts, feature);
-            await compress(feature);
-            manifest.push({
-              file: feature.slice(root.length + 1).replaceAll('\\', '/'), lang,
-              kind: 'feature', source: 'actual mission I scene at landscape viewport',
-            });
-          }
         }
       } catch (e) {
-        const msg = lang + '/#' + scene.id + ': ' + (e.stack ?? e);
+        const msg = lang + '/' + kind + '/#' + scene.id + ': ' + (e.stack ?? e);
         console.error(msg);
         failures.push(msg);
         if (process.env.CI) break captures;
@@ -420,8 +425,8 @@ async function main() {
   mkdirSync(outRoot, { recursive: true });
   const bytes = await enforceBudget();
   writeFileSync(join(outRoot, 'manifest.json'), JSON.stringify({
-    generator: 'tools/store-shots-v2.mjs', source: 'authentic Marchia gameplay', bytes,
-    shots: manifest, failures,
+    generator: 'tools/store-shots-v2.mjs', source: 'authentic Marchia gameplay',
+    bytes, shots: manifest, failures,
   }, null, 2) + '\n');
   if (failures.length) {
     console.error('[store-shots-v2] ' + failures.length + ' capture(s) failed; see manifest.json');
