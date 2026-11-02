@@ -8,12 +8,10 @@
 // Wheels and the horse's gait advance with the distance the drawn rig actually moves (not with
 // time), so hooves stay planted and wheels roll without slipping at any game speed (gait.ts).
 import {
-  BufferGeometry,
   Frustum,
   Group,
   InstancedBufferAttribute,
   InstancedMesh,
-  type Material,
   Matrix4,
   type PerspectiveCamera,
   Sphere,
@@ -24,8 +22,7 @@ import { edgeLength, MAX_WAGONS, TICK_HZ } from '../sim/index';
 import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
 import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts } from './models/cargo';
-import type { ModelPart } from './models/kit';
-import { modelMaterial } from './models/materials';
+import { Parts } from './instancedParts';
 import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
 import { type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
@@ -94,37 +91,6 @@ interface AnimRig {
 
 /** Gait state of a render-only (decor) rig. */
 interface DecorGait { odo: number; gph: number; roll: number; mv: number; init: boolean }
-
-class Parts {
-  readonly meshes: InstancedMesh[];
-  count = 0;
-  constructor(parts: ModelPart[], cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
-    this.meshes = parts.map((p) => {
-      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
-      m.count = 0;
-      m.frustumCulled = false;
-      m.castShadow = true;
-      m.receiveShadow = true;
-      m.name = name;
-      group.add(m);
-      return m;
-    });
-  }
-  begin(): void { this.count = 0; }
-  push(mat: Matrix4): number {
-    const i = this.count++;
-    for (const m of this.meshes) m.setMatrixAt(i, mat);
-    return i;
-  }
-  end(): void {
-    for (const m of this.meshes) {
-      m.count = this.count;
-      m.visible = this.count > 0;
-      if (this.count) m.instanceMatrix.needsUpdate = true;
-    }
-  }
-  setShadow(on: boolean): void { for (const m of this.meshes) m.castShadow = on; }
-}
 
 /** A render-only wagon (main-menu cinematic); not part of the simulation. */
 export interface DecorWagon {
