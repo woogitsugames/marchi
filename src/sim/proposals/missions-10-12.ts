@@ -53,8 +53,8 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       [[76, 40], [76, 41]],
       [[81, 39], [81, 40]],
     ],
-    contract: { beer: 30 },
-    deadlineMin: 12, star3Min: 8.5, star2Min: 10.5, rain: [],
+    contract: { beer: 26 },
+    deadlineMin: 12, star3Min: 10.5, star2Min: 11.3, rain: [],
   },
   m12: {
     id: 'm12', mapId: 'valley-m3', seed: M3_VALLEY.seed,
@@ -68,9 +68,9 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       { type: 'farm', x: 28, y: 48, facing: 2, stock: { grain: 6 } },
       { type: 'farm', x: 38, y: 48, facing: 2, stock: { grain: 6 } },
       { type: 'mill', x: 45, y: 43, facing: 2, stock: { flour: 2 } },
-      { type: 'malthouse', x: 53, y: 43, facing: 2, stock: { malt: 3 } },
+      { type: 'malthouse', x: 53, y: 43, facing: 2, stock: { malt: 8 } },
       { type: 'bakery', x: 56, y: 37, facing: 0, stock: { bread: 4 } },
-      { type: 'brewery', x: 66, y: 37, facing: 0, stock: { beer: 4 } },
+      { type: 'brewery', x: 66, y: 37, facing: 0, stock: { beer: 12 } },
       { type: 'castle', x: 78, y: 42, facing: 2 },
     ],
     roads: [
@@ -88,13 +88,13 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
     ],
     // Only the current letter is ordered by the castle. Beer and malt buffers therefore
     // saturate during the first bread delivery. The small granary starts full.
-    contract: { bread: 24, beer: 36 },
+    contract: { bread: 40, beer: 48 },
     tranches: [
-      { need: { bread: 12 }, dueMin: 4.2 },
-      { need: { bread: 12, beer: 12 }, dueMin: 8.5 },
-      { need: { beer: 24 }, dueMin: 12 },
+      { need: { bread: 32 }, dueMin: 6 },
+      { need: { bread: 8, beer: 12 }, dueMin: 9 },
+      { need: { beer: 36 }, dueMin: 12 },
     ],
-    deadlineMin: 12, star3Min: 9, star2Min: 10.5, rain: [],
+    deadlineMin: 12, star3Min: 9.5, star2Min: 10.5, rain: [],
   },
 };
 
