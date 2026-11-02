@@ -41,7 +41,8 @@ function checkTick(w: World, seed: number, tracks: Map<number, Track>): void {
     }
     if (t - prev.since <= STUCK_LIMIT) continue;
     if (wagon.status.k === 'NO_ROUTE') {
-      const target = w.state.buildings.find((b) => b.id === wagon.status.target);
+      const targetId = wagon.status.target;
+      const target = w.state.buildings.find((b) => b.id === targetId);
       // An actually disconnected target is diagnosed, not an unexplained deadlock.
       if (!target || !reachable(w, wagon.at, target.gate)) continue;
     }
