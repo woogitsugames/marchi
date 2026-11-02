@@ -10,6 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 
 ## Do zrobienia
 - [ ] P3 — Buduj: doliczyć koszt drogi dojazdowej do etykiety kosztu (nowe klucze i18n); etykieta czasem nachodzi na ducha.
+- [ ] P3 — Pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki? (do sprawdzenia; nakładanie się wozów rozwiązane wizualnie, D-35; odstęp w sim wymaga przestrojenia misji.)
 - [ ] P2 — Narzędzie raportu pokrycia tłumaczeń (klucze dodane po paczce 04) + paczka uzupełnień dla GPT; zrzuty `?lang=ar|ja|de|ru` (długość, RTL, glify).
 - [ ] P1 — (D-17) 4K jako pakiet do pobrania: w APK tylko 2K (+low); pobieranie 4K po wyborze Ultra (Play Asset Delivery lub własne pobieranie do pamięci aplikacji), pasek postępu, weryfikacja SHA-256, możliwość usunięcia.
 - [ ] P2 — (D-18) RTL dla arabskiego: przejść CSS na właściwości logiczne (inline-start/end), lustrzane ułożenie listwy i arkuszy, ikony kierunkowe (strzałki) odbite; zrzuty `?lang=ar`.

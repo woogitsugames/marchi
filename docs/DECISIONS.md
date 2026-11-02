@@ -343,3 +343,18 @@ notice names fishers too; plaque "Zima · rok N" (`yearAt`) instead of a 24-min 
 (6) *Proof*: m1–m9 + lab state hashes identical to the base build for every balance strategy sampled each minute
 (34 runs), `tools/balance.ts` output identical; tests/stall-readability.test.ts (F7 red without the fix). F3 and F10:
 proposals only, in the research doc. (decided)
+
+**D-35 — Wagon spacing is drawn, not simulated.** Wagons going the same way are drawn at least 5 m apart
+(`src/render/wagonSpacing.ts`, used by `wagonsView`): on each directed edge, from the front wagon back, a
+follower is drawn behind the one ahead (also across the next node); the drawn lag grows at once, shrinks at
+0.35 m per tick so nothing jumps, may put the wagon back on its previous edge, and is capped at 8 m (one
+cell back). The sim is unchanged. *Tried first in the sim (a follower may not get closer than 5 m to a moving
+wagon ahead; no deadlock because only moving wagons are leaders), measured with tools/balance.ts against
+the current tuning: with one-node lookahead m1 "bridge + 2 wagons" turned from a win (10.78 min) into a
+loss, m4 "stone bridge before the ice" went 6.43 → 7.24 min (3 → 2 seals), m6 "nothing" 8.92 → 8.76 (1 → 2)
+and "connect the granary" 8.31 → 8.74 (3 → 2); same-edge only: m1 still lost, m4 7.95, m5/m6 ladders off.
+4 m cells and 3.6 m/s mean a 5 m gap is a real throughput cut on every shared stretch, i.e. a rebalance of
+every mission, not a cosmetic fix. Drawn: m1 bot fleet and m2 show 0 overlapping same-direction pairs (53
+and 78 sampled in the sim positions); the deliberately overloaded 120-wagon bench keeps ~78 % (dozens of
+wagons on a few cells exceed the capped lag).* (decided — revisit as a sim rule together with a balance pass)
+
