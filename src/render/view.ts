@@ -4,6 +4,7 @@
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
+  BoxGeometry,
   Color,
   Group,
   Mesh,
@@ -26,9 +27,11 @@ import { Effects } from './fx';
 import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
-import { applyTextures, foliageLift, type MatKey, setTreeQuality } from './models/materials';
+import { PartBuilder } from './models/kit';
+import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
+import { ShaderPrewarm } from './prewarm';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
 import { TerrainView } from './terrain';
@@ -130,6 +133,11 @@ class View implements WorldView {
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
   private lastStats = { calls: 0, triangles: 0 };
+  /** Shader pre-warm (research 2026-11-02): runs after the next rendered frame when set. */
+  private warm: ShaderPrewarm | null = null;
+  private warmPending = false;
+  /** One plain mesh per model material kind: buildings and bridges that are not built yet. */
+  private warmKinds: Mesh[] | null = null;
 
   constructor() {
     this.lighting = new Lighting(this.scene);
@@ -161,6 +169,8 @@ class View implements WorldView {
     r.shadowMap.type = PCFSoftShadowMap;
     r.info.autoReset = true;
     this.renderer = r;
+    this.warm = new ShaderPrewarm(r);
+    this.warmPending = true;
     try {
       initTextureLoaders(r);
     } catch (e) {
@@ -204,7 +214,14 @@ class View implements WorldView {
       ),
     ).then(async (sets) => {
       if (gen !== this.texGen) return; // a newer load binds (and disposes these with the rest)
-      for (const it of sets) if (it) applyTextures(it.key, { normalMap: it.s.normalMap, roughnessMap: it.s.roughnessMap });
+      const ok = sets.filter((it) => it !== null).map((it) => ({ key: it.key, set: { normalMap: it.s.normalMap, roughnessMap: it.s.roughnessMap } }));
+      // compile the textured variants first (off the main thread), so binding them stalls no frame
+      try {
+        if (this.warm) await this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, new Map(ok.map((it) => [modelMaterial(it.key), texturedVariant(it.key, it.set)])), this.kindMeshes());
+      } catch (e) { console.warn('[view] shader pre-warm (textures)', e); }
+      if (gen !== this.texGen) return;
+      for (const it of ok) applyTextures(it.key, it.set);
+      this.warmPending = true;
       await disposeTexturesExcept(q);
     });
     this.texturesReady = Promise.all([terrain, models]).then(() => undefined);
@@ -259,6 +276,36 @@ class View implements WorldView {
     this.ghost.set(null, null, null, this.overlay);
     this.setPlacementGhost(this.ghostReq);
     this.overlay!.setSites(this.siteReq);
+    this.warmPending = true;
+  }
+
+  /** Stand-in meshes, one per model material kind, sharing one small box (PartBuilder layout). */
+  private kindMeshes(): Mesh[] {
+    if (this.warmKinds) return this.warmKinds;
+    const b = new PartBuilder({ seed: 1 });
+    const box = new BoxGeometry(1, 1, 1);
+    for (const k of materialKinds()) b.add(k, box, { color: '#808080' });
+    box.dispose();
+    this.warmKinds = b.build().map((p) => {
+      const m = new Mesh(p.geometry, modelMaterial(p.material));
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
+    });
+    return this.warmKinds;
+  }
+
+  /**
+   * Compile every program the current world can need (see prewarm.ts). Started from `frame` after
+   * a frame has been drawn, so the first frame of a world never waits for more than it draws.
+   */
+  private startPrewarm(): void {
+    const warm = this.warm;
+    if (!warm || !this.world) return;
+    setTimeout(() => {
+      if (!this.world || this.warm !== warm) return;
+      warm.run(this.scene, this.rig.camera, this.kindMeshes()).catch((e: unknown) => console.warn('[view] shader pre-warm', e));
+    }, 0);
   }
 
   private disposeWorld(): void {
@@ -396,6 +443,10 @@ class View implements WorldView {
     r.render(this.scene, cam);
     this.lastStats.calls = r.info.render.calls;
     this.lastStats.triangles = r.info.render.triangles;
+    if (this.warmPending) {
+      this.warmPending = false;
+      this.startPrewarm();
+    }
   }
 
   /** Bridge centre and axis (first bridge found), for the menu shot. */
@@ -605,6 +656,7 @@ class View implements WorldView {
     this.applyQuality();
     this.resize(this.cssW, this.cssH, this.dpr);
     this.loadTextures();
+    this.warmPending = true;
   }
 
   private applyQuality(): void {
@@ -666,6 +718,10 @@ class View implements WorldView {
     (this.deckRing.material as MeshBasicMaterial).dispose();
     this.fx.dispose();
     this.lighting.dispose();
+    this.warm?.dispose();
+    this.warm = null;
+    if (this.warmKinds) for (const m of this.warmKinds) m.geometry.dispose();
+    this.warmKinds = null;
     this.renderer?.dispose();
     this.renderer = null;
   }
