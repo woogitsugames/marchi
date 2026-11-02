@@ -462,3 +462,12 @@ above the D-38 shared-input note. Measured with `tools/supply-readability.ts` (m
 "on the way" with the cause named 0 % → 64.3 % of 437 s doing nothing, 33.8 % with the late woodcutter, 19.8 % with
 the right fix; final hashes equal with and without the reads (test `tests/thin-delivery.test.ts`). (decided)
 
+**D-42 — "No road to victory" is said at once (contracts; read-only).** `deadEnd(world)` (`src/ui/deadEnd.ts`,
+pure read of the sim) reports a contract that can no longer be won for lack of a road: the castle gate has no road
+from the stable (the gap finder `suggestConnection` still needs new cells) and silver + the refund for selling every
+wagon but one (`WAGON_REFUND` = half `WAGON_PRICE`, as `sellWagon`) is below the cheapest connection — or no
+connection can be built at all. The app checks it every 5 s of game time; once per game it pauses and shows a
+letter "Szlak nie do uratowania" with the cost, the silver and the possible refunds (Again / Menu / Keep watching).
+Not covered (left to the deadline): a connected castle whose producers cannot reach their inputs, or a time
+shortfall — those are forecasts (D-38), not dead ends. (decided)
+

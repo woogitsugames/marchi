@@ -22,8 +22,9 @@ import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import {
-  buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
+import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -74,6 +75,8 @@ function applyVolumes(p: Prefs): void {
 const MUSIC_FULL = 0.7;
 
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
+/** How often the no-road-to-victory check runs (game time). */
+const DEAD_END_EVERY = 5 * TICK_HZ;
 /** Window for the second tap that confirms demolishing a building a contract cannot replace. */
 const DEMOLISH_CONFIRM_MS = 4000;
 
@@ -136,6 +139,8 @@ export class App implements PanelNav {
   private tutorial: Tutorial | null = null;
   /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
   private debugStart = false;
+  /** The no-road-to-victory letter was shown in this game (D-42): once per game. */
+  private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
   private ghostKey = '';
@@ -466,6 +471,7 @@ export class App implements PanelNav {
   private enterGame(w: World): void {
     this.stopTutorial();
     this.mode = 'game';
+    this.deadEndShown = false;
     this.sheets.closeAll();
     this.layers.menu.innerHTML = '';
     this.layers.overlay.querySelector('.scrim')?.remove();
@@ -586,6 +592,27 @@ export class App implements PanelNav {
     this.prevAudio = captureAudioState(this.world.state);
     if (this.mode === 'game' && this.world.state.mission.result === 'running') music.setMood(isRaining(this.world.state) ? 'rain' : 'play');
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
+    if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();
+  }
+
+  /** D-42: a contract that can no longer be won says why at once (read-only check, every 5 s of game time). */
+  private checkDeadEnd(): void {
+    const d = deadEnd(this.world);
+    if (!d) return;
+    this.deadEndShown = true;
+    const speed = this.loop.speed;
+    this.loop.speed = 0;
+    this.hud?.setSpeed(0);
+    const letter = buildDeadEndLetter(d, {
+      again: () => this.newGame(this.missionId, this.slot, false),
+      menu: () => void this.showMenu(),
+      watch: () => {
+        letter.remove();
+        this.loop.speed = speed || 1;
+        this.hud?.setSpeed(this.loop.speed);
+      },
+    });
+    this.layers.overlay.append(letter);
   }
 
   private async autosave(): Promise<void> {

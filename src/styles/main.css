@@ -865,6 +865,7 @@ body.is-side .sheet-grip::before { display: none; }
 .letter .l-body .l-sign { text-align: end; font-style: italic; color: var(--ink-soft); margin-bottom: 16px; }
 .letter-scrim { cursor: pointer; transition: opacity var(--t-fast) var(--ease); }
 .letter-scrim.is-out { opacity: 0; }
+.letter .actions.l-more { margin-top: 8px; }
 
 @media (max-height: 500px) {
   .scrim { align-items: flex-start; padding-top: calc(var(--safe-t) + 34px); }

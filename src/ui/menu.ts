@@ -8,6 +8,7 @@ import { saveErrorMessageKey } from '../platform/saveGate';
 import { VALLEY_SLOTS, type SlotSummary, type ValleySlot } from '../platform/save';
 import { iconSvg } from './icons';
 import { getContractLetter } from '../content/letters';
+import type { DeadEnd } from './deadEnd';
 import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
@@ -464,6 +465,31 @@ export function buildOpeningLetter(missionId: string, onClose: () => void): HTML
   window.addEventListener('keydown', onKey);
   requestAnimationFrame(() => letter.querySelector<HTMLButtonElement>('[data-a="start"]')?.focus());
   return scrim;
+}
+
+export interface DeadEndActions { again(): void; menu(): void; watch(): void }
+
+/** "No road to victory" (D-42): the cause and the numbers, instead of waiting for the deadline. */
+export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement {
+  const letter = h('div.letter.lost' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'deadend-title' });
+  const why = d.cost < 0
+    ? esc(t('deadEnd.none'))
+    : tHtml('deadEnd.text', { cost: fmtInt(d.cost), coins: fmtInt(d.coins), raise: fmtInt(d.raise) });
+  letter.innerHTML = `
+    <div class="l-kicker">${esc(t('contract.kicker'))}</div>
+    <h2 id="deadend-title" dir="auto">${esc(t('deadEnd.title'))}</h2>
+    <p dir="auto">${why}</p>
+    <div class="actions">
+      <button class="btn primary cf" data-a="again">${esc(t('contract.again'))}</button>
+      <button class="btn cf" data-a="menu">${esc(t('contract.menu'))}</button>
+    </div>
+    <div class="actions l-more"><button class="btn cf" data-a="watch">${esc(t('deadEnd.watch'))}</button></div>`;
+  letter.style.clipPath = deckle('bottom', 73, 6, 30);
+  letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
+  letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);
+  letter.querySelector('[data-a="watch"]')!.addEventListener('click', act.watch);
+  const seal = h('span.big-seal.broken', { html: iconSvg('seal', 72) });
+  return h('div.scrim.deadend-scrim', null, h('div.letter-wrap', null, letter, seal));
 }
 
 export function buildEndLetter(world: World, seals: number, act: EndActions): HTMLElement {

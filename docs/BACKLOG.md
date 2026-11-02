@@ -17,7 +17,6 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — (D-18) Teksty liczbowe z liczbą mnogą w pl.ts/en.ts przepisać na bloki `{n, plural, …}` (np. „3 pola”, „{n} srebra”), formaty liczb/czasu przez Intl.
 - [ ] — Sklep/płatności/release: odłożone (D-17).
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
-- [ ] P2 — Wczesne wykrycie „brak drogi do zwycięstwa” (brak ścieżki do zamku i srebro < koszt najtańszej przeprawy, a wozów nie ma do sprzedania) → list z przyczyną.
 - [ ] P2 — (nieodtwarzalny 2026-11-02, docs/research/2026-11-02-water-shader.md) Błąd shadera wody `'z' : vector field selection out of range` — 8 scen (low/high/ultra/auto, m1/m2/m7/dolina) bez błędów; przy ponownym zgłoszeniu z urządzenia dodać `renderer.debug.onShaderError` z logiem programu. Uwaga: `quality=medium` nie istnieje (cichy powrót do auto).
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
 - [ ] P2 — Kamera po otwarciu panelu chowa obiekt pod arkuszem: `camera.focusCell(cell, screenOffset)`.
@@ -106,6 +105,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P4 — Sandbox S6: zamówienia królewskie (maks. 2, bez terminu, odrzucalne) i jarmarki sezonowe (+25% ceny jednego towaru, RNG w stanie); `src/sim/orders.ts`, `tests/orders.test.ts` (sim)
 
 ## Zrobione
+- 2026-11-02 — (D-42) Wczesne wykrycie „brak drogi do zwycięstwa”: `deadEnd(world)` (`src/ui/deadEnd.ts`, czysty odczyt) — zamek odcięty od stajni, a srebro + zwrot za sprzedaż zbędnych wozów < najtańsze połączenie (`suggestConnection`) albo połączenia nie da się zbudować → list „Szlak nie do uratowania” z liczbami (Jeszcze raz / Do menu / Patrz dalej), sprawdzany co 5 s czasu gry, raz na grę; test `tests/dead-end.test.ts`.
 - 2026-11-02 — (D-41) Misja X: „drewno w drodze” w cienkim ładunku nazywa niedobór u źródła — „Wóz 8 wiezie tylko 2 z 6 — Chata drwala nie nadąża z dostawą” nad łańcuchem tartaku (`thinDelivery`, czysty odczyt, bez zmiany hashy). Pomiar `tools/supply-readability.ts` (strategia „nic”): czekanie „w drodze” z wyjaśnioną przyczyną 0 % → 64,3 % (437 s); przy właściwej naprawie 19,8 %. Powtarzalność lekcji IX/X zostaje do playtestu.
 - 2026-11-02 — (D-40) Listy kasztelana w grze: list otwierający przy starcie kontraktu (z menu, nie przy `?play=` ani „Jeszcze raz”; gra na pauzie, zamyka go jedno dotknięcie / Esc / Enter; w misji I samouczek rusza po nim) i autorski list końcowy wg pieczęci / przegranej zamiast ogólnego zdania; brak tłumaczenia → angielski z `dir=auto` (poprawna interpunkcja w RTL). Zrzuty `docs/shots/s6-letter-*`.
 - 2026-11-02 — (research F10/F3, D-38) M7: tempo dostaw i prognoza „przy tym tempie: gotowe za M:SS” z pieczęciami na liście przewozowym i w karcie zamku (`contractForecast`, dziennik tempa w UI); M9: „Drewno bierze też: Węglarnia — tam N, tu M” nad łańcuchem tartaku/węglarza (`sharedInput`), lekcja widoczna 5% → 85% czasu; hasze bez zmian — gałąź `claude/w-readab`.
