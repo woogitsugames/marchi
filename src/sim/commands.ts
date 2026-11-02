@@ -6,6 +6,7 @@ import {
 import { buildingById, upstreamOf } from './logistics';
 import { grade, net, type World } from './network';
 import { cancelJob } from './wagons';
+import { acceptOrder, declineMerchant, declineOrder, sellToMerchant } from './events';
 import { canPlace, canSurface, demolishQuote, rankGated } from './town';
 import type { BuildingStatus, BuildingType, SurfaceKind, Terrain } from './types';
 
@@ -15,7 +16,12 @@ export type Command =
   | { t: 'buyWagon'; stable: number }
   /** Sell an idle wagon back for half its price (recovery when silver runs out). */
   | { t: 'sellWagon'; wagon: number }
-  | { t: 'place'; type: BuildingType; x: number; y: number; facing: number };
+  | { t: 'place'; type: BuildingType; x: number; y: number; facing: number }
+  /** Free valley events (D-54): accept / set aside a royal order, sell surplus to / dismiss the merchant. */
+  | { t: 'orderAccept'; id: string }
+  | { t: 'orderDecline'; id: string }
+  | { t: 'merchantSell'; id: string }
+  | { t: 'merchantDecline'; id: string };
 
 export type CommandError =
   | { k: 'OUT_OF_BOUNDS' }
@@ -35,6 +41,10 @@ export type CommandError =
   | { k: 'LOCKED'; rank: number }
   /** Free valley: the player cannot build this type at all (the castle). */
   | { k: 'NOT_PLACEABLE' }
+  /** The event (order / merchant offer) is not there (any more), or the order is already accepted. */
+  | { k: 'NO_EVENT' }
+  /** The merchant's good is no longer spare (hauled away, reserved, cut off): nothing sold, no loss. */
+  | { k: 'NO_SURPLUS' }
   /** A fisher's hut needs water next to its footprint or its gate. */
   | { k: 'NOT_NEAR_WATER' }
   /** A quarry needs high, rocky ground (hills, the ridge): QUARRY_MIN_HEIGHT above the water. */
@@ -189,6 +199,19 @@ export function applyCommand(world: World, cmd: Command): CommandResult {
     }
     case 'place':
       return place(world, cmd.type, cmd.x, cmd.y, cmd.facing, false);
+    case 'orderAccept':
+    case 'orderDecline':
+    case 'merchantDecline': {
+      if (typeof cmd.id !== 'string') return { ok: false, err: { k: 'BAD_TARGET' } };
+      const f = cmd.t === 'orderAccept' ? acceptOrder : cmd.t === 'orderDecline' ? declineOrder : declineMerchant;
+      const err = f(world, cmd.id);
+      return err ? { ok: false, err } : { ok: true, cost: 0 };
+    }
+    case 'merchantSell': {
+      if (typeof cmd.id !== 'string') return { ok: false, err: { k: 'BAD_TARGET' } };
+      const r = sellToMerchant(world, cmd.id);
+      return 'err' in r ? { ok: false, err: r.err } : { ok: true, cost: -r.silver };
+    }
   }
 }
 

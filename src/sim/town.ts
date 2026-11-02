@@ -5,7 +5,7 @@ import {
   BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, GOODS, MARKET, RANKS, TICK_HZ, UNDO_TICKS, emptyGoods, sumGoods,
 } from './defs';
 import type { World } from './network';
-import { fairPercent } from './seasons';
+import { fairPercent } from './events';
 import type { Building, BuildingType, Good, MarketState, SimState, TownState } from './types';
 
 // --- State -------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ export function pricePct(saturation: number): number {
 
 /**
  * Price of one unit at a saturation level, in hundredths of a silver coin. `fairPct` (100 = none) is
- * the seasonal fair bonus from seasons.ts fairPercent(): applied per unit on the saturation-adjusted
+ * the valley fair bonus from events.ts fairPercent() (D-54): applied per unit on the saturation-adjusted
  * price and rounded down, so market.cents keeps collecting the fractions.
  */
 function centsAt(g: Good, saturation: number, fairPct: number): number {

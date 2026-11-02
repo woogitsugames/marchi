@@ -12,6 +12,7 @@ import {
 import { makeEnvelope } from '../src/platform/saveGate';
 import { GOODS_V4, RANKS_V4, STATE_VERSION, applyCommand, checkInvariants, createWorld, stateHash, step, worldFromState, type World } from '../src/sim/index';
 import { generateScenario } from '../tools/fuzz-lib';
+import { freshValleyEvents } from '../src/sim/events';
 import { assert, eq, test } from './harness';
 
 type J = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -63,6 +64,7 @@ const v4goods = (m: J): J => Object.fromEntries(GOODS_V4.map((g) => [g, m[g]]));
 function downgrade(cur: J, to: 4 | 5 | 6): J {
   const s = JSON.parse(JSON.stringify(cur)) as J;
   s.version = to;
+  delete s.valleyEvents; // state v8 (D-54)
   delete s.nextWagonN;
   for (const w of s.wagons) delete w.n;
   if (to === 6) return s;
@@ -98,6 +100,8 @@ for (const from of [4, 5, 6] as const) {
       freshDb();
       const w = mid(id, 1500);
       await rawPut(oldEnvelope('auto', w, from, 111));
+      // an old save had no valley events: the migration starts them empty (D-54), so does the reference
+      if (w.state.valleyEvents) w.state.valleyEvents = freshValleyEvents();
       await adoptLegacySaves();
       const want = id === 'sandbox' ? 'valley1' : contractSlot(id);
       const list = await listSaves();
@@ -167,13 +171,13 @@ test('robust: a fresh database (v0 -> v2) creates both stores and lists nothing'
 
 // (5) damaged / wrong / future envelopes -----------------------------------------------------------
 
-test('robust: damaged, wrong-version and v8 envelopes give a SaveError code, never a crash, and stay untouched', async () => {
+test('robust: damaged, wrong-version and newer envelopes give a SaveError code, never a crash, and stay untouched', async () => {
   freshDb();
   const w = mid('m3', 200);
   const good = JSON.parse(JSON.stringify(makeEnvelope('x', w.state, 5))) as J;
   const mk = (slot: string, f: (e: J) => void): J => { const e = JSON.parse(JSON.stringify(good)) as J; e.slot = slot; f(e); return e; };
   const recs = [
-    mk('auto-m1', (e) => { e.stateVersion = 8; }),
+    mk('auto-m1', (e) => { e.stateVersion = STATE_VERSION + 1; }),
     mk('auto-m2', (e) => { e.stateVersion = 99; e.state.version = 99; }),
     mk('auto-m3', (e) => { e.stateVersion = 0; }),
     mk('auto-m4', (e) => { e.format = 3; }),
@@ -293,7 +297,7 @@ test('B1: a newer-version legacy auto save never replaces a playable per-mission
   for (let i = 0; i < 100; i++) step(w3);
   await saveGame(contractSlot('m3'), w3.state);
   const w = createWorld('m3');
-  await rawPut({ ...makeEnvelope('auto', w.state, Date.now() + 9999), stateVersion: 8 });
+  await rawPut({ ...makeEnvelope('auto', w.state, Date.now() + 9999), stateVersion: STATE_VERSION + 1 });
   await adoptLegacySaves();
   const back = await loadGame(contractSlot('m3'));
   assert(back !== null, 'good per-mission save kept');

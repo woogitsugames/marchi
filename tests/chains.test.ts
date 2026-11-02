@@ -16,6 +16,7 @@ import { sandboxStatus, stepTown } from '../src/sim/town';
 import { plans } from '../tools/balance';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { generateScenario, makeWorld, runScenario } from '../tools/fuzz-lib';
+import { freshValleyEvents } from '../src/sim/events';
 import { assert, eq, test } from './harness';
 
 type J = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -364,6 +365,7 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
   // ... and it migrates to a state that runs exactly like the fresh one
   if (ok4.ok) {
     const out = migrate(ok4.envelope).state;
+    w.state.valleyEvents = freshValleyEvents(); // migrated saves start the valley events empty (D-54)
     eq(JSON.stringify(out), serialize(w), 'v4 -> v5 byte-identical to a fresh v5 state (key order)');
   }
 });
@@ -384,6 +386,7 @@ function v4View(st: unknown): string {
       if ('version' in out && 'mapId' in out) out.version = 0;
       if ('result' in out && 'endTick' in out) delete out.roadStone; // state v6 (D-32)
       if ('nextId' in out) delete out.nextWagonN; // state v7 (D-44)
+      if ('nextId' in out) delete out.valleyEvents; // state v8 (D-54), sandbox only
       if ('bridgeFrom' in out && 'odometer' in out) delete out.n; // state v7 wagon fleet number
       return out;
     }

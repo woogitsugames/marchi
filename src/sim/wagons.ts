@@ -6,6 +6,7 @@ import { contractTarget, storeCapOf } from './contract';
 import { bridgeIceUntil, thawing } from './seasons';
 import { buildingById } from './logistics';
 import { isMarket, sellAt } from './town';
+import { handInOrders } from './events';
 import { dijkstra, edgeLength, edgeSpeedAt, findPath, hasEdge, isRaining, net, type World } from './network';
 import type { Building, Good, Wagon } from './types';
 
@@ -383,7 +384,8 @@ function finishBusy(world: World, w: Wagon): void {
   to.stock[j.good] += w.cargoQty;
   to.incoming[j.good] -= j.qty;
   // the market sells on arrival: stock -> consumed, silver paid (conservation holds)
-  if (isMarket(world, to)) sellAt(world, to, j.good);
+  // accepted royal orders take their share first (D-54), the rest is sold
+  if (isMarket(world, to)) { handInOrders(world, to, j.good); sellAt(world, to, j.good); }
   w.cargoQty = 0;
   w.cargoGood = null;
   w.job = null;

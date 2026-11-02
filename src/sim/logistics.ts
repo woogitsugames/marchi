@@ -3,7 +3,7 @@
 import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
-import { fairPercent } from './seasons';
+import { fairPercent, orderOutstanding } from './events';
 import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Good, Wagon } from './types';
 
@@ -178,8 +178,10 @@ export function dispatch(world: World): void {
     let slots = Math.max(1, Math.floor((st.wagons.length * MARKET.wagonSharePct) / 100));
     const markets = st.buildings.filter((b) => b.type === 'castle');
     for (const w of st.wagons) if (w.job && markets.some((m) => m.id === w.job!.to)) slots--;
+    // goods still owed to accepted royal orders go first (D-54; no order = the old price order)
+    const owed = (g: Good): number => (orderOutstanding(st, g) > 0 ? 1 : 0);
     const goods = GOODS.filter((g) => MARKET.base[g] > 0)
-      .sort((a, c) => unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
+      .sort((a, c) => owed(c) - owed(a) || unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
     for (const m of markets) {
       for (const g of goods) {
         if (slots <= 0 || free.length === 0) break;

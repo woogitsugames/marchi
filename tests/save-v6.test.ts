@@ -15,12 +15,12 @@ function loadV6(w: World, label: string): World {
   const before = serialize(w);
   const envelope = makeEnvelope('auto', w.state, 0);
   eq(envelope.stateVersion, STATE_VERSION, label + ': envelope version');
-  eq(envelope.stateVersion, 7, label + ': a current (v6 seasons + v7 fleet numbers) save');
+  eq(envelope.stateVersion, STATE_VERSION, label + ': a current save');
   const parsed = parseSave(JSON.stringify(envelope));
   assert(parsed.ok, label + ': save gate rejected valid v6 data: ' +
     (parsed.ok ? '' : parsed.errors.map((e) => e.code + '@' + e.path).join(', ')));
   const saved = migrate(parsed.envelope);
-  eq(saved.stateVersion, 7, label + ': no unexpected migration');
+  eq(saved.stateVersion, STATE_VERSION, label + ': no unexpected migration');
   const restored = deserialize(JSON.stringify(saved.state));
   eq(serialize(restored), before, label + ': exact persisted state and key order');
   eq(stateHash(restored), stateHash(w), label + ': identical hash immediately after load');

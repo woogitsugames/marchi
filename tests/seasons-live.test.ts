@@ -7,7 +7,7 @@ import {
 } from '../src/sim/index';
 import { cellSpeed, edgeCosts, net } from '../src/sim/network';
 import {
-  SEASON_TICKS, YEAR_TICKS, bridgeIceUntil, cycleTicks, cycleTicksAt, effectsAt, fairPercentAt, seasonIceUntilAt, thawAt,
+  SEASON_TICKS, YEAR_TICKS, bridgeIceUntil, cycleTicks, cycleTicksAt, effectsAt, seasonIceUntilAt, thawAt,
   yieldPercentAt,
 } from '../src/sim/seasons';
 import { quoteCents, sellAt, unitCents } from '../src/sim/town';
@@ -41,8 +41,6 @@ test('seasons live: the allocation-free hooks agree with effectsAt over two year
     eq(yieldPercentAt('mill', t), 100, `mill @${t}`);
     eq(thawAt(t), e.dirtSpeedMultiplier !== 1, `thaw @${t}`);
     eq(seasonIceUntilAt(t), e.closedBridgeUntilTick ?? -1, `ice @${t}`);
-    eq(fairPercentAt('beer', t), e.fair && e.fair.good === 'beer' ? e.fair.pricePercent : 100, `fair @${t}`);
-    eq(fairPercentAt('bread', t), 100, `no fair for bread @${t}`);
   }
 });
 
@@ -188,7 +186,7 @@ test('seasons live: winter ice closes wooden spans for two short windows, keeps 
   eq(w.state.ice.length, 0, 'nothing written into state.ice');
 });
 
-test('seasons live: autumn fair pays +25 % for beer per unit (rounded down), nothing else changes', () => {
+test('seasons live: the valley fair pays +25 % per unit (rounded down) for its good only; plain autumn pays nothing extra (D-54)', () => {
   const sb = createWorld('sandbox');
   const castle = sb.state.buildings.find((b) => b.type === 'castle')!;
   for (const qty of [1, 6, 30]) {
@@ -201,9 +199,10 @@ test('seasons live: autumn fair pays +25 % for beer per unit (rounded down), not
     eq(quoteCents(sb.state, 'beer', qty, 125), want, `quote ${qty}`);
   }
   eq(unitCents(sb.state, 'wood', 100), unitCents(sb.state, 'wood'), 'default is no fair');
-  const sell = (tick: number, g: 'beer' | 'bread'): number => {
+  const sell = (tick: number, g: 'beer' | 'bread', fair = true): number => {
     const w = createWorld('sandbox');
     w.state.tick = tick;
+    if (fair) w.state.valleyEvents!.fair = { id: 'fair-2', good: 'beer', season: 'autumn', startTick: AUTUMN, endTick: AUTUMN + SEASON_TICKS, pricePercent: 125 };
     const c = w.state.buildings.find((b) => b.id === castle.id)!;
     c.stock[g] = 6;
     return sellAt(w, c, g) * 100 + w.state.market.cents;
@@ -213,7 +212,8 @@ test('seasons live: autumn fair pays +25 % for beer per unit (rounded down), not
   eq(sell(10, 'beer'), quoteCents(fresh, 'beer', 6), 'beer in spring: the plain quote');
   assert(sell(AUTUMN + 10, 'beer') > sell(10, 'beer') * 1.24, 'about +25 %');
   eq(sell(AUTUMN + 10, 'bread'), sell(10, 'bread'), 'bread unchanged in autumn');
-  eq(sell(WINTER + 10, 'beer'), sell(10, 'beer'), 'no fair in winter');
+  eq(sell(WINTER + 10, 'beer'), sell(10, 'beer'), 'fair over: plain price');
+  eq(sell(AUTUMN + 10, 'beer', false), quoteCents(fresh, 'beer', 6), 'autumn without a fair: no old beer bonus');
   const lab = createWorld('lab');
   lab.state.tick = AUTUMN + 10;
   for (const g of GOODS) eq(unitCents(lab.state, g), unitCents(lab.state, g, 100), 'no seasons, no fair');

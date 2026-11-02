@@ -16,6 +16,8 @@
 import { BUILDINGS, FLOW_BUCKETS, GOODS, GOODS_V4, MARKET, MAX_WAGONS, RANKS, RANKS_V4, STATE_VERSION, WAGON_CAPACITY, capacityOf, isGood } from '../sim/defs';
 import { isMapId, mapSize, terrainFor } from '../sim/missions';
 import { checkInvariants } from '../sim/sim';
+import { FAIR_PRICE_PERCENT, MAX_ROYAL_ORDERS, MERCHANT_PRICE_PERCENT, ORDER_TEMPLATES } from '../sim/events';
+import { SEASON_TICKS } from '../sim/seasons';
 import { terrainHash } from '../sim/terrainHash';
 import type { SimState } from '../sim/types';
 
@@ -590,6 +592,88 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
         if (fl.length !== FLOW_BUCKETS) e.add('BAD_TYPE', `${tp}.flow`, `expected ${FLOW_BUCKETS} buckets, got ${fl.length}`);
         fl.forEach((v, i) => { if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > LIMITS.maxInt) e.add('OUT_OF_RANGE', `${tp}.flow[${i}]`, `expected silver >= 0, got ${show(v)}`); });
       }
+    }
+  }
+  gateValleyEvents(c, s, version);
+}
+
+const TEMPLATE_IDS = new Set<string>(ORDER_TEMPLATES.map((t) => t.id));
+const SEASON_NAMES = new Set(['spring', 'summer', 'autumn', 'winter']);
+
+/** state v8 (D-54): the free valley's event slice. Only sandbox states carry it (required there from v8). */
+function gateValleyEvents(c: Ctx, s: Obj, version: number): void {
+  const P = 'state';
+  const m = isObj(s.mission) ? s.mission : null;
+  const sandbox = m?.id === 'sandbox';
+  if (!has(s, 'valleyEvents')) {
+    if (version >= 8 && sandbox) c.e.add('BAD_TYPE', `${P}.valleyEvents`, 'missing');
+    return;
+  }
+  if (!sandbox) { c.e.add('INCONSISTENT', `${P}.valleyEvents`, 'valley events outside the free valley'); return; }
+  const ev = obj(c, s, 'valleyEvents', P);
+  if (!ev) return;
+  const p = `${P}.valleyEvents`;
+  const tpl = (o: Obj, k: string, path: string, nullable: boolean): void => {
+    const v = o[k];
+    if (nullable && v === null) return;
+    if (typeof v !== 'string' || !TEMPLATE_IDS.has(v)) c.e.add('BAD_TYPE', `${path}.${k}`, `unknown order template ${show(v)}`);
+  };
+  const idOf = (o: Obj, path: string, prefix: string): void => {
+    const v = o.id;
+    if (typeof v !== 'string' || !new RegExp(`^${prefix}-[0-9]{1,9}$`).test(v)) c.e.add('BAD_TYPE', `${path}.id`, `bad id ${show(v)}`);
+  };
+  const partialGoods = (o: Obj, k: string, path: string): Obj | null => {
+    const g = obj(c, o, k, path);
+    if (!g) return null;
+    for (const key of Object.keys(g)) {
+      if (!c.goods.includes(key)) { c.e.add('BAD_TYPE', `${path}.${k}.${key}`, `unknown good ${show(key)}`); continue; }
+      int(c, g, key, `${path}.${k}`, 0, LIMITS.maxInt);
+    }
+    return g;
+  };
+  const orders = arr(c, ev, 'orders', p, MAX_ROYAL_ORDERS);
+  if (orders) orders.forEach((o, i) => {
+    const op = `${p}.orders[${i}]`;
+    if (!isObj(o)) { c.e.add('BAD_TYPE', op, 'expected object'); return; }
+    idOf(o, op, 'order');
+    tpl(o, 'templateId', op, false);
+    if (typeof o.accepted !== 'boolean') c.e.add('BAD_TYPE', `${op}.accepted`, `expected boolean, got ${show(o.accepted)}`);
+    const need = partialGoods(o, 'need', op), del = partialGoods(o, 'delivered', op);
+    if (need && del) for (const g of Object.keys(del)) {
+      const d = del[g], n = need[g];
+      if (typeof d === 'number' && (typeof n !== 'number' || d > n)) c.e.add('INCONSISTENT', `${op}.delivered.${g}`, `delivered ${d} > needed ${show(n)}`);
+    }
+    if (need && Object.keys(need).length === 0) c.e.add('OUT_OF_RANGE', `${op}.need`, 'an order needs at least one good');
+    int(c, o, 'rewardSilver', op, 0, LIMITS.maxInt);
+    int(c, o, 'rewardRenown', op, 0, LIMITS.maxInt);
+  });
+  for (const k of ['nextOrderTick', 'nextOrderAfterSoldUnits', 'sequence', 'ordersDone', 'orderSilver', 'merchantSilver']) int(c, ev, k, p, 0, LIMITS.maxInt);
+  int(c, ev, 'lastFairSeasonIndex', p, -1, LIMITS.maxInt);
+  int(c, ev, 'lastMerchantSeasonIndex', p, -1, LIMITS.maxInt);
+  tpl(ev, 'lastRejectedTemplate', p, true);
+  if (ev.fair !== null) {
+    const f = obj(c, ev, 'fair', p);
+    if (f) {
+      const fp = `${p}.fair`;
+      idOf(f, fp, 'fair');
+      goodField(c, f, 'good', fp, false);
+      if (typeof f.season !== 'string' || !SEASON_NAMES.has(f.season)) c.e.add('BAD_TYPE', `${fp}.season`, `unknown season ${show(f.season)}`);
+      const start = int(c, f, 'startTick', fp, 0, LIMITS.maxInt);
+      const end = int(c, f, 'endTick', fp, 0, LIMITS.maxInt);
+      if (start !== null && end !== null && end - start !== SEASON_TICKS) c.e.add('INCONSISTENT', `${fp}.endTick`, 'a fair lasts exactly one season');
+      if (f.pricePercent !== FAIR_PRICE_PERCENT) c.e.add('OUT_OF_RANGE', `${fp}.pricePercent`, `expected ${FAIR_PRICE_PERCENT}, got ${show(f.pricePercent)}`);
+    }
+  }
+  if (ev.merchant !== null) {
+    const mo = obj(c, ev, 'merchant', p);
+    if (mo) {
+      const mp = `${p}.merchant`;
+      idOf(mo, mp, 'merchant');
+      goodField(c, mo, 'good', mp, false);
+      int(c, mo, 'quantity', mp, 1, 12);
+      const cents = int(c, mo, 'unitCents', mp, 1, LIMITS.maxInt);
+      if (mo.pricePercent !== MERCHANT_PRICE_PERCENT) c.e.add('OUT_OF_RANGE', `${mp}.pricePercent`, `expected ${MERCHANT_PRICE_PERCENT}, got ${show(mo.pricePercent)}`);
+      else if (cents !== null && typeof mo.good === 'string' && isGood(mo.good) && cents !== MARKET.base[mo.good] * MERCHANT_PRICE_PERCENT) c.e.add('INCONSISTENT', `${mp}.unitCents`, 'quote does not match 140 % of the base price');
     }
   }
 }

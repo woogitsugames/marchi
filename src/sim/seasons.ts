@@ -5,7 +5,7 @@
 import { RAIN_DIRT, TICK_HZ } from './defs';
 import { iceUntil } from './contract';
 import type { World } from './network';
-import type { BuildingType, Good, RainSpell } from './types';
+import type { BuildingType, RainSpell } from './types';
 
 export const SEASON_TICKS = 15 * 60 * TICK_HZ;
 export const YEAR_TICKS = 4 * SEASON_TICKS;
@@ -26,14 +26,6 @@ const ICE_OFFSETS: readonly Readonly<RainSpell>[] = [
   { start: 9 * 60 * TICK_HZ, end: 11 * 60 * TICK_HZ },
 ];
 
-export const AUTUMN_FAIR_GOOD: Good = 'beer';
-
-export interface FairBonus {
-  good: Good;
-  /** Percentage of the ordinary saturation-adjusted price; 125 means +25%. */
-  pricePercent: number;
-}
-
 /** This contains data, not mutations or applied production/transport changes. */
 export interface SeasonEffects {
   season: Season;
@@ -48,8 +40,6 @@ export interface SeasonEffects {
   iceWindows: readonly Readonly<RainSpell>[];
   /** Reopening tick while a winter ice interval is active, otherwise null. */
   closedBridgeUntilTick: number | null;
-  /** A single good is boosted only in autumn. */
-  fair: Readonly<FairBonus> | null;
 }
 
 export type SeasonChangeKind = 'season' | 'thaw-start' | 'thaw-end' | 'ice-start' | 'ice-end';
@@ -108,7 +98,6 @@ export function effectsAt(tick: number): SeasonEffects {
     thawWindow,
     iceWindows,
     closedBridgeUntilTick,
-    fair: season === 'autumn' ? { good: AUTUMN_FAIR_GOOD, pricePercent: 125 } : null,
   };
 }
 
@@ -209,15 +198,8 @@ export function bridgeIceUntil(world: World): number {
   return s > authored ? s : authored;
 }
 
-/** Fair price percentage for a good at tick (125 for beer in autumn, else 100). */
-export function fairPercentAt(good: Good, tick: number): number {
-  return good === AUTUMN_FAIR_GOOD && seasonIndex(tick) === 2 ? 125 : 100;
-}
-
-/** Fair price percentage in this world right now (100 without seasons). */
-export function fairPercent(world: World, good: Good): number {
-  return seasonal(world) ? fairPercentAt(good, world.state.tick) : 100;
-}
+// The fair price bonus moved to events.ts fairPercent() (D-54: a dynamic valley fair replaced the
+// fixed autumn beer +25%; never both).
 
 /** 1-based year of the calendar at tick (for the HUD). */
 export function yearAt(tick: number): number {

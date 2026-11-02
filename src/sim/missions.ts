@@ -1,4 +1,5 @@
 // Mission definitions: map spec, pre-placed buildings and roads, contract.
+import { freshValleyEvents } from './events';
 import { GOODS, STATE_VERSION, TICK_HZ, emptyGoods, goodsOf } from './defs';
 import { lineCells, place, spawnWagon } from './commands';
 import { nextInt, seedRng } from './rng';
@@ -274,6 +275,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     market: freshMarket(def.market ?? def.contract === null),
     town: freshTown(),
   };
+  if (def.id === 'sandbox') state.valleyEvents = freshValleyEvents();
   state.rain = rainSpells(state.rng);
   if (def.rain) state.rain = def.rain.map((r) => ({ ...r }));
   const world: World = { terrain, state, cache: null, scratch: null };
