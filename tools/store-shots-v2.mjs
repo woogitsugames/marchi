@@ -264,6 +264,25 @@ function frameHtml(png, caption, kind, fonts) {
     </body></html>`;
 }
 
+// Direct screenshot of the actual Chromium compositor frame. This bypasses
+// Playwright's wait for the continuously animating WebGL game to become stable.
+async function captureFrame(page) {
+  const client = await page.context().newCDPSession(page);
+  let timeout;
+  try {
+    const result = await Promise.race([
+      client.send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('CDP screenshot timed out after 60s')), 60000);
+      }),
+    ]);
+    return Buffer.from(result.data, 'base64');
+  } finally {
+    clearTimeout(timeout);
+    await client.detach().catch(() => {});
+  }
+}
+
 async function compose(browser, rawPng, caption, orientation, fonts, target) {
   const { w, h } = SIZES[orientation];
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
@@ -271,7 +290,7 @@ async function compose(browser, rawPng, caption, orientation, fonts, target) {
     const page = await ctx.newPage();
     await page.setContent(frameHtml(rawPng, caption, orientation, fonts), { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: target, timeout: 90000, animations: 'disabled' });
+    writeFileSync(target, await captureFrame(page));
   } finally { await ctx.close(); }
 }
 
@@ -321,7 +340,7 @@ async function composeFeature(browser, png, lang, fonts, target) {
       <p>${htmlEscape(FEATURE_SUBTITLE[lang])}</p></div></body></html>`;
     await page.setContent(html, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: target, timeout: 90000, animations: 'disabled' });
+    writeFileSync(target, await captureFrame(page));
   } finally { await ctx.close(); }
 }
 
@@ -370,7 +389,7 @@ async function main() {
           if (game.errors.length) throw new Error('Page errors after resize: ' + game.errors.join('; '));
           const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
           console.log('[store-shots-v2] ' + lang + ' scene #' + scene.id + ' / ' + kind);
-          const raw = await game.page.screenshot({ timeout: 90000, animations: 'disabled' });
+          const raw = await captureFrame(game.page);
           mkdirSync(dirname(file), { recursive: true });
           await compose(browser, raw, captions.get(scene.id)[lang], kind, fonts, file);
           const meta = await sharp(file).metadata();
