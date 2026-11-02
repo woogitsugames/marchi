@@ -32,6 +32,11 @@ jobs:
       - run: npm ci
       - name: Typecheck proposals
         run: npm run typecheck
+      - name: Diagnostic balance of all three missions
+        run: |
+          npx tsx tools/bot-m7.ts || true
+          npx tsx tools/bot-m8.ts || true
+          npx tsx tools/bot-m9.ts || true
       - name: Acceptance tests
         run: npx tsx tests/run.ts missions-7-9
       - name: Mission VII three plans

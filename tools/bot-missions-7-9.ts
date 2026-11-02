@@ -19,7 +19,7 @@ export type RunResult = {
   id: Mission789Id; strategy: string; result: string; minutes: number; seals: number;
   coins: number; actionSecond: number | null; commandErrors: string[]; invariantErrors: string[];
   stoneUsed: number; peakStoneStored: number; maxStoneWagon: number;
-  fishCrossings: number; contestedSamples: number; produced: {fish: number; stone: number; malt: number; beer: number};
+  fishCrossings: number; contestedSamples: number; delivered: string; produced: {fish: number; stone: number; malt: number; beer: number};
 };
 
 const row = (w: World, y: number, x1: number, x2: number): number[] =>
@@ -30,7 +30,7 @@ const wagon = (w: World): Command => ({ t: 'buyWagon', stable: stableId(w) });
 export const STRATEGIES: Record<Mission789Id, Strategy[]> = {
   m7: [
     { name: 'nic / no action', after: 0, cmds: () => [] },
-    { name: 'czesciowa / extra wagon @0:30', after: 30, cmds: (w) => [wagon(w)] },
+    { name: 'czesciowa / bank-side fisher late @3:40', after: 220, cmds: () => [{ t: 'place', type: 'fisher', ...M7_FISHER_SITE }] },
     { name: 'wlasciwa / bank-side fisher @0:20 + wagon', after: 20,
       cmds: (w) => [{ t: 'place', type: 'fisher', ...M7_FISHER_SITE }, wagon(w)] },
   ],
@@ -101,11 +101,15 @@ export function runProposed(id: Mission789Id, strategy: Strategy): RunResult {
       }
     }
     const l = st.ledger.produced;
+    const castle = st.buildings.find((b) => b.type === 'castle')!;
+    const need = st.mission.contract!.need;
+    const delivered = Object.keys(need).filter((g) => need[g as keyof typeof need] > 0)
+      .map((g) => g + '=' + castle.stock[g as keyof typeof need] + '/' + need[g as keyof typeof need]).join(',');
     return {
       id, strategy: strategy.name, result: st.mission.result,
       minutes: st.mission.endTick / (60 * TICK_HZ), seals: stars(w), coins: st.coins,
       actionSecond, commandErrors, invariantErrors, stoneUsed, peakStoneStored, maxStoneWagon,
-      fishCrossings, contestedSamples, produced: { fish: l.fish, stone: l.stone, malt: l.malt, beer: l.beer },
+      fishCrossings, contestedSamples, delivered, produced: { fish: l.fish, stone: l.stone, malt: l.malt, beer: l.beer },
     };
   });
 }
@@ -119,6 +123,7 @@ export function printResults(id: Mission789Id): RunResult[] {
       ' | storedStone ' + r.peakStoneStored + ' usedStone ' + r.stoneUsed +
       ' maxStoneLoad ' + r.maxStoneWagon +
       ' fishBridge ' + r.fishCrossings + ' contested ' + r.contestedSamples +
+      ' delivered ' + r.delivered + ' produced ' + JSON.stringify(r.produced) +
       ' | errs ' + [...r.commandErrors, ...r.invariantErrors].join('; '));
   }
   return results;
