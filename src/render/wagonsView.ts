@@ -25,17 +25,24 @@ import type { ModelPart } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { createHorseWalkMaterial, type HorseWalkMaterial, WAGON, wagonLod1, wagonModel } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
+import { wagonDrawLag } from './wagonSpacing';
 
 /** Lateral offset from the road centreline (keep right). */
 const LANE = 1.05;
 /** Heading aims this far ahead along the drawn road (≈ rear axle to the horse's shoulders). */
 const LOOKAHEAD = 2.4;
+/** How fast a follower catches up again once the wagon ahead turns off (m per sim tick). */
+const GAP_RELAX = 0.35;
 /** Spacing of wagons queuing at one node. */
 const QUEUE_GAP = 8;
 
 interface Snap {
   id: number;
   init: boolean;
+  /** Metres the drawn position stays behind the sim position (spacing, D-31). */
+  lag: number;
+  /** Edge the wagon was on before the current one (to draw it there while lagging), -1 if none. */
+  prevAt: number; prevNext: number; curAt: number; curNext: number;
   px: number; pz: number; py: number; podo: number;
   cx: number; cz: number; cy: number; codo: number;
   /** Edge direction of the current snapshot (unit, xz). */
@@ -186,45 +193,59 @@ export class WagonsView {
     while (this.tickTimes.length > 1 && nowMs - this.tickTimes[0]! > 1000) this.tickTimes.shift();
     const t = world.terrain;
     const A = _v;
+    const wantLag = wagonDrawLag(world);
     for (const w of world.state.wagons) {
       let s = this.snaps.get(w.id);
       if (!s) {
         s = {
-          id: w.id, init: false, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
+          id: w.id, init: false, lag: 0, prevAt: -1, prevNext: -1, curAt: -1, curNext: -1, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
         };
         this.snaps.set(w.id, s);
       }
       s.px = s.cx; s.pz = s.cz; s.py = s.cy; s.podo = s.codo;
+      if (w.next >= 0 && (w.at !== s.curAt || w.next !== s.curNext)) {
+        s.prevAt = s.curAt; s.prevNext = s.curNext; s.curAt = w.at; s.curNext = w.next;
+      }
+      // spacing: the lag grows at once (no overlap) and shrinks gently (no jump when the road clears)
+      const want = w.next >= 0 ? wantLag.get(w.id) ?? 0 : 0;
+      s.lag = want >= s.lag ? want : Math.max(want, s.lag - GAP_RELAX);
       if (w.next >= 0) {
-        this.centre(world, w.at, A);
+        // the edge and distance actually drawn: lagging may put the wagon back on its previous edge
+        let ea = w.at, eb = w.next, d = w.edgeT - s.lag;
+        if (d < 0 && s.prevNext === w.at && s.prevAt >= 0) {
+          const pl = edgeLength(t, s.prevAt, s.prevNext);
+          ea = s.prevAt; eb = s.prevNext; d = Math.max(0, pl + d);
+        }
+        d = Math.max(0, d);
+        this.centre(world, ea, A);
         const ax = A.x, az = A.z;
-        this.centre(world, w.next, A);
+        this.centre(world, eb, A);
         const bx = A.x, bz = A.z;
-        const len = edgeLength(t, w.at, w.next);
-        const f = Math.min(1, w.edgeT / len);
+        const len = edgeLength(t, ea, eb);
+        const f = Math.min(1, d / len);
         const l = Math.hypot(bx - ax, bz - az) || 1;
         s.dx = (bx - ax) / l; s.dz = (bz - az) / l;
         // drawn on the road mask's curve; heading toward a point a little further along it
-        const p = this.roads.pointOnEdge(w.at, w.next, f, _p);
+        const p = this.roads.pointOnEdge(ea, eb, f, _p);
         s.cx = p.x; s.cz = p.z;
         const ahead = (1 - f) * l;
         let q: RoadPoint;
-        if (LOOKAHEAD <= ahead) q = this.roads.pointOnEdge(w.at, w.next, f + LOOKAHEAD / l, _q);
-        else if (w.path.length) {
-          const n2 = w.path[0]!;
+        if (LOOKAHEAD <= ahead) q = this.roads.pointOnEdge(ea, eb, f + LOOKAHEAD / l, _q);
+        else if (eb !== w.next || w.path.length) {
+          const n2 = eb !== w.next ? w.next : w.path[0]!;
           this.centre(world, n2, A);
           const l2 = Math.hypot(A.x - bx, A.z - bz) || 1;
-          q = this.roads.pointOnEdge(w.next, n2, Math.min(1, (LOOKAHEAD - ahead) / l2), _q);
-        } else q = this.roads.pointOnEdge(w.at, w.next, 1, _q);
+          q = this.roads.pointOnEdge(eb, n2, Math.min(1, (LOOKAHEAD - ahead) / l2), _q);
+        } else q = this.roads.pointOnEdge(ea, eb, 1, _q);
         const hx = q.x - p.x, hz = q.z - p.z, hl = Math.hypot(hx, hz);
         if (hl > 0.4) { s.hx = hx / hl; s.hz = hz / hl; } else { s.hx = p.tx; s.hz = p.tz; }
-        const wa = t.water[w.at] === 1, wb = t.water[w.next] === 1;
+        const wa = t.water[ea] === 1, wb = t.water[eb] === 1;
         s.bridge = wa || wb;
-        const ha = this.surf(world, w.at), hb = this.surf(world, w.next);
+        const ha = this.surf(world, ea), hb = this.surf(world, eb);
         s.cy = ha + (hb - ha) * f;
         s.pitch = s.bridge ? Math.atan2(hb - ha, l) : 0;
-        const woodA = wa && world.state.roads[w.at] === 1, woodB = wb && world.state.roads[w.next] === 1;
+        const woodA = wa && world.state.roads[ea] === 1, woodB = wb && world.state.roads[eb] === 1;
         s.lane = woodA && woodB ? 0 : woodA ? Math.min(1, f * 2 - 0.4) : woodB ? Math.min(1, (1 - f) * 2 - 0.4) : 1;
         if (s.lane < 0) s.lane = 0;
         s.moving = true;
@@ -236,7 +257,7 @@ export class WagonsView {
         s.lane = s.bridge && world.state.roads[w.at] === 1 ? 0 : 1;
         s.moving = false;
       }
-      s.codo = w.odometer;
+      s.codo = w.odometer - s.lag;
       s.opp = false;
       if (!s.init) {
         s.init = true;

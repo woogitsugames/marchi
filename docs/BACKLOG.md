@@ -13,7 +13,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Buduj: doliczyć koszt drogi dojazdowej do etykiety kosztu (nowe klucze i18n); etykieta czasem nachodzi na ducha.
 - [ ] P3 — Buduj: po postawieniu niepodłączonego budynku nie zamykać narzędzia; podwójny przycisk Cofnij w układach bocznych.
 - [ ] P2 — Tłumaczenia: ~100 kluczy z PENDING_KEYS dla 15 języków (paczka GPT 05).
-- [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render); pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki.
+- [ ] P3 — Pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki. (Nakładanie się wozów jadących w tę samą stronę: rozwiązane wizualnie, D-31; odstęp w sim wymaga przestrojenia misji.)
 - [ ] P2 — (D-21) Tryb swobodny jako spokojny city builder: UI stawiania budynków (sim ma `place`; podgląd footprintu, brama, koszt, płaskość), sandbox bez terminu, więcej srebra/dochód z dostaw do zamku lub targu, zapis postępów; bez life-simu osadników.
 - [ ] P3 — (D-21) Opisy sklepu i polityka prywatności: usunąć „jednorazowy zakup / pełna wersja”, dopisać tryb swobodny; reklamy dopiero po decyzji o dostawcy (wymaga zmiany deklaracji danych!).
 - [ ] P1 — List końcowy: top 3 przyczyny przestojów i stracony czas (`topStallCauses`) — UI w `buildEndLetter` (menu.ts), po zakończeniu pracy agenta Fold.
