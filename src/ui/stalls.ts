@@ -2,7 +2,7 @@
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { explainBuilding, outputCustomer, seasonalSupplier, type Building, type World } from '../sim/index';
-import { isCritical, isStall } from './format';
+import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
 export const MIN_STALL_TICKS = 20;
@@ -76,4 +76,38 @@ export function cureFor(world: World, id: number): Cure {
   }
   cureCache = { key, cure };
   return cure;
+}
+
+/**
+ * rankStalls() once per sim tick instead of every frame (frame-cost research, item 3): the ranking only
+ * changes when the state does — a tick, a command applied in pause (`version`: e.g. the loop's journal
+ * length), a new world or a loaded save. `invalidate()` forces the next call to recompute (sheet or
+ * selection changes, a language switch). The returned array is shared between calls: read it, never mutate it.
+ */
+export class StallRanking {
+  private world: World | null = null;
+  private state: object | null = null;
+  private tick = -1;
+  private net = -1;
+  private count = -1;
+  private version = -1;
+  private cached: StallEntry[] = [];
+  /** Recomputations since construction (tests, perf overlay). */
+  computed = 0;
+
+  get(world: World, version = 0): StallEntry[] {
+    const st = world.state;
+    if (world !== this.world || st !== this.state || st.tick !== this.tick || st.netVersion !== this.net ||
+      st.buildings.length !== this.count || version !== this.version) {
+      this.world = world; this.state = st; this.tick = st.tick; this.net = st.netVersion;
+      this.count = st.buildings.length; this.version = version;
+      this.cached = rankStalls(world);
+      this.computed++;
+    }
+    return this.cached;
+  }
+
+  invalidate(): void {
+    this.tick = -1;
+  }
 }
