@@ -46,7 +46,9 @@
   --rail-top: 0px; /* height of the top rail on tiny screens (Flip cover) */
 
   --rail-h: 120px; /* portrait rail height without the safe area */
-  --rail-w: 128px; /* landscape rail width without the safe area */
+  --rail-w: 0px; /* D-43: no side rail any more; the bottom rail runs along every layout */
+  --hud-top: 0px; /* bottom of the top cluster (bar + contract), set by the HUD */
+  --bar-b: 0px; /* bottom of the chips / speed row, set by the HUD */
 
   color-scheme: light;
 }
@@ -252,255 +254,9 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 
 #hud { position: absolute; inset: 0; }
 
-/* waybill (list przewozowy) */
-.waybill-wrap {
-  position: absolute;
-  top: calc(var(--safe-t) + 10px);
-  inset-inline-start: calc(var(--safe-s) + 10px);
-  filter: var(--shadow);
-  transform-origin: 28px 28px;
-  transition: transform var(--t-mid) var(--ease), opacity var(--t-mid) var(--ease);
-}
-:root[dir='rtl'] .waybill-wrap { transform-origin: calc(100% - 28px) 28px; }
-.waybill {
-  position: relative;
-  width: 214px;
-  padding-block: 12px 22px;
-  padding-inline: 14px 12px;
-  background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
-  /* torn bottom edge: clip-path from JS */
-}
-.waybill h2 {
-  margin: 0 0 6px;
-  margin-inline-end: 40px;
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 22px;
-  line-height: 1;
-}
-.waybill .wb-to { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; }
-.wb-line { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 6px; min-height: 30px; }
-.wb-line + .wb-line { border-top: 1px solid rgb(74 72 67 / .3); }
-.wb-line .tally { width: 100%; max-width: 150px; height: 18px; display: block; }
-.wb-line .tally path.on { fill: var(--ink); }
-.wb-line .tally path.off { fill: rgb(74 72 67 / .16); }
-.wb-line .count { font-size: 15px; font-weight: 700; min-width: 42px; text-align: end; }
-.wb-line .count small { font-weight: 400; color: var(--ink-soft); font-size: 13px; }
-.wb-line.done .count { color: var(--meadow); }
-.wb-time { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 15px; font-weight: 500; }
-.wb-time.late { color: var(--clay); }
-.seal-btn {
-  position: absolute;
-  top: 2px;
-  inset-inline-end: 2px;
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-}
-.seal-stack { position: relative; width: 40px; height: 40px; }
-.seal-stack svg { position: absolute; inset: 0; }
-.seal-stack .seal-empty { color: var(--parchment-dim); }
-.seal-stack .seal-ghost { color: rgb(74 72 67 / .55); }
-.seal-stack .seal-fill { color: var(--clay); }
-.waybill-wrap.is-collapsed .waybill { display: none; }
-.waybill-wrap .seal-only { display: none; }
-.waybill-wrap.is-collapsed .seal-only { display: grid; width: 60px; height: 60px; place-items: center; }
-.waybill-wrap.is-collapsed { filter: none; }
-.seal-only .seal-stack { width: 52px; height: 52px; filter: var(--shadow); }
-.seal-only .seal-time {
-  position: absolute; left: 50%; top: 56px; transform: translateX(-50%);
-  font-size: 13px; font-weight: 700; color: var(--parchment); white-space: nowrap;
-  background: var(--oak); padding: 1px 6px; clip-path: polygon(3px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px), 0 3px);
-}
-
-/* tool rail */
-.rail {
-  position: absolute;
-  inset-inline-start: 0;
-  inset-inline-end: 0;
-  bottom: 0;
-  padding-block: 0 calc(var(--safe-b) + 6px); padding-inline: calc(var(--safe-s) + 8px) calc(var(--safe-e) + 8px);
-  background: var(--oak);
-  color: var(--parchment);
-  border-top: 1px solid var(--oak-hi);
-  box-shadow: 0 -2px 0 rgb(43 38 32 / .4);
-  display: flex;
-  flex-direction: column;
-}
-.rail-line {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 52px;
-  border-bottom: 1px solid rgb(74 72 67 / .9);
-}
-.rail-stat { display: flex; align-items: center; gap: 5px; font-size: 17px; font-weight: 700; padding: 0 6px; }
-.rail-stat svg { opacity: .92; }
-.rail-stat.sep::before { content: ''; width: 1px; height: 20px; background: var(--iron); margin-inline-end: 6px; }
-.rail-stat .lbl { font-weight: 400; font-size: 13px; opacity: .8; }
-.rail-stat.rain { color: var(--mist); }
-.rail-spacer { flex: 1; }
-.speed { display: flex; gap: 2px; }
-.speed .btn { min-width: 48px; width: 48px; min-height: 48px; height: 48px; padding: 0; --c: 5px; }
-.speed .btn.is-on { --fill: #4b3f31; }
-.rail-tools { display: flex; justify-content: space-between; gap: 4px; padding-top: 6px; }
-@media (min-width: 600px) {
-  body:not(.is-landscape) .rail-tools { justify-content: flex-end; gap: 6px; }
-  body:not(.is-landscape).left-handed .rail-tools { justify-content: flex-end; }
-  body:not(.is-landscape) .tool { flex: 0 0 96px; }
-}
-.tool {
-  flex: 1;
-  min-width: 52px;
-  max-width: 96px;
-  min-height: 60px;
-  flex-direction: column;
-  gap: 2px;
-  padding: 4px 2px 3px;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: .01em;
-}
-.tool .tl { line-height: 1; white-space: nowrap; }
-.tool.is-on { --fill: #46392c; }
-.tool.is-on .tl { color: #e9d9b6; }
-.icon-btn { padding: 0; width: 48px; }
-.rail-tools .menu-slot { display: none; }
-body.is-landscape .rail-line .menu-slot { display: none; }
-body.is-landscape .rail-tools .menu-slot { display: inline-flex; }
-
-/* landscape: rail on the right edge (mirrored for left-handed) */
-body.is-landscape .rail {
-  inset-inline-start: auto;
-  top: 0;
-  inset-inline-end: 0;
-  bottom: 0;
-  width: calc(var(--rail-w) + var(--safe-e));
-  padding-block: calc(var(--safe-t) + 6px) calc(var(--safe-b) + 6px); padding-inline: 8px calc(var(--safe-e) + 8px);
-  border-top: 0;
-  border-inline-start: 1px solid var(--oak-hi);
-  box-shadow: calc(-2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
-  justify-content: flex-start;
-  gap: 6px;
-}
-body.is-landscape .rail-line {
-  flex-wrap: wrap;
-  border-bottom: 0;
-  min-height: 0;
-  gap: 4px;
-  justify-content: space-between;
-}
-body.is-landscape .rail-line .rail-spacer { display: none; }
-body.is-landscape .rail-stat { font-size: 15px; padding: 0 2px; min-height: 28px; }
-body.is-landscape .rail-stat.sep::before { display: none; }
-body.is-landscape .rail-stat .lbl { display: none; }
-body.is-landscape .speed { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%; order: 5; }
-body.is-landscape .speed .btn { width: 100%; min-width: 0; height: 48px; }
-body.is-landscape .rail-tools {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding-top: 6px;
-  border-top: 1px solid var(--iron);
-}
-body.is-landscape .tool { max-width: none; min-height: 52px; }
-body.is-landscape .tool .tl { display: none; }
-body.is-landscape .tool.is-on .tl {
-  display: block;
-  position: absolute;
-  inset-inline-end: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-}
-body.is-landscape.left-handed .rail { inset-inline-end: auto; inset-inline-start: 0; border-inline-start: 0; border-inline-end: 1px solid var(--oak-hi); box-shadow: calc(2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
-  padding-inline-start: calc(var(--safe-s) + 8px); padding-inline-end: 8px; width: calc(var(--rail-w) + var(--safe-s)); }
-body.is-landscape .waybill-wrap { inset-inline-start: calc(var(--safe-s) + 10px); }
-body.is-landscape.left-handed .waybill-wrap { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
-/* portrait left-handed: mirror the tool order so the most used tool sits under the left thumb */
-body:not(.is-landscape).left-handed .rail-tools { flex-direction: row-reverse; }
-body:not(.is-landscape).left-handed .rail-line { flex-direction: row-reverse; }
-
-/* active-tool label in landscape lives outside the clipped button */
-.tool-caption {
-  position: absolute;
-  padding: 6px 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--parchment);
-  background: var(--oak);
-  border: 1px solid var(--clay);
-  white-space: nowrap;
-  display: none;
-}
-body.is-landscape .tool-caption.is-shown { display: block; }
-
 /* ---------------------------------------------------------------- markers in the scene */
 
 #markers { position: absolute; inset: 0; overflow: hidden; }
-.bubble {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 48px; /* hit area */
-  height: 52px;
-  margin: -52px 0 0 -24px;
-  display: grid;
-  place-items: start center;
-  opacity: 0;
-  transition: opacity 150ms var(--ease);
-  will-change: transform, opacity;
-}
-.bubble.is-shown { opacity: 1; }
-.bubble .bb {
-  --c: 5px;
-  width: 38px;
-  height: 46px;
-  filter: var(--shadow);
-}
-.bubble .bb-in {
-  width: 38px;
-  height: 46px;
-  padding: 5px 5px 13px;
-  background: var(--iron);
-  clip-path: polygon(5px 0, 33px 0, 38px 5px, 38px 29px, 33px 34px, 24px 34px, 19px 45px, 14px 34px, 5px 34px, 0 29px, 0 5px);
-  position: relative;
-}
-.bubble .bb-in::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
-  clip-path: polygon(5.6px 1.5px, 32.4px 1.5px, 36.5px 5.6px, 36.5px 28.4px, 32.4px 32.5px, 23.2px 32.5px, 19px 41.5px, 14.8px 32.5px, 5.6px 32.5px, 1.5px 28.4px, 1.5px 5.6px);
-}
-.bubble .bb-in svg { position: relative; width: 26px; height: 26px; margin: -1px auto 0; color: var(--ink); --icon-halo: var(--parchment); }
-.bubble.is-critical .bb-in { background: var(--clay); }
-.bubble.is-critical .bb-in svg { color: var(--clay); }
-.bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
-.bubble.is-minor .bb-in svg { opacity: .8; }
-.bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }
-@keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
-
-.eta-tag {
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 2px 7px 2px 6px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #2b2620;
-  background: var(--ochre);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  clip-path: polygon(6px 0, 100% 0, 100% 100%, 6px 100%, 0 50%);
-  padding-inline-start: 10px;
-  opacity: 0;
-  transition: opacity 150ms var(--ease);
-}
-.eta-tag.is-shown { opacity: 1; }
-
 .draft-tag {
   position: absolute;
   left: 0;
@@ -516,61 +272,6 @@ body.is-landscape .tool-caption.is-shown { display: block; }
 .draft-tag.is-shown { display: block; }
 .draft-tag.is-bad { --frame: var(--clay); color: #6e3520; }
 .draft-tag .dt-sub { display: block; font-weight: 400; font-size: 13px; color: var(--ink-soft); }
-
-/* ---------------------------------------------------------------- toasts & notices */
-
-.toasts {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--rail-h) + var(--safe-b) + 12px);
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-start;
-  gap: 6px;
-  width: min(360px, calc(100vw - 24px));
-}
-body.is-landscape .toasts { inset-inline-start: auto; inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 12px); transform: none; bottom: calc(var(--safe-b) + 12px); align-items: flex-end; }
-body.is-landscape.left-handed .toasts { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 12px); align-items: flex-start; }
-.toast {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-block: 8px;
-  padding-inline: 10px 12px;
-  font-size: 15px;
-  font-weight: 500;
-  min-height: 40px;
-  animation: toast-in var(--t-mid) var(--ease);
-  transition: opacity var(--t-mid) var(--ease);
-}
-.toast.err { --frame: var(--clay); }
-.toast.err svg { color: var(--clay); }
-.toast.is-out { opacity: 0; }
-.toast-n { margin-inline-start: auto; padding-inline-start: 6px; color: var(--ink-soft); font-size: 13px; }
-.toast-n:empty { display: none; }
-@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-.notice-wrap {
-  position: absolute;
-  top: calc(var(--safe-t) + 12px);
-  inset-inline-end: calc(var(--safe-e) + 12px);
-  max-width: min(260px, calc(100vw - 250px));
-}
-.notice {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 8px 12px;
-  font-size: 15px;
-  line-height: 1.2;
-  animation: toast-in var(--t-slow) var(--ease);
-  transition: opacity var(--t-slow) var(--ease);
-}
-.notice.is-out { opacity: 0; }
-body.is-landscape .notice-wrap { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 12px); }
-body.is-landscape.left-handed .notice-wrap { inset-inline-end: calc(var(--safe-e) + 12px); }
-
 
 /* ---------------------------------------------------------------- sheets */
 
@@ -887,7 +588,6 @@ body.is-side .sheet-grip::before { display: none; }
   white-space: pre;
   pointer-events: none;
 }
-body.is-landscape .perf { bottom: 8px; inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 8px); }
 
 /* ================================================================ foldables & big screens
    Body classes come from src/ui/layout.ts: is-split (tools bottom-left, speed bottom-right),
@@ -905,45 +605,6 @@ body.is-landscape .perf { bottom: 8px; inset-inline-end: calc(var(--rail-w) + va
 /* fold / unfold / rotate: snap to the new dock instead of sliding across a different screen */
 body.is-relayout *, body.is-relayout *::before { transition: none !important; animation: none !important; }
 
-.rail-hint { display: none; }
-
-/* ---- split rail: two oak pads in the thumb corners of a near-square / wide portrait screen */
-body.is-split .rail {
-  background: none;
-  border-top: 0;
-  box-shadow: none;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 0 calc(var(--safe-b) + 12px); padding-inline: calc(var(--safe-s) + 12px) calc(var(--safe-e) + 12px);
-  pointer-events: none;
-  filter: var(--shadow);
-}
-body.is-split .rail-tools, body.is-split .rail-line {
-  pointer-events: auto;
-  background: var(--oak);
-  --c: 8px;
-  clip-path: var(--chamfer);
-  box-shadow: inset 0 1px 0 var(--oak-hi);
-}
-body.is-split .rail-tools { order: 0; padding: 6px; gap: 4px; justify-content: flex-start; }
-body.is-split .tool { flex: 0 0 80px; min-height: 64px; }
-body.is-split .rail-line {
-  order: 1;
-  flex-wrap: wrap;
-  width: 262px;
-  min-height: 0;
-  padding: 4px 6px 6px;
-  border-bottom: 0;
-  row-gap: 2px;
-  justify-content: space-between;
-}
-body.is-split .rail-line .rail-spacer { flex-basis: 100%; height: 0; }
-body.is-split .rail-stat { min-height: 34px; }
-body.is-split.left-handed .rail { flex-direction: row-reverse; }
-body.is-split.left-handed .rail-tools, body.is-split.left-handed .rail-line { flex-direction: row; }
-body.is-split.left-handed .rail-line { flex-wrap: wrap; }
 
 /* split screens: the side sheet docks bottom-right, just above the speed pad, so its close button
    and links stay within the right thumb's reach instead of the far top corner */
@@ -953,39 +614,11 @@ body.is-split:not(.is-flex) .sheet { top: auto; bottom: calc(var(--rail-h) + var
 body.is-split .menu-strip { width: 320px; }
 
 /* ---- narrow portrait (old Fold cover ~344 px): menu button joins the tools row */
-body.is-narrow .rail-line .menu-slot { display: none; }
-body.is-narrow .rail-tools .menu-slot { display: inline-flex; flex: 0 0 48px; }
-body.is-narrow .rail-stat { padding: 0 2px; font-size: 16px; gap: 3px; }
-body.is-narrow .rail-stat.sep::before { margin-inline-end: 3px; }
-body.is-narrow .speed { gap: 1px; }
-body.is-narrow .tool { min-width: 48px; }
-body.is-narrow .tool .tl { font-size: 12px; letter-spacing: 0; }
-body.is-narrow .waybill { width: 196px; }
 body.is-narrow .menu-strip { width: min(290px, 84vw); padding-inline-end: 16px; }
 body.is-narrow .menu-item { font-size: 23px; }
 
 /* ---- mini (Flip cover, tiny windows): watch mode. Controls at the TOP edge because the Flip
    cover's cameras cut into the bottom of the panel; no building tools, seal instead of waybill. */
-body.is-mini .rail {
-  top: 0;
-  bottom: auto;
-  padding-block: calc(var(--safe-t) + 2px) 2px; padding-inline: calc(var(--safe-s) + 6px) calc(var(--safe-e) + 6px);
-  border-top: 0;
-  border-bottom: 1px solid var(--oak-hi);
-  box-shadow: 0 2px 0 rgb(43 38 32 / .4);
-}
-body.is-mini .rail-tools { display: none; }
-body.is-mini .rail-line { border-bottom: 0; min-height: 50px; gap: 2px; }
-body.is-mini .rail-stat { padding: 0 2px; font-size: 16px; }
-body.is-mini .rail-stat.sep { display: none; }
-body.is-mini .rail-hint { display: block; font-size: 13px; color: var(--mist); padding: 0 2px 3px; line-height: 1.2; }
-body.is-mini .waybill-wrap { top: calc(var(--rail-top) + 8px); }
-body.is-mini .toasts {
-  inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 8px); transform: none;
-  bottom: auto; top: calc(var(--rail-top) + 8px);
-  width: calc(100vw - 96px); flex-direction: column; align-items: flex-end;
-}
-body.is-mini .notice-wrap { top: calc(var(--rail-top) + 8px); inset-inline-end: calc(var(--safe-e) + 8px); max-width: calc(100vw - 96px); }
 body.is-mini .sheet { max-height: calc(100% - var(--safe-t) - 6px); }
 body.is-mini .sheet-head h3 { font-size: 24px; }
 body.is-mini .menu-strip { width: min(236px, 66vw); padding-block: calc(var(--safe-t) + 16px) 22px; padding-inline: calc(var(--safe-s) + 14px) 14px; }
@@ -1010,26 +643,11 @@ body.is-flex #hud::before {
   top: var(--hinge-bottom);
   background: linear-gradient(180deg, rgb(74 72 67 / .9) 0 1.5px, transparent 1.5px), #2a231c;
 }
-body.is-flex .waybill-wrap { top: calc(var(--hinge-bottom) + 16px); }
-body.is-flex .notice-wrap { top: calc(var(--hinge-bottom) + 16px); }
 body.is-flex .sheet { top: calc(var(--hinge-bottom) + 12px); bottom: 0; max-height: none; }
 body.is-flex.is-side .sheet { top: calc(var(--hinge-bottom) + 16px); bottom: calc(var(--safe-b) + 12px); max-height: none; }
 /* Fold inner in Flex mode (wide): three columns in the bottom segment —
    waybill + tools (left thumb) | open sheet | coins, time, speed (right thumb) */
-body.is-flex.is-split .rail-tools { display: grid; grid-template-columns: repeat(3, 76px); gap: 4px; }
-body.is-flex.is-split .tool { min-height: 60px; }
-body.is-flex.is-split.mode-game .sheet {
-  inset-inline-start: calc(var(--safe-s) + 12px + 258px + 12px);
-  inset-inline-end: calc(var(--safe-e) + 12px + 262px + 12px);
-  width: auto;
-}
-body.is-flex.is-split.mode-game.left-handed .sheet {
-  inset-inline-start: calc(var(--safe-s) + 12px + 262px + 12px);
-  inset-inline-end: calc(var(--safe-e) + 12px + 258px + 12px);
-}
 body.is-flex.is-split .sheet-actions .btn { font-size: 15px; padding: 0 8px; gap: 4px; }
-body.is-flex.is-split.left-handed .waybill-wrap { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
-body.is-flex .toasts { bottom: auto; top: calc(var(--hinge-top) - 12px); transform: translate(-50%, -100%); flex-direction: column; }
 body.is-flex .menu-wrap { top: var(--hinge-bottom); }
 body.is-flex .menu-strip {
   width: min(560px, calc(100vw - 24px));
@@ -1112,7 +730,7 @@ body.is-clear .clear-restore {
    setting still swaps sides on top of that. Playback-like speed controls and numeric ETA tags keep
    their left-to-right order, like media controls in RTL apps. */
 .speed, .eta-tag { direction: ltr; }
-.rail .tl, .rail-hint { unicode-bidi: plaintext; }
+.tool .tl, .rail-hint { unicode-bidi: plaintext; }
 :root[dir='rtl'] .vol::-webkit-slider-runnable-track { background: linear-gradient(270deg, var(--ochre) 0 var(--v), var(--oak) var(--v)); }
 bdi { unicode-bidi: isolate; }
 /* joined scripts: letter-spacing tears Arabic ligatures; small caps / case do not exist in these scripts */
@@ -1221,67 +839,6 @@ bdi { unicode-bidi: isolate; }
 .menu-list li:has(> .is-valley) { border-top: var(--hair) solid var(--iron); margin-top: 6px; }
 .menu-item.is-valley .mi-mark { background: var(--ochre); }
 
-/* ---- waybill in tranches (mission V): the letter now due is marked, delivered ones carry a seal */
-.wb-tranches { list-style: none; margin: 2px 0 0; padding: 0; }
-.wb-tr { padding-block: 4px; }
-.wb-tr + .wb-tr { border-top: 1px solid rgb(74 72 67 / .3); }
-.wb-tr .tr-h { display: flex; align-items: center; gap: 6px; min-height: 24px; font-size: 13px; color: var(--ink-soft); }
-.wb-tr .tr-n { font-family: var(--font-head); font-weight: 600; font-size: 16px; color: var(--clay); min-width: 20px; }
-.wb-tr .tr-t { flex: 1; min-width: 0; }
-.wb-tr .tr-seal { color: var(--clay); width: 22px; height: 22px; }
-.wb-tr .tr-state { font-size: 13px; color: var(--meadow); padding-inline-start: 26px; line-height: 1.1; }
-.wb-tr.is-done { cursor: pointer; }
-.wb-tr.is-late .tr-state { color: #6e3520; font-weight: 700; }
-.wb-tr.is-done.is-late .tr-seal { color: rgb(74 72 67 / .6); }
-.wb-tr.is-now {
-  margin-inline: -8px;
-  padding-inline: 5px 8px;
-  border-inline-start: 3px solid var(--ochre);
-  background: rgb(184 137 58 / .13);
-}
-.wb-tr.is-now .tr-h { color: var(--ink); font-weight: 700; font-size: 15px; }
-.wb-tr.is-now .tr-state { padding-inline-start: 0; }
-.wb-tr.is-later { opacity: .72; cursor: pointer; }
-.wb-tr .tr-goods { display: flex; gap: 12px; padding-inline-start: 26px; font-size: 13px; font-weight: 700; }
-.wb-tr .tr-goods span { display: inline-flex; align-items: center; gap: 3px; }
-
-/* ---- town plaque (free valley): rank, checklist towards the next rank, income now */
-.plaque {
-  position: relative;
-  width: 214px;
-  padding-block: 10px 20px;
-  padding-inline: 14px 12px;
-  background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
-  cursor: pointer;
-}
-.plaque .pl-kick { font-size: 13px; color: var(--ink-soft); font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; margin-inline-end: 40px; }
-.plaque h2 { margin: 0 0 6px; margin-inline-end: 40px; font-family: var(--font-head); font-weight: 600; font-size: 24px; line-height: 1; }
-.plaque .seal-btn { top: 4px; }
-.pl-next { font-size: 13px; color: var(--ink-soft); margin-bottom: 2px; }
-.pl-req { list-style: none; margin: 0; padding: 0; }
-.pl-req li {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) auto;
-  align-items: center;
-  column-gap: 6px;
-  padding-block: 2px;
-  font-size: 13px;
-}
-.pl-mark { width: 8px; height: 8px; transform: rotate(45deg); box-shadow: inset 0 0 0 1.5px var(--iron); margin-inline-start: 2px; }
-.pl-req li.is-met .pl-mark { background: var(--meadow); box-shadow: none; }
-.pl-req li.is-met .pl-l { color: var(--meadow); }
-.pl-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pl-v { font-weight: 700; font-size: 15px; text-align: end; }
-.pl-v small { font-weight: 400; font-size: 13px; color: var(--ink-soft); }
-.pl-bar { grid-column: 2 / 4; display: block; height: 4px; background: rgb(74 72 67 / .18); position: relative; }
-.pl-bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--ochre); }
-.pl-req li.is-met .pl-bar > i { background: var(--meadow); }
-.pl-income { display: flex; align-items: center; gap: 5px; margin-top: 7px; font-size: 15px; font-weight: 700; color: #7d5d23; }
-.plaque-wrap .seal-only .seal-time { color: #f0e6d2; }
-.pl-season { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
-.pl-season.is-winter { color: var(--iron); }
-body.is-narrow .plaque { width: 196px; }
-
 /* ---- rank-up: a short sealed letter (slide 200 ms, wax pressed 120 ms after it; no bounce) */
 .rank-letter-wrap {
   position: absolute;
@@ -1312,11 +869,6 @@ body.is-narrow .plaque { width: 196px; }
   animation: rl-stamp 120ms var(--ease) 120ms both;
 }
 @keyframes rl-stamp { from { opacity: 0; transform: scale(1.16) rotate(8deg); } to { opacity: 1; transform: rotate(8deg); } }
-/* centred with translateX(-50%): physical left, the rail side decides (hand XOR RTL) */
-body.is-landscape .rank-letter-wrap { left: calc((100vw - var(--rail-w)) / 2); }
-body.is-landscape.left-handed .rank-letter-wrap { left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2); }
-:root[dir='rtl'] body.is-landscape .rank-letter-wrap { left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2); }
-:root[dir='rtl'] body.is-landscape.left-handed .rank-letter-wrap { left: calc((100vw - var(--rail-w)) / 2); }
 body.is-flex .rank-letter-wrap { top: 24px; }
 body.is-mini .rank-letter-wrap { top: calc(var(--rail-top) + 8px); }
 
@@ -1390,29 +942,6 @@ body.is-mini .rank-letter-wrap { top: calc(var(--rail-top) + 8px); }
 .pb-actions { grid-area: actions; display: flex; gap: 6px; }
 .pb-back { padding: 0 12px; font-size: 15px; }
 .pb-place { min-width: 124px; }
-
-/* landscape: the shelf is a column beside the rail */
-body.is-landscape .build-shelf {
-  inset-inline-start: auto;
-  top: 0;
-  bottom: 0;
-  inset-inline-end: calc(var(--rail-w) + var(--safe-e));
-  width: 112px;
-  padding: calc(var(--safe-t) + 8px) 8px calc(var(--safe-b) + 8px);
-  border-top: 0;
-  border-inline-start: 1px solid var(--oak-hi);
-  box-shadow: calc(-2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
-  animation-name: fade-in;
-}
-body.is-landscape .bs-cards { flex-direction: column; overflow-x: hidden; overflow-y: auto; height: 100%; touch-action: pan-y; }
-body.is-landscape .build-card { flex: 0 0 auto; min-height: 96px; }
-body.is-landscape.left-handed .build-shelf { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s)); border-inline-start: 0; border-inline-end: 1px solid var(--oak-hi); }
-body.is-landscape.build-placing .build-shelf { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
-body.is-landscape .pb-card { flex-direction: column; align-items: flex-start; }
-body.is-landscape .pb-t b { white-space: normal; }
-body.is-landscape .pb-hint { order: 1; }
-body.is-landscape .pb-actions { order: 2; flex-direction: column; margin-top: auto; }
-body.is-landscape .pb-place { min-width: 0; padding: 0 8px; }
 
 /* split pads (near-square / wide portrait): the shelf is a third pad above the tools */
 body.is-split:not(.is-flex) .build-shelf {
@@ -1493,12 +1022,6 @@ body.is-mini .build-ui, body.is-mini .build-float { display: none; }
 body:not(.build-open) { --shelf-h: 0px; }
 body.has-undo { --undo-h: 58px; }
 .toasts { bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + var(--undo-h, 0px) + 12px); }
-body.is-landscape .undo-btn { bottom: calc(var(--safe-b) + 10px); inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 10px); }
-body.is-landscape.build-open .undo-btn { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 112px + 10px); }
-body.is-landscape.left-handed .undo-btn { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 10px); }
-body.is-landscape.left-handed.build-open .undo-btn { inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 112px + 10px); }
-body.is-landscape .toasts { bottom: calc(var(--safe-b) + var(--undo-h, 0px) + 12px); }
-body.is-landscape.build-open .toasts { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 112px + 12px); }
 body.is-split:not(.is-flex) .undo-btn { bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + 12px); inset-inline-end: calc(var(--safe-e) + 12px); }
 body.is-flex .undo-btn { bottom: auto; top: calc(var(--hinge-top) - 60px); }
 body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); }
@@ -1510,6 +1033,27 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .cap-bar.is-full > i { background: var(--clay); }
 .cap-small, .ice-hint { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; color: #6e3520; font-weight: 700; }
 .ice-hint { color: var(--ink-soft); margin-top: 8px; }
+
+/* rank checklist rows (market sheet; the HUD plaque restyles them under .plaque) */
+.pl-next { font-size: 13px; color: var(--ink-soft); margin-bottom: 2px; }
+.pl-req { list-style: none; margin: 0; padding: 0; }
+.pl-req li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+  padding-block: 2px;
+  font-size: 13px;
+}
+.pl-mark { width: 8px; height: 8px; transform: rotate(45deg); box-shadow: inset 0 0 0 1.5px var(--iron); margin-inline-start: 2px; }
+.pl-req li.is-met .pl-mark { background: var(--meadow); box-shadow: none; }
+.pl-req li.is-met .pl-l { color: var(--meadow); }
+.pl-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-v { font-weight: 700; font-size: 15px; text-align: end; }
+.pl-v small { font-weight: 400; font-size: 13px; color: var(--ink-soft); }
+.pl-bar { grid-column: 2 / 4; display: block; height: 4px; background: rgb(74 72 67 / .18); position: relative; }
+.pl-bar > i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--ochre); }
+.pl-req li.is-met .pl-bar > i { background: var(--meadow); }
 
 /* ---- market & rank sheet */
 .ms-req li { font-size: 15px; padding-block: 3px; }
@@ -1571,7 +1115,6 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
   body.mode-menu:not(.is-flex) .menu-list li { break-inside: avoid; }
   body.mode-menu:not(.is-flex) .menu-item { font-size: 21px; min-height: 52px; padding: 5px 0; }
 }
-body.build-open .tool-caption { display: none !important; }
 /* Flex mode on the Fold: the middle column is narrow — card, actions and hint stack */
 body.is-flex.build-placing .build-shelf { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "actions" "hint"; }
 body.is-flex.build-placing .pb-actions .btn { flex: 1; }
@@ -1650,13 +1193,6 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .slot-row.is-asking { padding-inline-end: 10px; }
 
 /* contract pace (F10): waybill forecast under the clock, castle-card pace rows; shared input (F3) */
-.wb-pace { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgb(74 72 67 / .45); font-size: 13px; line-height: 1.25; }
-.wb-pace-eta, .wb-pace-sup { display: flex; align-items: center; gap: 6px; min-height: 30px; cursor: pointer; }
-.wb-pace-eta { font-weight: 700; justify-content: space-between; }
-.wb-pace-sup { color: var(--ink-soft); }
-.wb-pace-sup svg { flex: none; }
-.wb-pace.warn .wb-pace-eta { color: #6e3520; }
-.wb-pace.late .wb-pace-eta { color: var(--clay); }
 .pace-seals { display: inline-flex; gap: 1px; flex: none; }
 .pace-seals i { display: inline-grid; color: rgb(74 72 67 / .35); }
 .pace-seals i.on { color: var(--clay); }
@@ -1676,3 +1212,544 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .shared-hint svg { flex: none; }
 .shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
+
+/* ================================================================ HUD v3 (D-43): concept "D" on the painted UI kit
+   Sprites: public/assets/ui/kit/<name>@2x|@3x.png, slicing in docs/ui-kit.md. 9-slice through border-image with
+   percentage slices (independent of the @2x / @3x file chosen by image-set) and border-image-width in CSS px
+   = the kit's dp margins. The border itself stays 0 wide: padding decides the content inset. Round sprites
+   (buttons, seals, pins, badges) are plain backgrounds at their own aspect ratio. */
+:root {
+  --wine: #6f1d22;
+  --wine-ink: #5a171b;
+  --slate: #3d4852;
+  --brass: #a07a3a;
+  --brass-dk: #6b5128;
+  --kparch: #ead6ad;
+  --kparch-dim: #d7c29a;
+}
+
+.k-panel, .wb-panel, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
+.kbar, .kbar > i, .seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
+  border-style: solid;
+  border-width: 0;
+  border-image-repeat: stretch;
+}
+.k-panel, .wb-panel, .toast, .notice, .undo-btn {
+  border-image-source: url("/assets/ui/kit/panel@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
+  border-image-slice: 15% 10% fill;
+  border-image-width: 12px;
+}
+.chip {
+  border-image-source: url("/assets/ui/kit/stat@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/stat@2x.png") 2x, url("/assets/ui/kit/stat@3x.png") 3x);
+  border-image-slice: 25% 10% fill;
+  border-image-width: 10px 12px;
+}
+.speed {
+  border-image-source: url("/assets/ui/kit/segment-bg@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/segment-bg@2x.png") 2x, url("/assets/ui/kit/segment-bg@3x.png") 3x);
+  border-image-slice: 20.45% 7.5% fill;
+  border-image-width: 9px 12px;
+}
+.seg.is-on::before {
+  border-image-source: url("/assets/ui/kit/segment-active@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/segment-active@2x.png") 2x, url("/assets/ui/kit/segment-active@3x.png") 3x);
+  border-image-slice: 20.45% 22.5% fill;
+  border-image-width: 9px;
+}
+.ribbon {
+  border-image-source: url("/assets/ui/kit/ribbon@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/ribbon@2x.png") 2x, url("/assets/ui/kit/ribbon@3x.png") 3x);
+  border-image-slice: 23.5% 19.2% fill;
+  border-image-width: 8px 23px;
+}
+.snow-pill, .seal-time, .eta-tag {
+  border-image-source: url("/assets/ui/kit/eta@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/eta@2x.png") 2x, url("/assets/ui/kit/eta@3x.png") 3x);
+  border-image-slice: 25% 16.7% fill;
+  border-image-width: 10px 14px;
+}
+.kbar {
+  border-image-source: url("/assets/ui/kit/progress-track@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/progress-track@2x.png") 2x, url("/assets/ui/kit/progress-track@3x.png") 3x);
+  border-image-slice: 25% 5% fill;
+  border-image-width: 2px 6px;
+}
+.kbar > i {
+  border-image-source: url("/assets/ui/kit/progress-fill@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/progress-fill@2x.png") 2x, url("/assets/ui/kit/progress-fill@3x.png") 3x);
+  border-image-slice: 25% 5% fill;
+  border-image-width: 2px 6px;
+}
+.tool {
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+  border-image-slice: 13.9% 15.6% fill;
+  border-image-width: 10px;
+}
+.tool:active {
+  border-image-source: url("/assets/ui/kit/card-pressed@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-pressed@2x.png") 2x, url("/assets/ui/kit/card-pressed@3x.png") 3x);
+}
+.tool.is-on {
+  border-image-source: url("/assets/ui/kit/card-active@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-active@2x.png") 2x, url("/assets/ui/kit/card-active@3x.png") 3x);
+}
+.tool.is-cure {
+  border-image-source: url("/assets/ui/kit/card-highlight@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-highlight@2x.png") 2x, url("/assets/ui/kit/card-highlight@3x.png") 3x);
+}
+.tool.is-disabled {
+  border-image-source: url("/assets/ui/kit/card-disabled@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-disabled@2x.png") 2x, url("/assets/ui/kit/card-disabled@3x.png") 3x);
+}
+.stall-card::before {
+  border-image-source: url("/assets/ui/kit/panel-alert@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel-alert@2x.png") 2x, url("/assets/ui/kit/panel-alert@3x.png") 3x);
+  border-image-slice: 15% 10% fill;
+  border-image-width: 12px;
+}
+.sheet-paper, .letter, .rank-letter {
+  border-image-source: url("/assets/ui/kit/frame-sheet@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/frame-sheet@2x.png") 2x, url("/assets/ui/kit/frame-sheet@3x.png") 3x);
+  border-image-slice: 16.07% 11.875% fill;
+  border-image-width: 36px 38px;
+}
+body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[data-kind='settings'] .sheet-paper,
+.sheet[data-kind='valley'] .sheet-paper, .sheet[data-kind='missionsave'] .sheet-paper {
+  border-image-source: url("/assets/ui/kit/frame-sheet-dim@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/frame-sheet-dim@2x.png") 2x, url("/assets/ui/kit/frame-sheet-dim@3x.png") 3x);
+}
+.build-shelf {
+  border-image-source: url("/assets/ui/kit/panel-dim@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel-dim@2x.png") 2x, url("/assets/ui/kit/panel-dim@3x.png") 3x);
+  border-image-slice: 15% 10% fill;
+  border-image-width: 12px;
+}
+.clear-restore {
+  border-image-source: url("/assets/ui/kit/stat@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/stat@2x.png") 2x, url("/assets/ui/kit/stat@3x.png") 3x);
+  border-image-slice: 25% 10% fill;
+  border-image-width: 10px 12px;
+}
+.menu-btn { background: image-set(url("/assets/ui/kit/menu@2x.png") 2x, url("/assets/ui/kit/menu@3x.png") 3x) center / contain no-repeat; }
+.menu-btn:active { background-image: image-set(url("/assets/ui/kit/button-pressed@2x.png") 2x, url("/assets/ui/kit/button-pressed@3x.png") 3x); }
+.stall-eye { background: image-set(url("/assets/ui/kit/button-normal@2x.png") 2x, url("/assets/ui/kit/button-normal@3x.png") 3x) center / contain no-repeat; }
+.stall-eye:active { background-image: image-set(url("/assets/ui/kit/button-pressed@2x.png") 2x, url("/assets/ui/kit/button-pressed@3x.png") 3x); }
+.alarm-seal { background: image-set(url("/assets/ui/kit/seal-alert@2x.png") 2x, url("/assets/ui/kit/seal-alert@3x.png") 3x) center / contain no-repeat; }
+.al-badge, .tool .cost { background: image-set(url("/assets/ui/kit/badge@2x.png") 2x, url("/assets/ui/kit/badge@3x.png") 3x) center / contain no-repeat; }
+.tool.is-disabled .cost { background-image: image-set(url("/assets/ui/kit/badge-red@2x.png") 2x, url("/assets/ui/kit/badge-red@3x.png") 3x); }
+.kseal, .so-seal { background: image-set(url("/assets/ui/kit/seal-empty@2x.png") 2x, url("/assets/ui/kit/seal-empty@3x.png") 3x) center / contain no-repeat; }
+.kseal.on, .so-fill { background: image-set(url("/assets/ui/kit/seal-full@2x.png") 2x, url("/assets/ui/kit/seal-full@3x.png") 3x) center / contain no-repeat; }
+.bubble .bb { background: image-set(url("/assets/ui/kit/pin-brass@2x.png") 2x, url("/assets/ui/kit/pin-brass@3x.png") 3x) center / contain no-repeat; }
+.bubble.is-critical .bb { background-image: image-set(url("/assets/ui/kit/pin-red@2x.png") 2x, url("/assets/ui/kit/pin-red@3x.png") 3x); }
+
+/* ---- top cluster: bar (menu, chips, speed) and the contract / valley panel, one grid */
+#hud { position: absolute; inset: 0; }
+.hud-top {
+  position: absolute;
+  top: calc(var(--safe-t) + 8px);
+  inset-inline-start: calc(var(--safe-s) + 10px);
+  inset-inline-end: calc(var(--safe-e) + 10px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "menu chips" "speed speed" "contract contract";
+  align-items: start;
+  gap: 8px;
+}
+.topbar { display: contents; }
+.menu-btn {
+  grid-area: menu;
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  color: var(--ink);
+  transition: transform 60ms linear;
+}
+.menu-btn:active svg { transform: translateY(1px); }
+.chips { grid-area: chips; justify-self: end; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px;
+  padding-block: 4px; padding-inline: 10px 16px;
+  white-space: nowrap;
+  font-size: 19px; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.chip-ic { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle, #f1e3c1 0 58%, var(--brass) 60% 70%, var(--brass-dk) 72%); color: var(--brass-dk); }
+.chip-time .chip-ic { color: #7a4f12; }
+.chip-time.rain .chip-ic { color: var(--slate); }
+.speed {
+  grid-area: speed;
+  justify-self: end;
+  /* the painted frame has its three dividers at fixed fractions of the stretched middle: the four
+     cells are sized to land on them (docs/ui-kit.md, segment-bg 160 x 44 dp, 12 dp ends) */
+  --m: 216px;
+  width: calc(var(--m) + 24px);
+  height: 48px;
+  padding-inline: 2px;
+  display: grid;
+  grid-template-columns: calc(10px + .2224 * var(--m)) calc(.2941 * var(--m)) calc(.2942 * var(--m)) calc(10px + .1893 * var(--m));
+}
+.seg {
+  position: relative; isolation: isolate;
+  min-width: 0; height: 48px;
+  display: grid; place-items: center;
+  font-size: 18px; font-weight: 700;
+  color: #efe0bd;
+}
+.seg > span { display: grid; place-items: center; transition: transform 60ms linear; }
+.seg:active > span { transform: translateY(1px); }
+.seg.is-on { color: var(--ink); }
+.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; inset-inline: 0; z-index: -1; }
+.rail-hint { display: none; }
+
+/* contract and valley panels */
+.waybill-wrap { grid-area: contract; justify-self: start; width: min(330px, 100%); position: relative; }
+.waybill { position: relative; padding-inline: 4px; }
+.ribbon {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  width: calc(100% + 8px); margin-inline: -8px;
+  min-height: 48px;
+  padding-block: 6px 7px; padding-inline: 30px;
+  font-family: var(--font-head); font-weight: 600; font-size: 21px; line-height: 1.05;
+  color: #f3e5c4; text-align: center;
+  text-shadow: 0 1px 0 rgb(43 10 12 / .55);
+}
+.ribbon .rb-t { text-wrap: balance; }
+.wb-panel {
+  position: relative;
+  margin-top: -8px;
+  margin-inline: 10px;
+  padding-block: 14px 8px; padding-inline: 12px;
+  color: var(--ink);
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+}
+.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; flex-wrap: wrap; }
+.wb-seals { display: inline-flex; gap: 4px; }
+.wb-seals.is-dim { opacity: .55; }
+.kseal { display: inline-block; width: 30px; height: 30px; flex: none; }
+.snow-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding-block: 3px; padding-inline: 12px 14px;
+  color: #eef0ee; font-size: 15px; white-space: nowrap;
+}
+.snow-pill svg { color: #dfe8ef; }
+.snow-pill bdi { font-size: 18px; font-weight: 700; }
+.snow-pill.late { color: #ffd9c8; }
+.snow-pill.late bdi { color: #ffc2a8; }
+.wb-line {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding-inline-end: 6px;
+  min-height: 48px; cursor: pointer;
+}
+.wb-gi { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
+  background: radial-gradient(circle, #efe0bf 0 60%, var(--brass) 62% 70%, transparent 72%); }
+.kbar { position: relative; display: block; height: 10px; }
+.kbar > i { position: absolute; inset-block: 0; inset-inline-start: 0; display: block; min-width: 12px; transition: width var(--t-mid) var(--ease); }
+.kbar > i[style^='width:0.0%'] { display: none; }
+.kbar::after {
+  /* quarter marks engraved into the track */
+  content: ''; position: absolute; inset-block: -2px; inset-inline: 6px;
+  background: linear-gradient(90deg, transparent calc(25% - .75px), rgb(30 24 18 / .75) calc(25% - .75px) calc(25% + .75px), transparent calc(25% + .75px) calc(50% - .75px),
+    rgb(30 24 18 / .75) calc(50% - .75px) calc(50% + .75px), transparent calc(50% + .75px) calc(75% - .75px), rgb(30 24 18 / .75) calc(75% - .75px) calc(75% + .75px), transparent calc(75% + .75px));
+}
+.wb-line .count { font-size: 18px; font-weight: 700; min-width: 48px; text-align: end; }
+.wb-line .count small { font-weight: 400; font-size: 15px; color: var(--ink-soft); }
+.wb-line.done .count { color: var(--meadow); }
+/* pace forecast rows (D-38): full 48 px targets */
+.wb-pace { margin-top: 4px; border-top: 1px dashed rgb(74 72 67 / .45); font-size: 14px; line-height: 1.2; }
+.wb-pace-eta, .wb-pace-sup { display: flex; align-items: center; gap: 6px; min-height: 48px; cursor: pointer; }
+.wb-pace-eta { font-weight: 700; }
+.wb-pace-sup { color: var(--ink-soft); border-top: 1px solid rgb(74 72 67 / .2); }
+.wb-pace-sup svg { flex: none; }
+.wb-pace.warn .wb-pace-eta { color: #6e3520; }
+.wb-pace.late .wb-pace-eta { color: var(--wine); }
+/* tranches (mission V) */
+.wb-tranches { list-style: none; margin: 2px 0 0; padding: 0; }
+.wb-tr { padding-block: 4px; }
+.wb-tr + .wb-tr { border-top: 1px solid rgb(74 72 67 / .3); }
+.wb-tr .tr-h { display: flex; align-items: center; gap: 6px; min-height: 28px; font-size: 14px; color: var(--ink-soft); }
+.wb-tr .tr-n { font-family: var(--font-head); font-weight: 600; font-size: 17px; color: var(--wine); min-width: 22px; }
+.wb-tr .tr-t { flex: 1; min-width: 0; }
+.wb-tr .kseal { width: 24px; height: 24px; }
+.wb-tr .tr-state { font-size: 13px; color: var(--meadow); padding-inline-start: 28px; line-height: 1.1; }
+.wb-tr.is-done, .wb-tr.is-later { cursor: pointer; min-height: 48px; }
+.wb-tr.is-late .tr-state { color: #6e3520; font-weight: 700; }
+.wb-tr.is-now { margin-inline: -6px; padding-inline: 4px 6px; border-inline-start: 3px solid var(--brass); background: rgb(160 122 58 / .14); }
+.wb-tr.is-now .tr-h { color: var(--ink); font-weight: 700; font-size: 15px; }
+.wb-tr.is-now .tr-state { padding-inline-start: 0; }
+.wb-tr.is-later { opacity: .75; }
+.wb-tr .tr-goods { display: flex; gap: 12px; padding-inline-start: 28px; font-size: 14px; font-weight: 700; }
+.wb-tr .tr-goods span { display: inline-flex; align-items: center; gap: 3px; }
+/* valley plaque */
+.plaque { cursor: pointer; padding-top: 12px; }
+.plaque .pl-next { font-size: 13px; font-weight: 700; color: var(--wine); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
+.plaque .pl-req li { grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 2px; padding-block: 3px; font-size: 14px; }
+.plaque .pl-req .pl-bar { grid-column: 1 / -1; height: 10px; background: none; }
+.plaque .pl-req .pl-bar > i, .plaque .pl-req li.is-met .pl-bar > i { background: none; }
+.plaque .pl-l { min-width: 0; white-space: normal; }
+.plaque .pl-req li.is-met .pl-l { color: var(--meadow); font-weight: 700; }
+.pl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 10px; margin-top: 6px; padding-top: 4px; border-top: 1px solid rgb(74 72 67 / .25); }
+.pl-income { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; color: #6b4c16; min-height: 28px; }
+.pl-season { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.pl-season.is-winter { color: var(--slate); }
+/* folded: the wax seal fills with progress, the time in a slate plaque under it */
+.waybill-wrap.is-collapsed { width: auto; }
+.waybill-wrap.is-collapsed .waybill { display: none; }
+.waybill-wrap .seal-only { display: none; }
+.waybill-wrap.is-collapsed .seal-only { display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 64px; min-height: 64px; }
+.so-seal { position: relative; display: block; width: 52px; height: 52px; filter: drop-shadow(0 2px 1px rgb(30 22 14 / .4)); }
+.so-fill { position: absolute; inset: 0; }
+.seal-time { margin-top: -6px; padding-block: 2px; padding-inline: 10px; font-size: 14px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
+.seal-only.late .seal-time { color: #ffc2a8; }
+
+/* ---- bottom rail: worst stall card + alarm seal, the tool cards */
+.rail {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding-block: 0 calc(var(--safe-b) + 8px); padding-inline: calc(var(--safe-s) + 8px) calc(var(--safe-e) + 8px);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.stall-row { display: flex; align-items: center; gap: 6px; }
+body.left-handed .stall-row { flex-direction: row-reverse; }
+.stall-card {
+  position: relative; isolation: isolate;
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+  min-height: 64px;
+  padding-block: 8px; padding-inline: 18px 8px;
+  color: var(--ink);
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+}
+.stall-card::before { content: ''; position: absolute; inset: 0; z-index: -1; }
+/* the wine bar of panel-alert marks the leading edge: mirrored in RTL */
+:root[dir='rtl'] .stall-card::before { transform: scaleX(-1); }
+.sc-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sc-kick { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--wine); }
+.sc-text { font-size: 17px; line-height: 1.15; overflow-wrap: anywhere; }
+.sc-text b { font-weight: 700; }
+.stall-eye { flex: none; width: 52px; height: 52px; display: grid; place-items: center; color: var(--wine); }
+.stall-eye svg { transition: transform 60ms linear; }
+.stall-eye:active svg { transform: translateY(1px); }
+.stall-row.is-crit .stall-eye { color: #7f1a1e; }
+.alarm-seal { position: relative; flex: none; width: 72px; height: 72px; display: grid; place-items: center; color: #f3e1bd; }
+.alarm-seal .al-ic { display: grid; place-items: center; transition: transform 60ms linear; }
+.alarm-seal:active .al-ic { transform: translateY(1px); }
+.al-badge {
+  position: absolute; top: -2px; inset-inline-end: -2px;
+  min-width: 26px; height: 26px; display: grid; place-items: center;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+}
+.rail-tools { display: flex; gap: 6px; justify-content: space-between; }
+.tool {
+  position: relative;
+  flex: 1 1 0; min-width: 48px; max-width: 84px;
+  min-height: 72px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  padding-block: 7px 6px; padding-inline: 3px;
+  color: var(--ink);
+  font-size: 14px; font-weight: 700;
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+}
+.tool .ti { display: grid; place-items: center; width: 40px; height: 34px; transition: transform 60ms linear; }
+.tool:active .ti, .tool:active .tl { transform: translateY(1px); }
+.tool .tl { line-height: 1.05; text-align: center; white-space: nowrap; }
+.tool.is-on { color: var(--wine-ink); }
+.tool.is-disabled .ti, .tool.is-disabled .tl { opacity: .6; }
+.tool.is-disabled[data-tool='wagon'] .tl { opacity: 1; color: #6e1a1e; }
+.tool .cost {
+  position: absolute; top: -11px; inset-inline-end: -6px;
+  min-width: 30px; height: 30px; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: var(--ink);
+}
+.tool.is-disabled .cost { color: #f6e6c6; }
+body:not(.left-handed) .rail-tools { flex-direction: row; }
+body.left-handed:not(.is-landscape):not(.is-split) .rail-tools { flex-direction: row-reverse; }
+body.build-open .stall-row { display: none; }
+/* six cards on a phone: a slightly smaller label so the longest ("Rozbiórka") stays whole */
+.has-build .tool .tl { font-size: 12.5px; letter-spacing: -.01em; }
+body.is-narrow .has-build .tool .tl { font-size: 11.5px; }
+body.is-landscape .has-build .tool .tl, body.is-split .has-build .tool .tl { font-size: 14px; letter-spacing: 0; }
+
+/* landscape phones and wide / near-square portraits (unfolded Fold): one row along the bottom —
+   tools under one thumb, the stall card and the alarm seal under the hand's thumb (D-37: hand only) */
+body.is-landscape .hud-top, body.is-split .hud-top {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "menu contract . chips speed";
+}
+body.is-landscape .waybill-wrap, body.is-split .waybill-wrap { width: 330px; }
+body.is-landscape .chips, body.is-split .chips { flex-wrap: nowrap; }
+body.is-landscape .rail, body.is-split .rail { flex-direction: row-reverse; align-items: flex-end; justify-content: space-between; gap: 16px; }
+body.is-landscape.left-handed .rail, body.is-split.left-handed .rail { flex-direction: row; }
+body.is-landscape .stall-row, body.is-split .stall-row { flex: 0 1 520px; min-width: 0; }
+body.is-landscape .rail-tools, body.is-split .rail-tools { flex: 0 1 auto; justify-content: flex-start; margin-inline-end: auto; }
+body.is-landscape.left-handed .rail-tools, body.is-split.left-handed .rail-tools { margin-inline-end: 0; margin-inline-start: auto; }
+body.is-landscape .tool, body.is-split .tool { flex: 0 0 76px; }
+/* a short landscape screen: slimmer contract rows so the panel and the tools both fit */
+body.is-landscape .wb-head { min-height: 34px; }
+body.is-landscape .kseal { width: 26px; height: 26px; }
+@media (max-height: 380px) { body.is-landscape .ribbon { font-size: 19px; } }
+
+/* narrow portrait (360 px, old Fold cover) */
+body.is-narrow .chip { font-size: 17px; padding-inline: 8px 14px; }
+body.is-narrow .chip-ic { width: 26px; height: 26px; }
+body.is-narrow .tool { padding-inline: 2px; }
+body.is-narrow .tool .tl { font-size: 12px; }
+body.is-narrow .sc-text { font-size: 15px; }
+body.is-narrow .alarm-seal { width: 64px; height: 64px; }
+
+/* Flip cover (is-mini): watch mode — scene, pins, speed. Menu + speed on top, the folded seal opens the castle. */
+body.is-mini .hud-top { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "menu speed" "contract hint"; top: calc(var(--safe-t) + 4px); gap: 4px 8px; }
+body.is-mini .chips, body.is-mini .rail { display: none; }
+body.is-mini .speed { justify-self: end; }
+body.is-mini .rail-hint { display: block; grid-area: hint; align-self: center; font-size: 13px; line-height: 1.2; color: #f3e8cf; text-shadow: 0 1px 2px rgb(0 0 0 / .8); }
+
+/* Flex (tabletop) mode: scene above the hinge, the whole HUD on the table below */
+body.is-flex .hud-top { top: calc(var(--hinge-bottom) + 12px); }
+body.is-flex .rail { z-index: 1; }
+
+/* ---- markers: kit pins (red = worst / critical, brass = lesser), slate ETA plaque */
+.bubble {
+  position: absolute; left: 0; top: 0;
+  width: 48px; height: 56px;
+  margin: -56px 0 0 -24px;
+  display: grid; place-items: start center;
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
+  will-change: transform, opacity;
+}
+.bubble.is-shown { opacity: 1; }
+.bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
+.bubble .bb-in { width: 32px; height: 32px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); --icon-halo: var(--kparch); }
+/* red pin: the kit's red tip plus a wine ring round the cause, so worst / critical reads at a glance */
+.bubble.is-critical .bb-in { color: var(--wine); box-shadow: inset 0 0 0 2.5px var(--wine), 0 0 0 1px rgb(111 29 34 / .35); }
+.bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
+.bubble.is-minor .bb-in svg { opacity: .8; }
+.bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }
+@keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
+.eta-tag {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; gap: 6px;
+  min-height: 34px; padding-block: 3px; padding-inline: 12px 14px;
+  font-size: 16px; font-weight: 700; color: #eef0ee; white-space: nowrap;
+  opacity: 0; transition: opacity 150ms var(--ease);
+}
+.eta-tag .eta-ic { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #e7e9e4; color: var(--slate); }
+.eta-tag.is-shown { opacity: 1; }
+
+/* ---- toasts and notices on kit panels */
+.toasts {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + var(--undo-h, 0px) + 12px);
+  transform: translateX(-50%);
+  display: flex; flex-direction: column-reverse; align-items: center; gap: 6px;
+  width: min(380px, calc(100vw - 24px));
+}
+.toast {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding-block: 8px; padding-inline: 14px;
+  font-size: 15px; font-weight: 600; color: var(--ink);
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+  animation: toast-in var(--t-mid) var(--ease);
+  transition: opacity var(--t-mid) var(--ease);
+}
+.toast.err { color: #5a171b; }
+.toast.err svg { color: var(--wine); }
+.toast.is-out { opacity: 0; }
+.toast-n { margin-inline-start: auto; padding-inline-start: 6px; color: var(--ink-soft); font-size: 13px; }
+.toast-n:empty { display: none; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.notice-wrap {
+  position: absolute;
+  top: calc(var(--hud-top) + 8px);
+  inset-inline-end: calc(var(--safe-e) + 10px);
+  max-width: min(300px, calc(100vw - 20px));
+}
+body.is-landscape .notice-wrap, body.is-split .notice-wrap { top: calc(var(--bar-b) + 8px); }
+.notice {
+  display: flex; gap: 8px; align-items: center;
+  padding-block: 10px; padding-inline: 14px;
+  font-size: 15px; line-height: 1.2; color: var(--ink);
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+  animation: toast-in var(--t-slow) var(--ease);
+  transition: opacity var(--t-slow) var(--ease);
+}
+.notice.is-out { opacity: 0; }
+body.is-mini .toasts { bottom: auto; top: calc(var(--hud-top) + 8px); flex-direction: column; }
+body.is-flex .toasts { bottom: auto; top: calc(var(--hinge-top) - 12px); transform: translate(-50%, -100%); flex-direction: column; }
+
+/* ---- build shelf and undo above the bottom rail */
+.build-shelf { background: none; box-shadow: none; padding-block: 12px; padding-inline: calc(var(--safe-s) + 12px) calc(var(--safe-e) + 12px); color: var(--ink); }
+.pb-card, .pb-card svg { color: var(--ink); }
+.pb-m .bc-size, .pb-hint { color: var(--ink-soft); }
+.pb-m .bc-price.is-short { color: #6e1a1e; }
+body.is-landscape .build-shelf {
+  inset-inline-start: auto;
+  inset-inline-end: calc(var(--safe-e) + 8px);
+  top: calc(var(--bar-b) + 8px);
+  bottom: calc(var(--rail-h) + var(--safe-b) + 8px);
+  width: 124px;
+  padding: 12px 10px;
+}
+body.is-landscape .bs-cards { flex-direction: column; overflow-x: hidden; overflow-y: auto; height: 100%; touch-action: pan-y; }
+body.is-landscape .build-card { flex: 0 0 auto; min-height: 96px; }
+body.is-landscape.left-handed .build-shelf { inset-inline-end: auto; inset-inline-start: calc(var(--safe-s) + 8px); }
+body.is-landscape.build-placing .build-shelf { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+body.is-landscape .pb-card { flex-direction: column; align-items: flex-start; }
+body.is-landscape .pb-t b { white-space: normal; }
+body.is-landscape .pb-hint { order: 1; }
+body.is-landscape .pb-actions { order: 2; flex-direction: column; margin-top: auto; }
+body.is-landscape .pb-place { min-width: 0; padding: 0 8px; }
+.undo-btn { --fill: transparent; clip-path: none; color: var(--ink); padding-inline: 12px 16px; filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35)); }
+.undo-btn::before { display: none; }
+body.is-landscape .undo-btn { bottom: calc(var(--rail-h) + var(--safe-b) + 10px); }
+body.is-landscape.build-open .undo-btn { inset-inline-end: calc(var(--safe-e) + 8px + 124px + 10px); }
+body.is-landscape.left-handed .undo-btn { inset-inline-end: auto; inset-inline-start: calc(var(--safe-s) + 10px); }
+body.is-landscape.left-handed.build-open .undo-btn { inset-inline-start: calc(var(--safe-s) + 8px + 124px + 10px); }
+body.is-landscape.build-open .toasts { left: calc(50% - 66px); }
+
+/* ---- sheets in the painted frame: content inset clear of the corner ornaments */
+.sheet { filter: drop-shadow(0 3px 3px rgb(20 14 8 / .4)); }
+.sheet-paper {
+  clip-path: none;
+  background: none;
+  padding-block: 18px calc(26px + var(--safe-b)); padding-inline: 18px;
+}
+/* a bottom sheet covers the rail: hide what would peek through the frame's open corners */
+body.has-sheet:not(.is-side) .rail { visibility: hidden; }
+body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
+.sheet-paper > .sp-in { clip-path: none; background: none; padding-bottom: 0; }
+body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 24px; }
+body.is-side .sheet-paper > .sp-in { clip-path: none; }
+.sheet-grip { height: 14px; }
+.sheet-head { padding-inline: 8px 0; padding-top: 4px; }
+.sheet-head h3 { color: var(--ink); }
+.sheet-head .kicker { color: var(--wine); font-weight: 700; }
+.sheet-body { padding-block: 0 8px; padding-inline: 8px; }
+.sheet .btn.primary, .letter .btn.primary { --frame: #4a1216; --fill: var(--wine); color: #f3e5c4; }
+.sheet .btn.primary:active, .letter .btn.primary:active { --fill: #5e181c; }
+.link.is-root { --frame: var(--wine); }
+.link.is-root .l-icon, .link .root-tag { color: var(--wine); }
+.pace-row { min-height: 52px; }
+body.is-narrow .sheet-paper { border-image-width: 30px 32px; padding-inline: 14px; }
+body.is-mini .sheet-paper { border-image-width: 26px 28px; padding-block: 12px 10px; padding-inline: 12px; }
+body.is-mini .sheet-grip { height: 6px; }
+/* the end letter and the rank letter: the same frame, no torn edge */
+.letter { clip-path: none !important; background: none; padding-block: 44px 26px; padding-inline: 30px; }
+.letter::before { inset: 22px; }
+.rank-letter { clip-path: none !important; background: none; padding-block: 24px 26px; padding-inline: 26px 70px; }
+.rank-letter-wrap .float { filter: drop-shadow(0 3px 3px rgb(20 14 8 / .4)); }
+
+/* "Pokaż przyciski" (clear screen) on a stat plate */
+body.is-clear .clear-restore { background: none; clip-path: none; color: var(--ink); font-weight: 700; padding-inline: 16px; opacity: 1; }
+
+/* Flip cover: the main menu strip scrolls — a fade at its foot says there is more below */
+body.is-mini .menu-strip {
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
+  padding-bottom: 40px;
+}

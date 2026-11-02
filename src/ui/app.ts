@@ -21,6 +21,7 @@ import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
+import { rankStalls } from './stalls';
 import {
   buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
@@ -155,7 +156,7 @@ export class App implements PanelNav {
       this.hud?.announce(t('hud.stallFixed', { name: buildingName(this.world, id) }));
     };
     this.sheets = new Sheets(this.layers.sheets);
-    this.sheets.onChange = () => this.syncSelection();
+    this.sheets.onChange = () => { this.syncSelection(); document.body.classList.toggle('has-sheet', this.sheets.count > 0); };
 
     this.view.mount(this.canvas);
     this.world = createWorld('m1');
@@ -470,6 +471,7 @@ export class App implements PanelNav {
   }
 
   private buildHud(): void {
+    this.hud?.dispose();
     this.layers.hud.innerHTML = '';
     this.markers.reset();
     this.hud = new Hud({
@@ -487,6 +489,7 @@ export class App implements PanelNav {
         if (c) this.go('building', c.castle, true);
       },
       openBuilding: (id) => this.go('building', id, true),
+      showStall: (id) => this.go('building', id, true),
       waybillCollapsed: (c) => { this.prefs.waybillCollapsed = c; savePrefs(this.prefs); },
       openMarket: () => this.openMarket(),
       rankUp: (r) => {
@@ -501,12 +504,25 @@ export class App implements PanelNav {
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
-    this.hud.update(this.world, this.pace);
+    this.hud.update(this.world, this.pace, rankStalls(this.world));
+    this.watchRail();
+  }
+
+  /** The bottom rail grows and shrinks with the worst-stall row: keep --rail-h in step (no per-frame reads). */
+  private railObserver: ResizeObserver | null = null;
+  private watchRail(): void {
+    this.railObserver?.disconnect();
+    const rail = this.layers.hud.querySelector<HTMLElement>('.rail');
+    if (rail) {
+      try { this.railObserver = new ResizeObserver(() => this.measureRail()); this.railObserver.observe(rail); } catch { /* old WebView */ }
+    }
     requestAnimationFrame(() => this.measureRail());
   }
 
   private clearGameUi(): void {
     this.stopTutorial();
+    this.hud?.dispose();
+    this.railObserver?.disconnect();
     this.layers.hud.innerHTML = '';
     this.layers.overlay.querySelector('.scrim')?.remove();
     this.markers.reset();
@@ -538,8 +554,9 @@ export class App implements PanelNav {
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {
-      this.hud?.update(this.world, this.pace);
-      this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false);
+      const stalls = rankStalls(this.world);
+      this.hud?.update(this.world, this.pace, stalls);
+      this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();
@@ -641,17 +658,18 @@ export class App implements PanelNav {
     this.sheets.open(marketSheet(() => this.world));
   }
 
-  /** Middle of the map area not covered by the rail or the build shelf (first ghost position). */
+  /** Middle of the map area between the top cluster and the bottom rail / build shelf (first ghost position). */
   private sceneCentre(): [number, number] {
     const l = this.layout ?? computeLayout();
-    let x0 = 0, x1 = l.w, y1 = l.sceneH;
-    const y0 = 0;
-    for (const el of document.querySelectorAll<HTMLElement>('#hud .rail-tools, #hud .rail-line, #hud .build-shelf')) {
+    let x0 = 0, x1 = l.w, y0 = 0, y1 = l.sceneH;
+    for (const el of document.querySelectorAll<HTMLElement>('#hud .rail, #hud .build-shelf, #hud .topbar')) {
       if (el.hidden || el.offsetParent === null) continue;
       const r = el.getBoundingClientRect();
-      if (r.top > l.sceneH * 0.45 && r.top < y1 && !l.landscape) y1 = Math.max(l.sceneH * 0.4, r.top);
-      if (l.landscape && r.left > l.w * 0.5) x1 = Math.min(x1, r.left);
-      if (l.landscape && r.right < l.w * 0.5) x0 = Math.max(x0, r.right);
+      if (el.classList.contains('topbar')) { if (r.bottom < l.sceneH * 0.4) y0 = Math.max(y0, r.bottom); continue; }
+      // a side shelf (landscape) narrows the scene; anything along the bottom lifts its floor
+      if (r.height > l.sceneH * 0.5 && r.left > l.w * 0.5) x1 = Math.min(x1, r.left);
+      else if (r.height > l.sceneH * 0.5 && r.right < l.w * 0.5) x0 = Math.max(x0, r.right);
+      else if (r.top > l.sceneH * 0.4 && r.top < y1) y1 = Math.max(l.sceneH * 0.45, r.top);
     }
     return [(x0 + x1) / 2, y0 + (y1 - y0) * 0.5];
   }
@@ -926,19 +944,14 @@ export class App implements PanelNav {
 
   private measureRail(): void {
     const rail = this.layers.hud.querySelector<HTMLElement>('.rail');
-    if (!rail) return;
-    const r = rail.getBoundingClientRect();
-    const st = getComputedStyle(document.documentElement);
-    const safeB = parseFloat(st.getPropertyValue('--safe-b')) || 0;
-    const b = document.body.classList;
     const root = document.documentElement.style;
-    if (b.contains('is-mini')) {
+    if (!rail || document.body.classList.contains('is-mini') || rail.offsetParent === null) {
       root.setProperty('--rail-h', '0px');
-      root.setProperty('--rail-top', `${r.height}px`);
-    } else {
-      root.setProperty('--rail-top', '0px');
-      if (!b.contains('is-landscape')) root.setProperty('--rail-h', `${Math.max(0, r.height - safeB)}px`);
+      return;
     }
+    const r = rail.getBoundingClientRect();
+    const safeB = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-b')) || 0;
+    root.setProperty('--rail-h', `${Math.max(0, Math.round(r.height - safeB))}px`);
   }
 
   // ------------------------------------------------------------------ debug (screenshots, bots)

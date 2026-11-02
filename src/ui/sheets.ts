@@ -52,6 +52,13 @@ export class Sheets {
 
   /** Open (or replace the top sheet with) new content. Only one sheet is visible at a time. */
   open(content: SheetContent): Sheet {
+    const sheet = this.place(content);
+    // frame style hook (D-43): 'building', 'wagon', 'market' get the bright frame, menus the dim one
+    sheet.el.dataset.kind = content.key.split(':')[0];
+    return sheet;
+  }
+
+  private place(content: SheetContent): Sheet {
     const top = this.top;
     if (top && top.content.key === content.key) {
       top.content = content;

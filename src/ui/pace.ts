@@ -39,7 +39,7 @@ function producerName(f: ContractForecast, i: number): string {
   return g.producerType ? t(`building.${g.producerType}` as MessageKey) : '—';
 }
 
-/** Waybill block: "At this pace: done in 9:40 ●○○" and the bottleneck's supply "Fisher's hut ×1 · 5.3/min". */
+/** Waybill block (the seals sit in the panel head, D-43): "At this pace: done in 9:40" and the bottleneck's supply "Fisher's hut ×1 · 5.3/min". */
 export function waybillPaceHtml(world: World, f: ContractForecast | null): string {
   if (!f || !f.ready || f.bottleneck < 0) return '';
   const tick = world.state.tick;
@@ -52,7 +52,7 @@ export function waybillPaceHtml(world: World, f: ContractForecast | null): strin
   const supply = tHtml('contract.pace.supply', { who: producerName(f, f.bottleneck), n: fmtInt(b.producers), rate: fmtDec(b.perMin, 1) });
   const go = b.producer >= 0 ? `data-wb="b:${b.producer}"` : 'data-wb="castle"';
   return `<div class="wb-pace${late ? ' late' : f.seals <= 1 ? ' warn' : ''}">
-    <div class="wb-pace-eta" data-wb="castle" role="button" tabindex="0"><span>${eta}</span>${late ? '' : sealRow(f.seals)}</div>
+    <div class="wb-pace-eta" data-wb="castle" role="button" tabindex="0"><span>${eta}</span></div>
     <div class="wb-pace-sup" ${go} role="button" tabindex="0">${iconSvg(b.good, 18, goodName(b.good))}<span>${supply}</span></div></div>`;
 }
 
