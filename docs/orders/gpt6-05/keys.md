@@ -92,3 +92,54 @@
 | `market.notYet` | not yet | jeszcze nie |
 | `town.willUnlock` | Unlocks: {list} | Odblokuje: {list} |
 | `market.colPrice` | price now | cena teraz |
+| `valley.title` | Settlement ledgers | Księgi osad |
+| `valley.slot` | Ledger {n} | Księga {n} |
+| `valley.new` | New settlement | Nowa osada |
+| `valley.newSub` | Empty ledger — start from the first hut | Pusta księga — zacznij od pierwszej chaty |
+| `valley.play` | Play | Graj |
+| `valley.fresh` | Start over | Od nowa |
+| `valley.delete` | Delete | Usuń |
+| `valley.silver` | Silver | Srebro |
+| `valley.played` | Played | W grze |
+| `valley.last` | Last played | Ostatnio |
+| `valley.confirmDelete` | Erase ledger {n} — {name}, renown {renown}? This cannot be undone. | Wymazać księgę {n} — {name}, renoma {renown}? Tego nie da się cofnąć. |
+| `valley.confirmFresh` | Start over in ledger {n}? {name} with renown {renown} will be lost. | Zacząć od nowa w księdze {n}? {name} z renomą {renown} przepadnie. |
+| `valley.confirmBroken` | Delete damaged ledger {n}? | Usunąć uszkodzoną księgę {n}? |
+| `valley.yesDelete` | Yes, delete | Tak, usuń |
+| `valley.yesFresh` | Yes, start over | Tak, od nowa |
+| `valley.keep` | Keep it | Zostaw |
+| `valley.broken` | Damaged ledger | Księga uszkodzona |
+| `valley.loading` | Opening the ledgers… | Otwieram księgi… |
+| `valley.readFail` | The saves could not be read. Contracts still work. | Nie udało się odczytać zapisów. Kontrakty działają bez zmian. |
+| `valley.retry` | Try again | Spróbuj ponownie |
+| `valley.saving` | Saving to ledger {n} | Zapis w księdze {n} |
+| `valley.brokenOpen` | Open the valley ledgers | Otwórz księgi doliny |
+| `valley.what` | {mode}, {slot} | {mode}, {slot} |
+| `good.fish` | fish | ryby |
+| `good.stone` | stone | kamień |
+| `good.charcoal` | charcoal | węgiel drzewny |
+| `good.malt` | malt | słód |
+| `good.beer` | beer | piwo |
+| `goodGen.fish` | fish | ryb |
+| `goodGen.stone` | stone | kamienia |
+| `goodGen.charcoal` | charcoal | węgla drzewnego |
+| `goodGen.malt` | malt | słodu |
+| `goodGen.beer` | beer | piwa |
+| `goodAcc.fish` | fish | ryby |
+| `goodAcc.stone` | stone | kamień |
+| `goodAcc.charcoal` | charcoal | węgiel drzewny |
+| `goodAcc.malt` | malt | słód |
+| `goodAcc.beer` | beer | piwo |
+| `building.fisher` | Fisher's hut | Chata rybaka |
+| `building.quarry` | Quarry | Kamieniołom |
+| `building.charcoalBurner` | Charcoal burner | Węglarnia |
+| `building.malthouse` | Malthouse | Słodownia |
+| `building.brewery` | Brewery | Browar |
+| `status.NO_INPUT.CONTESTED` | {good} goes to another customer | {good} jedzie do innego odbiorcy |
+| `cause.NO_INPUT.CONTESTED` | input taken by another customer | surowiec zabiera inny odbiorca |
+| `err.NOT_NEAR_WATER` | A fisher's hut must stand by the water | Rybak musi stać nad wodą |
+| `err.NOT_ON_ROCK` | A quarry needs high, rocky ground | Kamieniołom tylko na skalistym wzniesieniu |
+| `err.NO_STONE` | Not enough stone in the granaries: need {need}, have {have} | Brak kamienia w spichlerzach: potrzeba {need}, jest {have} |
+| `rank.4` | Stronghold | Gród |
+| `rank.5` | Capital | Stolica |
+| `town.unlockCastle` | castle upgrade | rozbudowa zamku |
