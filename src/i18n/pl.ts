@@ -55,6 +55,9 @@ export const pl = {
   'wagon.UNLOADING': 'Rozładunek',
   'wagon.RETURNING': 'Wraca do stajni',
   'wagon.BRIDGE_JAM': 'Czeka przy moście na wóz {blocker}',
+  'wagon.BRIDGE_JAM.ONCOMING': 'Czeka przy moście: wóz {blocker} jedzie z naprzeciwka (jeden pas)',
+  'wagon.BRIDGE_JAM.SPAN_FULL': 'Czeka przy moście: na przęśle już komplet wozów (z wozem {blocker})',
+  'wagon.BRIDGE_JAM.YIELD': 'Przepuszcza wóz {blocker}, który dłużej czeka po drugiej stronie',
   'wagon.NO_ROUTE': 'Brak drogi do celu: {target}',
   'wagon.NO_ROUTE.home': 'Brak drogi do stajni',
   'wagon.name': 'Wóz {id}',
@@ -495,6 +498,9 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  'wagon.BRIDGE_JAM.ONCOMING',
+  'wagon.BRIDGE_JAM.SPAN_FULL',
+  'wagon.BRIDGE_JAM.YIELD',
   'events.card.title',
   'events.card.fold',
   'events.card.unfold',
