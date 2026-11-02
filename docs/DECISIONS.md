@@ -358,3 +358,65 @@ every mission, not a cosmetic fix. Drawn: m1 bot fleet and m2 show 0 overlapping
 and 78 sampled in the sim positions); the deliberately overloaded 120-wagon bench keeps ~78 % (dozens of
 wagons on a few cells exceed the capped lag).* (decided — revisit as a sim rule together with a balance pass)
 
+
+**D-36 — One save slot per contract mission; starting over always asks (no state change).** Before, every
+contract wrote to the single slot `auto`: starting mission V while mission III was unfinished overwrote III
+after the first autosave (30 s), and pause → "Start over" deleted a contract save at once. Now contracts write
+to `auto-<missionId>` (`src/platform/slots.ts`); the free valley keeps its three ledgers (D-29) unchanged.
+`adoptLegacySaves()` (menu start) moves an old `auto` save into its own slot — a contract into
+`auto-<missionId>` (the newer copy wins if both exist), a valley game into the first empty ledger as before;
+an unreadable one stays in `auto`, which "Continue" still offers so the damaged-save message keeps working.
+The copy is written before `auto` is deleted, so a crash in between leaves two copies, never none. A menu row
+with an unfinished save says "in progress, m:ss"; tapping it opens a ledger-style sheet (Continue / Start
+over → in-row ask), the pause menu asks before "Start over" for contracts too. The end letter's "Again" does
+not ask: the save is already deleted when the contract ends. *(decided)*
+
+**D-37 — Arabic RTL: the whole HUD mirrors through logical CSS.** `dir="rtl"` (set by `index.html` before the
+first paint and by `src/i18n/index.ts` on a language change) now mirrors the UI: `src/styles/main.css` uses only
+logical properties (`inset-inline-*`, `margin/padding-inline-*`, `border-inline-*`, `text-align: start/end`;
+4-value paddings split into `padding-block` + `padding-inline`). Safe areas read through a logical pair
+`--safe-s` / `--safe-e` that swaps in RTL, and `--ix` (+1 / −1) flips the few physical x offsets (shadows
+thrown from the rail and the build shelf, slide-in of side sheets). Mirrored: tool rail (landscape: left edge;
+portrait: tool order), sheets and their dock side, waybill (collapse origin), town plaque, toasts, notices,
+undo, "Pokaż przyciski", menu strip and the valley ledgers. The left-handed setting still swaps sides on top
+(rail side = hand XOR RTL, `railOnLeft()` in `src/ui/dom.ts` for the JS-placed tool caption; swipe-to-close
+follows). Not mirrored: the map, camera and gestures; boxes placed from screen coordinates (stall bubbles,
+ETA tags, ghost labels, tutorial ring); boxes centred with `left: 50%`; the speed buttons and ETA tags keep
+LTR order (playback-like, as in RTL apps); goods and building icons. Direction icons: the chain / "dalej"
+arrow (`.fwd`) and back / undo (`.rtl-flip`) mirror. Numbers: `iso()` / `<bdi>` isolate parameters; plural
+`#` numbers now use Latin digits like `fmtInt` and are isolated in RTL. `tests/css-logical.test.ts` fails on
+any physical left/right outside the listed exceptions. *Owner asked for a mirrored HUD (brief 05); the
+research note (BACKLOG) had suggested mirroring content only — superseded. Open: whether an Arabic
+right-hander prefers the landscape rail on the right (then "left-handed" reads backwards in RTL).* (decided)
+*Amended 2026-11-02 (owner):* the rail side follows the hand only — in RTL the rail stays on the right for a
+right-handed player. `App.applyHand()` sets the `left-handed` class to hand XOR RTL, so the logical CSS lands the
+rail physically on the hand's side; `railOnLeft()` then equals the left-handed setting.
+
+**D-38 — Contract pace forecast and shared inputs are read-only diagnosis (F10, F3; no StallReason, no hash
+change).** Implements the F3/F10 proposals of docs/research/2026-11-02-seasons-m7-9.md. (1) *F10*: a slower
+supply is not a stall (design/seasons.md §3), so the waybill and the castle card read a forecast instead of a new
+status. `src/sim/forecast.ts` (pure, sim rules): the UI keeps a `PaceLog` (cumulative `ledger.produced` every 10 s
+of game time, sampled in `App.onTick`, window 2 min plus the first sample; never in `SimState`, reset on a new
+world or an earlier tick). `contractForecast(world, log)` per ordered good: to make = need − castle stock −
+promised − spare producer stock; pace = the better of the 2-min window and the whole log (a passing dip does not
+make it panic, a fix shows within the window); ETA = to make ÷ pace + quickest loaded trip (+ load/unload), or the
+last promised wagon's `wagonEta` when everything missing is already on the way; two ordered goods made from one
+input (m9: planks and charcoal from wood) are also timed as a pool on that input's pace, bounded by the producers'
+full-work rate (without this m9 showed "late" in 30 of 55 samples of a won run). Seals from the star ticks minus
+tranches already missed; `aim` = pace the bottleneck needs for the next better seal. Ready after one minute of
+samples; letters with tranches get no forecast (their waybill reads tranche by tranche). UI (`src/ui/pace.ts`):
+waybill "At this pace: done in M:SS" + three seals (pressed as earned; clay when ≤ 1, "N late" past the deadline)
+and "<producer> ×n · r/min" with a tap to that producer; the castle card leads with "Delivery pace" (per good now /
+at most, e.g. 5.1 vs 6.7 fish/min; "for 3 seals (4:04 left) you need ≈11.2/min") while the castle only waits, or
+shows it under the order when the castle is stalled. (2) *F3*: `sharedInput(world, id)` (diagnose.ts): a consumer
+waiting for an input (WAITING_DELIVERY, NO_WAGON, WAITING_UPSTREAM, NO_INPUT except UNREACHABLE) while a consumer of
+another kind holds or awaits that good; the card puts "Wood also feeds: Charcoal burner — there 6, here 2" (tap →
+rival) above the chain, plus "One supplier (Woodcutter's hut) for 2 customers — a second one would help" while
+there is one producer. The sim's CONTESTED keeps its narrow meaning. Rejected: m9 data changes (start wood, wagons)
+and widening `contestedBy` to reserved stock — both change mission hashes (and the seal tuning). (3) *Proof*
+(`tools/pace-readability.ts`, tests/contract-pace.test.ts): m7 forecast seals = outcome in 100 % / 100 % of samples
+for "no action" / "right fix" (median error 16 / 42 s), late fix 67 % two minutes after the action, never a false
+"late"; m9 61 / 39 / 59 %, 6 / 7 / 1 false "late" samples. m9 lesson on a consumer card: 5.0 % → 84.9 % of the
+game without action (3.3 → 81.0 %, 3.8 → 57.1 % with fixes), 0 wrong rivals. m7 and m9 hashes identical with and
+without reading every tick for all bot strategies. New PL/EN keys in `PENDING_KEYS`. (decided — retune the pace
+window after the playtest)

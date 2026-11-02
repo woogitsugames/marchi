@@ -115,7 +115,10 @@ export function formatPlural(s: string, params: Record<string, string | number>)
     const branches = new Map<string, string>();
     body.replace(/\s*(=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}/g, (_x, k: string, v: string) => { branches.set(k, v); return ''; });
     const text = branches.get('=' + n) ?? branches.get(pluralRules().select(n)) ?? branches.get('other') ?? '';
-    return text.split('#').join(new Intl.NumberFormat(current).format(n));
+    // Latin digits like every other number in the UI (format.ts fmtInt uses -u-nu-latn), isolated in RTL
+    // so "11 كتلة" keeps the number with its word (bidi, D-37)
+    const num = new Intl.NumberFormat(`${current}-u-nu-latn`).format(n);
+    return text.split('#').join(RTL_LANGS.has(current) ? `\u2068${num}\u2069` : num);
   });
 }
 

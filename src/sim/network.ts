@@ -22,6 +22,11 @@ export interface NetCache {
   edgeMask: Uint8Array;
   /** Lazily built edge travel times per (loaded, rain, thaw) variant, index cell*8+dir, Infinity = no edge. */
   costs: (Float64Array | null)[];
+  /**
+   * Lazily built connected-component label per cell over `edgeMask` (-1 off the road network), see
+   * `reachable`. Labels are the minimal cell index of each component.
+   */
+  comp: Int32Array | null;
 }
 
 /** Opposite direction index for DX/DY. */
@@ -40,6 +45,11 @@ export interface World {
   queue?: { tick: number; ver: number; penalty: Map<number, number> } | null;
   /** Scratch buffers for pathfinding (reused). */
   scratch: PathScratch | null;
+  /**
+   * Recycled dist/prev arrays for non-scratch Dijkstra results (`releaseDistMap`). Derived, never saved;
+   * a released map's arrays are overwritten by a later `dijkstra` call.
+   */
+  distPool?: { dist: Float64Array[]; prev: Int32Array[] };
 }
 
 export function net(world: World): NetCache {
@@ -74,7 +84,7 @@ export function net(world: World): NetCache {
       }
     }
   }
-  world.cache = { ver: st.netVersion, occupied, gateOf, span, edgeMask: new Uint8Array(n * 8), costs: [null, null, null, null, null, null, null, null] };
+  world.cache = { ver: st.netVersion, occupied, gateOf, span, edgeMask: new Uint8Array(n * 8), costs: [null, null, null, null, null, null, null, null], comp: null };
   const mask = world.cache.edgeMask;
   for (let i = 0; i < n; i++) {
     if (!st.roads[i]) continue;
@@ -109,6 +119,43 @@ export function edgeCosts(world: World, loaded: boolean, rain: boolean, thaw = f
   }
   c.costs[k] = tab;
   return tab;
+}
+
+/**
+ * Is there any drivable path a -> b? Same answer as `dijkstra(world, a, ...).dist[b] < Infinity` for
+ * every direction, load, weather and queue/ice state: edges are symmetric (`hasEdge` is), every edge
+ * in `edgeMask` has a finite cost (bridge queue and ice only add finite seconds), and a start off the
+ * roads reaches nothing. Component labels are computed once per network version. If one-way edges or
+ * impassable-but-present edges ever appear, this must become a directed search.
+ */
+export function reachable(world: World, a: number, b: number): boolean {
+  const comp = components(world);
+  return comp[a]! !== -1 && comp[a] === comp[b];
+}
+
+function components(world: World): Int32Array {
+  const c = net(world);
+  if (c.comp) return c.comp;
+  const w = world.terrain.w, n = w * world.terrain.h;
+  const roads = world.state.roads, mask = c.edgeMask;
+  const comp = new Int32Array(n).fill(-1);
+  const stack: number[] = [];
+  for (let i = 0; i < n; i++) {
+    if (comp[i] !== -1 || !roads[i]) continue;
+    comp[i] = i;
+    stack.push(i);
+    while (stack.length) {
+      const u = stack.pop()!;
+      const ux = u % w, uy = (u - ux) / w;
+      for (let d = 0; d < 8; d++) {
+        if (!mask[u * 8 + d]) continue;
+        const v = (uy + DY[d]!) * w + ux + DX[d]!;
+        if (comp[v] === -1) { comp[v] = i; stack.push(v); }
+      }
+    }
+  }
+  c.comp = comp;
+  return comp;
 }
 
 /** Expected extra seconds per wagon waiting at / crossing a one-lane bridge. */
@@ -235,6 +282,18 @@ export interface DistMap {
   prev: Int32Array;
 }
 
+/** Keep at most this many spare dist/prev pairs per world (a dispatch uses up to ~30). */
+const DIST_POOL_MAX = 64;
+
+/**
+ * Hand a `dijkstra` result (reuse=false) back for recycling. The caller must not read `m` afterwards:
+ * the next `dijkstra` call overwrites its arrays.
+ */
+export function releaseDistMap(world: World, m: DistMap): void {
+  const p = world.distPool ?? (world.distPool = { dist: [], prev: [] });
+  if (p.dist.length < DIST_POOL_MAX) { p.dist.push(m.dist); p.prev.push(m.prev); }
+}
+
 /**
  * Dijkstra over road cells from `start`. reverse=false: dist[x] = time start -> x.
  * reverse=true: dist[x] = time x -> start. Stops early when `stopAt` is settled.
@@ -244,8 +303,13 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   const n = w * h;
   const sc = scratch(world);
   // reuse=true: results live in shared scratch buffers (valid until the next reuse call) — no allocation
-  const dist = reuse ? sc.dist.fill(Infinity) : new Float64Array(n).fill(Infinity);
-  const prev = reuse ? sc.prev.fill(-1) : new Int32Array(n).fill(-1);
+  // reuse=false: own arrays, recycled from `releaseDistMap` when available (same contents after fill)
+  const pool = reuse ? undefined : world.distPool;
+  let pd = pool?.dist.pop(), pp = pool?.prev.pop();
+  if (pd && pd.length !== n) pd = undefined;
+  if (pp && pp.length !== n) pp = undefined;
+  const dist = reuse ? sc.dist.fill(Infinity) : (pd ?? new Float64Array(n)).fill(Infinity);
+  const prev = reuse ? sc.prev.fill(-1) : (pp ?? new Int32Array(n)).fill(-1);
   if (!world.state.roads[start]) return { dist, prev };
   const hn = sc.heapNode, hk = sc.heapKey;
   let size = 0;

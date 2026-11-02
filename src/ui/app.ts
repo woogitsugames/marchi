@@ -6,19 +6,24 @@ import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } fr
 import {
   TICK_HZ, applyCommand, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
-  isRaining,
+  isRaining, newPaceLog, samplePace, type PaceLog,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, WorldView } from '../render/api';
-import { CONTRACT_SLOT, VALLEY_SLOTS, adoptLegacyValley, deleteSave, isValleySlot, listSaves, loadGame, readSlots, saveGame } from '../platform/save';
+import {
+  LEGACY_SLOT, adoptLegacySaves, contractSlot, contractSlotMission, deleteSave, isGameSlot, isValleySlot, listSaves, loadGame, readSlots,
+  saveGame, slotFor,
+} from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
 import { bridgeA, stableId } from '../../tools/bot';
-import { h } from './dom';
+import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
-import { buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, settingsSheet, valleySheet, type MissionKey, type SaveInfo } from './menu';
+import {
+  buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+} from './menu';
 import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -85,11 +90,13 @@ export class App implements PanelNav {
   private params: URLSearchParams;
   private layers: { markers: HTMLElement; hud: HTMLElement; sheets: HTMLElement; tutorial: HTMLElement; menu: HTMLElement; overlay: HTMLElement };
   world: World;
+  /** Contract pace samples (UI-owned, never in the state): the waybill / castle-card forecast. */
+  pace: PaceLog = newPaceLog();
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
   private missionId: MissionKey = 'm1';
-  /** Save slot of the running game: CONTRACT_SLOT for contracts, a valley ledger in the free valley (D-29). */
-  private slot: string = CONTRACT_SLOT;
+  /** Save slot of the running game: the mission's own slot for contracts (D-36), a valley ledger in the free valley (D-29). */
+  private slot: string = contractSlot('m1');
   private prevAudio: AudioSnapshot | null = null;
   private sheets: Sheets;
   private hud: Hud | null = null;
@@ -109,6 +116,10 @@ export class App implements PanelNav {
   private perfEl: HTMLElement | null = null;
   private perfAt = 0;
   private save: SaveInfo | null = null;
+  /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
+  private unfinished = new Map<string, SaveInfo>();
+  /** The slot "Continue" failed to load (shown as damaged in the menu): wiped when that contract starts afresh. */
+  private brokenSlot: string | null = null;
   private speedBeforeMenu: Speed = 1;
   /** Demolish tool: the contract building a first tap warned about (second tap within the window demolishes). */
   private demolishArm: { id: number; until: number } | null = null;
@@ -167,7 +178,7 @@ export class App implements PanelNav {
     const qp = this.params.get('quality');
     this.qualityParam = isQualityPref(qp) ? qp : null;
     this.dynres.enabled = this.params.get('dynres') !== '0';
-    document.body.classList.toggle('left-handed', this.prefs.leftHanded);
+    this.applyHand();
     applyVolumes(this.prefs);
     this.view.setQuality(renderQuality(this.view, this.effectiveQuality()));
     this.applyLayout();
@@ -190,7 +201,7 @@ export class App implements PanelNav {
     window.addEventListener('keydown', (e) => this.onKey(e));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') void this.autosave(); });
     window.addEventListener('pagehide', () => void this.autosave());
-    onLangChange(() => this.rebuildUi());
+    onLangChange(() => { this.applyHand(); this.rebuildUi(); });
 
     if (this.params.get('perf') === '1') {
       this.perfEl = h('div.perf.num');
@@ -203,6 +214,15 @@ export class App implements PanelNav {
       rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
       ready: false,
     };
+  }
+
+  /**
+   * The tool rail follows the hand, not the language (owner, 2026-11-02): RTL mirrors the content,
+   * so the 'left-handed' class (which swaps the logical side) is set when hand XOR RTL — a
+   * right-handed Arabic player keeps the rail under the right thumb.
+   */
+  private applyHand(): void {
+    document.body.classList.toggle('left-handed', this.prefs.leftHanded !== isRtl());
   }
 
   async start(): Promise<void> {
@@ -248,15 +268,22 @@ export class App implements PanelNav {
   private async refreshSaves(adopt = false): Promise<void> {
     const token = ++this.menuToken;
     let save: SaveInfo | null = null;
+    const unfinished = new Map<string, SaveInfo>();
     try {
-      if (adopt) await adoptLegacyValley().catch((e: unknown) => console.warn('legacy valley save not moved', e));
-      const saves = await listSaves();
-      const s = saves.find((x) => x.slot === CONTRACT_SLOT || isValleySlot(x.slot));
-      save = s ? { missionId: s.missionId, tick: s.tick, slot: s.slot } : null;
+      if (adopt) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
+      const saves = await listSaves(); // newest first
+      const info = (x: (typeof saves)[number]): SaveInfo => ({ missionId: x.missionId, tick: x.tick, slot: x.slot, savedAt: x.savedAt });
+      const s = saves.find((x) => isGameSlot(x.slot));
+      save = s ? info(s) : null;
+      for (const x of saves) {
+        const m = contractSlotMission(x.slot);
+        if (m && !unfinished.has(m)) unfinished.set(m, info(x));
+      }
     } catch { save = null; }
     if (token !== this.menuToken || this.mode !== 'menu') return;
-    const changed = JSON.stringify(save) !== JSON.stringify(this.save);
+    const changed = JSON.stringify([save, [...unfinished]]) !== JSON.stringify([this.save, [...this.unfinished]]);
     this.save = save;
+    this.unfinished = unfinished;
     if (changed) this.renderMenu();
   }
 
@@ -282,14 +309,39 @@ export class App implements PanelNav {
     if (this.mode !== 'menu') return;
     this.layers.menu.append(buildMainMenu({
       continueGame: () => void this.continueGame(),
-      newGame: (m) => this.newGame(m),
+      newGame: (m) => this.pickMission(m),
+      startFresh: (m) => {
+        if (this.brokenSlot && this.brokenSlot !== contractSlot(m)) void deleteSave(this.brokenSlot).catch(() => undefined);
+        this.startFresh(m);
+      },
       openValley: () => this.openValley(),
       openSettings: () => this.openSettings(),
-    }, broken ? null : this.save, broken));
+    }, broken ? null : this.save, broken, this.unfinished));
+  }
+
+  /** A mission tapped in the menu: straight in, or first the ask sheet when it has an unfinished save (D-36). */
+  private pickMission(m: MissionKey): void {
+    if (this.mode !== 'menu') return;
+    const u = m === 'sandbox' ? undefined : this.unfinished.get(m);
+    if (!u) { this.newGame(m); return; }
+    this.sheets.open(missionSaveSheet({
+      continueGame: () => void this.continueGame(u.slot),
+      startFresh: () => this.startFresh(m),
+    }, m, u));
+  }
+
+  /** Wipes the mission's own save, then starts it afresh (never another mission's save). */
+  private startFresh(m: MissionKey): void {
+    const slot = slotFor(m);
+    // the delete is queued before any autosave of the new game (IndexedDB runs them in order)
+    void deleteSave(slot).catch(() => undefined);
+    this.unfinished.delete(m);
+    this.newGame(m);
   }
 
   private setWorld(w: World): void {
     this.world = w;
+    this.pace = newPaceLog();
     this.loop = new GameLoop(w);
     this.loop.onTick = () => this.onTick();
     this.prevAudio = captureAudioState(w.state);
@@ -308,9 +360,9 @@ export class App implements PanelNav {
   }
 
   /** slot: the valley ledger to play in (free valley only; default the first ledger). */
-  newGame(id: MissionKey, slot: string = VALLEY_SLOTS[0]): void {
+  newGame(id: MissionKey, slot: string | null = null): void {
     this.missionId = id;
-    this.slot = id === 'sandbox' && isValleySlot(slot) ? slot : CONTRACT_SLOT;
+    this.slot = slotFor(id, slot);
     this.enterGame(createWorld(id));
     const forced = this.params.get('tut') === '1';
     if (id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'))) this.startTutorial();
@@ -369,13 +421,16 @@ export class App implements PanelNav {
 
   /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */
   private async continueGame(slot: string | null = null): Promise<void> {
-    const from = slot ?? this.save?.slot ?? CONTRACT_SLOT;
+    const from = slot ?? this.save?.slot ?? LEGACY_SLOT;
     try {
       const st: SimState | null = await loadGame(from);
       if (!st) throw new Error('save slot is empty');
       if (this.mode !== 'menu') return; // a second tap already started a game
       this.missionId = isMissionKey(st.mission.id) ? st.mission.id : 'm1';
-      this.slot = from;
+      // a contract still in the legacy slot moves to its own slot with the next autosave (the stale
+      // copy is dropped by adoptLegacySaves); a valley game stays put (its ledgers may all be taken)
+      this.slot = from === LEGACY_SLOT && st.mission.id !== 'sandbox' ? slotFor(st.mission.id) : from;
+      this.brokenSlot = null;
       this.enterGame(worldFromState(st));
     } catch (e) {
       // damaged / incompatible save: say so; a contract is offered afresh, a valley ledger in the picker
@@ -388,7 +443,10 @@ export class App implements PanelNav {
         this.openValley();
         return;
       }
-      const m: MissionKey = isMissionKey(this.save?.missionId) ? this.save!.missionId as MissionKey : 'm1';
+      const id = contractSlotMission(from) ?? this.save?.missionId;
+      const m: MissionKey = isMissionKey(id) && id !== 'sandbox' ? id : 'm1';
+      this.brokenSlot = from;
+      this.sheets.closeAll();
       this.renderMenu(m);
     }
   }
@@ -428,6 +486,7 @@ export class App implements PanelNav {
         const c = this.world.state.mission.contract;
         if (c) this.go('building', c.castle, true);
       },
+      openBuilding: (id) => this.go('building', id, true),
       waybillCollapsed: (c) => { this.prefs.waybillCollapsed = c; savePrefs(this.prefs); },
       openMarket: () => this.openMarket(),
       rankUp: (r) => {
@@ -442,7 +501,7 @@ export class App implements PanelNav {
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
-    this.hud.update(this.world);
+    this.hud.update(this.world, this.pace);
     requestAnimationFrame(() => this.measureRail());
   }
 
@@ -479,7 +538,7 @@ export class App implements PanelNav {
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {
-      this.hud?.update(this.world);
+      this.hud?.update(this.world, this.pace);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false);
       this.tutorial?.update(dt);
       this.build.frame();
@@ -504,6 +563,7 @@ export class App implements PanelNav {
 
   private onTick(): void {
     this.view.afterTick();
+    samplePace(this.pace, this.world);
     if (this.prevAudio && audio.ready) {
       const l = this.view.audioListener?.() ?? { x: 0, z: 0, yaw: 0 };
       const tr = this.world.terrain;
@@ -754,7 +814,7 @@ export class App implements PanelNav {
       setLeftHanded: (v) => {
         this.prefs.leftHanded = v;
         savePrefs(this.prefs);
-        document.body.classList.toggle('left-handed', v);
+        this.applyHand();
         requestAnimationFrame(() => this.measureRail());
       },
       musicVolume: () => this.prefs.musicVolume,

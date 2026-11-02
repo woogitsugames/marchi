@@ -79,3 +79,17 @@ export function deckle(edge: 'bottom' | 'right', seed: number, depth = 7, steps 
   }
   return `polygon(${pts.join(', ')})`;
 }
+
+/** The document runs right-to-left (Arabic, D-37): the HUD is mirrored by the CSS logical properties. */
+export function isRtl(): boolean {
+  return document.documentElement.dir === 'rtl';
+}
+
+/**
+ * Is the tool rail on the physical left edge (landscape)? It sits at the inline end, so on the right in
+ * LTR; the left-handed setting and RTL each mirror it once.
+ */
+export function railOnLeft(): boolean {
+  return document.body.classList.contains('left-handed') !== isRtl();
+}
+

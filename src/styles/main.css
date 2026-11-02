@@ -37,6 +37,12 @@
   --safe-r: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
   --safe-b: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
   --safe-l: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+  /* logical safe areas: inline start / end (swap in RTL, below) — every inline offset uses these */
+  --safe-s: var(--safe-l);
+  --safe-e: var(--safe-r);
+  /* +1 in LTR, -1 in RTL: multiplies physical x offsets that must follow the inline direction
+     (shadows thrown away from an edge, slide-in transforms) */
+  --ix: 1;
   --rail-top: 0px; /* height of the top rail on tiny screens (Flip cover) */
 
   --rail-h: 120px; /* portrait rail height without the safe area */
@@ -44,6 +50,10 @@
 
   color-scheme: light;
 }
+
+/* RTL (Arabic, D-37): the HUD and sheets mirror through logical properties; only the safe-area pair and
+   the x sign flip here. Gestures, camera and the map are not mirrored. */
+:root[dir='rtl'] { --safe-s: var(--safe-r); --safe-e: var(--safe-l); --ix: -1; }
 
 * { box-sizing: border-box; }
 
@@ -168,13 +178,13 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   width: min(272px, 70vw);
   max-height: 100vh;
   overflow-y: auto;
-  padding: calc(var(--safe-t) + 36px) 22px 40px calc(var(--safe-l) + 24px);
+  padding-block: calc(var(--safe-t) + 36px) 40px; padding-inline: calc(var(--safe-s) + 24px) 22px;
   display: flex;
   flex-direction: column;
   background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
   /* deckled bottom edge: clip-path set from JS */
 }
-.menu-wrap { position: absolute; top: 0; left: 0; filter: var(--shadow); }
+.menu-wrap { position: absolute; top: 0; inset-inline-start: 0; filter: var(--shadow); }
 .menu-pin {
   position: absolute; left: calc(50% - 5px); top: calc(var(--safe-t) + 12px);
   width: 10px; height: 10px; background: radial-gradient(circle at 35% 35%, #8a8478 0 18%, var(--iron) 22%); clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
@@ -246,11 +256,12 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .waybill-wrap {
   position: absolute;
   top: calc(var(--safe-t) + 10px);
-  left: calc(var(--safe-l) + 10px);
+  inset-inline-start: calc(var(--safe-s) + 10px);
   filter: var(--shadow);
   transform-origin: 28px 28px;
   transition: transform var(--t-mid) var(--ease), opacity var(--t-mid) var(--ease);
 }
+:root[dir='rtl'] .waybill-wrap { transform-origin: calc(100% - 28px) 28px; }
 .waybill {
   position: relative;
   width: 214px;
@@ -306,10 +317,10 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 /* tool rail */
 .rail {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
-  padding: 0 calc(var(--safe-r) + 8px) calc(var(--safe-b) + 6px) calc(var(--safe-l) + 8px);
+  padding-block: 0 calc(var(--safe-b) + 6px); padding-inline: calc(var(--safe-s) + 8px) calc(var(--safe-e) + 8px);
   background: var(--oak);
   color: var(--parchment);
   border-top: 1px solid var(--oak-hi);
@@ -361,15 +372,15 @@ body.is-landscape .rail-tools .menu-slot { display: inline-flex; }
 
 /* landscape: rail on the right edge (mirrored for left-handed) */
 body.is-landscape .rail {
-  left: auto;
+  inset-inline-start: auto;
   top: 0;
-  right: 0;
+  inset-inline-end: 0;
   bottom: 0;
-  width: calc(var(--rail-w) + var(--safe-r));
-  padding: calc(var(--safe-t) + 6px) calc(var(--safe-r) + 8px) calc(var(--safe-b) + 6px) 8px;
+  width: calc(var(--rail-w) + var(--safe-e));
+  padding-block: calc(var(--safe-t) + 6px) calc(var(--safe-b) + 6px); padding-inline: 8px calc(var(--safe-e) + 8px);
   border-top: 0;
-  border-left: 1px solid var(--oak-hi);
-  box-shadow: -2px 0 0 rgb(43 38 32 / .4);
+  border-inline-start: 1px solid var(--oak-hi);
+  box-shadow: calc(-2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
   justify-content: flex-start;
   gap: 6px;
 }
@@ -398,14 +409,14 @@ body.is-landscape .tool .tl { display: none; }
 body.is-landscape .tool.is-on .tl {
   display: block;
   position: absolute;
-  right: calc(100% + 8px);
+  inset-inline-end: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
 }
-body.is-landscape.left-handed .rail { right: auto; left: 0; border-left: 0; border-right: 1px solid var(--oak-hi); box-shadow: 2px 0 0 rgb(43 38 32 / .4);
-  padding-left: calc(var(--safe-l) + 8px); padding-right: 8px; width: calc(var(--rail-w) + var(--safe-l)); }
-body.is-landscape .waybill-wrap { left: calc(var(--safe-l) + 10px); }
-body.is-landscape.left-handed .waybill-wrap { left: auto; right: calc(var(--safe-r) + 10px); }
+body.is-landscape.left-handed .rail { inset-inline-end: auto; inset-inline-start: 0; border-inline-start: 0; border-inline-end: 1px solid var(--oak-hi); box-shadow: calc(2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
+  padding-inline-start: calc(var(--safe-s) + 8px); padding-inline-end: 8px; width: calc(var(--rail-w) + var(--safe-s)); }
+body.is-landscape .waybill-wrap { inset-inline-start: calc(var(--safe-s) + 10px); }
+body.is-landscape.left-handed .waybill-wrap { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
 /* portrait left-handed: mirror the tool order so the most used tool sits under the left thumb */
 body:not(.is-landscape).left-handed .rail-tools { flex-direction: row-reverse; }
 body:not(.is-landscape).left-handed .rail-line { flex-direction: row-reverse; }
@@ -484,7 +495,7 @@ body.is-landscape .tool-caption.is-shown { display: block; }
   align-items: center;
   gap: 4px;
   clip-path: polygon(6px 0, 100% 0, 100% 100%, 6px 100%, 0 50%);
-  padding-left: 10px;
+  padding-inline-start: 10px;
   opacity: 0;
   transition: opacity 150ms var(--ease);
 }
@@ -519,8 +530,8 @@ body.is-landscape .tool-caption.is-shown { display: block; }
   gap: 6px;
   width: min(360px, calc(100vw - 24px));
 }
-body.is-landscape .toasts { left: auto; right: calc(var(--rail-w) + var(--safe-r) + 12px); transform: none; bottom: calc(var(--safe-b) + 12px); align-items: flex-end; }
-body.is-landscape.left-handed .toasts { right: auto; left: calc(var(--rail-w) + var(--safe-l) + 12px); align-items: flex-start; }
+body.is-landscape .toasts { inset-inline-start: auto; inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 12px); transform: none; bottom: calc(var(--safe-b) + 12px); align-items: flex-end; }
+body.is-landscape.left-handed .toasts { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 12px); align-items: flex-start; }
 .toast {
   display: flex;
   align-items: center;
@@ -543,7 +554,7 @@ body.is-landscape.left-handed .toasts { right: auto; left: calc(var(--rail-w) + 
 .notice-wrap {
   position: absolute;
   top: calc(var(--safe-t) + 12px);
-  right: calc(var(--safe-r) + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px);
   max-width: min(260px, calc(100vw - 250px));
 }
 .notice {
@@ -557,8 +568,8 @@ body.is-landscape.left-handed .toasts { right: auto; left: calc(var(--rail-w) + 
   transition: opacity var(--t-slow) var(--ease);
 }
 .notice.is-out { opacity: 0; }
-body.is-landscape .notice-wrap { right: calc(var(--rail-w) + var(--safe-r) + 12px); }
-body.is-landscape.left-handed .notice-wrap { right: calc(var(--safe-r) + 12px); }
+body.is-landscape .notice-wrap { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 12px); }
+body.is-landscape.left-handed .notice-wrap { inset-inline-end: calc(var(--safe-e) + 12px); }
 
 
 /* ---------------------------------------------------------------- sheets */
@@ -566,8 +577,8 @@ body.is-landscape.left-handed .notice-wrap { right: calc(var(--safe-r) + 12px); 
 #sheets { position: absolute; inset: 0; }
 .sheet {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: 0;
   max-height: 64vh;
   display: flex;
@@ -628,18 +639,18 @@ body.is-side .sheet {
   top: calc(var(--safe-t) + 10px);
   bottom: auto;
   max-height: calc(100% - var(--safe-t) - var(--safe-b) - 20px);
-  left: auto;
-  right: calc(var(--safe-r) + 10px);
+  inset-inline-start: auto;
+  inset-inline-end: calc(var(--safe-e) + 10px);
   width: min(380px, 46vw);
 }
 body.is-side:not(.is-landscape) .sheet { max-height: calc(100% - var(--rail-h) - var(--safe-b) - var(--safe-t) - 20px); }
-body.is-side.is-landscape .sheet { right: auto; left: calc(var(--safe-l) + 10px); width: min(380px, calc(100vw - var(--rail-w) - 40px)); }
-body.is-side.is-landscape.left-handed .sheet { left: auto; right: calc(var(--safe-r) + 10px); }
+body.is-side.is-landscape .sheet { inset-inline-end: auto; inset-inline-start: calc(var(--safe-s) + 10px); width: min(380px, calc(100vw - var(--rail-w) - 40px)); }
+body.is-side.is-landscape.left-handed .sheet { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
 /* in the main menu the strip owns the left edge: settings dock on the right */
-body.mode-menu.is-side .sheet { left: auto; right: calc(var(--safe-r) + 10px); width: min(380px, calc(100vw - 300px)); }
-body.is-side .sheet.is-entering, body.is-side .sheet.is-leaving { transform: translateX(32px); }
+body.mode-menu.is-side .sheet { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); width: min(380px, calc(100vw - 300px)); }
+body.is-side .sheet.is-entering, body.is-side .sheet.is-leaving { transform: translateX(calc(32px * var(--ix))); }
 body.mode-game.is-side.is-landscape:not(.left-handed) .sheet.is-entering,
-body.mode-game.is-side.is-landscape:not(.left-handed) .sheet.is-leaving { transform: translateX(-32px); }
+body.mode-game.is-side.is-landscape:not(.left-handed) .sheet.is-leaving { transform: translateX(calc(-32px * var(--ix))); }
 body.is-side .sheet-paper { clip-path: var(--chamfer); --c: 8px; padding: var(--hair); }
 body.is-side .sheet-paper > .sp-in { clip-path: polygon(7.4px 0, calc(100% - 7.4px) 0, 100% 7.4px, 100% calc(100% - 7.4px), calc(100% - 7.4px) 100%, 7.4px 100%, 0 calc(100% - 7.4px), 0 7.4px); padding-bottom: 0; }
 body.is-side .sheet-grip { height: 10px; }
@@ -729,6 +740,9 @@ body.is-side .sheet-grip::before { display: none; }
 /* the 'back' glyph turned forward: points right in LTR, left in RTL */
 .fwd { display: inline-grid; transform: scaleX(-1); }
 :root[dir='rtl'] .fwd { transform: none; }
+/* direction icons drawn pointing back / turning back (back, undo): mirrored in RTL; goods and buildings never */
+.rtl-flip { display: inline-grid; }
+:root[dir='rtl'] .rtl-flip { transform: scaleX(-1); }
 .link.is-root { --frame: var(--clay); --hair: 1.5px; }
 .link.is-root .l-icon { color: var(--clay); --icon-halo: #e2d3c2; }
 .link .root-tag { display: inline-block; font-size: 13px; font-weight: 700; color: var(--clay); font-variant: small-caps; text-transform: lowercase; letter-spacing: .06em; margin-inline-start: 6px; }
@@ -812,7 +826,7 @@ body.is-side .sheet-grip::before { display: none; }
   align-items: center;
   justify-content: flex-start;
   padding: calc(var(--safe-t) + 44px) 20px calc(var(--safe-b) + 16px);
-  padding-inline-start: calc(var(--safe-l) + max(20px, 8vw));
+  padding-inline-start: calc(var(--safe-s) + max(20px, 8vw));
   overflow-y: auto;
   animation: fade-in var(--t-slow) var(--ease);
 }
@@ -864,7 +878,7 @@ body.is-side .sheet-grip::before { display: none; }
 .perf {
   position: absolute;
   bottom: calc(var(--rail-h) + var(--safe-b) + 8px);
-  right: calc(var(--safe-r) + 8px);
+  inset-inline-end: calc(var(--safe-e) + 8px);
   font-size: 13px;
   line-height: 1.25;
   padding: 4px 8px;
@@ -873,7 +887,7 @@ body.is-side .sheet-grip::before { display: none; }
   white-space: pre;
   pointer-events: none;
 }
-body.is-landscape .perf { bottom: 8px; right: calc(var(--rail-w) + var(--safe-r) + 8px); }
+body.is-landscape .perf { bottom: 8px; inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 8px); }
 
 /* ================================================================ foldables & big screens
    Body classes come from src/ui/layout.ts: is-split (tools bottom-left, speed bottom-right),
@@ -902,7 +916,7 @@ body.is-split .rail {
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 calc(var(--safe-r) + 12px) calc(var(--safe-b) + 12px) calc(var(--safe-l) + 12px);
+  padding-block: 0 calc(var(--safe-b) + 12px); padding-inline: calc(var(--safe-s) + 12px) calc(var(--safe-e) + 12px);
   pointer-events: none;
   filter: var(--shadow);
 }
@@ -942,12 +956,12 @@ body.is-split .menu-strip { width: 320px; }
 body.is-narrow .rail-line .menu-slot { display: none; }
 body.is-narrow .rail-tools .menu-slot { display: inline-flex; flex: 0 0 48px; }
 body.is-narrow .rail-stat { padding: 0 2px; font-size: 16px; gap: 3px; }
-body.is-narrow .rail-stat.sep::before { margin-right: 3px; }
+body.is-narrow .rail-stat.sep::before { margin-inline-end: 3px; }
 body.is-narrow .speed { gap: 1px; }
 body.is-narrow .tool { min-width: 48px; }
 body.is-narrow .tool .tl { font-size: 12px; letter-spacing: 0; }
 body.is-narrow .waybill { width: 196px; }
-body.is-narrow .menu-strip { width: min(290px, 84vw); padding-right: 16px; }
+body.is-narrow .menu-strip { width: min(290px, 84vw); padding-inline-end: 16px; }
 body.is-narrow .menu-item { font-size: 23px; }
 
 /* ---- mini (Flip cover, tiny windows): watch mode. Controls at the TOP edge because the Flip
@@ -955,7 +969,7 @@ body.is-narrow .menu-item { font-size: 23px; }
 body.is-mini .rail {
   top: 0;
   bottom: auto;
-  padding: calc(var(--safe-t) + 2px) calc(var(--safe-r) + 6px) 2px calc(var(--safe-l) + 6px);
+  padding-block: calc(var(--safe-t) + 2px) 2px; padding-inline: calc(var(--safe-s) + 6px) calc(var(--safe-e) + 6px);
   border-top: 0;
   border-bottom: 1px solid var(--oak-hi);
   box-shadow: 0 2px 0 rgb(43 38 32 / .4);
@@ -967,14 +981,14 @@ body.is-mini .rail-stat.sep { display: none; }
 body.is-mini .rail-hint { display: block; font-size: 13px; color: var(--mist); padding: 0 2px 3px; line-height: 1.2; }
 body.is-mini .waybill-wrap { top: calc(var(--rail-top) + 8px); }
 body.is-mini .toasts {
-  left: auto; right: calc(var(--safe-r) + 8px); transform: none;
+  inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 8px); transform: none;
   bottom: auto; top: calc(var(--rail-top) + 8px);
   width: calc(100vw - 96px); flex-direction: column; align-items: flex-end;
 }
-body.is-mini .notice-wrap { top: calc(var(--rail-top) + 8px); right: calc(var(--safe-r) + 8px); max-width: calc(100vw - 96px); }
+body.is-mini .notice-wrap { top: calc(var(--rail-top) + 8px); inset-inline-end: calc(var(--safe-e) + 8px); max-width: calc(100vw - 96px); }
 body.is-mini .sheet { max-height: calc(100% - var(--safe-t) - 6px); }
 body.is-mini .sheet-head h3 { font-size: 24px; }
-body.is-mini .menu-strip { width: min(236px, 66vw); padding: calc(var(--safe-t) + 16px) 14px 22px calc(var(--safe-l) + 14px); }
+body.is-mini .menu-strip { width: min(236px, 66vw); padding-block: calc(var(--safe-t) + 16px) 22px; padding-inline: calc(var(--safe-s) + 14px) 14px; }
 body.is-mini .menu-strip .title { font-size: 36px; }
 body.is-mini .menu-strip .subtitle { font-size: 13px; }
 body.is-mini .menu-strip .rule { margin: 10px 0 2px; }
@@ -992,7 +1006,7 @@ body.is-flex #hud::before {
   /* the steward's table under the scene: dark oak, an iron edge along the hinge */
   content: '';
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  inset-inline-start: 0; inset-inline-end: 0; bottom: 0;
   top: var(--hinge-bottom);
   background: linear-gradient(180deg, rgb(74 72 67 / .9) 0 1.5px, transparent 1.5px), #2a231c;
 }
@@ -1005,22 +1019,22 @@ body.is-flex.is-side .sheet { top: calc(var(--hinge-bottom) + 16px); bottom: cal
 body.is-flex.is-split .rail-tools { display: grid; grid-template-columns: repeat(3, 76px); gap: 4px; }
 body.is-flex.is-split .tool { min-height: 60px; }
 body.is-flex.is-split.mode-game .sheet {
-  left: calc(var(--safe-l) + 12px + 258px + 12px);
-  right: calc(var(--safe-r) + 12px + 262px + 12px);
+  inset-inline-start: calc(var(--safe-s) + 12px + 258px + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px + 262px + 12px);
   width: auto;
 }
 body.is-flex.is-split.mode-game.left-handed .sheet {
-  left: calc(var(--safe-l) + 12px + 262px + 12px);
-  right: calc(var(--safe-r) + 12px + 258px + 12px);
+  inset-inline-start: calc(var(--safe-s) + 12px + 262px + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px + 258px + 12px);
 }
 body.is-flex.is-split .sheet-actions .btn { font-size: 15px; padding: 0 8px; gap: 4px; }
-body.is-flex.is-split.left-handed .waybill-wrap { left: auto; right: calc(var(--safe-r) + 10px); }
+body.is-flex.is-split.left-handed .waybill-wrap { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
 body.is-flex .toasts { bottom: auto; top: calc(var(--hinge-top) - 12px); transform: translate(-50%, -100%); flex-direction: column; }
 body.is-flex .menu-wrap { top: var(--hinge-bottom); }
 body.is-flex .menu-strip {
   width: min(560px, calc(100vw - 24px));
   max-height: calc(100vh - var(--hinge-bottom));
-  padding: 18px 22px 22px calc(var(--safe-l) + 24px);
+  padding-block: 18px 22px; padding-inline: calc(var(--safe-s) + 24px) 22px;
 }
 body.is-flex .menu-strip .title { font-size: 40px; }
 body.is-flex .menu-strip .rule { margin: 12px 0 4px; }
@@ -1065,8 +1079,10 @@ body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px))
 :root[lang='ko'] { --font-head: 'Noto Serif CJK KR', 'Noto Serif KR', serif; --font-body: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; }
 :root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; }
 :root[data-script='arabic'] {
-  --font-head: 'Noto Naskh Arabic', 'Noto Sans Arabic', serif;
-  --font-body: 'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif;
+  /* the game's Latin faces first (their @font-face unicode-range has no Arabic): the brand title, digits and
+     untranslated fallbacks keep the game typography; Arabic letters fall through to the OS Naskh (D-18, D-37) */
+  --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', serif;
+  --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif;
 }
 :root[data-script='devanagari'] {
   --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
@@ -1078,7 +1094,7 @@ body.is-clear .clear-restore {
   display: block;
   position: fixed;
   inset-block-end: calc(12px + env(safe-area-inset-bottom));
-  inset-inline-end: calc(12px + env(safe-area-inset-right));
+  inset-inline-end: calc(12px + var(--safe-e));
   min-width: 48px; min-height: 48px;
   padding: 0 14px;
   font: 500 15px var(--font-body);
@@ -1091,10 +1107,11 @@ body.is-clear .clear-restore {
 }
 
 
-/* ================================================================ RTL (D-18)
-   Only content mirrors. The rail, speed pad, sheet dock and toasts follow the hand setting
-   (left-handed), not the language, so they keep a left-to-right box flow. */
-.rail, .eta-tag, .tool-caption { direction: ltr; }
+/* ================================================================ RTL (D-18, D-37)
+   The whole HUD mirrors through logical properties (rail, sheets, waybill, plaque, toasts). The hand
+   setting still swaps sides on top of that. Playback-like speed controls and numeric ETA tags keep
+   their left-to-right order, like media controls in RTL apps. */
+.speed, .eta-tag { direction: ltr; }
 .rail .tl, .rail-hint { unicode-bidi: plaintext; }
 :root[dir='rtl'] .vol::-webkit-slider-runnable-track { background: linear-gradient(270deg, var(--ochre) 0 var(--v), var(--oak) var(--v)); }
 bdi { unicode-bidi: isolate; }
@@ -1295,18 +1312,21 @@ body.is-narrow .plaque { width: 196px; }
   animation: rl-stamp 120ms var(--ease) 120ms both;
 }
 @keyframes rl-stamp { from { opacity: 0; transform: scale(1.16) rotate(8deg); } to { opacity: 1; transform: rotate(8deg); } }
+/* centred with translateX(-50%): physical left, the rail side decides (hand XOR RTL) */
 body.is-landscape .rank-letter-wrap { left: calc((100vw - var(--rail-w)) / 2); }
 body.is-landscape.left-handed .rank-letter-wrap { left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2); }
+:root[dir='rtl'] body.is-landscape .rank-letter-wrap { left: calc(var(--rail-w) + (100vw - var(--rail-w)) / 2); }
+:root[dir='rtl'] body.is-landscape.left-handed .rank-letter-wrap { left: calc((100vw - var(--rail-w)) / 2); }
 body.is-flex .rank-letter-wrap { top: 24px; }
 body.is-mini .rank-letter-wrap { top: calc(var(--rail-top) + 8px); }
 
 /* ---- build shelf: an oak ledge of parchment cards above the rail */
 .build-shelf {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   bottom: calc(var(--rail-h) + var(--safe-b));
-  padding: 8px calc(var(--safe-r) + 8px) 8px calc(var(--safe-l) + 8px);
+  padding-block: 8px 8px; padding-inline: calc(var(--safe-s) + 8px) calc(var(--safe-e) + 8px);
   background: var(--oak-press);
   border-top: 1px solid var(--oak-hi);
   box-shadow: 0 -2px 0 rgb(43 38 32 / .4);
@@ -1373,20 +1393,20 @@ body.is-mini .rank-letter-wrap { top: calc(var(--rail-top) + 8px); }
 
 /* landscape: the shelf is a column beside the rail */
 body.is-landscape .build-shelf {
-  left: auto;
+  inset-inline-start: auto;
   top: 0;
   bottom: 0;
-  right: calc(var(--rail-w) + var(--safe-r));
+  inset-inline-end: calc(var(--rail-w) + var(--safe-e));
   width: 112px;
   padding: calc(var(--safe-t) + 8px) 8px calc(var(--safe-b) + 8px);
   border-top: 0;
-  border-left: 1px solid var(--oak-hi);
-  box-shadow: -2px 0 0 rgb(43 38 32 / .4);
+  border-inline-start: 1px solid var(--oak-hi);
+  box-shadow: calc(-2px * var(--ix)) 0 0 rgb(43 38 32 / .4);
   animation-name: fade-in;
 }
 body.is-landscape .bs-cards { flex-direction: column; overflow-x: hidden; overflow-y: auto; height: 100%; touch-action: pan-y; }
 body.is-landscape .build-card { flex: 0 0 auto; min-height: 96px; }
-body.is-landscape.left-handed .build-shelf { right: auto; left: calc(var(--rail-w) + var(--safe-l)); border-left: 0; border-right: 1px solid var(--oak-hi); }
+body.is-landscape.left-handed .build-shelf { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s)); border-inline-start: 0; border-inline-end: 1px solid var(--oak-hi); }
 body.is-landscape.build-placing .build-shelf { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 body.is-landscape .pb-card { flex-direction: column; align-items: flex-start; }
 body.is-landscape .pb-t b { white-space: normal; }
@@ -1396,37 +1416,37 @@ body.is-landscape .pb-place { min-width: 0; padding: 0 8px; }
 
 /* split pads (near-square / wide portrait): the shelf is a third pad above the tools */
 body.is-split:not(.is-flex) .build-shelf {
-  right: auto;
-  left: calc(var(--safe-l) + 12px);
+  inset-inline-end: auto;
+  inset-inline-start: calc(var(--safe-s) + 12px);
   bottom: calc(var(--rail-h) + var(--safe-b) + 4px);
-  max-width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px);
+  max-width: calc(100vw - var(--safe-s) - var(--safe-e) - 24px);
   padding: 6px;
   border-top: 0;
   box-shadow: inset 0 1px 0 var(--oak-hi);
   --c: 8px;
   clip-path: var(--chamfer);
 }
-body.is-split:not(.is-flex).left-handed .build-shelf { left: auto; right: calc(var(--safe-r) + 12px); }
+body.is-split:not(.is-flex).left-handed .build-shelf { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 12px); }
 body.is-split.build-placing:not(.is-flex) .build-shelf { width: min(560px, calc(100vw - 24px)); padding: 8px 10px; }
 
 /* Flex mode: the shelf works in the bottom segment, like a sheet; the ghost stays on the scene above */
 body.is-flex .build-shelf {
   top: calc(var(--hinge-bottom) + 12px);
   bottom: auto;
-  left: calc(var(--safe-l) + 12px);
-  right: calc(var(--safe-r) + 12px);
+  inset-inline-start: calc(var(--safe-s) + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px);
   border-top: 0;
   box-shadow: none;
   --c: 8px;
   clip-path: var(--chamfer);
 }
 body.is-flex.is-split .build-shelf {
-  left: calc(var(--safe-l) + 12px + 258px + 12px);
-  right: calc(var(--safe-r) + 12px + 262px + 12px);
+  inset-inline-start: calc(var(--safe-s) + 12px + 258px + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px + 262px + 12px);
 }
 body.is-flex.is-split.left-handed .build-shelf {
-  left: calc(var(--safe-l) + 12px + 262px + 12px);
-  right: calc(var(--safe-r) + 12px + 258px + 12px);
+  inset-inline-start: calc(var(--safe-s) + 12px + 262px + 12px);
+  inset-inline-end: calc(var(--safe-e) + 12px + 258px + 12px);
 }
 body.is-flex .bs-cards { flex-wrap: wrap; overflow: visible; }
 /* Flip cover (watch mode): no building at all */
@@ -1462,10 +1482,10 @@ body.is-mini .build-ui, body.is-mini .build-float { display: none; }
 /* ---- undo the last placement (full refund for 30 s) */
 .undo-btn {
   position: absolute;
-  right: calc(var(--safe-r) + 10px);
+  inset-inline-end: calc(var(--safe-e) + 10px);
   bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + 10px);
   font-size: 15px;
-  padding: 0 14px 0 10px;
+  padding-block: 0 0; padding-inline: 10px 14px;
   gap: 6px;
   filter: var(--shadow);
   animation: toast-in var(--t-mid) var(--ease);
@@ -1473,13 +1493,13 @@ body.is-mini .build-ui, body.is-mini .build-float { display: none; }
 body:not(.build-open) { --shelf-h: 0px; }
 body.has-undo { --undo-h: 58px; }
 .toasts { bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + var(--undo-h, 0px) + 12px); }
-body.is-landscape .undo-btn { bottom: calc(var(--safe-b) + 10px); right: calc(var(--rail-w) + var(--safe-r) + 10px); }
-body.is-landscape.build-open .undo-btn { right: calc(var(--rail-w) + var(--safe-r) + 112px + 10px); }
-body.is-landscape.left-handed .undo-btn { right: auto; left: calc(var(--rail-w) + var(--safe-l) + 10px); }
-body.is-landscape.left-handed.build-open .undo-btn { left: calc(var(--rail-w) + var(--safe-l) + 112px + 10px); }
+body.is-landscape .undo-btn { bottom: calc(var(--safe-b) + 10px); inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 10px); }
+body.is-landscape.build-open .undo-btn { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 112px + 10px); }
+body.is-landscape.left-handed .undo-btn { inset-inline-end: auto; inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 10px); }
+body.is-landscape.left-handed.build-open .undo-btn { inset-inline-start: calc(var(--rail-w) + var(--safe-s) + 112px + 10px); }
 body.is-landscape .toasts { bottom: calc(var(--safe-b) + var(--undo-h, 0px) + 12px); }
-body.is-landscape.build-open .toasts { right: calc(var(--rail-w) + var(--safe-r) + 112px + 12px); }
-body.is-split:not(.is-flex) .undo-btn { bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + 12px); right: calc(var(--safe-r) + 12px); }
+body.is-landscape.build-open .toasts { inset-inline-end: calc(var(--rail-w) + var(--safe-e) + 112px + 12px); }
+body.is-split:not(.is-flex) .undo-btn { bottom: calc(var(--rail-h) + var(--safe-b) + var(--shelf-h, 0px) + 12px); inset-inline-end: calc(var(--safe-e) + 12px); }
 body.is-flex .undo-btn { bottom: auto; top: calc(var(--hinge-top) - 60px); }
 body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); }
 
@@ -1521,7 +1541,7 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .ms-blds { display: flex; flex-wrap: wrap; gap: 6px; }
 .ms-b {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 40px; padding: 4px 10px 4px 6px;
+  min-height: 40px; padding-block: 4px 4px; padding-inline: 6px 10px;
   background: #dcd3c0; box-shadow: inset 0 0 0 1px #8f887a;
   font-size: 15px; font-weight: 500;
 }
@@ -1624,7 +1644,35 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .slot-fail { margin-top: 0; }
 /* pause menu: which ledger the free valley is written to */
 .slot-note { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 15px; color: var(--ink-soft); }
-.slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding: 0 8px 0 0; }
-.pause-ask { padding: 10px 10px 12px 6px; border-bottom: 0; }
+.slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding-block: 0 0; padding-inline: 0 8px; }
+.pause-ask { padding-block: 10px 12px; padding-inline: 6px 10px; border-bottom: 0; }
 .pause-ask .slot-no { font-size: 22px; }
 .slot-row.is-asking { padding-inline-end: 10px; }
+
+/* contract pace (F10): waybill forecast under the clock, castle-card pace rows; shared input (F3) */
+.wb-pace { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgb(74 72 67 / .45); font-size: 13px; line-height: 1.25; }
+.wb-pace-eta, .wb-pace-sup { display: flex; align-items: center; gap: 6px; min-height: 30px; cursor: pointer; }
+.wb-pace-eta { font-weight: 700; justify-content: space-between; }
+.wb-pace-sup { color: var(--ink-soft); }
+.wb-pace-sup svg { flex: none; }
+.wb-pace.warn .wb-pace-eta { color: #6e3520; }
+.wb-pace.late .wb-pace-eta { color: var(--clay); }
+.pace-seals { display: inline-flex; gap: 1px; flex: none; }
+.pace-seals i { display: inline-grid; color: rgb(74 72 67 / .35); }
+.pace-seals i.on { color: var(--clay); }
+.pace-fc { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.pace-fc.warn { color: #6e3520; }
+.pace-fc.late { color: var(--clay); }
+.pace-rows { display: grid; gap: 4px; }
+.pace-row {
+  --c: 5px; --hair: 1px; --frame: #8f887a; --fill: #dcd3c0;
+  width: 100%; min-height: 48px; display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 8px;
+  padding-block: 4px; padding-inline: 6px 10px; text-align: start; font-size: 14px; line-height: 1.2;
+}
+.pace-row.is-neck { --frame: var(--clay); }
+.pace-row:active { --fill: #cfc5b0; }
+.pace-aim, .pace-wait { margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
+.shared-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
+.shared-hint svg { flex: none; }
+.shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }

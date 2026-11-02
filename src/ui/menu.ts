@@ -31,15 +31,20 @@ function missionSub(id: MissionKey): string {
 
 export interface MenuActions {
   continueGame(): void;
+  /** A mission from the list: asks first when that mission has an unfinished save (D-36). */
   newGame(mission: MissionKey): void;
+  /** "Start this contract afresh" under a damaged save: no question, the save is unreadable anyway. */
+  startFresh(mission: MissionKey): void;
   /** Free valley: the ledger (slot) picker. */
   openValley(): void;
   openSettings(): void;
 }
 
-export interface SaveInfo { missionId: string; tick: number; slot: string }
+export interface SaveInfo { missionId: string; tick: number; slot: string; savedAt: number }
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
+/** Margin numeral of a contract's save entry: the mission's own number. */
+const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
 /** "Księga II" for a valley slot. */
 export function slotLabel(slot: ValleySlot): string {
@@ -56,8 +61,12 @@ function saveWhat(save: SaveInfo): string {
   return slot ? t('valley.what', { mode: missionTitle('sandbox'), slot: slotLabel(slot) }) : missionTitle(save.missionId);
 }
 
-/** broken = the save could not be loaded: show why and offer that contract afresh. */
-export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: MissionKey | null = null): HTMLElement {
+/**
+ * broken = the save could not be loaded: show why and offer that contract afresh.
+ * unfinished = contract saves by mission id: their rows say "in progress, 12:34" (D-36).
+ */
+export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: MissionKey | null = null,
+  unfinished: ReadonlyMap<string, SaveInfo> = new Map()): HTMLElement {
   const items: HTMLElement[] = [];
   const item = (label: string, sub: string, fn: () => void, primary = false, cls = ''): void => {
     const b = h(`button.menu-item${primary ? '.primary' : ''}${cls}` as 'button.menu-item', null,
@@ -69,14 +78,18 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
   if (save) {
     item(t('menu.continue'), t('menu.continueSub', { what: saveWhat(save), time: iso(ticksClock(save.tick)) }), act.continueGame, true);
   }
-  for (const id of MENU_MISSIONS) item(missionTitle(id), missionSub(id), () => act.newGame(id), id === 'm1' && !save);
+  for (const id of MENU_MISSIONS) {
+    const u = unfinished.get(id);
+    const sub = u ? `${missionSub(id)} · ${t('save.inProgress', { time: iso(ticksClock(u.tick)) })}` : missionSub(id);
+    item(missionTitle(id), sub, () => act.newGame(id), id === 'm1' && !save);
+  }
   item(missionTitle('sandbox'), missionSub('sandbox'), act.openValley, false, '.is-valley');
   item(t('menu.settings'), '', act.openSettings);
   let err: HTMLElement | null = null;
   if (broken) {
     // a damaged valley ledger is dealt with in the picker (delete it there); a contract starts afresh
     const again = h('button.btn.primary.cf', null, t(broken === 'sandbox' ? 'valley.brokenOpen' : 'menu.saveBrokenNew'));
-    again.addEventListener('click', () => { if (broken === 'sandbox') act.openValley(); else act.newGame(broken); });
+    again.addEventListener('click', () => { if (broken === 'sandbox') act.openValley(); else act.startFresh(broken); });
     err = h('div.menu-error', { role: 'alert' }, h('p', null, t('menu.saveBroken')), again);
   }
   const strip = h('div.menu-strip', null,
@@ -290,6 +303,52 @@ export function valleySheet(act: ValleyActions): SheetContent {
   return content;
 }
 
+export interface MissionSaveActions {
+  continueGame(): void;
+  /** Wipe the unfinished save and start the mission afresh. */
+  startFresh(): void;
+}
+
+/**
+ * Tapping a contract that has an unfinished save (D-36): the save as a ledger entry (time played,
+ * last played) with "Continue" and "Start over"; "Start over" asks once more in the row, like the
+ * valley ledgers. Closing the sheet (swipe, back, Escape) leaves the save alone.
+ */
+export function missionSaveSheet(act: MissionSaveActions, missionId: MissionKey, save: SaveInfo): SheetContent {
+  let asking = false;
+  const roman = (MENU_MISSIONS as readonly string[]).includes(missionId) ? ROMAN_MISSION[MENU_MISSIONS.indexOf(missionId as typeof MENU_MISSIONS[number])] : '';
+  return {
+    key: 'missionsave',
+    update(sheet: Sheet) {
+      setHtml(sheet.icon, iconSvg('castle', 30));
+      sheet.kicker.textContent = t('menu.contractItem');
+      sheet.title.textContent = missionTitle(missionId);
+      const time = ticksClock(save.tick);
+      const meta = `<dl class="slot-meta">
+        <div><dt>${esc(t('valley.played'))}</dt><dd>${bdi(time)}</dd></div>
+        <div><dt>${esc(t('valley.last'))}</dt><dd>${bdi(playedAt(save.savedAt), 'num when')}</dd></div></dl>`;
+      const acts = asking
+        ? `<p class="slot-ask" role="alert">${esc(t('save.confirmFresh', { time }))}</p>
+          <div class="slot-acts two"><button class="btn paper cf" data-a="keep">${esc(t('valley.keep'))}</button>
+          <button class="btn primary cf" data-a="fresh">${esc(t('valley.yesFresh'))}</button></div>`
+        : `<div class="slot-acts"><button class="btn primary cf slot-play" data-a="play">${esc(t('menu.continue'))}</button>
+          <button class="btn paper cf slot-small" data-a="ask">${esc(t('menu.restart'))}</button></div>`;
+      const html = `<ol class="slots"><li class="slot-row is-filled${asking ? ' is-asking' : ''}">
+        <span class="slot-no" aria-hidden="true">${roman}</span><div class="slot-main">
+        <span class="slot-name">${esc(t('save.unfinished'))}</span>${meta}${acts}</div></li></ol>`;
+      if (setHtml(sheet.body, html)) {
+        sheet.body.querySelectorAll<HTMLElement>('[data-a]').forEach((b) => b.addEventListener('click', () => {
+          const a = b.dataset.a;
+          if (a === 'play') act.continueGame();
+          if (a === 'fresh') act.startFresh();
+          if (a === 'ask' || a === 'keep') { asking = a === 'ask'; this.update(sheet); }
+        }));
+      }
+      return true;
+    },
+  };
+}
+
 export interface GameMenuActions {
   resume(): void;
   settings(): void;
@@ -299,7 +358,8 @@ export interface GameMenuActions {
 
 /** slot: the free-valley ledger being written to (shown under the title), null for contracts. */
 export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySlot | null = null): SheetContent {
-  // a free-valley settlement is hours of work: "start over" asks first (contracts restart at once)
+  // "start over" wipes the save: it always asks first (a valley settlement is hours of work, D-29;
+  // a contract can be twenty minutes, D-36)
   let asking = false;
   return {
     key: 'gamemenu',
@@ -308,12 +368,16 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
       sheet.kicker.textContent = t('menu.paused');
       sheet.title.textContent = world.state.mission.contract ? t('menu.contractItem') : t('hud.sandbox');
       const note = slot ? `<p class="slot-note"><span class="slot-no" aria-hidden="true">${slotNumeral(slot)}</span>${esc(t('valley.saving', { n: slotNumeral(slot) }))}</p>` : '';
-      const restart = asking && slot
-        ? `<div class="slot-row is-asking pause-ask"><span class="slot-no" aria-hidden="true">${slotNumeral(slot)}</span><div class="slot-main">
-            <p class="slot-ask" role="alert">${esc(t('valley.confirmFresh', { n: slotNumeral(slot), name: rankName(world.state.town?.rank ?? 0), renown: fmtInt(world.state.town?.renown ?? 0) }))}</p>
+      const ask = slot
+        ? t('valley.confirmFresh', { n: slotNumeral(slot), name: rankName(world.state.town?.rank ?? 0), renown: fmtInt(world.state.town?.renown ?? 0) })
+        : t('save.confirmRestart', { time: ticksClock(world.state.tick) });
+      const mark = slot ? slotNumeral(slot) : (ROMAN_MISSION[MENU_MISSIONS.indexOf(world.state.mission.id as typeof MENU_MISSIONS[number])] ?? '');
+      const restart = asking
+        ? `<div class="slot-row is-asking pause-ask"><span class="slot-no" aria-hidden="true">${mark}</span><div class="slot-main">
+            <p class="slot-ask" role="alert">${esc(ask)}</p>
             <div class="slot-acts two"><button class="btn paper cf" data-a="keep">${esc(t('valley.keep'))}</button>
             <button class="btn primary cf" data-a="restart">${esc(t('valley.yesFresh'))}</button></div></div></div>`
-        : `<button class="btn cf" data-a="${slot ? 'ask' : 'restart'}">${esc(t('menu.restart'))}</button>`;
+        : `<button class="btn cf" data-a="ask">${esc(t('menu.restart'))}</button>`;
       const html = `${note}<div class="sheet-actions" style="flex-direction:column">
         <button class="btn primary cf" data-a="resume">${esc(t('menu.resume'))}</button>
         <button class="btn cf" data-a="settings">${esc(t('menu.settings'))}</button>
