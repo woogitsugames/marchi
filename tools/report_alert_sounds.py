@@ -69,7 +69,7 @@ def update_provenance() -> tuple[int, int]:
     if set(hashes) != set(provenance["output_sha256"]):
         raise ValueError("Audio catalogue membership changed")
     changed = {key for key, sha in hashes.items() if sha != provenance["output_sha256"][key]}
-    if not changed or not changed <= {
+    if not changed <= {
         "ui/stall.ogg", "ui/stall.m4a", "ui/error.ogg", "ui/error.m4a"
     }:
         raise ValueError(f"Unexpected audio changes: {sorted(changed)}")
