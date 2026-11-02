@@ -18,7 +18,7 @@ export interface ContractLetterSet {
 export const CONTRACT_LETTERS = {
   m1: {
     pl: {
-      opening: "Do zarządcy traktów: przed pierwszym śniegiem dostarcz do grodu 30 desek i 20 bochenków. Drwal i tartak pracują za rzeką, lecz brzegi nie są połączone. Wytycz przeprawę, a potem dopilnuj drogi mąki i chleba.\n— Wszebor, kasztelan Łozinnego Brodu",
+      opening: "Do zarządcy traktów: przed pierwszym śniegiem dostarcz do grodu 30 desek i 20 bochenków. Drwal i tartak pracują za rzeką, lecz brzegi nie są połączone. Wytycz przeprawę, a potem dopilnuj dowozu mąki i chleba.\n— Wszebor, kasztelan Łozinnego Brodu",
       won: {
         1: "Dostawy dotarły przed śniegiem. Cieśle mają deski, kuchnia chleb. Następnym razem puść wozy w drogę wcześniej.\n— Wszebor",
         2: "Dobrze wytyczony trakt przyniósł dostawy ze sporym zapasem czasu. Dwie pieczęcie za sprawną pracę wozów.\n— Wszebor",
@@ -58,7 +58,7 @@ export const CONTRACT_LETTERS = {
   },
   m3: {
     pl: {
-      opening: "Deszcz rozmył gruntowy trakt. Do zamku trzeba dowieźć 24 deski i 16 bochenków, ale koła grzęzną w koleinach. Młynarz Borzym czeka na przewóz ziarna. Wybrukuj odcinki, po których idzie najwięcej wozów.\n— Wszebor",
+      opening: "Deszcz rozmył gruntowy trakt. Do zamku trzeba dowieźć 24 deski i 16 bochenków, ale koła grzęzną w koleinach. Młynarz Borzym czeka na dostawę zboża. Wybrukuj odcinki, po których jeździ najwięcej wozów.\n— Wszebor",
       won: {
         1: "Gród otrzymał zapasy mimo ulewy. Termin ocalony, ale błoto kosztowało nas wiele czasu.\n— Wszebor",
         2: "Droga wytrzymała jesienną słotę. Dwie pieczęcie za sprawny przewóz.\n— Wszebor",
@@ -102,7 +102,7 @@ export const CONTRACT_LETTERS = {
       won: {
         1: "Trzy dostawy zapisano w porę, choć na placu panował zamęt. Jedna pieczęć.\n— Wszebor",
         2: "Na jarmark dotarło wszystko o właściwej porze. Dwie pieczęcie za porządek w dostawach.\n— Wszebor",
-        3: "Nie trzeba było wołać woźniców po raz drugi. Wszystkie transze dotarły bez pośpiechu ostatniej chwili. Trzy pieczęcie.\n— Wszebor",
+        3: "Nie trzeba było wołać woźniców po raz drugi. Wszystkie dostawy dotarły bez gonitwy przed terminem. Trzy pieczęcie.\n— Wszebor",
       },
       lost: "Co najmniej jedna transza nie dotarła na czas. Następnym razem rozdziel zapas na kolejne terminy, zamiast liczyć tylko sumę.\n— Wszebor",
     },
@@ -118,7 +118,7 @@ export const CONTRACT_LETTERS = {
   },
   m6: {
     pl: {
-      opening: "Spichlerz jest ciasny, a ziarno przybywa szybciej, niż młynarz Borzym może je odebrać. Gdy magazyn się zapełni, stanie praca i ucierpi kontrakt grodu. Znajdź miejsce dla zapasów albo skieruj wozy innym szlakiem.\n— Wszebor",
+      opening: "Spichlerz jest ciasny, a zboże przybywa szybciej, niż młynarz Borzym może je odebrać. Gdy magazyn się zapełni, stanie praca i ucierpi kontrakt grodu. Znajdź miejsce dla zapasów albo skieruj wozy innym szlakiem.\n— Wszebor",
       won: {
         1: "Dostawy dotarły, choć spichlerz pękał w szwach. Jedna pieczęć; trzeba pilniej patrzeć na stan zapasów.\n— Wszebor",
         2: "Wozy rozwiozły nadmiar towarów, zanim zatrzymał pracę warsztatów. Dwie pieczęcie za rozsądną gospodarkę.\n— Wszebor",
@@ -142,7 +142,7 @@ export const CONTRACT_LETTERS = {
       won: {
         1: "Ryby dotarły na czas, choć stół długo czekał. Jedna pieczęć; druga chata przy wodzie skróciłaby czekanie kucharzy.\n— Wszebor",
         2: "Kuchnia dostała połów bez większej zwłoki. Dwie pieczęcie; następnym razem postaw chatę wcześniej.\n— Wszebor",
-        3: "Sieci przy brzegu i wozy na moście pracowały jak jeden szlak. Trzy pieczęcie za dobrze wybrane miejsce.\n— Wszebor",
+        3: "Rybacy łowili, wozy dowoziły. Trzy pieczęcie za dobrze wybrane miejsce.\n— Wszebor",
       },
       lost: "Post się skończył, a ryb zabrakło. Sprawdź, czy chata stoi nad wodą i czy wozy nadążają przez most.\n— Wszebor",
     },
@@ -160,7 +160,7 @@ export const CONTRACT_LETTERS = {
     pl: {
       opening: "Nad doliną zbierają się chmury. Zanim deszcz zamieni trakty w błoto, chcę dostać 24 deski i 20 bochenków. Kamieniołom pracuje na skalnym wzgórzu, lecz kamień leżący w jego składzie nie wybrukuje drogi. Niech wozy przewiozą go do spichlerza, po cztery sztuki na wóz. Dopiero wtedy napraw południowy odcinek traktu.\n— Wszebor",
       won: {
-        1: "Dostawy przebiły się przez błoto. Jedna pieczęć; kamień leżał w kamieniołomie, a mógł leżeć na trakcie.\n— Wszebor",
+        1: "Dostawy przebiły się przez błoto. Jedna pieczęć; kamień leżał w kamieniołomie, a trakt tonął w błocie.\n— Wszebor",
         2: "Dodatkowe wozy częściowo nadrobiły opóźnienie przez błoto. Dwie pieczęcie; bruk oszczędziłby jeszcze więcej czasu.\n— Wszebor",
         3: "Kamień dotarł do spichlerza przed ulewą, a bruk utrzymał wozy na drodze. Trzy pieczęcie za przezorność.\n— Wszebor",
       },
@@ -182,9 +182,9 @@ export const CONTRACT_LETTERS = {
       won: {
         1: "Goście nie cierpieli pragnienia, choć tartak i węglarz kłócili się o każde polano. Jedna pieczęć.\n— Wszebor",
         2: "Drugi drwal uspokoił spór o drewno. Dwie pieczęcie; więcej wozów przyspieszyłoby resztę.\n— Wszebor",
-        3: "Drewna starczyło dla obu warsztatów, a piwo popłynęło na czas. Trzy pieczęcie za dobrze rozdzielony las.\n— Wszebor",
+        3: "Drewna starczyło dla obu warsztatów, a piwo popłynęło na czas. Trzy pieczęcie za mądry podział drewna.\n— Wszebor",
       },
-      lost: "Wesele nadeszło przed dostawami. Sprawdź, kto zabiera drewno drwala, i dodaj drugie źródło.\n— Wszebor",
+      lost: "Wesele nadeszło przed dostawami. Sprawdź, kto zabiera drewno drwala, i postaw drugą chatę drwala.\n— Wszebor",
     },
     en: {
       opening: "The wedding draws near. We need 36 planks, 8 charcoal and 26 beer. Grain must reach the malthouse, and malt the brewery. The sawmill and the charcoal burner both draw on a single woodcutter: when one claims the delivery, the other stops. Increase the wood supply and give the wagons enough capacity.\n— Wszebor",
@@ -198,10 +198,10 @@ export const CONTRACT_LETTERS = {
   },
   m10: {
     pl: {
-      opening: "Kowal czeka na węgiel drzewny, a cieśle na deski: potrzeba 48 desek i 8 miar węgla. Tartak i węglarz biorą drewno od jednego drwala, a on nie nadąży za oboma. Gdy tartak pisze, że drewno idzie do węglarza, nie winię wozów — drewna jest za mało. Postaw drugiego drwala; więcej wozów nie zetnie ani jednego drzewa.\n— Wszebor",
+      opening: "Kowal czeka na węgiel drzewny, a cieśle na deski: potrzeba 48 desek i 8 miar węgla. Tartak i węglarz biorą drewno od jednego drwala, a on nie nadąży za oboma. Gdy przy tartaku widać, że drewno trafia do węglarza, nie obwiniaj wozów — drewna jest za mało. Postaw drugiego drwala; więcej wozów nie zetnie ani jednego drzewa.\n— Wszebor",
       won: {
         1: "Deski i węgiel dotarły, choć tartak długo czekał na każde polano. Jedna pieczęć; drugi drwal skróciłby tę kolejkę.\n— Wszebor",
-        2: "Drugi drwal uspokoił spór o drewno, ale stanął późno. Dwie pieczęcie; następnym razem zwiększ podaż od razu.\n— Wszebor",
+        2: "Drugi drwal uspokoił spór o drewno, lecz zjawił się późno. Dwie pieczęcie; następnym razem zwiększ podaż od razu.\n— Wszebor",
         3: "Drewna starczyło dla węglarza i tartaku. Trzy pieczęcie za naprawę u źródła, a nie na drodze.\n— Wszebor",
       },
       lost: "Termin minął, a desek zabrakło: węglarz spalał drewno, którego potrzebował tartak. Postaw drugiego drwala; dodatkowe wozy nie dadzą więcej drewna.\n— Wszebor",
@@ -218,7 +218,7 @@ export const CONTRACT_LETTERS = {
   },
   m11: {
     pl: {
-      opening: "Na zimę zamek potrzebuje 22 miar piwa. Zboże rośnie na zachodnich polach, a słodownia stoi daleko na wschodzie. Trzy wozy mają obsłużyć gospodarstwo, słodownię, browar i zamek. Gdy browar pisze, że wszystkie wozy są zajęte, a ziarno czeka na polu, kup wozy w stajni: trasa się nie skróci, ale więcej kursów pójdzie naraz.\n— Wszebor",
+      opening: "Na zimę zamek potrzebuje 22 miar piwa. Zboże rośnie na zachodnich polach, a słodownia stoi daleko na wschodzie. Trzy wozy mają obsłużyć gospodarstwo, słodownię, browar i zamek. Gdy browar pisze, że wszystkie wozy są zajęte, a zboże czeka na polu, kup wozy w stajni: trasa się nie skróci, ale więcej kursów pójdzie naraz.\n— Wszebor",
       won: {
         1: "Piwo dotarło, ale wozy spędziły zbyt wiele czasu w drodze. Jedna pieczęć; długi szlak wymaga więcej wozów.\n— Wszebor",
         2: "Dodatkowy wóz pomógł słodowni, choć część kursów wciąż czekała. Dwie pieczęcie; na tak długim szlaku przydałyby się kolejne wozy.\n— Wszebor",
@@ -238,11 +238,11 @@ export const CONTRACT_LETTERS = {
   },
   m12: {
     pl: {
-      opening: "Na wielkie warzenie potrzeba 40 bochenków i 48 miar piwa w trzech listach: 32 bochenki do 6:00, potem 8 bochenków i 12 miar piwa do 9:00, na koniec 36 miar piwa do 12:00. Zamek przyjmuje tylko bieżący list, więc browar szybko zapełni półki. Mały spichlerz jest pełen zboża, a duży stoi dwa pola od traktu. Połącz go od razu — przechowa piwo na kolejne listy.\n— Wszebor",
+      opening: "Na wielkie warzenie potrzeba 40 bochenków i 48 miar piwa w trzech dostawach: 32 bochenki do 6:00, potem 8 bochenków i 12 miar piwa do 9:00, na koniec 36 miar piwa do 12:00. Zamek przyjmuje tylko bieżącą dostawę, więc browar szybko zapełni półki. Mały spichlerz jest pełen zboża, a duży stoi dwa pola od traktu. Połącz go od razu — przechowa piwo na kolejne dostawy.\n— Wszebor",
       won: {
         1: "Ostatnie beczki dotarły, ale browar długo stał z pełnymi półkami. Jedna pieczęć; wolny spichlerz pozwoliłby warzyć na zapas.\n— Wszebor",
         2: "Duży spichlerz przyjął część piwa, choć połączyłeś go późno. Dwie pieczęcie; im wcześniej go połączysz, tym większy zapas.\n— Wszebor",
-        3: "Wszystkie listy wypełniono w porę. Spichlerz przyjmował piwo, gdy zamek go nie chciał, i oddał je, gdy przyszła pora. Trzy pieczęcie.\n— Wszebor",
+        3: "Wszystkie dostawy dotarły w porę. Spichlerz przechował piwo, aż zamek mógł je przyjąć. Trzy pieczęcie.\n— Wszebor",
       },
       lost: "Ostatni termin minął bez całego zamówienia. Browar stał, bo pełny spichlerz nie przyjmował nadwyżek. Połącz duży spichlerz, zanim półki się zapełnią.\n— Wszebor",
     },
