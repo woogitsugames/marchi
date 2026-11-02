@@ -8,11 +8,13 @@ function placeholders(value: string): string[] {
 }
 
 test('Simplified Chinese dictionary has all Polish keys and English placeholders', () => {
-  const expected = Object.keys(pl).sort();
-  const actual = Object.keys(zh_Hans).sort();
-  assert(JSON.stringify(actual) === JSON.stringify(expected), 'Simplified Chinese dictionary keys differ from Polish');
+  const expected = Object.keys(pl);
+  const actual = Object.keys(zh_Hans);
+  assert(JSON.stringify(actual) === JSON.stringify(expected), 'Simplified Chinese dictionary key order differs from Polish');
   for (const key of expected as MessageKey[]) {
+    const value = zh_Hans[key];
+    assert(typeof value === 'string' && value.trim().length > 0, `Missing or empty translation: ${key}`);
     if (key.startsWith('goodGen.') || key.startsWith('goodAcc.')) continue;
-    assert(JSON.stringify(placeholders(zh_Hans[key])) === JSON.stringify(placeholders(en[key])), `Placeholder mismatch: ${key}`);
+    assert(JSON.stringify(placeholders(value)) === JSON.stringify(placeholders(en[key])), `Placeholder mismatch: ${key}`);
   }
 });

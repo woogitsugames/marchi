@@ -17,7 +17,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import type { World } from '../sim/index';
-import { isRaining, net, timeOfDay } from '../sim/index';
+import { isRaining, net, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
 import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
 import { BuildingsView } from './buildingsView';
@@ -108,6 +108,8 @@ class View implements WorldView {
   private time = 0;
   private rain = 0;
   private wet = 0;
+  /** 0..1 winter frost on the terrain (free valley seasons), eased like the wet ground. */
+  private winter = 0;
   private tod = MENU_TIME;
   private fps = 60;
   private overlayMode: Overlay = 'none';
@@ -326,8 +328,12 @@ class View implements WorldView {
     const raining = !this.menu && isRaining(w.state);
     const rt = raining ? 1 : 0;
     this.rain = snap ? rt : this.rain + (rt - this.rain) * Math.min(1, dt * 0.6);
-    // ground gets wet quickly and dries slowly
-    this.wet = snap ? rt : this.wet + (rt - this.wet) * Math.min(1, dt * (raining ? 0.4 : 0.05));
+    // ground gets wet quickly and dries slowly; the spring thaw (free valley) keeps it half wet
+    const seasons = !this.menu && seasonal(w);
+    const wt = Math.max(rt, seasons && thawing(w) ? 0.6 : 0);
+    this.wet = snap ? wt : this.wet + (wt - this.wet) * Math.min(1, dt * (wt > this.wet ? 0.4 : 0.05));
+    const winterT = seasons && seasonAt(w.state.tick) === 'winter' ? 1 : 0;
+    this.winter = snap ? winterT : this.winter + (winterT - this.winter) * Math.min(1, dt * 0.25);
     this.lighting.update(this.tod, this.rain);
     const env = this.lighting.env;
     foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
@@ -353,6 +359,7 @@ class View implements WorldView {
     // --- world
     const tu = this.terrain.uniforms;
     tu.uWet!.value = this.wet;
+    tu.uWinter!.value = this.winter;
     (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
     tu.uTraffic!.value = this.overlayMode === 'traffic' ? 1 : 0;

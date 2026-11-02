@@ -12,6 +12,7 @@ from unittest.mock import patch
 from tools.process_audio import (
     MANIFEST,
     FREESOUND_SOURCES,
+    budget_and_channels,
     FreesoundPage,
     freesound_preview,
     sha256,
@@ -108,6 +109,40 @@ class FreesoundTests(unittest.TestCase):
     def test_loudest_excerpt_rejects_silence(self) -> None:
         with self.assertRaisesRegex(ValueError, "silent"):
             loudest_window_index(array("f", [0.0] * 100), 50, step=10)
+
+    def test_new_sound_chains_have_verified_manifest_metadata(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        validate_manifest(manifest)
+        expected = {
+            "sfx/quarry-chisel", "sfx/quarry-rock",
+            "sfx/fisher-net", "sfx/fisher-splash",
+            "sfx/charcoal-fire", "sfx/malt-bubbles",
+            "sfx/brewery-barrels", "sfx/load-stone",
+            "sfx/unload-stone", "sfx/load-fish",
+            "sfx/unload-fish", "sfx/load-barrel",
+            "sfx/unload-barrel",
+        }
+        # Not rendered yet: listed as pending, never as shipped tracks.
+        self.assertEqual(expected, {t["id"] for t in manifest["pending_tracks"]})
+        self.assertFalse(expected & {t["id"] for t in manifest["tracks"]})
+        for key in ("quarry_chisel", "rocks_fall", "fish_netted",
+                    "fisher_splash", "malt_bubbles", "barrel"):
+            source = manifest["sources"][key]
+            self.assertEqual(source["license"], "CC0-1.0")
+            self.assertEqual(source["provider"], "freesound")
+
+    def test_runtime_catalogue_rejects_unrendered_tracks(self) -> None:
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(ValueError, "Audio catalogue mismatch"):
+                budget_and_channels(Path(root), [
+                    {"id": "sfx/quarry-chisel", "kind": "sfx", "seconds": 2.4}
+                ], ["ui/stall"])
+
+    def test_rejects_path_traversal(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        manifest["tracks"][0]["id"] = "sfx/../unsafe"
+        with self.assertRaisesRegex(ValueError, "Invalid audio asset ID"):
+            validate_manifest(manifest)
 
     def test_sha256(self) -> None:
         with tempfile.TemporaryDirectory() as root:

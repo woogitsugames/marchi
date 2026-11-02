@@ -1,6 +1,7 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, suggestLinkToStable, wagonEta, wagonSlowdown,
+  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal,
+  suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, rankGated, stoneAvailable, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
@@ -123,7 +124,7 @@ function stockHtml(world: World, b: Building): string {
     parts.push(`<div class="section-h">${esc(t('why.makes'))}</div><div class="goods">${outs.map((g) =>
       chip(g, b.stock[g], def.outCap, b.reservedOut[g] > 0 ? `<span class="inc">${tHtml('why.reserved', { n: b.reservedOut[g] })}</span>` : '')).join('')}</div>`);
     if (b.progress >= 0) {
-      const pct = Math.min(100, (b.progress / def.recipe.ticks) * 100);
+      const pct = Math.min(100, (b.progress / cycleTicks(world, b.type, def.recipe.ticks)) * 100);
       parts.push(`<div class="progress" title="${esc(t('why.cycle'))}"><i style="width:${pct.toFixed(1)}%"></i></div>`);
     }
   } else if (b.type === 'warehouse') {
@@ -139,8 +140,8 @@ function stockHtml(world: World, b: Building): string {
     parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(held)}/${fmtInt(cap)}` })}</span></div>
       <div class="cap-bar${full ? ' is-full' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
-    if (rankGated(world)) {
-      // free valley: granaries keep a stone reserve for cobbles and stone bridges before the market gets any
+    if (rankGated(world) || world.state.mission.roadStone) {
+      // free valley (and missions that build with stone): granaries keep a stone reserve for cobbles and stone bridges
       const res = Math.min(b.stock.stone, STONE_RESERVE);
       parts.push(`<div class="s-hint stone-res">${iconSvg('stone', 22, goodName('stone'))}<span>${
         tHtml('why.stoneReserve', { n: fmtInt(res), max: fmtInt(STONE_RESERVE) })}<br><small>${
@@ -159,6 +160,35 @@ function stockHtml(world: World, b: Building): string {
       <div class="sheet-actions"><button class="btn primary cf" data-act="buy:${b.id}">${iconSvg('buy_wagon', 26)}<span>${esc(t('tool.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button></div>`);
   }
   return parts.join('');
+}
+
+const SEASON_NOTE_KEY: Record<string, MessageKey> = {
+  'winter:farm': 'season.effect.winter-farm', 'winter:fisher': 'season.effect.winter-fisher', 'summer:farm': 'season.effect.summer-farm',
+};
+
+function seasonNoteText(n: SeasonNote): string | null {
+  if (n.k === 'FAIR') return t('season.effect.autumn-fair');
+  const key = SEASON_NOTE_KEY[`${n.season}:${n.type}`];
+  return key ? t(key) : null;
+}
+
+/**
+ * Season line on a building card (free valley): the building's own seasonal pace (farm, fisher, the
+ * castle's fair), or, when it waits on a supplier that the season slows, that this is slower supply
+ * and not a stall — the chain then ends at a working farm, not at a missing road.
+ */
+function seasonHtml(world: World, id: number, chain: ReasonLink[]): string {
+  const own = seasonNote(world, id);
+  if (own) {
+    const text = seasonNoteText(own);
+    return text ? `<div class="s-hint season-hint">${iconSvg(own.k === 'FAIR' ? 'beer' : 'snow', 18)}<span>${esc(text)}</span></div>` : '';
+  }
+  const last = chain[chain.length - 1];
+  if (!last || last.kind !== 'building' || last.id === id) return '';
+  const up = seasonNote(world, last.id);
+  const text = up && up.k === 'YIELD' && up.pct < 100 ? seasonNoteText(up) : null;
+  if (!text || !up || up.k !== 'YIELD') return '';
+  return `<div class="s-hint season-hint">${iconSvg('snow', 18)}<span>${esc(t('season.upstream', { why: text }))}</span></div>`;
 }
 
 export function buildingSheet(nav: PanelNav, id: number): SheetContent {
@@ -192,7 +222,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const u = lastUndoable(world);
       const undo = u && u.building === id
         ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}">${iconSvg('undo', 24)}<span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
-      setHtml(sheet.body, top + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
+      setHtml(sheet.body, top + seasonHtml(world, b.id, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
       return true;
     },
     onClose() { nav.setGhost(null); },
@@ -232,8 +262,8 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         const slow = w.next >= 0 ? wagonSlowdown(world, id) : null;
         if (slow && slow.factor < 0.93) {
           const pct = Math.round(slow.factor * 100);
-          const why = tHtml(slow.mud ? 'wagon.slowMud' : slow.grade > 0.02 ? 'wagon.slowUphill' : 'wagon.slowOther', { pct: fmtInt(pct) });
-          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud ? 'rain' : 'road_dirt', 20)}<span>${why}</span></dd>`);
+          const why = tHtml(slow.thaw ? 'wagon.slowThaw' : slow.mud ? 'wagon.slowMud' : slow.grade > 0.02 ? 'wagon.slowUphill' : 'wagon.slowOther', { pct: fmtInt(pct) });
+          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud && !slow.thaw ? 'rain' : 'road_dirt', 20)}<span>${why}</span></dd>`);
         }
         if (job && job.phase === 'pickup') {
           const to = buildingById(world, job.to);
@@ -251,7 +281,11 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;
         if (fix) html += fixHtml(world, target, fix);
-        if (w.status.k === 'BRIDGE_CLOSED') html += `<div class="s-hint ice-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('wagon.iceHint'))}</span></div>`;
+        if (w.status.k === 'BRIDGE_CLOSED') {
+          // free valley winter: the same cause as mission IV's ice, plus the reassurance that it passes
+          const winter = seasonal(world) && seasonAt(world.state.tick) === 'winter' ? ` ${t('season.iceWinter')}` : '';
+          html += `<div class="s-hint ice-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('wagon.iceHint') + winter)}</span></div>`;
+        }
       }
       nav.setGhost(fix ? fix.cells : null);
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still

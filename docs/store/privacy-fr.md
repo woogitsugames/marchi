@@ -14,9 +14,9 @@ La progression, l’état de la carte, les ressources et les informations de sau
 
 Vous pouvez supprimer les sauvegardes locales en effaçant le stockage de l’application ou en supprimant celle-ci de l’appareil. La simple désinstallation avec conservation des données peut les laisser intactes. Les éventuelles sauvegardes du système d’exploitation sont régies par les paramètres de votre appareil et les conditions du fournisseur du système.
 
-## 3. Achat unique de la version complète
+## 3. Jeu gratuit sans publicité ni achats intégrés
 
-Des contenus supplémentaires peuvent être débloqués par un achat unique sur Google Play ou l’App Store. L’exploitant de la boutique concernée traite le paiement selon ses propres conditions de confidentialité. Le jeu ne collecte pas les coordonnées de carte de paiement. La boutique peut traiter indépendamment les informations relatives à l’achat et au compte.
+Le jeu entier, y compris les missions I–VI et la Vallée libre, est gratuit et ne comporte ni publicité ni achats intégrés. La Vallée libre propose trois emplacements de sauvegarde locaux et des chaînes de production de poisson, pierre, charbon de bois, malt et bière. Les sauvegardes et ressources restent sur votre appareil, comme indiqué ci-dessus. Le jeu ne collecte aucune donnée d'achat ou de paiement.
 
 ## 4. Partage et sécurité
 

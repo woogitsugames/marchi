@@ -64,6 +64,7 @@ export class TerrainView {
       uRoadTexel: { value: new Vector2(1 / roads.tw, 1 / roads.th) },
       uWL: { value: hf.waterLevel },
       uWet: { value: 0 },
+      uWinter: { value: 0 },
       uTraffic: { value: 0 },
       uTime: { value: 0 },
       uSelRect: { value: overlay.selRect },
@@ -279,6 +280,7 @@ uniform vec2 uMap;
 uniform vec2 uRoadTexel;
 uniform float uWL;
 uniform float uWet;
+uniform float uWinter;
 uniform float uTraffic;
 uniform float uTime;
 uniform vec4 uSelRect;
@@ -512,6 +514,14 @@ const FRAG_MAIN = /* glsl */ `
   // everything gets a little darker and glossier in rain
   A *= 1.0 - 0.12 * uWet;
   RO.x = mix(RO.x, RO.x * 0.75, uWet);
+  // winter (free valley seasons): hoarfrost pales and cools the ground; no snow cover, no new assets
+  if (uWinter > 0.001) {
+    float lum = dot(A, vec3(0.3, 0.59, 0.11));
+    // roads keep their colour (they carry the diagnosis) and the river bed stays dark
+    float frost = uWinter * 0.42 * (1.0 - roadCover) * smoothstep(0.3, 1.2, hW);
+    A = mix(A, vec3(lum * 0.9 + 0.28, lum * 0.92 + 0.29, lum * 0.95 + 0.31), frost);
+    RO.x = mix(RO.x, RO.x * 0.85, frost);
+  }
 
   // --- overlays ----------------------------------------------------------------------
   vec3 ovCol = vec3(0.0);

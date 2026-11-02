@@ -16,6 +16,8 @@ La carga es visible en cada carro cargado. Consulta su destino y el tiempo estim
 
 Los contratos del castillo son misiones breves diseñadas para partidas de 5 a 12 minutos. Entrega los bienes solicitados antes del plazo y gana sellos por tu eficacia. ¿Prefieres un ritmo más tranquilo? Construye libremente tu red de transporte en un valle sin plazo de contrato.
 
+El Valle Libre es un modo tranquilo de construcción de ciudades con tres espacios de guardado independientes. Haz crecer tu asentamiento por rangos hasta convertirlo en una capital. Desbloquea pesca, canteras de piedra para calzadas y puentes de piedra, producción de carbón vegetal, maltería y elaboración de cerveza. Cada cadena requiere entregas reales en carros.
+
 Cinco características principales:
 - Explicaciones con un toque de los paros de edificios y carros, incluida la cadena de causas.
 - Carga visible, destinos y tiempos estimados de llegada de los carros.
@@ -23,7 +25,7 @@ Cinco características principales:
 - Contratos de 5 a 12 minutos y un valle sin plazo para jugar libremente.
 - Entregas físicas de troncos, tablas, grano, harina y pan: los bienes no se teletransportan.
 
-Empieza gratis con las misiones 1 a 3 y un pequeño valle libre. Una sola compra desbloquea la versión completa. Sin anuncios, sistemas de energía, mejoras de pago para ganar ni esperas artificiales de recarga. El progreso se guarda localmente en tu dispositivo.
+Las seis misiones (I–VI) y el Valle Libre son gratis. Sin anuncios, compras integradas, sistemas de energía, ventajas de pago ni esperas artificiales. El progreso se guarda localmente en tu dispositivo.
 
 ## Palabras clave — referencia ASO (Google Play no tiene un campo específico)
 logística medieval, estrategia, carros, entregas, cadenas de suministro, construcción de caminos, puentes, rutas comerciales, contratos, juego económico

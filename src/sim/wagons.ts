@@ -2,7 +2,8 @@
 import {
   BUILDINGS, DT, LOAD_TICKS, NO_ROUTE_CANCEL_TICKS, UNLOAD_TICKS, WOOD_BRIDGE_MAX_WAGONS, capacityOf, emptyGoods, inputGoods, sumGoods,
 } from './defs';
-import { contractTarget, iceUntil, storeCapOf } from './contract';
+import { contractTarget, storeCapOf } from './contract';
+import { bridgeIceUntil, thawing } from './seasons';
 import { buildingById } from './logistics';
 import { isMarket, sellAt } from './town';
 import { dijkstra, edgeLength, edgeSpeedAt, findPath, hasEdge, isRaining, net, type World } from './network';
@@ -74,7 +75,7 @@ function stepWagon(world: World, w: Wagon): void {
     // advance along at -> next
     const len = edgeLength(world.terrain, w.at, w.next);
     const loaded = w.cargoQty > 0;
-    const v = edgeSpeedAt(world, w.at, w.next, w.edgeT / len, loaded, isRaining(st));
+    const v = edgeSpeedAt(world, w.at, w.next, w.edgeT / len, loaded, isRaining(st), thawing(world));
     const step = v * DT * budget;
     if (w.edgeT + step < len) {
       w.edgeT += step;
@@ -97,7 +98,7 @@ function stepWagon(world: World, w: Wagon): void {
  */
 function iceBlocks(world: World, w: Wagon, to: number): boolean {
   const st = world.state;
-  const until = iceUntil(st);
+  const until = bridgeIceUntil(world); // mission IV's authored ice and the free valley's winter
   if (until < 0) return false;
   const c = net(world);
   const sp = c.span[to]!;

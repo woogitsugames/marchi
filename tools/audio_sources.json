@@ -162,6 +162,115 @@
       "notes": "Real log impact (alternate excerpt from same CC0 recording)"
     }
   ],
+  "pending_tracks_note": "Task 46: selected CC0 sources, not rendered yet. Move these entries into 'tracks' only together with the rendered OGG/M4A files, source previews and docs/audio-provenance.json; then add the IDs to src/audio/sounds.ts.",
+  "pending_tracks": [
+    {
+      "id": "sfx/quarry-chisel",
+      "kind": "sfx",
+      "seconds": 2.4,
+      "start": 2,
+      "source": "quarry_chisel",
+      "notes": "Real chisel hammering in a quarry; selected excerpt, not a continuous loop"
+    },
+    {
+      "id": "sfx/quarry-rock",
+      "kind": "sfx",
+      "seconds": 1.2,
+      "start": 0.25,
+      "source": "rocks_fall",
+      "notes": "Small rocks falling on stone"
+    },
+    {
+      "id": "sfx/fisher-net",
+      "kind": "sfx",
+      "seconds": 2.1,
+      "start": 0.4,
+      "source": "fish_netted",
+      "notes": "Authentic field recording of a fish being netted in a river; may contain a splash"
+    },
+    {
+      "id": "sfx/fisher-splash",
+      "kind": "sfx",
+      "seconds": 1.2,
+      "start": 0.05,
+      "source": "fisher_splash",
+      "notes": "Water splash onto soil/plants; proxy for a fisherman's water splash, not a net recording"
+    },
+    {
+      "id": "sfx/charcoal-fire",
+      "kind": "sfx",
+      "seconds": 3.4,
+      "start": 9,
+      "source": "oven_fire",
+      "loop_crossfade": 0.35,
+      "notes": "Real fireplace crackling used as a charcoal kiln proxy; no kiln-specific recording"
+    },
+    {
+      "id": "sfx/malt-bubbles",
+      "kind": "sfx",
+      "seconds": 3.6,
+      "start": 1,
+      "source": "malt_bubbles",
+      "loop_crossfade": 0.4,
+      "notes": "Real bubbles in water; proxy for fermentation, not an authentic brewery recording"
+    },
+    {
+      "id": "sfx/brewery-barrels",
+      "kind": "sfx",
+      "seconds": 1.5,
+      "start": 6,
+      "source": "barrel",
+      "notes": "Vintage real wooden barrel drops; separate excerpt for brewery handling"
+    },
+    {
+      "id": "sfx/load-stone",
+      "kind": "sfx",
+      "seconds": 0.8,
+      "start": 0,
+      "source": "rocks_fall",
+      "notes": "Small rock loading impact"
+    },
+    {
+      "id": "sfx/unload-stone",
+      "kind": "sfx",
+      "seconds": 1.05,
+      "start": 1.2,
+      "source": "rocks_fall",
+      "notes": "Small rock unloading impact, alternate excerpt"
+    },
+    {
+      "id": "sfx/load-fish",
+      "kind": "sfx",
+      "seconds": 0.95,
+      "start": 0.25,
+      "source": "fish_netted",
+      "notes": "Wet fish/net handling during loading"
+    },
+    {
+      "id": "sfx/unload-fish",
+      "kind": "sfx",
+      "seconds": 1.1,
+      "start": 3,
+      "source": "fish_netted",
+      "notes": "Wet fish/net handling during unloading, alternate excerpt"
+    },
+    {
+      "id": "sfx/load-barrel",
+      "kind": "sfx",
+      "seconds": 1.15,
+      "start": 1.4,
+      "source": "barrel",
+      "notes": "Wooden barrel loading impact"
+    },
+    {
+      "id": "sfx/unload-barrel",
+      "kind": "sfx",
+      "seconds": 1.35,
+      "start": 14,
+      "source": "barrel",
+      "notes": "Wooden barrel unloading impact, alternate excerpt"
+    }
+  ],
   "sources": {
     "birds": {
       "filename": "park_ambience_birds.wav",
@@ -314,6 +423,66 @@
       "license": "CC0-1.0",
       "preview": "ogg-hq",
       "notes": "Real fireplace wood crackling (fire, not oven mechanics)"
+    },
+    "quarry_chisel": {
+      "provider": "freesound",
+      "sound_id": 841053,
+      "filename": "841053-hq.ogg",
+      "author": "Artiom_Constantinov",
+      "page": "https://freesound.org/people/Artiom_Constantinov/sounds/841053/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Authentic quarry chisel tapping, recorded in a quarry"
+    },
+    "rocks_fall": {
+      "provider": "freesound",
+      "sound_id": 576107,
+      "filename": "576107-hq.ogg",
+      "author": "Tim_Verberne",
+      "page": "https://freesound.org/people/Tim_Verberne/sounds/576107/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real small rocks falling and striking the ground"
+    },
+    "fish_netted": {
+      "provider": "freesound",
+      "sound_id": 581580,
+      "filename": "581580-hq.ogg",
+      "author": "paulprit",
+      "page": "https://freesound.org/people/paulprit/sounds/581580/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Fish being netted on a river, authentic fishing field recording"
+    },
+    "fisher_splash": {
+      "provider": "freesound",
+      "sound_id": 210428,
+      "filename": "210428-hq.ogg",
+      "author": "qubodup",
+      "page": "https://freesound.org/people/qubodup/sounds/210428/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Water splashing onto soil/plants; approximation for fishing splash"
+    },
+    "malt_bubbles": {
+      "provider": "freesound",
+      "sound_id": 529383,
+      "filename": "529383-hq.ogg",
+      "author": "calebrankin",
+      "page": "https://freesound.org/people/calebrankin/sounds/529383/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Real bubbles in water, fermentation approximation"
+    },
+    "barrel": {
+      "provider": "freesound",
+      "sound_id": 675975,
+      "filename": "675975-hq.ogg",
+      "author": "craigsmith",
+      "page": "https://freesound.org/people/craigsmith/sounds/675975/",
+      "license": "CC0-1.0",
+      "preview": "ogg-hq",
+      "notes": "Wooden barrels dropping, vintage effects archive"
     }
   },
   "synthetic_retained": [

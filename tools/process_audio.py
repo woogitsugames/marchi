@@ -134,10 +134,16 @@ def sha256(path: Path) -> str:
 
 
 def validate_manifest(manifest: dict) -> None:
-    ids = [t["id"] for t in manifest["tracks"]]
-    if len(ids) != len(set(ids)):
+    # pending_tracks: selected but not yet rendered (task 46); validated, not shipped or checked.
+    pending = manifest.get("pending_tracks", [])
+    ids = [t["id"] for t in manifest["tracks"] + pending]
+    retained = manifest.get("synthetic_retained", [])
+    if len(ids) + len(retained) != len(set(ids + retained)):
         raise ValueError("Duplicate audio asset ID in manifest")
-    for track in manifest["tracks"]:
+    if any(not re.fullmatch(r"(?:ambient|sfx|ui)/[a-z0-9][a-z0-9-]*", sid)
+           for sid in ids + retained):
+        raise ValueError("Invalid audio asset ID/path in manifest")
+    for track in manifest["tracks"] + pending:
         if track["kind"] not in ("ambient", "sfx"):
             raise ValueError(f"Invalid kind for {track['id']}")
         if track["source"] not in manifest["sources"]:
@@ -411,12 +417,25 @@ def encode(raw: Path, track: dict, staged: Path) -> None:
             raise ValueError(f"Wrong audio properties: {file}: {meta}")
 
 
-def budget_and_channels(output_root: Path, tracks: list[dict] | None = None) -> int:
+def budget_and_channels(
+    output_root: Path, tracks: list[dict] | None = None,
+    retained: list[str] | None = None
+) -> int:
     outputs = list(output_root.rglob("*.ogg")) + list(output_root.rglob("*.m4a"))
     total = sum(p.stat().st_size for p in outputs)
     if total >= MAX_BYTES:
         raise ValueError(f"Audio budget exceeded: {total} >= {MAX_BYTES}")
-    if len(outputs) != 46:
+    if tracks is not None and retained is not None:
+        declared = {t["id"] for t in tracks} | set(retained)
+        expected = {f"{stem}.{ext}" for stem in declared for ext in ("ogg", "m4a")}
+        actual = {p.relative_to(output_root).as_posix() for p in outputs}
+        if actual != expected:
+            missing = sorted(expected - actual)
+            unexpected = sorted(actual - expected)
+            raise ValueError(
+                f"Audio catalogue mismatch: missing={missing}, unexpected={unexpected}"
+            )
+    elif len(outputs) != 46:
         raise ValueError(f"Expected 46 codec assets (23 sounds), found {len(outputs)}")
     for stem in {p.with_suffix("") for p in outputs}:
         ogg, m4a = stem.with_suffix(".ogg"), stem.with_suffix(".m4a")
@@ -454,7 +473,7 @@ def main() -> None:
               manifest["sources"][t["source"]].get("provider") == "freesound"]
     if args.check:
         total = budget_and_channels(
-            OUT, manifest["tracks"] if PROVENANCE.exists() else None
+            OUT, manifest["tracks"], manifest["synthetic_retained"]
         )
         if PROVENANCE.exists():
             prov = json.loads(PROVENANCE.read_text(encoding="utf-8"))
@@ -476,7 +495,8 @@ def main() -> None:
                 expected = prov.get("sources", {}).get(key, {}).get("sha256")
                 if expected and (not file.is_file() or sha256(file) != expected):
                     raise ValueError(f"Bundled Freesound source digest mismatch: {key}")
-        print(f"PASS: {total} B / {MAX_BYTES} B; 46 files; stereo ambient / mono SFX")
+        count = 2 * (len(manifest["tracks"]) + len(manifest["synthetic_retained"]))
+        print(f"PASS: {total} B / {MAX_BYTES} B; {count} files; stereo ambient / mono SFX")
         return
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         parser.error("ffmpeg and ffprobe must be installed")
@@ -515,7 +535,9 @@ def main() -> None:
                 target = merged / file.relative_to(staged)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(file, target)
-        total = budget_and_channels(merged, tracks)
+        total = budget_and_channels(
+            merged, manifest["tracks"], manifest["synthetic_retained"]
+        )
         for file in staged.rglob("*"):
             if file.is_file():
                 dest = OUT / file.relative_to(staged)

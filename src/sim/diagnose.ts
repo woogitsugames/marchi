@@ -2,7 +2,8 @@
 import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS } from './defs';
 import { buildingById } from './logistics';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
-import type { BuildingStatus, Wagon, WagonStatus } from './types';
+import { AUTUMN_FAIR_GOOD, seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
+import type { BuildingStatus, BuildingType, Good, Wagon, WagonStatus } from './types';
 
 export type ReasonLink =
   | { kind: 'building'; id: number; status: BuildingStatus }
@@ -78,13 +79,13 @@ export function wagonEta(world: World, wagonId: number): Eta | null {
   const w = wagonById(world, wagonId);
   if (!w) return null;
   if (w.status.k === 'NO_ROUTE') return null;
-  const rain = isRaining(world.state);
+  const rain = isRaining(world.state), thaw = thawing(world);
   const loaded = w.cargoQty > 0;
   let t = w.busyTicks / TICK_HZ;
   let node = w.at;
   if (w.next >= 0) {
     const len = edgeLength(world.terrain, w.at, w.next);
-    t += (len - w.edgeT) / edgeSpeedAt(world, w.at, w.next, 0.5, loaded, rain);
+    t += (len - w.edgeT) / edgeSpeedAt(world, w.at, w.next, 0.5, loaded, rain, thaw);
     node = w.next;
   }
   if (w.dest >= 0 && node !== w.dest) {
@@ -122,8 +123,10 @@ export interface Slowdown {
   /** Surface under the wagon right now. */
   surface: 'dirt' | 'cobble' | 'woodBridge' | 'stoneBridge';
   raining: boolean;
-  /** True when rain turns the current dirt track into mud. */
+  /** True when rain or the spring thaw turns the current dirt track into mud. */
   mud: boolean;
+  /** The spring thaw (free valley seasons) is what makes the dirt track muddy right now. */
+  thaw: boolean;
   /** Current speed divided by the dry, flat speed of the same surface (1 = no slowdown). */
   factor: number;
   /** Grade of the current edge, positive uphill. */
@@ -142,9 +145,32 @@ export function wagonSlowdown(world: World, wagonId: number): Slowdown | null {
   const water = world.terrain.water[cell] === 1;
   const cobble = world.state.roads[cell] === 2;
   const surface = water ? (cobble ? 'stoneBridge' : 'woodBridge') : cobble ? 'cobble' : 'dirt';
-  const raining = isRaining(world.state);
+  const raining = isRaining(world.state), thaw = thawing(world);
   const g = a !== b ? grade(world.terrain, a, b) : 0;
   const dry = cellSpeed(world, cell, false);
-  const now = cellSpeed(world, cell, raining) * slopeFactor(g, w.cargoQty > 0);
-  return { surface, raining, mud: raining && surface === 'dirt', factor: now / dry, grade: g };
+  const now = cellSpeed(world, cell, raining, thaw) * slopeFactor(g, w.cargoQty > 0);
+  const muddy = surface === 'dirt' && (raining || thaw);
+  return { surface, raining, mud: muddy, thaw: muddy && thaw && !raining, factor: now / dry, grade: g };
+}
+
+/**
+ * The season's effect on a building, for its card (free valley): a farm or fisher working slower in
+ * winter (or a farm faster in summer), the castle paying the autumn fair price for beer. A slower
+ * producer is not a stall: the consumers downstream stay WAITING_UPSTREAM and point here.
+ */
+export type SeasonNote =
+  | { k: 'YIELD'; season: Season; type: BuildingType; pct: number }
+  | { k: 'FAIR'; good: Good; pct: number };
+
+export function seasonNote(world: World, id: number): SeasonNote | null {
+  if (!seasonal(world)) return null;
+  const b = buildingById(world, id);
+  if (!b) return null;
+  const tick = world.state.tick, season = seasonAt(tick);
+  if (b.type === 'farm' || b.type === 'fisher') {
+    const pct = yieldPercentAt(b.type, tick);
+    return pct === 100 ? null : { k: 'YIELD', season, type: b.type, pct };
+  }
+  if (b.type === 'castle' && season === 'autumn' && world.state.mission.contract === null) return { k: 'FAIR', good: AUTUMN_FAIR_GOOD, pct: 125 };
+  return null;
 }

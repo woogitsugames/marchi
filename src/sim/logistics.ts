@@ -3,6 +3,7 @@
 import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
+import { fairPercent } from './seasons';
 import { dijkstra, hasEdge, net, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Good, Wagon } from './types';
 
@@ -96,9 +97,9 @@ export function dispatch(world: World): void {
       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
   }
-  // free valley: granaries keep a stone reserve for cobbles and stone bridges (design S5), after
-  // every producer input and before the market (full loads only)
-  if (marketOpen(world)) {
+  // free valley and missions with road stone (D-32): granaries keep a stone reserve for cobbles and
+  // stone bridges (design S5), after every producer input and before the market (full loads only)
+  if (marketOpen(world) || st.mission.roadStone) {
     for (const b of st.buildings) {
       if (b.type !== 'warehouse') continue;
       const want = Math.min(STONE_RESERVE - b.stock.stone - b.incoming.stone, warehouseSpace(b));
@@ -169,7 +170,7 @@ export function dispatch(world: World): void {
     const markets = st.buildings.filter((b) => b.type === 'castle');
     for (const w of st.wagons) if (w.job && markets.some((m) => m.id === w.job!.to)) slots--;
     const goods = GOODS.filter((g) => MARKET.base[g] > 0)
-      .sort((a, c) => unitCents(st, c) - unitCents(st, a) || GOODS.indexOf(a) - GOODS.indexOf(c));
+      .sort((a, c) => unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
     for (const m of markets) {
       for (const g of goods) {
         if (slots <= 0 || free.length === 0) break;

@@ -162,6 +162,12 @@ export interface MissionState {
   contract: Contract | null;
   result: 'running' | 'won' | 'lost';
   endTick: number;
+  /**
+   * Cobbles and stone bridges cost stone in this contract mission, and granaries keep a stone
+   * reserve (state v6, D-32; copied from MissionDef.roadStone). The free valley always builds with
+   * stone (rank gating) and keeps this false.
+   */
+  roadStone: boolean;
 }
 
 export interface Ledger {

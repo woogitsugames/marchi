@@ -2,6 +2,8 @@
 
 **Stan założeń: 1 listopada 2026 r.** Propozycje do wprowadzenia w konsolach sklepów. Dotyczą wyłącznie wersji gry opisanej w zleceniu: lokalne zapisy IndexedDB, brak kont, serwera rozgrywki, reklam, analityki i śledzenia. **Nie są wynikiem audytu końcowych pakietów APK/AAB/IPA.**
 
+**Model v1.0 po D-21/D-29:** cała gra jest darmowa: misje I–VI oraz Wolna dolina (trzy lokalne sloty zapisu; rangi Osada–Stolica; łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa). Brak reklam i zakupów w aplikacji. Kamień jest zużywany m.in. do bruku i kamiennych mostów. Stan rozgrywki pozostaje lokalny.
+
 ## Google Play Console — Data safety
 
 | Pytanie / obszar | Odpowiedź do formularza | Uzasadnienie |
@@ -30,14 +32,14 @@
 
 Lokalne dane gry przetwarzane wyłącznie na urządzeniu nie są traktowane przez Apple jako dane „collected”. Dobrowolny kontakt e-mail poza aplikacją nie oznacza automatycznie zbierania danych **z aplikacji**; zasady obsługi wiadomości opisują obie polityki prywatności.
 
-## Zakupy i granice deklaracji „brak zbierania danych”
+## Darmowa gra i granice deklaracji „brak zbierania danych”
 
-- **Płatność przez sklep ≠ automatycznie dane zbierane przez grę.** Google Play i Apple mogą niezależnie przetwarzać dane kont i transakcji; gra nie pobiera danych kart płatniczych.
-- **Przed publikacją skontroluj implementację zakupów.** Jeżeli integracja Play Billing / StoreKit lub zewnętrzny dostawca zakupów zacznie przesyłać identyfikatory transakcji, potwierdzenia zakupów, dane diagnostyczne albo informacje o urządzeniu poza urządzenie, deklaracja „No data collected” może wymagać zmiany. Nie zakładaj jej prawdziwości na podstawie samego opisu modelu biznesowego.
-- **Sprawdź biblioteki i pakiety końcowe.** Upewnij się, że nowe SDK (płatności, awarie, analityka, reklamy), uprawnienia i połączenia sieciowe nie wprowadzają zbierania danych. Formularz Google obejmuje także transmisje realizowane przez SDK.
-- **Nie publikuj obietnicy dostępu do misji 1–3 i jednorazowego odblokowania**, dopóki funkcje nie są rzeczywiście zaimplementowane i zweryfikowane. Zgodnie z docs/DECISIONS.md (D-10) integrację sklepową odłożono na później.
+- **Stan v1.0:** misje I–VI oraz Wolna dolina są darmowe; w grze nie ma reklam ani zakupów w aplikacji. Nie deklaruj płatnego odblokowania misji ani pełnej wersji w konsolach sklepów.
+- **Lokalne zapisy Wolnej doliny:** trzy niezależne sloty obejmują stan osady, rangi od Osady do Stolicy, zasoby oraz łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa. W opisanym modelu te dane pozostają w IndexedDB na urządzeniu.
+- **Weryfikacja przed wydaniem:** sprawdź końcowe APK/AAB/IPA, bibliotekę zależności, uprawnienia i rzeczywiste połączenia sieciowe. Formularze muszą uwzględnić także ewentualną transmisję realizowaną przez SDK, np. diagnostykę, analitykę lub reklamę.
+- **Zmiana modelu w przyszłości:** jeżeli pojawią się reklamy, płatności, usługi sieciowe, synchronizacja lub SDK przesyłające identyfikatory i dane, ponownie przeanalizuj deklaracje i polityki przed publikacją takiej wersji. Nie traktuj obecnego braku zbierania danych jako deklaracji na przyszłość.
 - **Publikacja polityk:** zamień {{CONTACT_EMAIL}} na rzeczywisty adres; opublikuj dostępne publicznie strony HTML pod stałymi adresami HTTPS, ustaw URL w obu sklepach i zapewnij dostęp z samej gry.
-- **Wersje i zmiany:** zaktualizuj deklaracje wraz z każdą zmianą zbierania danych, SDK, sposobu płatności lub synchronizacji zapisów.
+- **Wersje i zmiany:** zaktualizuj deklaracje wraz z każdą zmianą zbierania danych, SDK, monetyzacji lub synchronizacji zapisów.
 
 ## Oficjalne wytyczne
 

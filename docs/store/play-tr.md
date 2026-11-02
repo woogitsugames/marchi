@@ -16,6 +16,8 @@ Yüklü her arabanın yükü görünür. Hedefini ve tahmini teslim süresini in
 
 Kale sözleşmeleri 5–12 dakikalık oturumlar için tasarlanmış kısa görevlerdir. İstenen malları süre dolmadan teslim edin ve verimli çalışmanızla mühür kazanın. Daha sakin bir tempo mu istersiniz? Sözleşme süresi olmayan bir vadide ulaşım ağınızı serbestçe kurun.
 
+Serbest Vadi, üç bağımsız kayıt yuvası sunan sakin bir şehir kurma modudur. Yerleşimini kademeler boyunca başkente dönüştür. Balıkçılığı, taş yollar ve taş köprüler için taş ocaklarını, odun kömürü üretimini, malt yapımını ve bira üretimini aç. Her üretim zincirinde mallar yine arabalarla gerçekten taşınmalıdır.
+
 Beş temel özellik:
 - Duran bina ve arabalar için nedenler zinciriyle birlikte tek dokunuşta açıklama.
 - Görünür araba yükleri, hedefler ve tahmini varış süreleri.
@@ -23,7 +25,7 @@ Beş temel özellik:
 - 5–12 dakikalık sözleşmeler ve süre sınırı olmayan açık vadi.
 - Kütük, kalas, tahıl, un ve ekmeğin fiziksel teslimatı; mallar anında ışınlanmaz.
 
-1–3. görevler ve küçük bir serbest vadiyle ücretsiz başlayın. Tek seferlik satın alma tam sürümün kilidini açar. Reklam, enerji sistemi, ücretli avantaj veya yapay dolum bekleme süresi yoktur. İlerlemeniz cihazınıza yerel olarak kaydedilir.
+Altı görevin (I–VI) tamamı ve Serbest Vadi ücretsizdir. Reklam, uygulama içi satın alma, enerji sistemi, ücretli üstünlük veya yapay bekleme yoktur. İlerlemen cihazında yerel olarak saklanır.
 
 ## Anahtar kelimeler — ASO başvurusu (Google Play'de ayrı anahtar kelime alanı yoktur)
 orta çağ lojistiği, strateji, arabalar, teslimat, tedarik zinciri, yol yapımı, köprüler, ticaret, sözleşme, ekonomi oyunu
