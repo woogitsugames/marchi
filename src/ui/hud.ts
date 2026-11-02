@@ -3,7 +3,7 @@
 import {
   GOODS, RANKS, WAGON_PRICE, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, yearAt,
-  type BuildingType, type Contract, type Good, type SandboxStatus, type Season, type World,
+  type BuildingType, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
@@ -11,6 +11,7 @@ import { t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
 import { bdi, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
+import { forecastFor, waybillPaceHtml } from './pace';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
 
@@ -21,6 +22,8 @@ export interface HudActions {
   setSpeed(s: Speed): void;
   openGameMenu(): void;
   openCastle(): void;
+  /** Open a building's card (the waybill's supplier line). */
+  openBuilding(id: number): void;
   waybillCollapsed(c: boolean): void;
   /** The town plaque was tapped: market & rank sheet. */
   openMarket(): void;
@@ -136,13 +139,15 @@ export class Hud {
       else this.setCollapsed(false);
     });
     this.waybillBody.addEventListener('keydown', (e) => {
-      if ((e.key === 'Enter' || e.key === ' ') && (e.target as HTMLElement).dataset.wb === 'castle') { e.preventDefault(); this.act.openCastle(); }
+      const wb = (e.target as HTMLElement).dataset.wb;
+      if ((e.key === 'Enter' || e.key === ' ') && wb && wb !== 'fold') { e.preventDefault(); this.openWb(wb); }
     });
     this.waybillBody.addEventListener('click', (e) => {
       const el = (e.target as HTMLElement).closest('[data-wb]');
       if (!el) return;
-      if ((el as HTMLElement).dataset.wb === 'fold') this.setCollapsed(true);
-      else this.act.openCastle();
+      const wb = (el as HTMLElement).dataset.wb ?? '';
+      if (wb === 'fold') this.setCollapsed(true);
+      else this.openWb(wb);
     });
 
     // town plaque (free valley): rank, the checklist towards the next rank, income
@@ -212,6 +217,12 @@ export class Hud {
     this.setBuild(false);
   }
 
+  /** A waybill target: "b:<id>" opens that building (the pace line's supplier), anything else the castle. */
+  private openWb(wb: string): void {
+    if (wb.startsWith('b:')) this.act.openBuilding(Number(wb.slice(2)));
+    else this.act.openCastle();
+  }
+
   /** The build tool exists in the free valley and in missions that allow building. */
   setBuild(on: boolean): void {
     const b = this.toolBtns.get('build');
@@ -276,8 +287,11 @@ export class Hud {
     }
   }
 
-  /** Cheap; call every frame — only touches the DOM when numbers change. */
-  update(world: World): void {
+  /**
+   * Cheap; call every frame — only touches the DOM when numbers change. `pace`: the delivery log
+   * the app samples every tick (contract pace forecast on the waybill, F10).
+   */
+  update(world: World, pace: PaceLog | null = null): void {
     const st = world.state;
     setText(this.coins, fmtInt(st.coins));
     const wagonBtn = this.toolBtns.get('wagon');
@@ -320,7 +334,9 @@ export class Hud {
     const left = Math.max(0, dueTick - st.tick);
     const leftSec = Math.floor(left / TICK_HZ);
     const folded = this.collapsed || this.compact;
-    const sig = `${have.join(',')}|${leftSec}|${folded}|${tr.map((x) => `${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}`).join('')}`;
+    const fc = pace && !folded ? forecastFor(world, pace) : null;
+    const fcSig = fc && fc.ready ? `${fc.seals}:${Math.floor((fc.finishTick - st.tick) / TICK_HZ)}:${fc.bottleneck}:${Math.round((fc.goods[fc.bottleneck]?.perMin ?? 0) * 10)}` : '';
+    const sig = `${have.join(',')}|${leftSec}|${folded}|${tr.map((x) => `${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}`).join('')}|${fcSig}`;
     if (sig === this.lastSig) return;
     this.lastSig = sig;
     const total = goods.reduce((a, g) => a + c.need[g], 0);
@@ -336,7 +352,7 @@ export class Hud {
     const timeLine = `<div class="wb-time num${late ? ' late' : ''}">${iconSvg('snow', 20)}<span>${tHtml('contract.timeLeft', { time: ticksClock(left) })}</span></div>`;
     let body: string;
     if (!tr.length) {
-      body = `<p class="wb-to">${t('contract.to')}</p>${goods.map((g, i) => tallyLine(g, have[i]!, c.need[g], i)).join('')}${timeLine}`;
+      body = `<p class="wb-to">${t('contract.to')}</p>${goods.map((g, i) => tallyLine(g, have[i]!, c.need[g], i)).join('')}${timeLine}${waybillPaceHtml(world, fc)}`;
     } else {
       body = `<ol class="wb-tranches">${tr.map((x, i) => {
         const tg = GOODS.filter((g) => x.need[g] > 0) as Good[];

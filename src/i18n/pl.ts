@@ -394,6 +394,17 @@ export const pl = {
   'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
   'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
   'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
+  // contract pace forecast and shared inputs (F10, F3; D-36): see PENDING_KEYS
+  'contract.pace.eta': 'Przy tym tempie: gotowe za {time}',
+  'contract.pace.late': 'Przy tym tempie: spóźnienie {time}',
+  'contract.pace.supply': '{who} ×{n} · {rate}/min',
+  'why.pace.title': 'Tempo dostaw',
+  'why.pace.good': '{who} ×{n}: teraz {rate}/min, najwyżej {cap}/min',
+  'why.pace.need': 'Na {seals} (zostało {time}) trzeba ≈{rate}/min',
+  'why.pace.seals': '{n, plural, one {# pieczęć} few {# pieczęcie} other {# pieczęci}}',
+  'why.pace.wait': 'Prognoza tempa — po pierwszej minucie dostaw.',
+  'why.shared': '{good} bierze też: {rival} — tam {there}, tu {here} (zapas i w drodze)',
+  'why.sharedOne': 'Jeden dostawca ({who}) na {n} odbiorców — przyda się drugi.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -413,6 +424,16 @@ export const PENDING_KEYS = [
   'road.stone',
   'why.stoneReserve',
   'why.stoneAll',
+  'contract.pace.eta',
+  'contract.pace.late',
+  'contract.pace.supply',
+  'why.pace.title',
+  'why.pace.good',
+  'why.pace.need',
+  'why.pace.seals',
+  'why.pace.wait',
+  'why.shared',
+  'why.sharedOne',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

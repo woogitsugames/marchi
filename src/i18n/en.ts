@@ -391,4 +391,15 @@ export const en: FullDict = {
   'err.NO_STONE.mining': 'The quarry is still cutting — nothing awaits pickup.',
   'err.NO_STONE.noQuarry': 'Nobody quarries it: build a quarry.',
   'why.waitsCustomer': 'Full of {good} — waiting for the customer to take more',
+  // contract pace forecast and shared inputs (F10, F3; D-36): see PENDING_KEYS
+  'contract.pace.eta': 'At this pace: done in {time}',
+  'contract.pace.late': 'At this pace: {time} late',
+  'contract.pace.supply': '{who} ×{n} · {rate}/min',
+  'why.pace.title': 'Delivery pace',
+  'why.pace.good': '{who} ×{n}: now {rate}/min, at most {cap}/min',
+  'why.pace.need': 'For {seals} ({time} left) you need ≈{rate}/min',
+  'why.pace.seals': '{n, plural, one {# seal} other {# seals}}',
+  'why.pace.wait': 'Pace forecast after the first minute.',
+  'why.shared': '{good} also feeds: {rival} — there {there}, here {here} (stock and on the way)',
+  'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
 };

@@ -1628,3 +1628,31 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .pause-ask { padding: 10px 10px 12px 6px; border-bottom: 0; }
 .pause-ask .slot-no { font-size: 22px; }
 .slot-row.is-asking { padding-inline-end: 10px; }
+
+/* contract pace (F10): waybill forecast under the clock, castle-card pace rows; shared input (F3) */
+.wb-pace { margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgb(74 72 67 / .45); font-size: 13px; line-height: 1.25; }
+.wb-pace-eta, .wb-pace-sup { display: flex; align-items: center; gap: 6px; min-height: 30px; cursor: pointer; }
+.wb-pace-eta { font-weight: 700; justify-content: space-between; }
+.wb-pace-sup { color: var(--ink-soft); }
+.wb-pace-sup svg { flex: none; }
+.wb-pace.warn .wb-pace-eta { color: #6e3520; }
+.wb-pace.late .wb-pace-eta { color: var(--clay); }
+.pace-seals { display: inline-flex; gap: 1px; flex: none; }
+.pace-seals i { display: inline-grid; color: rgb(74 72 67 / .35); }
+.pace-seals i.on { color: var(--clay); }
+.pace-fc { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.pace-fc.warn { color: #6e3520; }
+.pace-fc.late { color: var(--clay); }
+.pace-rows { display: grid; gap: 4px; }
+.pace-row {
+  --c: 5px; --hair: 1px; --frame: #8f887a; --fill: #dcd3c0;
+  width: 100%; min-height: 48px; display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 8px;
+  padding-block: 4px; padding-inline: 6px 10px; text-align: start; font-size: 14px; line-height: 1.2;
+}
+.pace-row.is-neck { --frame: var(--clay); }
+.pace-row:active { --fill: #cfc5b0; }
+.pace-aim, .pace-wait { margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
+.shared-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
+.shared-hint svg { flex: none; }
+.shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }

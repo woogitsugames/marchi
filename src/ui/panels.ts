@@ -2,7 +2,7 @@
 import {
   BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
-  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, rankGated, stoneAvailable, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
+  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
@@ -12,9 +12,12 @@ import {
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
+import { castlePaceHtml, forecastFor, sharedHtml } from './pace';
 
 export interface PanelNav {
   readonly world: World;
+  /** Contract pace samples for the castle card's forecast. */
+  readonly pace: PaceLog;
   /** Jump the camera to a subject and open its sheet. */
   go(kind: 'building' | 'wagon', id: number): void;
   buyWagon(stable: number): void;
@@ -111,7 +114,7 @@ function chip(g: Good, have: number, cap: number | null, extra: string, empty = 
     <span><bdi class="num"><b>${fmtInt(have)}</b>${cap !== null ? `<span class="cap">/${fmtInt(cap)}</span>` : ''}</bdi>${extra}</span></div>`;
 }
 
-function stockHtml(world: World, b: Building): string {
+function stockHtml(world: World, b: Building, pace: PaceLog): string {
   const def = BUILDINGS[b.type];
   const parts: string[] = [];
   const inc = (g: Good): string => (b.incoming[g] > 0 ? `<span class="inc">${tHtml('why.inbound', { n: fmtInt(b.incoming[g]) })}</span>` : '');
@@ -153,6 +156,9 @@ function stockHtml(world: World, b: Building): string {
       const gs = GOODS.filter((g) => c.need[g] > 0);
       parts.push(`<div class="section-h">${esc(t('why.order'))}</div><div class="goods">${gs.map((g) =>
         chip(g, Math.min(b.stock[g], c.need[g]), c.need[g], inc(g))).join('')}</div>`);
+      // a slow supply is not a stall: the pace and the forecast say what the statuses cannot (F10);
+      // while the castle only waits for wagons this section leads the card instead (buildingSheet)
+      if (c.castle === b.id && (isStall(b.status) || b.status.k === 'NO_INPUT')) parts.push(castlePaceHtml(world, forecastFor(world, pace)));
     }
   } else if (b.type === 'stable') {
     const n = world.state.wagons.filter((w) => w.home === b.id).length;
@@ -240,8 +246,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}">${iconSvg('undo', 24)}<span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
       // a winter-slowed supplier is the real root of a missing input: say so above the chain
       const upSeason = upstreamSeasonHtml(world, b.id);
-      const lead = b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason;
-      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
+      // an input shared with a consumer of another kind goes first: a wagon on the way or busy
+      // wagons are the chain's root, but the lesson is the shared supply (F3)
+      const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
+      const lead = pace + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason);
+      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },
     onClose() { nav.setGhost(null); },
