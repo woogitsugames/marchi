@@ -328,7 +328,7 @@ async function composeFeature(browser, png, lang, fonts, target) {
 async function main() {
   const opts = parseOptions(), captions = captionsFromPlan(), fonts = fontFaces();
   const langs = opts.lang === 'all' ? ['pl', 'en'] : [opts.lang];
-  const scenes = SCENES.filter((s) => opts.shot === 'all' || opts.shot.includes(s.id));
+  const scenes = SCENES.filter((scene) => opts.shot === 'all' || opts.shot.includes(scene.id));
   const kinds = opts.orientation === 'all' ? ['portrait', 'landscape', 'app'] : [opts.orientation];
   const { chromium } = await import('playwright');
   const preview = await runPreview();
@@ -339,14 +339,15 @@ async function main() {
     browser = await chromium.launch({ args: [
       '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage',
     ] });
-    captures: for (const lang of langs) for (const kind of kinds) for (const scene of scenes) {
-      if (kind === 'landscape' && ![1, 5].includes(scene.id)) continue;
-      const dims = SIZES[kind];
-      const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
-      console.log('[store-shots-v2] ' + lang + '/' + kind + ' #' + scene.id);
+    // One actual deterministic simulation per scene and language. Resizing the SAME game
+    // context renders the real responsive UI for Play, landscape and App Store.
+    // In particular, do not fast-forward or reassign the mission for each output size.
+    captures: for (const lang of langs) for (const scene of scenes) {
+      const variants = kinds.filter((kind) => kind !== 'landscape' || [1, 5].includes(scene.id));
+      if (!variants.length) continue;
       let game;
       try {
-        game = await openGame(browser, preview.url, scene, lang, dims);
+        game = await openGame(browser, preview.url, scene, lang, SIZES[variants[0]]);
         if (scene.id === 3) {
           await game.page.evaluate(() => {
             const app = window.__marchia.app;
@@ -359,24 +360,41 @@ async function main() {
         const evidence = await seekEvidence(game.page, scene.id);
         await prepareScene(game.page, scene.id, evidence);
         if (game.errors.length) throw new Error('Page errors: ' + game.errors.join('; '));
-        const raw = await game.page.screenshot({ timeout: 90000, animations: 'disabled' });
-        mkdirSync(dirname(file), { recursive: true });
-        await compose(browser, raw, captions.get(scene.id)[lang], kind, fonts, file);
-        const meta = await sharp(file).metadata();
-        if (meta.width !== dims.w || meta.height !== dims.h) throw new Error('Unexpected PNG dimensions');
-        await compress(file);
-        manifest.push({ file: file.slice(root.length + 1).replaceAll('\\', '/'), lang, kind, caption: captions.get(scene.id)[lang], ...evidence });
-        if (scene.id === 1 && kind === 'landscape') {
-          const feature = join(outRoot, lang, 'feature-1024x500.png');
-          await composeFeature(browser, raw, lang, fonts, feature);
-          await compress(feature);
-          manifest.push({ file: feature.slice(root.length + 1).replaceAll('\\', '/'), lang, kind: 'feature', source: '1-real-M1-scene' });
+        for (const kind of variants) {
+          const dims = SIZES[kind];
+          const viewport = game.page.viewportSize();
+          if (viewport.width !== dims.cssW || viewport.height !== dims.cssH) {
+            await game.page.setViewportSize({ width: dims.cssW, height: dims.cssH });
+            await game.page.waitForTimeout(1150);
+          }
+          if (game.errors.length) throw new Error('Page errors after resize: ' + game.errors.join('; '));
+          const file = join(outRoot, lang, String(scene.id).padStart(2, '0') + '-' + dims.w + 'x' + dims.h + '.png');
+          console.log('[store-shots-v2] ' + lang + ' scene #' + scene.id + ' / ' + kind);
+          const raw = await game.page.screenshot({ timeout: 90000, animations: 'disabled' });
+          mkdirSync(dirname(file), { recursive: true });
+          await compose(browser, raw, captions.get(scene.id)[lang], kind, fonts, file);
+          const meta = await sharp(file).metadata();
+          if (meta.width !== dims.w || meta.height !== dims.h) throw new Error('Unexpected PNG dimensions');
+          await compress(file);
+          manifest.push({
+            file: file.slice(root.length + 1).replaceAll('\\', '/'), lang, kind,
+            caption: captions.get(scene.id)[lang], ...evidence,
+          });
+          if (scene.id === 1 && kind === 'landscape') {
+            const feature = join(outRoot, lang, 'feature-1024x500.png');
+            await composeFeature(browser, raw, lang, fonts, feature);
+            await compress(feature);
+            manifest.push({
+              file: feature.slice(root.length + 1).replaceAll('\\', '/'), lang,
+              kind: 'feature', source: 'actual mission I scene at landscape viewport',
+            });
+          }
         }
       } catch (e) {
-        const msg = lang + '/' + kind + '/#' + scene.id + ': ' + (e.stack ?? e);
+        const msg = lang + '/#' + scene.id + ': ' + (e.stack ?? e);
         console.error(msg);
         failures.push(msg);
-        if (process.env.CI) break captures; // stop at first missing real scene on CI; write manifest below
+        if (process.env.CI) break captures;
       } finally { await game?.context.close(); }
     }
   } finally { await browser?.close(); preview.stop(); }
