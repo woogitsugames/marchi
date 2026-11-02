@@ -225,7 +225,7 @@ export class Hud {
 
     // ---- bottom: worst stall card + alarm seal
     this.stallText = h('span.sc-text');
-    this.stallEye = h('button.stall-eye', { html: iconSvg('inspect', 26) });
+    this.stallEye = h('button.stall-eye', { html: iconSvg('eye', 28) });
     this.stallEye.addEventListener('click', () => { const w = this.stalls[0]; if (w) { this.lastShown = w.id; this.act.showStall(w.id); } });
     const card = h('div.stall-card', { role: 'status' }, h('span.sc-txt', null, h('span.sc-kick', null, t('hud.worst')), this.stallText), this.stallEye);
     this.alarmIcon = h('span.al-ic');
@@ -479,7 +479,7 @@ export class Hud {
         <bdi class="count num">${fmtInt(got)}<small>/${fmtInt(need)}</small></bdi></div>`;
     let body: string;
     if (!tr.length) {
-      body = `${goods.map((g, i) => line(g, have[i]!, c.need[g])).join('')}${waybillPaceHtml(world, fc)}`;
+      body = `<div class="wb-goods">${goods.map((g, i) => line(g, have[i]!, c.need[g])).join('')}</div>${waybillPaceHtml(world, fc)}`;
     } else {
       body = `<ol class="wb-tranches">${tr.map((x, i) => {
         const tg = GOODS.filter((g) => x.need[g] > 0) as Good[];
@@ -491,7 +491,7 @@ export class Hud {
         }
         if (i === cur) {
           return `<li class="wb-tr is-now${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
-            ${tg.map((g) => line(g, got[g], x.need[g])).join('')}
+            <div class="wb-goods">${tg.map((g) => line(g, got[g], x.need[g])).join('')}</div>
             ${x.missed ? `<div class="tr-state">${esc(t('contract.trancheLate'))}</div>` : ''}</li>`;
         }
         return `<li class="wb-tr is-later" data-wb="castle"><div class="tr-h">${head}</div>
@@ -573,8 +573,8 @@ export class Hud {
       <p>${esc(t('town.rankText'))}</p>
       ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}` });
     letter.style.clipPath = deckle('bottom', 4111 + rank, 6, 22);
-    const seal = h('span.rl-seal', { html: iconSvg('seal', 56) });
-    const wrap = h('button.rank-letter-wrap.hit', { 'aria-label': t('sheet.close') }, h('div.float', null, letter), seal);
+    letter.append(h('i.rl-seal.kseal.on', { 'aria-hidden': 'true' }));
+    const wrap = h('button.rank-letter-wrap.hit', { 'aria-label': t('sheet.close') }, h('div.float', null, letter));
     const close = (): void => {
       if (this.rankLetter !== wrap) return;
       this.rankLetter = null;

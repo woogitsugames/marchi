@@ -56,6 +56,7 @@ export type IconId =
   | 'demolish'
   | 'buy_wagon'
   | 'inspect'
+  | 'eye'
   | 'overlay_load'
   | 'pause'
   | 'speed1'
@@ -1617,6 +1618,38 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.cut(band(quad([7, 10.4], [9.8, 10.7], [12.8, 10.2], 6), taper(0.6, 0.15)));
     // nail
     d.cut(gouge([19.6, 9.7], [21.2, 9.7], 0.5));
+  },
+
+  eye(d) {
+    // the watchful eye: almond lids, the upper one heavier, lashes cut upward, a hatched iris
+    const outer: Poly = [
+      ...quad([0.8, 12.4], [12, -2.4], [23.2, 12.4], 14),
+      ...quad([23.2, 12.4], [12, 24.4], [0.8, 12.4], 14).slice(1, -1),
+    ];
+    const white: Poly = [
+      ...quad([3.4, 12.2], [12, 1.6], [20.6, 12.2], 14),
+      ...quad([20.6, 12.2], [12, 21.6], [3.4, 12.2], 14).slice(1, -1),
+    ];
+    d.ink(outer);
+    d.cut(white);
+    // shade on the white: ink hatching in the far corner and under the upper lid (light from the upper left)
+    d.hatchInk(clipHalf(shrink(white, 0.5), -1, 0, -16.2), -60, 1.4, 0.5, 0.5);
+    d.hatchInk(clipHalf(clipHalf(shrink(white, 0.4), 0, 1, 8.4), -1, 0, -7.4), 0, 1.2, 0.45, 0.7);
+    // lashes above the upper lid, splayed outward
+    for (const [x, lean] of [[5.6, -1.2], [8.6, -0.6], [12, 0], [15.4, 0.6], [18.4, 1.2]] as const) {
+      const t = (x - 0.8) / 22.4;
+      const y = (1 - t) * (1 - t) * 12.4 + 2 * t * (1 - t) * -2.4 + t * t * 12.4;
+      d.inkFine(band(seg([x, y + 0.4], [x + lean, y - 2.4], 3), lerpW(1.1, 0.35)));
+    }
+    // iris: ink disc, white-line hatching on the lit upper left
+    d.layer();
+    const iris = circ(12, 11.9, 4.7);
+    d.ink(iris);
+    d.hatchCut(clipHalf(shrink(iris, 0.8), 1, 1, 23.2), -45, 1.35, 0.55);
+    // pupil with a cut glint
+    d.layer();
+    d.ink(circ(12, 11.9, 2.1));
+    d.cut(circ(11.1, 11, 0.8));
   },
 
   overlay_load(d) {

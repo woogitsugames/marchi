@@ -30,7 +30,7 @@ export function forecastFor(world: World, log: PaceLog): ContractForecast | null
 /** Three small seals, the first `n` pressed. */
 export function sealRow(n: number): string {
   let s = '';
-  for (let i = 0; i < 3; i++) s += `<i class="${i < n ? 'on' : ''}">${iconSvg('seal', 16)}</i>`;
+  for (let i = 0; i < 3; i++) s += `<i class="kseal${i < n ? ' on' : ''}"></i>`;
   return `<span class="pace-seals" role="img" aria-label="${esc(t('contract.stars', { n }))}">${s}</span>`;
 }
 

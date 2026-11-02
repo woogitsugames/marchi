@@ -670,3 +670,29 @@ WebView IndexedDB saves and settings and leave out the WebView caches; docs/stor
 not "data collection". Not verified here: a full APK (Maven Central answered 429 during the Kotlin compile of the
 filesystem plugin) — check the morning APK with `aapt dump permissions`. (decided)
 
+
+**D-53 — HUD v3 polish: a compact landscape contract, engraved bars, one kit button, seals inside the frame (UI
+only; no sim change).** Owner review of the D-43 screens before the APK. (1) *Landscape contract* (915×412): the
+panel was 330 px wide (36 %) and 192 / 245 / 341 px tall in missions I / VII / IX (47 / 59 / 83 % of the height);
+now 272 px (30 %) and 129 / 178 / 178 px (31 / 43 / 43 %), the tranche letter V 340 → 260 px: seals and the snow
+pill in one row (24 px seals, 28 px pill), the goods side by side (`.wb-goods`, a cell = icon, count, a 6 px bar
+under the count; up to 3 per row), a later or finished tranche in one row, the pace forecast in one 48 px row — the supplier part shrinks to
+its good's icon (still a 48 px target to the producer; its words stay visually hidden for screen readers). Portrait
+keeps the layout with less padding (10/4 px, 36 px head row; mission I 198 → 186 px). Every tap row stays ≥ 48 px. A folded contract no
+longer keeps the 330 px column in landscape. (2) *Bars*: the kit's slate `progress-track` read as a black tube at
+0; the track is now a CSS groove engraved into the parchment (a shade darker than the paper, a dark lip above, a
+light lip below, brass studs), quarter marks are faint cuts, the fill stays the antique-brass `progress-fill`;
+8 px tall (6 px in landscape). (3) *Eye*: the stall card's button shows a drawn woodcut `eye` (`src/ui/icons.ts`:
+almond lids, lashes, hatched iris, glint) instead of the pointing hand. (4) *Letters*: the old rosette that hung
+over the frame (end, opening, dead end, rank) is replaced by the kit wax inside the frame's top corner —
+`seal-full` for an opening or a win, `seal-empty` for a loss or a dead end; the end letter's three seals and the castle card's
+pace seals are the kit seals too; letters keep 38 px clear of the bottom ornaments, and on a short landscape screen the end letter reads
+in two columns so its buttons stay on screen. (5) *Buttons*: every `.btn` (sheets, letters, menus, settings) is
+on the kit — primary = wine wax (chamfered, dark wax rim), secondary = the parchment tool card with its brass
+edge (`card-normal / pressed / active / disabled`); no oak buttons are left. The tutorial note sits on `panel` with
+the kit seal, "Pomiń" grows to 48 px. Fixed on the way: the speed cells' `.seg` rules also hit the settings'
+segmented control (`div.seg`), squeezing "Jakość obrazu" into one 48 px cell — now scoped to `button.seg`; the
+rank letter's text no longer runs into its frame. Screens `docs/shots/hud4-*.jpg` (before/after), checked on
+412×915, 915×412, 904×1000, 360×740, Flip 360×380, Flex and `lang=ar`: 0 console errors, no target under 48 px.
+Rejected: tinting the slate track sprite with filters (muddy at 6–8 px and different per GPU); dropping the pace
+row in landscape (the forecast is the point of D-38). (decided)
