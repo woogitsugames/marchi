@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audio source and manifest unit tests (no asset generation)
+        run: python3 -m unittest tools/test_process_audio.py
+
       - name: Headless simulation tests
         shell: bash
         run: |
