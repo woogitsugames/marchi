@@ -251,17 +251,44 @@ Przed sesją **użyj pustego testowego profilu WebView/urządzenia**, nigdy pryw
 
 W V1–V4 wpisuj `task_time_s` i `task_success`; w V4 również `save_ok`. `time_s`/`correct` zostaw puste — nie są to scenariusze diagnozy przestoju. Nie usuwaj zapisów spoza wydzielonego środowiska. Nie zmieniaj samodzielnie stanu rangi w konsoli, jeśli celem jest ocena intuicyjności interfejsu.
 
-## 3D. Fold/Flip i tryb Flex (F1–F3)
+
+### V5 — Pory roku i jesienny jarmark
+
+- **Start:** `?play=sandbox&ff=780&speed=4` (zapowiedź lata w 13:00), `?play=sandbox&ff=1780&speed=4` (jesień za 20 sekund symulacji), `?play=sandbox&ff=2700&speed=0` (zima do oglądania). Jeżeli chcesz zmierzyć odbiór zapowiedzi, zacznij **przed** granicą, nie dopiero na niej; `ff` wykonuje skok, nie obserwację gracza.
+- **Fakty do klucza:** sezon trwa **15 min symulacji**: wiosna [00:00,15:00), roztopy [04:00,08:00) ×0,55 na drodze gruntowej; lato [15:00,30:00), gospodarstwa +20% tempa; jesień [30:00,45:00), **piwo +25% względem bieżącej ceny po nasyceniu**; zima [45:00,60:00), farma −40%, ryby −50%, drewniane mosty zamknięte w [48:00,50:00) i [54:00,56:00), kamienne pozostają czynne. Zapowiedź nadchodzi **2 min gry wcześniej**; pauza zatrzymuje kalendarz.
+- **Polecenie:** „Wyjaśnij, co się niedługo zmieni i jak wpłynie na produkcję, drogę albo targ”. `season_understood=1`, gdy wskazuje poprawny konkretny efekt; nie wymagaj czekania pełnej pory roku. Wpisz `task_time_s` i `issue_codes=SEASON` tylko przy obserwowanej pomyłce. Płatność +25% w praktyce wymaga faktycznej sprzedaży piwa; początkujący gracz może tylko odczytać ofertę jarmarku — rozdziel te wyniki.
+
+### V6 — Dziesięć towarów, rangi 0–5 i odblokowania
+
+**Towary** (stała `GOODS`): `wood` drewno, `planks` deski, `grain` zboże, `flour` mąka, `bread` chleb, `fish` ryby, `stone` kamień, `charcoal` węgiel drzewny, `malt` słód, `beer` piwo. Pytanie: „Które z nich trzeba wyprodukować lub kupić jako półprodukt; czym różni się sprzedaż od przetworzenia?”.
+
+**Rangi i wszystkie trzy łączne warunki (renoma, różne sprzedane towary, najlepszy przepływ srebra/min):**
+
+| Ranga | Renoma | Rodzaje | Najlepszy przepływ | Odblokowanie |
+| --- | ---: | ---: | ---: | --- |
+| 0 (start) | 0 | 0 | 0 | drwal, tartak, farma, stajnia, spichlerz, droga gruntowa |
+| 1 | 200 | 2 | 8 | młyn i piekarnia |
+| 2 | 1000 | 4 | 20 | rybak, kamieniołom, bruk i kamienny most |
+| 3 | 2500 | 6 | 60 | węglarz i słodownia |
+| 4 | 6000 | 7 | 120 | browar |
+| 5 | 13000 | 9 | 160 | ulepszenie wyglądu zamku, bez nowego budynku |
+
+- **Start:** `?play=sandbox&speed=0` oraz opcjonalnie **realny** zaawansowany zapis testowej księgi. Nie ustawiaj rangi sztucznie i nie żądaj osiągnięcia rangi 5 w krótkiej sesji.
+- **Zaliczenie:** uczestnik sam odnajduje wymagania następnej rangi i wymienia, co się odblokuje (`rank_understood`); `goods_identified` to liczba prawidłowo wskazanych towarów 0–10. Zapisz `task_time_s` i odróżnij **rozumienie progów** od faktycznego awansu.
+
+## 3D. Fold/Flip i tryb Flex (F0–F3)
+
+**F0 — zwykły telefon (punkt odniesienia):** wykonaj H1 i P1 na typowym nieskładanym Androidzie w pionie, następnie obróć ekran. Zanotuj dostęp do szyny narzędzi jedną ręką, czytelność karty, brak ucięć, przypadkowe kliknięcia i położenie „Pokaż”. Zapisz `device_class=phone`, `screen_mode=normal`, `layout_ok`, `misclicks`.
 
 **Sprzęt:** prawdziwy Fold/Flip z APK debug; zanotuj model, Android, rozdzielczość, skalę ekranu, zewnętrzny/wewnętrzny ekran, orientację i aktualną postawę. Emulacja viewportu jest dopuszczalna **tylko jako próba techniczna**, nie jako wynik ergonomii fizycznego zawiasu. `src/ui/layout.ts` wykrywa segmenty viewportu/CSS lub natywny `__marchiaFold`; poziomy zawias z dwiema częściami o wysokości co najmniej 200 CSS px uruchamia `is-flex` (scena u góry, HUD na dole). Pionowy zawias daje `is-book` (panele w prawym segmencie). Bardzo mały ekran zewnętrzny Flip może przejść do `is-mini`, gdzie narzędzia budowania są niedostępne **celowo**.
 
 | ID | Procedura bez podpowiedzi | Oczekiwane zachowanie / odnotowanie |
 | --- | --- | --- |
-| **F1 — Fold złożony → rozłożony** | Uruchom sandbox na ekranie okładki, otwórz kartę, rozłóż urządzenie i wróć do tej samej czynności; powtórz po obrocie. | Brak utraty stanu, podwójnej karty czy niezamierzonego gestu; działają gesty kamery i duże cele dotykowe. W pionowym zawiasie karta mieści się w prawym segmencie. |
+| **F1 — Fold złożony → rozłożony (`is-split`)** | Uruchom sandbox na ekranie okładki, otwórz kartę, rozłóż urządzenie i wróć do tej samej czynności; powtórz po obrocie. | Brak utraty stanu, podwójnej karty czy niezamierzonego gestu; działają gesty kamery i duże cele dotykowe. Na szerokim ekranie (`w>=720 CSS px` i bez trybu poziomego/mini) sprawdź `is-split`; pionowy zawias rozpoznany przez API może dodatkowo włączyć `is-book`, wtedy karta powinna zmieścić się w prawym segmencie. Nie zakładaj `is-book` tylko na podstawie fizycznego modelu. |
 | **F2 — Flex/tabletop** | Złóż ekran do poziomego półotwarcia, podczas widocznej karty wybierz narzędzie, czytaj status i spróbuj wykonać gest w scenie. Rozłóż urządzenie w trakcie anulowanej czynności. | `is-flex` tylko przy **wykrytym** poziomym podziale i odpowiednich rozmiarach. Scena u góry, HUD/karty poniżej, nie ma klikalnych elementów pod zawiasem ani przypadkowego dokończenia gestu po zmianie układu. |
 | **F3 — Flip główny → okładka** | Sprawdź mapę i menu na ekranie głównym, następnie zamknij Flip na ekran okładki i wróć. | `is-mini` może świadomie wyłączyć budowę; menu/karty nie ucinają tekstu, nie prowadzą do martwych dotknięć, powrót do głównego ekranu przywraca elementy sterowania. Jeśli WebView nie działa na okładce, zapisz `unsupported`, nie błąd UX gry. |
 
-**Preflight F2:** rzeczywisty `document.body.classList.contains('is-flex') === true`; przy fałszu nie udawaj Flex i wpisz `invalid_setup=1` lub `device_unsupported` w `notes_no_pii`. Zapisuj `fold_state` (`cover|inner|book|flex|flip_cover`), `layout_ok`, `task_success`, liczbę błędnych dotknięć, niezamierzone komendy, ucięcia UI i konkretną sekwencję reprodukcji. **Nie** porównuj czasów z Fold/Flip do płaskich telefonów bez rozdzielenia typu ekranu.
+**Preflight urządzeń:** `is-split` oznacza szeroki layout, **nie** dowód fizycznego zawiasu; `is-book` wymaga wykrycia pionowego segmentu, `is-flex` poziomego z dwiema częściami o wysokości >=200 CSS px, `is-mini` małego viewportu. Zapisz rzeczywiste klasy, orientację i źródło informacji o zawiasie (segments/CSS/natywne) lub `unsupported`. **Preflight F2:** rzeczywisty `document.body.classList.contains('is-flex') === true`; przy fałszu nie udawaj Flex i wpisz `invalid_setup=1` lub `device_unsupported` w `notes_no_pii`. Zapisuj `fold_state` (`cover|inner|book|flex|flip_cover`), `layout_ok`, `task_success`, liczbę błędnych dotknięć, niezamierzone komendy, ucięcia UI i konkretną sekwencję reprodukcji. **Nie** porównuj czasów z Fold/Flip do płaskich telefonów bez rozdzielenia typu ekranu.
 
 ## 4. Prowadzenie: think-aloud i pomiar
 
