@@ -4,7 +4,7 @@ import { AudioEngine } from '../audio/audio';
 import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
-  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
+  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining,
 } from '../sim/index';
@@ -69,6 +69,8 @@ function applyVolumes(p: Prefs): void {
 const MUSIC_FULL = 0.7;
 
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
+/** Window for the second tap that confirms demolishing a building a contract cannot replace. */
+const DEMOLISH_CONFIRM_MS = 4000;
 
 export interface AppOptions {
   canvas: HTMLCanvasElement;
@@ -108,6 +110,8 @@ export class App implements PanelNav {
   private perfAt = 0;
   private save: SaveInfo | null = null;
   private speedBeforeMenu: Speed = 1;
+  /** Demolish tool: the contract building a first tap warned about (second tap within the window demolishes). */
+  private demolishArm: { id: number; until: number } | null = null;
   private input: InputHandle;
   private layout: LayoutInfo | null = null;
   private layoutQueued = false;
@@ -156,6 +160,7 @@ export class App implements PanelNav {
       },
       close: () => this.setTool('none'),
       sceneCentre: () => this.sceneCentre(),
+      undoInSheet: (id) => this.sheets.top?.content.key === `building:${id}`,
     });
     this.layers.markers.append(this.build.floating);
 
@@ -558,14 +563,17 @@ export class App implements PanelNav {
     else if (cmd.t === 'place') this.afterPlace(cmd.type, cmd.x, cmd.y, n);
   }
 
-  /** A building went up: toast, back to the shelf, and if its gate is cut off, the gap finder at once. */
+  /**
+   * A building went up: toast, back to the shelf, and if its gate is cut off, the gap finder at once.
+   * The build tool stays open under the card (closing the card returns to the shelf); the card holds
+   * the undo then, so the floating undo button steps aside (undoInSheet).
+   */
   private afterPlace(type: string, x: number, y: number, n: string): void {
     if (audio.ready) void audio.play('ui.wood');
     this.hud?.toast(t('hud.placed', { name: t(`building.${type}` as 'building.farm'), n }), 'info', 'build', 2200);
     this.build.back();
     const b = this.world.state.buildings.find((q) => q.x === x && q.y === y && q.placedTick >= 0);
     if (!b || b.type === 'stable' || !suggestLinkToStable(this.world, b.id)) return;
-    this.setTool('none');
     this.go('building', b.id, false);
   }
 
@@ -667,7 +675,19 @@ export class App implements PanelNav {
       if (p?.kind === 'building') {
         const b = buildingById(this.world, p.id);
         if (b) cell = b.y * this.world.terrain.w + b.x;
+        // a contract building that cannot be built again: warn first, demolish on a second tap
+        if (b && demolishIsFinal(this.world, b.id)) {
+          const now = performance.now();
+          const armed = this.demolishArm && this.demolishArm.id === b.id && now < this.demolishArm.until;
+          if (!armed) {
+            this.demolishArm = { id: b.id, until: now + DEMOLISH_CONFIRM_MS };
+            if (audio.ready) void audio.play('ui.error');
+            this.hud?.toast(t('demolish.confirm', { name: buildingName(this.world, b.id) }), 'err', 'demolish', DEMOLISH_CONFIRM_MS);
+            return;
+          }
+        }
       } else cell = this.view.cellAt(x, y);
+      this.demolishArm = null;
       if (cell >= 0) this.enqueue({ t: 'demolish', cell });
       return;
     }

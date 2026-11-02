@@ -231,7 +231,10 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 2px;
+  /* a subtitle that must wrap keeps whole phrases together (no lone last word under a dash) */
+  text-wrap: pretty;
 }
+.menu-item .mi-text { text-wrap: balance; }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 

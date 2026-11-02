@@ -8,7 +8,7 @@ nie automatyczne dodanie kluczy lokalizacji.
 
 **PL — Nazwa:** Ryby na post
 
-**PL — Podtytuł:** Rybak potrzebuje brzegu, a zamek mostu.
+**PL — Podtytuł:** Rybak nad wodą, zamek za mostem. (menu: skrócone, by mieściło się w jednej linii przy 412 px)
 
 **PL — List kasztelana:**
 
@@ -34,7 +34,7 @@ nie automatyczne dodanie kluczy lokalizacji.
 
 **PL — Nazwa:** Bruk przed burzą
 
-**PL — Podtytuł:** Kamień na drogę trzeba najpierw przywieźć.
+**PL — Podtytuł:** Najpierw przywieź kamień na bruk. (menu: skrócone, by mieściło się w jednej linii przy 412 px)
 
 **PL — List kasztelana:**
 

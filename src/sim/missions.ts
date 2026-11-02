@@ -132,6 +132,20 @@ export function missionBuildable(missionId: string): BuildingType[] | 'ranked' {
   return MISSIONS[missionId]?.buildable ?? [];
 }
 
+/**
+ * Read helper for the UI: demolishing this building is final in a contract mission — its type is not
+ * on the mission's build list, so it can never stand again and the contract may become unwinnable.
+ * The sim still allows the demolition (replays stay valid); the demolish tool asks for a second tap.
+ */
+export function demolishIsFinal(world: World, buildingId: number): boolean {
+  const st = world.state;
+  if (!st.mission.contract) return false;
+  const b = st.buildings.find((x) => x.id === buildingId);
+  if (!b || b.type === 'castle' || b.type === 'stable') return false; // the sim refuses these anyway
+  const can = missionBuildable(st.mission.id);
+  return can !== 'ranked' && !can.includes(b.type);
+}
+
 export const MISSIONS: Record<string, MissionDef> = {
   m1: {
     id: 'm1',
