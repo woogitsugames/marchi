@@ -370,7 +370,7 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
 
 // --- contract missions behave exactly as in state v4 -------------------------------------------------
 
-/** Final state of each balance strategy, as a v4 state: new goods, ranks 4-5 and mission.roadStone stripped, version 0. */
+/** Final state of each balance strategy, as a v4 state: new goods, ranks 4-5, mission.roadStone and the v7 fleet numbers stripped, version 0. */
 function v4View(st: unknown): string {
   const legacy = new Set<string>(GOODS_V4);
   const strip = (v: unknown): unknown => {
@@ -383,6 +383,8 @@ function v4View(st: unknown): string {
       if (Array.isArray(out.rankTicks)) out.rankTicks = out.rankTicks.slice(0, 4);
       if ('version' in out && 'mapId' in out) out.version = 0;
       if ('result' in out && 'endTick' in out) delete out.roadStone; // state v6 (D-32)
+      if ('nextId' in out) delete out.nextWagonN; // state v7 (D-44)
+      if ('bridgeFrom' in out && 'odometer' in out) delete out.n; // state v7 wagon fleet number
       return out;
     }
     return v;
@@ -390,20 +392,22 @@ function v4View(st: unknown): string {
   return JSON.stringify(strip(JSON.parse(JSON.stringify(st))));
 }
 
-/** Measured on the state-v4 build (commit 7590de8) with the same runs; see D-30. */
+/** Measured on the state-v4 build (commit 7590de8) with the same runs; see D-30. Deliberate re-baselines:
+ *  D-44 (1) a bridge-held wagon root is charged per span in every world: m2 nothing / buy 2 / 2nd wooden
+ *  bridge and m4 nothing / buy 3 change (stall ledger only, state with the ledger stripped identical). */
 const V4_GOLDEN: Record<string, string> = {
   'm1|nothing (no crossing)': '7c315e7a86c45ca5',
   'm1|wooden bridge x=41 @0:10': 'c22a705d468f86e0',
   'm1|bridge + 2 wagons @0:10': '89fa376a29801a9f',
-  'm2|nothing': '7fc1c8d157ed7f29',
-  'm2|buy 2 wagons': '99d33c2352b3a9c9',
+  'm2|nothing': '4b902f1db0533e35',
+  'm2|buy 2 wagons': 'c33b5d92f4dbd83f',
   'm2|buy 2 + stone bridge @45s': 'a439d677a03daddc',
-  'm2|buy 2 + 2nd wooden bridge x=63 @45s': '06324d3b475478fa',
+  'm2|buy 2 + 2nd wooden bridge x=63 @45s': 'a1da025a585ea7ce',
   'm3|nothing': 'd9640beb3a7098ee',
   'm3|buy 2 wagons': '801dad9003439978',
   'm3|buy 2 + cobble corridor @25s': 'b9ba07e0099afaa8',
-  'm4|nothing': 'a64f6bf76e6f6110',
-  'm4|buy 3 wagons @1:00': '0b250d6171216846',
+  'm4|nothing': 'f033eff4d9820c10',
+  'm4|buy 3 wagons @1:00': '8ec390098e423284',
   'm4|stone bridge late @4:00 (iced)': '3989018910beb607',
   'm4|stone bridge before ice @1:00': '84ebfdcac27366dd',
   'm5|nothing': '55bf74afce0867e2',

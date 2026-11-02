@@ -267,7 +267,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       wire(sheet, nav);
       setHtml(sheet.icon, iconSvg('wagon', 36));
       sheet.kicker.textContent = t('wagon.kicker');
-      sheet.title.textContent = wagonName(id);
+      sheet.title.textContent = wagonName(world, id);
       const eta = wagonEta(world, id);
       const waiting = isWagonWait(w.status);
       const cargo = w.cargoGood && w.cargoQty > 0

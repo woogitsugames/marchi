@@ -110,10 +110,14 @@ test('no free wagon: an unreachable source stays NO_INPUT/UNREACHABLE (not ALL_B
 });
 
 test('dispatch fixes keep bench state hashes (recorded from the pre-fix sim)', () => {
+  // Re-baselined by D-44: (1) the last two bench100 samples (stall ledger only), then (3) every sample for
+  // state v7 (`Wagon.n`, `nextWagonN`, version 7); with those fields stripped and version 6 the hashes equal
+  // the pre-D-44 ones (713e69f3…/c648427c… series).
   const want: Record<number, string[]> = {
-    50: ['713e69f3eaab8c43', 'cf024b6683c4bd09', '17316fd2cad6fa32', '8bf0c61d32a766fd', 'c310bdf5af98fcab', 'a7908b09085a6c60'],
-    100: ['c648427c162563da', '06ff93fcb7698806', 'dff63db526b16d36', '2190c401abbe7f49', 'ab1282712910a464', '17f1e2a72d8ad006'],
+    50: ['7bfba2c92d9139f9', '1080e5f4625e18f9', 'c5ce8aca8c5fbc0a', '17ea054b961b95b7', 'c5147f050081829f', '3e2b9df1c76b0a6d'],
+    100: ['365d8f9d0273d365', '0ba7f5d9fcd00a49', '871ae932f4281235', '949b37549a859baa', '517282a5b17b586f', '2431f47789a793f6'],
   };
+
   for (const n of [50, 100]) {
     const w = benchWorld(n);
     const got: string[] = [];

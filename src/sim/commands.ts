@@ -197,7 +197,7 @@ export function spawnWagon(world: World, stableId: number): number {
   const stable = buildingById(world, stableId)!;
   const id = st.nextId++;
   st.wagons.push({
-    id, home: stable.id, at: stable.gate, next: -1, edgeT: 0, path: [], dest: stable.gate, pathVer: -1,
+    id, n: st.nextWagonN++, home: stable.id, at: stable.gate, next: -1, edgeT: 0, path: [], dest: stable.gate, pathVer: -1,
     cargoGood: null, cargoQty: 0, job: null, status: { k: 'IDLE' }, busyTicks: 0, bridgeFrom: -1, odometer: 0,
   });
   return id;

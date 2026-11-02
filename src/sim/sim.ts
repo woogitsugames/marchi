@@ -9,7 +9,7 @@ import { buildMission, missionSeasons, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
 import { stepTown } from './town';
-import { cycleTicks, seasonal } from './seasons';
+import { cycleTicks } from './seasons';
 import { MARKET } from './defs';
 import type { GoodMap, SimState } from './types';
 
@@ -110,7 +110,6 @@ const STALL_GRACE_TICKS = 2 * TICK_HZ;
 function accountStalls(world: World): void {
   const st = world.state;
   const roots = new Set<string>();
-  const spanRoots = seasonal(world);
   for (const b of st.buildings) {
     if (NOT_STALL.has(b.status.k) || b.stalledTicks < STALL_GRACE_TICKS) continue;
     const chain = explainBuilding(world, b.id);
@@ -123,9 +122,8 @@ function accountStalls(world: World): void {
     if (!root) continue;
     // a wagon held at a bridge is one cause per span (the loop below charges the same key), not
     // one per wagon: a single frozen or jammed crossing must not split into several ledger rows
-    // (docs/design/seasons.md §3). Seasonal worlds only: the ledger is in the state hash, and the
-    // contract missions keep their golden hashes (D-34).
-    if (spanRoots && root.kind === 'wagon' && (root.status.k === 'BRIDGE_CLOSED' || root.status.k === 'BRIDGE_JAM')) roots.add(`span:${root.status.span}:${root.status.k}`);
+    // (docs/design/seasons.md §3). Every world, contract letters included (D-34, D-44).
+    if (root.kind === 'wagon' && (root.status.k === 'BRIDGE_CLOSED' || root.status.k === 'BRIDGE_JAM')) roots.add(`span:${root.status.span}:${root.status.k}`);
     else roots.add(`${root.kind}:${root.id}:${statusKey(root.status)}`);
   }
   for (const w of st.wagons) {
@@ -219,6 +217,15 @@ export function checkInvariants(world: World): string[] {
     const lhs = n0(bal.produced[g]) - n0(bal.consumed[g]) - n0(bal.destroyed[g]);
     const rhs = bal.inStock[g] + bal.onWagons[g];
     if (lhs !== rhs) errs.push(`conservation ${g}: produced-consumed-destroyed=${lhs} but stock+cargo=${rhs}`);
+  }
+  // fleet numbers arrived with state v7 (D-44): unique, below the counter
+  if (st.nextWagonN !== undefined) {
+    const seen = new Set<number>();
+    for (const w of st.wagons) {
+      if (!(w.n >= 1 && w.n < st.nextWagonN)) errs.push(`wagon ${w.id} number ${w.n} outside 1..${st.nextWagonN - 1}`);
+      if (seen.has(w.n)) errs.push(`wagon number ${w.n} used twice`);
+      seen.add(w.n);
+    }
   }
   // market fields arrived with state v4; the save gate runs this on older states before migrating
   if (st.market && st.ledger.sold) for (const g of GOODS) {

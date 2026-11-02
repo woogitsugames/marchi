@@ -2,7 +2,7 @@
 // Use: npx tsx tools/bot-m10.ts (or bot-m11.ts / bot-m12.ts).
 import {
   MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, explainBuilding,
-  lineCells, stars, step, unexplainedStalls, type Command, type World,
+  lineCells, stars, stateHash, step, unexplainedStalls, type Command, type World,
 } from '../src/sim/index';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK, type Mission101112Id } from '../src/sim/proposals/missions-10-12';
 
@@ -29,6 +29,8 @@ export interface RunResult {
   lateTranches: number;
   delivered: string;
   produced: { planks: number; charcoal: number; grain: number; malt: number; beer: number; bread: number };
+  /** Final state hash (golden comparisons across sim changes, D-44). */
+  hash: string;
 }
 
 const stableId = (w: World): number => w.state.buildings.find((b) => b.type === 'stable')!.id;
@@ -117,6 +119,7 @@ export function runProposed(id: Mission101112Id, strategy: Strategy): RunResult 
     lateTranches: c.tranches.filter((t) => t.missed).length, delivered,
     produced: { planks: l.planks, charcoal: l.charcoal, grain: l.grain,
       malt: l.malt, beer: l.beer, bread: l.bread },
+    hash: stateHash(w),
   };
 }
 

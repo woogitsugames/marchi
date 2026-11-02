@@ -2,7 +2,7 @@
 // re-installs the data from src/sim/proposals/missions-7-9.ts for the run, a no-op once registered).
 import {
   MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, lineCells,
-  stars, step, stoneAvailable, unexplainedStalls,
+  stars, stateHash, step, stoneAvailable, unexplainedStalls,
   type Command, type World,
 } from '../src/sim/index';
 import { PROPOSED_MISSIONS_7_9, M7_FISHER_SITE, M9_WOODCUTTER_SITE, type Mission789Id } from '../src/sim/proposals/missions-7-9';
@@ -22,6 +22,8 @@ export type RunResult = {
   coins: number; actionSecond: number | null; commandErrors: string[]; invariantErrors: string[];
   stoneUsed: number; peakStoneStored: number; maxStoneWagon: number;
   fishCrossings: number; contestedSamples: number; delivered: string; produced: {fish: number; stone: number; malt: number; beer: number};
+  /** Final state hash (golden comparisons across sim changes, D-44). */
+  hash: string;
 };
 
 const row = (w: World, y: number, x1: number, x2: number): number[] =>
@@ -121,6 +123,7 @@ export function runProposed(id: Mission789Id, strategy: Strategy): RunResult {
       minutes: st.mission.endTick / (60 * TICK_HZ), seals: stars(w), coins: st.coins,
       actionSecond, commandErrors, invariantErrors, stoneUsed, peakStoneStored, maxStoneWagon,
       fishCrossings, contestedSamples, delivered, produced: { fish: l.fish, stone: l.stone, malt: l.malt, beer: l.beer },
+      hash: stateHash(w),
     };
   });
 }

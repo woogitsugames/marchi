@@ -3,7 +3,7 @@
 // The free valley ('sandbox') runs a fixed horizon instead (docs/design/sandbox.md §4.5, D-29):
 // the decent plan plays 150 minutes and must reach rank 1 at 8-12 min, rank 2 at 20-30, rank 3 at
 // 40-50, rank 4 at 70-90 and rank 5 at 105-135; "nothing" stays at rank 0.
-import { applyCommand, createWorld, lineCells, step, stars, TICK_HZ, type Command, type World } from '../src/sim/index';
+import { applyCommand, createWorld, lineCells, stateHash, step, stars, TICK_HZ, type Command, type World } from '../src/sim/index';
 import { DECENT, report, runSandbox, type BotStep } from './bot-sandbox';
 
 export type Strat = { name: string; at: number; expect?: number; cmds: (w: World) => Command[] };
@@ -67,7 +67,7 @@ export const sandboxPlans: SandboxStrat[] = [
   { name: '3 wagons + cobble @2:00 (locked)', plan: [...sbBuy(3), { name: 'cobble', after: 120, cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 24, 30, 46) }] }] },
 ];
 
-export interface BalanceRow { mission: string; strat: string; result: string; minutes: number; seals: number; missed: number; coins: number; errors: string[] }
+export interface BalanceRow { mission: string; strat: string; result: string; minutes: number; seals: number; missed: number; coins: number; errors: string[]; hash: string }
 
 export function runStrategy(id: string, s: Strat): BalanceRow {
   const w = createWorld(id);
@@ -79,7 +79,7 @@ export function runStrategy(id: string, s: Strat): BalanceRow {
   const c = w.state.mission.contract;
   return {
     mission: id, strat: s.name, result: w.state.mission.result, minutes: w.state.mission.endTick / TICK_HZ / 60,
-    seals: stars(w), missed: c ? c.tranches.filter((t) => t.missed).length : 0, coins: w.state.coins, errors,
+    seals: stars(w), missed: c ? c.tranches.filter((t) => t.missed).length : 0, coins: w.state.coins, errors, hash: stateHash(w),
   };
 }
 

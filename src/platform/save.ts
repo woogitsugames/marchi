@@ -84,6 +84,29 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
   // v5 -> v6: `mission.roadStone` (D-32, mission VIII builds cobbles with stone). Saves before v6
   // never had such a mission: false. Appended last, as in a fresh state (hash over JSON.stringify).
   5: (s) => ({ ...s, version: 6, mission: { ...(s.mission as Record<string, unknown>), roadStone: false } }),
+  // v6 -> v7: fleet numbers (D-44). Wagons get `n` = 1..N in id order (purchase order: ids only grow),
+  // right after `id`; the state gets `nextWagonN` = N + 1 right after `nextId` (key order of a fresh
+  // state, the hash is taken over JSON.stringify). Numbers of wagons sold before v7 are not known.
+  6: (s) => {
+    const wagons = s.wagons as Record<string, unknown>[];
+    const order = wagons.map((w) => w.id as number).sort((a, b) => a - b);
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(s)) {
+      out[k] = s[k];
+      if (k === 'nextId') out.nextWagonN = wagons.length + 1;
+    }
+    out.version = 7;
+    out.wagons = wagons.map((w) => {
+      const nw: Record<string, unknown> = {};
+      for (const k of Object.keys(w)) {
+        if (k === 'n') continue;
+        nw[k] = w[k];
+        if (k === 'id') nw.n = order.indexOf(w.id as number) + 1;
+      }
+      return nw;
+    });
+    return out;
+  },
 };
 
 export function migrate(env: SaveEnvelope): SaveEnvelope {

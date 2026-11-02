@@ -78,6 +78,8 @@ export interface Job {
 
 export interface Wagon {
   id: number;
+  /** Fleet number shown to the player ("Wóz 3"): 1..N in purchase order, never reused (state v7, D-44). */
+  n: number;
   home: number; // stable building id
   /** Current node (cell index). When moving, the node we left. */
   at: number;
@@ -225,6 +227,8 @@ export interface SimState {
   buildings: Building[];
   wagons: Wagon[];
   nextId: number;
+  /** Next fleet number for a new wagon (`Wagon.n`); sold wagons' numbers are not reused (state v7). */
+  nextWagonN: number;
   rain: RainSpell[];
   /** Ice windows: wooden bridges (one-lane spans) cannot be entered while tick is in [start, end). */
   ice: RainSpell[];

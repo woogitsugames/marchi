@@ -2,7 +2,7 @@
 // F1 a winter-slowed farm behind CONTESTED, F2 a full output whose customer still takes it, F4 where the
 // missing road stone is, F7 one ledger row per frozen span. All read-only diagnosis except F7 (ledger).
 import {
-  SEASON_TICKS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, outputCustomer, seasonAt,
+  DISPATCH_INTERVAL, SEASON_TICKS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, outputCustomer, seasonAt,
   seasonalSupplier, step, stoneAvailable, type World,
 } from '../src/sim/index';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
@@ -112,4 +112,51 @@ test('F7: a frozen wooden span is one ledger cause in a seasonal world (no per-w
   const keys = Object.keys(w.state.ledger.stallSeconds);
   assert(keys.some((k) => k.startsWith('span:') && k.endsWith(':BRIDGE_CLOSED')), `span charged: ${keys.join(',')}`);
   eq(keys.filter((k) => k.startsWith('wagon:') && (k.endsWith(':BRIDGE_CLOSED') || k.endsWith(':BRIDGE_JAM'))).length, 0, `no per-wagon bridge rows: ${keys.join(',')}`);
+});
+
+test('F7 / D-44: contract letters charge a held bridge once per span (m2 jam, m4 ice), never per wagon', () => {
+  const runs: { id: string; at: number; cmds: (w: World) => Parameters<typeof applyCommand>[1][] }[] = [
+    { id: 'm2', at: 0, cmds: () => [] },
+    { id: 'm4', at: 60, cmds: (w) => Array.from({ length: 3 }, () => ({ t: 'buyWagon' as const, stable: w.state.buildings.find((b) => b.type === 'stable')!.id })) },
+  ];
+  for (const r of runs) {
+    const w = createWorld(r.id);
+    while (w.state.mission.result === 'running') {
+      if (w.state.tick === r.at * TICK_HZ) for (const c of r.cmds(w)) assert(applyCommand(w, c).ok, r.id + ' command');
+      step(w);
+    }
+    const keys = Object.keys(w.state.ledger.stallSeconds);
+    assert(keys.some((k) => k.startsWith('span:')), `${r.id}: span charged: ${keys.join(',')}`);
+    eq(keys.filter((k) => k.startsWith('wagon:') && (k.endsWith(':BRIDGE_CLOSED') || k.endsWith(':BRIDGE_JAM'))).join(','), '', `${r.id}: no per-wagon bridge rows`);
+  }
+});
+
+test('F5 / D-44: a supplier whose own delivery is held at a bridge is not "making it now" (m4 ice: castle <- sawmill <- iced wood wagon)', () => {
+  const w = createWorld('m4');
+  const held = (id: number): boolean => {
+    const p = buildingById(w, id);
+    if (!p || p.status.k !== 'WAITING_DELIVERY') return false;
+    const wagonId = p.status.wagon;
+    const k = w.state.wagons.find((x) => x.id === wagonId)?.status.k;
+    return k === 'BRIDGE_CLOSED' || k === 'BRIDGE_JAM' || k === 'NO_ROUTE';
+  };
+  let blamed = 0, wrong = 0;
+  while (w.state.mission.result === 'running') {
+    step(w);
+    if ((w.state.tick - 1) % DISPATCH_INTERVAL) continue; // statuses were just recomputed
+    for (const b of w.state.buildings) {
+      const s = b.status;
+      // suppliers with a lower id got their status earlier in the same pass
+      if (s.k === 'WAITING_UPSTREAM' && s.from < b.id && held(s.from)) wrong++;
+      if (s.k === 'NO_INPUT' && s.cause === 'NONE_AVAILABLE' && held(s.blockedBy)) {
+        const chain = explainBuilding(w, b.id);
+        const last = chain[chain.length - 1]!;
+        assert(last.kind === 'wagon' && (last.status.k === 'BRIDGE_CLOSED' || last.status.k === 'BRIDGE_JAM' || last.status.k === 'NO_ROUTE'),
+          'chain ends at the held wagon: ' + chain.map((l) => l.kind + l.id + ':' + l.status.k).join(' > '));
+        blamed++;
+      }
+    }
+  }
+  eq(wrong, 0, 'WAITING_UPSTREAM ("the supplier is making it now") from a supplier held at a bridge');
+  assert(blamed > 20, `NO_INPUT blamed on the held supplier, chain to the bridge (${blamed} samples)`);
 });
