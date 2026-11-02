@@ -60,7 +60,7 @@ function measure() {
     if ((r.left < -1 || r.right > vw + 1 || r.top < -1 || r.bottom > vh + 1) && !scrollers(e)) out.offscreen.push({ el: name(e), ...R(e) });
   }
   // touch targets
-  const sel = 'button, a[href], [data-a], .hit, .tool, .menu-item, .btn, input, select, [role=button], [role=tab], .rail-stat, .wb-pace-eta, .wb-pace-sup, .wb-row';
+  const sel = 'button, a[href], [data-a], .hit, .tool, .menu-item, .btn, input, select, [role=button], [role=tab], .wb-pace-eta, .wb-pace-sup, .wb-row';
   for (const e of ui.querySelectorAll(sel)) {
     if (!vis(e) || scrollers(e) && false) continue;
     // use the hit-area: element rect (pseudo-expanders not measured)
@@ -78,7 +78,7 @@ function measure() {
   }
   // panels + overlaps
   const P = {
-    waybill: '.waybill-wrap', rail: '.rail', sheet: '.sheet', toasts: '.toasts', notice: '.notice-wrap', menu: '.menu-strip', perf: '.perf',
+    waybill: '.waybill-wrap', topbar: '.hud-top', rail: '.rail', sheet: '.sheet', toasts: '.toasts', notice: '.notice-wrap', menu: '.menu-strip', perf: '.perf',
   };
   const rects = {};
   for (const [k, s] of Object.entries(P)) { const e = ui.querySelector(s); if (e && vis(e)) { rects[k] = R(e); } }
@@ -87,7 +87,7 @@ function measure() {
   const ov = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
   const keys = Object.keys(rects);
   for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) { const a = ov(rects[keys[i]], rects[keys[j]]); if (a > 40) out.overlaps.push({ a: keys[i], b: keys[j], px2: a }); }
-  const ctrl = [...ui.querySelectorAll('.rail-tools, .rail-line')].filter(vis).map(R);
+  const ctrl = [...ui.querySelectorAll('.rail-tools, .stall-row, .topbar .speed, .topbar .chips')].filter(vis).map(R);
   for (const bb of bubbles) { const br = R(bb); for (const [k, r] of Object.entries(rects)) if (['waybill', 'sheet', 'rail', 'menu'].includes(k) && ov(br, r) > 200) out.overlaps.push({ a: 'bubble@' + br.l + ',' + br.t, b: k, px2: ov(br, r) }); for (const c of ctrl) if (ov(br, c) > 200) out.overlaps.push({ a: 'bubble@' + br.l + ',' + br.t, b: 'railpad', px2: ov(br, c) }); }
   // sheet inner pieces vs waybill (sheet is inside rect check above); scrollable sheet?
   const sh = ui.querySelector('.sheet'); if (sh && vis(sh)) { const sc = [...sh.querySelectorAll('*')].find((e) => ['auto', 'scroll'].includes(getComputedStyle(e).overflowY) && e.scrollHeight > e.clientHeight + 1) || (sh.scrollHeight > sh.clientHeight + 1 ? sh : null); out.sheetScroll = sc ? { sh: sc.scrollHeight, ch: sc.clientHeight } : null; }

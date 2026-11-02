@@ -1719,6 +1719,9 @@ body.is-landscape.build-open .toasts { left: calc(50% - 66px); }
   background: none;
   padding-block: 18px calc(26px + var(--safe-b)); padding-inline: 18px;
 }
+/* a bottom sheet stops under the contract panel (fold audit P3: it covered the waybill on 360 px), but keeps
+   at least 45 % of the screen to read in */
+body:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: max(45vh, min(64vh, calc(100% - var(--hud-top) - 8px))); }
 /* a bottom sheet covers the rail: hide what would peek through the frame's open corners */
 body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }

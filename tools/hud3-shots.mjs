@@ -46,7 +46,7 @@ const PLAN = [
   ['m1-why', 'p412'], ['m1-why', 'l915'], ['m1-why', 'f904'], ['m1-why', 'n360'],
   ['m1-ar', 'p412'], ['m1-ar', 'l915'], ['m1-why-ar', 'p412'],
   ['m1-start', 'p412'],
-  ['m7', 'p412'], ['m7', 'n360'], ['m7', 'l915'], ['m7-ar', 'p412'], ['m7-castle', 'p412'], ['m7-castle', 'flip'],
+  ['m7', 'p412'], ['m7', 'n360'], ['m7', 'l915'], ['m7-ar', 'p412'], ['m7-castle', 'p412'], ['m7-castle', 'flip'], ['m7-castle', 'n360'], ['m7-castle', 'flex'], ['m7-castle', 'l915'],
   ['m9', 'p412'], ['sandbox', 'p412'], ['sandbox', 'l915'], ['sandbox', 'flip'], ['market', 'p412'], ['build', 'p412'], ['build', 'l915'],
   ['wagon', 'p412'], ['pause', 'p412'], ['pause', 'flip'], ['menu', 'flip'], ['menu', 'p412'], ['end', 'p412'], ['tut', 'p412'], ['tut', 'l915'],
   ['left', 'l915'], ['left', 'p412'],
@@ -102,7 +102,7 @@ for (const [sid, vid] of PLAN) {
   if (v.hinge) await page.evaluate(() => window.dispatchEvent(new Event('marchia:fold')));
   await page.waitForTimeout(1500);
   await act(page, s.act);
-  await page.waitForTimeout(1800);
+  await page.waitForTimeout(3000);
   const m = await page.evaluate(measure);
   await page.screenshot({ path: `${out}/${name}.jpg`, type: 'jpeg', quality: 82 });
   errors += errs.length;
