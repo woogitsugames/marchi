@@ -394,6 +394,11 @@ export const pl = {
   'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
   'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
   'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
+  // per-mission saves and start-over confirmations (D-36): see PENDING_KEYS
+  'save.inProgress': 'w toku, {time}',
+  'save.unfinished': 'Niedokończona gra',
+  'save.confirmFresh': 'Zacząć od nowa? Zapis po {time} gry przepadnie.',
+  'save.confirmRestart': 'Zacząć kontrakt od nowa? Zapis po {time} gry przepadnie.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -413,6 +418,10 @@ export const PENDING_KEYS = [
   'road.stone',
   'why.stoneReserve',
   'why.stoneAll',
+  'save.inProgress',
+  'save.unfinished',
+  'save.confirmFresh',
+  'save.confirmRestart',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
