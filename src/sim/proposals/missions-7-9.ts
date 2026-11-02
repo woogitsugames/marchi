@@ -1,8 +1,9 @@
 // Mission design proposals VII-IX (order 42).
 // Deliberately NOT registered in missions.ts. Tests and bots register locally.
 // Reuse existing map IDs so integration needs only three MissionDef registrations.
+// Type-only import from missions.ts: missions.ts will import this file to register VII-IX, and a
+// value import (valleySpec) would run before VALLEY_W is initialised in that import cycle.
 import type { MissionDef } from '../missions';
-import { valleySpec } from '../missions';
 import type { ValleySpec } from '../terrain';
 import { M2_VALLEY, M3_VALLEY } from '../missions-proposed';
 
@@ -10,8 +11,8 @@ export type Mission789Id = 'm7' | 'm8' | 'm9';
 
 /** VII: proven river valley, with north-bank fish and a bridge to the southern castle. */
 export const M7_VALLEY: ValleySpec = { ...M2_VALLEY, seed: M2_VALLEY.seed };
-/** VIII: original valley, with the tested rocky quarry site at (57, 7). */
-export const M8_VALLEY: ValleySpec = valleySpec(1301);
+/** VIII: original valley (mapId valley1 = valleySpec(seed)), with the tested rocky quarry site at (57, 7). */
+export const M8_SEED = 1301;
 /** IX: proven dry logistics valley with two competing uses for wood. */
 export const M9_VALLEY: ValleySpec = { ...M3_VALLEY, seed: M3_VALLEY.seed };
 
@@ -44,7 +45,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     deadlineMin: 12, star3Min: 7.5, star2Min: 9.5,
   },
   m8: {
-    id: 'm8', mapId: 'valley1', seed: M8_VALLEY.seed,
+    id: 'm8', mapId: 'valley1', seed: M8_SEED,
     coins: 410, wagons: 6,
     buildable: ['quarry'],
     buildings: [

@@ -4,10 +4,11 @@ import {
   onRock, nearWater, roadStoneCost, stoneAvailable, validatePlace, validateRoad,
 } from '../src/sim/index';
 import {
-  M7_DRY_SITE, M7_FISHER_SITE, M7_VALLEY, M8_FALSE_QUARRY_SITE, M8_QUARRY_SITE, M8_VALLEY,
+  M7_DRY_SITE, M7_FISHER_SITE, M7_VALLEY, M8_FALSE_QUARRY_SITE, M8_QUARRY_SITE, M8_SEED,
   M9_VALLEY, M9_WOODCUTTER_SITE, PROPOSED_MISSIONS_7_9,
 } from '../src/sim/proposals/missions-7-9';
 import { generateValley } from '../src/sim/terrain';
+import { valleySpec } from '../src/sim/missions';
 import { STRATEGIES, runProposed, withProposal } from '../tools/bot-missions-7-9';
 import { assert, eq, test } from './harness';
 
@@ -17,7 +18,7 @@ const row = (y: number, x1: number, x2: number): number[] => lineCells(W, y * W 
 // sim hook that is not part of this proposal (existing sim files stay untouched; see
 // docs/reviews/gpt-integration-2.md). Until it lands, the stone-dependent m8 checks are skipped.
 const M8_ROAD_STONE_HOOK = withProposal('m8', () => roadStoneCost(createWorld('m8'), row(44, 45, 60), 2) > 0);
-for (const [id, spec] of [['m7', M7_VALLEY], ['m8', M8_VALLEY], ['m9', M9_VALLEY]] as const) {
+for (const [id, spec] of [['m7', M7_VALLEY], ['m8', valleySpec(M8_SEED)], ['m9', M9_VALLEY]] as const) {
   test(id + ': proposal uses the promised 96x72 valley and an existing terrain alias', () => {
     const data = PROPOSED_MISSIONS_7_9[id];
     eq(spec.w, 96, 'width'); eq(spec.h, 72, 'height');
