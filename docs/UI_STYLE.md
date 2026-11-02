@@ -34,17 +34,20 @@ Since D-43 every HUD surface is drawn from the painted kit in `public/assets/ui/
 | `segment-bg` + `segment-active` | speed: pause / ×1 / ×2 / ×4 | 20.45 % 7.5 % / 9 × 12 px — the four cells are sized to the painted dividers (`.speed`, `--m`) |
 | `card-normal / pressed / active / highlight / disabled` | tool cards; highlight = the cure of the worst stall, disabled = hatched | 13.9 % 15.6 % / 10 px |
 | `eta` (slate) | "M:SS do śniegu" pill, folded-seal time, wagon ETA plaque | 25 % 16.7 % / 10 × 14 px |
-| `progress-track` + `progress-fill` | a bar per good / per rank requirement; quarter marks drawn by CSS | 25 % 5 % / 2 × 6 px |
+| `progress-fill` | the brass fill of a bar per good / per rank requirement (8 px tall, 6 px in landscape) | 25 % 5 % / 2 × 4 px |
+| — (CSS groove, D-53) | the bar's track: a groove engraved into the parchment (a shade darker than the paper, dark lip above, light lip below, brass studs at the ends), quarter marks as faint cuts. The kit's slate `progress-track` is not used: empty, it read as a black tube | — |
 | `frame-sheet` / `frame-sheet-dim` | all large sheets (why, wagon, market: bright; pause, settings, ledgers, mission save: dim), end letter, rank letter | 16.07 % 11.875 % / 36 × 38 px (30 × 32 on 360 px, 26 × 28 on Flip) |
-| `menu`, `button-normal/pressed` | menu button, the eye button on the stall card | — |
+| `menu`, `button-normal/pressed` | menu button, the eye button on the stall card (woodcut `eye` icon) | — |
+| `card-normal / pressed / active / disabled` | every secondary `.btn` in sheets, letters, menus and notes (D-53) | 13.9 % 15.6 % / 10 px |
 | `seal-alert` + `badge` | alarm seal with the stall count | — |
-| `seal-empty` / `seal-full` | three forecast seals on the contract panel; the folded contract (fills with progress) | — |
+| `seal-empty` / `seal-full` | three forecast seals on the contract panel; the folded contract (fills with progress); the seals earned on the end letter and the castle card's pace forecast; the castle's wax inside the top corner of every letter (full = opening / won, empty = lost / dead end), the rank letter and the tutorial note (D-53) | — |
 | `pin-red` / `pin-brass` | stall pins on the map: red = the worst stall or a critical one (plus a wine ring round the cause), brass = lesser | — |
 | `badge` / `badge-red` | tool cost (Kup wóz 30); red when the silver is short | — |
 
 Content inside sheets keeps clear of the frame's corner ornaments: 18 px frame padding + 8 px body padding, 26 px
-at the bottom. No clip-path on kit surfaces (the old chamfers and torn edges stay only on the main menu strip,
-the tutorial note and old in-sheet chips/buttons).
+at the bottom (letters: 44 px top, 38 px bottom, 30 px sides). Nothing hangs over a frame: seals sit inside it.
+No clip-path on kit surfaces (the old chamfers and torn edges stay only on the main menu strip and the primary
+button's chamfer). The tutorial note sits on `panel`.
 
 Shadows: a soft `drop-shadow(0 2px 2px rgb(30 22 14 / .35))` under floating kit pieces (the painted edges already
 carry the bevel); no glow, no blur haze.
@@ -54,13 +57,14 @@ carry the bevel); no glow, no blur haze.
 Kit palette (muted, from the sprites): `--wine #6f1d22` (ribbon, alert, primary action in sheets, critical) ·
 `--slate #3d4852` (snow pill, ETA) · `--brass #a07a3a` / `--brass-dk #6b5128` (rings, icon wells) · parchment of the
 panels (`--kparch #ead6ad`). Text: `--ink #2b2620`, `--ink-soft #4d453a`; `--meadow #56603f` for "done".
-Older tokens (`--parchment`, `--oak`, `--iron`, `--clay`, `--ochre`) remain for the main menu strip, settings
-controls and in-sheet chips. Status colours are always paired with an icon shape (never colour alone).
+Older tokens (`--parchment`, `--iron`, `--clay`, `--ochre`) remain for the main menu strip and settings
+controls; `--oak` only for the volume groove and the portrait build shelf — no button is oak any more (D-53). Status colours are always paired with an icon shape (never colour alone).
 
 ## Grid and spacing
 
 - Base unit **4 px**; spacing scale 4 / 8 / 12 / 16 / 24 / 32.
 - Touch targets **≥ 48 px** (CSS px ≈ dp): speed cells 48 tall, contract rows and pace rows 48, ribbon 48,
+  tutorial "Pomiń" 48,
   tool cards 72, eye button 52, alarm seal 72 (64 on 360 px). Text never clips: chips grow with their number,
   long names wrap (ribbon, stall card) — six tool cards on a phone use a 12.5 px label.
 - Respect `env(safe-area-inset-*)` on every edge-anchored element (`--safe-s/e` are logical, swap in RTL).
@@ -87,8 +91,13 @@ controls and in-sheet chips. Status colours are always paired with an icon shape
 | Pressed | `card-pressed`, content shifts down 1 px | `button-pressed`, 1 px shift; no scale bounce |
 | Active tool | `card-active`, wine label | active speed cell: `segment-active` |
 | Cure of the worst stall | `card-highlight` (Kup wóz for a missing wagon, Droga for a missing road) | — |
-| Disabled | `card-disabled` (hatched) + the reason on the card ("brak 4" in place of the label, red cost badge) and in a toast on tap | old in-sheet buttons: 40 % + hatching |
+| Disabled | `card-disabled` (hatched) + the reason on the card ("brak 4" in place of the label, red cost badge) and in a toast on tap | `card-disabled` at 60 % |
 | Focus (keyboard/a11y) | 2 px ochre outline, offset 2 px | same |
+
+Buttons inside sheets, letters, menus and notes (`.btn`, D-53): **primary** = wine wax (`--wine` with a lighter
+top, dark wax rim `#3e1013`, parchment text, chamfered), one per surface; **secondary** = the parchment tool card
+with its brass edge (`card-normal`, `card-pressed`, selected = `card-active`, disabled = `card-disabled` at 60 %),
+ink text. Same in every language and on every screen.
 
 Motion: 100–250 ms, `cubic-bezier(.2,.7,.2,1)` (decelerate). Sheets slide, markers fade.
 No springs, no overshoot, no infinite pulsing — a stall pin breathes once on appearance.
@@ -129,11 +138,13 @@ fading out in dashes to an empty post).
 
 - **Contract** = a panel under a red ribbon with the mission name: three forecast seals (D-38), the
   "M:SS do śniegu" pill, a bar per good with "n/total", then the pace rows ("Przy tym tempie: gotowe za …",
-  the bottleneck's supplier). Tapping the ribbon folds it to a wax seal that fills with progress, time below.
+  the bottleneck's supplier). In landscape (D-53) it is a compact card ≤ 30 % of the width: seals and pill in one
+  row, the goods side by side (icon, count, slim bar), the pace in one 48 px row whose supplier part shrinks to
+  the good's icon (the words stay for screen readers). Tapping the ribbon folds it to a wax seal that fills with progress, time below.
 - **Free valley** = the same panel: rank on the ribbon, the checklist towards the next rank, income and season.
 - **Stall** = a kit pin above the building; its cause opens with one tap. The worst stall (largest
   `stalledTicks × criticality`, `src/ui/stalls.ts`) is also named on the bottom card ("NAJGORSZY ZASTÓJ —
-  Młyn: wszystkie wozy zajęte"); the eye button jumps the camera there and opens "Dlaczego stoi?", the alarm
+  Młyn: wszystkie wozy zajęte"); the eye button (a woodcut eye) jumps the camera there and opens "Dlaczego stoi?", the alarm
   seal cycles through all stalls (badge = count).
 - **ETA** = a slate plaque above the selected wagon.
 - Time and silver: two chips at the top, each with its own icon (sun/rain, coin).
