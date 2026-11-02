@@ -270,3 +270,9 @@ Measured with the extended decent bot (tools/bot-sandbox.ts, 150 min): ranks at 
 `town.rankTicks` to six entries; the gate expects five goods / four ranks for v1-v4 and ten / six for v5.
 Missions I-VI run bit-identically to state v4 with the new fields stripped (all 26 balance runs compared;
 golden hashes in tests/chains.test.ts). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox)
+
+**D-31 — Owner decisions 2026-11-02 (day).** (1) Rank names 4–5: **Gród** and **Stolica**. (2) **Seasons** in the
+free valley, gently: announced in advance, change conditions (winter: river ice, lower farm yields; spring: thaw slows
+dirt roads) and teach new stall causes, never destroy the settlement. (3) Next after the chains UI, all in order:
+missions VII–IX → valley events (royal orders, fairs, merchants, soft goals) → playtest + polish; GPT designs part of
+it (pack 06). (4) The title is **„Marchia” in every language**; the subtitle is translated. (decided)
