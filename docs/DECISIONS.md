@@ -478,3 +478,26 @@ wind, no tree shadows. Cost (412×915 dpr 2, `r.info.render` incl. shadow pass):
 416k→465k tris; mid 37→40, 332k→298k; far 35→35; low near 40→48, 248k→255k; sandbox high near 31→42, 402k→451k
 (the +calls are the second variant per kind). Screens: `docs/shots/trees2-{before,after}-*.jpg`,
 `trees2-closeup-*.jpg`; script `tools/tree-shots.mjs`. Not done: a multi-view (azimuth) impostor atlas. (decided)
+
+**D-43 — Camera keeps the sheet's subject in the visible part of the map; idle wagons wait in a drawn row
+beside the stable (render only).** (1) Opening a building or wagon sheet (tap, `?open=`, links in the cause chain)
+measures the map area left visible: the scene minus the sheet's layout rect (transform ignored, so a sheet still
+sliding in counts at its final place), the tool rail and the waybill, cut greedily keeping the largest rect
+(`src/ui/focus.ts`). Because the sheet's side is measured, not assumed, bottom sheets (portrait), side sheets
+(landscape / ≥720 px), RTL (D-37) and the left-hand swap all work without branches. If the subject's marker (and,
+for a building, its gate) is already ≥15 % inside that area the camera does not move; otherwise
+`focusCell(cell, screenOffset)` aims the orbit so the cell lands at the area's centre — the ground shift is
+computed by unprojecting the offset from a scratch camera at the goal distance/yaw, so zoom and rotation stay
+as the player left them. The move is a fixed 220 ms ease-out cubic (no spring, no overshoot); any pan, zoom,
+rotate or follow cancels it. Nothing is restored on close (a jump back would lose what the player was looking at).
+A followed wagon is kept at the same offset. The 2D fallback view ignores the offset. Measured
+(`tools/camera-shots.mjs`, m1, 5 buildings × 412×915, 915×412, 904×1000, ar 915×412, ar 904×1000): a tap on a building
+where the sheet docks left the marker or gate under the sheet in 25/25 cases before, 0/25 after (marker clearance
+from the sheet edge: median −136 → +273 px); opening by navigation: clearance median +75 → +253 px, min +39 → +183 px. (2) Wagons standing idle or
+just back at a stable gate share one sim node (research 2026-11-02-idle-wagons.md: changing the sim is not worth
+the hashes/migration). The view now draws them in waiting places beside the stable: side by side along both
+flanks (3.2 m pitch, up to 7 per side, then ranks behind), horses toward the gate side / road, only where the whole
+rig stands on open ground (no road, gate, footprint, water, field, forest > 0.15). Places go in wagon id order
+(same state → same picture); wagons beyond the free places are still tucked into the stable. The drawn offset eases
+in and out (1.6/s) so arrivals and departures drive rather than jump. Sim state is untouched (`wagon-spacing`
+checks the hash). (decided)
