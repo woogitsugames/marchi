@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUD mockups</title>
+<script src="icons.js"></script>
+<style>
+@font-face { font-family: 'Grenze Gotisch'; font-weight: 600; src: url(grenze-gotisch-latin-ext-600-normal.woff2); }
+@font-face { font-family: 'Grenze Gotisch'; font-weight: 700; src: url(grenze-gotisch-latin-ext-700-normal.woff2); }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 400; src: url(alegreya-sans-latin-ext-400-normal.woff2); }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 500; src: url(alegreya-sans-latin-ext-500-normal.woff2); }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 700; src: url(alegreya-sans-latin-ext-700-normal.woff2); }
+:root {
+  --ink: #2b2620; --ink-soft: #4d453a; --parchment: #e4dccb; --parchment-dim: #cfc5b0;
+  --oak: #3b3127; --oak-press: #362d24; --oak-hi: #5a4a39; --oak-deep: #2c241c; --iron: #4a4843; --clay: #8c4a2f;
+  --ochre: #b8893a; --meadow: #56603f; --mist: #c9c6bb; --leather: #5b3a26; --leather-hi: #7a5034;
+  --head: 'Grenze Gotisch', serif; --body: 'Alegreya Sans', sans-serif;
+  --fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .55' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .17 0 0 0 0 .15 0 0 0 0 .12 .42 0 0 0 -.15'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='60'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .35' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .75 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --shadow: drop-shadow(2px 2px 0 rgb(43 38 32 / .45));
+  --cut: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #222; font-family: var(--body); color: var(--ink); }
+.scene { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.hud { position: absolute; inset: 0; pointer-events: none; }
+.ic { width: 24px; height: 24px; display: inline-block; flex: none; }
+.ic svg { width: 100%; height: 100%; display: block; }
+.num { font-variant-numeric: tabular-nums; }
+.chamfer { clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut)); }
+.parch { background: var(--fibre) 0 0 / 220px 220px, var(--parchment); }
+.oak { background: var(--grain) 0 0 / 300px 60px, var(--oak); color: var(--parchment); }
+.label { position: absolute; left: 8px; bottom: 8px; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: #fff; background: rgb(0 0 0 / .55); padding: 3px 6px; display: none; }
+
+/* map-anchored stall bubble shared by all variants (diegetic) */
+.bubble { position: absolute; transform: translate(-50%, -100%); filter: var(--shadow); }
+.bubble .b { width: 44px; height: 40px; display: grid; place-items: center; color: var(--clay); --cut: 5px; }
+.bubble .t { width: 10px; height: 8px; margin: -1px auto 0; background: var(--parchment); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.eta { position: absolute; transform: translate(-50%, -100%); font: 700 12px var(--body); color: var(--ink); background: var(--ochre); padding: 2px 6px; --cut: 3px; }
+
+/* ============ A1 — Listwa (light, collapsible strip) ============ */
+.A1 .strip { position: absolute; top: 0; left: 0; right: 0; padding: 8px 10px 14px; display: flex; align-items: center; gap: 10px; filter: var(--shadow); }
+.A1 .strip::after { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
+  clip-path: polygon(0 0, 100% 0, 100% 82%, 97% 86%, 93% 83%, 88% 88%, 83% 84%, 77% 87%, 71% 83%, 64% 88%, 58% 84%, 51% 87%, 45% 83%, 39% 88%, 33% 84%, 27% 87%, 21% 83%, 15% 88%, 9% 84%, 4% 87%, 0 83%); }
+.A1 .seal { width: 34px; height: 34px; flex: none; color: var(--clay); }
+.A1 .goods { flex: 1; display: grid; gap: 4px; }
+.A1 .g { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 6px; font: 700 14px var(--body); }
+.A1 .g .ic { width: 20px; height: 20px; color: var(--ink); }
+.A1 .bar { height: 7px; background: rgb(43 38 32 / .12); box-shadow: inset 0 0 0 1px rgb(43 38 32 / .35); position: relative; }
+.A1 .bar i { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(-60deg, var(--ink-soft) 0 2px, var(--ink) 2px 4px); }
+.A1 .g small { font-weight: 400; color: var(--ink-soft); }
+.A1 .clock { flex: none; display: grid; justify-items: center; font: 700 15px var(--body); padding-left: 10px; border-left: 1.5px solid rgb(43 38 32 / .25); }
+.A1 .clock .ic { width: 18px; height: 18px; }
+.A1 .clock span { font: 400 11px var(--body); color: var(--ink-soft); }
+.A1 .stall { position: absolute; left: 10px; bottom: calc(76px + 10px); display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; filter: var(--shadow); font: 500 14px var(--body); }
+.A1 .stall .n { width: 26px; height: 26px; display: grid; place-items: center; background: var(--clay); color: var(--parchment); font: 700 14px var(--body); --cut: 4px; }
+.A1 .stall b { font-weight: 700; }
+.A1 .bar-b { position: absolute; left: 0; right: 0; bottom: 0; height: 76px; display: flex; align-items: stretch; border-top: 1.5px solid var(--oak-hi); }
+.A1 .stats { display: grid; align-content: center; gap: 4px; padding: 0 12px; font: 700 15px var(--body); border-right: 1px solid rgb(228 220 203 / .14); }
+.A1 .stats div { display: flex; align-items: center; gap: 6px; }
+.A1 .stats .ic { width: 18px; height: 18px; color: var(--ochre); }
+.A1 .tools { flex: 1; display: flex; }
+.A1 .tool { flex: 1; display: grid; justify-items: center; align-content: center; gap: 3px; font: 500 12px var(--body); color: var(--parchment); position: relative; }
+.A1 .tool .ic { width: 28px; height: 28px; }
+.A1 .tool + .tool::before { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 1px; background: rgb(228 220 203 / .12); }
+.A1 .tool.off { opacity: .45; }
+.A1 .tool.off em { font-style: normal; color: var(--ochre); }
+.A1 .speed { width: 64px; display: grid; justify-items: center; align-content: center; gap: 2px; background: var(--oak-deep); border-left: 1px solid rgb(228 220 203 / .14); font: 700 13px var(--body); color: var(--ochre); }
+.A1 .speed .ic { width: 26px; height: 26px; color: var(--parchment); }
+.A1 .menu { width: 48px; display: grid; place-items: center; }
+/* landscape */
+.land.A1 .bar-b { left: auto; top: 0; width: 92px; height: auto; flex-direction: column; border-top: 0; border-left: 1.5px solid var(--oak-hi); }
+.land.A1 .stats { padding: 10px 0; justify-items: center; border-right: 0; border-bottom: 1px solid rgb(228 220 203 / .14); }
+.land.A1 .tools { flex-direction: column; }
+.land.A1 .tool + .tool::before { left: 20px; right: 20px; top: 0; bottom: auto; width: auto; height: 1px; }
+.land.A1 .speed { width: auto; height: 62px; border-left: 0; border-top: 1px solid rgb(228 220 203 / .14); }
+.land.A1 .menu { width: auto; height: 46px; }
+.land.A1 .strip { right: 92px; left: 0; padding: 6px 12px 12px; width: 460px; }
+.land.A1 .goods { grid-template-columns: 1fr 1fr; gap: 14px; }
+.land.A1 .stall { bottom: 12px; left: 12px; }
+
+/* ============ A2 — Narożna karta (compact corner card + split pads) ============ */
+.A2 .card { position: absolute; top: 10px; left: 10px; width: 176px; padding: 10px 12px 12px; filter: var(--shadow); --cut: 6px; }
+.A2 .card h3 { font: 700 19px var(--head); display: flex; align-items: center; justify-content: space-between; line-height: 1; }
+.A2 .card h3 .ic { width: 22px; height: 22px; color: var(--clay); }
+.A2 .row { display: grid; grid-template-columns: 20px 1fr; gap: 2px 8px; align-items: center; margin-top: 9px; }
+.A2 .row .ic { width: 20px; height: 20px; grid-row: span 2; }
+.A2 .row .v { font: 700 14px var(--body); display: flex; justify-content: space-between; }
+.A2 .row .v small { font-weight: 400; color: var(--ink-soft); }
+.A2 .seg { display: flex; gap: 2px; height: 6px; }
+.A2 .seg i { flex: 1; background: rgb(43 38 32 / .16); }
+.A2 .seg i.f { background: var(--ink); }
+.A2 .seg i.h { background: linear-gradient(90deg, var(--ink) 50%, rgb(43 38 32 / .16) 50%); }
+.A2 .dl { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgb(43 38 32 / .22); display: flex; align-items: center; gap: 6px; font: 700 14px var(--body); }
+.A2 .dl .ic { width: 16px; height: 16px; }
+.A2 .dl span { font-weight: 400; color: var(--ink-soft); }
+.A2 .purse { position: absolute; top: 10px; right: 10px; display: grid; gap: 0; filter: var(--shadow); --cut: 5px; }
+.A2 .purse div { display: flex; align-items: center; gap: 6px; padding: 7px 12px; font: 700 15px var(--body); }
+.A2 .purse div + div { border-top: 1px solid rgb(228 220 203 / .14); }
+.A2 .purse .ic { width: 18px; height: 18px; color: var(--ochre); }
+.A2 .stalls { position: absolute; top: 104px; right: 10px; display: flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; font: 700 13px var(--body); color: var(--parchment); background: var(--clay); filter: var(--shadow); --cut: 5px; }
+.A2 .stalls .ic { width: 20px; height: 20px; }
+.A2 .pad { position: absolute; bottom: 12px; display: flex; filter: var(--shadow); --cut: 8px; }
+.A2 .pad.tools { left: 10px; }
+.A2 .pad.spd { right: 10px; }
+.A2 .pad > div { width: 58px; height: 58px; display: grid; justify-items: center; align-content: center; gap: 2px; font: 500 11px var(--body); position: relative; }
+.A2 .pad > div .ic { width: 26px; height: 26px; }
+.A2 .pad > div + div { box-shadow: inset 1px 0 0 rgb(228 220 203 / .12); }
+.A2 .pad > div.on { color: var(--ochre); }
+.A2 .pad > div.on::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 5px; height: 2px; background: var(--ochre); }
+.A2 .pad > div.off { opacity: .45; }
+.A2 .pad.spd > div { width: 50px; }
+.land.A2 .pad.tools { left: auto; right: 10px; bottom: 74px; }
+.land.A2 .stalls { top: 10px; right: auto; left: 196px; }
+.land.A2 .purse { top: auto; bottom: 12px; left: 10px; right: auto; display: flex; }
+.land.A2 .purse div + div { border-top: 0; border-left: 1px solid rgb(228 220 203 / .14); }
+
+/* ============ B1 — Zwój i rzemień (scroll + leather strap with wooden tokens) ============ */
+.B1 .scroll { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 360px; height: 92px; filter: var(--shadow); }
+.B1 .scroll .paper { position: absolute; left: 14px; right: 14px; top: 6px; bottom: 6px; background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
+  background-image: var(--fibre), linear-gradient(90deg, rgb(43 38 32 / .16), transparent 7%, transparent 93%, rgb(43 38 32 / .16)); background-size: 220px 220px, 100% 100%;
+  padding: 8px 26px 6px 58px; }
+.B1 .roll { position: absolute; top: 0; bottom: 0; width: 18px; border-radius: 9px / 6px;
+  background: linear-gradient(90deg, #a99d84, #ddd3bf 35%, #f0e9da 50%, #cfc4ad 70%, #8f8470); box-shadow: inset 0 0 0 1px rgb(43 38 32 / .35); }
+.B1 .roll.l { left: 4px; } .B1 .roll.r { right: 4px; }
+.B1 .wax { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; }
+.B1 .wax svg { width: 100%; height: 100%; }
+.B1 .scroll h3 { font: 700 18px var(--head); line-height: 1; margin-bottom: 4px; }
+.B1 .tally { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 6px; font: 700 14px var(--body); }
+.B1 .tally .ic { width: 18px; height: 18px; }
+.B1 .tally svg.marks { height: 14px; width: 100%; }
+.B1 .tally small { font-weight: 400; color: var(--ink-soft); }
+.B1 .candle { position: absolute; right: -2px; top: 98px; transform: translateX(0); }
+.B1 .strap { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; }
+.B1 .strap .belt { position: absolute; left: -10px; right: -10px; top: 26px; height: 34px; background:
+  repeating-linear-gradient(90deg, transparent 0 7px, rgb(228 200 160 / .35) 7px 9px) 0 3px / 100% 1.5px no-repeat,
+  repeating-linear-gradient(90deg, transparent 0 7px, rgb(228 200 160 / .35) 7px 9px) 0 29px / 100% 1.5px no-repeat,
+  linear-gradient(var(--leather-hi), var(--leather) 40%, #4a2e1e); box-shadow: 0 3px 0 rgb(0 0 0 / .35); }
+.B1 .tokens { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: space-evenly; align-items: flex-start; }
+.B1 .tok { width: 62px; display: grid; justify-items: center; gap: 2px; font: 700 11px var(--body); color: var(--parchment); text-shadow: 0 1px 0 #000; }
+.B1 .tok .disc { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; color: #e9dfc9;
+  background: radial-gradient(circle at 50% 40%, #6a563f, #4a3b2b 62%, #362a1f 63%, #3f3226 70%, #2a2018);
+  box-shadow: 0 3px 0 rgb(0 0 0 / .45), inset 0 0 0 2px rgb(0 0 0 / .25); }
+.B1 .tok .disc .ic { width: 28px; height: 28px; filter: drop-shadow(0 -1px 0 rgb(0 0 0 / .6)); }
+.B1 .tok.on .disc { box-shadow: 0 3px 0 rgb(0 0 0 / .45), 0 0 0 3px var(--clay); }
+.B1 .tok.off { opacity: .55; }
+.B1 .tok.pouch .disc { border-radius: 46% 46% 50% 50% / 38% 38% 62% 62%; background: radial-gradient(circle at 50% 35%, #8a5a3a, #5b3a26 70%); }
+.B1 .tok.pouch .disc b { font: 700 16px var(--body); color: #f2e6c9; }
+.B1 .hg { position: absolute; top: 112px; right: 10px; display: grid; justify-items: center; gap: 4px; }
+.B1 .hg .disc { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #e9dfc9; background: radial-gradient(circle at 50% 40%, #6a563f, #4a3b2b 62%, #2a2018); box-shadow: 0 3px 0 rgb(0 0 0 / .45); }
+.B1 .hg span { font: 700 12px var(--body); color: var(--parchment); background: rgb(43 38 32 / .8); padding: 1px 6px; }
+.B1 .stallnote { position: absolute; left: 10px; top: 112px; width: 170px; padding: 8px 10px; transform: rotate(-1.5deg); filter: var(--shadow); font: 500 13px var(--body); }
+.B1 .stallnote b { font: 700 15px var(--head); color: var(--clay); display: block; }
+.B1 .stallnote::before { content: ''; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #7e7a72, #3a3833); }
+.land.B1 .scroll { left: 230px; transform: none; }
+.land.B1 .strap { left: auto; top: 0; width: 96px; height: auto; }
+.land.B1 .strap .belt { top: -10px; bottom: -10px; left: 31px; right: auto; width: 34px; height: auto;
+  background: linear-gradient(90deg, var(--leather-hi), var(--leather) 40%, #4a2e1e); box-shadow: -3px 0 0 rgb(0 0 0 / .35); }
+.land.B1 .tokens { top: 0; bottom: 0; left: 0; right: 0; flex-direction: column; align-items: center; justify-content: space-evenly; }
+.land.B1 .tok { width: auto; }
+.land.B1 .tok .disc { width: 50px; height: 50px; }
+.land.B1 .tok span { display: none; }
+.land.B1 .hg { top: auto; bottom: 10px; right: 108px; }
+.land.B1 .stallnote { top: auto; bottom: 12px; }
+
+/* ============ B2 — Pulpit skryby (writer's desk plank, stamps, pinned note) ============ */
+.B2 .note { position: absolute; top: 12px; left: 12px; width: 196px; padding: 16px 14px 12px; transform: rotate(-1.2deg); filter: var(--shadow); }
+.B2 .note .nail { position: absolute; top: 5px; left: 50%; width: 9px; height: 9px; margin-left: -4px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #9a958b, #3a3833 70%); }
+.B2 .note h3 { font: 700 21px var(--head); line-height: 1; }
+.B2 .note p { font: 400 12px var(--body); color: var(--ink-soft); margin: 2px 0 6px; }
+.B2 .note .l { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid rgb(43 38 32 / .18); font: 700 15px var(--body); }
+.B2 .note .l .ic { width: 20px; height: 20px; }
+.B2 .note .l small { font-weight: 400; color: var(--ink-soft); }
+.B2 .note .l .marks { height: 13px; }
+.B2 .note .snow { display: flex; align-items: center; gap: 6px; margin-top: 6px; font: 700 14px var(--body); }
+.B2 .note .snow .ic { width: 16px; height: 16px; }
+.B2 .note .sealw { position: absolute; right: -10px; bottom: -12px; width: 46px; height: 46px; transform: rotate(8deg); }
+.B2 .desk { position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background:
+  linear-gradient(rgb(255 255 255 / .08), transparent 6px), var(--grain) 0 0 / 300px 60px,
+  repeating-linear-gradient(0deg, transparent 0 29px, rgb(0 0 0 / .35) 29px 30px), var(--oak);
+  box-shadow: 0 -3px 0 #251e17, 0 -4px 0 var(--oak-hi); }
+.B2 .desk .fit { position: absolute; top: 6px; width: 22px; height: 76px; background: linear-gradient(90deg, #2e2d2a, #4a4843 40%, #2e2d2a); }
+.B2 .desk .fit::before, .B2 .desk .fit::after { content: ''; position: absolute; left: 7px; width: 7px; height: 7px; border-radius: 50%; background: #75716a; }
+.B2 .desk .fit::before { top: 8px; } .B2 .desk .fit::after { bottom: 8px; }
+.B2 .stamps { position: absolute; left: 30px; right: 30px; bottom: 12px; display: flex; justify-content: space-between; }
+.B2 .stamp { width: 58px; display: grid; justify-items: center; gap: 3px; font: 500 11px var(--body); color: var(--parchment); }
+.B2 .stamp .h { width: 52px; height: 48px; display: grid; place-items: center; color: var(--ink); background: linear-gradient(#efe7d6, var(--parchment) 40%, #cbbfa6); box-shadow: 0 3px 0 #1d1712, inset 0 -3px 0 rgb(43 38 32 / .25); --cut: 7px; }
+.B2 .stamp .h .ic { width: 28px; height: 28px; }
+.B2 .stamp.on .h { background: linear-gradient(#b56a4a, var(--clay) 45%, #6e3923); color: var(--parchment); }
+.B2 .stamp.off { opacity: .5; }
+.B2 .ledge { position: absolute; left: 12px; right: 12px; bottom: 98px; display: flex; justify-content: space-between; align-items: flex-end; }
+.B2 .coins { display: flex; align-items: flex-end; gap: 6px; font: 700 16px var(--body); color: var(--parchment); text-shadow: 0 1px 0 #000; }
+.B2 .coins .stack { display: grid; }
+.B2 .coins .stack i { width: 26px; height: 6px; margin-top: -2px; border-radius: 50%; background: linear-gradient(#e6cf8f, #a8843c); box-shadow: 0 1px 0 #5b4520; }
+.B2 .sand { display: flex; align-items: center; gap: 0; filter: var(--shadow); }
+.B2 .sand > div { width: 48px; height: 48px; display: grid; place-items: center; --cut: 5px; }
+.B2 .sand > div + div { margin-left: 2px; }
+.B2 .sand > div.on { background: var(--clay); color: var(--parchment); }
+.B2 .sand .ic { width: 24px; height: 24px; }
+.B2 .time { font: 700 14px var(--body); color: var(--parchment); text-shadow: 0 1px 0 #000; display: flex; gap: 5px; align-items: center; margin-right: 8px; }
+.B2 .time .ic { width: 18px; height: 18px; color: var(--ochre); }
+.B2 .stalltag { position: absolute; top: 228px; left: 22px; padding: 6px 10px 6px 8px; display: flex; gap: 6px; align-items: center; background: var(--clay); color: var(--parchment); font: 700 13px var(--body); transform: rotate(-1.2deg); filter: var(--shadow); --cut: 4px; }
+.B2 .stalltag .ic { width: 18px; height: 18px; }
+.land.B2 .desk { left: auto; top: 0; width: 100px; height: auto; background: linear-gradient(90deg, rgb(255 255 255 / .08), transparent 6px), var(--grain) 0 0 / 300px 60px, repeating-linear-gradient(90deg, transparent 0 33px, rgb(0 0 0 / .35) 33px 34px), var(--oak); box-shadow: -3px 0 0 #251e17, -4px 0 0 var(--oak-hi); }
+.land.B2 .desk .fit { display: none; }
+.land.B2 .stamps { left: auto; right: 22px; top: 10px; bottom: 10px; flex-direction: column; }
+.land.B2 .stamp span { display: none; }
+.land.B2 .ledge { left: 12px; right: 112px; bottom: 12px; }
+.land.B2 .stalltag { top: 12px; left: 226px; }
+
+/* ============ C1 — Same krawędzie (minimal, everything collapsed) ============ */
+.C1 .top { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 0; filter: var(--shadow); --cut: 5px; }
+.C1 .top > div { display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 44px; font: 700 15px var(--body); }
+.C1 .top > div + div { box-shadow: inset 1px 0 0 rgb(228 220 203 / .14); }
+.C1 .top .ic { width: 18px; height: 18px; color: var(--ochre); }
+.C1 .top .ring { width: 30px; height: 30px; }
+.C1 .stall { position: absolute; top: 10px; right: 10px; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 8px; background: var(--clay); color: var(--parchment); font: 700 15px var(--body); filter: var(--shadow); --cut: 5px; }
+.C1 .stall .ic { width: 22px; height: 22px; }
+.C1 .fab { position: absolute; right: 12px; bottom: 14px; display: flex; gap: 8px; }
+.C1 .fab > div { width: 60px; height: 60px; display: grid; place-items: center; filter: var(--shadow); --cut: 9px; }
+.C1 .fab > div .ic { width: 30px; height: 30px; }
+.C1 .fab .b2 { background: var(--clay); color: var(--parchment); }
+.C1 .spd { position: absolute; left: 12px; bottom: 14px; display: flex; align-items: center; height: 60px; padding: 0 6px; gap: 2px; filter: var(--shadow); --cut: 9px; }
+.C1 .spd > div { width: 48px; height: 48px; display: grid; place-items: center; }
+.C1 .spd > div.on { color: var(--ochre); box-shadow: inset 0 -2px 0 var(--ochre); }
+.C1 .peek { position: absolute; left: 50%; transform: translateX(-50%); top: 62px; padding: 4px 10px; font: 500 12px var(--body); color: var(--parchment); background: rgb(43 38 32 / .72); --cut: 3px; }
+
+/* ============ C2 — Szuflada (minimal with tool drawer open) ============ */
+.C2 .line { position: absolute; top: 0; left: 0; right: 0; height: 46px; display: flex; align-items: center; gap: 14px; padding: 0 12px; font: 700 15px var(--body); border-bottom: 1.5px solid var(--oak-hi); }
+.C2 .line .ic { width: 18px; height: 18px; color: var(--ochre); }
+.C2 .line .it { display: flex; align-items: center; gap: 5px; }
+.C2 .line .it small { font-weight: 400; color: var(--mist); }
+.C2 .line .sp { flex: 1; }
+.C2 .line .st { background: var(--clay); color: var(--parchment); padding: 4px 8px 4px 6px; display: flex; gap: 5px; align-items: center; --cut: 4px; }
+.C2 .line .st .ic { color: var(--parchment); }
+.C2 .drawer { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 12px 16px; border-top: 1.5px solid var(--oak-hi); }
+.C2 .drawer .grab { width: 40px; height: 4px; margin: -6px auto 10px; background: rgb(228 220 203 / .3); }
+.C2 .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.C2 .cell { height: 74px; display: grid; justify-items: center; align-content: center; gap: 4px; font: 500 12px var(--body); background: rgb(0 0 0 / .18); box-shadow: inset 0 0 0 1px rgb(228 220 203 / .1); --cut: 6px; }
+.C2 .cell .ic { width: 30px; height: 30px; }
+.C2 .cell.on { box-shadow: inset 0 0 0 2px var(--clay); color: var(--parchment); }
+.C2 .cell.off { opacity: .45; }
+.C2 .cell em { font-style: normal; font-size: 11px; color: var(--ochre); }
+.C2 .row2 { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.C2 .row2 .seg { flex: 1; display: flex; height: 48px; background: rgb(0 0 0 / .18); --cut: 6px; }
+.C2 .row2 .seg > div { flex: 1; display: grid; place-items: center; }
+.C2 .row2 .seg > div.on { background: var(--oak-hi); color: var(--ochre); }
+.C2 .row2 .x { width: 48px; height: 48px; display: grid; place-items: center; background: rgb(0 0 0 / .18); --cut: 6px; }
+.C2 .tab { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); }
+.land.C2 .drawer { left: auto; top: 46px; width: 300px; border-top: 0; border-left: 1.5px solid var(--oak-hi); }
+.land.C2 .grid { grid-template-columns: repeat(3, 1fr); }
+.land.C2 .cell { height: 70px; }
+</style>
+</head>
+<body>
+<div class="scene" id="scene"></div>
+<div class="hud" id="hud"></div>
+<div class="label" id="lbl"></div>
+<script>
+const P = new URLSearchParams(location.search);
+const V = P.get('v') || 'A1';
+const land = innerWidth > innerHeight;
+document.getElementById('scene').style.backgroundImage = `url(${land ? 'bg-915x412.jpg' : 'bg-412x915.jpg'})`;
+const hud = document.getElementById('hud');
+hud.classList.add(V); if (land) hud.classList.add('land');
+const ic = (id, cls = '') => `<span class="ic ${cls}"><svg viewBox="0 0 24 24" fill="currentColor">${ICONS[id]}</svg></span>`;
+// tally marks drawn as engraved strokes (5-bar gates), done vs remaining
+function marks(done, total, w = 120) {
+  let s = `<svg class="marks" viewBox="0 0 ${w} 14" preserveAspectRatio="none">`;
+  const step = w / (total + Math.floor(total / 5) * 1.6);
+  let x = 1;
+  for (let i = 0; i < total; i++) {
+    const on = i < done; const gate = i % 5 === 4;
+    const col = on ? '#2b2620' : 'rgba(43,38,32,.22)';
+    if (gate) s += `<line x1="${x - step * 4.4}" y1="11" x2="${x - step * .2}" y2="3" stroke="${col}" stroke-width="1.4"/>`;
+    else s += `<line x1="${x}" y1="2" x2="${x + .6}" y2="12" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    x += gate ? step * 1.6 : step;
+  }
+  return s + '</svg>';
+}
+// wax seal that fills clockwise with contract progress
+function wax(p) {
+  const a = p * 2 * Math.PI, r = 20, x = 24 + r * Math.sin(a), y = 24 - r * Math.cos(a);
+  return `<svg viewBox="0 0 48 48"><path d="M24 2c4 0 5 3 9 3s5 3 7 6 1 6 3 9-2 6-2 9-3 6-6 8-6 1-9 3-6 1-9-1-5-3-7-6-1-6-3-9 1-6 1-9 3-5 6-7 6-3 10-6z" fill="#6e3923"/>
+    <path d="M24 24 L24 4 A20 20 0 ${p > .5 ? 1 : 0} 1 ${x.toFixed(1)} ${y.toFixed(1)} Z" fill="#a85a3a"/>
+    <circle cx="24" cy="24" r="12" fill="none" stroke="#e4dccb" stroke-opacity=".45" stroke-width="1.2"/>
+    <g transform="translate(14 14) scale(.84)" fill="#e4dccb" fill-opacity=".8">${ICONS.castle}</g></svg>`;
+}
+const ring = (p) => { const c = 2 * Math.PI * 12; return `<svg class="ring" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="rgba(228,220,203,.2)" stroke-width="3"/><circle cx="15" cy="15" r="12" fill="none" stroke="#b8893a" stroke-width="3" stroke-dasharray="${(c * p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 15 15)"/></svg>`; };
+
+const D = { planks: [18, 30], bread: [11, 20], left: '4:52', coins: 84, clock: '09:18' };
+const bub = land ? [{ x: 470, y: 205, i: 'no_wagon' }, { x: 260, y: 92, i: 'waiting' }] : [{ x: 210, y: 452, i: 'no_wagon' }, { x: 207, y: 258, i: 'waiting' }];
+let html = bub.map((b) => `<div class="bubble" style="left:${b.x}px;top:${b.y}px"><div class="b parch chamfer">${ic(b.i)}</div><div class="t"></div></div>`).join('');
+html += land ? `<div class="eta chamfer" style="left:490px;top:258px">0:42</div>` : `<div class="eta chamfer" style="left:253px;top:535px">0:42</div>`;
+
+if (V === 'A1') html += `
+  <div class="strip">
+    <div class="seal">${wax(.6)}</div>
+    <div class="goods">
+      <div class="g">${ic('planks')}<div class="bar"><i style="width:60%"></i></div><span class="num">18<small>/30</small></span></div>
+      <div class="g">${ic('bread')}<div class="bar"><i style="width:55%"></i></div><span class="num">11<small>/20</small></span></div>
+    </div>
+    <div class="clock">${ic('snow')}<b class="num">4:52</b><span>do śniegu</span></div>
+  </div>
+  <div class="stall parch chamfer"><span class="n chamfer">2</span><span><b>Młyn</b> — brak wolnego wozu</span></div>
+  <div class="bar-b oak">
+    <div class="stats"><div>${ic('coin')}<span class="num">84</span></div><div>${ic('sun')}<span class="num">09:18</span></div></div>
+    <div class="tools">
+      <div class="tool">${ic('road_dirt')}Droga</div>
+      <div class="tool">${ic('road_cobble')}Bruk</div>
+      <div class="tool">${ic('demolish')}Rozbiórka</div>
+      <div class="tool off">${ic('buy_wagon')}<span>Wóz <em>30</em></span></div>
+    </div>
+    <div class="speed">${ic('speed2')}×2</div>
+    <div class="menu">${ic('menu')}</div>
+  </div>`;
+
+if (V === 'A2') {
+  const seg = (d, t) => { let s = ''; const n = 10; for (let i = 0; i < n; i++) { const f = (d / t) * n - i; s += `<i class="${f >= 1 ? 'f' : f >= .5 ? 'h' : ''}"></i>`; } return `<div class="seg">${s}</div>`; };
+  html += `
+  <div class="card parch chamfer">
+    <h3>List przewozowy ${ic('seal')}</h3>
+    <div class="row">${ic('planks')}<div class="v"><span>Deski</span><span class="num">18<small>/30</small></span></div>${seg(18, 30)}</div>
+    <div class="row">${ic('bread')}<div class="v"><span>Chleb</span><span class="num">11<small>/20</small></span></div>${seg(11, 20)}</div>
+    <div class="dl">${ic('snow')}<b class="num">4:52</b><span>do śniegu</span></div>
+  </div>
+  <div class="purse oak chamfer"><div>${ic('coin')}<span class="num">84</span></div><div>${ic('sun')}<span class="num">09:18</span></div></div>
+  <div class="stalls chamfer">${ic('no_wagon')}2 przestoje</div>
+  <div class="pad tools oak chamfer">
+    <div class="on">${ic('road_dirt')}Droga</div><div>${ic('road_cobble')}Bruk</div><div>${ic('demolish')}Rozbiórka</div><div class="off">${ic('buy_wagon')}Wóz 30</div>
+  </div>
+  <div class="pad spd oak chamfer"><div>${ic('pause')}</div><div class="on">${ic('speed2')}</div><div>${ic('menu')}</div></div>`;
+}
+
+if (V === 'B1') html += `
+  <div class="scroll">
+    <div class="roll l"></div><div class="roll r"></div>
+    <div class="paper">
+      <div class="wax">${wax(.6)}</div>
+      <h3>Do zamku przed śniegiem · <span class="num" style="font-family:var(--body);font-size:15px">4:52</span></h3>
+      <div class="tally">${ic('planks')}${marks(18, 30)}<span class="num">18<small>/30</small></span></div>
+      <div class="tally">${ic('bread')}${marks(11, 20)}<span class="num">11<small>/20</small></span></div>
+    </div>
+  </div>
+  <div class="stallnote parch"><b>Młyn stoi</b>brak wolnego wozu · i jeszcze 1</div>
+  <div class="hg"><div class="disc">${ic('speed2')}</div><span>×2 · 09:18</span></div>
+  <div class="strap"><div class="belt"></div>
+    <div class="tokens">
+      <div class="tok pouch"><div class="disc"><b class="num">84</b></div><span>srebra</span></div>
+      <div class="tok on"><div class="disc">${ic('road_dirt')}</div><span>Droga</span></div>
+      <div class="tok"><div class="disc">${ic('road_cobble')}</div><span>Bruk</span></div>
+      <div class="tok"><div class="disc">${ic('demolish')}</div><span>Rozbiórka</span></div>
+      <div class="tok off"><div class="disc">${ic('buy_wagon')}</div><span>Wóz 30</span></div>
+    </div>
+  </div>`;
+
+if (V === 'B2') html += `
+  <div class="note parch"><div class="nail"></div>
+    <h3>List przewozowy</h3><p>do zamku przed pierwszym śniegiem</p>
+    <div class="l">${ic('planks')}${marks(18, 30)}<span class="num">18<small>/30</small></span></div>
+    <div class="l">${ic('bread')}${marks(11, 20)}<span class="num">11<small>/20</small></span></div>
+    <div class="snow">${ic('snow')}<span class="num">4:52</span>&nbsp;<span style="font-weight:400;color:var(--ink-soft)">do śniegu</span></div>
+    <div class="sealw">${wax(.6)}</div>
+  </div>
+  <div class="stalltag chamfer">${ic('no_wagon')}Młyn: brak wozu · +1</div>
+  <div class="ledge">
+    <div class="coins"><div class="stack"><i></i><i></i><i></i><i></i></div><span class="num">84</span></div>
+    <div style="display:flex;align-items:center"><div class="time">${ic('sun')}<span class="num">09:18</span></div>
+      <div class="sand"><div class="oak chamfer">${ic('pause')}</div><div class="chamfer on">${ic('speed2')}</div><div class="oak chamfer">${ic('speed4')}</div><div class="oak chamfer">${ic('menu')}</div></div></div>
+  </div>
+  <div class="desk"><div class="fit" style="left:4px"></div><div class="fit" style="right:4px"></div>
+    <div class="stamps">
+      <div class="stamp on"><div class="h chamfer">${ic('road_dirt')}</div><span>Droga</span></div>
+      <div class="stamp"><div class="h chamfer">${ic('road_cobble')}</div><span>Bruk</span></div>
+      <div class="stamp"><div class="h chamfer">${ic('demolish')}</div><span>Rozbiórka</span></div>
+      <div class="stamp off"><div class="h chamfer">${ic('buy_wagon')}</div><span>Wóz 30</span></div>
+      <div class="stamp"><div class="h chamfer">${ic('overlay_load')}</div><span>Ruch</span></div>
+    </div>
+  </div>`;
+
+if (V === 'C1') html += `
+  <div class="top oak chamfer"><div>${ring(.6)}<span class="num">4:52</span></div><div>${ic('coin')}<span class="num">84</span></div></div>
+  <div class="stall chamfer">${ic('no_wagon')}2</div>
+  <div class="spd oak chamfer"><div>${ic('pause')}</div><div class="on">${ic('speed2')}</div><div>${ic('speed4')}</div></div>
+  <div class="fab"><div class="oak chamfer">${ic('menu')}</div><div class="b2 chamfer">${ic('build')}</div></div>`;
+
+if (V === 'C2') html += `
+  <div class="line oak">
+    <div class="it">${ic('planks')}<span class="num">18<small>/30</small></span></div>
+    <div class="it">${ic('bread')}<span class="num">11<small>/20</small></span></div>
+    <div class="it">${ic('snow')}<span class="num">4:52</span></div>
+    <div class="sp"></div>
+    <div class="it">${ic('coin')}<span class="num">84</span></div>
+    <div class="st chamfer">${ic('no_wagon')}2</div>
+  </div>
+  <div class="drawer oak"><div class="grab"></div>
+    <div class="grid">
+      <div class="cell on chamfer">${ic('road_dirt')}Droga</div><div class="cell chamfer">${ic('road_cobble')}Bruk</div>
+      <div class="cell chamfer">${ic('demolish')}Rozbiórka</div><div class="cell off chamfer">${ic('buy_wagon')}<span>Wóz <em>30</em></span></div>
+      ${land ? `<div class="cell chamfer">${ic('overlay_load')}Ruch</div><div class="cell chamfer">${ic('build')}Budynki</div>` : ''}
+    </div>
+    <div class="row2"><div class="seg chamfer"><div>${ic('pause')}</div><div>${ic('speed1')}</div><div class="on">${ic('speed2')}</div><div>${ic('speed4')}</div></div><div class="x chamfer">${ic('close')}</div></div>
+  </div>`;
+
+hud.innerHTML = html;
+document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

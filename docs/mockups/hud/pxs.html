@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUD palety i style</title>
+<!-- Palette x style HUD mockups. Open as pxs.html?p=P1&s=S1 (p: P1..P4, s: S1..S3). -->
+<script src="icons.js"></script>
+<script src="palettes.js"></script>
+<style>
+/* Both subsets per weight, otherwise Polish glyphs or the whole heading fall back to a default serif. */
+@font-face { font-family: 'Grenze Gotisch'; font-weight: 700; src: url(../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-700-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Grenze Gotisch'; font-weight: 700; src: url(../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-ext-700-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 500; src: url(../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-500-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 500; src: url(../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-500-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 700; src: url(../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-700-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Alegreya Sans'; font-weight: 700; src: url(../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-700-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+:root { --head: 'Grenze Gotisch', serif; --body: 'Alegreya Sans', sans-serif; --cut: 7px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #222; font-family: var(--body); font-weight: 500; }
+.scene { position: absolute; inset: 0; background: url(bg-412x915.jpg) center / cover; }
+.hud { position: absolute; inset: 0; color: var(--text); }
+.ic { width: 24px; height: 24px; display: inline-block; flex: none; }
+.ic svg { width: 100%; height: 100%; display: block; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+.cham { clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut)); }
+.drop { filter: drop-shadow(2px 2px 0 var(--shadow)); }
+/* framed chamfer: outer layer = edge colour, inner layer = ground (gives a crisp chamfered border) */
+.frame { position: relative; }
+.frame > .bd, .frame > .gd { position: absolute; pointer-events: none; }
+.frame > .bd { inset: 0; background: var(--edge); }
+.frame > .gd { inset: var(--bw, 1.5px); background: var(--ground, var(--panel)); --cut: calc(var(--cut0, 7px) - 0.6px); }
+.frame > .in { position: relative; }
+
+/* ------------------------------------------------------------ layout (shared) */
+.wb { position: absolute; top: 8px; left: 8px; right: 8px; --cut0: 9px; --cut: 9px; }
+.wb .frame > .in { display: grid; grid-template-columns: 50px 1fr auto; column-gap: 10px; padding: 10px 12px 11px 10px; }
+.seal { width: 50px; height: 50px; grid-row: span 1; align-self: center; }
+.seal svg { width: 100%; height: 100%; display: block; }
+.wb h1 { font: 700 21px/1 var(--head); letter-spacing: .01em; color: var(--text); margin-top: 3px; }
+.wb p { font: 500 13.5px/1.2 var(--body); color: var(--dim); margin-top: 4px; }
+.clock { display: grid; justify-items: end; align-content: center; text-align: right; padding-left: 12px; border-left: 1px solid var(--rule, var(--track)); }
+.clock .t { display: flex; align-items: center; gap: 5px; font: 700 24px/1 var(--body); color: var(--num); }
+.clock .t .ic { width: 18px; height: 18px; color: var(--text); }
+.clock > span { font: 500 13px/1.2 var(--body); color: var(--dim); margin-top: 3px; }
+.goods { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--rule, var(--track)); }
+.g { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; column-gap: 7px; row-gap: 5px; }
+.g .ic { color: var(--text); grid-row: span 2; width: 26px; height: 26px; }
+.g .nm { font: 500 14px/1 var(--body); color: var(--dim); }
+.g b { font: 700 19px/1 var(--body); color: var(--num); }
+.g b small { font-size: 14px; font-weight: 500; color: var(--dim); }
+.bar { grid-column: 2 / -1; height: 6px; background: var(--track); position: relative; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--fill); }
+.bar::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--tick, rgba(0,0,0,0)) calc(10% - 1px) 10%); }
+
+.stall { position: absolute; top: 140px; left: 8px; display: flex; align-items: stretch; min-height: 50px; --cut0: 7px; --cut: 7px; }
+.stall .frame > .in { margin: var(--bw, 1.5px); clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px); display: flex; align-items: stretch; }
+.stall .sq { width: 50px; display: grid; place-items: center; background: var(--alert); color: var(--alertText); }
+.stall .sq .ic { width: 28px; height: 28px; }
+.stall .tx { padding: 6px 14px 6px 11px; display: grid; align-content: center; gap: 1px; }
+.stall .tx b { font: 700 15.5px/1.15 var(--body); color: var(--alertInk); }
+.stall .tx span { font: 500 15.5px/1.15 var(--body); color: var(--text); }
+.stall .chev svg { width: 100%; height: 100%; display: block; }
+.stall .chev { align-self: center; flex: none; width: 14px; height: 14px; margin-right: 10px; color: var(--dim); }
+
+.bubble { position: absolute; transform: translate(-50%, -100%); }
+.bubble .b { width: 48px; height: 44px; --cut0: 6px; --cut: 6px; --edge: var(--alert); --bw: 2px; --ground: var(--bubble); }
+.bubble .b > .in { height: 100%; display: grid; place-items: center; color: var(--alertInk); }
+.bubble .b .ic { width: 28px; height: 28px; }
+.bubble .tl { width: 14px; height: 9px; margin: -1px auto 0; background: var(--alert); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.eta { position: absolute; transform: translate(-50%, -100%); }
+.eta .e { padding: 3px 7px 3px 6px; display: flex; align-items: center; gap: 4px; background: var(--active); color: var(--activeText); font: 700 14px/1 var(--body); --cut: 4px; }
+.eta .e .ic { width: 16px; height: 16px; }
+.eta .tl { width: 10px; height: 6px; margin: 0 auto; background: var(--active); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+
+.dock { position: absolute; left: 0; right: 0; bottom: 0; background: var(--dock); color: var(--text); }
+.status { height: 52px; display: flex; align-items: center; padding: 0 6px 0 12px; gap: 14px; }
+.status .st { display: flex; align-items: center; gap: 6px; font: 700 19px/1 var(--body); color: var(--num); }
+.status .st .ic { width: 20px; height: 20px; color: var(--text); }
+.status .st small { font: 500 13px var(--body); color: var(--dim); margin-left: 1px; }
+.speed { margin-left: auto; display: flex; height: 48px; }
+.speed > div { width: 50px; height: 48px; display: grid; place-items: center; position: relative; color: var(--text); }
+.speed > div .ic { width: 24px; height: 24px; }
+.speed > div + div { box-shadow: inset 1px 0 0 var(--track); }
+.speed > div.on { background: var(--active); color: var(--activeText); box-shadow: none; }
+.speed > div.on::after { content: ''; position: absolute; left: 50%; bottom: 3px; width: 8px; height: 4px; margin-left: -4px; background: currentColor; clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+.tools { height: 70px; display: flex; border-top: 1px solid var(--track); }
+.tool { flex: 1; display: grid; justify-items: center; align-content: center; gap: 4px; font: 500 13px/1 var(--body); color: var(--text); position: relative; }
+.tool .ic { width: 30px; height: 30px; }
+.tool + .tool::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 1px; background: var(--track); }
+.tool .price { position: absolute; top: 5px; left: 5px; display: flex; align-items: center; gap: 1px; font: 700 12px/1 var(--body); color: var(--num); }
+.tool .price .ic { width: 11px; height: 11px; color: var(--num); }
+
+/* ------------------------------------------------------------ S1 flat, crisp, heraldic */
+.S1 .wb .bd, .S1 .stall .bd { background: var(--edge); }
+.S1 .wb .frame > .in::before { content: ''; position: absolute; inset: 3px; border: 1px solid var(--edge); opacity: .55; pointer-events: none;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px); }
+.S1 .clock .t { font-size: 26px; }
+.S1 .g b { font-size: 21px; }
+.S1 .dock { box-shadow: 0 -1.5px 0 var(--edge), 0 -4px 0 var(--dock), 0 -5px 0 var(--edge); }
+.S1 .status { border-bottom: 1px solid var(--track); }
+.S1 .tools { border-top: 0; }
+
+/* ------------------------------------------------------------ S2 manuscript leaf with ornament */
+.S2 .wb .frame > .in { padding: 13px 16px 13px 14px; }
+.S2 .orn { position: absolute; width: 28px; height: 28px; color: var(--edge); pointer-events: none; }
+.S2 .orn svg { width: 100%; height: 100%; display: block; }
+.S2 .orn.tl { top: 3px; left: 3px; } .S2 .orn.tr { top: 3px; right: 3px; transform: scaleX(-1); }
+.S2 .orn.bl { bottom: 3px; left: 3px; transform: scaleY(-1); } .S2 .orn.br { bottom: 3px; right: 3px; transform: scale(-1, -1); }
+.S2 .wb .frame > .in::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--edge); border-width: 1px 0; opacity: .7; pointer-events: none; margin: 0 28px; }
+.S2 .wb .frame > .in::after { content: ''; position: absolute; inset: 5px; border: 1px solid var(--edge); border-width: 0 1px; opacity: .7; pointer-events: none; margin: 28px 0; }
+.S2 .hd { display: flex; align-items: stretch; gap: 6px; }
+.S2 .hd .ini { flex: none; width: 40px; display: grid; place-items: center; background: var(--rubricBg, var(--alert)); color: var(--alertText); font: 700 36px/1 var(--head); padding-top: 2px;
+  box-shadow: inset 0 0 0 2px var(--rubricBg, var(--alert)), inset 0 0 0 3px var(--alertText); }
+.S2 .wb h1 { margin-top: 1px; }
+.S2 .wb p { font-size: 13px; }
+.S2 .seal { width: 46px; height: 46px; }
+.S2 .wb .frame > .in { grid-template-columns: 46px 1fr auto; column-gap: 9px; }
+.S2 .stall .tx b::before { content: '\00B6\2009'; }
+.S2 .clock > span, .S2 .g .nm { font-variant: small-caps; letter-spacing: .04em; color: var(--rubric, var(--alertInk)); }
+.S2 .clock > span { font-size: 14px; }
+.S2 .goods { border-top: 0; background: linear-gradient(var(--edge), var(--edge)) 0 0 / 100% 1px no-repeat; }
+.S2 .goods { position: relative; }
+.S2 .goods::before { content: ''; position: absolute; top: -5px; left: 50%; width: 30px; height: 11px; margin-left: -15px; background: var(--panel); }
+.S2 .goods::after { content: ''; position: absolute; top: -4px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px; background: var(--edge); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.S2 .bar { height: 7px; background: transparent; border: 1px solid var(--dim); }
+.S2 .bar i { inset: 1px auto 1px 1px; }
+.S2 .stall .sq { background: var(--alert); }
+.S2 .stall .tx b { font-variant: small-caps; letter-spacing: .03em; font-size: 16.5px; }
+.S2 .dock { box-shadow: 0 -2px 0 var(--edge); }
+.S2 .band { height: 8px; background: var(--edge);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 0h16v1H0zM0 7h16v1H0zM8 2l3 2-3 2-3-2z'/%3E%3C/svg%3E") 0 0 / 16px 8px repeat-x; opacity: .85; }
+.S2 .status { height: 50px; }
+.S2 .tools { border-top: 0; }
+.S2 .tool { font-variant: small-caps; letter-spacing: .03em; font-size: 14px; }
+.S2 .tool + .tool::before { top: 50%; bottom: auto; height: 7px; width: 7px; margin: -3.5px 0 0 -3.5px; background: var(--edge); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.S2 .speed > div + div { box-shadow: inset 1px 0 0 var(--edge); }
+
+/* ------------------------------------------------------------ S3 material: forged rim, rivets, stitched ground */
+.S3 .frame > .bd { background: linear-gradient(160deg, var(--rimHi), var(--rim) 35%, var(--rimLo)); }
+.S3 .wb, .S3 .stall { --bw: 4px; }
+.S3 .wb .gd, .S3 .stall .gd { background: linear-gradient(180deg, color-mix(in srgb, var(--panel), #fff 5%), var(--panel) 40%, color-mix(in srgb, var(--panel), #000 7%)); }
+.S3 .wb .frame > .in::before { content: ''; position: absolute; inset: 6px; border: 1px dashed var(--stitch); pointer-events: none; }
+.S3 .rv { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, var(--rimHi), var(--rim) 55%, var(--rimLo)); box-shadow: .5px .5px 0 rgba(0,0,0,.45); }
+.S3 .wb .frame > .in { padding: 13px 15px 14px 14px; }
+.S3 .dock { background: linear-gradient(180deg, color-mix(in srgb, var(--dock), #fff 6%), var(--dock) 18%, color-mix(in srgb, var(--dock), #000 10%)); }
+.S3 .dock::before { content: ''; position: absolute; left: 0; right: 0; top: -5px; height: 5px; background: linear-gradient(180deg, var(--rimHi), var(--rim) 50%, var(--rimLo)); }
+.S3 .status { border-bottom: 1px solid rgba(0,0,0,.25); box-shadow: 0 1px 0 rgba(255,255,255,.06); }
+.S3 .tools { border-top: 0; padding: 0 4px; gap: 4px; align-items: center; }
+.S3 .tool { height: 62px; background: linear-gradient(180deg, color-mix(in srgb, var(--panel2), #fff 6%), var(--panel2) 50%, color-mix(in srgb, var(--panel2), #000 8%));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -2px 0 rgba(0,0,0,.25), 0 0 0 1px var(--rimLo); --cut: 5px; }
+.S3 .tool + .tool::before { display: none; }
+.S3 .speed { box-shadow: 0 0 0 1px var(--rimLo); background: color-mix(in srgb, var(--dock), #000 var(--sunk, 18%)); }
+.S3 .speed > div.on { background: linear-gradient(180deg, color-mix(in srgb, var(--active), #fff 14%), var(--active) 50%, color-mix(in srgb, var(--active), #000 12%)); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+.S3 .bar { height: 7px; box-shadow: inset 0 1px 1px rgba(0,0,0,.35); }
+.S3 .bubble .b { --bw: 3px; }
+.S3 .bubble .b .gd { background: linear-gradient(180deg, color-mix(in srgb, var(--bubble), #fff 5%), var(--bubble)); }
+
+/* palette-specific tuning */
+.P1 { --sunk: 6%; --rule: rgba(167,132,44,.55); --tick: rgba(236,227,203,.7); }
+.P1.S2 { --rubric: #a3271a; }
+.P1 .goods .g:nth-child(2) .bar i { background: var(--fill2); }
+.P1 .speed > div.on { background: var(--accent); }
+.P2 { --tick: rgba(29,33,40,.8); --rule: rgba(95,104,116,.6); }
+.P2.S2 { --rubric: #c9bfa6; --rubricBg: #9a2a21; }
+.P3 { --tick: rgba(24,35,75,.8); --rule: rgba(201,161,74,.4); }
+.P3.S2 { --rubric: #e6c063; }
+.P4 { --tick: rgba(18,58,48,.8); --rule: rgba(196,162,91,.4); }
+.P4.S2 { --rubric: #dcbb70; }
+.P1 .dock { box-shadow: 0 -1.5px 0 var(--edge); }
+.P1.S1 .dock { box-shadow: 0 -1.5px 0 var(--edge), 0 -4px 0 var(--dock), 0 -5px 0 var(--edge); }
+
+.cap { display: none; }
+</style>
+</head>
+<body>
+<div class="scene"></div>
+<div class="hud" id="hud"></div>
+<script>
+const Q = new URLSearchParams(location.search);
+const PK = Q.get('p') || 'P1', SK = Q.get('s') || 'S1';
+const pal = PALETTES[PK];
+const hud = document.getElementById('hud');
+hud.classList.add(PK, SK);
+for (const [k, v] of Object.entries(pal)) if (k !== 'name') hud.style.setProperty('--' + k, v);
+const ic = (id) => `<span class="ic"><svg viewBox="0 0 24 24" fill="currentColor">${ICONS[id]}</svg></span>`;
+const fr = (cls, inner, extra = '') => `<div class="frame ${cls}"><div class="bd cham"></div><div class="gd cham"></div>${extra}<div class="in">${inner}</div></div>`;
+// wax seal filling clockwise with contract progress (60 %)
+function wax(p) {
+  const a = p * 2 * Math.PI, r = 19, x = 25 + r * Math.sin(a), y = 25 - r * Math.cos(a);
+  return `<svg viewBox="0 0 50 50"><path d="M25 2c4 0 6 3 10 3s5 3 7 6 1 6 3 9-2 6-2 9-3 6-6 8-6 2-9 4-6 1-10-1-5-3-8-6-1-6-3-9 1-6 1-10 3-5 6-7 6-3 11-6z" fill="${pal.waxLo}"/>
+    <path d="M25 25 L25 6 A19 19 0 ${p > .5 ? 1 : 0} 1 ${x.toFixed(1)} ${y.toFixed(1)} Z" fill="${pal.wax}"/>
+    <circle cx="25" cy="25" r="19" fill="none" stroke="${pal.waxHi}" stroke-width="1.2"/>
+    <circle cx="25" cy="25" r="11.5" fill="${pal.waxLo}" stroke="${pal.waxHi}" stroke-opacity=".7" stroke-width="1"/>
+    <g transform="translate(14.5 14.5) scale(.875)" fill="#f3e2c4" fill-opacity=".9">${ICONS.castle}</g></svg>`;
+}
+const orn = `<svg viewBox="0 0 22 22" fill="currentColor"><path d="M1 21V5.5Q1 1 5.5 1H21v1.4H6Q2.4 2.4 2.4 6V21z"/><path d="M5 5h3.2v1H6v2.2H5z"/><path d="M4.6 4.6l2-2 .9.9-2 2z" opacity=".0"/><circle cx="9.5" cy="9.5" r="1.4"/><path d="M12 2.4c-1.6 1.6-1.4 3.8.6 4.6-1-.9-1-2.6-.6-4.6zM2.4 12c1.6-1.6 3.8-1.4 4.6.6-.9-1-2.6-1-4.6-.6z"/></svg>`;
+const orns = SK === 'S2' ? ['tl', 'tr', 'bl', 'br'].map((c) => `<span class="orn ${c}">${orn}</span>`).join('') : '';
+const rv = (pos) => SK === 'S3' ? pos.map(([l, t]) => `<span class="rv" style="${l};${t}"></span>`).join('') : '';
+
+let h = '';
+// map-anchored stall bubbles: mill on the river bank, woodcutter's hut at the forest edge; wagon ETA on the lower road
+const bubbles = [{ x: 208, y: 452, i: 'no_wagon' }, { x: 206, y: 256, i: 'output_full' }];
+for (const b of bubbles) h += `<div class="bubble drop" style="left:${b.x}px;top:${b.y}px">${fr('b', ic(b.i), rv([]))}<div class="tl"></div></div>`;
+h += `<div class="eta drop" style="left:256px;top:536px"><div class="e cham">${ic('wagon')}<span class="num">0:42</span></div><div class="tl"></div></div>`;
+
+const head = SK === 'S2' ? '<div class="hd"><span class="ini">L</span><div><h1>ist przewozowy</h1><p>do zamku przed pierwszym śniegiem</p></div></div>' : '<div><h1>List przewozowy</h1><p>do zamku przed pierwszym śniegiem</p></div>';
+h += `<div class="wb drop">` + fr('', `
+    <div class="seal">${wax(.6)}</div>
+    ${head}
+    <div class="clock"><div class="t">${ic('snow')}<span class="num">4:52</span></div><span>do śniegu</span></div>
+    <div class="goods">
+      <div class="g">${ic('planks')}<span class="nm">Deski</span><b class="num">18<small>/30</small></b><div class="bar"><i style="width:60%"></i></div></div>
+      <div class="g">${ic('bread')}<span class="nm">Chleb</span><b class="num">11<small>/20</small></b><div class="bar"><i style="width:55%"></i></div></div>
+    </div>`, orns + rv([['left:6px', 'top:6px'], ['right:6px', 'top:6px'], ['left:6px', 'bottom:6px'], ['right:6px', 'bottom:6px']])) + `</div>`;
+
+h += `<div class="stall drop">` + fr('', `<div class="sq">${ic('no_wagon')}</div>
+    <div class="tx"><b class="num">2 przestoje</b><span>Młyn: brak wolnego wozu</span></div>
+    <span class="chev"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 2l7 6-7 6-1.4-1.6L9 8 3.6 3.6z"/></svg></span>`, rv([])) + `</div>`;
+
+h += `<div class="dock">
+  ${SK === 'S2' ? '<div class="band"></div>' : ''}
+  <div class="status">
+    <div class="st">${ic('coin')}<span class="num">84</span><small>srebra</small></div>
+    <div class="st">${ic('sun')}<span class="num">09:18</span></div>
+    <div class="speed cham" style="--cut:5px"><div>${ic('pause')}</div><div>${ic('speed1')}</div><div class="on">${ic('speed2')}</div><div>${ic('speed4')}</div></div>
+  </div>
+  <div class="tools">
+    <div class="tool cham">${ic('road_dirt')}Droga</div>
+    <div class="tool cham">${ic('road_cobble')}Bruk</div>
+    <div class="tool cham">${ic('demolish')}Rozbiórka</div>
+    <div class="tool cham">${ic('buy_wagon')}Kup wóz<span class="price">${ic('coin')}<span class="num">30</span></span></div>
+    <div class="tool cham">${ic('overlay_load')}Ruch</div>
+    <div class="tool cham">${ic('menu')}Menu</div>
+  </div>
+</div>`;
+hud.innerHTML = h;
+document.fonts.ready.then(() => {
+  // the stall entry hangs right under the waybill, whatever its height
+  document.querySelector('.stall').style.top = (document.querySelector('.wb').getBoundingClientRect().bottom + 8) + 'px';
+  document.body.dataset.ready = '1';
+});
+</script>
+</body>
+</html>
