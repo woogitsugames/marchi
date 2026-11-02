@@ -56,7 +56,7 @@ export const SOUNDS = {
   'load.barrel': asset('sfx/load-barrel', 'sfx', 0.36, { radius: 48, cooldown: 0.06 }),
   'unload.barrel': asset('sfx/unload-barrel', 'sfx', 0.3, { radius: 48, cooldown: 0.06 }),
   'contract.won': asset('sfx/wax-seal', 'ui', 0.64, { cooldown: 0.3 }),
-  'stall.alert': asset('ui/stall', 'ui', 0.55, { cooldown: 1.5 }), // interim; real fix = re-render with 0.7-1.4 kHz content
+  'stall.alert': asset('ui/stall', 'ui', 0.38, { cooldown: 1.5 }),
   'ui.wood': asset('ui/wood', 'ui', 0.4, { cooldown: 0.04 }),
   'ui.paper': asset('ui/paper', 'ui', 0.44, { cooldown: 0.04 }),
   'ui.error': asset('ui/error', 'ui', 0.36, { cooldown: 0.2 }),

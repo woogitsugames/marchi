@@ -414,9 +414,34 @@ the manifest and rejects missing or unexpected assets.
 
 ### Original procedural effects retained
 
-Only `sfx/wax-seal`, `ui/stall`, `ui/wood`, `ui/paper` and `ui/error` remain
-the original procedural CC0 sound design from `tools/generate_audio.py`.
-Do not rerun that generator after rendering these field recordings.
+Only `sfx/wax-seal`, `ui/stall`, `ui/wood`, `ui/paper` and `ui/error` are
+procedural CC0 sound designs from `tools/generate_audio.py`. Never run the
+unqualified generator over the delivered field-recorded catalogue.
+
+### Task 59 — Phone-audible wooden alerts (2026-11-02)
+
+`ui/stall` (0.54 s) and `ui/error` (0.48 s) are newly synthesized, original
+wooden double-knocks. They retain a little low-frequency thud but concentrate
+their energy in 700–1400 Hz; they do not contain voices, samples, bells or
+digital beeps. Each is mono 24 kHz, encoded as OGG Vorbis plus AAC/M4A using
+the existing UI pipeline (peak-normalized to approximately -6 dBFS). The new
+source is deterministic, with independent noise seeds for each impact.
+
+**Safe reproduction (does not touch the CC0 recordings):**
+
+```bash
+python3 tools/generate_audio.py --only-ui-alerts
+# Update only ui/stall + ui/error output hashes in docs/audio-provenance.json
+python3 tools/process_audio.py --check
+```
+
+The before/after measurements (spectral energy below 200 Hz, 300–1000 Hz,
+1–4 kHz, target 700–1400 Hz, EBU R128 LUFS, 300 Hz high-pass phone model)
+and exact OGG/M4A durations are in
+`docs/research/2026-11-02-alert-sounds.md`. Runtime `stall.alert` gain
+returns to 0.38 after removal of the temporary +3.2 dB workaround; new
+bandwidth, rather than simply louder bass, makes it audible on phone speakers.
+`ui.error` gain remains 0.36. All other assets are unchanged.
 
 ### Reproducing and validating
 
