@@ -499,3 +499,13 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 ### UI art kit — proposal 55
 
 `public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra. Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
+
+
+## Store artwork — order 61 (v2 live gameplay captures, 2026-11-02)
+
+- **Rights/provenance:** `docs/store/shots/{pl,en}/` contains only Playwright captures of the publisher's actual Marchia game and a feature image composited from the authentic rendered scene. No third-party artwork, generated/improvised UI, or phone mockup is permitted.
+- **Source and reproducibility:** `tools/store-shots-v2.mjs` (build + Vite preview + Chromium, game debug handles only in capture, and deterministic simulation with no state fabrication). `docs/store/screenshots-plan.md` maps each scene to its authenticity checks. GitHub Actions can reproduce the assets and records `docs/store/shots/manifest.json`.
+- **Files:** 6 vertical Google Play screenshots 1080×1920, 2 horizontal 1920×1080, 6 App Store 1290×2796, and one 1024×500 Google Play feature image *per language* (PL/EN), 30 optimized PNGs total, ≤25 MiB across both languages.
+- **Typography:** bundled game typefaces Grenze Gotisch 700 and Alegreya Sans 700 (SIL OFL; the generator reads its own installed font package locally). No font binaries distributed as separate assets.
+- **Composition:** text overlays use the game's dark wood / parchment / wax palette; images remain actual WebGL gameplay, not game-art concept renderings. The feature graphic preserves gameplay footage under the brand title.
+- **Pre-release:** view every generated full-resolution image and thumbnail before uploading to either store; scripts reject missing real scenes instead of faking statuses or mechanics.
