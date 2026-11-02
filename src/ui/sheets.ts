@@ -164,11 +164,8 @@ export class Sheets {
     let d = 0;
     const side = (): boolean => document.body.classList.contains('is-side');
     const sideSign = (): number => {
-      const b = document.body.classList;
-      // side sheets dock at the inline start (game) or end (menu); RTL mirrors which way that is
-      const rtl = isRtl() ? -1 : 1;
-      if (!b.contains('is-landscape') || b.contains('mode-menu')) return rtl;
-      return (b.contains('left-handed') ? 1 : -1) * rtl;
+      // side sheets dock at the inline end (D-55: in a landscape game too, opposite the contract); RTL mirrors it
+      return isRtl() ? -1 : 1;
     };
     for (const z of zones) {
       z.addEventListener('pointerdown', (e) => {
