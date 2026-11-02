@@ -34,3 +34,73 @@ Notes:
 ## Rendering
 
 See the section below (filled after the three.js view lands).
+
+## Pomiar na urządzeniu
+
+Strona **/tools/device-bench.html** jest oddzielnym wejściem Vite. Domyślnie wykonuje **3 przebiegi × 60 s**
+przy 50, 100 i 200 wozach, zawsze w rzeczywistej pętli symulacji **×4** (`GameLoop` + `benchWorld(n)`).
+Wybierz `low`, `high` albo `ultra` (lub `Wszystkie`: 9 przebiegów).
+Każdy przebieg tworzy nowy świat, czeka na tekstury i rozgrzewa renderer (45 klatek + 40 ticków)
+**poza** 60-sekundowym pomiarem. Dynamiczne skalowanie rozdzielczości jest wyłączone.
+Przez pierwsze 20 s kamera jest blisko (60 m), kolejne 20 s w średnim zbliżeniu (160 m),
+ostatnie 20 s daleko (320 m); przesunięcie i obrót są skryptowane według czasu, nie liczby klatek.
+
+### Chrome na telefonie (Galaxy Z Fold 8 Ultra)
+
+Na komputerze z repozytorium (ta sama sieć Wi-Fi co telefon):
+
+```bash
+npm ci
+npm run build
+npm run preview -- --host 0.0.0.0
+```
+
+W Chrome na telefonie otwórz **http://<IP-komputera>:4173/tools/device-bench.html**.
+Vite preview podaje stronę i tekstury pod ścieżką `/tools/…`; drugi build
+(`vite.bench.config.ts`) dodaje ją do `dist/tools/device-bench.html` bez modyfikowania
+`vite.config.ts`. Dla samego benchmarku można użyć `npm run build:bench`
+**po** normalnym buildzie; ten krok nie usuwa pozostałej zawartości `dist`.
+
+Ustaw wybraną orientację / rozłóż Fold **przed** startem; nie wygaszaj ekranu, wyłącz
+oszczędzanie energii i zamknij inne ciężkie aplikacje. Zmiana viewportu albo DPR w trakcie
+przebiegu powoduje jego odrzucenie. Gdy karta przejdzie do tła, czas pomiaru jest wstrzymany.
+Przycisk **Zatrzymaj** zachowuje wyniki zakończonych przebiegów.
+
+### APK i przeglądarka (ukryte wejście, D-56)
+
+`npm run build` buduje też `dist/tools/device-bench.html` (drugi przebieg Vite z `vite.bench.config.ts`;
+główny `vite.config.ts` i strona gry są bez zmian), więc `npm run apk` zawiera stronę w zasobach Capacitor.
+W menu gry **nie ma** przycisku. Wejście: adres gry z `?debug=1&bench=device` — `src/main.ts` przed
+uruchomieniem gry robi `location.replace('tools/device-bench.html')`. Bez `debug=1` parametr jest ignorowany.
+W APK trzeba ten adres podać WebView (debug build, `chrome://inspect` → konsola: `location.search='?debug=1&bench=device'`).
+W Capacitor pobieranie pliku JSON może być blokowane przez WebView; kopiowanie lub zaznaczenie
+surowego JSON pozostaje alternatywą. Teksty strony są tylko po polsku (narzędzie diagnostyczne, nie UI gracza).
+
+### Dane wyjściowe i interpretacja
+
+`Kopiuj JSON` / `Zapisz JSON` zwraca obiekt `marchia.device-bench.v1` z `device`,
+`setup` oraz `runs[]`. Każdy wiersz `runs[]` odpowiada kolumnom tabeli poniżej.
+`fpsAvg` = liczba klatek / sumaryczny czas aktywnych klatek;
+`fps1Low` = odwrotność **średniego czasu najwolniejszych 1% klatek** (nie pojedyncza najgorsza klatka).
+`simCpuMsPerFrame` mierzy CPU `GameLoop.advance` wraz z `afterTick`,
+`renderCpuMsPerFrame` — CPU `view.frame` (to **nie** pomiar czasu GPU).
+`drawCallsAvg` i `trianglesAvg` to średnie z `renderer.info.render` na klatkę;
+`texturesPeak` i `geometriesPeak` pochodzą z `renderer.info.memory`.
+`heapStartMB`, `heapEndMB`, `heapPeakMB` i `heapDeltaMB` mają wartość `null`,
+jeżeli przeglądarka nie udostępnia niestandardowego `performance.memory`.
+`device.renderer` / `vendor` korzystają z `WEBGL_debug_renderer_info`, jeśli dostępne,
+inaczej pokazują ograniczone dane WebGL. `viewport` obejmuje CSS px, rozmiar bufora i DPR.
+`camera[]` zawiera także FPS osobno dla trzech poziomów zoomu.
+
+`achievedSpeed` wynoszące mniej niż 4 oznacza, że urządzenie nie nadążało z tickami
+(w grze jest limit ticków na klatkę). Nie porównuj bez tego wskaźnika samych FPS.
+
+| Urządzenie | Jakość | Wozy | FPS śr. | 1% low | CPU sim ms/kl. | CPU render ms/kl. | Draw | Tris | Tex | Δ heap MB | × rzeczywiste |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Galaxy Z Fold 8 Ultra | high | 50 | — | — | — | — | — | — | — | — | — |
+| Galaxy Z Fold 8 Ultra | high | 100 | — | — | — | — | — | — | — | — | — | — |
+| Galaxy Z Fold 8 Ultra | high | 200 | — | — | — | — | — | — | — | — | — | — |
+
+Uzupełnij wiersze danymi JSON z telefonu, zachowując rozmiar ekranu, DPR i wersję aplikacji
+dla porównywalności. Wyniki innych jakości dopisuj jako osobne wiersze. Pomiary na
+fizycznym Foldzie **nie są** zastępowane wynikami desktopowymi.
