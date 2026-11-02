@@ -113,3 +113,20 @@ test('F7: a frozen wooden span is one ledger cause in a seasonal world (no per-w
   assert(keys.some((k) => k.startsWith('span:') && k.endsWith(':BRIDGE_CLOSED')), `span charged: ${keys.join(',')}`);
   eq(keys.filter((k) => k.startsWith('wagon:') && (k.endsWith(':BRIDGE_CLOSED') || k.endsWith(':BRIDGE_JAM'))).length, 0, `no per-wagon bridge rows: ${keys.join(',')}`);
 });
+
+test('F7 / D-44: contract letters charge a held bridge once per span (m2 jam, m4 ice), never per wagon', () => {
+  const runs: { id: string; at: number; cmds: (w: World) => Parameters<typeof applyCommand>[1][] }[] = [
+    { id: 'm2', at: 0, cmds: () => [] },
+    { id: 'm4', at: 60, cmds: (w) => Array.from({ length: 3 }, () => ({ t: 'buyWagon' as const, stable: w.state.buildings.find((b) => b.type === 'stable')!.id })) },
+  ];
+  for (const r of runs) {
+    const w = createWorld(r.id);
+    while (w.state.mission.result === 'running') {
+      if (w.state.tick === r.at * TICK_HZ) for (const c of r.cmds(w)) assert(applyCommand(w, c).ok, r.id + ' command');
+      step(w);
+    }
+    const keys = Object.keys(w.state.ledger.stallSeconds);
+    assert(keys.some((k) => k.startsWith('span:')), `${r.id}: span charged: ${keys.join(',')}`);
+    eq(keys.filter((k) => k.startsWith('wagon:') && (k.endsWith(':BRIDGE_CLOSED') || k.endsWith(':BRIDGE_JAM'))).join(','), '', `${r.id}: no per-wagon bridge rows`);
+  }
+});

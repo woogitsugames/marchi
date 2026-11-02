@@ -112,7 +112,7 @@ test('no free wagon: an unreachable source stays NO_INPUT/UNREACHABLE (not ALL_B
 test('dispatch fixes keep bench state hashes (recorded from the pre-fix sim)', () => {
   const want: Record<number, string[]> = {
     50: ['713e69f3eaab8c43', 'cf024b6683c4bd09', '17316fd2cad6fa32', '8bf0c61d32a766fd', 'c310bdf5af98fcab', 'a7908b09085a6c60'],
-    100: ['c648427c162563da', '06ff93fcb7698806', 'dff63db526b16d36', '2190c401abbe7f49', 'ab1282712910a464', '17f1e2a72d8ad006'],
+    100: ['c648427c162563da', '06ff93fcb7698806', 'dff63db526b16d36', '2190c401abbe7f49', '5a58035c13b27844', 'c7f0bbc81a0a4cc6'], // D-44 (1): last two re-baselined, ledger only,
   };
   for (const n of [50, 100]) {
     const w = benchWorld(n);
