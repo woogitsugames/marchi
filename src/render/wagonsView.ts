@@ -195,6 +195,9 @@ export class WagonsView {
   private parkSlots = new Map<number, ParkSlot[]>();
   private parkVer = -1;
   private cells = [0, 0, 0, 0];
+  private byIdx: (Snap | null)[] = [];
+  /** A tick ran since opposing traffic was last marked. */
+  private oppDirty = false;
 
   constructor(private readonly hf: Heightfield, private readonly roads: RoadField) {
     const cap = MAX_WAGONS;
@@ -332,54 +335,64 @@ export class WagonsView {
       const v = s.moving && step < MAX_STEP ? step * TICK_HZ : 0;
       s.vg += (v - s.vg) * 0.3;
     }
-    this.markOpposing(world);
+    // opposing traffic is only read when drawing: mark it once before the next frame instead of
+    // after every tick (×4 or a slow frame runs several ticks per frame; only the last one counts)
+    this.oppDirty = true;
   }
 
-  /** Wagons keep to the centre of the track unless meeting opposing traffic nearby. */
+  /**
+   * Wagons keep to the centre of the track unless meeting opposing traffic nearby. Reads only the
+   * snapshots of the last tick (direction, raw lane), so running it once per frame after any number
+   * of ticks gives the same result as after each of them. Allocation-free.
+   */
   private markOpposing(world: World): void {
     const ws = world.state.wagons;
     const n = world.terrain.w * world.terrain.h;
     if (this.head.length !== n) this.head = new Int32Array(n).fill(-1);
-    const head = this.head, link = this.link, item = this.item;
+    const head = this.head, link = this.link, item = this.item, touched = this.touched, cells = this.cells;
+    const cap = link.length;
+    // snapshots by wagon index (one Map lookup per wagon instead of one per neighbour visited)
+    const byIdx = this.byIdx;
+    byIdx.length = ws.length;
     let k = 0;
-    const touched: number[] = this.touched;
     touched.length = 0;
-    const ins = (cell: number, i: number) => {
-      if (cell < 0 || k >= link.length) return;
-      if (head[cell] === -1) touched.push(cell);
-      item[k] = i; link[k] = head[cell]!; head[cell] = k++;
-    };
     for (let i = 0; i < ws.length; i++) {
       const w = ws[i]!;
+      byIdx[i] = this.snaps.get(w.id) ?? null;
       if (w.next < 0) continue;
-      ins(w.at, i);
-      ins(w.next, i);
+      for (let c = w.at, pass = 0; pass < 2; pass++, c = w.next) {
+        if (c < 0 || k >= cap) continue;
+        if (head[c] === -1) touched.push(c);
+        item[k] = i; link[k] = head[c]!; head[c] = k++;
+      }
     }
     for (let i = 0; i < ws.length; i++) {
       const w = ws[i]!;
-      const s = this.snaps.get(w.id);
+      const s = byIdx[i];
       if (!s || w.next < 0) continue;
       let opp = false;
-      const cells = this.cells;
       cells[0] = w.at; cells[1] = w.next; cells[2] = w.path[0] ?? -1; cells[3] = w.path[1] ?? -1;
-      for (const c of cells) {
-        if (c < 0 || opp) continue;
+      for (let ci = 0; ci < 4 && !opp; ci++) {
+        const c = cells[ci]!;
+        if (c < 0) continue;
         for (let e = head[c]!; e !== -1; e = link[e]!) {
           const j = item[e]!;
           if (j === i) continue;
-          const o = this.snaps.get(ws[j]!.id);
+          const o = byIdx[j];
           if (o && o.dx * s.dx + o.dz * s.dz < -0.3) { opp = true; break; }
         }
       }
       s.opp = opp;
       if (!opp) s.lane = 0;
     }
-    for (const c of touched) head[c] = -1;
+    for (let i = 0; i < touched.length; i++) head[touched[i]!] = -1;
+    byIdx.fill(null);
   }
 
   /** Forget wagons that no longer exist (call on setWorld). */
   reset(): void {
     this.snaps.clear();
+    this.oppDirty = false;
   }
 
   get(id: number): Snap | undefined {
@@ -387,6 +400,10 @@ export class WagonsView {
   }
 
   frame(world: World, alpha: number, dt: number, camera: PerspectiveCamera, time: number): void {
+    if (this.oppDirty) {
+      this.oppDirty = false;
+      this.markOpposing(world);
+    }
     const hf = this.hf;
     _pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_pm);
