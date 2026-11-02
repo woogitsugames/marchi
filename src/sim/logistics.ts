@@ -120,8 +120,9 @@ export function dispatch(world: World): void {
   demands.sort((a, c) => a.prio - c.prio || a.fill - c.fill || (fair ? c.b.stalledTicks - a.b.stalledTicks : 0) ||
     a.b.id - c.b.id || GOODS.indexOf(a.good) - GOODS.indexOf(c.good));
 
-  const sourcesOf = (g: Good): Building[] =>
-    st.buildings.filter((s) => (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0);
+  // a source holds unreserved stock of g (read inline in the loops below: no array per demand)
+  const isSource = (s: Building, g: Good): boolean =>
+    (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0;
 
   const pickWagon = (source: Building): Wagon | null => {
     if (free.length === 0) return null;
@@ -141,8 +142,8 @@ export function dispatch(world: World): void {
     const starving = d.prio === 1 && d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1) && d.b.incoming[d.good] === 0;
     const minQty = Math.min(d.want, starving ? 2 : cap);
     let best: Building | null = null, bestT = Infinity, anyAvail = -1;
-    for (const s of sourcesOf(d.good)) {
-      if (s.id === d.b.id) continue;
+    for (const s of st.buildings) {
+      if (!isSource(s, d.good) || s.id === d.b.id) continue;
       if (s.type === 'warehouse' && d.b.type === 'warehouse') continue;
       const avail = s.stock[d.good] - s.reservedOut[d.good];
       const producer = s.type !== 'warehouse';
@@ -188,8 +189,8 @@ export function dispatch(world: World): void {
         const cap = capacityOf(g);
         if (MARKET.inflightPerGood - m.incoming[g] < cap) continue;
         let best: Building | null = null, bestT = Infinity;
-        for (const s of sourcesOf(g)) {
-          if (s.stock[g] - s.reservedOut[g] < cap) continue;
+        for (const s of st.buildings) {
+          if (!isSource(s, g) || s.stock[g] - s.reservedOut[g] < cap) continue;
           // stone in a granary is building material (cobbles, stone bridges), not for sale
           if (g === 'stone' && s.type === 'warehouse') continue;
           const t = dc.from(s.gate).dist[m.gate]!;

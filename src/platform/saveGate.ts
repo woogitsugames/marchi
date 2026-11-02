@@ -750,8 +750,13 @@ export function gateEnvelope(env: unknown): GateResult {
 }
 
 /** Golden hash of the terrain the generator produces today for this map + seed. */
+const terrainHashes = new Map<string, string>();
 export function currentTerrainHash(mapId: string, seed: number): string {
-  return terrainHash(terrainFor(mapId, seed));
+  // the generator is deterministic: one hash per map + seed per page, not one per autosave (GC audit)
+  const k = mapId + '#' + seed;
+  let h = terrainHashes.get(k);
+  if (h === undefined) { h = terrainHash(terrainFor(mapId, seed)); terrainHashes.set(k, h); }
+  return h;
 }
 
 /**

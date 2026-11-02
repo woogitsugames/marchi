@@ -59,7 +59,7 @@ if (wagons > 0) {
   await page.evaluate(({ n, cmds }) => {
     const app = window.__marchia.app;
     const st = app.world.state;
-    st.coins = 1e8; st.town.rank = 9;
+    st.coins = 1e8; st.town.rank = 5;
     for (const c of cmds) { if (c.t === 'road' && c.surface === 2) c.surface = 1; app.loop.enqueue(c); }
     app.loop.flushCommands();
     for (const b of st.buildings) if (b.type === 'warehouse') for (const g of ['wood', 'grain', 'flour']) { b.stock[g] += 48; st.ledger.produced[g] += 48; }

@@ -148,3 +148,26 @@ Surowe wyniki: 20 przebiegów (10 par przed/po) + 8 przebiegów dpr0.5 (w tym 4 
 - Obraz identyczny: `tools/jam-diff.mjs` (harness widoku, `frames=90` stałe kroki 1/30 s, sim x4), 30 wozów:
   korek przy moście (`stress=1&t=20`, 19 w ruchu, 1 para z naprzeciwka) i kolejka (`t=90`) — 0 różnych pikseli
   z 376 980 w obu scenach. `tests/wagon-spacing` zielone (`npm test`: 329 / 0).
+
+## Follow-up 2026-11-02 (noc, `claude/w-night`): (5) audyt alokacji pod GC
+
+Narzędzie: `tools/alloc-probe.mjs` (CDP `HeapProfiler.startSampling` co 2 KB, także obiekty zebrane przez minor/major GC,
+mapowanie przez sourcemap; `STACK=<funkcja>` wypisuje łańcuchy wywołań). Scena: sandbox, 50 wozów (komendy
+`frame-cost-bench.json`, 10 min gry rozgrzewki), ×4, low, dpr 0.5, 15 s próbkowania po 10 s spokoju, SwiftShader.
+Uwaga: `frame-cost.mjs` ustawiał `town.rank = 9` — od D-54 (zdarzenia doliny) rzuca `event rank must be in 0..5`; poprawione na 5.
+
+Wynik (2 przebiegi przed / po): **42,0 → 24,7 MB zaalokowanych w 15 s (−41 %)**. Co zmienione (bez zmian obrazu i sim):
+- `vnoise` (`models/kit.ts`) tworzył 2 domknięcia na wywołanie, a `Heightfield.cellField` jedno; `height()` wołane 3× na
+  wóz na klatkę (+2× na tick) przez `shoreDist`/`detail` → największy alokator (9,5 MB/15 s). Teraz bez domknięć, ta sama
+  kolejność działań (wartości bit w bit). `normal()`: `Math.hypot` → `Math.sqrt` (hypot pakuje argumenty).
+- `inputGoods`/`outputGoods` (`sim/defs.ts`) budowały nową tablicę przy każdym wywołaniu (produce co tick ×3 na budynek,
+  dispatcher) — teraz jedna zamrożona tablica na typ. `dispatch`: `sourcesOf` (filter na każde zapotrzebowanie) →
+  warunek w pętli po `st.buildings` (ta sama kolejność). Hasze i golden bez zmian (`npm test`).
+- `captureAudioState` (co tick obiekt na każdy budynek i wóz) nadpisuje poprzednią migawkę w miejscu.
+- `Markers.update`: `JSON.stringify(status)` + klucz `calmStall` na pinezkę na klatkę → raz na zmianę statusu/`stalledTicks`.
+- `WagonsView.frame`: tablice części `[body, lod1, ...animParts()]` 2× na klatkę → jedna stała lista.
+- `esc()` bez kopii, gdy tekst nie ma `& < > "`; `currentTerrainHash` (generacja + JSON terenu przy każdym autozapisie)
+  zapamiętany per mapa+seed.
+Zostaje (małe lub poza zakresem): three.js `getProgram`/`getParameters` co klatkę (~1 MB/15 s — jakiś materiał zmienia
+klucz programu między obiektami, np. ten sam materiał na `InstancedMesh` i zwykłej siatce), mapy `wagonDrawLag`/`stableParking`
+co tick (~1 MB/15 s), obiekty zapotrzebowań w `dispatch` (co 5. tick), HTML otwartego arkusza (co 250 ms).

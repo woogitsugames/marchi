@@ -198,6 +198,8 @@ export class WagonsView {
   private byIdx: (Snap | null)[] = [];
   /** A tick ran since opposing traffic was last marked. */
   private oppDirty = false;
+  /** Every instanced part list drawn per frame (built once: no arrays per frame, GC audit). */
+  private readonly framed: Parts[];
 
   constructor(private readonly hf: Heightfield, private readonly roads: RoadField) {
     const cap = MAX_WAGONS;
@@ -224,6 +226,7 @@ export class WagonsView {
     this.near = rig('near');
     this.mid = rig('mid');
     this.lod1 = new Parts(wagonLod1(), cap, this.group, 'wagon-lod1');
+    this.framed = [this.body, this.lod1, ...this.animParts()];
     for (const g of CARGO_GOODS) {
       this.cargo.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
       this.slots.set(g, cargoSlots(g));
@@ -416,7 +419,7 @@ export class WagonsView {
     const kGait = 1 - Math.exp(-dt * 1.5);
     const kPark = 1 - Math.exp(-dt * PARK_RATE);
 
-    for (const p of [this.body, this.lod1, ...this.animParts()]) p.begin();
+    for (let i = 0; i < this.framed.length; i++) this.framed[i]!.begin();
     for (const p of this.cargo.values()) p.begin();
     this.stack.clear();
     // stable order: moving first doesn't matter; queue index by id order
@@ -541,9 +544,10 @@ export class WagonsView {
         for (let i = 0; i < Math.min(slots.length, d.qty); i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
       }
     });
-    for (const p of [this.body, this.lod1, ...this.animParts()]) p.end();
+    for (let i = 0; i < this.framed.length; i++) this.framed[i]!.end();
     for (const p of this.cargo.values()) p.end();
-    for (const r of [this.near, this.mid]) {
+    for (let k = 0; k < 2; k++) {
+      const r = k === 0 ? this.near : this.mid;
       if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) a.needsUpdate = true;
     }
   }

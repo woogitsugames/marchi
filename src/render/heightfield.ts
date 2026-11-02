@@ -41,13 +41,15 @@ export class Heightfield {
     const ix = Math.floor(gx), iz = Math.floor(gz);
     const tx = gx - ix, tz = gz - iz;
     const W = this.w, H = this.h;
-    const at = (i: number, j: number) => f[(j < 0 ? 0 : j >= H ? H - 1 : j) * W + (i < 0 ? 0 : i >= W ? W - 1 : i)]!;
+    const i0 = ix - 1 < 0 ? 0 : ix - 1 >= W ? W - 1 : ix - 1, i1 = ix < 0 ? 0 : ix >= W ? W - 1 : ix;
+    const i2 = ix + 1 < 0 ? 0 : ix + 1 >= W ? W - 1 : ix + 1, i3 = ix + 2 < 0 ? 0 : ix + 2 >= W ? W - 1 : ix + 2;
     const wx0 = ((-tx + 2) * tx - 1) * tx * 0.5, wx1 = ((3 * tx - 5) * tx * tx + 2) * 0.5;
     const wx2 = ((-3 * tx + 4) * tx + 1) * tx * 0.5, wx3 = ((tx - 1) * tx * tx) * 0.5;
     let s = 0;
     for (let k = 0; k < 4; k++) {
       const j = iz - 1 + k;
-      const r = wx0 * at(ix - 1, j) + wx1 * at(ix, j) + wx2 * at(ix + 1, j) + wx3 * at(ix + 2, j);
+      const row = (j < 0 ? 0 : j >= H ? H - 1 : j) * W;
+      const r = wx0 * f[row + i0]! + wx1 * f[row + i1]! + wx2 * f[row + i2]! + wx3 * f[row + i3]!;
       const wz = k === 0 ? ((-tz + 2) * tz - 1) * tz * 0.5 : k === 1 ? ((3 * tz - 5) * tz * tz + 2) * 0.5 : k === 2 ? ((-3 * tz + 4) * tz + 1) * tz * 0.5 : ((tz - 1) * tz * tz) * 0.5;
       s += r * wz;
     }
@@ -126,7 +128,7 @@ export class Heightfield {
     const hx = this.height(x + e, z) - this.height(x - e, z);
     const hz = this.height(x, z + e) - this.height(x, z - e);
     const nx = -hx, ny = 2 * e, nz = -hz;
-    const l = Math.hypot(nx, ny, nz);
+    const l = Math.sqrt(nx * nx + ny * ny + nz * nz); // Math.hypot boxes its arguments
     out.x = nx / l; out.y = ny / l; out.z = nz / l;
   }
 

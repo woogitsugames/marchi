@@ -143,14 +143,29 @@ export const SITE_RULE: Partial<Record<BuildingType, 'NEAR_WATER' | 'ON_ROCK'>> 
   quarry: 'ON_ROCK',
 };
 
-export function inputGoods(type: BuildingType): Good[] {
-  const r = BUILDINGS[type].recipe;
-  return r ? (GOODS.filter((g) => (r.inputs[g] ?? 0) > 0) as Good[]) : [];
+// Recipes are constants: the input/output lists are built once per type (hot in produce/dispatch, no GC churn).
+// Callers get a shared frozen array and must not mutate it.
+const inCache = new Map<BuildingType, readonly Good[]>();
+const outCache = new Map<BuildingType, readonly Good[]>();
+
+export function inputGoods(type: BuildingType): readonly Good[] {
+  let v = inCache.get(type);
+  if (!v) {
+    const r = BUILDINGS[type].recipe;
+    v = Object.freeze(r ? (GOODS.filter((g) => (r.inputs[g] ?? 0) > 0) as Good[]) : []);
+    inCache.set(type, v);
+  }
+  return v;
 }
 
-export function outputGoods(type: BuildingType): Good[] {
-  const r = BUILDINGS[type].recipe;
-  return r ? (GOODS.filter((g) => (r.outputs[g] ?? 0) > 0) as Good[]) : [];
+export function outputGoods(type: BuildingType): readonly Good[] {
+  let v = outCache.get(type);
+  if (!v) {
+    const r = BUILDINGS[type].recipe;
+    v = Object.freeze(r ? (GOODS.filter((g) => (r.outputs[g] ?? 0) > 0) as Good[]) : []);
+    outCache.set(type, v);
+  }
+  return v;
 }
 
 /** Which building type produces a good (first match), for "who should make this" hints. */

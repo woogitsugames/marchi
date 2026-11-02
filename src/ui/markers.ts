@@ -31,6 +31,8 @@ export class Markers {
   /** Buildings with a stall bubble on screen in the previous frame. */
   private shownStalls = new Set<number>();
   private stamps: Stamp[] = [];
+  /** Per building: the last status seen and what was derived from it (sig strings reused between frames). */
+  private pinCache = new Map<number, { status: object; ticks: number; st: string; calm: boolean; crit: boolean; sig0: string; sig1: string }>();
 
   constructor() {
     this.etaText = h('span.num');
@@ -77,11 +79,19 @@ export class Markers {
         if (bd.stalledTicks < MIN_STALL_TICKS) continue;
         const a = view.anchorOf('building', bd.id);
         if (!a.visible) continue;
-        const st = JSON.stringify(bd.status);
-        const calm = calmStall(world, bd, st);
-        const crit = isCritical(bd.status, bd.stalledTicks, calm);
+        // the status text and its calm/critical class change only with a tick: keep them per building while the
+        // status object and stalledTicks are the same (no JSON.stringify per pin per frame, BACKLOG P2 / GC audit)
+        let c = this.pinCache.get(bd.id);
+        if (!c || c.status !== bd.status || c.ticks !== bd.stalledTicks) {
+          const st = JSON.stringify(bd.status);
+          const calm = calmStall(world, bd, st);
+          const crit = isCritical(bd.status, bd.stalledTicks, calm);
+          if (c && c.st === st && c.calm === calm && c.crit === crit) { c.status = bd.status; c.ticks = bd.stalledTicks; }
+          else { c = { status: bd.status, ticks: bd.stalledTicks, st, calm, crit, sig0: st + crit + calm, sig1: st + crit + calm + true }; this.pinCache.set(bd.id, c); }
+        }
+        const { calm, crit } = c;
         const isWorst = bd.id === worst;
-        const sig = st + crit + calm + isWorst;
+        const sig = isWorst ? c.sig1 : c.sig0;
         const b = this.take('building:' + bd.id);
         shown.add(bd.id);
         b.el.classList.toggle('is-minor', (bd.status.k === 'WAITING_PICKUP' || calm) && !isWorst);
@@ -194,6 +204,7 @@ export class Markers {
     for (const st of this.stamps) st.el.remove();
     this.stamps = [];
     this.shownStalls.clear();
+    this.pinCache.clear();
     this.byKey.clear();
     this.clearDraft();
     this.eta.classList.remove('is-shown');

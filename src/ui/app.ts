@@ -612,7 +612,7 @@ export class App implements PanelNav {
         x: l.x, z: l.z, yaw: l.yaw, mapWidth: tr.w, cellSize: tr.cellSize, water: tr.water, audibleRadius: 90,
       });
     }
-    this.prevAudio = captureAudioState(this.world.state);
+    this.prevAudio = captureAudioState(this.world.state, this.prevAudio);
     if (this.mode === 'game' && this.world.state.mission.result === 'running') music.setMood(isRaining(this.world.state) ? 'rain' : 'play');
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
     if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();

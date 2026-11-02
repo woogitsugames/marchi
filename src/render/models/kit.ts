@@ -66,13 +66,15 @@ function fade(t: number): number {
 export function vnoise(x: number, y: number, z: number, seed = 0): number {
   const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
   const xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
-  const l = (a: number, b: number, t: number) => a + (b - a) * t;
-  const c = (dx: number, dy: number, dz: number) => hash3(xi + dx, yi + dy, zi + dz, seed);
-  return l(
-    l(l(c(0, 0, 0), c(1, 0, 0), xf), l(c(0, 1, 0), c(1, 1, 0), xf), yf),
-    l(l(c(0, 0, 1), c(1, 0, 1), xf), l(c(0, 1, 1), c(1, 1, 1), xf), yf),
-    zf,
-  );
+  // no closures: this runs per wagon per frame through Heightfield.height (GC audit, frame-cost item 5)
+  const c000 = hash3(xi, yi, zi, seed), c100 = hash3(xi + 1, yi, zi, seed);
+  const c010 = hash3(xi, yi + 1, zi, seed), c110 = hash3(xi + 1, yi + 1, zi, seed);
+  const c001 = hash3(xi, yi, zi + 1, seed), c101 = hash3(xi + 1, yi, zi + 1, seed);
+  const c011 = hash3(xi, yi + 1, zi + 1, seed), c111 = hash3(xi + 1, yi + 1, zi + 1, seed);
+  const a0 = c000 + (c100 - c000) * xf, b0 = c010 + (c110 - c010) * xf;
+  const a1 = c001 + (c101 - c001) * xf, b1 = c011 + (c111 - c011) * xf;
+  const z0 = a0 + (b0 - a0) * yf, z1 = a1 + (b1 - a1) * yf;
+  return z0 + (z1 - z0) * zf;
 }
 
 /** Two-octave fractal noise in roughly [-1, 1]. */
