@@ -72,7 +72,7 @@ def updated_assets(text: str, day: str, rows: list[str], new_bytes: int) -> str:
         raise ValueError("docs/ASSETS.md: expected pending status missing")
     audit = (
         "\n#### Task 50 — Source download audit (" + day + ")\n\n"
-        "| Source | Author | Licence | Page | Download date (UTC) | SHA-256 |\n"
+        "| Runtime ID | Author | Licence | Page | Download date (UTC) | Source SHA-256 |\n"
         "|---|---|---|---|---|---|\n"
         + "\n".join(rows) + "\n\n"
     )
@@ -177,9 +177,12 @@ def main() -> None:
             )
             downloaded = previous_date if existing_sources[key] else date
             record["downloaded_on_utc"] = downloaded
-            date_label = downloaded or "unknown (pre-existing file)"
+        for track in original["pending_tracks"]:
+            source = original["sources"][track["source"]]
+            record = provenance["sources"][track["source"]]
+            date_label = record["downloaded_on_utc"] or "unknown (pre-existing file)"
             rows.append(
-                "| " + key + " | " + source["author"] + " | "
+                "| " + track["id"] + " | " + source["author"] + " | "
                 + source["license"] + " | " + source["page"] + " | "
                 + date_label + " | " + record["sha256"] + " |"
             )
