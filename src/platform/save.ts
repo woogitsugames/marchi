@@ -1,6 +1,7 @@
 // IndexedDB save slots with a versioned envelope and migrations.
 import { RANKS, STATE_VERSION, emptyGoods, goodsOf, type GoodMap, type SimState } from '../sim/index';
 import { freshMarket, freshTown } from '../sim/town';
+import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
 
 const DB_NAME = 'marchia';
@@ -178,17 +179,12 @@ export async function deleteSave(slot: string): Promise<void> {
   await tx('readwrite', (s) => s.delete(slot));
 }
 
-// --- Slots (D-29): one contract slot, three free-valley ledgers ----------------------------------
+// --- Slots (D-29, D-36): one slot per contract mission, three free-valley ledgers --------------
 
-/** Contract missions keep a single slot (a new contract replaces the old one). */
-export const CONTRACT_SLOT = 'auto';
-/** Free valley: three independent settlements. */
-export const VALLEY_SLOTS = ['valley1', 'valley2', 'valley3'] as const;
-export type ValleySlot = (typeof VALLEY_SLOTS)[number];
-
-export function isValleySlot(s: string | null | undefined): s is ValleySlot {
-  return (VALLEY_SLOTS as readonly string[]).includes(s ?? '');
-}
+export {
+  LEGACY_SLOT, VALLEY_SLOTS, contractSlot, contractSlotMission, isContractSlot, isGameSlot, isValleySlot, planLegacy, slotFor,
+  type LegacyPlan, type ValleySlot,
+} from './slots';
 
 /** What the slot picker shows for a stored slot, read through the save gate (never throws). */
 export type SlotSummary =
@@ -218,15 +214,16 @@ export async function readSlots(): Promise<SlotSummary[]> {
 }
 
 /**
- * Saves from before D-29 kept a free-valley game in the single 'auto' slot: move it into the first
- * empty valley ledger (same envelope, only `slot` changes). No-op otherwise; best effort.
+ * Moves a game out of the legacy single 'auto' slot (before D-29 also the free valley, before D-36
+ * every contract) into its own slot: same envelope, only `slot` changes. The copy is written before
+ * the legacy slot is deleted, so a failure in between leaves two copies, never none. Best effort.
  */
-export async function adoptLegacyValley(): Promise<void> {
-  const raw = await tx<unknown>('readonly', (s) => s.get(CONTRACT_SLOT));
-  if (!raw || typeof raw !== 'object' || (raw as { missionId?: unknown }).missionId !== 'sandbox') return;
-  const keys = await tx<IDBValidKey[]>('readonly', (s) => s.getAllKeys());
-  const free = VALLEY_SLOTS.find((v) => !keys.includes(v));
-  if (!free) return;
-  await tx('readwrite', (s) => s.put({ ...(raw as object), slot: free }));
-  await deleteSave(CONTRACT_SLOT);
+export async function adoptLegacySaves(): Promise<void> {
+  const raw = await tx<unknown>('readonly', (s) => s.get(LEGACY_SLOT));
+  if (raw === undefined) return;
+  const others = (await listSaves()).filter((x) => x.slot !== LEGACY_SLOT);
+  const plan = planLegacy(raw, others);
+  if (plan.kind === 'keep') return;
+  if (plan.kind === 'move') await tx('readwrite', (s) => s.put({ ...(raw as object), slot: plan.to }));
+  await deleteSave(LEGACY_SLOT);
 }
