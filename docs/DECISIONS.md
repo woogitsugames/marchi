@@ -480,3 +480,15 @@ i18n code so it runs in Node tests (`tests/fmt.test.ts`: en, de, hi, ar, pl). `f
 `ticksClock`, `dayClock` as thin wrappers so existing imports stay. `hud.ts` is not touched (HUD redesign in
 progress); it already formats through these wrappers. (decided)
 
+**D-44 — Saves: one IndexedDB connection, no JSON copy, a metadata store for the list.** `src/platform/save.ts`:
+(1) the connection is opened once per page and reused (dropped on `close` / `versionchange`, reopened on the next
+call; a dead handle is retried once). (2) `saveGame` no longer copies the state through JSON: with the connection
+open the transaction starts in the caller's own turn and `put()` takes IndexedDB's structured clone of the live
+state at once; only the first save of a page (database still opening) takes a `structuredClone` up front, so a
+game tick during the open cannot change what is saved. (3) The database goes to version 2 with a `meta` store
+(the envelope without `state`), written and deleted in the same transaction as the save; the upgrade fills it
+from existing saves. `listSaves` (the menu) reads only `meta`; the ledger picker (`readSlots`) still reads whole
+envelopes because it validates them through the save gate. State migrations (STATE_VERSION) and the slots of D-36
+are untouched. Tests on `fake-indexeddb` (dev dependency): one `open` for many operations, metadata-only listing,
+snapshot at call time, v1 → v2 upgrade, legacy `auto` adoption. (decided)
+

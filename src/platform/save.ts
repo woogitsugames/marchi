@@ -5,8 +5,10 @@ import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
 
 const DB_NAME = 'marchia';
-const DB_VERSION = 1;
+/** 2: a `meta` store beside `saves` (envelope without the state) so listing does not read whole games (D-44). */
+const DB_VERSION = 2;
 const STORE = 'saves';
+const META = 'meta';
 
 export type { SaveEnvelope, SaveErrorCode, GateError } from './saveGate';
 export { SaveError } from './saveGate';
@@ -109,41 +111,116 @@ function withTimeout<T>(p: Promise<T>, what: string): Promise<T> {
   });
 }
 
+/** Envelope without the state: what the menu needs to list saves (META store). */
+export type SaveMeta = Omit<SaveEnvelope, 'state'>;
+
+function metaOf(env: Record<string, unknown>): Record<string, unknown> {
+  const { state: _s, ...rest } = env;
+  return rest;
+}
+
+/** One connection per page, reused by every transaction; dropped when the browser closes it (D-44). */
+let dbPromise: Promise<IDBDatabase> | null = null;
+/** The open connection once ready: transactions then start synchronously, in the caller's own turn. */
+let dbReady: IDBDatabase | null = null;
+
 function open(): Promise<IDBDatabase> {
-  return withTimeout(new Promise<IDBDatabase>((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+  const p = withTimeout(new Promise<IDBDatabase>((resolve, reject) => {
     let req: IDBOpenDBRequest;
     try { req = indexedDB.open(DB_NAME, DB_VERSION); } catch (e) { reject(e); return; }
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (ev) => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'slot' });
+      if (!db.objectStoreNames.contains(META)) {
+        const meta = db.createObjectStore(META, { keyPath: 'slot' });
+        // v1 -> v2: fill the metadata of saves written before (one pass inside the upgrade transaction)
+        if ((ev.oldVersion ?? 0) >= 1) {
+          const cur = req.transaction!.objectStore(STORE).openCursor();
+          cur.onsuccess = () => {
+            const c = cur.result;
+            if (!c) return;
+            if (c.value && typeof c.value === 'object') meta.put(metaOf(c.value as Record<string, unknown>));
+            c.continue();
+          };
+        }
+      }
     };
     req.onsuccess = () => {
       const db = req.result;
-      db.onversionchange = () => db.close(); // never block another tab's upgrade
+      const drop = (): void => { if (dbPromise === p) dbPromise = null; if (dbReady === db) dbReady = null; };
+      db.onversionchange = () => { db.close(); drop(); }; // never block another tab's upgrade
+      db.onclose = drop; // the browser closed it (storage cleared, crash): reopen next time
+      dbReady = db;
       resolve(db);
     };
     req.onerror = () => reject(req.error);
     req.onblocked = () => reject(new Error('IndexedDB open blocked'));
   }), 'open');
+  dbPromise = p;
+  p.catch(() => { if (dbPromise === p) dbPromise = null; });
+  return p;
+}
+
+/** Test hook: forget the cached connection (closing it), as a page reload would. */
+export function resetSaveConnection(): void {
+  const p = dbPromise;
+  dbPromise = null;
+  dbReady = null;
+  if (p) void p.then((db) => db.close(), () => undefined);
+}
+
+/**
+ * Runs one transaction over `stores`; resolves with `f`'s result after commit. With the connection open the
+ * transaction (and `f`) starts synchronously in the caller's turn; otherwise after the open. Retries once on a
+ * dead connection.
+ */
+function run<T>(mode: IDBTransactionMode, stores: string[], f: (t: IDBTransaction) => IDBRequest<T> | null, retry = true): Promise<T> {
+  const exec = (db: IDBDatabase): Promise<T> => withTimeout(new Promise<T>((resolve, reject) => {
+    let t: IDBTransaction;
+    let r: IDBRequest<T> | null;
+    try {
+      t = db.transaction(stores, mode);
+      r = f(t);
+    } catch (e) {
+      // InvalidStateError: the cached connection is closing / closed -> reopen once
+      if (retry && e instanceof DOMException && e.name === 'InvalidStateError') {
+        dbPromise = null;
+        dbReady = null;
+        run(mode, stores, f, false).then(resolve, reject);
+      } else reject(e);
+      return;
+    }
+    t.oncomplete = () => resolve((r ? r.result : undefined) as T);
+    t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error ?? new Error('IndexedDB transaction aborted'));
+  }), mode);
+  return dbReady ? exec(dbReady) : open().then(exec);
 }
 
 function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-  return open().then((db) => withTimeout(new Promise<T>((resolve, reject) => {
-    let t: IDBTransaction;
-    let r: IDBRequest<T>;
-    try {
-      t = db.transaction(STORE, mode);
-      r = f(t.objectStore(STORE));
-    } catch (e) { db.close(); reject(e); return; }
-    t.oncomplete = () => { resolve(r.result); db.close(); };
-    t.onerror = () => { reject(t.error); db.close(); };
-    t.onabort = () => { reject(t.error ?? new Error('IndexedDB transaction aborted')); db.close(); };
-  }), mode));
+  return run(mode, [STORE], (t) => f(t.objectStore(STORE)));
+}
+
+/**
+ * Writes an envelope and its metadata in one transaction. `make` runs inside the transaction callback, i.e. in the
+ * same microtask as put(), which takes IndexedDB's structured clone at once: no game tick can slip between reading
+ * the state's tick for the metadata and copying the state (D-44).
+ */
+function putEnvelope(make: () => Record<string, unknown>): Promise<void> {
+  return run<IDBValidKey>('readwrite', [STORE, META], (t) => {
+    const env = make();
+    t.objectStore(META).put(metaOf(env));
+    return t.objectStore(STORE).put(env);
+  }).then(() => undefined);
 }
 
 export async function saveGame(slot: string, state: SimState): Promise<void> {
-  const env = makeEnvelope(slot, state, Date.now());
-  await tx('readwrite', (s) => s.put(env));
+  // No JSON round trip: with the connection open, put() runs now and takes IndexedDB's structured clone of the
+  // live state at once. Only the first save of a page (the database still opening) copies the state first,
+  // so a game tick during the open cannot change what is saved.
+  const snap = dbReady ? state : structuredClone(state);
+  await putEnvelope(() => makeEnvelope(slot, snap, Date.now(), false) as unknown as Record<string, unknown>);
 }
 
 /**
@@ -170,13 +247,17 @@ export async function verifySave(slot: string): Promise<SaveError | null> {
   return v.ok ? null : new SaveError(v.errors);
 }
 
-export async function listSaves(): Promise<Omit<SaveEnvelope, 'state'>[]> {
-  const all = await tx<SaveEnvelope[]>('readonly', (s) => s.getAll());
-  return all.map(({ state: _s, ...rest }) => rest).sort((a, b) => b.savedAt - a.savedAt);
+/** Saves newest first, read from the metadata store: no game state is loaded (D-44). */
+export async function listSaves(): Promise<SaveMeta[]> {
+  const all = await run<SaveMeta[]>('readonly', [META], (t) => t.objectStore(META).getAll() as IDBRequest<SaveMeta[]>);
+  return all.slice().sort((a, b) => b.savedAt - a.savedAt);
 }
 
 export async function deleteSave(slot: string): Promise<void> {
-  await tx('readwrite', (s) => s.delete(slot));
+  await run('readwrite', [STORE, META], (t) => {
+    t.objectStore(META).delete(slot);
+    return t.objectStore(STORE).delete(slot);
+  });
 }
 
 // --- Slots (D-29, D-36): one slot per contract mission, three free-valley ledgers --------------
@@ -224,6 +305,6 @@ export async function adoptLegacySaves(): Promise<void> {
   const others = (await listSaves()).filter((x) => x.slot !== LEGACY_SLOT);
   const plan = planLegacy(raw, others);
   if (plan.kind === 'keep') return;
-  if (plan.kind === 'move') await tx('readwrite', (s) => s.put({ ...(raw as object), slot: plan.to }));
+  if (plan.kind === 'move') await putEnvelope(() => ({ ...(raw as Record<string, unknown>), slot: plan.to }));
   await deleteSave(LEGACY_SLOT);
 }

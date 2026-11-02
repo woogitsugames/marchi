@@ -715,11 +715,14 @@ export function parseSave(json: string): LoadVerdict {
 }
 
 /** Builds a format-2 envelope (used by saveGame; pure apart from the caller-supplied clock). */
-export function makeEnvelope(slot: string, state: SimState, savedAt: number): SaveEnvelope {
+/**
+ * clone=false hands the live state over (saveGame: IndexedDB's put() takes its own structured clone at once);
+ * the default copies it, for callers that keep the envelope.
+ */
+export function makeEnvelope(slot: string, state: SimState, savedAt: number, clone = true): SaveEnvelope {
   return {
     format: 2, stateVersion: state.version, slot, savedAt, missionId: state.mission.id, tick: state.tick,
     terrainHash: currentTerrainHash(state.mapId, state.seed),
-    // structured clone of plain JSON data
-    state: JSON.parse(JSON.stringify(state)) as SimState,
+    state: clone ? JSON.parse(JSON.stringify(state)) as SimState : state,
   };
 }
