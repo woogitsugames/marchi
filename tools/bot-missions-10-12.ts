@@ -39,21 +39,28 @@ const granaryLink = (w: World): Command => ({
     M12_GRANARY_LINK.y2 * w.terrain.w + M12_GRANARY_LINK.x),
 });
 
+/** Plausible wrong fixes: they must not reach the right fix's seals (tests). */
+export const WRONG_FIXES: Record<Mission101112Id, readonly Strategy[]> = {
+  m10: [{ name: 'zla / two wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w)] }],
+  m11: [],
+  m12: [{ name: 'zla / two wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w)] }],
+};
+
 export const STRATEGIES: Record<Mission101112Id, readonly Strategy[]> = {
   m10: [
     { name: 'nic / competing workshops', after: 0, cmds: () => [] },
-    { name: 'czesciowa / woodcutter @1:00', after: 60, cmds: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }] },
-    { name: 'wlasciwa / woodcutter + wagon @0:20', after: 20, cmds: (w) => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }, wagon(w)] },
+    { name: 'czesciowa / woodcutter late @2:30', after: 150, cmds: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }] },
+    { name: 'wlasciwa / woodcutter @0:20', after: 20, cmds: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }] },
   ],
   m11: [
     { name: 'nic / three wagons for a long route', after: 0, cmds: () => [] },
-    { name: 'czesciowa / one wagon @5:00', after: 300, cmds: (w) => [wagon(w)] },
+    { name: 'czesciowa / one wagon @1:00', after: 60, cmds: (w) => [wagon(w)] },
     { name: 'wlasciwa / five wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w), wagon(w), wagon(w), wagon(w)] },
   ],
   m12: [
     { name: 'nic / granary remains full', after: 0, cmds: () => [] },
-    { name: 'czesciowa / one extra wagon @2:00', after: 120, cmds: (w) => [wagon(w)] },
-    { name: 'wlasciwa / connect granary + wagon @0:20', after: 20, cmds: (w) => [granaryLink(w), wagon(w)] },
+    { name: 'czesciowa / connect granary late @2:00', after: 120, cmds: (w) => [granaryLink(w)] },
+    { name: 'wlasciwa / connect granary @0:20', after: 20, cmds: (w) => [granaryLink(w)] },
   ],
 };
 
@@ -114,7 +121,7 @@ export function runProposed(id: Mission101112Id, strategy: Strategy): RunResult 
 }
 
 export function printResults(id: Mission101112Id): RunResult[] {
-  const results = STRATEGIES[id].map((strategy) => runProposed(id, strategy));
+  const results = [...STRATEGIES[id], ...WRONG_FIXES[id]].map((strategy) => runProposed(id, strategy));
   for (const result of results) {
     console.log(id + ' | ' + result.strategy + ' | ' + result.result + ' ' + result.minutes.toFixed(2) +
       ' min | seals ' + result.seals + ' | ' + result.delivered + ' | observations ' +

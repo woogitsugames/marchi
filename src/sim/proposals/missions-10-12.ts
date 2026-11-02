@@ -20,7 +20,9 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       { type: 'woodcutter', x: 14, y: 28, facing: 0, stock: { wood: 4 } },
       { type: 'charcoalBurner', x: 26, y: 37, facing: 0 },
       { type: 'sawmill', x: 32, y: 37, facing: 0, stock: { planks: 4 } },
-      { type: 'stable', x: 46, y: 35, facing: 0 },
+      // The stable sits by the woodcutter (D-36): wagons are never the bottleneck, so the
+      // shortage reads as wood, and buying wagons alone does not save the contract.
+      { type: 'stable', x: 19, y: 35, facing: 0 },
       { type: 'castle', x: 74, y: 42, facing: 2 },
     ],
     roads: [
@@ -28,11 +30,11 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       [[15, 30], [15, 40]],
       [[27, 39], [27, 40]],
       [[33, 39], [33, 40]],
-      [[47, 37], [47, 40]],
+      [[20, 37], [20, 40]],
       [[76, 40], [76, 41]],
     ],
     contract: { planks: 48, charcoal: 8 },
-    deadlineMin: 12, star3Min: 9, star2Min: 10.5, rain: [],
+    deadlineMin: 12, star3Min: 9.3, star2Min: 10.3, rain: [],
   },
   m11: {
     id: 'm11', mapId: 'valley-m3', seed: M3_VALLEY.seed,
@@ -53,12 +55,14 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       [[76, 40], [76, 41]],
       [[81, 39], [81, 40]],
     ],
-    contract: { beer: 26 },
-    deadlineMin: 12, star3Min: 10.75, star2Min: 11.55, rain: [],
+    // 22 beer (D-36): leaves 1 min of slack for "do nothing"; 26 made late wagon purchases lose.
+    contract: { beer: 22 },
+    deadlineMin: 12, star3Min: 9.4, star2Min: 10.3, rain: [],
   },
   m12: {
     id: 'm12', mapId: 'valley-m3', seed: M3_VALLEY.seed,
-    coins: 210, wagons: 8, buildable: ['warehouse'],
+    // 12 wagons (D-36): enough that buying more does not help; the buffer is the only fix.
+    coins: 210, wagons: 12, buildable: ['warehouse'],
     buildings: [
       { type: 'warehouse', x: 24, y: 42, facing: 2, cap: 12, stock: { grain: 12 } },
       // The larger, empty granary is two road cells away from the trunk.
@@ -94,7 +98,7 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
       { need: { bread: 8, beer: 12 }, dueMin: 9 },
       { need: { beer: 36 }, dueMin: 12 },
     ],
-    deadlineMin: 12, star3Min: 9.5, star2Min: 10.5, rain: [],
+    deadlineMin: 12, star3Min: 9, star2Min: 10.1, rain: [],
   },
 };
 
