@@ -130,8 +130,15 @@ export function buildingStatusText(s: BuildingStatus, world?: World): string {
     return capFirst(t('status.NO_INPUT.CONTESTED.to', { good: goodName(s.good), rival: buildingName(world, s.blockedBy) }));
   }
   const cause = 'cause' in s ? s.cause : null;
-  const key = (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
+  let key = (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
   const params: Record<string, string | number> = {};
+  // "the supplier is making it now" only while it is: a supplier waiting for its own input says so (F5, D-44)
+  const sup = s.k === 'WAITING_UPSTREAM' && world ? buildingById(world, s.from) : undefined;
+  if (sup && sup.progress < 0 && (sup.status.k === 'WAITING_DELIVERY' || sup.status.k === 'WAITING_UPSTREAM')) {
+    key = 'status.WAITING_UPSTREAM.supplierWaits';
+    params.supplierGood = goodName(sup.status.good);
+    params.supplierGoodAcc = t(`goodAcc.${sup.status.good}` as MessageKey);
+  }
   if ('good' in s) {
     params.good = goodName(s.good);
     params.goodGen = t(`goodGen.${s.good}` as MessageKey);

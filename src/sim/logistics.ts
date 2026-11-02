@@ -277,22 +277,42 @@ function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string,
 }
 
 /**
+ * A supplier that waits for its own input (WAITING_DELIVERY) is held when that delivery is stuck:
+ * the wagon stands at a closed or jammed bridge, or has no route. Then it makes nothing for its
+ * customers and the wait is a real stall upstream, not production in progress (D-44, F5).
+ */
+function heldUpstream(world: World, p: Building): boolean {
+  if (p.status.k !== 'WAITING_DELIVERY') return false;
+  const wagonId = p.status.wagon;
+  const wg = world.state.wagons.find((x) => x.id === wagonId);
+  return !!wg && (wg.status.k === 'BRIDGE_CLOSED' || wg.status.k === 'BRIDGE_JAM' || wg.status.k === 'NO_ROUTE');
+}
+
+/**
  * When nothing of `g` is available: is a producer that can reach `b` busy making it? Returns
- * WAITING_UPSTREAM for a working, reachable producer; otherwise the producer to blame (stalled
- * ones first, so the cause chain follows the real blockage rather than the lowest id).
+ * WAITING_UPSTREAM for a reachable producer that is producing (preferred) or waiting for an input
+ * that is moving; the card names the supplier's own wait when it is not producing. A supplier whose
+ * own delivery is held (heldUpstream) makes nothing: `b` reads NO_INPUT.NONE_AVAILABLE blamed on
+ * it, so the chain and the stall ledger follow the supplier's wait to the bridge (D-44, F5).
+ * Otherwise the producer to blame: stalled ones first, so the cause chain follows the real
+ * blockage rather than the lowest id.
  */
 function upstreamReason(world: World, b: Building, g: Good, dc: DistCache): BuildingStatus {
-  let stalled = -1, any = -1;
+  let waiting = -1, held = -1, stalled = -1, any = -1;
   for (const p of world.state.buildings) {
     if (p.id === b.id || !outputGoods(p.type).includes(g)) continue;
     const reach = dc.from(p.gate).dist[b.gate]! < Infinity;
-    // healthy supplier: producing now, or itself just waiting for a delivery / its own supplier
-    const healthy = p.progress >= 0 || p.status.k === 'WORKING' || p.status.k === 'WAITING_DELIVERY' || p.status.k === 'WAITING_UPSTREAM';
-    if (reach && healthy) return { k: 'WAITING_UPSTREAM', good: g, from: p.id };
+    const producing = p.progress >= 0 || p.status.k === 'WORKING';
+    if (reach && producing) return { k: 'WAITING_UPSTREAM', good: g, from: p.id };
+    const isHeld = heldUpstream(world, p);
+    const healthy = !isHeld && (p.status.k === 'WAITING_DELIVERY' || p.status.k === 'WAITING_UPSTREAM');
+    if (reach && healthy && waiting === -1) waiting = p.id;
+    if (reach && isHeld && held === -1) held = p.id;
     if (any === -1) any = p.id;
-    if (stalled === -1 && !healthy) stalled = p.id;
+    if (stalled === -1 && !producing && !healthy) stalled = p.id;
   }
-  return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: stalled >= 0 ? stalled : any };
+  if (waiting >= 0) return { k: 'WAITING_UPSTREAM', good: g, from: waiting };
+  return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: held >= 0 ? held : stalled >= 0 ? stalled : any };
 }
 
 function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, dc: DistCache): BuildingStatus {
