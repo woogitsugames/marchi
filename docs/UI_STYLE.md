@@ -1,6 +1,7 @@
 # MARCHIA · UI visual system
 
-The UI is the **steward's kit**: a waybill on parchment, an iron-shod tally board, a wax seal.
+The UI is the **steward's kit**: painted parchment panels in brass fittings, a red heraldic ribbon, wax seals
+(D-43; before it, a waybill on flat parchment and an oak rail).
 It speaks only when needed, and it is designed for a thumb on a phone in a moving tram.
 
 ## Typography (both SIL Open Font License 1.1, bundled via `@fontsource`, latin-ext for Polish)
@@ -14,52 +15,85 @@ It speaks only when needed, and it is designed for a thumb on a phone in a movin
 - Never set body text in Grenze Gotisch. Never use more than these two faces.
 - Licences: see `docs/ASSETS.md` → Fonts. OFL text ships in `public/licenses/`.
 
-## Materials (used sparingly and functionally — never as wallpaper)
+## Materials — the painted UI kit (D-43)
 
-| Material | Where | Implementation |
+Since D-43 every HUD surface is drawn from the painted kit in `public/assets/ui/kit/` (`<name>@2x.png` /
+`@3x.png`, slicing in `docs/ui-kit.md`, previews `docs/ui-kit-*.png`). CSS picks the file with
+`image-set(… 2x, … 3x)` (plain `url(@2x)` first as a fallback) and stretches it with **9-slice
+`border-image`**: slices in **percent of the file** (so @2x and @3x read the same), `border-image-width` in CSS px
+= the kit's dp margins, the border itself 0 px wide (padding decides the content inset). Round sprites
+(buttons, seals, pins, badges, the alarm seal) are plain `background … / contain`, never stretched.
+
+| Sprite | Where | 9-slice (file %) / width |
 |---|---|---|
-| **Pergamin** (parchment) | panels with text the player reads: waybill, "Why is it stalled?", wagon card | flat `#e4dccb` + very low-contrast fibre noise (SVG turbulence), torn/deckled edge only on the contract waybill |
-| **Drewno** (oak) | the action bar (tool rail) and speed control | dark oak `#3b3127` with a 1 px lighter top edge, no photographic wood texture |
-| **Żelazo** (iron) | borders of buttons, the active tool ring, dividers | `#4a4843` hairlines 1.5 px; square corners with small chamfers (cut corners, not rounded) |
-| **Wosk** (wax) | the contract seal, the single primary call-to-action, critical stall markers | Glina `#8c4a2f`, slightly irregular disc |
+| `panel` | contract & valley panel, toasts, notices, undo | 15 % 10 % / 12 px |
+| `panel-alert` | worst-stall card (wine bar on the leading edge; mirrored in RTL via `::before`) | 15 % 10 % / 12 px |
+| `panel-dim` | build shelf | 15 % 10 % / 12 px |
+| `ribbon` | contract title, valley rank (Grenze Gotisch, parchment text) | 23.5 % 19.2 % / 8 × 23 px |
+| `stat` | time and silver chips, "Pokaż przyciski" | 25 % 10 % / 10 × 12 px |
+| `segment-bg` + `segment-active` | speed: pause / ×1 / ×2 / ×4 | 20.45 % 7.5 % / 9 × 12 px — the four cells are sized to the painted dividers (`.speed`, `--m`) |
+| `card-normal / pressed / active / highlight / disabled` | tool cards; highlight = the cure of the worst stall, disabled = hatched | 13.9 % 15.6 % / 10 px |
+| `eta` (slate) | "M:SS do śniegu" pill, folded-seal time, wagon ETA plaque | 25 % 16.7 % / 10 × 14 px |
+| `progress-track` + `progress-fill` | a bar per good / per rank requirement; quarter marks drawn by CSS | 25 % 5 % / 2 × 6 px |
+| `frame-sheet` / `frame-sheet-dim` | all large sheets (why, wagon, market: bright; pause, settings, ledgers, mission save: dim), end letter, rank letter | 16.07 % 11.875 % / 36 × 38 px (30 × 32 on 360 px, 26 × 28 on Flip) |
+| `menu`, `button-normal/pressed` | menu button, the eye button on the stall card | — |
+| `seal-alert` + `badge` | alarm seal with the stall count | — |
+| `seal-empty` / `seal-full` | three forecast seals on the contract panel; the folded contract (fills with progress) | — |
+| `pin-red` / `pin-brass` | stall pins on the map: red = the worst stall or a critical one (plus a wine ring round the cause), brass = lesser | — |
+| `badge` / `badge-red` | tool cost (Kup wóz 30); red when the silver is short | — |
 
-Corner rule: **chamfered (cut) corners** of 6 px, never border-radius pills. Shadows: only one —
-a hard 2 px offset in Torf at 40 % under floating elements (like paper on a table), no blur haze.
+Content inside sheets keeps clear of the frame's corner ornaments: 18 px frame padding + 8 px body padding, 26 px
+at the bottom. No clip-path on kit surfaces (the old chamfers and torn edges stay only on the main menu strip,
+the tutorial note and old in-sheet chips/buttons).
+
+Shadows: a soft `drop-shadow(0 2px 2px rgb(30 22 14 / .35))` under floating kit pieces (the painted edges already
+carry the bevel); no glow, no blur haze.
 
 ## Colour tokens
 
-`--ink #2b2620` · `--parchment #e4dccb` · `--parchment-dim #cfc5b0` · `--oak #3b3127` ·
-`--oak-hi #5a4a39` · `--iron #4a4843` · `--clay #8c4a2f` (wax / alert) · `--ochre #b8893a` (ETA,
-progress) · `--meadow #56603f` (OK / working) · `--mist #c9c6bb`.
-Status colours are always paired with an icon shape (never colour alone).
+Kit palette (muted, from the sprites): `--wine #6f1d22` (ribbon, alert, primary action in sheets, critical) ·
+`--slate #3d4852` (snow pill, ETA) · `--brass #a07a3a` / `--brass-dk #6b5128` (rings, icon wells) · parchment of the
+panels (`--kparch #ead6ad`). Text: `--ink #2b2620`, `--ink-soft #4d453a`; `--meadow #56603f` for "done".
+Older tokens (`--parchment`, `--oak`, `--iron`, `--clay`, `--ochre`) remain for the main menu strip, settings
+controls and in-sheet chips. Status colours are always paired with an icon shape (never colour alone).
 
 ## Grid and spacing
 
 - Base unit **4 px**; spacing scale 4 / 8 / 12 / 16 / 24 / 32.
-- Touch targets **≥ 48 px** (CSS px ≈ dp), primary actions 56 px.
-- Respect `env(safe-area-inset-*)` on every edge-anchored element.
-- **Thumb zone**: tools and speed live on the bottom edge in portrait, on the right edge in
-  landscape (right-handed default, mirrored for left-handed). On near-square / wide portrait screens
-  (width ≥ 720 px, unfolded Fold, tablets) the rail splits into two pads: tools bottom-left, speed
-  bottom-right. Panels open from the bottom in portrait, from the side in landscape / on foldables
-  (width ≥ 720 px: side sheet, map stays visible).
-- **Foldables** (D-16): Flex mode puts the scene in the top half and every control in the bottom half;
-  the Flip cover screen is a watch mode (scene, bubbles, speed; no building tools; controls on top).
+- Touch targets **≥ 48 px** (CSS px ≈ dp): speed cells 48 tall, contract rows and pace rows 48, ribbon 48,
+  tool cards 72, eye button 52, alarm seal 72 (64 on 360 px). Text never clips: chips grow with their number,
+  long names wrap (ribbon, stall card) — six tool cards on a phone use a 12.5 px label.
+- Respect `env(safe-area-inset-*)` on every edge-anchored element (`--safe-s/e` are logical, swap in RTL).
+- **Layout (concept D, D-43)**: one grid on top (`.hud-top`): menu · chips · speed · contract. Portrait: menu
+  left, chips right, speed as a second row right-aligned, contract panel under them. Landscape and wide /
+  near-square portraits (≥ 720 px, unfolded Fold): one row — menu, contract, chips, speed. Bottom (`.rail`):
+  portrait = worst-stall card + alarm seal above the row of tool cards; landscape / wide = one row, tools under
+  one thumb, stall card + alarm seal under the other.
+- **Hand, not language** (D-37 amended): the alarm seal and stall card sit on the hand's side (right for a
+  right-handed player, in RTL too); left-handed mirrors it, and in portrait mirrors the tool order.
+- Sheets open from the bottom in portrait (stopping under the contract panel, at least 45 % of the screen) and
+  hide the rail under them; from the side in landscape (below the speed row) and on screens ≥ 720 px.
+- **Foldables** (D-16): Flex mode puts the scene in the top half and the whole HUD (top cluster and rail) on the
+  table below the hinge; the Flip cover is a watch mode (menu, speed, the folded contract seal that opens the
+  castle card, pins; no tools, no stall card).
 - Every overlay closes with one gesture: tap on the empty map, swipe down on the sheet, or the
   Android back button. A "clear screen" tap (two-finger tap) hides all UI except the scene.
 
 ## Buttons and states
 
-| State | Look |
-|---|---|
-| Rest | oak fill, iron hairline, parchment icon/label |
-| Pressed | fill darkens 8 %, content shifts down 1 px (no scale bounce) |
-| Active tool | iron ring becomes wax-clay, label under the icon |
-| Disabled | 40 % opacity + diagonal hatching; the reason is shown on long-press |
-| Focus (keyboard/a11y) | 2 px ochre outline, offset 2 px |
+| State | Tool card | Other |
+|---|---|---|
+| Rest | `card-normal`, ink icon and label | kit button / segment |
+| Pressed | `card-pressed`, content shifts down 1 px | `button-pressed`, 1 px shift; no scale bounce |
+| Active tool | `card-active`, wine label | active speed cell: `segment-active` |
+| Cure of the worst stall | `card-highlight` (Kup wóz for a missing wagon, Droga for a missing road) | — |
+| Disabled | `card-disabled` (hatched) + the reason on the card ("brak 4" in place of the label, red cost badge) and in a toast on tap | old in-sheet buttons: 40 % + hatching |
+| Focus (keyboard/a11y) | 2 px ochre outline, offset 2 px | same |
 
 Motion: 100–250 ms, `cubic-bezier(.2,.7,.2,1)` (decelerate). Sheets slide, markers fade.
-No springs, no overshoot, no infinite pulsing — a stall marker breathes once on appearance.
+No springs, no overshoot, no infinite pulsing — a stall pin breathes once on appearance.
+Performance: the HUD DOM is built once; per frame only text, widths and classes change when a value changes;
+sizes are measured by `ResizeObserver` (rail height, top cluster), never per frame.
 
 ## Iconography
 
@@ -91,13 +125,18 @@ full crate, hourglass, missing good = good icon with a stroke-through, ice floes
 bridge, and a forked cart track for a contested input: one fork worn deep with an arrowhead, the other
 fading out in dashes to an empty post).
 
-## Diegetic HUD (what lives in the scene, not in corners)
+## Diegetic HUD (what lives in the scene, what in the corners)
 
-- **Contract** = a waybill (list przewozowy) pinned top-left: two lines with ticks, plus the
-  wax seal that fills as the contract completes. Collapses to the seal alone.
-- **Stall** = a small parchment speech-bubble with the reason icon above the building.
-- **ETA** = small ochre label beside the selected wagon / wagons on hover-tap.
-- Coins and day time: one compact line on the tool rail, not a corner dashboard.
+- **Contract** = a panel under a red ribbon with the mission name: three forecast seals (D-38), the
+  "M:SS do śniegu" pill, a bar per good with "n/total", then the pace rows ("Przy tym tempie: gotowe za …",
+  the bottleneck's supplier). Tapping the ribbon folds it to a wax seal that fills with progress, time below.
+- **Free valley** = the same panel: rank on the ribbon, the checklist towards the next rank, income and season.
+- **Stall** = a kit pin above the building; its cause opens with one tap. The worst stall (largest
+  `stalledTicks × criticality`, `src/ui/stalls.ts`) is also named on the bottom card ("NAJGORSZY ZASTÓJ —
+  Młyn: wszystkie wozy zajęte"); the eye button jumps the camera there and opens "Dlaczego stoi?", the alarm
+  seal cycles through all stalls (badge = count).
+- **ETA** = a slate plaque above the selected wagon.
+- Time and silver: two chips at the top, each with its own icon (sun/rain, coin).
 
 ## Main menu
 

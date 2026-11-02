@@ -478,3 +478,42 @@ wind, no tree shadows. Cost (412×915 dpr 2, `r.info.render` incl. shadow pass):
 416k→465k tris; mid 37→40, 332k→298k; far 35→35; low near 40→48, 248k→255k; sandbox high near 31→42, 402k→451k
 (the +calls are the second variant per kind). Screens: `docs/shots/trees2-{before,after}-*.jpg`,
 `trees2-closeup-*.jpg`; script `tools/tree-shots.mjs`. Not done: a multi-view (azimuth) impostor atlas. (decided)
+
+**D-43 — HUD v3: concept "D" on the painted UI kit (UI only; no sim change, hashes identical).** The owner approved
+mockup D (docs/mockups/hud/v2 on `claude/hud-mockups`: top from A, bottom from B) and the painted kit
+(`public/assets/ui/kit`, `docs/ui-kit.md`). The old waybill parchment and the oak rail are gone — one HUD, not two.
+*Top* (`.hud-top`, one CSS grid): menu button, time chip (sun/rain icon) and silver chip (coin icon) on `stat`
+plates that grow with their text, the speed control on `segment-bg` (pause / ×1 / ×2 / ×4; in portrait a second
+row, right-aligned; the four cells are sized to land on the painted dividers), and the contract under a red
+`ribbon` (mission name; tap folds it to a wax seal that fills with progress): three forecast seals (D-38, dim until
+the forecast is ready; tranche letters show 3 − missed), the slate "M:SS do śniegu" pill, a `progress` bar per
+good with "n/total", and the D-38 pace rows, now real 48 px rows (fold audit P2). The free valley uses the same
+panel: rank on the ribbon, the checklist, income and season. *Bottom* (`.rail`): "NAJGORSZY ZASTÓJ — <building>:
+<short cause>" on `panel-alert` with an eye button (camera + "Dlaczego stoi?"), the `seal-alert` that cycles
+through the stalls (badge = count), and the tool cards (Budynki where the mission allows building, Droga, Bruk,
+Rozbiórka, Kup wóz with a cost badge, Ruch). The worst stall is read-only (`src/ui/stalls.ts`): the same
+buildings as the pins (`isStall` or NO_INPUT, ≥ 2 s), score = `stalledTicks` × 3 when critical, × 0.25 when it
+resolves by itself (waiting for a pickup, a customer that still takes the output, a season), × 1 otherwise; ties
+by id. Its *cure* follows the cause chain (`explainBuilding`) from the root: a wagon for `NO_WAGON.ALL_BUSY` or
+`OUTPUT_FULL.NO_WAGON` → "Kup wóz" gets `card-highlight`; a road for `NO_ROAD`, `UNREACHABLE`, `NONE_CAN_REACH`,
+`NO_ROUTE` → "Droga". Silver short: hatched `card-disabled`, the label becomes the shortfall ("brak 4"), the
+badge turns red; the tap still gives the full reason (toast). *Map*: kit pins (red = the worst or a critical stall,
+with a wine ring round the cause icon; brass = lesser), the wagon ETA on the slate `eta` plaque. *Sheets* (why,
+wagon, market, build card, pause, settings, ledgers, mission save) and the end / rank letters sit in
+`frame-sheet` (`-dim` for menus) with content kept 26 px from the frame; a bottom sheet hides the rail under it and
+stops under the contract panel (≥ 45 % of the screen; fold audit P3 on 360 px). *Layouts*: landscape and
+≥ 720 px portraits put the top in one row (menu, contract, chips, speed) and the bottom in one row (tools under one
+thumb, stall card + alarm under the hand's thumb; left-handed mirrors, RTL does not — D-37 as amended); Flex mode
+moves the whole HUD under the hinge; the Flip cover keeps menu, speed and the folded seal (opens the castle card),
+no tools and no stall card; the Flip main menu got a fade at its foot as the scroll hint (fold audit P2).
+*Tech*: 9-slice `border-image` with percentage slices (independent of @2x / @3x) and `image-set`, border width 0;
+DOM built once, updated on value change only; rail and top-cluster sizes from `ResizeObserver` (`--rail-h`,
+`--hud-top`, `--bar-b`). Arabic gets the D-38 and HUD keys (the i18n-ar test now allows pending keys in `ar`),
+which also fixes the "min/4.9" bidi flip of the English fallback. Kept as they were: tutorial anchors
+(`.waybill-wrap`, `.wb-line`, `[data-tool="road"]`), toasts, notices (now under the top cluster), undo, "Pokaż
+przyciski", build shelf (landscape: a column under the speed row), `window.__marchia.ready`. Screens:
+`docs/shots/hud3-*.jpg`; script `tools/hud3-shots.mjs` (also reports small targets, clipped text, off-screen boxes).
+Rejected: keeping the oak side rail in landscape (two bottom bars and a side bar fight over a 412 px height; the
+mockup's single bottom row reads better); a stall speech bubble on the map (D removed the duplicate; the pin's
+cause is one tap away and the card names it). Open: the eye glyph is the existing `inspect` (pointing hand) icon,
+not a drawn eye; the other 15 languages fall back to English for the new keys (PENDING_KEYS). (decided)

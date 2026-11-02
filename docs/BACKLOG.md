@@ -9,6 +9,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [ ] P3 — (D-43) HUD v3: oko na karcie zastoju to ikona `inspect` (wskazująca dłoń) — narysować drzeworytowe oko; nowe klucze HUD (`hud.worst`, `hud.worstShow`, `hud.stallsNext`, `contract.toSnow`, `tool.wagonShort`) tylko pl/en/ar — paczka dla 14 pozostałych języków.
+- [ ] P3 — (D-43) Flip (tryb zegarka): tempo dostaw nadal tylko po otwarciu karty zamku (pieczęć pokazuje czas); zdecydować, czy pieczęć ma linię prognozy (fold audit P3 #4).
+- [ ] P3 — (D-43) Notatka samouczka i pasek budowy w trybie Flex: sprawdzić na urządzeniu; arkusz w Flex przykrywa żetony i tempo (zamykany jednym gestem).
 - [ ] P2 — Misja X: „drewno w drodze — wóz N” maskuje niedobór drewna. Tartak ma `WAITING_DELIVERY`, gdy wóz stoi u drwala i czeka, aż drewno powstanie; `NO_INPUT.CONTESTED` widać tylko 6,4 % gry (głównie pierwsze 20 s). Łagodzi to „drewno zasila też węglarza” (D-38) — 68,6 % gry na karcie tartaku. Do rozważenia: łańcuch WAITING_DELIVERY → wóz w załadunku → producent pracuje (diagnose.ts), bez zmiany hasha. Też: X powtarza lekcję IX (tartak vs węglarz) — po playteście ocenić, czy zostawić (D-39).
 - [ ] P3 — Listy kasztelana (`src/content/letters.ts`, misje I–XII) nie są jeszcze pokazywane w UI (list końcowy ma ogólny tekst); misje X–XII używają wspólnego id mapy `valley-m3`.
 - [ ] P3 — Buduj: doliczyć koszt drogi dojazdowej do etykiety kosztu (nowe klucze i18n); etykieta czasem nachodzi na ducha.
@@ -60,9 +63,7 @@ Numery linii z chwili researchu (inne zmiany w toku mogą je przesuwać). Dowody
 
 **Czytelność przyczyn (< 30 s)**
 - [ ] P2 — Karta przestoju mówi „co", ale nie „co zrobić": zrzut ui-why-bakery pokazuje korzeń „Młyn: brak wolnego wozu", bez akcji. Dodać pod łańcuchem jeden przycisk-lekarstwo zależny od korzenia: `NO_WAGON/ALL_BUSY` → „Kup wóz (30)" (nie wymaga wracania do szyny), `NO_ROAD`/`UNREACHABLE` → włącz narzędzie Droga i wskaż bramę, `OUTPUT_FULL/NO_DESTINATION` → „potrzebny spichlerz", `BRIDGE_JAM` → „druga przeprawa / most kamienny" (źródło: research, panels.ts buildingSheet, ui-why-bakery-412x915.png).
-- [ ] P2 — Lista „Co teraz stoi?" w HUD: jedna linia pod listem przewozowym z liczbą aktywnych przestojów i przyciskiem „najgorszy" (kamera + arkusz na przestoju o największym `stalledTicks` i krytyczności). Dziś gracz musi sam znaleźć bąbelek na mapie poza kadrem — przy 10+ budynkach to główny koszt czasu diagnozy (źródło: research, markers.ts, hud.ts).
 - [ ] P2 — Bąbelek ikoną-klepsydrą (`waiting`) dla `WAITING_PICKUP` nie niesie przyczyny; dodać pod ikoną licznik „1:30" (z `stalledTicks`) dopiero od 20 s, a kolor/kształt wg trzech klas: „czeka na wóz" (wóz), „brak drogi" (droga), „brak towaru" (towar przekreślony). Dziś bąbelki trzech klas różnią się tylko ikoną 26 px; testować czytelność na 412 px (źródło: research, format.ts buildingStatusIcon, ui-game-3min-412x915.png).
-- [ ] P2 — Przycisk „Kup wóz" wyszarzony bez powodu (ui-game-3min: 26 srebra < 30): UI_STYLE obiecuje powód „po długim dotknięciu", brak w `hud.ts` (tylko `is-disabled`). Pokazać toast „Brakuje 4 srebra" na dotknięcie (źródło: research, hud.ts update, docs/UI_STYLE.md Buttons and states).
 - [ ] P3 — Zmiana kadru po otwarciu arkusza: połączyć z wpisem `focusCell(cell, screenOffset)` — w portrecie arkusz zakrywa dolne 45%, a bąbelek przyczyny leży pod nim w 2 z 3 sprawdzonych zrzutów; przesunąć cel w górną połowę widocznego obszaru (źródło: research, ui-why-bakery-412x915.png).
 
 **Projekt gry (następne misje; bez walki i life-simu)**
@@ -108,6 +109,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P4 — Sandbox S6: zamówienia królewskie (maks. 2, bez terminu, odrzucalne) i jarmarki sezonowe (+25% ceny jednego towaru, RNG w stanie); `src/sim/orders.ts`, `tests/orders.test.ts` (sim)
 
 ## Zrobione
+- 2026-11-02 — (D-43) HUD v3 na zestawie UI: góra (menu, żetony czasu i srebra, segmenty tempa, kontrakt pod wstęgą z pieczęciami, „M:SS do śniegu”, paskami), dół (karta „Najgorszy zastój” z okiem, pieczęć alarmu z licznikiem, karty narzędzi z kosztem i podświetleniem lekarstwa), piny i tabliczka ETA z zestawu, arkusze w `frame-sheet`; zamyka „Co teraz stoi?” i „Kup wóz wyszarzony bez powodu”, fold audit P2 (wiersze tempa 48 px, wskazówka przewijania menu Flip, arabskie tempo) i P3 (arkusz pod kontraktem na 360 px, pasek monet za wąski) — gałąź `claude/hud-impl`.
 - 2026-11-02 — (research F10/F3, D-38) M7: tempo dostaw i prognoza „przy tym tempie: gotowe za M:SS” z pieczęciami na liście przewozowym i w karcie zamku (`contractForecast`, dziennik tempa w UI); M9: „Drewno bierze też: Węglarnia — tam N, tu M” nad łańcuchem tartaku/węglarza (`sharedInput`), lekcja widoczna 5% → 85% czasu; hasze bez zmian — gałąź `claude/w-readab`.
 - 2026-11-02 — (research P1) Rozbiórka w misjach z kontraktem: budynek, którego typu nie ma na liście budowy misji, rozbiera dopiero drugie dotknięcie w ciągu 4 s (ostrzeżenie `demolish.confirm`); czysty odczyt `demolishIsFinal` w sim, sim nadal przyjmuje komendę (powtórki ważne); test `tests/demolish-guard.test.ts`.
 - 2026-11-02 — Buduj: po postawieniu niepodłączonego budynku narzędzie zostaje otwarte pod kartą z „Naprawą”; pływający „Cofnij” chowa się, gdy karta tego budynku ma własne „Cofnij” (koniec podwójnego przycisku w układach bocznych).
