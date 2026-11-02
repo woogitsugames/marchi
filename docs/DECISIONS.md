@@ -696,3 +696,21 @@ rank letter's text no longer runs into its frame. Screens `docs/shots/hud4-*.jpg
 412×915, 915×412, 904×1000, 360×740, Flip 360×380, Flex and `lang=ar`: 0 console errors, no target under 48 px.
 Rejected: tinting the slate track sprite with filters (muddy at 6–8 px and different per GPU); dropping the pace
 row in landscape (the forecast is the point of D-38). (decided)
+
+**D-55 — Landscape side sheet docks opposite the contract, between the top bar and the bottom rail (UI only).**
+On a 915×412 screen the game's side sheet docked at the inline start for a right hand (end for a left hand) and
+ran from the chips row to the screen foot, so it covered the compact contract (D-53) and, when tall (castle card,
+cause chain), the tool cards; the left hand had it over the tools instead. Now, in a landscape game, the sheet
+always docks at the **inline end** — opposite the contract, which sits after the menu and mirrors with the
+language — and stops above the bottom rail (`max-height` = height − `--bar-b` − `--rail-h` − safe area − gaps;
+width `min(380px, 46vw)`). The contract, the tools, the stall card and the alarm stay readable and tappable while
+a sheet is open, for either hand; the body scrolls when the content is taller. Kept: the rail follows the hand only
+(D-37 as amended: tools under one thumb, stall card under the hand's thumb); portrait bottom sheets, ≥ 720 px
+portrait side sheets and the menu's settings sheet are unchanged. Swipe-to-close now follows the end side in a
+landscape game too (`sheets.ts`). The D-45 camera focus measures the sheet's layout rect, so the subject moves
+into the free area on the start side without code change (checked: m1 "why" farm, m7 castle). Screens
+`docs/shots/hud5-*.jpg` (before / after: 915×412 right hand, left hand and `ar`, 412×915, 904×1000, Flip, Flex):
+0 console errors, no target under 48 px. Rejected: starting the sheet under the contract (≈ 150 px left on 412 px
+with the rail); folding the contract to its seal while a sheet is open (hides the contract the BACKLOG item wants
+readable, and moves the tutorial anchors). Also (frame-cost item 3, not a rule): `rankStalls` runs once per tick,
+applied command or selection change (`StallRanking`), not every frame. (decided)

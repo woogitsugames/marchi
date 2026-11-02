@@ -30,6 +30,7 @@ const SCENES = [
   { id: 'm7', q: 'play=m7&ff=120&speed=0' },
   { id: 'm7-ar', q: 'play=m7&ff=120&speed=0&lang=ar' },
   { id: 'm7-castle', q: 'play=m7&ff=120&speed=0', act: 'castle' },
+  { id: 'm7-castle-ar', q: 'play=m7&ff=120&speed=0&lang=ar', act: 'castle' },
   { id: 'm9', q: 'play=m9&ff=150&speed=0' },
   { id: 'sandbox', q: 'play=sandbox&ff=240&speed=0' },
   { id: 'market', q: 'play=sandbox&ff=240&speed=0&market=1' },
@@ -40,6 +41,7 @@ const SCENES = [
   { id: 'end', q: 'play=m1&bot=1&ff=900&speed=0' },
   { id: 'tut', q: 'play=m1&tut=1&speed=0' },
   { id: 'left', q: 'play=m1&bot=1&ff=170&speed=0', act: 'left' },
+  { id: 'left-why', q: 'play=m1&bot=1&ff=170&speed=0', act: 'leftwhy' },
   { id: 'open', q: 'play=m1&speed=0', act: 'opening' },
   { id: 'deadend', q: 'play=m1&speed=0', act: 'deadend' },
   { id: 'end-ar', q: 'play=m1&bot=1&ff=900&speed=0&lang=ar' },
@@ -56,7 +58,7 @@ const PLAN = [
   ['m7', 'p412'], ['m7', 'n360'], ['m7', 'l915'], ['m7-ar', 'p412'], ['m7-castle', 'p412'], ['m7-castle', 'flip'], ['m7-castle', 'n360'], ['m7-castle', 'flex'], ['m7-castle', 'l915'],
   ['m9', 'p412'], ['sandbox', 'p412'], ['sandbox', 'l915'], ['sandbox', 'flip'], ['market', 'p412'], ['build', 'p412'], ['build', 'l915'],
   ['wagon', 'p412'], ['pause', 'p412'], ['pause', 'flip'], ['menu', 'flip'], ['menu', 'p412'], ['end', 'p412'], ['tut', 'p412'], ['tut', 'l915'],
-  ['left', 'l915'], ['left', 'p412'],
+  ['left', 'l915'], ['left', 'p412'], ['left-why', 'l915'], ['m7-castle-ar', 'l915'],
   ['open', 'p412'], ['open', 'l915'], ['deadend', 'p412'], ['deadend', 'l915'], ['end', 'l915'], ['end', 'n360'], ['end-ar', 'p412'],
   ['gamemenu', 'l915'], ['tut', 'n360'], ['tutnote', 'p412'], ['tutnote', 'l915'], ['tutnote', 'n360'],
   ['rank', 'p412'], ['settings', 'p412'], ['open', 'n360'], ['open', 'flip'], ['end', 'flip'], ['deadend', 'f904'], ['m7', 'flip'],
@@ -74,7 +76,8 @@ async function act(page, kind) {
     if (k === 'tutnote') document.querySelector('.letter [data-a="start"]')?.click();
     if (k === 'rank') window.__marchia.rankUp(1);
     if (k === 'settings') { A.openGameMenu(); document.querySelector('.sheet [data-a="settings"]')?.click(); }
-    if (k === 'left') { A.prefs.leftHanded = true; A.applyHand(); }
+    if (k === 'left' || k === 'leftwhy') { A.prefs.leftHanded = true; A.applyHand(); }
+    if (k === 'leftwhy') { const e = document.querySelector('.stall-eye'); if (e) e.click(); }
   }, kind);
 }
 

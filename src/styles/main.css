@@ -345,13 +345,13 @@ body.is-side .sheet {
   width: min(380px, 46vw);
 }
 body.is-side:not(.is-landscape) .sheet { max-height: calc(100% - var(--rail-h) - var(--safe-b) - var(--safe-t) - 20px); }
-body.is-side.is-landscape .sheet { inset-inline-end: auto; inset-inline-start: calc(var(--safe-s) + 10px); width: min(380px, calc(100vw - var(--rail-w) - 40px)); }
-body.is-side.is-landscape.left-handed .sheet { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); }
+/* landscape (D-55): the sheet docks opposite the contract (inline end, mirrors with the contract in RTL) and
+   between the chips / speed row and the bottom rail, so the contract, the tools and the stall card stay readable
+   with a sheet open, for either hand */
+body.is-side.is-landscape .sheet { width: min(380px, 46vw); }
 /* in the main menu the strip owns the left edge: settings dock on the right */
 body.mode-menu.is-side .sheet { inset-inline-start: auto; inset-inline-end: calc(var(--safe-e) + 10px); width: min(380px, calc(100vw - 300px)); }
 body.is-side .sheet.is-entering, body.is-side .sheet.is-leaving { transform: translateX(calc(32px * var(--ix))); }
-body.mode-game.is-side.is-landscape:not(.left-handed) .sheet.is-entering,
-body.mode-game.is-side.is-landscape:not(.left-handed) .sheet.is-leaving { transform: translateX(calc(-32px * var(--ix))); }
 body.is-side .sheet-paper { clip-path: var(--chamfer); --c: 8px; padding: var(--hair); }
 body.is-side .sheet-paper > .sp-in { clip-path: polygon(7.4px 0, calc(100% - 7.4px) 0, 100% 7.4px, 100% calc(100% - 7.4px), calc(100% - 7.4px) 100%, 7.4px 100%, 0 calc(100% - 7.4px), 0 7.4px); padding-bottom: 0; }
 body.is-side .sheet-grip { height: 10px; }
@@ -1778,8 +1778,9 @@ body:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: max(45vh, mi
 /* a bottom sheet covers the rail: hide what would peek through the frame's open corners */
 body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
+body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
 .sheet-paper > .sp-in { clip-path: none; background: none; padding-bottom: 0; }
-body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 24px; }
+body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 30px; }
 body.is-side .sheet-paper > .sp-in { clip-path: none; }
 .sheet-grip { height: 14px; }
 .sheet-head { padding-inline: 8px 0; padding-top: 4px; }

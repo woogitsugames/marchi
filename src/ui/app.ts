@@ -21,7 +21,7 @@ import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
-import { rankStalls } from './stalls';
+import { StallRanking } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
   buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
@@ -118,6 +118,8 @@ export class App implements PanelNav {
   private endShown = false;
   private lastFrame = 0;
   private lastSheetUpdate = 0;
+  /** rankStalls() once per tick / applied command / selection change, not every frame (frame-cost item 3). */
+  private readonly ranking = new StallRanking();
   private perfEl: HTMLElement | null = null;
   private perfAt = 0;
   private save: SaveInfo | null = null;
@@ -524,7 +526,8 @@ export class App implements PanelNav {
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
-    this.hud.update(this.world, this.pace, rankStalls(this.world));
+    this.ranking.invalidate();
+    this.hud.update(this.world, this.pace, this.ranking.get(this.world, this.loop.journal.length));
     this.watchRail();
   }
 
@@ -574,7 +577,7 @@ export class App implements PanelNav {
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {
-      const stalls = rankStalls(this.world);
+      const stalls = this.ranking.get(this.world, this.loop.journal.length);
       this.hud?.update(this.world, this.pace, stalls);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
       this.tutorial?.update(dt);
@@ -811,9 +814,11 @@ export class App implements PanelNav {
   private select(sel: PickResult): void {
     this.selection = sel;
     this.view.setSelection(sel);
+    this.ranking.invalidate();
   }
 
   private syncSelection(): void {
+    this.ranking.invalidate();
     const top = this.sheets.top;
     if (!top || !(top.content.key.startsWith('building:') || top.content.key.startsWith('wagon:'))) {
       if (this.selection) this.select(null);
