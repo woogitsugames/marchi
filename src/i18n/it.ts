@@ -193,8 +193,6 @@ export const it: Dict = {
   "contract.time": "Tempo",
   "contract.delivered": "Consegnato",
   "contract.left": "Argento",
-
-  // Translation round 05: tutorial, market, building and settlement ledgers.
   "tutorial.m1.from": "Una lettera del castellano",
   "tutorial.m1.skip": "Salta",
   "tutorial.m1.step1": "Il castellano ordina 30 assi e 20 pani. Tocca una voce della lettera di vettura per esaminare il castello.",
@@ -337,19 +335,17 @@ export const it: Dict = {
   "rank.4": "Roccaforte",
   "rank.5": "Capitale",
   "town.unlockCastle": "ampliamento del castello",
-  // missions VII–IX (D-32): translated in batch 06
   "menu.m7": "VII. Pesce per la Quaresima",
   "menu.m7Sub": "Riva per il pescatore, ponte per il castello",
   "menu.m8": "VIII. Selciato in tempo",
   "menu.m8Sub": "Porta prima la pietra per la pavimentazione",
   "menu.m9": "IX. Birra per le nozze",
   "menu.m9Sub": "Segheria e carbonaia si contendono il legno",
-  // free valley seasons (D-33): translated in batch 06
   "season.spring": "Primavera",
   "season.summer": "Estate",
   "season.autumn": "Autunno",
   "season.winter": "Inverno",
-  "season.when": "{season} · giorno {day}",
+  "season.when": "{season} · anno {year}",
   "season.notice.season": "Tra {time} inizierà {season}.",
   "season.notice.thaw-start": "Tra {time} il disgelo rallenterà le strade sterrate.",
   "season.notice.thaw-end": "Tra {time} le strade sterrate si asciugheranno.",

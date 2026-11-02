@@ -193,8 +193,6 @@ export const pt_BR: Dict = {
   "contract.time": "Tempo",
   "contract.delivered": "Entregue",
   "contract.left": "Prata",
-
-  // Translation round 05: tutorial, market, building and settlement ledgers.
   "tutorial.m1.from": "Uma carta do castelão",
   "tutorial.m1.skip": "Pular",
   "tutorial.m1.step1": "O castelão encomenda 30 tábuas e 20 pães. Toque em um item da carta de porte para inspecionar o castelo.",
@@ -337,19 +335,17 @@ export const pt_BR: Dict = {
   "rank.4": "Fortaleza",
   "rank.5": "Capital",
   "town.unlockCastle": "ampliação do castelo",
-  // missions VII–IX (D-32): translated in batch 06
   "menu.m7": "VII. Peixe na Quaresma",
   "menu.m7Sub": "Pescador precisa da margem; castelo, de ponte",
   "menu.m8": "VIII. Calçamento a tempo",
   "menu.m8Sub": "Traga a pedra antes de calçar a estrada",
   "menu.m9": "IX. Cerveja no casamento",
   "menu.m9Sub": "Serraria e carvoaria disputam a madeira",
-  // free valley seasons (D-33): translated in batch 06
   "season.spring": "Primavera",
   "season.summer": "Verão",
   "season.autumn": "Outono",
   "season.winter": "Inverno",
-  "season.when": "{season} · dia {day}",
+  "season.when": "{season} · ano {year}",
   "season.notice.season": "Em {time} começa {season}.",
   "season.notice.thaw-start": "Em {time}, o degelo vai atrasar as estradas de terra.",
   "season.notice.thaw-end": "Em {time}, as estradas de terra vão secar.",

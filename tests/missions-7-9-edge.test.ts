@@ -85,8 +85,15 @@ test('m8: building cobbles without stone returns exact NO_STONE {need,have}; val
     }
     const attempted = applyCommand(w, { t: 'road', surface: 2, cells: path });
     assert(!attempted.ok, 'rejected road command');
-    if (!attempted.ok) eq(JSON.stringify(attempted.err), JSON.stringify({ k: 'NO_STONE', need, have }),
-      'exact error payload');
+    // The base later added supply hints (incoming / atQuarry / quarries) to NO_STONE: the command
+    // error must equal the validation error and keep the exact need/have counts.
+    if (!attempted.ok) {
+      eq(JSON.stringify(attempted.err), JSON.stringify(validation.err), 'command error equals validation error');
+      if (attempted.err.k === 'NO_STONE') {
+        eq(attempted.err.need, need, 'exact need in command error');
+        eq(attempted.err.have, have, 'exact have in command error');
+      }
+    }
     eq(stateHash(w), before, 'failed command is pure/atomic');
     clean(w, 'after NO_STONE rejection');
   };

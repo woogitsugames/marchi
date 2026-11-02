@@ -193,8 +193,6 @@ export const de: Dict = {
   "contract.time": "Zeit",
   "contract.delivered": "Geliefert",
   "contract.left": "Silber",
-
-  // Translation round 05: tutorial, market, building and settlement ledgers.
   "tutorial.m1.from": "Ein Brief vom Kastellan",
   "tutorial.m1.skip": "Überspringen",
   "tutorial.m1.step1": "Der Kastellan bestellt 30 Bretter und 20 Brote. Tippe auf einen Eintrag im Frachtbrief, um die Burg zu prüfen.",
@@ -337,19 +335,17 @@ export const de: Dict = {
   "rank.4": "Burgstadt",
   "rank.5": "Hauptstadt",
   "town.unlockCastle": "Burgausbau",
-  // missions VII–IX (D-32): translated in batch 06
   "menu.m7": "VII. Fisch zur Fastenzeit",
   "menu.m7Sub": "Fischer ans Ufer, Burg braucht eine Brücke",
   "menu.m8": "VIII. Pflaster vor dem Sturm",
   "menu.m8Sub": "Stein fürs Pflaster muss zuerst ankommen",
   "menu.m9": "IX. Bier zur Hochzeit",
   "menu.m9Sub": "Sägewerk und Köhlerei streiten um Holz",
-  // free valley seasons (D-33): translated in batch 06
   "season.spring": "Frühling",
   "season.summer": "Sommer",
   "season.autumn": "Herbst",
   "season.winter": "Winter",
-  "season.when": "{season} · Tag {day}",
+  "season.when": "{season} · Jahr {year}",
   "season.notice.season": "In {time} beginnt {season}.",
   "season.notice.thaw-start": "In {time} bremst Tauwetter die Feldwege.",
   "season.notice.thaw-end": "In {time} trocknen die Feldwege ab.",

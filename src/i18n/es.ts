@@ -193,8 +193,6 @@ export const es: Dict = {
   "contract.time": "Tiempo",
   "contract.delivered": "Entregado",
   "contract.left": "Plata",
-
-  // Translation round 05: tutorial, market, building and settlement ledgers.
   "tutorial.m1.from": "Una carta del alcaide",
   "tutorial.m1.skip": "Omitir",
   "tutorial.m1.step1": "El alcaide pide 30 tablas y 20 panes. Toca una entrada de la carta de porte para inspeccionar el castillo.",
@@ -337,19 +335,17 @@ export const es: Dict = {
   "rank.4": "Fortaleza",
   "rank.5": "Capital",
   "town.unlockCastle": "ampliación del castillo",
-  // missions VII–IX (D-32): translated in batch 06
   "menu.m7": "VII. Pescado de Cuaresma",
   "menu.m7Sub": "Pescador a la orilla; castillo con puente",
   "menu.m8": "VIII. Adoquines a tiempo",
   "menu.m8Sub": "Primero lleva piedra para empedrar la vía",
   "menu.m9": "IX. Cerveza para la boda",
   "menu.m9Sub": "Aserradero y carbonera se disputan la leña",
-  // free valley seasons (D-33): translated in batch 06
   "season.spring": "Primavera",
   "season.summer": "Verano",
   "season.autumn": "Otoño",
   "season.winter": "Invierno",
-  "season.when": "{season} · día {day}",
+  "season.when": "{season} · año {year}",
   "season.notice.season": "En {time} comienza {season}.",
   "season.notice.thaw-start": "En {time}, el deshielo frenará los caminos de tierra.",
   "season.notice.thaw-end": "En {time}, los caminos de tierra se secarán.",

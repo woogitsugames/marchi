@@ -193,8 +193,6 @@ export const fr: Dict = {
   "contract.time": "Temps",
   "contract.delivered": "Livré",
   "contract.left": "Argent",
-
-  // Translation round 05: tutorial, market, building and settlement ledgers.
   "tutorial.m1.from": "Une lettre du châtelain",
   "tutorial.m1.skip": "Passer",
   "tutorial.m1.step1": "Le châtelain commande 30 planches et 20 pains. Touchez une ligne de la lettre de voiture pour examiner le château.",
@@ -337,19 +335,17 @@ export const fr: Dict = {
   "rank.4": "Place forte",
   "rank.5": "Capitale",
   "town.unlockCastle": "agrandissement du château",
-  // missions VII–IX (D-32): translated in batch 06
   "menu.m7": "VII. Poisson pour le carême",
   "menu.m7Sub": "Rive pour le pêcheur, pont pour le château",
   "menu.m8": "VIII. Pavés avant l'orage",
   "menu.m8Sub": "La pierre doit arriver avant la pose des pavés",
   "menu.m9": "IX. Bière pour les noces",
   "menu.m9Sub": "Scierie et charbonnière se disputent le bois",
-  // free valley seasons (D-33): translated in batch 06
   "season.spring": "Printemps",
   "season.summer": "Été",
   "season.autumn": "Automne",
   "season.winter": "Hiver",
-  "season.when": "{season} · jour {day}",
+  "season.when": "{season} · année {year}",
   "season.notice.season": "Nouvelle saison dans {time} : {season}.",
   "season.notice.thaw-start": "Dans {time}, le dégel ralentira les chemins de terre.",
   "season.notice.thaw-end": "Dans {time}, les chemins de terre sécheront.",
