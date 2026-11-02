@@ -205,16 +205,18 @@ test('events: every third 15-minute season offers an advance-announced 25% fair'
   st.tick += EVENT_SEASON_TICKS;
   events = generate(st, events);
   eq(events.fair, null, 'bonus ends naturally');
+  const cycleState = advanced();
+  let cycleEvents = freshValleyEvents();
   let total = 0;
   for (let season = 0; season < 14; season++) {
-    st.tick = season * EVENT_SEASON_TICKS;
-    events = generate(st, events);
-    if (events.fair?.startTick === st.tick) {
+    cycleState.tick = season * EVENT_SEASON_TICKS;
+    cycleEvents = generate(cycleState, cycleEvents);
+    if (cycleEvents.fair?.startTick === cycleState.tick) {
       total++;
-      checkGoods(st, events);
+      checkGoods(cycleState, cycleEvents);
     }
   }
-  assert(total >= 3, 'regular seasonal fair cadence');
+  eq(total, 4, 'four fairs in 14 seasons, once every third');
   eq(FAIR_EVERY_SEASONS, 3, 'every third season');
 });
 
@@ -224,6 +226,7 @@ test('events: unreserved warehouse and producer outputs are merchant-only surplu
   const sawmill = st.buildings.find((b) => b.type === 'sawmill')!;
   const castle = st.buildings.find((b) => b.type === 'castle')!;
   castle.stock.planks = 200;
+  sawmill.stock.planks = 0; // the sandbox starts with six planks; isolate warehouse surplus
   sawmill.stock.wood = 50; // input, not sawmill output
   eq(merchantSurplus(st).planks ?? 0, 0, 'do not sell castle stock');
   eq(merchantSurplus(st).wood ?? 0, 0, 'do not sell producer inputs');
