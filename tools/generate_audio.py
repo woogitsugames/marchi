@@ -6,6 +6,7 @@ No recordings, samples, instruments, sound libraries or externally-owned audio.
 """
 from __future__ import annotations
 
+import argparse
 import math
 import subprocess
 from pathlib import Path
@@ -73,6 +74,27 @@ def chirp(duration: float = 0.15, f0: float = 900, f1: float = 1600) -> np.ndarr
     return (np.sin(phase) * e).astype(np.float32)
 
 
+def wooden_alert_strike(seed: int, pitch: float, seconds: float = 0.235) -> np.ndarray:
+    """A damped wooden clack with a noisy 0.7-1.4 kHz body, not a pitched beep."""
+    n = round(seconds * FS)
+    t = times(n)
+    rng = np.random.default_rng(seed)
+    # Per-effect RNG: --only-ui-alerts does not alter unrelated sound assets.
+    grain = rng.standard_normal(n).astype(np.float32)
+    bandpass = signal.butter(3, (690, 1490), btype='bandpass', fs=FS, output='sos')
+    mid = signal.sosfilt(bandpass, grain).astype(np.float32)
+    mid /= max(float(np.sqrt(np.mean(mid * mid))), 1e-8)
+    # Inharmonic partials evoke an uneven board, not a tuned bell.
+    rings = (0.60 * np.sin(2 * math.pi * (pitch * t + 45 * t * t) + 0.4)
+             + 0.27 * np.sin(2 * math.pi * (1.37 * pitch * t + 31 * t * t) + 1.9)
+             + 0.15 * np.sin(2 * math.pi * (1.68 * pitch * t - 17 * t * t) + 2.8))
+    body = (0.72 * mid + 0.28 * rings) * np.exp(-t * 17.0)
+    # A little low wood resonance remains; mobile-speaker content dominates.
+    wood = 0.09 * np.sin(2 * math.pi * 145 * t + 0.1) * np.exp(-t * 30)
+    impact = (body + wood) * (1 - np.exp(-t * 1250))
+    return impact.astype(np.float32)
+
+
 def one_shot(kind: str) -> np.ndarray:
     lengths = {
         'cart-dirt': 4.8, 'cart-cobble': 3.8, 'mill-wheel': 5.5,
@@ -81,7 +103,7 @@ def one_shot(kind: str) -> np.ndarray:
         'load-plank': 1.1, 'unload-plank': 1.35,
         'load-log': 1.25, 'unload-log': 1.45,
         'axe': 0.85, 'saw': 1.9, 'oven': 1.3,
-        'wax-seal': 1.05, 'stall': 0.62, 'wood': 0.28, 'paper': 0.48, 'error': 0.48,
+        'wax-seal': 1.05, 'stall': 0.54, 'wood': 0.28, 'paper': 0.48, 'error': 0.48,
     }
     duration = lengths[kind]
     n = round(duration * FS)
@@ -138,14 +160,15 @@ def one_shot(kind: str) -> np.ndarray:
         y += noise(n, low=140, high=2200) * np.exp(-((t - 0.18) / 0.25) ** 2) * 0.04
         place(y, 0.53, thunk(120, 0.44, 0.1), 0.37)
     elif kind == 'stall':
-        place(y, 0.08, thunk(86, 0.44, 0.08), 0.34)
-        place(y, 0.27, thunk(106, 0.27, 0.07), 0.2)
+        place(y, 0.045, wooden_alert_strike(5901, 870), 0.38)
+        place(y, 0.205, wooden_alert_strike(5902, 1040), 0.30)
     elif kind == 'wood':
         place(y, 0.04, thunk(245, 0.22, 0.12), 0.39)
     elif kind == 'paper':
         y += noise(n, low=350, high=3300) * np.exp(-((t - 0.17) / 0.15) ** 2) * 0.09
     elif kind == 'error':
-        place(y, 0.05, thunk(85, 0.42, 0.08), 0.39)
+        place(y, 0.045, wooden_alert_strike(5911, 1010), 0.36)
+        place(y, 0.145, wooden_alert_strike(5912, 790), 0.27)
     return y
 
 
@@ -234,6 +257,16 @@ def render(name: str, y: np.ndarray, long: bool = False) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '--only-ui-alerts', action='store_true',
+        help='Safely regenerate just ui/stall and ui/error without touching CC0 field recordings',
+    )
+    args = parser.parse_args()
+    if args.only_ui_alerts:
+        for name in ('stall', 'error'):
+            render(f'ui/{name}', one_shot(name))
+        return
     for kind, dur in [('morning', 36), ('river', 34), ('rain', 32), ('evening', 40)]:
         render(f'ambient/{kind}', ambient(kind, dur), long=True)
     for name in ['cart-dirt', 'cart-cobble', 'horse-snort', 'bridge-wood',
