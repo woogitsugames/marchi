@@ -52,6 +52,8 @@ const DPR_CAP: Readonly<Record<Quality, number>> = { low: 1.25, high: 2, ultra: 
 /** Menu: dawn at the river crossing. */
 const MENU_TIME = 0.262;
 const MENU_TARGET = { x: 41.5 * CELL, z: 35 * CELL, dist: 52, yaw: -0.75 };
+/** Building types whose chimney smokes while working (smoke points come from the models). */
+const SMOKES_WHEN_WORKING = new Set<string>(['bakery', 'charcoalBurner', 'malthouse', 'brewery']);
 
 const MODEL_TEXTURES: [MatKey, TextureName][] = [
   ['wood', 'wood_planks'],
@@ -85,6 +87,7 @@ class View implements WorldView {
   private water: WaterView | null = null;
   private roads: RoadField | null = null;
   private overlay: OverlayData | null = null;
+  private siteReq: number[] | null = null;
   private vegetation: VegetationView | null = null;
   private cover: GroundCover | null = null;
   private buildings: BuildingsView | null = null;
@@ -252,6 +255,7 @@ class View implements WorldView {
     this.setSelection(this.selection);
     this.ghost.set(null, null, null, this.overlay);
     this.setPlacementGhost(this.ghostReq);
+    this.overlay!.setSites(this.siteReq);
   }
 
   private disposeWorld(): void {
@@ -261,6 +265,7 @@ class View implements WorldView {
     if (this.wagons) { this.worldGroup.remove(this.wagons.group); this.wagons.dispose(); }
     this.vegetation?.dispose();
     if (this.cover) { this.worldGroup.remove(this.cover.group); this.cover.dispose(); this.cover = null; }
+    if (this.overlay) { this.overlay.texture.dispose(); this.overlay.siteTexture.dispose(); }
     this.terrain = null;
   }
 
@@ -288,8 +293,8 @@ class View implements WorldView {
     for (const b of w.state.buildings) {
       const info = this.buildings.info.get(b.id);
       if (!info || !info.smoke) continue;
-      // bakery smokes when working; other hearths smoulder at night/in the morning
-      const on = b.type === 'bakery' ? b.status.k === 'WORKING' : false;
+      // ovens and kilns smoke while working: bakery, charcoal burner, malthouse kiln, brewery copper
+      const on = SMOKES_WHEN_WORKING.has(b.type) && b.status.k === 'WORKING';
       list.push({ pos: info.smoke, on });
     }
     if (force || list.length) this.fx.setEmitters(list);
@@ -528,6 +533,11 @@ class View implements WorldView {
   }
 
   // ------------------------------------------------------------------ overlays
+  setSiteHighlight(cells: readonly number[] | null): void {
+    this.siteReq = cells ? cells.slice() : null;
+    this.overlay?.setSites(this.siteReq);
+  }
+
   setRoadPreview(p: RoadPreview | null): void {
     this.overlay?.setPreview(p);
   }

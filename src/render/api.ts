@@ -80,6 +80,9 @@ export interface WorldView {
   setRoadPreview(p: RoadPreview | null): void;
   /** Translucent building model + ground outline, gate and offending cell; null hides it. */
   setPlacementGhost?(g: PlacementGhost | null): void;
+  /** Shade the ground cells where the building being placed may stand (quarry: rock; fisher: by the
+   *  water); null clears. Optional: views without it simply show no hint. */
+  setSiteHighlight?(cells: readonly number[] | null): void;
   /** Screen position of a cell's centre at ground (bridge deck) height. Projection only, no ray-march. */
   cellToScreen?(cell: number): ScreenAnchor;
   setOverlay(o: Overlay): void;

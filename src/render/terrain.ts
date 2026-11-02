@@ -57,6 +57,8 @@ export class TerrainView {
       tGround: { value: this.groundTex },
       tRoad: { value: roads.texture },
       tOver: { value: overlay.texture },
+      tSite: { value: overlay.siteTexture },
+      uSiteOn: overlay.siteOn,
       tNoise: { value: noiseTexture() },
       uMap: { value: new Vector2(hf.sizeX, hf.sizeZ) },
       uRoadTexel: { value: new Vector2(1 / roads.tw, 1 / roads.th) },
@@ -270,6 +272,8 @@ uniform sampler2DArray tOrm;
 uniform sampler2D tGround;
 uniform sampler2D tRoad;
 uniform sampler2D tOver;
+uniform sampler2D tSite;
+uniform float uSiteOn;
 uniform sampler2D tNoise;
 uniform vec2 uMap;
 uniform vec2 uRoadTexel;
@@ -526,6 +530,15 @@ const FRAG_MAIN = /* glsl */ `
     pv *= 0.25 + 0.75 * hatch;
     pb *= 0.25 + 0.75 * hatch;
   }
+  if (uSiteOn > 0.5) {
+    // suitable ground for the placement: sparse cross-hatching in ochre, like a surveyor's shading
+    float site = smoothstep(0.3, 0.6, texture(tSite, cuv).r);
+    float h1 = abs(fract((wxz.x + wxz.y) * 0.45) - 0.5) * 2.0;
+    float h2 = abs(fract((wxz.x - wxz.y) * 0.45) - 0.5) * 2.0;
+    float cross = max(1.0 - smoothstep(0.12, 0.3, h1), 1.0 - smoothstep(0.12, 0.3, h2));
+    float k = site * (0.18 + 0.5 * cross);
+    ovCol = mix(ovCol, uOchre * 0.82, k); ovA = max(ovA, k * 0.75);
+  }
   if (pv > 0.0) { ovCol = mix(ovCol, uOchre, pv); ovA = max(ovA, pv * 0.65); }
   if (pb > 0.0) { ovCol = mix(ovCol, uClay, pb); ovA = max(ovA, pb * 0.6); }
   float bad = smoothstep(0.3, 0.6, ov.a);
@@ -602,6 +615,6 @@ function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {
       .replace('#include <normal_fragment_maps>', 'normal = normalize((viewMatrix * vec4(Nw, 0.0)).xyz);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += tEmis;');
   };
-  m.customProgramCacheKey = () => 'marchia-terrain-3' + (m.userData.low ? '-low' : '');
+  m.customProgramCacheKey = () => 'marchia-terrain-4' + (m.userData.low ? '-low' : '');
   return m;
 }
