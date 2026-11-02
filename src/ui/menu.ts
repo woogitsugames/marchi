@@ -3,7 +3,7 @@
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
 import { GOODS, MISSIONS, topStallCauses, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
-import { bdi, buildingName, clock, fmtInt, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
 import { saveErrorMessageKey } from '../platform/saveGate';
 import { VALLEY_SLOTS, type SlotSummary, type ValleySlot } from '../platform/save';
 import { iconSvg } from './icons';
@@ -498,7 +498,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const c = st.mission.contract;
   const castle = c ? st.buildings.find((b) => b.id === c.castle) : null;
   const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
-    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: `${fmtInt(Math.min(castle?.stock[g] ?? 0, c.need[g]))}/${fmtInt(c.need[g])}`, good: goodName(g) })}</span></span>`).join('') : '';
+    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: fmtRatio(Math.min(castle?.stock[g] ?? 0, c.need[g]), c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
   const def = MISSIONS[st.mission.id];
   const sealRow = [0, 1, 2].map((i) => `<span class="s${i < seals ? '' : ' off'}">${iconSvg('seal', 52)}</span>`).join('');
   // the castellan's own words by seals (or the loss), the generic line for missions without letters

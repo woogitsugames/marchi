@@ -866,6 +866,8 @@ body.is-side .sheet-grip::before { display: none; }
 .letter-scrim { cursor: pointer; transition: opacity var(--t-fast) var(--ease); }
 .letter-scrim.is-out { opacity: 0; }
 .letter .actions.l-more { margin-top: 8px; }
+/* sheets take focus on open for assistive tech (D-43 a11y); the container itself draws no ring */
+section.sheet:focus { outline: none; }
 
 @media (max-height: 500px) {
   .scrim { align-items: flex-start; padding-top: calc(var(--safe-t) + 34px); }

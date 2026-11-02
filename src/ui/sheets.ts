@@ -82,8 +82,9 @@ export class Sheets {
     sheet.el.classList.add('is-entering');
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
-    // keyboard and screen-reader focus into the sheet (the close button), without scrolling the scene
-    requestAnimationFrame(() => (sheet.el.querySelector<HTMLElement>('.close') ?? sheet.el).focus({ preventScroll: true }));
+    // keyboard and screen-reader focus into the sheet (the dialog itself: announced by its title, no ring on the
+    // close button for touch players; Tab reaches the close button next)
+    requestAnimationFrame(() => sheet.el.focus({ preventScroll: true }));
     this.onChange?.();
     return sheet;
   }

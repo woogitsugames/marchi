@@ -471,3 +471,12 @@ letter "Szlak nie do uratowania" with the cost, the silver and the possible refu
 Not covered (left to the deadline): a connected castle whose producers cannot reach their inputs, or a time
 shortfall — those are forecasts (D-38), not dead ends. (decided)
 
+**D-43 — One formatting module for numbers and time (Intl).** `src/ui/fmt.ts` holds every number / time formatter
+of the UI: `fmtInt`, `fmtDec`, `fmtPercent`, `fmtRatio`, `fmtDuration` (game clock m:ss / h:mm:ss) and
+`fmtDayTime` (24 h). Latin digits in every language (`-u-nu-latn`, as before), grouping, decimal separator, the
+percent sign and spacing follow the language (de "90 %", hi "12,34,567"). Formatters are cached for the current
+language and dropped on a switch (`setFmtLang`, called from `onLangChange` in `format.ts`); the module imports no
+i18n code so it runs in Node tests (`tests/fmt.test.ts`: en, de, hi, ar, pl). `format.ts` keeps `clock`,
+`ticksClock`, `dayClock` as thin wrappers so existing imports stay. `hud.ts` is not touched (HUD redesign in
+progress); it already formats through these wrappers. (decided)
+

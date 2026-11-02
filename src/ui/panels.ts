@@ -7,7 +7,7 @@ import {
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -141,7 +141,7 @@ function stockHtml(world: World, b: Building, pace: PaceLog): string {
     const full = cap > 0 && held + promised >= cap;
     const small = b.capOverride >= 0 && b.capOverride < (def.storeCap ?? 0)
       ? `<div class="s-hint cap-small">${iconSvg('storage_full', 18)}<span>${tHtml('why.capSmall', { n: fmtInt(cap) })}</span></div>` : '';
-    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(held)}/${fmtInt(cap)}` })}</span></div>
+    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: fmtRatio(held, cap) })}</span></div>
       <div class="cap-bar${full ? ' is-full' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
     if (rankGated(world) || world.state.mission.roadStone) {

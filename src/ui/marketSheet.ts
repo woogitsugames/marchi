@@ -3,7 +3,7 @@
 import { BUILDINGS, MARKET, RANKS, sandboxStatus, type BuildingType, type World } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
-import { bdi, fmtDec, fmtInt, goodName, rankName, tHtml, ticksClock } from './format';
+import { bdi, fmtDec, fmtInt, fmtPercent, goodName, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { unlockList } from './hud';
@@ -41,7 +41,7 @@ export function marketSheet(world: () => World): SheetContent {
         const low = pct <= 75;
         return `<li class="ms-good${low ? ' is-low' : ''}">${iconSvg(p.good, 28, goodName(p.good))}
           <span class="ms-name"><b>${esc(goodName(p.good))}</b><small>${tHtml('market.base', { n: fmtInt(p.base) })} · ${tHtml('market.sold', { n: fmtInt(p.sold) })}</small></span>
-          <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(`${fmtInt(pct)}%`)}</small></span>
+          <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(fmtPercent(pct / 100))}</small></span>
           <span class="ms-sat" title="${esc(t('market.sat'))}"><span class="pl-bar"><i style="width:${sat.toFixed(1)}%"></i></span></span></li>`;
       }).join('');
       const headRow = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
