@@ -1,4 +1,4 @@
-# D-44 — Zdarzenia w Wolnej dolinie (projekt, bez integracji)
+# D-NN (propozycja) — Zdarzenia w Wolnej dolinie (projekt, bez integracji)
 
 **Podstawa:** D-21 (rozgrywka bez kar, energii i FOMO); D-29 (docs/design/sandbox.md: 10 towarów, rangi, handel); D-33 (docs/design/seasons.md: działające pory roku). Niniejsze zlecenie dodaje tylko nowy moduł src/sim/proposals/events.ts, testy i treści. **Nie dodaje jeszcze zdarzeń do działającej gry, zapisu ani HUD.**
 
@@ -8,7 +8,7 @@ Zamówienia, jarmarki i kupiec są **dobrowolnymi okazjami logistycznymi**, nie 
 
 Każde losowanie korzysta wyłącznie z czterowyrazowego RNG zapisanego w SimState.rng i zegara SimState.tick (10 ticków na sekundę). Generator zwraca nowy stan zdarzeń i nowy RNG. Dopóki nie ma integracji, nic nie mutuje świata, zapasów ani pieniędzy.
 
-**Niezgodność starszej specyfikacji:** projekt sandbox.md podawał sześciominutowy sezon, ale działający system D-33 ma **15 minut na sezon = 9 000 ticków**. Nowy moduł przyjmuje tę rzeczywistą wartość. Aktualny silnik w seasons.ts i town.ts już nadaje jesienią **+25% ceny piwa**. Integracja D-44 ma **zastąpić** ten dotychczasowy bonus dynamicznym jarmarkiem; nie wolno naliczyć jednocześnie dwóch bonusów ani dublować jarmarków.
+**Niezgodność starszej specyfikacji:** projekt sandbox.md podawał sześciominutowy sezon, ale działający system D-33 ma **15 minut na sezon = 9 000 ticków**. Nowy moduł przyjmuje tę rzeczywistą wartość. Aktualny silnik w seasons.ts i town.ts już nadaje jesienią **+25% ceny piwa**. Integracja D-NN (propozycja) ma **zastąpić** ten dotychczasowy bonus dynamicznym jarmarkiem; nie wolno naliczyć jednocześnie dwóch bonusów ani dublować jarmarków.
 
 ## Dostępność — dziesięć towarów i rangi 0–5
 
@@ -75,7 +75,7 @@ Proponowane nowe pole przyszłego SimState: valleyEvents: ValleyEventState. Stan
 
 proposeValleyEvents(snapshot, previousEvents) zwraca { events, rng }. Wejście nie jest mutowane; lokalna implementacja następnego kroku sfc32 zachowuje algorytm z rng.ts. Kolejność losowań jest stała: **jarmark, zamówienie, kupiec**. Nie losować z renderowania lub z asynchronicznych callbacków; wywoływać raz na krok w stabilnym punkcie i **zapisywać events i rng jednocześnie**. Kolejny przebieg po save/load musi dać identyczny wynik. Dla misji innych niż sandbox brak ofert i brak dodatkowego zużycia RNG.
 
-Wdrożenie w osobnym PR musi obejmować: migrację wersji zapisu i neutralną inicjalizację pola; deterministyczne wywołanie generatora z tym samym tickiem co market i ledger; cztery komendy dla zamówienia i kupca; atomowe ledger/stock/silver/renown; zastąpienie bonusu piwa w seasons.ts/town.ts; dodanie kluczy i18n; testy fizycznej konserwacji towarów, powtórzenia replay, cold/warm save i zbiegu transakcji z rezerwacją do wozu. **Nie ma żadnej zmiany plików istniejącej symulacji w D-44.**
+Wdrożenie w osobnym PR musi obejmować: migrację wersji zapisu i neutralną inicjalizację pola; deterministyczne wywołanie generatora z tym samym tickiem co market i ledger; cztery komendy dla zamówienia i kupca; atomowe ledger/stock/silver/renown; zastąpienie bonusu piwa w seasons.ts/town.ts; dodanie kluczy i18n; testy fizycznej konserwacji towarów, powtórzenia replay, cold/warm save i zbiegu transakcji z rezerwacją do wozu. **Nie ma żadnej zmiany plików istniejącej symulacji w D-NN (propozycja).**
 
 ## 5. Nowy HUD: karta pod panelem kontraktu
 
