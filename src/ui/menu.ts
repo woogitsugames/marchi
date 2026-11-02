@@ -252,8 +252,8 @@ export function valleySheet(act: ValleyActions): SheetContent {
     let acts: string;
     if (conf) {
       const ask = conf === 'delete'
-        ? t('valley.confirmDelete', { name, n: slotNumeral(v) })
-        : t('valley.confirmFresh', { name, n: slotNumeral(v) });
+        ? t('valley.confirmDelete', { name, n: slotNumeral(v), renown: fmtInt(s.renown) })
+        : t('valley.confirmFresh', { name, n: slotNumeral(v), renown: fmtInt(s.renown) });
       acts = `<p class="slot-ask" role="alert">${esc(ask)}</p>
         <div class="slot-acts two"><button class="btn paper cf" data-a="keep">${esc(t('valley.keep'))}</button>
         <button class="btn primary cf" data-a="yes" data-slot="${v}">${esc(t(conf === 'delete' ? 'valley.yesDelete' : 'valley.yesFresh'))}</button></div>`;
@@ -299,6 +299,8 @@ export interface GameMenuActions {
 
 /** slot: the free-valley ledger being written to (shown under the title), null for contracts. */
 export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySlot | null = null): SheetContent {
+  // a free-valley settlement is hours of work: "start over" asks first (contracts restart at once)
+  let asking = false;
   return {
     key: 'gamemenu',
     update(sheet: Sheet) {
@@ -306,16 +308,23 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
       sheet.kicker.textContent = t('menu.paused');
       sheet.title.textContent = world.state.mission.contract ? t('menu.contractItem') : t('hud.sandbox');
       const note = slot ? `<p class="slot-note"><span class="slot-no" aria-hidden="true">${slotNumeral(slot)}</span>${esc(t('valley.saving', { n: slotNumeral(slot) }))}</p>` : '';
+      const restart = asking && slot
+        ? `<div class="slot-row is-asking pause-ask"><span class="slot-no" aria-hidden="true">${slotNumeral(slot)}</span><div class="slot-main">
+            <p class="slot-ask" role="alert">${esc(t('valley.confirmFresh', { n: slotNumeral(slot), name: rankName(world.state.town?.rank ?? 0), renown: fmtInt(world.state.town?.renown ?? 0) }))}</p>
+            <div class="slot-acts two"><button class="btn paper cf" data-a="keep">${esc(t('valley.keep'))}</button>
+            <button class="btn primary cf" data-a="restart">${esc(t('valley.yesFresh'))}</button></div></div></div>`
+        : `<button class="btn cf" data-a="${slot ? 'ask' : 'restart'}">${esc(t('menu.restart'))}</button>`;
       const html = `${note}<div class="sheet-actions" style="flex-direction:column">
         <button class="btn primary cf" data-a="resume">${esc(t('menu.resume'))}</button>
         <button class="btn cf" data-a="settings">${esc(t('menu.settings'))}</button>
-        <button class="btn cf" data-a="restart">${esc(t('menu.restart'))}</button>
+        ${restart}
         <button class="btn cf" data-a="menu">${esc(t('menu.toMenu'))}</button></div>`;
       if (setHtml(sheet.body, html)) {
         sheet.body.querySelectorAll<HTMLElement>('[data-a]').forEach((b) => b.addEventListener('click', () => {
           const a = b.dataset.a;
           if (a === 'resume') act.resume();
           if (a === 'settings') act.settings();
+          if (a === 'ask' || a === 'keep') { asking = a === 'ask'; this.update(sheet); }
           if (a === 'restart') act.restart();
           if (a === 'menu') act.toMenu();
         }));

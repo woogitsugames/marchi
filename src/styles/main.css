@@ -1614,3 +1614,5 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 /* pause menu: which ledger the free valley is written to */
 .slot-note { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 15px; color: var(--ink-soft); }
 .slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding: 0 8px 0 0; }
+.pause-ask { padding: 10px 10px 12px 6px; border-bottom: 0; }
+.pause-ask .slot-no { font-size: 22px; }
