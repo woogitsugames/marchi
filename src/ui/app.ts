@@ -6,7 +6,7 @@ import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } fr
 import {
   TICK_HZ, applyCommand, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
-  isRaining,
+  isRaining, newPaceLog, samplePace, type PaceLog,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, WorldView } from '../render/api';
@@ -90,6 +90,8 @@ export class App implements PanelNav {
   private params: URLSearchParams;
   private layers: { markers: HTMLElement; hud: HTMLElement; sheets: HTMLElement; tutorial: HTMLElement; menu: HTMLElement; overlay: HTMLElement };
   world: World;
+  /** Contract pace samples (UI-owned, never in the state): the waybill / castle-card forecast. */
+  pace: PaceLog = newPaceLog();
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
   private missionId: MissionKey = 'm1';
@@ -339,6 +341,7 @@ export class App implements PanelNav {
 
   private setWorld(w: World): void {
     this.world = w;
+    this.pace = newPaceLog();
     this.loop = new GameLoop(w);
     this.loop.onTick = () => this.onTick();
     this.prevAudio = captureAudioState(w.state);
@@ -483,6 +486,7 @@ export class App implements PanelNav {
         const c = this.world.state.mission.contract;
         if (c) this.go('building', c.castle, true);
       },
+      openBuilding: (id) => this.go('building', id, true),
       waybillCollapsed: (c) => { this.prefs.waybillCollapsed = c; savePrefs(this.prefs); },
       openMarket: () => this.openMarket(),
       rankUp: (r) => {
@@ -497,7 +501,7 @@ export class App implements PanelNav {
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
-    this.hud.update(this.world);
+    this.hud.update(this.world, this.pace);
     requestAnimationFrame(() => this.measureRail());
   }
 
@@ -534,7 +538,7 @@ export class App implements PanelNav {
     const alpha = this.loop.advance(dt);
     this.view.frame(alpha, dt);
     if (this.mode === 'game') {
-      this.hud?.update(this.world);
+      this.hud?.update(this.world, this.pace);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false);
       this.tutorial?.update(dt);
       this.build.frame();
@@ -559,6 +563,7 @@ export class App implements PanelNav {
 
   private onTick(): void {
     this.view.afterTick();
+    samplePace(this.pace, this.world);
     if (this.prevAudio && audio.ready) {
       const l = this.view.audioListener?.() ?? { x: 0, z: 0, yaw: 0 };
       const tr = this.world.terrain;
