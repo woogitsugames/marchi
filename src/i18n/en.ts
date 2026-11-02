@@ -380,4 +380,5 @@ export const en: FullDict = {
   'season.upstream': '{why} Slower supply, not a stall.',
   'season.iceWinter': 'Winter ice recedes on its own; the bridge is not damaged.',
   'wagon.slowThaw': 'thaw — {pct}% of normal speed; cobbles stay firm',
+  'demolish.confirm': '{name} cannot be built again in this mission. Tap again to demolish.',
 };

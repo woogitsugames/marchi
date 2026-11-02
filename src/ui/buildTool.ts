@@ -42,6 +42,8 @@ export interface BuildHost {
   close(): void;
   /** Area of the scene not covered by HUD, for the first ghost position. */
   sceneCentre(): [number, number];
+  /** The open sheet already offers this building's undo (its card): no second undo button. */
+  undoInSheet(building: number): boolean;
 }
 
 interface Located { x: number; y: number; px: number }
@@ -475,7 +477,8 @@ export class BuildTool {
   }
 
   private updateUndo(world: World): void {
-    const u = lastUndoable(world);
+    const found = lastUndoable(world);
+    const u = found && !this.host.undoInSheet(found.building) ? found : null;
     const sig = u ? `${u.building}|${u.secondsLeft}|${u.refund}` : '';
     if (sig === this.undoSig) return;
     this.undoSig = sig;

@@ -358,9 +358,9 @@ export const pl = {
   'town.unlockCastle': 'rozbudowa zamku',
   // missions VII-IX (D-32): see PENDING_KEYS
   'menu.m7': 'VII. Ryby na post',
-  'menu.m7Sub': 'Rybak potrzebuje brzegu, zamek — mostu',
+  'menu.m7Sub': 'Rybak nad wodą, zamek za mostem',
   'menu.m8': 'VIII. Bruk przed burzą',
-  'menu.m8Sub': 'Kamień na bruk trzeba najpierw przywieźć',
+  'menu.m8Sub': 'Najpierw przywieź kamień na bruk',
   'menu.m9': 'IX. Piwo na wesele',
   'menu.m9Sub': 'Tartak i węglarz walczą o drewno',
   // free valley seasons (D-33): see PENDING_KEYS
@@ -382,6 +382,8 @@ export const pl = {
   'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
   'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
   'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
+  // demolish tool in contract missions: second tap confirms (see PENDING_KEYS)
+  'demolish.confirm': '{name}: w tej misji nie postawisz go ponownie. Dotknij jeszcze raz, by rozebrać.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -411,6 +413,7 @@ export const PENDING_KEYS = [
   'season.upstream',
   'season.iceWinter',
   'wagon.slowThaw',
+  'demolish.confirm',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
