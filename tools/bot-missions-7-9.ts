@@ -13,6 +13,8 @@ export type Strategy = {
   after: number;
   /** For the stone road lesson, wait for this much delivered, unreserved stone. */
   whenStone?: number;
+  /** Optional earlier action, e.g. wagons ahead of a stone-dependent road upgrade. */
+  setup?: { after: number; cmds: (w: World) => Command[] };
   cmds: (w: World) => Command[];
 };
 export type RunResult = {
@@ -37,8 +39,9 @@ export const STRATEGIES: Record<Mission789Id, Strategy[]> = {
   m8: [
     { name: 'nic / no action', after: 0, cmds: () => [] },
     { name: 'czesciowa / extra wagon @0:30', after: 30, cmds: (w) => [wagon(w)] },
-    { name: 'wlasciwa / cobble x45-60 after stone arrives', after: 45, whenStone: 16,
-      cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 44, 45, 60) }] },
+    { name: 'wlasciwa / wagon + cobble x45-56 from quarry', after: 45, whenStone: 12,
+      setup: { after: 30, cmds: (w) => [wagon(w)] },
+      cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 44, 45, 56) }] },
   ],
   m9: [
     { name: 'nic / no action', after: 0, cmds: () => [] },
@@ -63,11 +66,19 @@ export function runProposed(id: Mission789Id, strategy: Strategy): RunResult {
     const commandErrors: string[] = [];
     const invariantErrors: string[] = [];
     let actionSecond: number | null = null;
-    let executed = false, stoneUsed = 0, peakStoneStored = 0, maxStoneWagon = 0;
+    let executed = false, setupDone = false, stoneUsed = 0, peakStoneStored = 0, maxStoneWagon = 0;
     let fishCrossings = 0, contestedSamples = 0;
     const fishCells = new Set<number>();
     // Observation is orthogonal to the outcome: fish is transported through water-road cells.
     while (st.mission.result === 'running') {
+      if (strategy.setup && !setupDone && st.tick >= strategy.setup.after * TICK_HZ) {
+        for (const cmd of strategy.setup.cmds(w)) {
+          const r = applyCommand(w, cmd);
+          if (!r.ok) commandErrors.push(JSON.stringify({ command: cmd, error: r.err }));
+          else stoneUsed += r.stone ?? 0;
+        }
+        setupDone = true;
+      }
       if (!executed && st.tick >= strategy.after * TICK_HZ &&
           (strategy.whenStone === undefined || stoneAvailable(w) >= strategy.whenStone)) {
         for (const cmd of strategy.cmds(w)) {

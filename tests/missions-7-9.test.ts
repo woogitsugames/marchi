@@ -70,8 +70,8 @@ test('m8: dry quarry rejected, rocky quarry valid, NO_STONE until its 4-unit wag
     assert(findPath(w, q.gate, wh.gate, true), 'quarry can deliver to granary');
   });
   const repaired = runProposed('m8', STRATEGIES.m8[2]!);
-  assert(repaired.peakStoneStored >= 16, 'quarry brought 16 stone to granary before paving');
-  eq(repaired.stoneUsed, 16, '16 units consumed by cobbled road');
+  assert(repaired.peakStoneStored >= 12, 'quarry brought 12 stone to granary before paving');
+  eq(repaired.stoneUsed, 12, '12 units consumed by cobbled road');
   assert(repaired.maxStoneWagon <= 4 && repaired.maxStoneWagon > 0, 'heavy stone load limited to four');
   assert((repaired.actionSecond ?? 0) > 45, 'not paved without delivered material');
 });

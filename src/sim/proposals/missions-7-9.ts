@@ -51,7 +51,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
       { type: 'woodcutter', x: 14, y: 13, facing: 0, stock: { wood: 5 } },
       { type: 'sawmill', x: 28, y: 20, facing: 0, stock: { planks: 4 } },
       { type: 'stable', x: 46, y: 21, facing: 0 },
-      { type: 'quarry', ...M8_QUARRY_SITE, stock: { stone: 4 } },
+      { type: 'quarry', ...M8_QUARRY_SITE, stock: { stone: 8 } },
       { type: 'warehouse', x: 62, y: 20, facing: 0 },
       { type: 'farm', x: 18, y: 46, facing: 2, stock: { grain: 5 } },
       { type: 'mill', x: 42, y: 37, facing: 0, stock: { flour: 3 } },
@@ -71,7 +71,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     roadsOverWater: true,
     // The storm makes the southern dirt road expensive in wagon time.
     rain: [{ start: 1000, end: 7200 }],
-    contract: { planks: 30, bread: 20 },
+    contract: { planks: 24, bread: 20 },
     deadlineMin: 13, star3Min: 8, star2Min: 10.5,
   },
   m9: {
@@ -100,7 +100,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
       [[76, 40], [76, 41]],
     ],
     rain: [],
-    contract: { planks: 44, charcoal: 8, beer: 26 },
+    contract: { planks: 36, charcoal: 8, beer: 26 },
     deadlineMin: 13, star3Min: 8, star2Min: 10.5,
   },
 };
