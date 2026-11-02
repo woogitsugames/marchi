@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal,
+  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   UNDO_TICKS, WAGON_PRICE, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -167,21 +167,37 @@ function seasonNoteText(n: SeasonNote): string | null {
 
 /**
  * Season line on a building card (free valley): the building's own seasonal pace (farm, fisher, the
- * castle's fair), or, when it waits on a supplier that the season slows, that this is slower supply
- * and not a stall — the chain then ends at a working farm, not at a missing road.
+ * castle's fair). `own` only; the supplier and ice hints are separate (upstreamSeasonHtml, iceHtml).
  */
-function seasonHtml(world: World, id: number, chain: ReasonLink[]): string {
+function seasonHtml(world: World, id: number): string {
   const own = seasonNote(world, id);
-  if (own) {
-    const text = seasonNoteText(own);
-    return text ? `<div class="s-hint season-hint">${iconSvg(own.k === 'FAIR' ? 'beer' : 'snow', 18)}<span>${esc(text)}</span></div>` : '';
-  }
-  const last = chain[chain.length - 1];
-  if (!last || last.kind !== 'building' || last.id === id) return '';
-  const up = seasonNote(world, last.id);
-  const text = up && up.k === 'YIELD' && up.pct < 100 ? seasonNoteText(up) : null;
-  if (!text || !up || up.k !== 'YIELD') return '';
-  return `<div class="s-hint season-hint">${iconSvg('snow', 18)}<span>${esc(t('season.upstream', { why: text }))}</span></div>`;
+  if (!own) return '';
+  const text = seasonNoteText(own);
+  return text ? `<div class="s-hint season-hint">${iconSvg(own.k === 'FAIR' ? 'beer' : 'snow', 18)}<span>${esc(text)}</span></div>` : '';
+}
+
+/**
+ * A building waiting for an input that a season slows (winter farm or fisher behind a mill or a
+ * malthouse): "slower supply, not a stall", with one tap to that supplier. Shown above the chain
+ * when the status is NO_INPUT (e.g. CONTESTED: the rival is real, but the root is the slow farm).
+ */
+function upstreamSeasonHtml(world: World, id: number): string {
+  const up = seasonalSupplier(world, id);
+  const text = up ? seasonNoteText(up.note) : null;
+  if (!up || !text) return '';
+  const p = buildingById(world, up.from);
+  const go = p ? ` <button class="linkish" data-go="building:${p.id}">${esc(t(`building.${p.type}` as MessageKey))}</button>` : '';
+  return `<div class="s-hint season-hint">${iconSvg('snow', 18)}<span>${esc(t('season.upstream', { why: text }))}${go}</span></div>`;
+}
+
+/**
+ * The chain ends at a wagon held by ice on a wooden bridge: the same reassurance as the wagon card
+ * (a stone bridge does not freeze; in a seasonal winter, the ice recedes on its own).
+ */
+function iceHtml(world: World, chain: ReasonLink[]): string {
+  if (!chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_CLOSED')) return '';
+  const winter = seasonal(world) && seasonAt(world.state.tick) === 'winter' ? ` ${t('season.iceWinter')}` : '';
+  return `<div class="s-hint ice-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('wagon.iceHint') + winter)}</span></div>`;
 }
 
 export function buildingSheet(nav: PanelNav, id: number): SheetContent {
@@ -196,7 +212,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
       sheet.title.textContent = t(`building.${b.type}` as MessageKey);
-      const chain = explainBuilding(world, id);
+      const chain = explainBuilding(world, id, 5, true);
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;
       if (chain.length > 1) {
@@ -215,7 +231,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const u = lastUndoable(world);
       const undo = u && u.building === id
         ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}">${iconSvg('undo', 24)}<span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
-      setHtml(sheet.body, top + seasonHtml(world, b.id, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
+      // a winter-slowed supplier is the real root of a missing input: say so above the chain
+      const upSeason = upstreamSeasonHtml(world, b.id);
+      const lead = b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason;
+      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
       return true;
     },
     onClose() { nav.setGhost(null); },
@@ -269,7 +288,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       html += `<dl class="kv" style="margin-top:10px">${rows.join('')}</dl>`;
       let fix: RoadSuggestion | null = null, target = -1;
       if (waiting) {
-        const chain = explainWagon(world, id);
+        const chain = explainWagon(world, id, 4, true);
         if (chain.length > 1) html += `<div class="section-h">${esc(t('wagon.chain'))}</div>${chainHtml(world, chain, 'wagon', id)}`;
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;

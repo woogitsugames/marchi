@@ -368,7 +368,7 @@ export const pl = {
   'season.summer': 'Lato',
   'season.autumn': 'Jesień',
   'season.winter': 'Zima',
-  'season.when': '{season} · dzień {day}',
+  'season.when': '{season} · rok {year}',
   'season.notice.season': 'Za {time} nowa pora roku: {season}.',
   'season.notice.thaw-start': 'Za {time} roztopy spowolnią gruntowe drogi.',
   'season.notice.thaw-end': 'Za {time} drogi gruntowe obeschną.',
@@ -382,6 +382,11 @@ export const pl = {
   'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
   'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
   'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
+  // seasons / stall readability playtest fixes (2026-11-02): see PENDING_KEYS
+  'err.NO_STONE.coming': 'W drodze do spichlerzy: {incoming}, czeka w kamieniołomach: {quarry}.',
+  'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
+  'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
+  'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -411,6 +416,10 @@ export const PENDING_KEYS = [
   'season.upstream',
   'season.iceWinter',
   'wagon.slowThaw',
+  'err.NO_STONE.coming',
+  'err.NO_STONE.mining',
+  'err.NO_STONE.noQuarry',
+  'why.waitsCustomer',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -36,15 +36,19 @@ export function marketSheet(world: () => World): SheetContent {
       // prices: one row per good — icon, name, price now (and % of base), saturation bar
       const rows = sb.prices.map((p) => {
         const sat = Math.min(100, (p.saturation / MARKET.cap) * 100);
-        const low = p.pct <= 75;
+        // the % column is the price now against base: saturation and the autumn fair (cents carry both)
+        const pct = Math.floor((p.pct * p.fairPct) / 100);
+        const low = pct <= 75;
         return `<li class="ms-good${low ? ' is-low' : ''}">${iconSvg(p.good, 28, goodName(p.good))}
           <span class="ms-name"><b>${esc(goodName(p.good))}</b><small>${tHtml('market.base', { n: fmtInt(p.base) })} · ${tHtml('market.sold', { n: fmtInt(p.sold) })}</small></span>
-          <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(`${fmtInt(p.pct)}%`)}</small></span>
+          <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(`${fmtInt(pct)}%`)}</small></span>
           <span class="ms-sat" title="${esc(t('market.sat'))}"><span class="pl-bar"><i style="width:${sat.toFixed(1)}%"></i></span></span></li>`;
       }).join('');
       const headRow = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
+      const fair = sb.prices.find((p) => p.fairPct > 100);
+      const fairHint = fair ? `<div class="s-hint season-hint">${iconSvg(fair.good, 18, goodName(fair.good))}<span>${esc(t('season.effect.autumn-fair'))}</span></div>` : '';
       const prices = `<div class="section-h">${esc(t('market.prices'))}</div><ul class="ms-prices">${headRow}${rows}</ul>
-        <div class="s-hint">${esc(t('market.satHint'))}</div>`;
+        ${fairHint}<div class="s-hint">${esc(t('market.satHint'))}</div>`;
 
       // buildings: open ones plain, locked ones hatched with their rank
       const card = (b: BuildingType, rank: number): string => `<span class="ms-b${rank >= 0 ? ' is-locked' : ''}">${iconSvg(b as IconId, 28)}

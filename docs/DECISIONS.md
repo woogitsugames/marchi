@@ -319,3 +319,27 @@ New PL/EN keys are in `PENDING_KEYS`. (5) *Proof*: m1–m9 and lab state hashes 
 balance strategy, sampled every minute (29 runs); free-valley decent bot ranks 10.1 / 26.6 / 45.4 / 78.1 / 123.4 min
 (before 9.8 / 25.3 / 44.4 / 75.6 / 120.5; all inside the windows), earned 17 118 vs 17 488 silver; fuzz 40 runs and a
 3-run full-year sandbox fuzz without failures. (decided — numbers as in the design proposal; retune after playtest)
+
+**D-34 — Stall readability after the seasons / VII–IX playtest (no StallReason change).** Fixes F1, F2, F4–F9 of
+docs/research/2026-11-02-seasons-m7-9.md. Rule: the player's explanation is read-only diagnosis on top of the sim's
+statuses; building statuses, the dispatcher and contract hashes stay as they were. (1) *F1*: `seasonalSupplier()`
+(diagnose.ts) — a building at NO_INPUT (CONTESTED / NONE_AVAILABLE) or WAITING_UPSTREAM whose good comes from a
+season-slowed farm/fisher; the card shows "slower supply, not a stall" with a tap to that farm **above** the chain
+when the status is NO_INPUT, and its bubble is minor, never critical. (2) *F2*: `outputCustomer()` — OUTPUT_FULL
+.NO_DESTINATION with no granary at all (blockedBy −1) while a reachable customer still takes the good (consumer
+recipe, contract castle still short of it, open market). Player chains (`explainBuilding(…, customers = true)`) link
+it to that customer with "waiting for the customer to take more"; the bubble is calm. The sim's own chain (stall
+ledger) is unchanged, a truly stranded output stays critical. Rejected: a new OUTPUT_FULL cause in logistics.ts — it
+changes building statuses, hence every contract hash, for the same player text. (3) *F4*: `NO_STONE` gains
+`incoming` (stone promised to granaries/castle), `atQuarry` (unreserved at quarries) and `quarries`; the toast and the
+road preview add "on the way N, at the quarry M" / "still cutting" / "build a quarry". Command results are not state.
+(4) *F7*: a building whose stall root is a wagon held at a bridge charges `span:S:BRIDGE_CLOSED|JAM` (the key the
+wagon loop already uses), not `wagon:N:…` — **only in seasonal worlds**: `ledger.stallSeconds` is hashed, and making
+it general changes the final hash of 6 of 34 contract runs (m2 ×3, m4 ×2, m8 ×1; ledger only, hashes with the ledger
+stripped identical) and the v4 golden test. Contract letters in m2/m4 therefore still split a jam into span + wagon
+rows; extending it is a golden-hash re-baseline for the owner to decide. (5) *F5/F6/F8/F9* (UI): ice hint on a
+building chain that ends at an iced bridge; market % column = saturation × fair with an "autumn fair" line; the winter
+notice names fishers too; plaque "Zima · rok N" (`yearAt`) instead of a 24-min day that does not fit 15-min seasons.
+(6) *Proof*: m1–m9 + lab state hashes identical to the base build for every balance strategy sampled each minute
+(34 runs), `tools/balance.ts` output identical; tests/stall-readability.test.ts (F7 red without the fix). F3 and F10:
+proposals only, in the research doc. (decided)

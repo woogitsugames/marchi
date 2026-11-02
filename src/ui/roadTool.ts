@@ -11,6 +11,14 @@ export function errorText(err: CommandError): string {
     case 'TOO_STEEP': return t(key, { grade: iso(fmtInt(err.grade * 100)), max: iso(fmtInt(err.max * 100)) });
     case 'NO_COINS': return t(key, { need: iso(fmtInt(err.need)), have: iso(fmtInt(err.have)) });
     case 'LOCKED': return t(key, { rank: rankName(err.rank) });
+    case 'NO_STONE': {
+      // say where the stone is: on its way, waiting at a quarry, still being cut, or not mined at all
+      const base = t(key, { need: iso(fmtInt(err.need)), have: iso(fmtInt(err.have)) });
+      const where = err.incoming + err.atQuarry > 0
+        ? t('err.NO_STONE.coming', { incoming: iso(fmtInt(err.incoming)), quarry: iso(fmtInt(err.atQuarry)) })
+        : t(err.quarries > 0 ? 'err.NO_STONE.mining' : 'err.NO_STONE.noQuarry');
+      return `${base}. ${where}`;
+    }
     default: return t(key);
   }
 }

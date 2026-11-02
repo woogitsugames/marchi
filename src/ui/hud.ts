@@ -1,8 +1,8 @@
 // In-game HUD: waybill (contract, with tranches), the town plaque (free valley), tool rail with
 // coins/time/speed, toasts, rain notice, the rank-up letter, season line and season notices.
 import {
-  DAY_TICKS, GOODS, RANKS, START_DAY_FRACTION, WAGON_PRICE, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
-  thawing, timeOfDay, TICK_HZ,
+  GOODS, RANKS, WAGON_PRICE, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
+  thawing, timeOfDay, TICK_HZ, yearAt,
   type BuildingType, type Contract, type Good, type SandboxStatus, type Season, type World,
   emptyGoods,
 } from '../sim/index';
@@ -38,10 +38,6 @@ const SEASON_EFFECT: Partial<Record<Season | 'thaw', MessageKey>> = {
 };
 const CHANGE_ICON: Record<string, IconId> = { 'thaw-start': 'road_dirt', 'thaw-end': 'road_dirt', 'ice-start': 'bridge_ice', 'ice-end': 'bridge_ice' };
 
-/** Calendar day (1-based) at a tick, from the same clock as the time of day. */
-function dayAt(tick: number): number {
-  return Math.floor(START_DAY_FRACTION + tick / DAY_TICKS) + 1;
-}
 
 /** Goods of a tranche the castle already holds: deliveries count up in tranche order. */
 function trancheHave(c: Contract, stock: Record<Good, number>, i: number): Record<Good, number> {
@@ -309,7 +305,7 @@ export class Hud {
     this.waybillWrap.hidden = !c;
     const sb = c ? null : sandboxStatus(world);
     this.plaqueWrap.hidden = !sb?.market;
-    if (sb?.market) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, dayAt(st.tick));
+    if (sb?.market) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, yearAt(st.tick));
     if (!c) return;
     const castle = st.buildings.find((b) => b.id === c.castle);
     const stock = castle ? castle.stock : emptyGoods();
@@ -372,7 +368,9 @@ export class Hud {
     const key = `${ch.kind}:${ch.atTick}`;
     if (this.lastSeason !== null && season !== this.lastSeason) {
       const fx = SEASON_EFFECT[season];
-      this.showNotice(SEASON_ICON[season], esc(fx ? t(fx) : t(`season.${season}`)));
+      // winter slows fishers too (50%), not only farms: say both in the one notice
+      const text = season === 'winter' ? `${t('season.effect.winter-farm')} ${t('season.effect.winter-fisher')}` : fx ? t(fx) : t(`season.${season}`);
+      this.showNotice(SEASON_ICON[season], esc(text));
     } else if (this.lastSeason !== null && thaw && !this.wasThaw) {
       this.showNotice('road_dirt', esc(t(SEASON_EFFECT.thaw!)));
     } else if (ch.announced && key !== this.announced) {
@@ -387,8 +385,8 @@ export class Hud {
     this.wasThaw = thaw;
   }
 
-  /** The free valley's plaque: rank, a checklist towards the next one, income now, the season and day. */
-  private updatePlaque(sb: SandboxStatus, season: Season | null, day: number): void {
+  /** The free valley's plaque: rank, a checklist towards the next one, income now, the season and year. */
+  private updatePlaque(sb: SandboxStatus, season: Season | null, year: number): void {
     if (this.lastRank >= 0 && sb.rank > this.lastRank) this.act.rankUp(sb.rank);
     this.lastRank = sb.rank;
     const n = sb.next;
@@ -400,11 +398,11 @@ export class Hud {
     ] : [];
     // the seal fills with the share of the next rank already earned (each requirement weighs a third)
     const frac = n ? reqs.reduce((a, r) => a + Math.min(1, r.have / Math.max(1, r.need)), 0) / reqs.length : 1;
-    const sig = `${sb.rank}|${reqs.map((r) => `${r.have}`).join(',')}|${sb.flowNow}|${folded}|${season}|${day}`;
+    const sig = `${sb.rank}|${reqs.map((r) => `${r.have}`).join(',')}|${sb.flowNow}|${folded}|${season}|${year}`;
     if (sig === this.plaqueSig) return;
     this.plaqueSig = sig;
     const income = `<span class="pl-income">${iconSvg('coin', 18)}<span>${tHtml('town.income', { n: fmtInt(sb.flowNow) })}</span></span>`;
-    const when = season ? `<span class="pl-season is-${season}">${iconSvg(SEASON_ICON[season], 18)}<span>${tHtml('season.when', { season: t(`season.${season}`), day: fmtInt(day) })}</span></span>` : '';
+    const when = season ? `<span class="pl-season is-${season}">${iconSvg(SEASON_ICON[season], 18)}<span>${tHtml('season.when', { season: t(`season.${season}`), year: fmtInt(year) })}</span></span>` : '';
     if (folded) {
       setHtml(this.plaqueOnly, `${sealStack(frac, 52)}${bdi(`+${fmtInt(sb.flowNow)}/min`, 'seal-time num')}`);
       return;

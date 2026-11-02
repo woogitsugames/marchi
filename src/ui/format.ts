@@ -147,6 +147,10 @@ export function wagonStatusText(world: World, s: WagonStatus): string {
 }
 
 export function linkText(world: World, l: ReasonLink): string {
+  if (l.kind === 'building' && l.waits === 'CUSTOMER' && 'good' in l.status) {
+    const g = l.status.good;
+    return capFirst(t('why.waitsCustomer', { good: goodName(g), goodGen: t(`goodGen.${g}` as MessageKey) }));
+  }
   return l.kind === 'building' ? buildingStatusText(l.status) : wagonStatusText(world, l.status);
 }
 
@@ -169,8 +173,13 @@ export function isStall(s: BuildingStatus): boolean {
   }
 }
 
-/** Critical stalls get the wax-clay marker: nothing is on the way to fix them. */
-export function isCritical(s: BuildingStatus, stalledTicks: number): boolean {
+/**
+ * Critical stalls get the wax-clay marker: nothing is on the way to fix them. `calm`: the stall
+ * resolves by itself — a full output whose customer still takes the good (outputCustomer), or an
+ * input a season slows (seasonalSupplier) — so it is never critical, however long it lasts.
+ */
+export function isCritical(s: BuildingStatus, stalledTicks: number, calm = false): boolean {
+  if (calm) return false;
   if (s.k === 'NO_ROAD') return true;
   if (s.k === 'NO_INPUT' && s.cause === 'UNREACHABLE') return true;
   if (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH') return true;

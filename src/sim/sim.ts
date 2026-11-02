@@ -9,7 +9,7 @@ import { buildMission, missionSeasons, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
 import { stepTown } from './town';
-import { cycleTicks } from './seasons';
+import { cycleTicks, seasonal } from './seasons';
 import { MARKET } from './defs';
 import type { GoodMap, SimState } from './types';
 
@@ -110,6 +110,7 @@ const STALL_GRACE_TICKS = 2 * TICK_HZ;
 function accountStalls(world: World): void {
   const st = world.state;
   const roots = new Set<string>();
+  const spanRoots = seasonal(world);
   for (const b of st.buildings) {
     if (NOT_STALL.has(b.status.k) || b.stalledTicks < STALL_GRACE_TICKS) continue;
     const chain = explainBuilding(world, b.id);
@@ -119,7 +120,13 @@ function accountStalls(world: World): void {
       const stalled = l.kind === 'building' ? !NOT_STALL.has(l.status.k) : l.status.k === 'BRIDGE_JAM' || l.status.k === 'NO_ROUTE' || l.status.k === 'BRIDGE_CLOSED';
       if (stalled) root = l;
     }
-    if (root) roots.add(`${root.kind}:${root.id}:${statusKey(root.status)}`);
+    if (!root) continue;
+    // a wagon held at a bridge is one cause per span (the loop below charges the same key), not
+    // one per wagon: a single frozen or jammed crossing must not split into several ledger rows
+    // (docs/design/seasons.md §3). Seasonal worlds only: the ledger is in the state hash, and the
+    // contract missions keep their golden hashes (D-34).
+    if (spanRoots && root.kind === 'wagon' && (root.status.k === 'BRIDGE_CLOSED' || root.status.k === 'BRIDGE_JAM')) roots.add(`span:${root.status.span}:${root.status.k}`);
+    else roots.add(`${root.kind}:${root.id}:${statusKey(root.status)}`);
   }
   for (const w of st.wagons) {
     if (w.status.k === 'BRIDGE_JAM' && st.tick - w.status.since >= STALL_GRACE_TICKS) roots.add(`span:${w.status.span}:BRIDGE_JAM`);
