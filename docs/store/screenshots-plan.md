@@ -1,48 +1,48 @@
-# MARCHIA — plan 6 zrzutów do Google Play i App Store
+# MARCHIA — 6 kadrów sklepowych (rzeczywista gra, HUD v3/v4)
 
-## Stan materiałów źródłowych
+**Weryfikacja przed publikacją:** wszystkie ujęcia muszą pochodzić z działającej gry uruchomionej w Playwright/Chromium. Generator odrzuca brakujące stany zamiast rysować fikcyjne panele, zatory, teksty czy elementy mapy. Pliki `docs/shots/*` oraz załączone referencje są tylko wzorem stylu.
 
-W katalogu docs/shots/ znajdują się **materiały referencyjne**, a nie sześć gotowych ekranów rozgrywki:
+## Kadry i podpisy (PL / EN)
 
-- **models-overview.png** — odniesienie dla modeli budynków i wozów; kontrola czytelności ładunku i skali.
-- **textures.png** — odniesienie dla błota, bruku, kamienia, strzechy i jesiennej palety.
-- **icons.png** i **icons.html** — odniesienie dla autorskich ikon towarów, statusów i narzędzi (styl drzeworytu).
-
-Zrzuty poniżej należy wykonać **z prawdziwej wersji gry** po doprowadzeniu wskazanych scen do czytelnego stanu. Nie należy przedstawiać arkusza ikon, tekstur ani makiety jako screenshotu rozgrywki.
-
-## Kolejność, ujęcia i podpisy
-
-| Nr | Co pokazać na zrzucie | Podpis PL | Caption EN | Odniesienie w docs/shots/ |
+| Nr | Rzeczywista scena i warunek | Podpis PL | Caption EN | Poziom |
 | --- | --- | --- | --- | --- |
-| 1 | **Wolna dolina**, rzeczywisty widok rozwijanej osady: rzeka, szlaki, zamek, załadowane wozy i widoczna w HUD ranga miasta. Pokaż swobodną rozbudowę bez licznika kontraktu; trzy sloty zapisu pokaż osobno na prawdziwym ekranie wyboru, nie w fotomontażu. | Twoja dolina, Twoje miasto | Your valley, your town | textures.png; models-overview.png |
-| 2 | Wybrana piekarnia i otwarty panel „Dlaczego stoi?”: konkretny brak mąki oraz łańcuch przyczyn prowadzący do młyna i przerwanej dostawy. Pokaż przyczynę, nie ogólny błąd. | Jedno dotknięcie. Znasz przyczynę | One tap reveals the cause | icons.png; icons.html |
-| 3 | Zbliżenie dwóch wozów z **różnymi widocznymi ładunkami** (np. deski i zboże). Jeden wybrany: karta z towarem, celem i ETA; ładunki nie mogą zostać zasłonięte przez UI. | Wiesz, co wiezie każdy wóz | See what every wagon carries | models-overview.png; icons.png |
-| 4 | **Nowe łańcuchy w Wolnej dolinie:** z rzeczywistej rozgrywki pokaż rybaka przy wodzie i/lub kamieniołom; na mapie prawdziwe dostawy kamienia do bruku lub kamiennego mostu. W ujęciach alternatywnych pokaż wypalarnię węgla drzewnego, słodownię i browar; nie dokładaj fikcyjnych elementów UI. | Nowe łańcuchy, nowe dostawy | New chains, new deliveries | textures.png; icons.png |
-| 5 | Prawdziwy przestój przy jednopasmowym drewnianym moście; wybrany wóz ma status oczekiwania na przejazd. Jeśli docelowa misja 2 nie jest gotowa, ustaw odtwarzalną scenę z istniejących mechanik; nie fałszuj panelu. | Znajdź wąskie gardło | Find the bottleneck | models-overview.png; icons.png |
-| 6 | List przewozowy do zamku: „30 desek, 20 chlebów”, postęp realizacji, pieczęcie i czas misji; w tle autentyczny transport. Kontrast dla czytelności tekstu na telefonie. | Kontrakty na 5–12 minut | Castle contracts in 5–12 minutes | icons.png; textures.png |
+| 1 | **Misja I:** prawdziwa dolina, wozy z towarami, lista kontraktu pod wstęgą. Nie mylić z Wolną doliną, bo ta nie ma terminu kontraktu. | Trasy, wozy, kontrakty | Roads, wagons, contracts | tak |
+| 2 | **Misja I:** przycisk oka przy karcie „Najgorszy zastój” otwiera autentyczny arkusz „Dlaczego stoi?”. Nie zmieniaj na potrzeby zdjęcia statusów ani magazynów. | Najgorszy zastój. Znajdź przyczynę | Find the cause of the worst stall | nie |
+| 3 | **Misja II:** prawdziwy status `BRIDGE_JAM` po ruchu wozów przez drewniany most; panel wybranego wozu pokazuje oczekiwanie. | Odetkaj most, uwolnij dostawy | Clear the bridge, free deliveries | nie |
+| 4 | **Misja IV:** aktywne, rzeczywiste okno kry na rzece. Pokazać zamkniętą drewnianą przeprawę i realną planszę. | Kra zamyka drewniany most | River ice closes the wooden bridge | nie |
+| 5 | **Wolna dolina:** ranga osady w HUD, rzeczywisty otwarty targ, pory roku; trzy Księgi osad dokumentować osobnym kadrem pomocniczym, nie udawać ich obecności na scenie. | Wolna dolina. Targ i ranga | Free Valley. Market and rank | tak |
+| 6 | **Misja I:** autentyczny list kasztelana z pieczęcią; nie dodawać wymyślonych pieczęci ani podrabianych nagród. | List kasztelana i królewski kontrakt | A castellan's letter and contract | nie |
 
-## Nowe mechaniki do udokumentowania po D-21/D-29
+## Rozmiary i lokalizacje
 
-- **Pełna darmowa zawartość:** sześć misji (I–VI) oraz Wolna dolina, bez reklam i zakupów w aplikacji; nie stosuj nakładek sugerujących odblokowanie pełnej wersji.
-- **Budowa miasta:** wolna rozgrywka z trzema lokalnymi slotami zapisu i rangami od Osady przez Wieś targową, Miasteczko, Miasto i Gród do Stolicy. Jeżeli wybór slotu nie mieści się w sześciu kadrach, przygotuj osobny autentyczny kadr rezerwowy.
-- **Pięć nowych dóbr:** ryby, kamień, węgiel drzewny, słód i piwo; łańcuchy rybak → ryby, kamieniołom → kamień (bruk, kamienny most), wypalarnia → węgiel drzewny, słodownia → słód, browar → piwo. Pokazuj tylko funkcje działające w nagrywanym buildzie.
-- **Weryfikacja:** sprawdź, czy dany build rzeczywiście udostępnia trzy sloty i właściwe rangi. Nie twórz inscenizowanych zrzutów przedstawiających przyszłe funkcje jako obecne.
+- **Google Play:** w każdym języku 6 PNG **1080 × 1920** i 2 PNG **1920 × 1080** (kadry 1 oraz 5).
+- **Google Play — grafika wyróżniająca:** **1024 × 500** w PL i EN; wycinek autentycznej sceny #1 z napisem „Marchia” i odpowiednio „Szlaki Królestwa” / „Roads of the Kingdom”.
+- **Apple App Store:** w każdym języku 6 PNG **1290 × 2796** (6,7 cala).
+- **Łącznie:** 30 plików PNG (15 PL i 15 EN), rozmiar sumaryczny nie większy niż **25 MiB**.
+- Nazwy: `docs/store/shots/<lang>/<nr>-<szerokość>x<wysokość>.png`, np. `docs/store/shots/pl/03-1080x1920.png`. Dodatkowo `feature-1024x500.png`.
+- Ewidencja autentycznych scen, aktywnych okien i błędów: `docs/store/shots/manifest.json`.
 
-## Wskazówki do przygotowania
+## Sposób generowania
 
-1. **Hierarchia:** 1 — rozpoznawalny świat; 2 — główny wyróżnik (diagnoza); 3 — widoczny ładunek; 4 — budowa; 5 — problem do rozwiązania; 6 — cel i krótkie sesje.
-2. **Jeden komunikat na obraz:** na każdym zrzucie pokaż realne UI lub obiekt potwierdzający podpis. Żadnych nieistniejących funkcji ani obietnic rozgrywki w statycznym montażu.
-3. **Kadry:** zacznij od portretu telefonu; sprawdź też landscape i foldable. Projektowe punkty odniesienia to 412×915, 915×412 i 904×1000 CSS px (docs/UI_STYLE.md i CLAUDE.md). Finalny eksport powinien spełniać wymagania rozdzielczości i proporcji konkretnego sklepu.
-4. **Napisy:** podpisy PL i EN traktuj jako krótkie nakładki oddzielone od HUD, bez zasłaniania przyczyny przestoju, ładunku, trasy ani pieczęci. Utrzymaj zapas przy krawędziach i czytelność przy pomniejszeniu.
-5. **Spójność:** zachowaj paletę późnej jesieni, mokre drogi, mgłę, drewno i pergamin, bez pastelowego efektu dioramy. Ikony towarów odróżniaj kształtem, nie samym kolorem.
-6. **Lokalizacja i stan gry:** przygotuj osobne zrzuty z interfejsem PL i EN. Przed wykonaniem #5 upewnij się, że korek na moście i panel statusu działają w tej kompilacji. #6 sfotografuj w misji z rzeczywistym kontraktem, nie w wolnej dolinie.
+```bash
+npm ci
+npm install --no-save --package-lock=false playwright@1.56.1
+npx playwright install chromium
+node tools/store-shots-v2.mjs
+# wybiórczo:
+node tools/store-shots-v2.mjs --lang=pl --shot=3 --orientation=portrait
+```
 
-## Lista kontrolna publikacji
+Skrypt uruchamia `npm run build` oraz własny `vite preview`, następnie wyświetla **faktyczne WebGL** i sprawdza warunki w stanie prawdziwej symulacji, zanim zapisze PNG. Nie nadpisuje statusów, poziomu osady, zasobów ani treści w UI. W misji II dokupuje dwa wozy istniejącą komendą gry, zgodnie z `tools/bot-m2.ts`.
 
-- [ ] Sześć oryginalnych kadrów rozgrywki w obu językach, w wymaganych przez sklepy rozmiarach.
-- [ ] Nie ma elementów z debugowania, placeholderów, testowych ikon ani tekstów niespójnych z aktualnym buildem.
-- [ ] Podpisy mieszczą się w limicie **40 znaków na język**.
-- [ ] UI, widoczne ładunki i powody przestojów odpowiadają aktualnym mechanikom.
-- [ ] Kadry Wolnej doliny pokazują prawdziwe rangi, działające sloty zapisu i wdrożone łańcuchy produkcji.
-- [ ] Materiały sklepowe nie zawierają obietnic zakupów, reklam ani odblokowania pełnej wersji.
-- [ ] Po zaktualizowaniu scen sprawdzono układ na małym ekranie telefonu.
+**Ciężar i jakość:** podpisy wykorzystują lokalne fonty gry (Grenze Gotisch + Alegreya Sans), a PNG są optymalizowane paletowo przez `sharp`; przekroczenie limitu 25 MiB przerywa zadanie. Bez makiet, ramek telefonów, „Welcome!” i strzałek-emoji. Przy miniaturze zweryfikować czytelność napisów.
+
+## QA i wiarygodność
+
+- [ ] 30 PNG z prawdziwej gry, z obu języków i prawidłowymi wymiarami.
+- [ ] Brak błędów WebGL, `pageerror`, paneli debug, fałszywych ładunków i zmienionych statusów.
+- [ ] Kontrakt #1, powód zatrzymania #2, rzeczywisty korek #3, aktywna kra #4, targ i ranga #5, list #6 sprawdzone w manifeście.
+- [ ] Podpisy PL/EN po maksymalnie 40 znaków.
+- [ ] Wszystkie 30 miniatur obejrzane przy docelowym rozmiarze i na telefonie; UI nie powinno zasłaniać ważnego obiektu.
+- [ ] Pliki PNG mieszczą się razem w 25 MiB.
+- [ ] Ostateczne pakiety wysyłane do sklepów odpowiadają pokazanym mechanikom i zasadom platform.
