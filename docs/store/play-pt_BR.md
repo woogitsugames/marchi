@@ -16,6 +16,8 @@ A carga é visível em cada carroça carregada. Confira o destino e a previsão 
 
 Os contratos do castelo são missões curtas para partidas de 5 a 12 minutos. Entregue os produtos solicitados antes do prazo e ganhe selos pela eficiência. Prefere um ritmo mais tranquilo? Construa sua rede de transporte livremente em um vale sem prazo de contrato.
 
+O Vale Livre é um modo tranquilo de construção de cidade com três espaços de salvamento independentes. Desenvolva seu povoado por diferentes níveis até chegar a uma capital. Desbloqueie pesca, pedreiras para pavimentação e pontes de pedra, produção de carvão vegetal, maltagem e fabricação de cerveja. Toda cadeia ainda depende de entregas reais por carroças.
+
 Cinco recursos principais:
 - Explicações com um toque para construções e carroças paradas, incluindo a cadeia de causas.
 - Carga visível, destinos e previsões de chegada das carroças.
@@ -23,7 +25,7 @@ Cinco recursos principais:
 - Contratos de 5 a 12 minutos e um vale livre sem prazo.
 - Entregas físicas de toras, tábuas, grãos, farinha e pão, sem teletransporte instantâneo de produtos.
 
-Comece grátis com as missões 1–3 e um pequeno vale livre. Uma única compra desbloqueia a versão completa. Sem anúncios, sistemas de energia, melhorias pagas que dão vantagem ou esperas artificiais de recarga. O progresso é salvo localmente no seu dispositivo.
+Todas as seis missões (I–VI) e o Vale Livre são gratuitos. Sem anúncios, compras no aplicativo, sistemas de energia, vantagens pagas ou esperas artificiais. O progresso fica salvo localmente no dispositivo.
 
 ## Palavras-chave — referência ASO (o Google Play não tem campo separado para palavras-chave)
 logística medieval, estratégia, carroças, entregas, cadeias de abastecimento, construção de estradas, pontes, rotas comerciais, contratos, jogo econômico
