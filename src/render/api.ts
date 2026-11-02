@@ -46,6 +46,12 @@ export interface PlacementGhost {
   badCell: number;
 }
 
+/** Screen-space offset from the canvas centre, CSS px (+x right, +y down). */
+export interface ScreenOffset {
+  x: number;
+  y: number;
+}
+
 export interface CameraControl {
   /** Pan by screen-space CSS pixels (drag). */
   pan(dxPx: number, dyPx: number): void;
@@ -54,10 +60,11 @@ export interface CameraControl {
   /** Rotate around the vertical axis (two-finger twist / right-drag); with a screen point the ground
    *  under it stays fixed (pivot between the fingers), otherwise the screen centre is the pivot. */
   rotate(radians: number, atX?: number, atY?: number): void;
-  /** Smoothly centre on a world cell (e.g. following a wagon). */
-  focusCell(cell: number): void;
-  /** Follow a wagon until cleared (null). */
-  follow(wagonId: number | null): void;
+  /** Glide (~200 ms, ease-out) so a world cell lands at the canvas centre + screenOffset (default: the
+   *  centre), e.g. the middle of the map area an open sheet leaves visible. Keeps zoom and rotation. */
+  focusCell(cell: number, screenOffset?: ScreenOffset): void;
+  /** Follow a wagon until cleared (null), kept at the canvas centre + screenOffset. */
+  follow(wagonId: number | null, screenOffset?: ScreenOffset): void;
 }
 
 export interface WorldView {
