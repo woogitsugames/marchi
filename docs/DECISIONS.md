@@ -765,3 +765,17 @@ only when `debug=1` **and** `bench=device` are both present. The branch's `src/r
 per quality, ultra DPR cap 3, `quality !== 'low'`) were already on the base and were not re-applied. The page's
 copy is Polish only (debug tool, outside i18n by design). Rejected: a menu or settings toggle (player build
 change), a third Vite entry in the main config (changes the player build's manifest). (decided)
+
+**D-57 — Valley chronicle wired to the UI; the recorded list is UI-owned (localStorage per ledger), not state.**
+The gpt-51 proposal (`src/sim/proposals/chronicle.ts`, 30 entries, texts `docs/content/chronicle.md`) is pure:
+`checkChronicle(state, done)` returns newly reached entries and "the caller owns the done IDs". Wired now without
+any sim change: `src/ui/chronicle.ts` keeps the recorded IDs per valley ledger in `localStorage`
+(`marchia.chronicle.<slot>`, best effort); on entering a valley game it adds silently everything the state already
+satisfies (no toast storm after a load), then checks once per game second and shows one toast per new entry
+("Kronika: …"). The pause menu of the free valley has "Kronika doliny (n/30)", opening a ledger page: recorded
+entries with the seal and the scribe's sentence, the others by title in faded ink with "jeszcze niezapisane" (the
+open titles double as gentle goals). A fresh ledger, "start over" and deleting the ledger clear its chronicle. Lost
+storage forgets only entries the state no longer shows (momentary: winter, fleet size after selling a wagon).
+No reward, no effect on play or hashes; 66 pl/en keys pending for the other languages. Open for the owner: move
+the list into the save (envelope field or SimState with a migration — then it travels with Android backup / a
+copied save), see HANDOVER „Decyzje na rano”. (decided, storage location open)
