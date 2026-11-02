@@ -122,9 +122,15 @@ class FreesoundTests(unittest.TestCase):
             "sfx/unload-fish", "sfx/load-barrel",
             "sfx/unload-barrel",
         }
-        # Not rendered yet: listed as pending, never as shipped tracks.
-        self.assertEqual(expected, {t["id"] for t in manifest["pending_tracks"]})
-        self.assertFalse(expected & {t["id"] for t in manifest["tracks"]})
+        pending = {t["id"] for t in manifest["pending_tracks"]}
+        shipped = {t["id"] for t in manifest["tracks"]}
+        if pending:
+            # Prior to task 50 asset download, none of these IDs may be shipped.
+            self.assertEqual(expected, pending)
+            self.assertFalse(expected & shipped)
+        else:
+            # After promotion, the strict audio catalogue verifies all 26 files.
+            self.assertTrue(expected <= shipped)
         for key in ("quarry_chisel", "rocks_fall", "fish_netted",
                     "fisher_splash", "malt_bubbles", "barrel"):
             source = manifest["sources"][key]
@@ -143,6 +149,36 @@ class FreesoundTests(unittest.TestCase):
         manifest["tracks"][0]["id"] = "sfx/../unsafe"
         with self.assertRaisesRegex(ValueError, "Invalid audio asset ID"):
             validate_manifest(manifest)
+
+
+    def test_task_50_promotes_only_the_expected_audio(self) -> None:
+        from tools.finalize_audio_50 import EXPECTED, promote
+        pending = [{"id": key} for key in sorted(EXPECTED)]
+        example = {"tracks": [{"id": "sfx/axe"}], "pending_tracks": pending}
+        result = promote(example)
+        self.assertEqual(14, len(result["tracks"]))
+        self.assertEqual([], result["pending_tracks"])
+        self.assertEqual(13, len(example["pending_tracks"]))
+        with self.assertRaisesRegex(ValueError, "exactly the 13"):
+            promote({"tracks": [], "pending_tracks": pending[:-1]})
+
+    def test_task_50_asset_docs_keep_the_verified_source_audit(self) -> None:
+        from tools.finalize_audio_50 import updated_assets
+        fixture = (
+            "The shipped baseline has 23 runtime IDs (46 OGG/M4A files). Task 46 selected "
+            "13 new audio IDs, so the strict checker keeps passing on the shipped 46 files.\n"
+            "### Task 46 — New building and logistics sounds (awaiting binaries)\n"
+            "**Status (2026-11-02):** Pending. "
+            "Do not create source digests from page metadata.\n"
+            "**Finish locally:** Run pipeline manually.\n"
+            "### Original procedural effects retained\n"
+        )
+        row = "| quarry_chisel | Artiom | CC0-1.0 | source | 2026-11-02 | hash |"
+        updated = updated_assets(fixture, "2026-11-02", [row], 152_000)
+        self.assertIn(row, updated)
+        self.assertIn("36 sound IDs and 72 OGG/M4A files", updated)
+        self.assertNotIn("awaiting binaries", updated)
+        self.assertNotIn("**Finish locally:**", updated)
 
     def test_sha256(self) -> None:
         with tempfile.TemporaryDirectory() as root:

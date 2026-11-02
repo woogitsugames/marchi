@@ -37,6 +37,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audio source and manifest unit tests (no asset generation)
+        run: python3 -m unittest tools/test_process_audio.py
+
+      - name: Install FFprobe for read-only audio verification
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Validate shipped audio catalogue (no downloads or rendering)
+        run: python3 tools/process_audio.py --check
+
       - name: Headless simulation tests
         shell: bash
         run: |

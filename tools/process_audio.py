@@ -464,13 +464,27 @@ def main() -> None:
                         help="Validate OGG/M4A assets, source hashes and budget")
     parser.add_argument("--only-freesound", action="store_true",
                         help="Render only Freesound SFX; keep shipped ambience")
+    parser.add_argument("--track-id", action="append", default=[],
+                        help="Render only a named shipped track (repeatable); useful for task 50")
     parser.add_argument("--source-dir", type=Path,
                         default=BASE / ".cache/audio-sources")
     args = parser.parse_args()
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     validate_manifest(manifest)
-    tracks = [t for t in manifest["tracks"] if not args.only_freesound or
-              manifest["sources"][t["source"]].get("provider") == "freesound"]
+    if args.track_id and args.only_freesound:
+        parser.error("--track-id cannot be combined with --only-freesound")
+    requested = set(args.track_id)
+    shipped = {t["id"] for t in manifest["tracks"]}
+    unknown = requested - shipped
+    if unknown:
+        parser.error(f"Unshipped or unknown --track-id(s): {sorted(unknown)}")
+    tracks = [
+        t for t in manifest["tracks"]
+        if (t["id"] in requested if requested else (
+            not args.only_freesound
+            or manifest["sources"][t["source"]].get("provider") == "freesound"
+        ))
+    ]
     if args.check:
         total = budget_and_channels(
             OUT, manifest["tracks"], manifest["synthetic_retained"]
