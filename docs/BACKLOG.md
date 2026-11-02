@@ -10,7 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
-- [ ] P2 — Render: `view.setPlacementGhost({type,x,y,facing,valid,badCell})` (półprzezroczysty model + obrys) i `view.cellToScreen(cell)` zamiast ~140 ray-marchów na klatkę w narzędziu Buduj; podgląd drogi dojazdowej przed postawieniem.
+- [ ] P3 — Buduj: doliczyć koszt drogi dojazdowej do etykiety kosztu (nowe klucze i18n); etykieta czasem nachodzi na ducha.
 - [ ] P3 — Buduj: po postawieniu niepodłączonego budynku nie zamykać narzędzia; podwójny przycisk Cofnij w układach bocznych.
 - [ ] P2 — Tłumaczenia: ~100 kluczy z PENDING_KEYS dla 15 języków (paczka GPT 05).
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render); pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki.
@@ -157,6 +157,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P3 — Sandbox S8 (po decyzji o reklamach): `AdsPort` + opcjonalna nagroda (+40 sr, ≤ 3/sesję, tylko sandbox, poza misją, bez timerów), zgoda UMP/ATT, aktualizacja `docs/store/data-safety.md` i `privacy-*.md` (reklamy = dane zbierane/udostępniane); domyślnie wersja 1.0 bez reklam
 
 ## Zrobione
+- 2026-11-02 — Podgląd budynku: półprzezroczysty model (ochra/glina), obrys, klin bramy, kreskowana droga dojazdowa (suggestConnection), cellToScreen zamiast ray-marchów (0,04 ms/klatkę), pierścień zaznaczenia wozu na pokładzie mostu.
 - 2026-11-02 — UI runda 3: misje IV–VI w menu, list przewozowy z transzami, kra na moście (BRIDGE_CLOSED) z ETA, mały spichlerz, tablica miasteczka + arkusz „Targ i ranga”, list przy awansie, narzędzie Buduj (półka, duch, obrót bramy, Postaw, Cofnij), naprawa dojazdu po postawieniu.
 - 2026-11-02 — Grafika: drogi czytelne z daleka (ciemny tor + jasne pobocze), krzewy poza polami, pojedyncze karty dalekich drzew z miękkim cieniem, wozy na krzywej drogi (odchyłka 0,73 → 0,25 m), ciemniejsza i bardziej przejrzysta woda z bliska; mniej trójkątów we wszystkich scenach.
 - 2026-11-01 — 15 tłumaczeń od GPT (PR #22–#36) scalone: es, nl, fr, it, de, pt-BR, sv, ru, tr, uk, ko, ja, hi, zh-Hans, ar (słowniki, glosariusze, testy, opisy sklepu, polityki prywatności); `cellsWord` wg reguł liczby mnogiej języka (Intl.PluralRules).

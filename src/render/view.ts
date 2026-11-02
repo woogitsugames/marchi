@@ -4,10 +4,13 @@
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
-  type Color,
+  Color,
   Group,
+  Mesh,
+  MeshBasicMaterial,
   PCFSoftShadowMap,
   Ray,
+  RingGeometry,
   Scene,
   SRGBColorSpace,
   Vector3,
@@ -15,7 +18,7 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { isRaining, net, timeOfDay } from '../sim/index';
-import type { Overlay, PickResult, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
+import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
 import { BuildingsView } from './buildingsView';
 import { CameraRig } from './cameraRig';
@@ -25,6 +28,7 @@ import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
 import { applyTextures, foliageLift, type MatKey } from './models/materials';
 import { OverlayData } from './overlay';
+import { PlacementGhostView } from './placementGhost';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
 import { TerrainView } from './terrain';
@@ -87,6 +91,10 @@ class View implements WorldView {
   private bridges = new BridgesView();
   private wagons: WagonsView | null = null;
   private fx = new Effects();
+  private ghost = new PlacementGhostView();
+  private ghostReq: PlacementGhost | null = null;
+  /** Selection ring of a wagon on a bridge deck (the terrain-draped ring would lie on the river bed). */
+  private deckRing: Mesh;
   private worldGroup = new Group();
   private treeGroup = new Group();
   private netVer = -1;
@@ -120,7 +128,14 @@ class View implements WorldView {
   constructor() {
     this.lighting = new Lighting(this.scene);
     this.scene.add(this.worldGroup);
-    this.worldGroup.add(this.treeGroup, this.bridges.group, this.fx.smoke, this.fx.rain);
+    this.worldGroup.add(this.treeGroup, this.bridges.group, this.fx.smoke, this.fx.rain, this.ghost.group);
+    const ring = new RingGeometry(4.46, 4.74, 56, 1);
+    ring.rotateX(-Math.PI / 2);
+    this.deckRing = new Mesh(ring, new MeshBasicMaterial({ color: new Color('#8c4a2f'), transparent: true, opacity: 0.85, depthWrite: false }));
+    this.deckRing.name = 'deck-selection-ring';
+    this.deckRing.renderOrder = 19;
+    this.deckRing.visible = false;
+    this.worldGroup.add(this.deckRing);
   }
 
   get camera() {
@@ -235,6 +250,8 @@ class View implements WorldView {
     this.wagons!.afterTick(world, performance.now());
     this.overlay!.updateTraffic(world);
     this.setSelection(this.selection);
+    this.ghost.set(null, null, null, this.overlay);
+    this.setPlacementGhost(this.ghostReq);
   }
 
   private disposeWorld(): void {
@@ -261,6 +278,7 @@ class View implements WorldView {
     this.vegetation!.update(this.rig.camera.position, true);
     this.cover?.rebuild(w, this.roads);
     this.updateEmitters(true);
+    if (this.ghostReq) this.ghost.set(this.ghostReq, w, this.hf, this.overlay);
   }
 
   private updateEmitters(force: boolean): void {
@@ -495,9 +513,28 @@ class View implements WorldView {
     return { x, y, visible };
   }
 
+  /** Centre of a cell at ground height, or the deck height of a bridge cell. */
+  cellToScreen(cell: number): ScreenAnchor {
+    const w = this.world, hf = this.hf;
+    if (!w || !hf || cell < 0 || cell >= hf.w * hf.h) return { x: 0, y: 0, visible: false };
+    const t = w.terrain;
+    const x = ((cell % t.w) + 0.5) * CELL, z = (Math.floor(cell / t.w) + 0.5) * CELL;
+    let y = hf.height(x, z);
+    if (t.water[cell] && w.state.roads[cell]) y = Math.max(y, t.cellH[cell]!);
+    _v.set(x, y, z).project(this.rig.camera);
+    const sx = (_v.x * 0.5 + 0.5) * this.cssW, sy = (-_v.y * 0.5 + 0.5) * this.cssH;
+    const visible = _v.z < 1 && _v.z > -1 && sx >= 0 && sy >= 0 && sx <= this.cssW && sy <= this.cssH;
+    return { x: sx, y: sy, visible };
+  }
+
   // ------------------------------------------------------------------ overlays
   setRoadPreview(p: RoadPreview | null): void {
     this.overlay?.setPreview(p);
+  }
+
+  setPlacementGhost(g: PlacementGhost | null): void {
+    this.ghostReq = g ? { ...g } : null;
+    this.ghost.set(this.ghostReq, this.world, this.hf, this.overlay);
   }
 
   setOverlay(o: Overlay): void {
@@ -525,11 +562,22 @@ class View implements WorldView {
   }
 
   private updateSelectionRing(): void {
-    const ov = this.overlay, sel = this.selection;
-    if (!ov || !sel || sel.kind !== 'wagon') return;
+    const ov = this.overlay, sel = this.selection, hf = this.hf;
+    if (!ov || !hf || !sel || sel.kind !== 'wagon') { this.deckRing.visible = false; return; }
     const s = this.wagons?.get(sel.id);
-    if (!s || !s.visible) { ov.selRing.w = 0; return; }
-    ov.selRing.set(s.fx + Math.sin(s.heading) * 1.8, s.fz + Math.cos(s.heading) * 1.8, 4.6, 1);
+    if (!s || !s.visible) { ov.selRing.w = 0; this.deckRing.visible = false; return; }
+    const rx = s.fx + Math.sin(s.heading) * 1.8, rz = s.fz + Math.cos(s.heading) * 1.8;
+    // on a bridge (or its ramp above the bank) the ground under the wagon is the river bed:
+    // draw the ring at deck height instead of draping it on the terrain
+    const ground = hf.inside(rx, rz) ? hf.height(rx, rz) : hf.waterLevel;
+    if (s.bridge || s.fy > ground + 0.6) {
+      ov.selRing.w = 0;
+      this.deckRing.position.set(rx, s.fy + 0.12, rz);
+      this.deckRing.visible = true;
+    } else {
+      ov.selRing.set(rx, rz, 4.6, 1);
+      this.deckRing.visible = false;
+    }
   }
 
   /** Switch tier: view settings at once, textures reloaded in the background (old ones freed after). */
@@ -593,6 +641,9 @@ class View implements WorldView {
     this.pendingTerrainTex = null;
     void disposeTextures();
     this.bridges.dispose();
+    this.ghost.dispose();
+    this.deckRing.geometry.dispose();
+    (this.deckRing.material as MeshBasicMaterial).dispose();
     this.fx.dispose();
     this.lighting.dispose();
     this.renderer?.dispose();

@@ -2,10 +2,13 @@
 // follows one finger ~72 dp above it, snapped to cells, validated with the sim's pure
 // validatePlace every frame; a rotate-gate button and cost/error text float beside the ghost,
 // "Postaw" sits in the thumb zone. Two fingers still move the camera (input.ts multi mode).
-// The ghost footprint is drawn by the view's cell preview (setRoadPreview); the gate pin and the
-// labels are DOM, placed by locating cells on screen with view.cellAt (no render change needed).
+// The ghost is the view's placement ghost (translucent model + ground outline, view.setPlacementGhost)
+// and, while the gate is off the road network, the access road it would need is previewed hatched
+// (setRoadPreview, dashed). The gate pin and the labels are DOM, placed with view.cellToScreen.
+// Views without those hooks (2D fallback) get the footprint as a cell preview and the labels are
+// placed by inverting view.cellAt (locateCell).
 import {
-  BUILDINGS, canPlace, gateCell, lastUndoable, net, unlockRank, validatePlace,
+  BUILDINGS, canPlace, gateCell, lastUndoable, net, suggestConnection, unlockRank, validatePlace,
   type BuildingType, type Command, type CommandError, type CommandResult, type World,
   missionBuildable,
 } from '../sim/index';
@@ -86,6 +89,16 @@ export function locateCell(view: WorldView, W: number, cell: number, guess: [num
   }
   if (!n) return null;
   return { x: mx / n, y: my / n, px };
+}
+
+/** Screen point of a cell centre and its approximate on-screen size, by projection (view.cellToScreen). */
+function projectCell(view: WorldView, W: number, cell: number): Located | null {
+  const a = view.cellToScreen!(cell);
+  if (!a.visible) return null;
+  const b = view.cellToScreen!(cell % W < W - 1 ? cell + 1 : cell - 1);
+  const c = view.cellToScreen!(cell + W);
+  const px = Math.max(Math.hypot(b.x - a.x, b.y - a.y), c.visible ? Math.hypot(c.x - a.x, c.y - a.y) : 0);
+  return { x: a.x, y: a.y, px: Math.min(200, Math.max(3, px)) };
 }
 
 /** Why a placement is refused, in plain words (water / road / building / gate) when the sim names a cell. */
@@ -326,18 +339,23 @@ export class BuildTool {
     const r = this.result;
     const cells = this.footprint(world);
     const bad = !r.ok && 'cell' in r.err ? r.err.cell : -1;
-    const key = `${cells[0]}|${this.type}|${r.ok}|${bad}`;
+    const gate = this.gateOf(world, this.facing);
+    const onRoad = this.gateTouchesRoad(world, gate);
+    const key = `${cells[0]}|${this.facing}|${this.type}|${r.ok}|${bad}|${onRoad}|${world.state.netVersion}`;
     if (key !== this.previewKey) {
       this.previewKey = key;
-      this.host.view().setRoadPreview({ cells, valid: r.ok, badCell: bad });
+      const view = this.host.view();
+      if (view.setPlacementGhost) {
+        view.setPlacementGhost({ type: this.type, x: this.gx, y: this.gy, facing: this.facing, valid: r.ok, badCell: bad });
+        const link = onRoad ? null : this.accessRoad(world, gate, cells);
+        view.setRoadPreview(link ? { cells: link, valid: true, badCell: -1, dashed: true } : null);
+      } else view.setRoadPreview({ cells, valid: r.ok, badCell: bad });
     }
     const coins = world.state.coins;
     const price = BUILDINGS[this.type].price;
     this.tag.classList.toggle('is-bad', !r.ok);
     if (r.ok) setHtml(this.tagMain, tHtml('build.cost', { n: fmtInt(price), have: fmtInt(coins) }));
     else setHtml(this.tagMain, esc(this.errText(r.err)));
-    const gate = this.gateOf(world, this.facing);
-    const onRoad = this.gateTouchesRoad(world, gate);
     this.tagSub.classList.toggle('is-warn', !onRoad);
     setHtml(this.tagSub, `${iconSvg(onRoad ? 'road_dirt' : 'no_road', 16)}<span>${esc(t(onRoad ? 'build.gateRoad' : 'build.gateNoRoad'))}</span>`);
     const place = this.shelf.querySelector<HTMLButtonElement>('.pb-place');
@@ -345,6 +363,43 @@ export class BuildTool {
       place.classList.toggle('is-disabled', !r.ok);
       place.setAttribute('aria-disabled', String(!r.ok));
     }
+  }
+
+  /**
+   * New road cells of the cheapest access road to the gate (sim gap finder): from the stable's gate,
+   * so the preview is a road the wagons can actually use, else from the nearest road cell.
+   * A route through the ghost's own footprint is refused. Only called when the ghost changes.
+   */
+  private accessRoad(world: World, gate: number, footprint: number[]): number[] | null {
+    const foot = new Set(footprint);
+    const via = (from: number): number[] | null => {
+      const s = suggestConnection(world, from, gate);
+      return s && s.newCells.length && !s.cells.some((c) => foot.has(c)) ? s.newCells : null;
+    };
+    const stable = world.state.buildings.find((b) => b.type === 'stable');
+    const link = stable ? via(stable.gate) : null;
+    if (link) return link;
+    const near = this.nearestRoad(world, gate, foot);
+    return near >= 0 ? via(near) : null;
+  }
+
+  /** Nearest free road cell around a cell (Chebyshev rings up to 12), -1 if none. */
+  private nearestRoad(world: World, cell: number, skip: Set<number>): number {
+    const W = world.terrain.w, H = world.terrain.h;
+    const cx = cell % W, cy = Math.floor(cell / W);
+    const occ = net(world).occupied;
+    for (let r = 1; r <= 12; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = cx + dx, y = cy + dy;
+          if (x < 0 || y < 0 || x >= W || y >= H) continue;
+          const c = y * W + x;
+          if (!skip.has(c) && world.state.roads[c] && occ[c] === -1) return c;
+        }
+      }
+    }
+    return -1;
   }
 
   /** A road cell next to the gate (the sim lays the gate cell itself). */
@@ -367,7 +422,11 @@ export class BuildTool {
   }
 
   private clearGhost(): void {
-    if (this.previewKey) this.host.view().setRoadPreview(null);
+    if (this.previewKey) {
+      const view = this.host.view();
+      view.setRoadPreview(null);
+      view.setPlacementGhost?.(null);
+    }
     this.previewKey = '';
     this.result = null;
     this.tag.parentElement!.hidden = true;
@@ -392,8 +451,10 @@ export class BuildTool {
     const W = world.terrain.w;
     const def = BUILDINGS[this.type!];
     const centre = (this.gy + (def.h >> 1)) * W + this.gx + (def.w >> 1);
-    const c = locateCell(view, W, centre, this.centreGuess);
-    const g = locateCell(view, W, this.gateOf(world, this.facing), this.gateGuess);
+    const gate = this.gateOf(world, this.facing);
+    // cellToScreen is a projection; locateCell (~140 ray-marches) only for views without it
+    const c = view.cellToScreen ? projectCell(view, W, centre) : locateCell(view, W, centre, this.centreGuess);
+    const g = view.cellToScreen ? projectCell(view, W, gate) : locateCell(view, W, gate, this.gateGuess);
     const wrap = this.tag.parentElement!;
     if (c) {
       this.centreGuess = [c.x, c.y];
@@ -408,7 +469,7 @@ export class BuildTool {
     if (g) {
       this.gateGuess = [g.x, g.y];
       this.pin.hidden = false;
-      this.pin.classList.toggle('is-bad', !!this.result && !this.result.ok && 'cell' in this.result.err && this.result.err.cell === this.gateOf(world, this.facing));
+      this.pin.classList.toggle('is-bad', !!this.result && !this.result.ok && 'cell' in this.result.err && this.result.err.cell === gate);
       this.pin.style.transform = `translate3d(${(g.x - 6).toFixed(0)}px, ${(g.y - 28).toFixed(0)}px, 0)`;
     } else this.pin.hidden = true;
   }

@@ -1,8 +1,9 @@
 // Per-cell overlay data drawn by the terrain shader (so everything drapes on the ground):
 //   R = road traffic level (0..1), G = road preview (valid), B = road preview (invalid),
 //   A = the offending cell of an invalid preview.
+// Plus the placement ghost's ground marks (footprint outline, gate arrow, offending cell).
 // Plus selection outline uniforms (rectangle for a building footprint, ring for a wagon).
-import { DataTexture, LinearFilter, RGBAFormat, UnsignedByteType, Vector4 } from 'three';
+import { DataTexture, LinearFilter, RGBAFormat, UnsignedByteType, Vector2, Vector4 } from 'three';
 import type { World } from '../sim/index';
 import type { RoadPreview } from './api';
 
@@ -14,6 +15,16 @@ export class OverlayData {
   /** centre x, centre z, radius, enabled */
   readonly selRing = new Vector4(0, 0, 0, 0);
   selRectOn = { value: 0 };
+  /** Placement ghost footprint: min x, min z, max x, max z (metres). */
+  readonly ghostRect = new Vector4(0, 0, 0, 0);
+  /** Ghost gate cell: centre x, centre z, outward direction x, z (unit). */
+  readonly ghostGate = new Vector4(0, 0, 0, 1);
+  /** Ghost offending cell: centre x, centre z, half size, enabled. */
+  readonly ghostBad = new Vector4(0, 0, 0, 0);
+  /** x = ghost on, y = placement valid. */
+  readonly ghostOn = new Vector2(0, 0);
+  /** 1 = the road preview is a proposed connection (hatched), 0 = a drawn road (solid). */
+  previewDash = { value: 0 };
   private preview: RoadPreview | null = null;
   private trafficMax = 1;
 
@@ -46,6 +57,7 @@ export class OverlayData {
     if (this.preview) for (const c of this.preview.cells) { d[c * 4 + 1] = 0; d[c * 4 + 2] = 0; }
     if (this.preview && this.preview.badCell >= 0) d[this.preview.badCell * 4 + 3] = 0;
     this.preview = p ? { cells: p.cells.slice(), valid: p.valid, badCell: p.badCell } : null;
+    this.previewDash.value = p && p.dashed ? 1 : 0;
     if (p) {
       const n = this.w * this.h;
       for (const c of p.cells) if (c >= 0 && c < n) d[c * 4 + (p.valid ? 1 : 2)] = 255;

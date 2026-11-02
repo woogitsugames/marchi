@@ -67,6 +67,11 @@ export class TerrainView {
       uSelRect: { value: overlay.selRect },
       uSelRectOn: overlay.selRectOn,
       uSelRing: { value: overlay.selRing },
+      uGhostRect: { value: overlay.ghostRect },
+      uGhostGate: { value: overlay.ghostGate },
+      uGhostBad: { value: overlay.ghostBad },
+      uGhostOn: { value: overlay.ghostOn },
+      uPrevDash: overlay.previewDash,
       uOchre: { value: new Color('#b8893a') },
       uClay: { value: new Color('#8c4a2f') },
       uDetail: { value: 1 },
@@ -275,6 +280,11 @@ uniform float uTime;
 uniform vec4 uSelRect;
 uniform float uSelRectOn;
 uniform vec4 uSelRing;
+uniform vec4 uGhostRect;
+uniform vec4 uGhostGate;
+uniform vec4 uGhostBad;
+uniform vec2 uGhostOn;
+uniform float uPrevDash;
 uniform vec3 uOchre;
 uniform vec3 uClay;
 uniform float uDetail;
@@ -510,6 +520,12 @@ const FRAG_MAIN = /* glsl */ `
   }
   float pv = smoothstep(0.32, 0.55, ov.g);
   float pb = smoothstep(0.32, 0.55, ov.b);
+  if (uPrevDash > 0.5) {
+    // proposed road: diagonal hatching, like a road pencilled onto a survey map
+    float hatch = smoothstep(0.35, 0.5, abs(fract((wxz.x + wxz.y) * 0.32) - 0.5) * 2.0);
+    pv *= 0.25 + 0.75 * hatch;
+    pb *= 0.25 + 0.75 * hatch;
+  }
   if (pv > 0.0) { ovCol = mix(ovCol, uOchre, pv); ovA = max(ovA, pv * 0.65); }
   if (pb > 0.0) { ovCol = mix(ovCol, uClay, pb); ovA = max(ovA, pb * 0.6); }
   float bad = smoothstep(0.3, 0.6, ov.a);
@@ -529,6 +545,34 @@ const FRAG_MAIN = /* glsl */ `
     float line = 1.0 - smoothstep(0.06, 0.2, abs(sd));
     float fill = (1.0 - smoothstep(-0.2, 0.0, sd)) * 0.12;
     ovCol = mix(ovCol, uClay, max(line, fill)); ovA = max(ovA, max(line * 0.75, fill));
+  }
+  if (uGhostOn.x > 0.5) {
+    vec3 gc = uGhostOn.y > 0.5 ? uOchre : uClay;
+    // footprint: a firm line just inside the edge and a faint wash
+    vec2 c = (uGhostRect.xy + uGhostRect.zw) * 0.5, hs = (uGhostRect.zw - uGhostRect.xy) * 0.5;
+    vec2 q = abs(wxz - c) - hs;
+    float sd = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+    float line = 1.0 - smoothstep(0.1, 0.26, abs(sd + 0.32));
+    float wash = (1.0 - smoothstep(-0.05, 0.05, sd)) * 0.2;
+    ovCol = mix(ovCol, gc, max(line, wash)); ovA = max(ovA, max(line * 0.9, wash));
+    // gate: a wedge pointing out of the building, inside the gate cell
+    vec2 gp = wxz - uGhostGate.xy;
+    float al = dot(gp, uGhostGate.zw), ac = abs(dot(gp, vec2(-uGhostGate.w, uGhostGate.z)));
+    float tri = max(max(-al - 1.3, al - 1.1), ac - (1.1 - al) * 0.62);
+    float wedge = 1.0 - smoothstep(-0.06, 0.06, tri);
+    vec2 gq = abs(gp) - vec2(1.75);
+    float gbox = 1.0 - smoothstep(0.06, 0.2, abs(max(gq.x, gq.y)));
+    ovCol = mix(ovCol, gc, max(wedge, gbox)); ovA = max(ovA, max(wedge * 0.92, gbox * 0.7));
+    // offending cell: pulsing clay fill crossed out
+    if (uGhostBad.w > 0.5) {
+      vec2 bp = wxz - uGhostBad.xy;
+      vec2 bq = abs(bp) - vec2(uGhostBad.z);
+      float inside = 1.0 - smoothstep(-0.05, 0.05, max(bq.x, bq.y));
+      float xmark = 1.0 - smoothstep(0.12, 0.26, min(abs(bp.x - bp.y), abs(bp.x + bp.y)) * 0.7071);
+      float pulse = 0.55 + 0.25 * sin(uTime * 6.0);
+      ovCol = mix(ovCol, uClay * mix(1.0, 0.55, xmark), inside);
+      ovA = max(ovA, inside * max(pulse, xmark * 0.95));
+    }
   }
   A = mix(A, ovCol, ovA * 0.85);
 
@@ -558,6 +602,6 @@ function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {
       .replace('#include <normal_fragment_maps>', 'normal = normalize((viewMatrix * vec4(Nw, 0.0)).xyz);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += tEmis;');
   };
-  m.customProgramCacheKey = () => 'marchia-terrain-2' + (m.userData.low ? '-low' : '');
+  m.customProgramCacheKey = () => 'marchia-terrain-3' + (m.userData.low ? '-low' : '');
   return m;
 }

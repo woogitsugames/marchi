@@ -1,6 +1,6 @@
 // Contract between the three.js world view (src/render) and the DOM UI / input (src/ui).
 // The view only READS sim state. It never mutates World.
-import type { World } from '../sim/index';
+import type { BuildingType, World } from '../sim/index';
 
 export type PickResult =
   | { kind: 'wagon'; id: number }
@@ -29,6 +29,20 @@ export interface RoadPreview {
   cells: number[];
   /** valid = drawn in ochre, invalid = clay with the offending cell marked. */
   valid: boolean;
+  badCell: number;
+  /** Proposed, not yet built (e.g. the access road a placement would need): drawn hatched. */
+  dashed?: boolean;
+}
+
+/** Building placement ghost (build tool). x, y = footprint top-left cell, as in the place command. */
+export interface PlacementGhost {
+  type: BuildingType;
+  x: number;
+  y: number;
+  facing: number;
+  /** valid = tinted ochre, invalid = clay with the offending cell marked. */
+  valid: boolean;
+  /** Offending cell (inside or outside the footprint, e.g. the gate), -1 if none. */
   badCell: number;
 }
 
@@ -64,6 +78,10 @@ export interface WorldView {
   anchorOf(kind: 'building' | 'wagon', id: number): ScreenAnchor;
   readonly camera: CameraControl;
   setRoadPreview(p: RoadPreview | null): void;
+  /** Translucent building model + ground outline, gate and offending cell; null hides it. */
+  setPlacementGhost?(g: PlacementGhost | null): void;
+  /** Screen position of a cell's centre at ground (bridge deck) height. Projection only, no ray-march. */
+  cellToScreen?(cell: number): ScreenAnchor;
   setOverlay(o: Overlay): void;
   setSelection(sel: PickResult): void;
   setQuality(q: Quality): void;

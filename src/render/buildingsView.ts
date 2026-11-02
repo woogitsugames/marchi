@@ -66,6 +66,44 @@ function prep(g: BufferGeometry, m: Matrix4): BufferGeometry {
   return c.applyMatrix4(m);
 }
 
+export interface FootprintTransform {
+  /** Model space -> world. */
+  m: Matrix4;
+  cx: number;
+  cz: number;
+  baseY: number;
+  /** Lowest ground under the footprint. */
+  lo: number;
+  angle: number;
+  sx: number;
+  sz: number;
+}
+
+/**
+ * Where a building model stands: footprint centre, base height (a little above the mean ground so
+ * the low side gets a plinth), turned so the model's +Z faces the gate, scaled to the footprint.
+ * Shared by the placed buildings and the placement ghost so the ghost is exactly what gets built.
+ */
+export function footprintTransform(
+  hf: Heightfield, model: { cells: [number, number] }, x: number, y: number, w: number, h: number, facing: number,
+): FootprintTransform {
+  const cx = (x + w / 2) * CELL, cz = (y + h / 2) * CELL;
+  let lo = Infinity, hi = -Infinity, sum = 0, n = 0;
+  for (let j = 0; j <= 4; j++) for (let i = 0; i <= 4; i++) {
+    const gy = hf.height(x * CELL + (i / 4) * w * CELL, y * CELL + (j / 4) * h * CELL);
+    lo = Math.min(lo, gy); hi = Math.max(hi, gy); sum += gy; n++;
+  }
+  const mean = sum / n;
+  const baseY = mean + (hi - mean) * 0.35;
+  const angle = (facing & 3) * (Math.PI / 2);
+  const odd = (facing & 1) === 1;
+  const [mcx, mcz] = model.cells;
+  const sx = odd ? h / mcx : w / mcx;
+  const sz = odd ? w / mcz : h / mcz;
+  const m = new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeScale(sx, 1, sz));
+  return { m, cx, cz, baseY, lo, angle, sx, sz };
+}
+
 export class BuildingsView {
   readonly group = new Group();
   info = new Map<number, BuildingInfo>();
@@ -91,21 +129,7 @@ export class BuildingsView {
     };
     for (const b of world.state.buildings) {
       const model = buildingModel(b.type as BuildingKind);
-      const cx = (b.x + b.w / 2) * CELL, cz = (b.y + b.h / 2) * CELL;
-      // ground under the footprint
-      let lo = Infinity, hi = -Infinity, sum = 0, n = 0;
-      for (let j = 0; j <= 4; j++) for (let i = 0; i <= 4; i++) {
-        const y = this.hf.height(b.x * CELL + (i / 4) * b.w * CELL, b.y * CELL + (j / 4) * b.h * CELL);
-        lo = Math.min(lo, y); hi = Math.max(hi, y); sum += y; n++;
-      }
-      const mean = sum / n;
-      const baseY = mean + (hi - mean) * 0.35;
-      const angle = (b.facing & 3) * (Math.PI / 2);
-      const odd = (b.facing & 1) === 1;
-      const [mcx, mcz] = model.cells;
-      const sx = odd ? b.h / mcx : b.w / mcx;
-      const sz = odd ? b.w / mcz : b.h / mcz;
-      const m = new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeScale(sx, 1, sz));
+      const { m, cx, cz, baseY, lo, angle, sx, sz } = footprintTransform(this.hf, model, b.x, b.y, b.w, b.h, b.facing);
       add(model.parts, m);
       if (baseY - lo > 0.3) {
         // field-stone plinth under the main house, reaching into the ground on the low side
