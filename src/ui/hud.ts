@@ -46,6 +46,8 @@ export function unlockList(rank: number): string {
   if (!r) return '';
   const parts = r.unlocks.map((b: BuildingType) => t(`building.${b}` as MessageKey));
   if (r.surfaces.includes(2)) parts.push(t('town.unlockCobble'));
+  // rank 5 (Stolica) unlocks no building, only the castle upgrade (castleLevel 1)
+  if (r.castleLevel > (RANKS[rank - 1]?.castleLevel ?? 0)) parts.push(t('town.unlockCastle'));
   return joinList(parts);
 }
 

@@ -1530,6 +1530,12 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .ms-hist .lg-dots { flex: 1; min-width: 16px; border-bottom: 1.5px dotted rgb(74 72 67 / .55); transform: translateY(-4px); }
 .ms-hist .mh-t { font-weight: 700; }
 .ms-hist .mh-t.is-not { font-weight: 400; color: var(--ink-soft); font-style: italic; }
+/* what each rank opens, under its name in the history */
+.ms-hist .mh-n small.mh-u { display: block; font-family: var(--font-body); font-weight: 400; font-size: 13px; color: var(--ink-soft); line-height: 1.25; }
+/* granary card: stone kept for cobbles and stone bridges (free valley) */
+.stone-res { display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--ink); }
+.stone-res svg { flex: none; }
+.stone-res small { font-size: 13px; color: var(--ink-soft); }
 
 /* short landscape screens: seven entries no longer fit one column — two columns on a wider strip */
 @media (max-height: 520px) and (min-width: 640px) {

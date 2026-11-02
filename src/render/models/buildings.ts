@@ -944,6 +944,37 @@ export function buildingModel(kind: BuildingKind): BuildingModel {
   return model;
 }
 
+let castleUpgradeCache: ModelPart[] | null = null;
+
+/**
+ * Castle level 1 (free valley rank 5, Stolica): a round corner tower with a conical shingle roof and a
+ * Glina-red pennant, added at the back-right corner of the bailey. Same local frame as castle().
+ */
+export function castleUpgradeParts(): ModelPart[] {
+  if (castleUpgradeCache) return castleUpgradeCache;
+  const b = new PartBuilder({ seed: 977, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
+  const tx = 6.4, tz = -6.4, r = 2.0, th = 12.5;
+  b.add('stone', new CylinderGeometry(r, r * 1.08, th, 14, 6, false), { ...stoneO(), m: trs(tx, th / 2, tz), jitter: 0.04 });
+  b.add('stone', new CylinderGeometry(r * 1.2, r * 1.25, 1.0, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, 0.5, tz) });
+  // corbel ring and merlons
+  b.add('stone', new CylinderGeometry(r + 0.35, r + 0.05, 0.5, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, th + 0.2, tz) });
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    box(b, 'stone', 0.7, 0.9, 0.45, trs(tx + Math.cos(a) * (r + 0.15), th + 0.9, tz + Math.sin(a) * (r + 0.15), 0, -a + Math.PI / 2), stoneO());
+  }
+  // arrow slits facing out of the bailey
+  for (const [y, a] of [[4.5, 0.3], [7.8, -0.9], [10.6, 0.3]] as const) {
+    box(b, 'stone', 0.14, 0.9, 0.05, trs(tx + Math.cos(a) * (r + 0.01), y, tz + Math.sin(a) * (r + 0.01), 0, -a + Math.PI / 2), { color: '#1d1a17', noise: 0, ao: 0, dirt: 0 });
+  }
+  // conical shingle roof inside the merlons
+  b.add('wood', new CylinderGeometry(0.04, r * 1.05, 4.2, 12, 3, false), { color: C.shingle, m: trs(tx, th + 2.3, tz), jitter: 0.02, ao: 0, dirt: 0 });
+  // pennant pole and cloth (the castle's warm accent)
+  rod(b, 'wood', v3(tx, th + 4.2, tz), v3(tx, th + 6.6, tz), 0.05, 0.04, 5, { color: C.timber, ao: 0 });
+  box(b, 'cloth', 1.4, 0.55, 0.03, trs(tx + 0.72, th + 6.25, tz), { color: C.clay, ao: 0, dirt: 0 });
+  castleUpgradeCache = b.build();
+  return castleUpgradeCache;
+}
+
 const propCache = new Map<PropKind, ModelPart[]>();
 
 /** Generic yard props. Fence: one 4 m segment along X centred on the origin. */

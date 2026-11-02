@@ -76,9 +76,20 @@ Goods must differ by **shape** (accessibility, colour-blind safe):
 | Grain | upright sheaf: bundle with fan of ears |
 | Flour | squat square sack tied at the top |
 | Bread | round loaf with three scored cuts |
+| Fish | side-on fish, blunt head left, forked tail right, fins and scale arcs |
+| Stone | single rough-hewn block in three-quarter view (lit top, chiselled faces) with a chip beside it |
+| Charcoal | low heap of angular lumps, each with a white glint cut on one facet |
+| Malt | mound of malted grain on a kiln floor with a malt shovel stuck in it |
+| Beer | stave tankard with two hoops, a handle and a foam head over the rim |
+
+The five valley goods (D-30) keep one silhouette class each, distinct from the first five: no other good
+is a fish, a cube, a scatter of lumps, a mound with a tool, or a vessel. Grain and malt are told apart by
+the sheaf's vertical fan versus the malt's low mound and shovel.
 
 Stall reasons have their own icons (crossed road, empty cart, bridge with two wagons,
-full crate, hourglass, missing good = good icon with a stroke-through).
+full crate, hourglass, missing good = good icon with a stroke-through, ice floes against a wooden
+bridge, and a forked cart track for a contested input: one fork worn deep with an arrowhead, the other
+fading out in dashes to an empty post).
 
 ## Diegetic HUD (what lives in the scene, not in corners)
 

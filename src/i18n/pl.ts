@@ -356,6 +356,11 @@ export const pl = {
   'rank.4': 'Gród',
   'rank.5': 'Stolica',
   'town.unlockCastle': 'rozbudowa zamku',
+  // UI round 5 (valley chains): see PENDING_KEYS
+  'status.NO_INPUT.CONTESTED.to': '{good} idzie do: {rival}',
+  'road.stone': '{n, plural, one {# kamień} few {# kamienie} many {# kamieni} other {# kamienia}} (masz {have})',
+  'why.stoneReserve': 'Rezerwa kamienia na bruk i mosty: {n} z {max}',
+  'why.stoneAll': 'Kamień do budowy we wszystkich spichlerzach: {n}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -509,6 +514,10 @@ export const PENDING_KEYS = [
   'rank.4',
   'rank.5',
   'town.unlockCastle',
+  'status.NO_INPUT.CONTESTED.to',
+  'road.stone',
+  'why.stoneReserve',
+  'why.stoneAll',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

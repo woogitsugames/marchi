@@ -12,9 +12,9 @@ import {
   Vector3,
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import type { Building, World } from '../sim/index';
+import { castleLevel, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { buildingModel, type BuildingKind } from './models/buildings';
+import { buildingModel, castleUpgradeParts, type BuildingKind } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
 
@@ -115,7 +115,8 @@ export class BuildingsView {
 
   /** Rebuild if the set of buildings changed. Returns true when rebuilt. */
   sync(world: World): boolean {
-    const sig = world.state.buildings.map((b) => `${b.id}:${b.type}:${b.x}:${b.y}:${b.facing}`).join('|');
+    const lvl = castleLevel(world.state);
+    const sig = `${lvl}|` + world.state.buildings.map((b) => `${b.id}:${b.type}:${b.x}:${b.y}:${b.facing}`).join('|');
     if (sig === this.signature) return false;
     this.signature = sig;
     this.clear();
@@ -131,6 +132,8 @@ export class BuildingsView {
       const model = buildingModel(b.type as BuildingKind);
       const { m, cx, cz, baseY, lo, angle, sx, sz } = footprintTransform(this.hf, model, b.x, b.y, b.w, b.h, b.facing);
       add(model.parts, m);
+      // castle level 1 (free valley rank 5): the extra corner tower with its pennant
+      if (b.type === 'castle' && lvl >= 1) add(castleUpgradeParts(), m);
       if (baseY - lo > 0.3) {
         // field-stone plinth under the main house, reaching into the ground on the low side
         const mb = modelBounds(model.parts);

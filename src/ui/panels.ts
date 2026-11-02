@@ -1,7 +1,7 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
   BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, suggestLinkToStable, wagonEta, wagonSlowdown,
-  UNDO_TICKS, WAGON_PRICE, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
+  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, rankGated, stoneAvailable, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
@@ -139,6 +139,13 @@ function stockHtml(world: World, b: Building): string {
     parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(held)}/${fmtInt(cap)}` })}</span></div>
       <div class="cap-bar${full ? ' is-full' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
+    if (rankGated(world)) {
+      // free valley: granaries keep a stone reserve for cobbles and stone bridges before the market gets any
+      const res = Math.min(b.stock.stone, STONE_RESERVE);
+      parts.push(`<div class="s-hint stone-res">${iconSvg('stone', 22, goodName('stone'))}<span>${
+        tHtml('why.stoneReserve', { n: fmtInt(res), max: fmtInt(STONE_RESERVE) })}<br><small>${
+        tHtml('why.stoneAll', { n: fmtInt(stoneAvailable(world)) })}</small></span></div>`);
+    }
   } else if (b.type === 'castle') {
     const c = world.state.mission.contract;
     if (c) {
@@ -173,7 +180,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         top = `<div class="section-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id)}`;
       } else {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
-        top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status))}</span>${since}</div>`;
+        top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world))}</span>${since}</div>`;
       }
       // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
       // a building the player just placed gets the link at once, before its first status update
