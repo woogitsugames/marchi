@@ -697,6 +697,37 @@ rank letter's text no longer runs into its frame. Screens `docs/shots/hud4-*.jpg
 Rejected: tinting the slate track sprite with filters (muddy at 6–8 px and different per GPU); dropping the pace
 row in landscape (the forecast is the point of D-38). (decided)
 
+**D-54 — Valley events in the Free Valley: royal orders, a dynamic fair, a travelling merchant (state v8).**
+Owner-approved (design `docs/design/events.md`, texts `docs/content/events.md`). Only the free valley
+(`mission.id === 'sandbox'`) gets a `valleyEvents` slice (state v8, appended last; save v7 → v8 migration adds
+the neutral slice, the save gate checks it); contract missions carry no new field and draw no extra RNG.
+`src/sim/events.ts` runs once per sim second at the end of the tick and writes events and `rng` together.
+**Royal orders** (≤ 2 at a time, ≥ 6 sim minutes apart, 30 templates gated by rank *and* a complete existing
+chain): an offer waits for **accept** (`orderAccept`); after that, goods arriving at the castle go to the oldest
+accepted order before the market (sold to the crown: no saturation, no market price), and a full order pays
+`ceil(1.5 × base value) + 8 + 5 × rank` silver and twice that renown, once. No deadline, no failure, set aside
+(`orderDecline`) at any time without loss — delivered goods stay delivered (D-21). **The fair** replaces the fixed
+autumn beer +25 % (D-33): every third 15-minute season one producible good sells at 125 %, announced 2 sim
+minutes ahead; never both bonuses. **The merchant** (every second season) buys up to N units of a spare good at
+140 % (`merchantSell`, re-checks the surplus now: unreserved, connected to the castle, working reserve kept; it
+is not market income, so it never feeds the silver/min rank flow) or is put aside (`merchantDecline`).
+Determinism: same seed + commands ⇒ same hash, cold/warm save identical (tests `valley-events*.test.ts`).
+**Contract missions are bit-identical**: 13 missions × {0, 2 wagons bought} hashed every 4 min over 12 min against
+golden values recorded on the pre-D-54 build (v7); re-run on base 7983aaa: 26/26 equal. **HUD**: the card
+„Wieści z doliny” (`src/ui/eventCard.ts`) sits under the town plaque in portrait and under the speed bar in
+landscape (the contract column is taken by the plaque and the rail), on the painted kit panel: per-order title,
+reward, per-good delivery bars, accept / set aside, the fair line, the merchant's offer with „Sprzedaj N”; the
+header folds it in one tap, every action 48 px, RTL by logical properties; a single toast per new event or fulfilled
+order, none on load or after a fast-forward. Balance (`tools/balance-sandbox.ts`, 180 min, 6 policies × 3 seeds,
+`docs/balance/sandbox-seasons.md` §D-54): a player who ignores the events keeps the pacing (rank times equal or within ±2.5 min, except stone: seed 1301
+R4 146 → 123 min, seed 1302 now reaches R4 at 85 min; silver −1…+4 %, the fair now also pays for planks, bread,
+stone); an eager player who accepts every order and sells to every merchant earns +14–46 % silver and reaches
+R2–R5 about 20–25 % earlier (R5 at 91–105 min instead of 116–124), and a valley that builds nothing reaches R1
+(13–61 min). Kept as designed for the playtest: the events are opt-in work for the crown, the order of
+ranks and the late-game wall stay; if the playtest finds R5 too quick, halve order renown first (2× → 1× silver).
+Screens `docs/shots/events-*.jpg` (412×915, 915×412, 904×1000, `ar` portrait and landscape, folded): 0 console
+errors, no target under 48 px. (decided)
+
 **D-55 — Landscape side sheet docks opposite the contract, between the top bar and the bottom rail (UI only).**
 On a 915×412 screen the game's side sheet docked at the inline start for a right hand (end for a left hand) and
 ran from the chips row to the screen foot, so it covered the compact contract (D-53) and, when tall (castle card,
