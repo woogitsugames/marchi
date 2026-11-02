@@ -16,7 +16,7 @@ import {
 } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
 import { bridgeA, stableId } from '../../tools/bot';
-import { h } from './dom';
+import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
@@ -176,7 +176,7 @@ export class App implements PanelNav {
     const qp = this.params.get('quality');
     this.qualityParam = isQualityPref(qp) ? qp : null;
     this.dynres.enabled = this.params.get('dynres') !== '0';
-    document.body.classList.toggle('left-handed', this.prefs.leftHanded);
+    this.applyHand();
     applyVolumes(this.prefs);
     this.view.setQuality(renderQuality(this.view, this.effectiveQuality()));
     this.applyLayout();
@@ -199,7 +199,7 @@ export class App implements PanelNav {
     window.addEventListener('keydown', (e) => this.onKey(e));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') void this.autosave(); });
     window.addEventListener('pagehide', () => void this.autosave());
-    onLangChange(() => this.rebuildUi());
+    onLangChange(() => { this.applyHand(); this.rebuildUi(); });
 
     if (this.params.get('perf') === '1') {
       this.perfEl = h('div.perf.num');
@@ -212,6 +212,15 @@ export class App implements PanelNav {
       rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
       ready: false,
     };
+  }
+
+  /**
+   * The tool rail follows the hand, not the language (owner, 2026-11-02): RTL mirrors the content,
+   * so the 'left-handed' class (which swaps the logical side) is set when hand XOR RTL — a
+   * right-handed Arabic player keeps the rail under the right thumb.
+   */
+  private applyHand(): void {
+    document.body.classList.toggle('left-handed', this.prefs.leftHanded !== isRtl());
   }
 
   async start(): Promise<void> {
@@ -800,7 +809,7 @@ export class App implements PanelNav {
       setLeftHanded: (v) => {
         this.prefs.leftHanded = v;
         savePrefs(this.prefs);
-        document.body.classList.toggle('left-handed', v);
+        this.applyHand();
         requestAnimationFrame(() => this.measureRail());
       },
       musicVolume: () => this.prefs.musicVolume,

@@ -388,4 +388,7 @@ arrow (`.fwd`) and back / undo (`.rtl-flip`) mirror. Numbers: `iso()` / `<bdi>` 
 any physical left/right outside the listed exceptions. *Owner asked for a mirrored HUD (brief 05); the
 research note (BACKLOG) had suggested mirroring content only — superseded. Open: whether an Arabic
 right-hander prefers the landscape rail on the right (then "left-handed" reads backwards in RTL).* (decided)
+*Amended 2026-11-02 (owner):* the rail side follows the hand only — in RTL the rail stays on the right for a
+right-handed player. `App.applyHand()` sets the `left-handed` class to hand XOR RTL, so the logical CSS lands the
+rail physically on the hand's side; `railOnLeft()` then equals the left-handed setting.
 
