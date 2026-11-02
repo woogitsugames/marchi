@@ -420,19 +420,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'demolish.confirm',
-  'err.NO_STONE.coming',
-  'err.NO_STONE.mining',
-  'err.NO_STONE.noQuarry',
-  'why.waitsCustomer',
-  'status.NO_INPUT.CONTESTED.to',
-  'road.stone',
-  'why.stoneReserve',
-  'why.stoneAll',
-  'save.inProgress',
-  'save.unfinished',
-  'save.confirmFresh',
-  'save.confirmRestart',
   'contract.pace.eta',
   'contract.pace.late',
   'contract.pace.supply',
