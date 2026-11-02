@@ -174,7 +174,7 @@ const SEASON_NOTE_KEY: Record<string, MessageKey> = {
 };
 
 function seasonNoteText(n: SeasonNote): string | null {
-  if (n.k === 'FAIR') return t('season.effect.autumn-fair');
+  if (n.k === 'FAIR') return t('events.fair.active', { good: t(`goodAcc.${n.good}` as MessageKey) });
   const key = SEASON_NOTE_KEY[`${n.season}:${n.type}`];
   return key ? t(key) : null;
 }

@@ -9,6 +9,7 @@ import { buildMission, missionSeasons, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
 import { stepTown } from './town';
+import { EVENT_CHECK_TICKS, stepValleyEvents } from './events';
 import { cycleTicks } from './seasons';
 import { MARKET } from './defs';
 import type { GoodMap, SimState } from './types';
@@ -58,6 +59,7 @@ export function step(world: World): void {
   }
   checkMission(world);
   stepTown(world);
+  if (st.valleyEvents && st.tick % EVENT_CHECK_TICKS === 0) stepValleyEvents(world);
   if (st.tick % TICK_HZ === 0 && st.mission.result === 'running') accountStalls(world);
   for (const b of st.buildings) {
     const k = b.status.k;

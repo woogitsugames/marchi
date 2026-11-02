@@ -2,7 +2,8 @@
 import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
 import { buildingById } from './logistics';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
-import { AUTUMN_FAIR_GOOD, seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
+import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
+import { fairStage } from './events';
 import type { BuildingStatus, BuildingType, Good, Wagon, WagonStatus } from './types';
 
 export type ReasonLink =
@@ -243,7 +244,9 @@ export function seasonNote(world: World, id: number): SeasonNote | null {
     const pct = yieldPercentAt(b.type, tick);
     return pct === 100 ? null : { k: 'YIELD', season, type: b.type, pct };
   }
-  if (b.type === 'castle' && season === 'autumn' && world.state.mission.contract === null) return { k: 'FAIR', good: AUTUMN_FAIR_GOOD, pct: 125 };
+  // the valley fair (D-54) replaced the fixed autumn beer bonus
+  const fair = world.state.valleyEvents?.fair ?? null;
+  if (b.type === 'castle' && fair && fairStage(fair, tick) === 'active' && world.state.mission.contract === null) return { k: 'FAIR', good: fair.good, pct: fair.pricePercent };
   return null;
 }
 

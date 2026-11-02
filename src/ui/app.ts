@@ -514,6 +514,7 @@ export class App implements PanelNav {
       showStall: (id) => this.go('building', id, true),
       waybillCollapsed: (c) => { this.prefs.waybillCollapsed = c; savePrefs(this.prefs); },
       openMarket: () => this.openMarket(),
+      eventCommand: (cmd) => this.enqueue(cmd),
       rankUp: (r) => {
         if (audio.ready) void audio.play('ui.paper');
         this.hud?.showRankUp(r);
@@ -670,7 +671,8 @@ export class App implements PanelNav {
     if (cmd.t === 'place') this.build.settled();
     if (this.mode !== 'game' || !this.hud) return;
     const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish'
-      : cmd.t === 'sellWagon' ? 'coin' : cmd.t === 'place' ? 'build' : 'buy_wagon';
+      : cmd.t === 'sellWagon' || cmd.t === 'merchantSell' ? 'coin' : cmd.t === 'place' ? 'build'
+      : cmd.t === 'buyWagon' ? 'buy_wagon' : 'seal';
     if (!r.ok) {
       if (audio.ready) void audio.play('ui.error');
       this.hud.toast(errorText(r.err), 'err', icon);
@@ -681,6 +683,7 @@ export class App implements PanelNav {
     else if (cmd.t === 'demolish') this.hud.toast(t('hud.demolished', { n }), 'info', icon, 1800);
     else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n }), 'info', icon, 1800);
     else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n }), 'info', icon, 1800);
+    else if (cmd.t === 'merchantSell') this.hud.toast(t('events.merchant.sold', { n }), 'info', 'coin', 2200);
     else if (cmd.t === 'place') this.afterPlace(cmd.type, cmd.x, cmd.y, n);
   }
 

@@ -6,7 +6,7 @@
 import {
   GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, yearAt,
-  type BuildingType, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
+  type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
@@ -17,6 +17,7 @@ import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, waybillPaceHtml } from './pace';
 import { cureFor, type Cure, type StallEntry } from './stalls';
+import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
 
@@ -36,6 +37,8 @@ export interface HudActions {
   openMarket(): void;
   /** The town reached a new rank while playing (not on load). */
   rankUp(rank: number): void;
+  /** Valley event card (D-54): accept / set aside an order, sell to / dismiss the merchant. */
+  eventCommand(cmd: Command): void;
 }
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
@@ -44,7 +47,7 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 const SEASON_ICON: Record<Season, IconId> = { spring: 'rain', summer: 'sun', autumn: 'beer', winter: 'snow' };
 /** What a season (or the thaw) changes, said once when it begins. Spring itself changes nothing until the thaw. */
 const SEASON_EFFECT: Partial<Record<Season | 'thaw', MessageKey>> = {
-  summer: 'season.effect.summer-farm', autumn: 'season.effect.autumn-fair', winter: 'season.effect.winter-farm', thaw: 'season.effect.spring-thaw',
+  summer: 'season.effect.summer-farm', winter: 'season.effect.winter-farm', thaw: 'season.effect.spring-thaw',
 };
 const CHANGE_ICON: Record<string, IconId> = { 'thaw-start': 'road_dirt', 'thaw-end': 'road_dirt', 'ice-start': 'bridge_ice', 'ice-end': 'bridge_ice' };
 /** Languages whose sentences may start lower-case after "Name:" (German nouns keep their capital). */
@@ -142,6 +145,7 @@ export class Hud {
   private plTitle: HTMLElement;
   private plBody: HTMLElement;
   private plaqueOnly: HTMLElement;
+  private events: EventCard;
   private rankLetter: HTMLElement | null = null;
   private wasRaining = false;
   /** Season bookkeeping for notices (null = not seen yet: loading a game announces nothing old). */
@@ -261,14 +265,17 @@ export class Hud {
     }
     const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, this.stallRow, tools);
 
+    // ---- valley events (D-54): under the plaque, free valley only
+    this.events = new EventCard({ command: (c) => this.act.eventCommand(c), toast: (text, icon) => this.toast(text, 'info', icon, 4200) });
+
     this.toasts = h('div.toasts', { 'aria-live': 'polite' });
     this.live = h('div.sr-only', { 'aria-live': 'polite', role: 'status' });
-    this.root = h('div', null, h('div.hud-top', null, top, this.waybillWrap, this.plaqueWrap), rail, this.toasts, this.live);
+    this.root = h('div', null, h('div.hud-top', null, top, this.waybillWrap, this.plaqueWrap, this.events.root), rail, this.toasts, this.live);
     this.setBuild(false);
     // notices sit under the top cluster: its height changes with folding, pace rows, layout
     try {
       this.topObserver = new ResizeObserver(() => this.measureTop());
-      for (const el of [top, this.waybillWrap, this.plaqueWrap, speed]) this.topObserver.observe(el);
+      for (const el of [top, this.waybillWrap, this.plaqueWrap, this.events.root, speed]) this.topObserver.observe(el);
     } catch { /* old WebView: CSS fallback */ }
   }
 
@@ -280,6 +287,7 @@ export class Hud {
     let y = 0, bar = 0;
     for (const el of this.root.querySelectorAll<HTMLElement>('.hud-top > *, .topbar > *')) {
       if (el.hidden || !el.offsetParent || el.classList.contains('topbar')) continue;
+      if (el.classList.contains('ev-card') && getComputedStyle(el).position === 'fixed') continue; // landscape: beside, not below
       const b = el.getBoundingClientRect().bottom;
       y = Math.max(y, b);
       if (el.matches('.chips, .speed, .menu-btn')) bar = Math.max(bar, b);
@@ -330,6 +338,7 @@ export class Hud {
     const f = this.collapsed || this.compact;
     this.waybillWrap.classList.toggle('is-collapsed', f);
     this.plaqueWrap.classList.toggle('is-collapsed', f);
+    this.events.setHudFolded(f);
     this.lastSig = '';
     this.sealsSig = '';
     this.plaqueSig = '';
@@ -397,6 +406,7 @@ export class Hud {
     const sb = c ? null : sandboxStatus(world);
     this.plaqueWrap.hidden = !sb?.market;
     if (sb?.market) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, yearAt(st.tick));
+    this.events.update(world);
     if (c) this.updateContract(world, c, pace);
   }
 

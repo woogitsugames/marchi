@@ -27,7 +27,7 @@ test('save v6 -> v7: wagons get fleet numbers 1..N in id order, the counter N + 
   const ids = raw.state.wagons.map((w) => w.id);
   const env = loadFixture();
   eq(env.stateVersion, STATE_VERSION, 'migrated to the current version');
-  eq(STATE_VERSION, 7, 'current state version');
+  eq(STATE_VERSION, 8, 'current state version (v8: valley events, D-54)');
   const w = deserialize(JSON.stringify(env.state));
   const byId = [...w.state.wagons].sort((a, b) => a.id - b.id);
   eq(byId.map((q) => q.n).join(','), byId.map((_, i) => i + 1).join(','), 'numbers 1..N in id order');

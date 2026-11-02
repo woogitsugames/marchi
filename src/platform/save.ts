@@ -1,6 +1,7 @@
 // IndexedDB save slots with a versioned envelope and migrations.
 import { RANKS, STATE_VERSION, emptyGoods, goodsOf, type GoodMap, type SimState } from '../sim/index';
 import { freshMarket, freshTown } from '../sim/town';
+import { freshValleyEvents } from '../sim/events';
 import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
 
@@ -107,6 +108,14 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       }
       return nw;
     });
+    return out;
+  },
+  // v7 -> v8: free valley events (D-54). A sandbox save gets an empty event slice appended last (key
+  // order of a fresh state); every other mission is unchanged apart from the version.
+  7: (s) => {
+    const mission = s.mission as Record<string, unknown>;
+    const out: Record<string, unknown> = { ...s, version: 8 };
+    if (mission.id === 'sandbox') out.valleyEvents = freshValleyEvents();
     return out;
   },
 };

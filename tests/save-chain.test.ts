@@ -6,6 +6,7 @@ import { migrate } from '../src/platform/save';
 import { gateEnvelope, makeEnvelope, prepareLoad, type GateResult } from '../src/platform/saveGate';
 import { GOODS_V4, RANKS_V4, STATE_VERSION, createWorld, deserialize, emptyGoods, serialize, stateHash, step } from '../src/sim/index';
 import { freshMarket, freshTown } from '../src/sim/town';
+import { freshValleyEvents } from '../src/sim/events';
 import { assert, eq, test } from './harness';
 
 type J = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -19,6 +20,7 @@ function v4goods(m: J): J {
 function downgrade(v6: J, to: 1 | 2 | 3 | 4 | 5): J {
   const s = JSON.parse(JSON.stringify(v6)) as J;
   s.version = to;
+  delete s.valleyEvents; // state v8 (D-54)
   // v6 -> v5: no road stone flag
   delete s.mission.roadStone;
   if (to === 5) return s;
@@ -55,6 +57,7 @@ function mid(id: string, ticks: number) {
 function expectedAfterMigration(fresh: J, from: 1 | 2 | 3 | 4 | 5): J {
   const s = JSON.parse(JSON.stringify(fresh)) as J;
   s.mission.roadStone = false; // no mission before v6 built with stone
+  if ('valleyEvents' in s) s.valleyEvents = freshValleyEvents(); // events start empty (D-54)
   if (from >= 4) return s; // the new goods are still 0 and ranks 4-5 not reached yet
   for (const b of s.buildings) b.placedTick = -1;
   s.ledger.silverEarned = 0;

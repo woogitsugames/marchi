@@ -11,7 +11,7 @@ export { isRaining, edgeLength, findPath, pathTime, net, hasEdge, grade, type Wo
 export { buildingById, gateConnected } from './logistics';
 export { explainBuilding, explainWagon, outputCustomer, seasonalSupplier, sharedInput, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
 export {
-  SEASON_TICKS, SEASON_WARNING_TICKS, YEAR_TICKS, AUTUMN_FAIR_GOOD, bridgeIceUntil, cycleTicks, effectsAt, nextChange, seasonAt, seasonal,
+  SEASON_TICKS, SEASON_WARNING_TICKS, YEAR_TICKS, bridgeIceUntil, cycleTicks, effectsAt, nextChange, seasonAt, seasonal,
   thawing, yearAt, type Season, type SeasonChange, type SeasonChangeKind, type SeasonEffects,
 } from './seasons';
 export { hashState } from './hash';
@@ -25,3 +25,8 @@ export {
   PACE_MIN_TICKS, PACE_SAMPLE_TICKS, PACE_WINDOW_TICKS, contractForecast, newPaceLog, samplePace,
   type ContractForecast, type GoodPace, type PaceLog,
 } from './forecast';
+export {
+  EVENT_CHECK_TICKS, FAIR_PRICE_PERCENT, MAX_ROYAL_ORDERS, MERCHANT_PRICE_PERCENT, ORDER_TEMPLATES,
+  fairPercent, fairStage, freshValleyEvents, merchantSurplus, orderOutstanding, producibleGoods,
+  type MerchantOffer, type OrderTemplateId, type RoyalOrder, type SeasonalFair, type ValleyEventState,
+} from './events';

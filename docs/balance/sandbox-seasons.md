@@ -138,3 +138,40 @@ diff --git a/src/sim/defs.ts b/src/sim/defs.ts
 ```
 
 **Brak zmian w obecnych plikach `src/sim` tego PR.** Źródło danych i kontrola CI: [GitHub Actions — D-52 baseline i tuned](https://github.com/woogitsugames/marchi/actions/runs/41432555084). W CI uruchomiono pełny `npm test`, `npm run typecheck`, `npm run build`, `npm run bot` i `npm run perf:sim`; tymczasowy test zbierający dane pomiarowe usunięto z docelowej gałęzi, pozostawiając samodzielny `tools/balance-sandbox.ts`.
+
+## D-54 — zdarzenia doliny: 180 min przed / po (2026-11-02)
+
+`npx tsx tools/balance-sandbox.ts` na bazie 7983aaa (przed: stały jesienny +25% na piwo), na gałęzi `claude/w-events`
+bez przyjmowania zdarzeń (po: jarmark dynamiczny, oferty czekają) i z `--events` (gracz gorliwy: przyjmuje każde
+zamówienie, sprzedaje każdemu kupcowi). Każda komórka: **przed / po / po z --events**; czasy rang w minutach gry.
+
+| Strategia | Seed | Ranga | R1 | R2 | R3 | R4 | R5 | Srebro 180 min | sr/min (średnio) |
+|---|---:|---|---|---|---|---|---|---|---|
+| nothing | 1301 | 0 / 0 / 1 | — / — / 61.0 | — / — / — | — / — / — | — / — / — | — / — / — | 1674 / 1708 / 2356 | 9.3 / 9.5 / 13.1 |
+| nothing | 1302 | 0 / 0 / 1 | — / — / 13.2 | — / — / — | — / — / — | — / — / — | — / — / — | 1981 / 2058 / 2560 | 11.0 / 11.4 / 14.2 |
+| nothing | 1303 | 0 / 0 / 1 | — / — / 44.3 | — / — / — | — / — / — | — / — / — | — / — / — | 1624 / 1688 / 2373 | 9.0 / 9.4 / 13.2 |
+| wood | 1301 | 1 / 1 / 1 | 10.6 / 10.6 / 7.1 | — / — / — | — / — / — | — / — / — | — / — / — | 3856 / 3946 / 5667 | 21.4 / 21.9 / 31.5 |
+| wood | 1302 | 1 / 1 / 1 | 10.1 / 10.1 / 6.9 | — / — / — | — / — / — | — / — / — | — / — / — | 3868 / 4014 / 5663 | 21.5 / 22.3 / 31.5 |
+| wood | 1303 | 1 / 1 / 1 | 10.8 / 10.8 / 7.8 | — / — / — | — / — / — | — / — / — | — / — / — | 3791 / 3924 / 5491 | 21.1 / 21.8 / 30.5 |
+| bread | 1301 | 2 / 2 / 2 | 10.1 / 10.1 / 8.2 | 26.5 / 26.5 / 20.4 | — / — / — | — / — / — | — / — / — | 9356 / 9665 / 11316 | 52.0 / 53.7 / 62.9 |
+| bread | 1302 | 2 / 2 / 2 | 10.3 / 10.3 / 8.3 | 26.1 / 26.1 / 20.4 | — / — / — | — / — / — | — / — / — | 9470 / 9588 / 11454 | 52.6 / 53.3 / 63.6 |
+| bread | 1303 | 2 / 2 / 2 | 10.3 / 10.3 / 8.1 | 27.5 / 27.5 / 19.5 | — / — / — | — / — / — | — / — / — | 9126 / 9750 / 10956 | 50.7 / 54.2 / 60.9 |
+| stone | 1301 | 4 / 4 / 4 | 10.1 / 10.1 / 8.2 | 26.6 / 26.6 / 20.4 | 46.9 / 45.7 / 35.2 | 146.3 / 122.8 / 79.8 | — / — / — | 14611 / 14738 / 17144 | 81.2 / 81.9 / 95.2 |
+| stone | 1302 | 3 / 4 / 3 | 10.3 / 10.3 / 8.3 | 26.3 / 26.3 / 22.1 | 45.3 / 45.6 / 35.2 | — / 84.5 / — | — / — / — | 14793 / 14877 / 17196 | 82.2 / 82.7 / 95.5 |
+| stone | 1303 | 4 / 4 / 4 | 10.3 / 10.3 / 8.1 | 27.9 / 27.9 / 19.9 | 48.0 / 45.3 / 35.7 | 87.3 / 84.9 / 77.7 | — / — / — | 14338 / 14595 / 17846 | 79.7 / 81.1 / 99.1 |
+| beer | 1301 | 5 / 5 / 5 | 10.1 / 10.1 / 8.2 | 26.6 / 26.6 / 20.4 | 45.4 / 45.9 / 33.6 | 78.1 / 77.9 / 57.6 | 117.9 / 118.0 / 90.9 | 23534 / 23460 / 27118 | 130.7 / 130.3 / 150.7 |
+| beer | 1302 | 5 / 5 / 5 | 10.3 / 10.3 / 8.3 | 26.3 / 26.3 / 22.1 | 44.9 / 44.3 / 33.9 | 76.6 / 76.4 / 59.6 | 115.6 / 117.1 / 93.0 | 24103 / 23693 / 27688 | 133.9 / 131.6 / 153.8 |
+| beer | 1303 | 5 / 5 / 5 | 10.3 / 10.3 / 8.1 | 27.9 / 27.9 / 19.9 | 47.2 / 45.0 / 34.9 | 79.7 / 77.3 / 62.6 | 119.6 / 119.4 / 102.2 | 23353 / 23178 / 26464 | 129.7 / 128.8 / 147.0 |
+| mixed | 1301 | 5 / 5 / 5 | 10.1 / 10.1 / 8.2 | 26.6 / 26.6 / 20.4 | 45.4 / 45.9 / 33.6 | 78.1 / 77.9 / 57.6 | 123.4 / 122.8 / 93.3 | 21715 / 21696 / 25397 | 120.6 / 120.5 / 141.1 |
+| mixed | 1302 | 5 / 5 / 5 | 10.3 / 10.3 / 8.3 | 26.3 / 26.3 / 22.1 | 44.9 / 44.3 / 33.9 | 76.6 / 76.4 / 59.6 | 121.8 / 121.8 / 99.4 | 21986 / 21619 / 25079 | 122.1 / 120.1 / 139.3 |
+| mixed | 1303 | 5 / 5 / 5 | 10.3 / 10.3 / 8.1 | 27.9 / 27.9 / 19.9 | 47.2 / 45.0 / 34.9 | 79.7 / 77.3 / 62.6 | 123.9 / 123.5 / 105.2 | 21627 / 21605 / 23887 | 120.2 / 120.0 / 132.7 |
+
+Srebro łącznie (średnia z 3 seedów) wobec bazy — bez zdarzeń / z `--events`: nothing +3,3% / +38,1%, wood +3,2% /
++46,1%, bread +3,8% / +20,7%, stone +1,1% / +19,3%, beer −0,9% / +14,5%, mixed −0,6% / +13,8%.
+
+**Wniosek.** Gracz, który ignoruje wieści, ma praktycznie to samo tempo (różnice ±2,5 min; wyjątek: stone — seed 1301
+R4 146 → 123 min, seed 1302 osiąga R4 w 85 min zamiast wcale; jarmark płaci teraz za deski, chleb, kamień, nie tylko
+piwo). Gracz gorliwy zyskuje 14–46% srebra i osiąga R2–R5 o ok. 20–25% szybciej (R5 w 91–105 min zamiast
+116–124); dolina bez budowy dochodzi do R1. Kolejność rang i „ściana” R5 zostają, więc **bez strojenia** —
+zamówienia to dobrowolna praca dla korony. Jeśli playtest uzna R5 za zbyt szybkie: najpierw renoma zamówień 2× → 1×
+srebra (BACKLOG).

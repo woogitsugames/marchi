@@ -1,6 +1,6 @@
 # Wolna dolina — teksty zdarzeń (PL / EN)
 
-**Status: propozycja; bez podłączenia do HUD i symulacji.** Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/proposals/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
+**Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień zostają tutaj jako materiał na przyszłe szczegóły karty. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
 
 ## Zamówienia królewskie — 30 wariantów
 
@@ -78,4 +78,4 @@ Jarmark wypada co trzeci 15-minutowy sezon symulacji; pierwsza zapowiedź jesien
 | events.orders.none | Na razie nie ma nowych zamówień. | No new orders for now. |
 | events.empty | Brak nowych wieści. Wozy mogą jechać dalej. | No new messages. The wagons can keep moving. |
 
-Wartości {good}, {qty}, {price}, {delivered}, {required}, {silver}, {renown} podstawia HUD z danych zdarzeń i lokalizuje nazwy towarów. Bez tekstów typu „ostatnia szansa”, „zostało X sekund”, „porażka” i bez powiadomień push. Teksty nie są jeszcze dodane do działającej warstwy i18n.
+Wartości {good}, {qty}, {price}, {delivered}, {required}, {silver}, {renown} podstawia HUD z danych zdarzeń i lokalizuje nazwy towarów. Bez tekstów typu „ostatnia szansa”, „zostało X sekund”, „porażka” i bez powiadomień push. Karta używa krótszych kluczy (`events.order.*`, `events.fair.*`, `events.merchant.*`); narracja tytułów 1:1 z tabeli.

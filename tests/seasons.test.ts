@@ -1,7 +1,7 @@
 import { assert, eq, test } from './harness';
 import { RAIN_DIRT, TICK_HZ } from '../src/sim/defs';
 import {
-  AUTUMN_FAIR_GOOD, YEAR_TICKS, SEASON_TICKS, SEASON_WARNING_TICKS,
+  YEAR_TICKS, SEASON_TICKS, SEASON_WARNING_TICKS,
   effectsAt, nextChange, seasonAt,
 } from '../src/sim/seasons';
 
@@ -86,14 +86,8 @@ test('seasons: two separate short winter ice windows, always reopening', () => {
   eq(effectsAt(offset + YEAR_TICKS).iceWindows.length, 0, 'no ice in spring');
 });
 
-test('seasons: fair affects exactly one product at +25% and only in autumn', () => {
-  eq(AUTUMN_FAIR_GOOD, 'beer', 'single fair product');
-  for (const t of [spring, summer, winter, YEAR_TICKS]) {
-    eq(effectsAt(t).fair, null, 'no fair outside autumn');
-  }
-  eq(effectsAt(autumn).fair?.good, 'beer', 'beer fair');
-  eq(effectsAt(autumn).fair?.pricePercent, 125, 'quarter bonus');
-  eq(effectsAt(autumn + SEASON_TICKS - 1).fair?.pricePercent, 125, 'fair until last tick');
+test('seasons: the calendar has no fixed fair any more (D-54: the valley fair replaced autumn beer)', () => {
+  for (const t of [spring, summer, autumn, winter, YEAR_TICKS]) eq('fair' in effectsAt(t), false, 'no fair field');
 });
 
 test('seasons: next change is strictly future and announced two minutes early', () => {

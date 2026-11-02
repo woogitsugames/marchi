@@ -1,3 +1,5 @@
+import type { ValleyEventState } from './events';
+
 // Core simulation data types. Everything in SimState is plain JSON data:
 // no classes, no Maps, no undefined values (use null / -1), so that
 // JSON.stringify(state) is a canonical, hashable, saveable snapshot.
@@ -236,6 +238,11 @@ export interface SimState {
   ledger: Ledger;
   market: MarketState;
   town: TownState;
+  /**
+   * Free valley events (state v8, D-54): royal orders, fair, merchant. Present only in 'sandbox'
+   * states (the key is absent everywhere else, so contract missions serialize exactly as before).
+   */
+  valleyEvents?: ValleyEventState;
 }
 
 export interface Terrain {

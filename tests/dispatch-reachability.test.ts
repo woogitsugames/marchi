@@ -1,7 +1,8 @@
 // Dispatch spike fixes (docs/research/2026-11-02-dispatch-spike.md): with no free wagon the
 // dispatcher answers "is a source reachable" from connected-component labels (A), and Dijkstra
 // results are recycled between dispatches (B). Both must be pure optimisations.
-import { createWorld, stateHash, step, type World } from '../src/sim/index';
+import { hashString } from '../src/sim/hash';
+import { createWorld, step, type World } from '../src/sim/index';
 import { dispatch } from '../src/sim/logistics';
 import { dijkstra, net, reachable, releaseDistMap } from '../src/sim/network';
 import { nextInt, seedRng } from '../src/sim/rng';
@@ -121,7 +122,9 @@ test('dispatch fixes keep bench state hashes (recorded from the pre-fix sim)', (
   for (const n of [50, 100]) {
     const w = benchWorld(n);
     const got: string[] = [];
-    for (let i = 1; i <= 3000; i++) { step(w); if (i % 500 === 0) got.push(stateHash(w)); }
+    // state v8 (D-54) changed only the version digit of these worlds: hash them as version 7, the
+    // recorded values stay exactly the pre-D-54 ones (proof that contract-style worlds are untouched)
+    for (let i = 1; i <= 3000; i++) { step(w); if (i % 500 === 0) got.push(hashString(JSON.stringify({ ...w.state, version: 7 }))); }
     eq(got.join(','), want[n]!.join(','), 'bench' + n);
   }
 });

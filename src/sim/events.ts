@@ -1,26 +1,22 @@
 /**
- * D-21 / D-29 / D-33: optional, pure proposals for Free Valley events.
+ * Valley events in the free valley (D-54; design docs/design/events.md, copy docs/content/events.md):
+ * royal orders, seasonal fairs and a travelling merchant. Sandbox only: the slice lives in
+ * `SimState.valleyEvents`, which only a 'sandbox' state carries (contract missions keep their exact
+ * JSON). No penalties, no expiry, no countdowns (D-21).
  *
- * NOT connected to step(), market sales, saves or the HUD. This file deliberately has only type
- * imports: the live sim, existing seasonal effects and their deterministic hashes stay unchanged.
+ * Pure part: producibleGoods / proposeValleyEvents / dismissRoyalOrder / deliverRoyalOrder /
+ * acceptMerchant / dismissMerchant never mutate their input. The sim adapters at the bottom
+ * (stepValleyEvents, handInOrders, the command helpers) apply them to a World atomically: event data
+ * and SimState.rng are written together, goods leave the world through ledger.consumed (+ sold).
  *
- * Future state vN: add valleyEvents: ValleyEventState to SimState (sandbox only in gameplay,
- * but preferably initialized for every state for a stable JSON schema). Initialize with
- * freshValleyEvents() in createWorld and the save migration; persist the result of
- * proposeValleyEvents(state, state.valleyEvents) and its returned rng TOGETHER, atomically,
- * after a simulation tick. Do not advance RNG at render time. All fields are JSON-safe; never
- * store Sets, wall-clock timestamps, timers, class instances or undefined. Replayed ticks must
- * use precisely one event-generation pass and write back both event data and RNG state.
- *
- * Future integration: events.fair REPLACES the current hard-coded autumn beer +25% bonus in
- * seasons.ts/town.ts; never multiply both bonuses. Calendar/ice/weather effects stay as-is.
+ * The dynamic fair REPLACES the old fixed autumn beer +25% (seasons.ts): fairPercent() below is the
+ * only fair price hook.
  */
-import type { BuildingType, Good, SimState } from '../types';
-import type { RngState } from '../rng';
-import type { Season } from '../seasons';
-
-/** Mirrors the canonical GOODS order from defs.ts; this proposal cannot import runtime defs. */
-const GOODS = ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone', 'charcoal', 'malt', 'beer'] as const satisfies readonly Good[];
+import { GOODS, MARKET } from './defs';
+import { SEASON_TICKS, type Season } from './seasons';
+import { reachable, type World } from './network';
+import type { RngState } from './rng';
+import type { Building, BuildingType, Good, SimState } from './types';
 
 /** D-29 rank unlocks. Each prerequisite is checked, not just the final building. */
 const PRODUCTION: Record<Good, { rank: number; building: BuildingType; requires: readonly Good[] }> = {
@@ -36,14 +32,9 @@ const PRODUCTION: Record<Good, { rank: number; building: BuildingType; requires:
   beer: { rank: 4, building: 'brewery', requires: ['malt'] },
 };
 
-/** Mirrored MARKET.base values (silver/unit). Keep in sync if the market is rebalanced. */
-const BASE_SILVER: Record<Good, number> = {
-  wood: 1, planks: 3, grain: 1, flour: 3, bread: 4,
-  fish: 3, stone: 2, charcoal: 4, malt: 4, beer: 9,
-};
+const BASE_SILVER = MARKET.base;
 
-// D-33 seasons use 15 min at 10 ticks/s. Events follow simulation ticks, not real time.
-export const EVENT_SEASON_TICKS = 9_000;
+export const EVENT_SEASON_TICKS = SEASON_TICKS;
 export const FAIR_WARNING_TICKS = 1_200; // announced two simulation minutes before the season
 export const ORDER_INTERVAL_TICKS = 3_600; // at most one new offer each six simulation minutes
 export const FAIR_EVERY_SEASONS = 3;
@@ -59,6 +50,8 @@ export type OrderTemplateId = (typeof ORDER_TEMPLATES)[number]['id'];
 export interface RoyalOrder {
   id: string;
   templateId: OrderTemplateId;
+  /** Offered orders wait for the player; only accepted ones take deliveries at the castle. */
+  accepted: boolean;
   /** Every good in this record is required. No deadline or failure fields. */
   need: Partial<Record<Good, number>>;
   /** Goods already handed to the castle for this order. */
@@ -99,6 +92,10 @@ export interface ValleyEventState {
   lastFairSeasonIndex: number;
   merchant: MerchantOffer | null;
   lastMerchantSeasonIndex: number;
+  /** Totals for the HUD and the balance bench: orders fulfilled, silver from orders and the merchant. */
+  ordersDone: number;
+  orderSilver: number;
+  merchantSilver: number;
 }
 
 export type EventSnapshot = Pick<SimState, 'tick' | 'rng' | 'town' | 'buildings' | 'ledger' | 'mission'>;
@@ -163,6 +160,7 @@ export function freshValleyEvents(): ValleyEventState {
     orders: [], nextOrderTick: 0, nextOrderAfterSoldUnits: 0, lastRejectedTemplate: null,
     sequence: 0, fair: null, lastFairSeasonIndex: -1,
     merchant: null, lastMerchantSeasonIndex: -1,
+    ordersDone: 0, orderSilver: 0, merchantSilver: 0,
   };
 }
 
@@ -236,7 +234,7 @@ function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngStat
   }
   const rewardSilver = Math.ceil(value * 1.5) + 8 + state.town.rank * 5;
   const order: RoyalOrder = {
-    id: 'order-' + events.sequence, templateId: template.id, need, delivered,
+    id: 'order-' + events.sequence, templateId: template.id, accepted: false, need, delivered,
     rewardSilver, rewardRenown: rewardSilver * 2,
   };
   return {
@@ -275,13 +273,14 @@ export function fairStage(fair: SeasonalFair | null, tick: number): 'upcoming' |
 }
 
 /** Unreserved finished outputs and warehouse stock, excluding market/castle and recipe inputs. */
-export function merchantSurplus(state: Pick<EventSnapshot, 'buildings' | 'town'>): Partial<Record<Good, number>> {
+export function merchantSurplus(state: Pick<EventSnapshot, 'buildings' | 'town'>, usable: (b: Building) => boolean = () => true): Partial<Record<Good, number>> {
   const goods = new Set(producibleGoods(state));
   const available: Partial<Record<Good, number>> = {};
   for (const good of goods) {
     let units = 0;
     for (const b of state.buildings) {
       if (b.type !== 'warehouse' && b.type !== PRODUCTION[good].building) continue;
+      if (!usable(b)) continue;
       units += Math.max(0, b.stock[good] - b.reservedOut[good]);
     }
     // Keeps a working stock for chains; stone gets the existing free-valley building reserve.
@@ -292,11 +291,11 @@ export function merchantSurplus(state: Pick<EventSnapshot, 'buildings' | 'town'>
   return available;
 }
 
-function merchantOffer(state: EventSnapshot, events: ValleyEventState, rng: RngState): ValleyEventState {
+function merchantOffer(state: EventSnapshot, events: ValleyEventState, rng: RngState, usable: (b: Building) => boolean): ValleyEventState {
   const seasonIndex = Math.floor(state.tick / EVENT_SEASON_TICKS);
   if (seasonIndex % MERCHANT_EVERY_SEASONS !== 0 || events.merchant ||
       events.lastMerchantSeasonIndex >= seasonIndex) return events;
-  const surplus = merchantSurplus(state);
+  const surplus = merchantSurplus(state, usable);
   const candidates = GOODS.filter((good) => (surplus[good] ?? 0) >= MERCHANT_MIN_TRADE);
   if (candidates.length === 0) return events;
   const good = candidates[draw(rng, candidates.length)]!;
@@ -316,7 +315,7 @@ function merchantOffer(state: EventSnapshot, events: ValleyEventState, rng: RngS
  * The caller must persist BOTH return values; calling twice with the old snapshot repeats RNG draws.
  * No event is generated outside the free valley. No timers, penalties or random wall-clock calls.
  */
-export function proposeValleyEvents(state: EventSnapshot, events: ValleyEventState): EventGeneration {
+export function proposeValleyEvents(state: EventSnapshot, events: ValleyEventState, usable: (b: Building) => boolean = () => true): EventGeneration {
   checkSnapshot(state);
   const rng = [...state.rng] as RngState;
   if (state.mission.id !== 'sandbox') return { events, rng };
@@ -326,7 +325,7 @@ export function proposeValleyEvents(state: EventSnapshot, events: ValleyEventSta
   if (next.fair !== null && state.tick >= next.fair.endTick) next = { ...next, fair: null };
   next = seasonalFair(state, next, rng, goods);
   next = royalOrder(state, next, rng, goods);
-  next = merchantOffer(state, next, rng);
+  next = merchantOffer(state, next, rng, usable);
   return { events: next, rng };
 }
 
@@ -384,4 +383,149 @@ export function acceptMerchant(events: ValleyEventState, id: string, quantity: n
     events: { ...events, merchant: null }, good: offer.good,
     accepted, cents: accepted * offer.unitCents,
   };
+}
+
+
+// --- Sim adapters (D-54) -------------------------------------------------------------------------
+
+/** Event generation runs once per sim second, at the end of the tick (after market and ledger). */
+export const EVENT_CHECK_TICKS = 10;
+
+function castleOf(world: World): Building | null {
+  for (const b of world.state.buildings) if (b.type === 'castle') return b;
+  return null;
+}
+
+/** A source the merchant can reach: connected by road to the castle gate. */
+function usableFor(world: World): (b: Building) => boolean {
+  const castle = castleOf(world);
+  return (b) => !!castle && reachable(world, b.gate, castle.gate);
+}
+
+/** One generation pass for the world (sandbox states only); writes events and rng together. */
+export function stepValleyEvents(world: World): void {
+  const st = world.state;
+  const ev = st.valleyEvents;
+  if (!ev || st.mission.id !== 'sandbox') return;
+  const r = proposeValleyEvents(st, ev, usableFor(world));
+  st.valleyEvents = r.events;
+  st.rng = r.rng;
+}
+
+/** Fair price percentage for a good right now (125 during its fair, else 100). The only fair hook. */
+export function fairPercent(world: World, good: Good): number {
+  const ev = world.state.valleyEvents;
+  if (!ev || !ev.fair || ev.fair.good !== good) return 100;
+  return fairStage(ev.fair, world.state.tick) === 'active' ? ev.fair.pricePercent : 100;
+}
+
+/** Units of g still owed to accepted royal orders (dispatcher priority, HUD). */
+export function orderOutstanding(st: Pick<SimState, 'valleyEvents'>, g: Good): number {
+  const ev = st.valleyEvents;
+  if (!ev) return 0;
+  let n = 0;
+  for (const o of ev.orders) if (o.accepted) n += Math.max(0, (o.need[g] ?? 0) - (o.delivered[g] ?? 0));
+  return n;
+}
+
+/**
+ * Goods arriving at the castle market go first to accepted royal orders (oldest first): they leave
+ * the world as consumed and sold (to the crown, not the market: no saturation, no market price).
+ * A completed order pays its silver and renown once. Returns units taken; the rest is sold as usual.
+ */
+export function handInOrders(world: World, castle: Building, g: Good): number {
+  const st = world.state;
+  let ev = st.valleyEvents;
+  if (!ev || !ev.orders.some((o) => o.accepted)) return 0;
+  let taken = 0;
+  for (const order of ev.orders.slice()) {
+    if (!order.accepted) continue;
+    const have = castle.stock[g];
+    if (have <= 0) break;
+    const r = deliverRoyalOrder(ev, order.id, g, have);
+    if (r.accepted === 0) continue;
+    ev = r.events;
+    castle.stock[g] -= r.accepted;
+    st.ledger.consumed[g] += r.accepted;
+    st.ledger.sold[g] += r.accepted;
+    taken += r.accepted;
+    if (r.reward) {
+      st.coins += r.reward.silver;
+      st.ledger.silverEarned += r.reward.silver;
+      st.town.renown += r.reward.renown;
+      ev = { ...ev, ordersDone: ev.ordersDone + 1, orderSilver: ev.orderSilver + r.reward.silver };
+    }
+  }
+  st.valleyEvents = ev;
+  return taken;
+}
+
+export type EventCommandError = { k: 'NO_EVENT' } | { k: 'NO_SURPLUS' };
+
+/** Accept an offered royal order: from now on castle deliveries count towards it. */
+export function acceptOrder(world: World, id: string): EventCommandError | null {
+  const ev = world.state.valleyEvents;
+  const order = ev?.orders.find((o) => o.id === id);
+  if (!ev || !order || order.accepted) return { k: 'NO_EVENT' };
+  world.state.valleyEvents = { ...ev, orders: ev.orders.map((o) => (o.id === id ? { ...o, accepted: true } : o)) };
+  return null;
+}
+
+/** Set an order aside (offered or accepted): no loss; delivered goods stay delivered (D-21). */
+export function declineOrder(world: World, id: string): EventCommandError | null {
+  const st = world.state;
+  const ev = st.valleyEvents;
+  if (!ev || !ev.orders.some((o) => o.id === id)) return { k: 'NO_EVENT' };
+  st.valleyEvents = dismissRoyalOrder(st, ev, id);
+  return null;
+}
+
+/** Put the merchant's offer aside. */
+export function declineMerchant(world: World, id: string): EventCommandError | null {
+  const ev = world.state.valleyEvents;
+  if (!ev || !ev.merchant || ev.merchant.id !== id) return { k: 'NO_EVENT' };
+  world.state.valleyEvents = dismissMerchant(ev);
+  return null;
+}
+
+/**
+ * Sell surplus to the merchant at the fixed quote: re-checks the surplus now (unreserved, connected
+ * to the castle, working reserve kept), takes it from producers first, then granaries (lowest id
+ * first), books consumed + sold, pays through market.cents. Not market income: no saturation and no
+ * silver/min flow (the rank flow requirement stays a measure of the market). Returns units sold.
+ */
+export function sellToMerchant(world: World, id: string): { err: EventCommandError } | { sold: number; silver: number } {
+  const st = world.state;
+  const ev = st.valleyEvents;
+  const offer = ev?.merchant;
+  if (!ev || !offer || offer.id !== id) return { err: { k: 'NO_EVENT' } };
+  const g = offer.good;
+  const surplus = merchantSurplus(st, usableFor(world))[g] ?? 0;
+  const qty = Math.min(offer.quantity, surplus);
+  if (qty <= 0) return { err: { k: 'NO_SURPLUS' } };
+  const usable = usableFor(world);
+  let left = qty;
+  for (const pass of [PRODUCTION[g].building, 'warehouse'] as const) {
+    for (const b of st.buildings) {
+      if (left <= 0) break;
+      if (b.type !== pass || !usable(b)) continue;
+      const k = Math.min(left, b.stock[g] - b.reservedOut[g]);
+      if (k <= 0) continue;
+      b.stock[g] -= k;
+      left -= k;
+    }
+  }
+  const sold = qty - left;
+  const sale = acceptMerchant(ev, id, sold);
+  st.ledger.consumed[g] += sold;
+  st.ledger.sold[g] += sold;
+  const m = st.market;
+  m.cents += sale.cents;
+  const pay = Math.floor(m.cents / 100);
+  m.cents -= pay * 100;
+  st.coins += pay;
+  st.ledger.silverEarned += pay;
+  st.town.renown += pay;
+  st.valleyEvents = { ...sale.events, merchantSilver: sale.events.merchantSilver + pay };
+  return { sold, silver: pay };
 }

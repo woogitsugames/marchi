@@ -11,7 +11,7 @@ import {
   ORDER_INTERVAL_TICKS, ORDER_TEMPLATES, acceptMerchant, deliverRoyalOrder, dismissMerchant,
   dismissRoyalOrder, fairStage, freshValleyEvents, merchantSurplus, producibleGoods, proposeValleyEvents,
   type ValleyEventState,
-} from '../src/sim/proposals/events';
+} from '../src/sim/events';
 import { assert, eq, test } from './harness';
 
 const allProducerTypes: BuildingType[] = [
