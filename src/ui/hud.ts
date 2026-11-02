@@ -3,6 +3,7 @@
 import {
   GOODS, RANKS, WAGON_PRICE, canSurface, isRaining, sandboxStatus, timeOfDay, TICK_HZ,
   type BuildingType, type Contract, type Good, type SandboxStatus, type World,
+  emptyGoods,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { t, type MessageKey } from '../i18n/index';
@@ -291,7 +292,7 @@ export class Hud {
     if (sb?.market) this.updatePlaque(sb);
     if (!c) return;
     const castle = st.buildings.find((b) => b.id === c.castle);
-    const stock = castle ? castle.stock : { wood: 0, planks: 0, grain: 0, flour: 0, bread: 0 };
+    const stock = castle ? castle.stock : emptyGoods();
     const goods = GOODS.filter((g) => c.need[g] > 0) as Good[];
     const have = goods.map((g) => Math.min(stock[g], c.need[g]));
     const tr = c.tranches;

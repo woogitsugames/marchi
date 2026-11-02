@@ -11,6 +11,7 @@ const TEX = 8; // terrain texture px per cell
 
 const CARGO: Record<Good, string> = {
   wood: '#6b5034', planks: '#c2a878', grain: '#a88d5c', flour: '#ddd6c6', bread: '#b8893a',
+  fish: '#7d8a86', stone: '#8a8478', charcoal: '#2b2620', malt: '#c9b48a', beer: '#8c4a2f',
 };
 const ROOF: Record<string, string> = {
   woodcutter: '#7c6a4c', sawmill: '#8a7350', farm: '#9a8058', mill: '#8f7d5d', bakery: '#94704e',
