@@ -1,7 +1,9 @@
 /**
  * D-52: Free Valley 180-minute season balance bench.
  *
- * Run: npx tsx tools/balance-sandbox.ts [--tuned] [--json]
+ * Run: npx tsx tools/balance-sandbox.ts [--tuned] [--json] [--events]
+ * --events (D-54): the player accepts every royal order and sells to every merchant (an eager player);
+ * without it the valley events still run (the fair always pays) but no offer is taken.
  * Six fixed bot policies, three real terrain/weather seeds, 10 ticks/game-second.
  * The optional --tuned scenario temporarily mutates the in-memory definitions;
  * it never writes to src/sim and restores the original constants afterwards.
@@ -15,6 +17,7 @@ import {
 } from '../src/sim/index';
 import { BUILDINGS, MARKET } from '../src/sim/defs';
 import { seasonAt, type Season } from '../src/sim/seasons';
+import { fairStage } from '../src/sim/events';
 import { DECENT, type BotStep } from './bot-sandbox';
 
 export const SEEDS = [1301, 1302, 1303] as const;
@@ -103,16 +106,21 @@ export interface BalanceRun {
   actionsDone: number;
   errors: string[];
   rankFell: boolean;
+  /** D-54 valley events: orders fulfilled, silver from orders and the merchant, fairs held. */
+  ordersDone: number;
+  orderSilver: number;
+  merchantSilver: number;
+  fairs: number;
 }
 
 export interface BalanceSuite {
-  scenario: 'baseline' | 'tuned';
+  scenario: 'baseline' | 'tuned' | 'events';
   minutes: number;
   seeds: readonly number[];
   rows: BalanceRun[];
 }
 
-function runOne(strategy: typeof PLANS[number], seed: number): BalanceRun {
+function runOne(strategy: typeof PLANS[number], seed: number, takeEvents = false): BalanceRun {
   const w = createWorld('sandbox', seed);
   if (!w.seasons) throw new Error('sandbox must enable seasons');
   const st = w.state;
@@ -126,7 +134,7 @@ function runOne(strategy: typeof PLANS[number], seed: number): BalanceRun {
   const end = MINUTES * 60 * TICK_HZ;
   let nextAction = 0, lastRank = st.town.rank, rankFell = false;
   let closedPrevious = new Set<number>(), winterClosedEpisodes = 0;
-  let fairBeerUnits = 0, fairExtraCents = 0;
+  let fairBeerUnits = 0, fairExtraCents = 0, fairs = 0;
 
   while (st.tick < end) {
     if (st.tick % TICK_HZ === 0 && nextAction < plan.length) {
@@ -147,25 +155,34 @@ function runOne(strategy: typeof PLANS[number], seed: number): BalanceRun {
       }
     }
 
+    if (takeEvents && st.tick % TICK_HZ === 0 && st.valleyEvents) {
+      const ev = st.valleyEvents;
+      for (const o of ev.orders) if (!o.accepted) applyCommand(w, { t: 'orderAccept', id: o.id });
+      if (ev.merchant) applyCommand(w, { t: 'merchantSell', id: ev.merchant.id });
+    }
+    const fair = st.valleyEvents?.fair ?? null;
+    if (fair && fair.startTick === st.tick) fairs++;
+    const fairGood = fair && fairStage(fair, st.tick) === 'active' ? fair.good : null;
+    const fairSoldBefore = fairGood ? st.ledger.sold[fairGood] : 0;
+    const fairSatBefore = fairGood ? st.market.saturation[fairGood] : 0;
     const tick = st.tick;
     const year = Math.floor(tick / (60 * SEASON_MINUTES * SEASONS.length * TICK_HZ));
     const season = seasonAt(tick);
     const earnedBefore = st.ledger.silverEarned;
-    const beerBefore = st.ledger.sold.beer;
-    const satBefore = st.market.saturation.beer;
     step(w);
     const silver = st.ledger.silverEarned - earnedBefore;
     total[season] += silver;
     byYear[year]![season] += silver;
 
-    const beer = st.ledger.sold.beer - beerBefore;
-    if (season === 'autumn' && beer > 0) {
-      // Reprice the EXACT sold batch against the same starting saturation.
-      // Per-unit rounding matches sellAt()/quoteCents(); no fake "25% of revenue".
-      const marketBefore = { market: { ...st.market, saturation: { ...st.market.saturation, beer: satBefore } } };
-      fairExtraCents += quoteCents(marketBefore, 'beer', beer, 125) -
-        quoteCents(marketBefore, 'beer', beer, 100);
-      fairBeerUnits += beer;
+    if (fairGood) {
+      // D-54: the dynamic fair; reprice the exact sold batch of the fair good at the starting saturation
+      // (per-unit rounding as sellAt; crown and merchant units in the same tick are counted too, rare)
+      const n = st.ledger.sold[fairGood] - fairSoldBefore;
+      if (n > 0) {
+        const mk = { market: { ...st.market, saturation: { ...st.market.saturation, [fairGood]: fairSatBefore } } };
+        fairExtraCents += quoteCents(mk, fairGood, n, 125) - quoteCents(mk, fairGood, n, 100);
+        if (fairGood === 'beer') fairBeerUnits += n;
+      }
     }
 
     const closedNow = new Set<number>();
@@ -210,11 +227,13 @@ function runOne(strategy: typeof PLANS[number], seed: number): BalanceRun {
     stallSeconds: Object.fromEntries(Object.entries(stalls).sort(([a], [b]) => a.localeCompare(b))),
     actionsDone: done.length,
     errors, rankFell,
+    ordersDone: st.valleyEvents?.ordersDone ?? 0, orderSilver: st.valleyEvents?.orderSilver ?? 0,
+    merchantSilver: st.valleyEvents?.merchantSilver ?? 0, fairs,
   };
 }
 
 /** Counterfactual: numbers are changed only in memory, never in source or saved state. */
-export function runBalanceSuite(tuned = false): BalanceSuite {
+export function runBalanceSuite(tuned = false, takeEvents = false): BalanceSuite {
   const originalBeerPrice = MARKET.base.beer;
   const brewery = BUILDINGS.brewery.recipe!;
   const originalBreweryTicks = brewery.ticks;
@@ -224,9 +243,9 @@ export function runBalanceSuite(tuned = false): BalanceSuite {
       brewery.ticks = 18 * TICK_HZ;            // defs.ts: 16 -> 18 seconds
     }
     const rows: BalanceRun[] = [];
-    for (const strategy of PLANS) for (const seed of SEEDS) rows.push(runOne(strategy, seed));
+    for (const strategy of PLANS) for (const seed of SEEDS) rows.push(runOne(strategy, seed, takeEvents));
     return {
-      scenario: tuned ? 'tuned' : 'baseline', minutes: MINUTES, seeds: SEEDS,
+      scenario: tuned ? 'tuned' : takeEvents ? 'events' : 'baseline', minutes: MINUTES, seeds: SEEDS,
       rows,
     };
   } finally {
@@ -260,7 +279,7 @@ export function balanceMarkdown(s: BalanceSuite): string {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const tuned = process.argv.includes('--tuned');
-  const suite = runBalanceSuite(tuned);
+  const suite = runBalanceSuite(tuned, process.argv.includes('--events'));
   if (process.argv.includes('--json')) console.log(JSON.stringify(suite));
   else console.log(balanceMarkdown(suite));
   if (suite.rows.some((r) => r.errors.length > 0 || r.rankFell)) process.exitCode = 1;
