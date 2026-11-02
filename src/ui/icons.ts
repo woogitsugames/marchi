@@ -60,7 +60,12 @@ export type IconId =
   | 'rain'
   | 'back'
   | 'snow'
-  | 'follow';
+  | 'follow'
+  // free valley / building (UI round 3)
+  | 'build'
+  | 'rotate'
+  | 'undo'
+  | 'bridge_ice';
 
 // ---------------------------------------------------------------------------
 // Geometry kit
@@ -1559,6 +1564,69 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.cut(gouge([9.3, 10.4], [10.6, 8.8], 1.0));
     // lashes on the upper lid
     for (const x of [6.2, 9.4, 12.6, 15.8]) d.inkFine(band(seg([x + 0.3, 6.6], [x - 0.4, 3.6], 3), lerpW(1.1, 0.5)));
+  },
+
+  build(d) {
+    // timber frame of a gable house going up: sill, two posts, tie beam, king post, rafters
+    d.ink(band(seg([1.6, 21.2], [22.4, 21.2], 8), lerpW(2.6, 2.2)));
+    d.layer();
+    d.ink(band(seg([5.2, 12.4], [5.2, 20.6], 6), 2.1), band(seg([18.8, 12.4], [18.8, 20.6], 6), 2.1));
+    d.inkFine(band(seg([5.6, 19.6], [10.4, 13.4], 5), 1.1));
+    d.layer();
+    d.ink(band(seg([3, 12.6], [21, 12.6], 8), 2));
+    d.ink(band(seg([12, 3.6], [12, 12.4], 6), 1.7));
+    d.layer();
+    d.ink(band(seg([12, 2.2], [1.4, 13.4], 10), lerpW(2.6, 2.1)), band(seg([12, 2.2], [22.6, 13.4], 10), lerpW(2.6, 2.1)));
+    d.cut(gouge([10.6, 4.6], [4.2, 11.2], 0.5), gouge([1.8, 21.2], [21.6, 21.2], 0.45));
+  },
+
+  rotate(d) {
+    // a cut arrow running round three quarters of a ring, head at the top
+    const arc = arcPts(12, 12.6, 8, 8, -70, 215, 30);
+    d.ink(band(arc, lerpW(2.0, 2.8)));
+    d.cut(band(arcPts(12, 12.6, 8, 8, 20, 190, 20), 0.5));
+    d.ink([
+      [12.6, 0.8],
+      [19.6, 4.2],
+      [13.2, 9.4],
+      [14.4, 5.2],
+    ]);
+  },
+
+  undo(d) {
+    // hooked arrow: the way back to where the building was not
+    d.ink(band([[8.6, 7.2], [14.2, 7.2], ...arcPts(14.2, 12.8, 5.6, 5.6, -90, 90, 16).slice(1), [5.2, 18.4]], lerpW(2.4, 2.0)));
+    d.ink([
+      [1.4, 7.2],
+      [9.4, 2.2],
+      [8.2, 7.2],
+      [9.4, 12.2],
+    ]);
+    d.cut(band(arcPts(14.2, 12.8, 5.6, 5.6, -40, 60, 8), 0.45));
+  },
+
+  bridge_ice(d) {
+    // wooden trestle bridge: rail, deck, piles
+    d.inkFine(band(seg([1.2, 5.4], [22.8, 5.4], 10), 1.1));
+    for (const x of [2.4, 8.2, 14, 19.8]) d.inkFine(band(seg([x, 5.4], [x, 8.8], 2), 1));
+    d.ink(band(seg([0.8, 9.6], [23.2, 9.6], 12), 2.8));
+    for (const x of [3.6, 8.2, 12.8, 17.4]) d.cut(gouge([x, 8.8], [x + 0.1, 10.4], 0.5));
+    for (const x of [4.6, 12, 19.4]) d.ink(band(seg([x, 10.6], [x - 0.2, 15.6], 3), 1.7));
+    // ice floes jammed against the piles, tilted slabs with hatched shadow
+    d.layer();
+    const floes: Poly[] = [
+      [[0.8, 16.4], [6.8, 15], [8, 17.4], [1.6, 19.4]],
+      [[8.6, 16.2], [14.4, 14.6], [16.2, 17.2], [9.4, 18.6]],
+      [[16.8, 15.6], [23.2, 15], [23.2, 18.4], [17.6, 18.8]],
+      [[3.6, 20], [10.8, 19.2], [11.6, 21.8], [4, 22.6]],
+      [[12.8, 19.6], [20.4, 19.4], [20.8, 22.2], [13.2, 22.4]],
+    ];
+    for (const f of floes) {
+      d.ink(f);
+      d.cut(shrink(f, 0.75));
+    }
+    d.hatchInk([[9.6, 17.6], [15.4, 16.6], [15.8, 17.4], [9.6, 18.4]], -30, 1.2, 0.5);
+    d.hatchInk([[4.4, 21.4], [10.8, 20.6], [11.2, 21.6], [4.6, 22.2]], -30, 1.2, 0.5);
   },
 
   back(d) {

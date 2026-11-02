@@ -3,13 +3,14 @@ import { lineCells, roadCellCost, validateRoad, type CommandError, type SurfaceK
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
 import type { Markers } from './markers';
-import { cellsWord, fmtInt, iso, joinList } from './format';
+import { cellsWord, fmtInt, iso, joinList, rankName } from './format';
 
 export function errorText(err: CommandError): string {
   const key = `err.${err.k}` as MessageKey;
   switch (err.k) {
     case 'TOO_STEEP': return t(key, { grade: iso(fmtInt(err.grade * 100)), max: iso(fmtInt(err.max * 100)) });
     case 'NO_COINS': return t(key, { need: iso(fmtInt(err.need)), have: iso(fmtInt(err.have)) });
+    case 'LOCKED': return t(key, { rank: rankName(err.rank) });
     default: return t(key);
   }
 }

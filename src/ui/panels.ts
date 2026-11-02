@@ -1,12 +1,12 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, outputGoods, suggestLinkToStable, wagonEta, wagonSlowdown,
-  WAGON_PRICE, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
+  BUILDINGS, GOODS, buildingById, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, suggestLinkToStable, wagonEta, wagonSlowdown,
+  UNDO_TICKS, WAGON_PRICE, type Building, type Good, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, goodName, isStall, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -24,6 +24,8 @@ export interface PanelNav {
   buildRoad(cells: number[]): void;
   /** Ghost road on the map for the gap finder (null clears it). */
   setGhost(cells: number[] | null): void;
+  /** Take back a building placed moments ago (full refund while lastUndoable names it). */
+  undoPlace(building: number): void;
 }
 
 // ---------------------------------------------------------------- gap finder
@@ -78,6 +80,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
+    if (act === 'undo') nav.undoPlace(Number(arg));
     if (act === 'fix' && !el.classList.contains('is-disabled')) {
       const s = gapSuggestion(nav.world, Number(arg));
       if (s && s.cost <= nav.world.state.coins) nav.buildRoad(s.cells);
@@ -89,7 +92,7 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
   const because = esc(t('why.because'));
   const last = chain.length - 1;
   const rootIsStall = (l: ReasonLink): boolean =>
-    l.kind === 'building' ? isStall(l.status) || l.status.k === 'NO_INPUT' : l.status.k === 'BRIDGE_JAM' || l.status.k === 'NO_ROUTE';
+    l.kind === 'building' ? isStall(l.status) || l.status.k === 'NO_INPUT' : isWagonWait(l.status);
   return `<ol class="chain">${chain.map((l, i) => {
     const self = l.kind === selfKind && l.id === selfId;
     const root = i === last && chain.length > 1 && rootIsStall(l);
@@ -124,7 +127,17 @@ function stockHtml(world: World, b: Building): string {
       parts.push(`<div class="progress" title="${esc(t('why.cycle'))}"><i style="width:${pct.toFixed(1)}%"></i></div>`);
     }
   } else if (b.type === 'warehouse') {
-    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(GOODS.reduce((a, g) => a + b.stock[g], 0))}/${fmtInt(def.storeCap ?? 0)}` })}</span></div>
+    // per-building capacity (mission VI's small granary) wins over the type default
+    const cap = b.capOverride >= 0 ? b.capOverride : def.storeCap ?? 0;
+    const held = GOODS.reduce((a, g) => a + b.stock[g], 0);
+    const promised = GOODS.reduce((a, g) => a + b.incoming[g], 0);
+    const pct = cap > 0 ? Math.min(100, (held / cap) * 100) : 0;
+    const promisedPct = cap > 0 ? Math.min(100 - pct, (promised / cap) * 100) : 0;
+    const full = cap > 0 && held + promised >= cap;
+    const small = b.capOverride >= 0 && b.capOverride < (def.storeCap ?? 0)
+      ? `<div class="s-hint cap-small">${iconSvg('storage_full', 18)}<span>${tHtml('why.capSmall', { n: fmtInt(cap) })}</span></div>` : '';
+    parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: `${fmtInt(held)}/${fmtInt(cap)}` })}</span></div>
+      <div class="cap-bar${full ? ' is-full' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
   } else if (b.type === 'castle') {
     const c = world.state.mission.contract;
@@ -162,11 +175,17 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status))}</span>${since}</div>`;
       }
-      // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build
-      const target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);
+      // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
+      // a building the player just placed gets the link at once, before its first status update
+      let target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);
+      if (target < 0 && b.placedTick >= 0 && world.state.tick - b.placedTick <= UNDO_TICKS && b.type !== 'stable' && gapSuggestion(world, id)) target = id;
       const fix = target >= 0 ? gapSuggestion(world, target) : null;
       nav.setGhost(fix ? fix.cells : null);
-      setHtml(sheet.body, top + (fix ? fixHtml(world, target, fix) : '') + stockHtml(world, b));
+      // just placed: the same undo as the floating button, here because the sheet covers it
+      const u = lastUndoable(world);
+      const undo = u && u.building === id
+        ? `<div class="sheet-actions"><button class="btn cf" data-act="undo:${id}">${iconSvg('undo', 24)}<span>${tHtml('undo.btn', { s: fmtInt(u.secondsLeft) })}</span>${bdi(`+${fmtInt(u.refund)}`)}</button></div>` : '';
+      setHtml(sheet.body, top + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b));
       return true;
     },
     onClose() { nav.setGhost(null); },
@@ -185,7 +204,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       sheet.kicker.textContent = t('wagon.kicker');
       sheet.title.textContent = wagonName(id);
       const eta = wagonEta(world, id);
-      const waiting = w.status.k === 'BRIDGE_JAM' || w.status.k === 'NO_ROUTE';
+      const waiting = isWagonWait(w.status);
       const cargo = w.cargoGood && w.cargoQty > 0
         ? `${iconSvg(w.cargoGood, 26, goodName(w.cargoGood))}${bdi(`× ${fmtInt(w.cargoQty)}`)}<span>${esc(goodName(w.cargoGood))}</span>`
         : esc(t('wagon.empty'));
@@ -200,8 +219,9 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         `<dt>${esc(t('wagon.dest'))}</dt><dd>${dest}</dd>`,
       ];
       if (eta && w.status.k !== 'IDLE') {
-        rows.push(`<dt>${esc(t('wagon.eta'))}</dt><dd class="eta num">${clock(eta.toDest)}</dd>`);
-        if (job) rows.push(`<dt>${esc(t('wagon.etaFinish'))}</dt><dd class="eta num">${clock(eta.toFinish)}</dd>`);
+        const ice = iceWaitSec(world, w.status);
+        rows.push(`<dt>${esc(t('wagon.eta'))}</dt><dd class="eta num">${clock(eta.toDest + ice)}</dd>`);
+        if (job) rows.push(`<dt>${esc(t('wagon.etaFinish'))}</dt><dd class="eta num">${clock(eta.toFinish + ice)}</dd>`);
         const slow = w.next >= 0 ? wagonSlowdown(world, id) : null;
         if (slow && slow.factor < 0.93) {
           const pct = Math.round(slow.factor * 100);
@@ -224,6 +244,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;
         if (fix) html += fixHtml(world, target, fix);
+        if (w.status.k === 'BRIDGE_CLOSED') html += `<div class="s-hint ice-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('wagon.iceHint'))}</span></div>`;
       }
       nav.setGhost(fix ? fix.cells : null);
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still

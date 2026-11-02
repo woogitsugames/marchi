@@ -4,7 +4,7 @@
 import { wagonEta, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
-import { buildingStatusIcon, clock, isCritical, isStall, wagonStatusIcon } from './format';
+import { buildingStatusIcon, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonStatusIcon } from './format';
 import { iconSvg } from './icons';
 
 const MIN_STALL_TICKS = 20; // 2 s: avoid flicker on short hiccups
@@ -84,7 +84,7 @@ export class Markers {
         this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
       }
       for (const w of world.state.wagons) {
-        if (w.status.k !== 'BRIDGE_JAM' && w.status.k !== 'NO_ROUTE') continue;
+        if (!isWagonWait(w.status)) continue;
         const a = view.anchorOf('wagon', w.id);
         if (!a.visible) continue;
         const crit = w.status.k === 'NO_ROUTE';
@@ -131,7 +131,7 @@ export class Markers {
         const e = wagonEta(world, w.id);
         if (e) {
           etaOn = true;
-          setText(this.etaText, clock(e.toDest));
+          setText(this.etaText, clock(e.toDest + iceWaitSec(world, w.status)));
           this.eta.style.transform = `translate3d(${(a.x + 14).toFixed(1)}px, ${(a.y - 4).toFixed(1)}px, 0)`;
         }
       }

@@ -1,12 +1,16 @@
-// In-game HUD: waybill (contract), tool rail with coins/time/speed, toasts, rain notice.
-import { GOODS, WAGON_PRICE, isRaining, timeOfDay, TICK_HZ, type Good, type World } from '../sim/index';
+// In-game HUD: waybill (contract, with tranches), the town plaque (free valley), tool rail with
+// coins/time/speed, toasts, rain notice, the rank-up letter.
+import {
+  GOODS, RANKS, WAGON_PRICE, canSurface, isRaining, sandboxStatus, timeOfDay, TICK_HZ,
+  type BuildingType, type Contract, type Good, type SandboxStatus, type World,
+} from '../sim/index';
 import type { Speed } from '../game/loop';
-import { t } from '../i18n/index';
-import { deckle, h, setHtml, setText } from './dom';
-import { bdi, dayClock, fmtInt, goodName, tHtml, ticksClock } from './format';
+import { t, type MessageKey } from '../i18n/index';
+import { deckle, esc, h, setHtml, setText } from './dom';
+import { bdi, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 
-export type Tool = 'none' | 'road' | 'cobble' | 'demolish';
+export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
 
 export interface HudActions {
   setTool(t: Tool): void;
@@ -16,6 +20,32 @@ export interface HudActions {
   openGameMenu(): void;
   openCastle(): void;
   waybillCollapsed(c: boolean): void;
+  /** The town plaque was tapped: market & rank sheet. */
+  openMarket(): void;
+  /** The town reached a new rank while playing (not on load). */
+  rankUp(rank: number): void;
+}
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+
+/** Goods of a tranche the castle already holds: deliveries count up in tranche order. */
+function trancheHave(c: Contract, stock: Record<Good, number>, i: number): Record<Good, number> {
+  const out = {} as Record<Good, number>;
+  for (const g of GOODS) {
+    let before = 0;
+    for (let k = 0; k < i; k++) before += c.tranches[k]!.need[g];
+    out[g] = Math.max(0, Math.min(c.tranches[i]!.need[g], stock[g] - before));
+  }
+  return out;
+}
+
+/** Buildings and surfaces a rank unlocks, as one readable list. */
+export function unlockList(rank: number): string {
+  const r = RANKS[rank];
+  if (!r) return '';
+  const parts = r.unlocks.map((b: BuildingType) => t(`building.${b}` as MessageKey));
+  if (r.surfaces.includes(2)) parts.push(t('town.unlockCobble'));
+  return joinList(parts);
 }
 
 /** Tally marks (groups of five) as one SVG: filled marks in ink, the rest faint. */
@@ -65,6 +95,12 @@ export class Hud {
   private caption: HTMLElement;
   private live: HTMLElement;
   private lastSig = '';
+  private plaqueSig = '';
+  private lastRank = -1;
+  private plaqueWrap: HTMLElement;
+  private plaqueBody: HTMLElement;
+  private plaqueOnly: HTMLElement;
+  private rankLetter: HTMLElement | null = null;
   private wasRaining = false;
   private collapsed: boolean;
   /** Watch mode on tiny screens (Flip cover): seal only, no building tools. */
@@ -92,6 +128,25 @@ export class Hud {
       else this.act.openCastle();
     });
 
+    // town plaque (free valley): rank, the checklist towards the next rank, income
+    this.plaqueBody = h('div.plaque', { role: 'button', tabindex: '0', 'aria-label': t('town.open') });
+    this.plaqueBody.style.clipPath = deckle('bottom', 733, 6);
+    this.plaqueOnly = h('button.seal-only', { 'aria-label': t('town.unfold') });
+    this.plaqueWrap = h('div.waybill-wrap.plaque-wrap', null, this.plaqueBody, this.plaqueOnly);
+    this.plaqueWrap.hidden = true;
+    this.plaqueWrap.classList.toggle('is-collapsed', collapsed);
+    this.plaqueOnly.addEventListener('click', () => {
+      if (this.compact) this.act.openMarket();
+      else this.setCollapsed(false);
+    });
+    this.plaqueBody.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('[data-pl="fold"]')) this.setCollapsed(true);
+      else this.act.openMarket();
+    });
+    this.plaqueBody.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.act.openMarket(); }
+    });
+
     // rail
     this.coins = h('span.num');
     this.day = h('span.num');
@@ -115,6 +170,7 @@ export class Hud {
 
     const tools = h('div.rail-tools');
     const defs: [string, IconId, string, () => void][] = [
+      ['build', 'build', t('tool.build'), () => this.act.setTool(this.toolOn('build') ? 'none' : 'build')],
       ['road', 'road_dirt', t('tool.road'), () => this.act.setTool(this.toolOn('road') ? 'none' : 'road')],
       ['cobble', 'road_cobble', t('tool.cobble'), () => this.act.setTool(this.toolOn('cobble') ? 'none' : 'cobble')],
       ['demolish', 'demolish', t('tool.demolish'), () => this.act.setTool(this.toolOn('demolish') ? 'none' : 'demolish')],
@@ -134,8 +190,15 @@ export class Hud {
 
     this.toasts = h('div.toasts', { 'aria-live': 'polite' });
     this.live = h('div.sr-only', { 'aria-live': 'polite', role: 'status' });
-    this.root = h('div', null, this.waybillWrap, rail, this.toasts, this.caption, this.live);
+    this.root = h('div', null, this.waybillWrap, this.plaqueWrap, rail, this.toasts, this.caption, this.live);
     rail.classList.add('hit');
+    this.setBuild(false);
+  }
+
+  /** The build tool exists in the free valley and in missions that allow building. */
+  setBuild(on: boolean): void {
+    const b = this.toolBtns.get('build');
+    if (b) b.hidden = !on;
   }
 
   private toolOn(id: string): boolean {
@@ -145,8 +208,10 @@ export class Hud {
   private setCollapsed(c: boolean): void {
     this.collapsed = c;
     this.waybillWrap.classList.toggle('is-collapsed', c || this.compact);
+    this.plaqueWrap.classList.toggle('is-collapsed', c || this.compact);
     this.act.waybillCollapsed(c);
     this.lastSig = '';
+    this.plaqueSig = '';
   }
 
   /** Tiny screen (Flip cover): show only the seal, keep the player's own collapse preference. */
@@ -154,7 +219,9 @@ export class Hud {
     if (this.compact === c) return;
     this.compact = c;
     this.waybillWrap.classList.toggle('is-collapsed', this.collapsed || c);
+    this.plaqueWrap.classList.toggle('is-collapsed', this.collapsed || c);
     this.lastSig = '';
+    this.plaqueSig = '';
   }
 
   /** Re-place the floating active-tool caption after a layout change. */
@@ -210,16 +277,31 @@ export class Hud {
     if (raining && !this.wasRaining && st.tick > 0) this.showNotice('rain', t('hud.rain'));
     this.wasRaining = raining;
 
+    const cobble = this.toolBtns.get('cobble');
+    if (cobble) {
+      const gate = canSurface(world, 2);
+      cobble.classList.toggle('is-disabled', !gate.ok);
+      cobble.setAttribute('aria-disabled', String(!gate.ok));
+    }
+
     const c = st.mission.contract;
     this.waybillWrap.hidden = !c;
+    const sb = c ? null : sandboxStatus(world);
+    this.plaqueWrap.hidden = !sb?.market;
+    if (sb?.market) this.updatePlaque(sb);
     if (!c) return;
     const castle = st.buildings.find((b) => b.id === c.castle);
+    const stock = castle ? castle.stock : { wood: 0, planks: 0, grain: 0, flour: 0, bread: 0 };
     const goods = GOODS.filter((g) => c.need[g] > 0) as Good[];
-    const have = goods.map((g) => Math.min(castle ? castle.stock[g] : 0, c.need[g]));
-    const left = Math.max(0, c.deadlineTick - st.tick);
+    const have = goods.map((g) => Math.min(stock[g], c.need[g]));
+    const tr = c.tranches;
+    const cur = tr.findIndex((x) => x.doneTick < 0);
+    // the clock runs to the tranche now due (its own deadline), or to the contract deadline
+    const dueTick = cur >= 0 && !tr[cur]!.missed ? tr[cur]!.deadlineTick : c.deadlineTick;
+    const left = Math.max(0, dueTick - st.tick);
     const leftSec = Math.floor(left / TICK_HZ);
     const folded = this.collapsed || this.compact;
-    const sig = `${have.join(',')}|${leftSec}|${folded}`;
+    const sig = `${have.join(',')}|${leftSec}|${folded}|${tr.map((x) => `${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}`).join('')}`;
     if (sig === this.lastSig) return;
     this.lastSig = sig;
     const total = goods.reduce((a, g) => a + c.need[g], 0);
@@ -229,13 +311,92 @@ export class Hud {
       setHtml(this.sealOnly, `${sealStack(frac, 52)}${bdi(ticksClock(left), 'seal-time num')}`);
       return;
     }
-    const lines = goods.map((g, i) => `<div class="wb-line${have[i]! >= c.need[g] ? ' done' : ''}" data-wb="castle" role="button" tabindex="0">
-        ${iconSvg(g, 24, goodName(g))}${tallySvg(have[i]!, c.need[g], i + 1)}
-        <bdi class="count num">${fmtInt(have[i]!)}<small>/${fmtInt(c.need[g])}</small></bdi></div>`).join('');
+    const tallyLine = (g: Good, got: number, need: number, i: number): string => `<div class="wb-line${got >= need ? ' done' : ''}" data-wb="castle" role="button" tabindex="0">
+        ${iconSvg(g, 24, goodName(g))}${tallySvg(got, need, i + 1)}
+        <bdi class="count num">${fmtInt(got)}<small>/${fmtInt(need)}</small></bdi></div>`;
+    const timeLine = `<div class="wb-time num${late ? ' late' : ''}">${iconSvg('snow', 20)}<span>${tHtml('contract.timeLeft', { time: ticksClock(left) })}</span></div>`;
+    let body: string;
+    if (!tr.length) {
+      body = `<p class="wb-to">${t('contract.to')}</p>${goods.map((g, i) => tallyLine(g, have[i]!, c.need[g], i)).join('')}${timeLine}`;
+    } else {
+      body = `<ol class="wb-tranches">${tr.map((x, i) => {
+        const tg = GOODS.filter((g) => x.need[g] > 0) as Good[];
+        const got = trancheHave(c, stock, i);
+        const head = `<span class="tr-n">${ROMAN[i] ?? i + 1}.</span><span class="tr-t">${tHtml('contract.tranche', { n: i + 1, time: ticksClock(x.deadlineTick) })}</span>`;
+        if (x.doneTick >= 0) {
+          return `<li class="wb-tr is-done${x.missed ? ' is-late' : ''}" data-wb="castle"><div class="tr-h">${head}<span class="tr-seal">${iconSvg('seal', 22)}</span></div>
+            <div class="tr-state">${esc(t(x.missed ? 'contract.trancheLate' : 'contract.trancheDone'))}</div></li>`;
+        }
+        if (i === cur) {
+          return `<li class="wb-tr is-now${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
+            ${tg.map((g, k) => tallyLine(g, got[g], x.need[g], i * 3 + k)).join('')}
+            ${x.missed ? `<div class="tr-state">${esc(t('contract.trancheLate'))}</div>` : ''}</li>`;
+        }
+        return `<li class="wb-tr is-later" data-wb="castle"><div class="tr-h">${head}</div>
+          <div class="tr-goods">${tg.map((g) => `<span>${iconSvg(g, 18, goodName(g))}${bdi(fmtInt(x.need[g]))}</span>`).join('')}</div></li>`;
+      }).join('')}</ol>${timeLine}`;
+    }
     setHtml(this.waybillBody, `<h2>${t('contract.title')}</h2>
-      <button class="seal-btn" data-wb="fold" aria-label="${t('hud.collapse')}">${sealStack(frac, 40)}</button>
-      <p class="wb-to">${t('contract.to')}</p>${lines}
-      <div class="wb-time num${late ? ' late' : ''}">${iconSvg('snow', 20)}<span>${tHtml('contract.timeLeft', { time: ticksClock(left) })}</span></div>`);
+      <button class="seal-btn" data-wb="fold" aria-label="${t('hud.collapse')}">${sealStack(frac, 40)}</button>${body}`);
+  }
+
+  /** The free valley's plaque: rank, a checklist towards the next one, income now. */
+  private updatePlaque(sb: SandboxStatus): void {
+    if (this.lastRank >= 0 && sb.rank > this.lastRank) this.act.rankUp(sb.rank);
+    this.lastRank = sb.rank;
+    const n = sb.next;
+    const folded = this.collapsed || this.compact;
+    const reqs = n ? [
+      { k: 'renown', label: t('town.renownShort'), have: sb.renown, need: n.renown, unit: '' },
+      { k: 'goods', label: t('town.goodsShort'), have: sb.goodsSold, need: n.goods, unit: '' },
+      { k: 'flow', label: t('town.flowShort'), have: sb.bestFlow, need: n.flow, unit: '' },
+    ] : [];
+    // the seal fills with the share of the next rank already earned (each requirement weighs a third)
+    const frac = n ? reqs.reduce((a, r) => a + Math.min(1, r.have / Math.max(1, r.need)), 0) / reqs.length : 1;
+    const sig = `${sb.rank}|${reqs.map((r) => `${r.have}`).join(',')}|${sb.flowNow}|${folded}`;
+    if (sig === this.plaqueSig) return;
+    this.plaqueSig = sig;
+    const income = `<span class="pl-income">${iconSvg('coin', 18)}<span>${tHtml('town.income', { n: fmtInt(sb.flowNow) })}</span></span>`;
+    if (folded) {
+      setHtml(this.plaqueOnly, `${sealStack(frac, 52)}${bdi(`+${fmtInt(sb.flowNow)}/min`, 'seal-time num')}`);
+      return;
+    }
+    const rows = reqs.map((r) => {
+      const met = r.have >= r.need;
+      const pct = Math.min(100, (r.have / Math.max(1, r.need)) * 100);
+      return `<li class="${met ? 'is-met' : ''}"><i class="pl-mark" aria-hidden="true"></i><span class="pl-l">${esc(r.label)}</span>
+        <bdi class="num pl-v">${fmtInt(Math.min(r.have, 99999))}<small>/${fmtInt(r.need)}${r.unit}</small></bdi>
+        <span class="pl-bar"><i style="width:${pct.toFixed(1)}%"></i></span></li>`;
+    }).join('');
+    const next = n ? `<div class="pl-next">${tHtml('town.toNext', { name: rankName(n.rank) })}</div><ul class="pl-req">${rows}</ul>`
+      : `<div class="pl-next">${esc(t('town.top'))}</div>`;
+    setHtml(this.plaqueBody, `<div class="pl-kick">${esc(t('market.title'))}</div><h2>${esc(rankName(sb.rank))}</h2>
+      <button class="seal-btn" data-pl="fold" aria-label="${esc(t('town.fold'))}">${sealStack(frac, 40)}</button>
+      ${next}${income}`);
+  }
+
+  /** Sealed letter for a new rank: slides in (200 ms), the wax is pressed (120 ms), tap or 6 s to close. */
+  showRankUp(rank: number): void {
+    this.rankLetter?.remove();
+    const unlocks = unlockList(rank);
+    const letter = h('div.rank-letter', { role: 'status', html: `
+      <div class="l-kicker">${esc(t('contract.kicker'))}</div>
+      <h2>${esc(t('town.rankUp', { name: rankName(rank) }))}</h2>
+      <p>${esc(t('town.rankText'))}</p>
+      ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}` });
+    letter.style.clipPath = deckle('bottom', 4111 + rank, 6, 22);
+    const seal = h('span.rl-seal', { html: iconSvg('seal', 56) });
+    const wrap = h('button.rank-letter-wrap.hit', { 'aria-label': t('sheet.close') }, h('div.float', null, letter), seal);
+    const close = (): void => {
+      if (this.rankLetter !== wrap) return;
+      this.rankLetter = null;
+      wrap.classList.add('is-out');
+      window.setTimeout(() => wrap.remove(), 220);
+    };
+    wrap.addEventListener('click', close);
+    this.rankLetter = wrap;
+    this.root.append(wrap);
+    window.setTimeout(close, 6000);
   }
 
   /** Screen-reader only announcement (quiet confirmations that have no visible text). */

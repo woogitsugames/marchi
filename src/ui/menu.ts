@@ -8,32 +8,48 @@ import { iconSvg } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
+/** Missions offered in the main menu, in order (the hidden test bench 'lab' never appears). */
+export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'] as const;
+export type MissionKey = (typeof MENU_MISSIONS)[number] | 'sandbox';
+
+export function isMissionKey(x: string | null | undefined): x is MissionKey {
+  return x === 'sandbox' || (MENU_MISSIONS as readonly string[]).includes(x ?? '');
+}
+
+/** Menu title of a mission ("IV. Zima na przeprawie", "Wolna dolina"). */
+export function missionTitle(id: string): string {
+  return isMissionKey(id) ? t(id === 'sandbox' ? 'menu.sandbox' : `menu.${id}` as MessageKey) : t('menu.m1');
+}
+
+function missionSub(id: MissionKey): string {
+  if (id === 'sandbox') return t('menu.valleySub');
+  if (id === 'm1') return t('menu.contractSub');
+  return t(`menu.${id}Sub` as MessageKey);
+}
+
 export interface MenuActions {
   continueGame(): void;
-  newGame(mission: 'm1' | 'm2' | 'm3' | 'sandbox'): void;
+  newGame(mission: MissionKey): void;
   openSettings(): void;
 }
 
 export interface SaveInfo { missionId: string; tick: number }
 
 /** broken = the save could not be loaded: show why and offer that contract afresh. */
-export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: 'm1' | 'm2' | 'm3' | 'sandbox' | null = null): HTMLElement {
+export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: MissionKey | null = null): HTMLElement {
   const items: HTMLElement[] = [];
-  const item = (label: string, sub: string, fn: () => void, primary = false): void => {
-    const b = h(`button.menu-item${primary ? '.primary' : ''}` as 'button.menu-item', null,
+  const item = (label: string, sub: string, fn: () => void, primary = false, cls = ''): void => {
+    const b = h(`button.menu-item${primary ? '.primary' : ''}${cls}` as 'button.menu-item', null,
       h('span.mi-mark'),
       h('span.mi-text', null, label, sub ? h('span.mi-sub', null, sub) : null));
     b.addEventListener('click', fn);
     items.push(h('li', null, b));
   };
   if (save) {
-    const what = save.missionId === 'sandbox' ? t('menu.sandbox') : save.missionId === 'm2' ? t('menu.m2') : save.missionId === 'm3' ? t('menu.m3') : t('menu.m1');
-    item(t('menu.continue'), t('menu.continueSub', { what, time: iso(ticksClock(save.tick)) }), act.continueGame, true);
+    item(t('menu.continue'), t('menu.continueSub', { what: missionTitle(save.missionId), time: iso(ticksClock(save.tick)) }), act.continueGame, true);
   }
-  item(t('menu.m1'), t('menu.contractSub'), () => act.newGame('m1'), !save);
-  item(t('menu.m2'), t('menu.m2Sub'), () => act.newGame('m2'));
-  item(t('menu.m3'), t('menu.m3Sub'), () => act.newGame('m3'));
-  item(t('menu.sandbox'), t('menu.sandboxSub'), () => act.newGame('sandbox'));
+  for (const id of MENU_MISSIONS) item(missionTitle(id), missionSub(id), () => act.newGame(id), id === 'm1' && !save);
+  item(missionTitle('sandbox'), missionSub('sandbox'), () => act.newGame('sandbox'), false, '.is-valley');
   item(t('menu.settings'), '', act.openSettings);
   let err: HTMLElement | null = null;
   if (broken) {

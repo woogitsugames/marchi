@@ -4,7 +4,7 @@ import { AudioEngine } from '../audio/audio';
 import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
-  TICK_HZ, applyCommand, buildingById, createWorld, grade, lineCells, net, stars, validateRoad, worldFromState,
+  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining,
 } from '../sim/index';
@@ -18,7 +18,9 @@ import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
-import { buildEndLetter, buildMainMenu, gameMenuSheet, settingsSheet, type SaveInfo } from './menu';
+import { buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, settingsSheet, type MissionKey, type SaveInfo } from './menu';
+import { BuildTool, buildTypes } from './buildTool';
+import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
 import { RoadDraft, errorText } from './roadTool';
@@ -56,8 +58,6 @@ function setClear(on: boolean): void {
   restoreBtn.setAttribute('aria-label', t('hud.showUi'));
 }
 
-type MissionKey = 'm1' | 'm2' | 'm3' | 'sandbox';
-
 /** Player volumes (0..1 sliders) -> engine channels; effects scale sfx, ambience and UI clicks together. */
 function applyVolumes(p: Prefs): void {
   music.setVolume(p.musicVolume * MUSIC_FULL);
@@ -92,6 +92,8 @@ export class App implements PanelNav {
   private hud: Hud | null = null;
   private markers = new Markers();
   private draft: RoadDraft;
+  /** Build tool: shelf, placement ghost, undo (free valley and missions that allow building). */
+  readonly build: BuildTool;
   private tool: Tool = 'none';
   private overlay = false;
   private selection: PickResult = null;
@@ -143,6 +145,18 @@ export class App implements PanelNav {
     this.world = createWorld('m1');
     this.loop = new GameLoop(this.world);
     this.draft = new RoadDraft(() => this.view, () => this.world, this.markers, (cells, surface) => this.enqueue({ t: 'road', cells, surface }));
+    this.build = new BuildTool({
+      view: () => this.view,
+      world: () => this.world,
+      enqueue: (cmd) => this.enqueue(cmd),
+      toast: (text, kind, icon) => {
+        if (kind === 'err' && audio.ready) void audio.play('ui.error');
+        this.hud?.toast(text, kind, icon);
+      },
+      close: () => this.setTool('none'),
+      sceneCentre: () => this.sceneCentre(),
+    });
+    this.layers.markers.append(this.build.floating);
 
     const qp = this.params.get('quality');
     this.qualityParam = isQualityPref(qp) ? qp : null;
@@ -155,11 +169,15 @@ export class App implements PanelNav {
 
     this.input = attachInput(this.canvas, () => this.view.camera, {
       tap: (x, y) => this.onTap(x, y),
-      draftMode: () => this.mode === 'game' && (this.tool === 'road' || this.tool === 'cobble'),
-      draftStart: (x, y) => { this.draft.surface = (this.tool === 'cobble' ? 2 : 1) as SurfaceKind; this.draft.start(x, y); },
-      draftMove: (x, y) => this.draft.move(x, y),
-      draftEnd: (x, y) => this.draft.end(x, y),
-      draftCancel: () => this.draft.cancel(),
+      draftMode: () => this.mode === 'game' && (this.tool === 'road' || this.tool === 'cobble' || (this.tool === 'build' && this.build.placing)),
+      draftStart: (x, y) => {
+        if (this.tool === 'build') { this.build.dragStart(x, y); return; }
+        this.draft.surface = (this.tool === 'cobble' ? 2 : 1) as SurfaceKind;
+        this.draft.start(x, y);
+      },
+      draftMove: (x, y) => { if (this.tool === 'build') this.build.dragMove(x, y); else this.draft.move(x, y); },
+      draftEnd: (x, y) => { if (this.tool === 'build') this.build.dragEnd(x, y); else this.draft.end(x, y); },
+      draftCancel: () => { if (this.tool === 'build') this.build.dragCancel(); else this.draft.cancel(); },
       twoFingerTap: () => setClear(!document.body.classList.contains('is-clear')),
       cameraTouched: () => this.stopFollow(),
     });
@@ -175,13 +193,15 @@ export class App implements PanelNav {
     (window as unknown as { __marchia: unknown }).__marchia = {
       app: this,
       findSteepDraft: () => this.findSteepDraft(),
+      /** Screenshots: the rank-up letter without playing ten minutes. */
+      rankUp: (r: number) => this.hud?.showRankUp(r),
       ready: false,
     };
   }
 
   async start(): Promise<void> {
     const play = this.params.get('play');
-    if (play === 'm1' || play === 'm2' || play === 'm3' || play === 'sandbox') {
+    if (isMissionKey(play)) {
       this.debugStart = this.params.get('tut') !== '1';
       this.newGame(play);
       this.applyDebug();
@@ -248,6 +268,7 @@ export class App implements PanelNav {
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
+    this.build.setOpen(false);
     this.view.setRoadPreview(null);
     this.ghosts = { gap: null, tut: null };
     this.ghostKey = '';
@@ -292,12 +313,18 @@ export class App implements PanelNav {
     this.ghosts.gap = cells;
   }
 
+  undoPlace(building: number): void {
+    const b = buildingById(this.world, building);
+    if (b) this.enqueue({ t: 'demolish', cell: b.y * this.world.terrain.w + b.x });
+  }
+
   buildRoad(cells: number[]): void {
     this.enqueue({ t: 'road', cells, surface: 1 });
   }
 
   private applyGhost(): void {
     if (this.draft.busy) { this.ghostKey = '#draft'; return; }
+    if (this.build.ghostOn) { this.ghostKey = '#build'; return; }
     const c = this.ghosts.gap ?? this.ghosts.tut;
     const k = c ? c.join(',') : '';
     if (k === this.ghostKey) return;
@@ -309,13 +336,13 @@ export class App implements PanelNav {
     try {
       const st: SimState | null = await loadGame(SAVE_SLOT);
       if (!st) throw new Error('save slot is empty');
-      this.missionId = (['m1', 'm2', 'm3', 'sandbox'] as const).find((k) => k === st.mission.id) ?? 'm1';
+      this.missionId = isMissionKey(st.mission.id) ? st.mission.id : 'm1';
       this.enterGame(worldFromState(st));
     } catch (e) {
       // damaged / incompatible save: say so and offer the same contract afresh
       console.error('continue failed', e);
       if (this.mode !== 'menu') return;
-      const m = (['m1', 'm2', 'm3', 'sandbox'] as const).find((k) => k === this.save?.missionId) ?? 'm1';
+      const m: MissionKey = isMissionKey(this.save?.missionId) ? this.save!.missionId as MissionKey : 'm1';
       if (audio.ready) void audio.play('ui.error');
       this.renderMenu(m);
     }
@@ -357,8 +384,16 @@ export class App implements PanelNav {
         if (c) this.go('building', c.castle, true);
       },
       waybillCollapsed: (c) => { this.prefs.waybillCollapsed = c; savePrefs(this.prefs); },
+      openMarket: () => this.openMarket(),
+      rankUp: (r) => {
+        if (audio.ready) void audio.play('ui.paper');
+        this.hud?.showRankUp(r);
+        this.hud?.announce(t('town.rankUp', { name: t(`rank.${r}` as 'rank.0') }));
+      },
     }, this.prefs.waybillCollapsed);
-    this.layers.hud.append(this.hud.root);
+    this.hud.setBuild(buildTypes(this.world).length > 0);
+    this.build.relabel();
+    this.layers.hud.append(this.hud.root, this.build.root);
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
@@ -373,6 +408,9 @@ export class App implements PanelNav {
     this.markers.reset();
     this.hud = null;
     this.draft.cancel();
+    this.build.setOpen(false);
+    this.tool = 'none';
+    document.body.classList.remove('has-undo', 'build-open', 'build-placing');
   }
 
   private rebuildUi(): void {
@@ -399,6 +437,7 @@ export class App implements PanelNav {
       this.hud?.update(this.world);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false);
       this.tutorial?.update(dt);
+      this.build.frame();
       this.applyGhost();
       if (now - this.lastSheetUpdate > 250) {
         this.lastSheetUpdate = now;
@@ -462,8 +501,10 @@ export class App implements PanelNav {
   }
 
   private onCommandResult(cmd: Command, r: CommandResult): void {
+    if (cmd.t === 'place') this.build.settled();
     if (this.mode !== 'game' || !this.hud) return;
-    const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish' : cmd.t === 'sellWagon' ? 'coin' : 'buy_wagon';
+    const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish'
+      : cmd.t === 'sellWagon' ? 'coin' : cmd.t === 'place' ? 'build' : 'buy_wagon';
     if (!r.ok) {
       if (audio.ready) void audio.play('ui.error');
       this.hud.toast(errorText(r.err), 'err', icon);
@@ -474,6 +515,37 @@ export class App implements PanelNav {
     else if (cmd.t === 'demolish') this.hud.toast(t('hud.demolished', { n }), 'info', icon, 1800);
     else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n }), 'info', icon, 1800);
     else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n }), 'info', icon, 1800);
+    else if (cmd.t === 'place') this.afterPlace(cmd.type, cmd.x, cmd.y, n);
+  }
+
+  /** A building went up: toast, back to the shelf, and if its gate is cut off, the gap finder at once. */
+  private afterPlace(type: string, x: number, y: number, n: string): void {
+    if (audio.ready) void audio.play('ui.wood');
+    this.hud?.toast(t('hud.placed', { name: t(`building.${type}` as 'building.farm'), n }), 'info', 'build', 2200);
+    this.build.back();
+    const b = this.world.state.buildings.find((q) => q.x === x && q.y === y && q.placedTick >= 0);
+    if (!b || b.type === 'stable' || !suggestLinkToStable(this.world, b.id)) return;
+    this.setTool('none');
+    this.go('building', b.id, false);
+  }
+
+  private openMarket(): void {
+    this.sheets.open(marketSheet(() => this.world));
+  }
+
+  /** Middle of the map area not covered by the rail or the build shelf (first ghost position). */
+  private sceneCentre(): [number, number] {
+    const l = this.layout ?? computeLayout();
+    let x0 = 0, x1 = l.w, y1 = l.sceneH;
+    const y0 = 0;
+    for (const el of document.querySelectorAll<HTMLElement>('#hud .rail-tools, #hud .rail-line, #hud .build-shelf')) {
+      if (el.hidden || el.offsetParent === null) continue;
+      const r = el.getBoundingClientRect();
+      if (r.top > l.sceneH * 0.45 && r.top < y1 && !l.landscape) y1 = Math.max(l.sceneH * 0.4, r.top);
+      if (l.landscape && r.left > l.w * 0.5) x1 = Math.min(x1, r.left);
+      if (l.landscape && r.right < l.w * 0.5) x0 = Math.max(x0, r.right);
+    }
+    return [(x0 + x1) / 2, y0 + (y1 - y0) * 0.5];
   }
 
   private buyWagonFromRail(): void {
@@ -545,6 +617,10 @@ export class App implements PanelNav {
 
   private onTap(x: number, y: number): void {
     if (this.mode !== 'game') return;
+    if (this.tool === 'build' && this.build.placing) {
+      this.build.tap(x, y);
+      return;
+    }
     if (this.tool === 'demolish') {
       const p = this.view.pick(x, y);
       let cell = -1;
@@ -561,18 +637,30 @@ export class App implements PanelNav {
     else {
       this.sheets.closeAll();
       this.select(null);
+      if (this.tool === 'build') this.setTool('none');
     }
   }
 
   private setTool(tl: Tool): void {
+    if (tl === 'cobble') {
+      const gate = canSurface(this.world, 2);
+      if (!gate.ok) {
+        if (audio.ready) void audio.play('ui.error');
+        this.hud?.toast(errorText(gate.err), 'err', 'road_cobble');
+        return;
+      }
+    }
+    if (tl === 'build' && !buildTypes(this.world).length) tl = 'none';
     this.tool = tl;
     this.draft.cancel();
+    this.build.setOpen(tl === 'build');
     this.hud?.setTool(tl, this.overlay);
   }
 
   private onKey(e: KeyboardEvent): void {
     if (e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack') {
       if (this.sheets.count) this.sheets.closeTop();
+      else if (this.tool === 'build' && this.build.placing) this.build.back();
       else if (this.tool !== 'none') this.setTool('none');
       else if (this.mode === 'game' && !this.endShown) this.openGameMenu();
       e.preventDefault();
@@ -583,6 +671,9 @@ export class App implements PanelNav {
       else if (k === 'r') this.setTool(this.tool === 'road' ? 'none' : 'road');
       else if (k === 'c') this.setTool(this.tool === 'cobble' ? 'none' : 'cobble');
       else if (k === 'x') this.setTool(this.tool === 'demolish' ? 'none' : 'demolish');
+      else if (k === 'b') this.setTool(this.tool === 'build' ? 'none' : 'build');
+      else if (k === 'enter' && this.tool === 'build') this.build.confirm();
+      else if (k === 'g' && this.tool === 'build') this.build.rotate();
       else if (k === 'h') document.body.classList.toggle('is-clear');
     }
   }
@@ -753,7 +844,9 @@ export class App implements PanelNav {
     const speed = p.get('speed');
     if (speed !== null) { this.loop.speed = Number(speed) as Speed; this.hud?.setSpeed(this.loop.speed); }
     const tool = p.get('tool');
-    if (tool === 'road' || tool === 'cobble' || tool === 'demolish') this.setTool(tool);
+    if (tool === 'road' || tool === 'cobble' || tool === 'demolish' || tool === 'build') this.setTool(tool);
+    const pick = p.get('pick');
+    if (pick && this.tool === 'build') this.build.pick(pick as Parameters<BuildTool['pick']>[0]);
     const open = p.get('open');
     if (open) {
       const b = this.world.state.buildings.find((q) => q.type === open);
@@ -762,10 +855,12 @@ export class App implements PanelNav {
     const wg = p.get('wagon');
     if (wg) {
       const moving = this.world.state.wagons.filter((q) => q.status.k !== 'IDLE');
-      const w = wg === 'jam' ? this.world.state.wagons.find((q) => q.status.k === 'BRIDGE_JAM') ?? moving[0] : moving[0];
+      const want = wg === 'jam' ? 'BRIDGE_JAM' : wg === 'closed' ? 'BRIDGE_CLOSED' : '';
+      const w = (want ? this.world.state.wagons.find((q) => q.status.k === want) : undefined) ?? moving[0];
       if (w) this.go('wagon', w.id, true);
     }
     if (p.get('collapsed') === '1') this.prefs.waybillCollapsed = true;
+    if (p.get('market') === '1') this.openMarket();
   }
 
   /** Two screen points whose straight drag drafts a road failing with TOO_STEEP (for screenshots/tests). */

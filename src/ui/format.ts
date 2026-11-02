@@ -27,6 +27,22 @@ export function fmtInt(n: number): string {
   return nf().format(Math.round(n));
 }
 
+/** Number with up to `digits` decimals (prices in silver from hundredths). */
+export function fmtDec(n: number, digits = 2): string {
+  const key = `${getLang()}:d${digits}`;
+  let f = nfCache.get(key);
+  if (!f) {
+    f = new Intl.NumberFormat(`${getLang()}-u-nu-latn`, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+    nfCache.set(key, f);
+  }
+  return f.format(n);
+}
+
+/** Name of a town rank (0..3). */
+export function rankName(rank: number): string {
+  return t(`rank.${Math.max(0, Math.min(3, rank))}` as MessageKey);
+}
+
 /** m:ss (or h:mm:ss) from seconds. */
 export function clock(sec: number): string {
   const s = Math.max(0, Math.round(sec));
@@ -126,6 +142,7 @@ export function wagonStatusText(world: World, s: WagonStatus): string {
     return s.target >= 0 ? t('wagon.NO_ROUTE', { target: buildingName(world, s.target) }) : t('wagon.NO_ROUTE.home');
   }
   if (s.k === 'BRIDGE_JAM') return t('wagon.BRIDGE_JAM', { blocker: s.blocker });
+  if (s.k === 'BRIDGE_CLOSED') return t('wagon.BRIDGE_CLOSED.in', { time: iso(ticksClock(Math.max(0, s.until - world.state.tick))) });
   return t(`wagon.${s.k}` as MessageKey);
 }
 
@@ -180,7 +197,18 @@ export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof
 export function wagonStatusIcon(s: WagonStatus, size: number): string {
   if (s.k === 'BRIDGE_JAM') return iconSvg('bridge_jam', size);
   if (s.k === 'NO_ROUTE') return iconSvg('no_route', size);
+  if (s.k === 'BRIDGE_CLOSED') return iconSvg('bridge_ice', size);
   return iconSvg('wagon', size);
+}
+
+/** Seconds a wagon still waits for the ice to clear (its ETA starts after that). */
+export function iceWaitSec(world: World, s: WagonStatus): number {
+  return s.k === 'BRIDGE_CLOSED' ? Math.max(0, s.until - world.state.tick) / TICK_HZ : 0;
+}
+
+/** A wagon status that is a wait worth explaining (bubble, red status line, cause chain). */
+export function isWagonWait(s: WagonStatus): boolean {
+  return s.k === 'BRIDGE_JAM' || s.k === 'NO_ROUTE' || s.k === 'BRIDGE_CLOSED';
 }
 
 export function linkIcon(world: World, l: ReasonLink, size: number): string {
