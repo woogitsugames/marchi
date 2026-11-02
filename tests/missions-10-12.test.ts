@@ -3,7 +3,7 @@ import {
   MISSIONS, checkInvariants, createWorld, findPath, lineCells, missionBuildable,
 } from '../src/sim/index';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK, PROPOSED_MISSIONS_10_12 } from '../src/sim/proposals/missions-10-12';
-import { STRATEGIES, runProposed } from '../tools/bot-missions-10-12';
+import { STRATEGIES, WRONG_FIXES, runProposed } from '../tools/bot-missions-10-12';
 import { assert, eq, test } from './harness';
 
 for (const id of ['m10', 'm11', 'm12'] as const) {
@@ -82,10 +82,15 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
       eq(r.commandErrors.length, 0, r.strategy + ' commands: ' + r.commandErrors.join('; '));
       eq(r.invariantErrors.length, 0, r.strategy + ' invariants: ' + r.invariantErrors.join('; '));
     }
-    eq(runs.map((x) => x.seals).join('/'), '1/2/3', 'measured seal ladder');
-    for (const r of runs) {
+    // Mission X: doing nothing loses (the charcoal burner eats the planks' wood, D-36).
+    eq(runs.map((x) => x.seals).join('/'), (id === 'm10' ? '0' : '1') + '/2/3', 'measured seal ladder');
+    for (const r of id === 'm10' ? runs.slice(1) : runs) {
       eq(r.result, 'won', r.strategy + ': must finish the contract');
       assert(r.minutes >= 5 && r.minutes <= 12, r.strategy + ': finish in 5-12 minutes');
+    }
+    for (const s of WRONG_FIXES[id]) {
+      const r = runProposed(id, s);
+      assert(r.seals <= 1, s.name + ' (a wrong fix) earns at most one seal: ' + r.minutes.toFixed(2));
     }
     assert(runs[0]!.seals <= 1, 'no action <=1 seal: ' + JSON.stringify(runs.map((x) => [x.minutes, x.seals, x.result])));
     eq(runs[2]!.result, 'won', 'correct fix must win');

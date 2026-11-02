@@ -420,3 +420,24 @@ for "no action" / "right fix" (median error 16 / 42 s), late fix 67 % two minute
 game without action (3.3 → 81.0 %, 3.8 → 57.1 % with fixes), 0 wrong rivals. m7 and m9 hashes identical with and
 without reading every tick for all bot strategies. New PL/EN keys in `PENDING_KEYS`. (decided — retune the pace
 window after the playtest)
+
+**D-39 — Missions X–XII in the menu; data rebalanced so each mission teaches its own cause.** Order 49 (GPT,
+docs/missions/m10–m12.md) was registered but not in the menu. Probes in the real sim (per-building status shares,
+action-time sweeps) showed three teaching faults; all fixes are `MissionDef` data in
+`src/sim/proposals/missions-10-12.ts`, no sim code and no mission id in the sim. (1) *X (wood for two workshops)*:
+with the stable at (46,35) the binding constraint was the 40-cell wagon trip to the woodcutter (woodcutter
+WAITING_PICKUP 24 %, CONTESTED 4 %), and buying a wagon made it worse (11.58 min). The stable moves next to the
+woodcutter, (19,35) with road (20,37)–(20,40); stars 9.3 / 10.3 min. Doing nothing now loses (36/48 planks: the
+burner keeps turning wood into surplus charcoal) — allowed by the order (≤ 1 seal); the right fix is the second
+woodcutter alone (8.34 min), two wagons are a measured wrong fix (10.44, 1 seal). (2) *XI (long route)*: with 26
+beer "nothing" took 11.82 of 12 min and one wagon bought at 3:00 lost (all wagons on 2-grain hauls). Contract 22
+beer, stars 9.4 / 10.3: nothing 10.94 (1), one wagon 10.06 (2), five 8.88 (3); no loss for 1–6 wagons bought at
+any time 0:20–6:40. (3) *XII (granary buffer)*: with 8 wagons linking the granary after 1:00 was worse than doing
+nothing (wagons hauled surplus grain into it, the brewery got none) and wagons beat the link. 12 starting wagons,
+stars 9.0 / 10.1: link at 0:20 → 8.60 (3), at 2:00 → 9.92 (2), nothing 10.36 (1), two wagons 10.44 (1); the
+granary buffers mostly beer, so the letters say beer, not malt. Tests: ladders 0/2/3 (X) and 1/2/3 (XI, XII),
+`WRONG_FIXES` ≤ 1 seal, partial–right ≥ 0.8 min. Menu: 12 entries, PL/EN names and short subtitles (≤ 34 chars)
+in `PENDING_KEYS`; XII renamed "Wielkie warzenie" (more natural than "piwowarstwo"); castellan letters rewritten
+to the new numbers (docs/content/letters-10-12.md). Rejected: changing the dispatcher (load splitting, surplus
+priority) — it would move every mission hash. Open: X still reads "wood on the way" most of the time (BACKLOG);
+X repeats IX's lesson in isolation; results are sensitive to the action second (dispatcher chaos). (decided)

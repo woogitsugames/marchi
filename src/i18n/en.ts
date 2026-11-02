@@ -366,6 +366,13 @@ export const en: FullDict = {
   'menu.m8Sub': 'Road stone must be hauled before it is laid',
   'menu.m9': 'IX. Ale for the wedding',
   'menu.m9Sub': 'Sawmill and charcoal burner fight for wood',
+  // missions X-XII (D-36): see PENDING_KEYS
+  'menu.m10': 'X. Charcoal for the smith',
+  'menu.m10Sub': 'One woodcutter, two workshops',
+  'menu.m11': 'XI. Malt for winter',
+  'menu.m11Sub': 'A distant malthouse ties up wagons',
+  'menu.m12': 'XII. The great brewing',
+  'menu.m12Sub': 'Store the beer for the next letter',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Spring',
   'season.summer': 'Summer',

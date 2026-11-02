@@ -11,7 +11,7 @@ import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
 /** Missions offered in the main menu, in order (the hidden test bench 'lab' never appears). */
-export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9'] as const;
+export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'] as const;
 export type MissionKey = (typeof MENU_MISSIONS)[number] | 'sandbox';
 
 export function isMissionKey(x: string | null | undefined): x is MissionKey {

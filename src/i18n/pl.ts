@@ -368,6 +368,13 @@ export const pl = {
   'menu.m8Sub': 'Najpierw przywieź kamień na bruk',
   'menu.m9': 'IX. Piwo na wesele',
   'menu.m9Sub': 'Tartak i węglarz walczą o drewno',
+  // missions X-XII (D-36): see PENDING_KEYS
+  'menu.m10': 'X. Węgiel dla kowala',
+  'menu.m10Sub': 'Jeden drwal na dwa warsztaty',
+  'menu.m11': 'XI. Słód na zimę',
+  'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
+  'menu.m12': 'XII. Wielkie warzenie',
+  'menu.m12Sub': 'Zapas piwa na kolejny list',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
@@ -420,6 +427,12 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  'menu.m10',
+  'menu.m10Sub',
+  'menu.m11',
+  'menu.m11Sub',
+  'menu.m12',
+  'menu.m12Sub',
   'contract.pace.eta',
   'contract.pace.late',
   'contract.pace.supply',
