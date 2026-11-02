@@ -9,12 +9,13 @@ export {
   WAGON,
   type WagonModel,
   type WheelMount,
-  type HorseWalkMaterial,
+  type HorseMaterials,
   wagonModel,
   wagonLod1,
-  horsePoseParts,
-  createHorseWalkMaterial,
-  HORSE_STRIDE,
+  createHorseMaterial,
+  addHorsePoseAttributes,
+  writeHorsePose,
+  HORSE_POSE_ATTRS,
 } from './wagon';
 export { type CargoGood, CARGO_GOODS, CARGO_MAX, cargoParts, cargoSlots, cargoUnitParts } from './cargo';
 export {

@@ -1,8 +1,10 @@
-// Trees from terrain.forest density: instanced full models near the camera, cross-quad
-// billboards (atlas baked from the same models) further away and on the apron hills.
+// Trees from terrain.forest density: instanced full models near the camera (two geometry
+// variants per kind), camera-facing cards (atlas baked from the same models) further away and on
+// the apron hills, with a dithered crossfade band between the two.
 // Placement is deterministic per cell and skips water, fields, buildings and roads.
 import {
   CustomBlending,
+  Euler,
   DstColorFactor,
   InstancedMesh,
   Matrix4,
@@ -18,8 +20,8 @@ import type { World } from '../sim/index';
 import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { rng, vnoise } from './models/kit';
-import { modelMaterial } from './models/materials';
-import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, type TreeKind } from './models/trees';
+import { modelMaterial, treeUniforms } from './models/materials';
+import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeLodFactor, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './models/trees';
 import type { RoadField } from './roads';
 import { apronHeight } from './terrain';
 
@@ -28,6 +30,8 @@ interface Tree {
   y: number;
   z: number;
   kind: number;
+  /** Geometry variant (near LOD). */
+  variant: number;
   m: Matrix4;
   /** Contact-shadow decal under a far card (flat, crown-sized). */
   blob: Matrix4;
@@ -52,7 +56,7 @@ void main() {
   float r = length(vP);
   float a = 1.0 - smoothstep(0.15, 1.0, r);
   a *= a * (1.0 - smoothstep(320.0, 700.0, vFar));
-  gl_FragColor = vec4(vec3(1.0 - 0.5 * a), 1.0);
+  gl_FragColor = vec4(vec3(1.0 - 0.3 * a), 1.0);
 }`;
 
 function blobMaterial(): ShaderMaterial {
@@ -80,6 +84,7 @@ export class VegetationView {
   readonly group: import('three').Group;
   private trees: Tree[] = [];
   private apron: Tree[] = [];
+  /** near[kind * TREE_VARIANTS + variant] = one mesh per material part. */
   private near: InstancedMesh[][] = [];
   private far: InstancedMesh[] = [];
   /** Contact shadows under far cards (one draw call; off in low quality). */
@@ -92,6 +97,8 @@ export class VegetationView {
   private lastR = 0;
   private castShadows = true;
   nearDist = 85;
+  /** Width (m) of the dithered crossfade between full trees and far cards. */
+  fadeBand = 12;
 
   constructor(private readonly hf: Heightfield, group: import('three').Group) {
     this.group = group;
@@ -127,17 +134,20 @@ export class VegetationView {
     TREE_KINDS.forEach((kind, k) => {
       const n = this.trees.filter((t) => t.kind === k).length;
       const na = this.apron.filter((t) => t.kind === k).length;
-      this.near.push(
-        treeParts(kind).map((p) => {
-          const m = new InstancedMesh(p.geometry, modelMaterial(p.material) as Material, Math.max(1, n));
-          m.count = 0;
-          m.castShadow = this.castShadows;
-          m.receiveShadow = true;
-          m.name = `tree-${kind}-${p.material}`;
-          this.group.add(m);
-          return m;
-        }),
-      );
+      for (let v = 0; v < TREE_VARIANTS; v++) {
+        const nv = this.trees.filter((t) => t.kind === k && t.variant === v).length;
+        this.near.push(
+          treeParts(kind, v).map((p) => {
+            const m = new InstancedMesh(p.geometry, modelMaterial(p.material) as Material, Math.max(1, nv));
+            m.count = 0;
+            m.castShadow = this.castShadows;
+            m.receiveShadow = true;
+            m.name = `tree-${kind}${v}-${p.material}`;
+            this.group.add(m);
+            return m;
+          }),
+        );
+      }
       const bb = treeBillboard(kind)[0]!;
       const fm = new InstancedMesh(bb.geometry, modelMaterial(bb.material) as Material, Math.max(1, n + na));
       fm.count = 0;
@@ -153,31 +163,41 @@ export class VegetationView {
 
   /** Re-bucket near/far when the camera moved noticeably. */
   update(camPos: Vector3, force = false): void {
+    treeUniforms.uLodNear.value = this.nearDist;
+    treeUniforms.uLodBand.value = this.fadeBand;
     const dx = camPos.x - this.lastX, dz = camPos.z - this.lastZ;
     if (!force && dx * dx + dz * dz < 36 && Math.abs(this.nearDist - this.lastR) < 1) return;
     this.lastX = camPos.x;
     this.lastZ = camPos.z;
     this.lastR = this.nearDist;
-    const r2 = this.nearDist * this.nearDist;
-    // shrubs are cheap and read badly as cross-quads from above: keep full models further out
-    const bushK = K('bush');
-    const rb = Math.max(this.nearDist, this.nearDist * 1.9);
-    const rb2 = rb * rb;
-    const counts = new Int32Array(TREE_KINDS.length);
-    const fcounts = new Int32Array(TREE_KINDS.length);
+    // Trees inside the crossfade band (plus a margin for the 6 m re-bucket step) go into both
+    // lists; the shaders dither them per pixel from the exact camera distance.
+    const MARGIN = 7;
+    const nK = TREE_KINDS.length;
+    const nearIn = new Float32Array(nK), farOut = new Float32Array(nK), blobOut = new Float32Array(nK);
+    TREE_KINDS.forEach((k, i) => {
+      const f = treeLodFactor(k);
+      const R = this.nearDist * f, B = this.fadeBand * f;
+      nearIn[i] = (R + MARGIN) ** 2;
+      farOut[i] = Math.max(0, R - B - MARGIN) ** 2;
+      blobOut[i] = Math.max(0, R - B * 0.5) ** 2;
+    });
+    const counts = new Int32Array(nK * TREE_VARIANTS);
+    const fcounts = new Int32Array(nK);
     const blobs = this.blobsOn ? this.blobs : null;
     let nb = 0;
     const cy = camPos.y;
     for (const t of this.trees) {
       const ddx = t.x - camPos.x, ddy = t.y - cy, ddz = t.z - camPos.z;
-      const near = ddx * ddx + ddy * ddy + ddz * ddz < (t.kind === bushK ? rb2 : r2);
-      if (near) {
-        const list = this.near[t.kind]!;
-        const i = counts[t.kind]!++;
-        for (const m of list) m.setMatrixAt(i, t.m);
-      } else {
+      const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+      if (d2 < nearIn[t.kind]!) {
+        const slot = t.kind * TREE_VARIANTS + t.variant;
+        const i = counts[slot]!++;
+        for (const m of this.near[slot]!) m.setMatrixAt(i, t.m);
+      }
+      if (d2 > farOut[t.kind]!) {
         this.far[t.kind]!.setMatrixAt(fcounts[t.kind]!++, t.m);
-        if (blobs) blobs.setMatrixAt(nb++, t.blob);
+        if (blobs && d2 > blobOut[t.kind]!) blobs.setMatrixAt(nb++, t.blob);
       }
     }
     for (const t of this.apron) {
@@ -189,19 +209,25 @@ export class VegetationView {
       this.blobs.visible = nb > 0;
       if (nb) this.blobs.instanceMatrix.needsUpdate = true;
     }
-    TREE_KINDS.forEach((_k, i) => {
-      for (const m of this.near[i]!) {
-        m.count = counts[i]!;
+    this.near.forEach((list, slot) => {
+      for (const m of list) {
+        m.count = counts[slot]!;
         m.instanceMatrix.needsUpdate = true;
         m.visible = m.count > 0;
         m.computeBoundingSphere();
       }
-      const f = this.far[i]!;
+    });
+    this.far.forEach((f, i) => {
       f.count = fcounts[i]!;
       f.instanceMatrix.needsUpdate = true;
       f.visible = f.count > 0;
       f.computeBoundingSphere();
     });
+  }
+
+  /** Per-frame: wind clock for the tree shaders. */
+  tick(timeSec: number): void {
+    treeUniforms.uTreeTime.value = timeSec;
   }
 
   dispose(): void {
@@ -213,13 +239,25 @@ export class VegetationView {
   }
 }
 
+const _e = new Euler();
+
 function makeTree(x: number, y: number, z: number, kind: number, rot: number, scale: number): Tree {
+  // per-tree shape variety without extra draw calls: crown width vs height, a slight lean
+  const h1 = Math.abs(Math.sin(x * 12.9898 + z * 78.233) * 43758.5453) % 1;
+  const h2 = Math.abs(Math.sin(x * 39.3468 + z * 11.1351) * 24634.6345) % 1;
+  const h3 = Math.abs(Math.sin(x * 73.156 + z * 52.235) * 12345.678) % 1;
+  const sy = scale * (0.88 + h1 * 0.26);
+  const sxz = scale * (0.88 + h2 * 0.24);
+  const tilt = 0.1 * (h3 - 0.5);
+  _e.set(tilt, rot, -tilt * (h1 - 0.5) * 2, 'YXZ');
+  _q.setFromEuler(_e);
+  const m = new Matrix4().compose(_v.set(x, y - 0.15, z), _q, _s.set(sxz, sy, sxz));
+  // contact shadow: shrubs a crown wide, trees a small pool around the trunk foot
+  const r = TREE_SIZE[TREE_KINDS[kind]!].radius * sxz * (TREE_KINDS[kind] === 'bush' ? 0.8 : 0.5);
   _q.setFromAxisAngle(_up, rot);
-  const m = new Matrix4().compose(_v.set(x, y - 0.15, z), _q, _s.set(scale, scale * (0.9 + Math.abs((x * 13.7 + z * 7.1) % 1) * 0.2), scale));
-  // contact shadow: shrubs a full crown wide, trees a pool around the trunk foot
-  const r = TREE_SIZE[TREE_KINDS[kind]!].radius * scale * (TREE_KINDS[kind] === 'bush' ? 1.1 : 0.7);
   const blob = new Matrix4().compose(_v.set(x, y + 0.05, z), _q, _s.set(r, 1, r));
-  return { x, y, z, kind, m, blob };
+  const variant = Math.floor(h3 * 997) % TREE_VARIANTS;
+  return { x, y, z, kind, variant, m, blob };
 }
 
 const K = (k: TreeKind) => TREE_KINDS.indexOf(k);

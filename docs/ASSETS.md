@@ -306,10 +306,7 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 
 ## Audio — CC0 field recordings (tasks 07, 18 and 46)
 
-The shipped baseline has 23 runtime IDs (46 OGG/M4A files). Task 46 selected
-13 more IDs (target **36 sounds / 72 files**); they wait in `pending_tracks` of
-`tools/audio_sources.json` until the binaries are rendered, so the strict
-`python3 tools/process_audio.py --check` keeps passing on the shipped 46 files.
+The shipped catalogue contains **36 sound IDs and 72 OGG/M4A files**. The 13 additional recordings were delivered in task 50. The strict catalogue checker includes all 72 files.
 Ambient is stereo; SFX/UI is mono, 24 kHz. The combined runtime audio (excluding
 music) must remain **below 4 MiB**. The reproducible source manifest is
 `tools/audio_sources.json`; verified source and output SHA-256 values are written
@@ -370,15 +367,9 @@ a documented bread oven. Each loading/unloading ID uses a different portion
 of a real sack, plank or log recording. Reject modern engines, asphalt and
 intelligible speech after listening — metadata alone cannot guarantee absence.
 
-### Task 46 — New building and logistics sounds (awaiting binaries)
+### Task 46 — New building and logistics sounds (task 50 delivered)
 
-**Status (2026-11-02):** The six newly selected Freesound pages individually
-display the **Creative Commons 0** label (checked by GPT-6, task 46; re-check each
-page when fetching). The existing fireplace CC0 source is reused for charcoal.
-Sources and render settings are in the manifest (`sources` + `pending_tracks`);
-no raw sources or OGG/M4A files exist yet, so the IDs are **not** in
-`src/audio/sounds.ts` (integration 2, docs/reviews/gpt-integration-2.md).
-Do not create source digests from page metadata.
+**Status (2026-11-02):** Task 50 delivered 13 CC0-derived sound effects as 26 OGG/M4A files. Both codec versions total 226081 bytes (limit: 400000 bytes). Original Freesound recordings were accessed through official public HQ OGG previews; filenames, hashes and source metadata are recorded in docs/audio-provenance.json. src/audio/sounds.ts was intentionally not modified.
 
 | New runtime ID(s) | Freesound source / author | Licence | Editing note |
 |---|---|---|---|
@@ -399,16 +390,27 @@ encoders; `charcoal-fire` and `malt-bubbles` use short crossfaded loops.
 The strict catalogue checker derives the expected file count and paths from
 the manifest and rejects missing or unexpected assets.
 
-**Finish locally:** move the `pending_tracks` entries into `tracks`, then
-`python3 tools/process_audio.py --only-freesound --fetch`
-(requires network and FFmpeg; this also processes the 11 earlier task-18 sources),
-then `python3 tools/process_audio.py --check`, `python3 -m unittest
-tools/test_process_audio.py`, `npm test`, `npm run typecheck`. Listen for
-silence, modern ambience, preview artefacts and loop seams; adjust excerpt
-offsets based on the actual recordings. Commit 26 new runtime audio files,
-all newly fetched `tools/audio-src/*-hq.ogg` sources and updated
-`docs/audio-provenance.json` in the **same** PR. Audio generation must never
-run in CI.
+**Reproduce task 50:** With the promoted manifest and bundled source previews in place, run python3 tools/process_audio.py --track-id sfx/brewery-barrels --track-id sfx/charcoal-fire --track-id sfx/fisher-net --track-id sfx/fisher-splash --track-id sfx/load-barrel --track-id sfx/load-fish --track-id sfx/load-stone --track-id sfx/malt-bubbles --track-id sfx/quarry-chisel --track-id sfx/quarry-rock --track-id sfx/unload-barrel --track-id sfx/unload-fish --track-id sfx/unload-stone, then python3 tools/process_audio.py --check. Listen to all 13 tracks before merging the PR.
+
+
+
+#### Task 50 — Source download audit (2026-11-02)
+
+| Runtime ID | Author | Licence | Page | Download date (UTC) | Source SHA-256 |
+|---|---|---|---|---|---|
+| sfx/quarry-chisel | Artiom_Constantinov | CC0-1.0 | https://freesound.org/people/Artiom_Constantinov/sounds/841053/ | 2026-11-02 | f7b5bad26e2cd5112c8633862de749cd68490cf338fde8541c12e6036453664d |
+| sfx/quarry-rock | Tim_Verberne | CC0-1.0 | https://freesound.org/people/Tim_Verberne/sounds/576107/ | 2026-11-02 | 87e0325a702b66139da6b76ddefa1f51fec25b59a1d8c456b570915df2ecf24f |
+| sfx/fisher-net | paulprit | CC0-1.0 | https://freesound.org/people/paulprit/sounds/581580/ | 2026-11-02 | 985c7a030b45c4f82ccfb2d6c201bd6cf4d54af21ee72242d926671b36814028 |
+| sfx/fisher-splash | qubodup | CC0-1.0 | https://freesound.org/people/qubodup/sounds/210428/ | 2026-11-02 | 38a7e2ab1e90305bdf068dc973b3916dd413eb327aaf1209fddddcf41ccf13e7 |
+| sfx/charcoal-fire | ceich93 | CC0-1.0 | https://freesound.org/people/ceich93/sounds/263864/ | 2026-11-02 | 21d61e6da0df08455656c2c9f105e8b2e06848b2c2d3592d7328172146f5219a |
+| sfx/malt-bubbles | calebrankin | CC0-1.0 | https://freesound.org/people/calebrankin/sounds/529383/ | 2026-11-02 | e70e4c1c9b06b045f628cd7ae29243839ea72d5462de5b349f4cfaa25783a060 |
+| sfx/brewery-barrels | craigsmith | CC0-1.0 | https://freesound.org/people/craigsmith/sounds/675975/ | 2026-11-02 | 0c6e53daeff15d1b70c6d7ac08baca38af0c4107563a58d4cea1011c5af31f1b |
+| sfx/load-stone | Tim_Verberne | CC0-1.0 | https://freesound.org/people/Tim_Verberne/sounds/576107/ | 2026-11-02 | 87e0325a702b66139da6b76ddefa1f51fec25b59a1d8c456b570915df2ecf24f |
+| sfx/unload-stone | Tim_Verberne | CC0-1.0 | https://freesound.org/people/Tim_Verberne/sounds/576107/ | 2026-11-02 | 87e0325a702b66139da6b76ddefa1f51fec25b59a1d8c456b570915df2ecf24f |
+| sfx/load-fish | paulprit | CC0-1.0 | https://freesound.org/people/paulprit/sounds/581580/ | 2026-11-02 | 985c7a030b45c4f82ccfb2d6c201bd6cf4d54af21ee72242d926671b36814028 |
+| sfx/unload-fish | paulprit | CC0-1.0 | https://freesound.org/people/paulprit/sounds/581580/ | 2026-11-02 | 985c7a030b45c4f82ccfb2d6c201bd6cf4d54af21ee72242d926671b36814028 |
+| sfx/load-barrel | craigsmith | CC0-1.0 | https://freesound.org/people/craigsmith/sounds/675975/ | 2026-11-02 | 0c6e53daeff15d1b70c6d7ac08baca38af0c4107563a58d4cea1011c5af31f1b |
+| sfx/unload-barrel | craigsmith | CC0-1.0 | https://freesound.org/people/craigsmith/sounds/675975/ | 2026-11-02 | 0c6e53daeff15d1b70c6d7ac08baca38af0c4107563a58d4cea1011c5af31f1b |
 
 ### Original procedural effects retained
 

@@ -40,5 +40,5 @@
     </application>
 
     <!-- No permissions: the game runs offline from the APK (assets served by Capacitor from local files);
-         nothing is downloaded or sent. See docs/store/data-safety.md and D-46. -->
+         nothing is downloaded or sent. See docs/store/data-safety.md and D-48. -->
 </manifest>

@@ -139,7 +139,7 @@ export class App implements PanelNav {
   private tutorial: Tutorial | null = null;
   /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
   private debugStart = false;
-  /** The no-road-to-victory letter was shown in this game (D-42): once per game. */
+  /** The no-road-to-victory letter was shown in this game (D-44): once per game. */
   private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
@@ -213,7 +213,7 @@ export class App implements PanelNav {
       this.layers.overlay.append(this.perfEl);
     }
     // window.__marchia: `ready` always (smoke tests and screenshot scripts wait for it); the App handle and the
-    // screenshot helpers only for ?debug=1 or the Vite dev server, never in a release page (D-45)
+    // screenshot helpers only for ?debug=1 or the Vite dev server, never in a release page (D-47)
     const debugHandle = this.params.get('debug') === '1' || import.meta.env.DEV;
     (window as unknown as { __marchia: unknown }).__marchia = debugHandle ? {
       app: this,
@@ -596,7 +596,7 @@ export class App implements PanelNav {
     if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();
   }
 
-  /** D-42: a contract that can no longer be won says why at once (read-only check, every 5 s of game time). */
+  /** D-44: a contract that can no longer be won says why at once (read-only check, every 5 s of game time). */
   private checkDeadEnd(): void {
     const d = deadEnd(this.world);
     if (!d) return;

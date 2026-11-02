@@ -7,9 +7,11 @@
  * caller can set `vertexColorsAsTint`).
  */
 import {
-  CanvasTexture,
   Color,
+  DataTexture,
   DoubleSide,
+  LinearFilter,
+  LinearMipmapLinearFilter,
   MeshStandardMaterial,
   SRGBColorSpace,
   type Texture,
@@ -17,7 +19,8 @@ import {
 
 export type MatKey =
   | 'wood' // sawn and hewn timber, wagon, boards, shingles, wicker
-  | 'bark' // logs, trunks
+  | 'bark' // logs, posts, piles
+  | 'trunk' // tree trunks and limbs (bark maps + the tree shader: LOD dither, sway)
   | 'thatch'
   | 'stone'
   | 'plaster' // wattle-and-daub, limewash
@@ -41,6 +44,7 @@ interface MatSpec {
 const SPECS: Record<MatKey, MatSpec> = {
   wood: { roughness: 0.86 },
   bark: { roughness: 0.95 },
+  trunk: { roughness: 0.95 },
   thatch: { roughness: 0.97 },
   stone: { roughness: 0.9 },
   plaster: { roughness: 0.93 },
@@ -70,9 +74,26 @@ const cache = new Map<MatKey, MeshStandardMaterial>();
  */
 export const foliageLift = { value: new Color(0, 0, 0) };
 
+/**
+ * Shared tree-shader state (leaves, needles, far-tree cards), set by the vegetation view:
+ *  - `uTreeTime` seconds for the wind, `uWindAmp` 0 (off, low quality) … 1;
+ *  - `uLodNear` / `uLodBand` the LOD radius and the width (m) of the dithered crossfade between
+ *    full trees and far cards; band 0 disables the dither (model preview, both always drawn).
+ * Each tree geometry carries `aTree` = (LOD radius factor, tint family: 0 conifer, 1 broadleaf,
+ * far-card lift in metres).
+ */
+export const treeUniforms = {
+  uTreeTime: { value: 0 },
+  uWindAmp: { value: 1 },
+  uLodNear: { value: 1e6 },
+  uLodBand: { value: 0 },
+  uBbNormal: { value: null as Texture | null },
+};
+
 // Far-tree cards turn about their vertical axis to face the camera (cylindrical billboard), so
 // from a high camera there is no "X" of two crossed cards. Their shadows use a separate blob
-// depth material (trees.ts billboardDepthMaterial).
+// depth material (trees.ts billboardDepthMaterial). Shading comes from a baked normal atlas
+// (same crown normals as the full model), passed in view space as the card's basis.
 const BB_NORMAL = /* glsl */ `
 vec3 objectNormal = vec3(normal);
 #ifdef USE_INSTANCING
@@ -84,7 +105,7 @@ vec3 objectNormal = vec3(normal);
   vec3 bbR = vec3(bbF.z, 0.0, -bbF.x);
   // lean the card back toward a high camera (part of the elevation angle), so from above a
   // crown reads as a round clump instead of a squashed wedge
-  float bbA = asin(bbEl) * 0.6;
+  float bbA = max(asin(bbEl) - 0.52, 0.0) * 0.6;
   vec3 bbU = vec3(0.0, cos(bbA), 0.0) - bbF * sin(bbA);
   mat3 bbIM = transpose(mat3(instanceMatrix));
   vec3 bbLR = normalize(bbIM * bbR);
@@ -92,6 +113,10 @@ vec3 objectNormal = vec3(normal);
   // shade as the upright crown would (the lean is only a projection aid)
   vec3 bbLF = normalize(bbIM * bbF);
   objectNormal = normalize(bbLR * normal.x + vec3(0.0, normal.y, 0.0) + bbLF * 0.6);
+  vBbR = normalize(mat3(viewMatrix) * bbR);
+  // basis of the bake camera (looking down at 0.52 rad, see trees.ts BB_ELEV)
+  vBbU = normalize(mat3(viewMatrix) * (vec3(0.0, 0.8678, 0.0) - bbF * 0.4969));
+  vBbF = normalize(mat3(viewMatrix) * (vec3(0.0, 0.4969, 0.0) + bbF * 0.8678));
 #endif
 #ifdef USE_TANGENT
   vec3 objectTangent = vec3(tangent.xyz);
@@ -100,22 +125,173 @@ vec3 objectNormal = vec3(normal);
 const BB_VERTEX = /* glsl */ `
 vec3 transformed = vec3(position);
 #ifdef USE_INSTANCING
-  transformed = bbLR * position.x + bbLU * position.y;
+  // the card is raised by aTree.z (the part of the elevated bake below the trunk foot) and moved
+  // toward the camera by the same amount over tan(elevation): it projects where it belongs but
+  // no longer dips into the ground
+  float bbTan = bbEl / max(sqrt(1.0 - bbEl * bbEl), 1e-3);
+  transformed = bbLR * position.x + bbLU * position.y + bbLF * (aTree.z / max(bbTan, 0.35));
 #endif
 #ifdef USE_ALPHAHASH
   vPosition = vec3(position);
 #endif
 `;
 
+const TREE_VERT_HEAD = /* glsl */ `
+uniform float uTreeTime;
+uniform float uWindAmp;
+uniform float uLodNear;
+uniform float uLodBand;
+attribute vec3 aTree;
+varying vec3 vTint;
+varying float vLodT;
+#ifdef TREE_FAR
+varying vec3 vBbR;
+varying vec3 vBbU;
+varying vec3 vBbF;
+#endif
+`;
+
+// Per-instance hue/value variation, LOD crossfade factor and a gentle height-weighted sway.
+// Everything is keyed on the instance origin, so a tree keeps its tint across the LOD swap.
+const TREE_VERT_BODY = /* glsl */ `
+#ifdef USE_INSTANCING
+  vec3 tO = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
+#else
+  vec3 tO = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+#endif
+  // small-magnitude hash (no sin of large arguments): identical in every tree program
+  vec2 hp = fract(tO.xz * vec2(0.1031, 0.1030));
+  hp += dot(hp, hp.yx + 33.33);
+  float tH1 = fract((hp.x + hp.y) * hp.x);
+  float tH2 = fract((hp.x + hp.y) * hp.y);
+  float tVal = 0.86 + 0.28 * tH1;
+  if (aTree.y > 0.5) {
+    // broadleaf: from russet-brown through ochre to a dull green-yellow, lighter/darker per tree
+    vec3 warm = vec3(1.13, 0.97, 0.80);
+    vec3 cool = vec3(0.92, 1.02, 0.94);
+    vTint = mix(cool, warm, tH2) * tVal;
+  } else {
+    // conifers: value and a slight blue-green / yellow-green shift
+    vTint = mix(vec3(0.95, 1.0, 1.0), vec3(1.05, 1.02, 0.92), tH2) * (0.9 + 0.2 * tH1);
+  }
+  float lodK = aTree.x > 0.0 ? aTree.x : 1.0;
+  vLodT = uLodBand > 0.0 ? clamp((uLodNear * lodK - distance(cameraPosition, tO)) / (uLodBand * lodK), 0.0, 1.0) : -1.0;
+  float wh = max(transformed.y, 0.0);
+  float wPh = uTreeTime * 1.1 + tH1 * 6.2831;
+  float sway = (sin(wPh) * 0.7 + sin(wPh * 2.37 + 1.3) * 0.3) * uWindAmp * 0.0006 * wh * wh;
+#if !defined(TREE_FAR) && !defined(TREE_TRUNK)
+  // leaf flutter on top of the sway (cards only; the far card keeps its silhouette)
+  float fl = sin(uTreeTime * 3.7 + dot(position, vec3(1.9, 1.3, 2.3)) + tH2 * 6.2831) * 0.035 * uWindAmp * min(wh, 2.0);
+  transformed += vec3(fl, fl * 0.4, -fl * 0.6);
+#endif
+  transformed.x += sway;
+  transformed.z += sway * 0.45;
+`;
+
+const TREE_FRAG_HEAD = /* glsl */ `
+varying vec3 vTint;
+varying float vLodT;
+#ifdef TREE_FAR
+varying vec3 vBbR;
+varying vec3 vBbU;
+varying vec3 vBbF;
+#ifdef TREE_BB_NORMAL
+uniform sampler2D uBbNormal;
+#endif
+#endif
+`;
+
+// Dithered LOD crossfade: the full tree keeps the pixels whose dither value is below the fade
+// factor, the far card the rest, so the pair always covers the crown exactly once.
+// Alpha-tested cards lose coverage in coarse mips (averaged thin needles fall under the cutoff
+// and distant conifers turn into bare poles): scale alpha up with the mip level being sampled.
+const TREE_FRAG_MIPALPHA = /* glsl */ `
+#if defined(USE_MAP) && !defined(TREE_TRUNK)
+{
+  vec2 tuv = vMapUv * vec2(textureSize(map, 0));
+  vec2 tdx = dFdx(tuv), tdy = dFdy(tuv);
+  float tlod = max(0.0, 0.5 * log2(max(dot(tdx, tdx), dot(tdy, tdy))));
+#ifdef TREE_FAR
+  // far cards: the atlas is effectively premultiplied (cleared to 0, foliage written opaque), so
+  // colour = rgb / alpha without any dark fringe. The silhouette also takes a finer mip than the
+  // colour, so thin spruce sprays stay solid at a distance.
+  vec4 tFine = textureLod(map, vMapUv, max(0.0, tlod - 1.5));
+  diffuseColor = vec4(diffuse * (sampledDiffuseColor.rgb + tFine.rgb) / max(sampledDiffuseColor.a + tFine.a, 1e-3), opacity * max(sampledDiffuseColor.a, tFine.a));
+#endif
+  diffuseColor.a *= 1.0 + tlod * 0.3;
+}
+#endif
+`;
+
+const TREE_FRAG_DITHER = /* glsl */ `
+if (vLodT >= 0.0) {
+  float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+  float dv = ign;
+#ifdef TREE_FAR
+  if (dv < vLodT) discard;
+#else
+  if (dv >= vLodT) discard;
+#endif
+}
+#ifndef TREE_TRUNK
+diffuseColor.rgb *= vTint;
+#endif
+`;
+
+// Foliage cards are double sided but carry crown normals: never flip them on back faces (the
+// default flip turned every card seen from behind toward the crown's dark side).
+const TREE_NORMAL = /* glsl */ `
+float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;
+vec3 normal = normalize(vNormal);
+#if defined(TREE_FAR) && defined(TREE_BB_NORMAL) && defined(USE_MAP)
+  vec4 bt = texture2D(uBbNormal, vMapUv);
+  vec3 bn = bt.a > 0.02 ? bt.xyz / bt.a * 2.0 - 1.0 : vec3(0.0, 0.5, 0.8);
+  normal = normalize(normalize(vBbR) * bn.x + normalize(vBbU) * bn.y + normalize(vBbF) * max(bn.z, 0.05));
+#endif
+vec3 nonPerturbedNormal = normal;
+`;
+
 function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
+  const tree = key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'trunk';
+  const foliage = key !== 'trunk';
   m.onBeforeCompile = (sh) => {
-    sh.uniforms.uFoliageLift = foliageLift;
     if (key === 'billboard') sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', BB_NORMAL).replace('#include <begin_vertex>', BB_VERTEX);
-    sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec3 uFoliageLift;')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * uFoliageLift;');
+    if (tree) {
+      Object.assign(sh.uniforms, treeUniforms);
+      const def = key === 'billboard' ? '#define TREE_FAR\n' : key === 'trunk' ? '#define TREE_TRUNK\n' : '';
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\n' + def + TREE_VERT_HEAD)
+        .replace('#include <morphtarget_vertex>', '#include <morphtarget_vertex>\n' + TREE_VERT_BODY);
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\n' + def + TREE_FRAG_HEAD)
+        .replace('#include <map_fragment>', '#include <map_fragment>\n' + TREE_FRAG_MIPALPHA)
+        .replace('#include <color_fragment>', '#include <color_fragment>\n' + TREE_FRAG_DITHER);
+      if (foliage) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', TREE_NORMAL);
+    }
+    if (foliage) {
+      sh.uniforms.uFoliageLift = foliageLift;
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform vec3 uFoliageLift;')
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * uFoliageLift;');
+    }
   };
-  m.customProgramCacheKey = () => 'foliage-' + key;
+  m.customProgramCacheKey = () => 'foliage3-' + key;
+}
+
+/**
+ * Quality switch for the tree materials: alpha-to-coverage on the full-detail cards (soft edges
+ * through MSAA) and wind on high/ultra; plain alpha test and a still forest on low.
+ */
+export function setTreeQuality(high: boolean): void {
+  treeUniforms.uWindAmp.value = high ? 1 : 0;
+  // (far cards keep the plain alpha test: their thin sprays read as a ghostly haze through MSAA)
+  for (const k of ['leaves', 'needles'] as const) {
+    const m = modelMaterial(k);
+    if (m.alphaToCoverage !== high) {
+      m.alphaToCoverage = high;
+      m.needsUpdate = true;
+    }
+  }
 }
 
 /** Shared material for a kind (created lazily, one instance per kind). */
@@ -131,7 +307,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
   });
   if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
-  if (key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'grass') addFoliageLift(m, key);
+  if (key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'grass' || key === 'trunk') addFoliageLift(m, key);
   if (s.alphaLeaf) {
     m.map = leafTexture();
     m.alphaTest = 0.5;
@@ -163,15 +339,48 @@ export function applyTextures(key: MatKey, set: TextureSet): void {
   m.needsUpdate = true;
 }
 
-let leafTex: CanvasTexture | null = null;
+/**
+ * Canvas → straight-alpha texture. A 2D canvas keeps black under fully transparent pixels, which
+ * filtering and mipmaps smear into dark rims around every leaf and every distant crown (an inked
+ * outline). Transparent texels get a neutral grey instead; rows are flipped to GL order.
+ */
+function straightAlpha(cv: HTMLCanvasElement, fill: number): DataTexture {
+  const w = cv.width, h = cv.height;
+  const g = cv.getContext('2d');
+  if (!g) throw new Error('2d canvas unavailable');
+  const src = g.getImageData(0, 0, w, h).data;
+  const out = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4, o = ((h - 1 - y) * w + x) * 4;
+      const a = src[i + 3]!;
+      out[o] = a ? src[i]! : fill;
+      out[o + 1] = a ? src[i + 1]! : fill;
+      out[o + 2] = a ? src[i + 2]! : fill;
+      out[o + 3] = a;
+    }
+  }
+  const t = new DataTexture(out, w, h);
+  t.colorSpace = SRGBColorSpace;
+  t.generateMipmaps = true;
+  t.minFilter = LinearMipmapLinearFilter;
+  t.magFilter = LinearFilter;
+  t.anisotropy = 2;
+  t.needsUpdate = true;
+  return t;
+}
+
+let leafTex: DataTexture | null = null;
 
 /**
- * Procedural leaf-cluster alpha texture (white RGB, leaf-shaped alpha), drawn on a canvas so
- * nothing is downloaded. Colour comes from the vertex colours of the card.
+ * Procedural leaf-cluster texture (grey-scale, leaf-shaped alpha), drawn on a canvas so nothing
+ * is downloaded. One card is a whole clump of foliage: a lobed, irregular mass of small leaves,
+ * darker toward its lower inner part and lighter on the upper rim (baked clump occlusion), with
+ * a few twigs and gaps. Colour comes from the vertex colours of the card.
  */
-export function leafTexture(): CanvasTexture {
+export function leafTexture(): DataTexture {
   if (leafTex) return leafTex;
-  const size = 128;
+  const size = 256;
   const cv = document.createElement('canvas');
   cv.width = cv.height = size;
   const g = cv.getContext('2d');
@@ -179,43 +388,61 @@ export function leafTexture(): CanvasTexture {
   g.clearRect(0, 0, size, size);
   let s = 12345;
   const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  // a twig across the card
-  g.strokeStyle = 'rgba(120,110,100,1)';
-  g.lineWidth = 2;
-  g.beginPath();
-  g.moveTo(size * 0.1, size * 0.9);
-  g.quadraticCurveTo(size * 0.45, size * 0.55, size * 0.9, size * 0.15);
-  g.stroke();
-  // sparse leaves, each a small ellipse with random tone (alpha carries the shape)
-  for (let i = 0; i < 64; i++) {
-    const t = r();
-    const cx = size * (0.1 + 0.8 * t) + (r() - 0.5) * size * 0.42;
-    const cy = size * (0.9 - 0.75 * t) + (r() - 0.5) * size * 0.42;
-    const rad = size * (0.025 + r() * 0.03);
-    const tone = 170 + Math.floor(r() * 85);
-    g.fillStyle = `rgb(${tone},${tone},${tone})`;
+  const c = size / 2;
+  // lobed outline: radius per angle from three low harmonics
+  const p1 = r() * 6.28, p2 = r() * 6.28, p3 = r() * 6.28;
+  const rim = (a: number) => size * 0.4 * (1 + 0.13 * Math.sin(3 * a + p1) + 0.09 * Math.sin(5 * a + p2) + 0.05 * Math.sin(8 * a + p3));
+  // twigs from the lower centre outward
+  g.strokeStyle = 'rgb(96,88,80)';
+  g.lineCap = 'round';
+  for (let i = 0; i < 6; i++) {
+    const a = -Math.PI / 2 + (r() - 0.5) * 2.6;
+    const l = rim(a) * (0.6 + r() * 0.3);
+    g.lineWidth = 2.2 - i * 0.2;
     g.beginPath();
-    g.ellipse(cx, cy, rad * 1.6, rad, r() * Math.PI, 0, Math.PI * 2);
+    g.moveTo(c, c + size * 0.18);
+    g.quadraticCurveTo(c + Math.cos(a) * l * 0.4, c + Math.sin(a) * l * 0.5, c + Math.cos(a) * l, c + Math.sin(a) * l);
+    g.stroke();
+  }
+  // leaves: denser inside, a ragged fringe at the rim; drawn back (dark) to front (light)
+  const leaves: [number, number, number, number, number][] = [];
+  for (let i = 0; i < 420; i++) {
+    const a = r() * Math.PI * 2;
+    const k = Math.pow(r(), 0.6);
+    const R = rim(a) * k;
+    const x = c + Math.cos(a) * R, y = c + Math.sin(a) * R;
+    // a few holes so the clump is not a solid disc
+    const hole = Math.sin(x * 0.07 + p1) * Math.sin(y * 0.06 + p2);
+    if (hole > 0.82 && k < 0.85) continue;
+    const up = (c - y) / (size * 0.4); // +1 top, -1 bottom
+    const tone = Math.max(70, Math.min(255, (150 + 80 * k + 40 * up) * (0.8 + r() * 0.35)));
+    leaves.push([x, y, a + (r() - 0.5) * 1.6, tone, size * (0.022 + r() * 0.016)]);
+  }
+  leaves.sort((p, q) => p[3] - q[3]);
+  for (const [x, y, rot, tone, len] of leaves) {
+    const t = Math.round(tone);
+    g.fillStyle = `rgb(${t},${t},${t})`;
+    g.beginPath();
+    g.ellipse(x, y, len * 1.7, len * 0.8, rot, 0, Math.PI * 2);
     g.fill();
   }
-  leafTex = new CanvasTexture(cv);
-  leafTex.colorSpace = SRGBColorSpace;
-  leafTex.anisotropy = 2;
+  leafTex = straightAlpha(cv, 175);
   return leafTex;
 }
 
-let needleTex: CanvasTexture | null = null;
+let needleTex: DataTexture | null = null;
 
 /**
- * Conifer spray texture (256×128): left half a branch spray with needles along a stem that runs
- * along U (u 0→0.5, v = 0.5), right half solid (for opaque crown cores that share the material).
+ * Conifer texture (256×256). Upper half (v 0.5→1): left a branch spray with needles along a stem
+ * that runs along U (u 0→0.5, v = 0.75), right solid (opaque crown cores share the material).
+ * Lower half (v 0→0.5): a pine tuft clump for `clumps(..., 'needles')` cards.
  */
-export function needleTexture(): CanvasTexture {
+export function needleTexture(): DataTexture {
   if (needleTex) return needleTex;
   const W = 256, H = 128;
   const cv = document.createElement('canvas');
   cv.width = W;
-  cv.height = H;
+  cv.height = H * 2;
   const g = cv.getContext('2d');
   if (!g) throw new Error('2d canvas unavailable');
   g.clearRect(0, 0, W, H);
@@ -255,8 +482,31 @@ export function needleTexture(): CanvasTexture {
   }
   g.fillStyle = 'rgb(220,220,220)';
   g.fillRect(W / 2 + 4, 4, W / 2 - 8, H - 8);
-  needleTex = new CanvasTexture(cv);
-  needleTex.colorSpace = SRGBColorSpace;
-  needleTex.anisotropy = 2;
+  // lower half: a Scots-pine tuft clump (bursts of needles in a lobed mass), seen from any side
+  const cx = W / 2, cy = H + H / 2;
+  const p1 = r() * 6.28, p2 = r() * 6.28;
+  const rim = (a: number) => H * 0.46 * (1 + 0.14 * Math.sin(3 * a + p1) + 0.08 * Math.sin(5 * a + p2));
+  const tufts: [number, number, number][] = [];
+  for (let i = 0; i < 70; i++) {
+    const a = r() * Math.PI * 2, k = Math.pow(r(), 0.55);
+    const x = cx + Math.cos(a) * rim(a) * k * 1.9, y = cy + Math.sin(a) * rim(a) * k;
+    tufts.push([x, y, Math.max(70, Math.min(255, (140 + 90 * k + 50 * (cy - y) / H) * (0.8 + r() * 0.3)))]);
+  }
+  tufts.sort((p, q) => p[2] - q[2]);
+  g.lineWidth = 1.4;
+  for (const [x, y, tone] of tufts) {
+    const t = Math.round(tone);
+    g.strokeStyle = `rgb(${t},${t},${t})`;
+    const n = 14 + Math.floor(r() * 8);
+    for (let j = 0; j < n; j++) {
+      const a = (j / n) * Math.PI * 2 + r() * 0.3;
+      const l = 7 + r() * 7;
+      g.beginPath();
+      g.moveTo(x, y);
+      g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l * 0.8 - 2);
+      g.stroke();
+    }
+  }
+  needleTex = straightAlpha(cv, 175);
   return needleTex;
 }

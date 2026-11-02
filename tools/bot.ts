@@ -6,7 +6,7 @@ import {
 
 export const cell = (w: World, x: number, y: number): number => y * w.terrain.w + x;
 
-// shared with the app (menu backdrop, ?bot=1): one definition in src/game (D-45)
+// shared with the app (menu backdrop, ?bot=1): one definition in src/game (D-47)
 export { bridgeA, polyline, stableId } from '../src/game/menuScene';
 import { bridgeA, polyline, stableId } from '../src/game/menuScene';
 

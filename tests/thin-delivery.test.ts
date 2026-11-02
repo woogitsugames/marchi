@@ -1,4 +1,4 @@
-// Mission X (D-41): "wood on the way" in a thin load names the shortage at the source; read-only, no hash change.
+// Mission X (D-43): "wood on the way" in a thin load names the shortage at the source; read-only, no hash change.
 import { STRATEGIES } from '../tools/bot-missions-10-12';
 import { supplyRun } from '../tools/supply-readability';
 import { assert, test } from './harness';

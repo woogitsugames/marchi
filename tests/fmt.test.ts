@@ -1,4 +1,4 @@
-// Intl formatting per language (D-43): grouping, percent sign, durations and the 24 h clock; Latin digits.
+// Intl formatting per language (D-45): grouping, percent sign, durations and the 24 h clock; Latin digits.
 import { fmtDayTime, fmtDuration, fmtInt, fmtPercent, fmtRatio, setFmtLang } from '../src/ui/fmt';
 import { assert, eq, test } from './harness';
 

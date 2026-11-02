@@ -1,4 +1,4 @@
-// Early "no road to victory" (D-42).
+// Early "no road to victory" (D-44).
 import { applyCommand, createWorld } from '../src/sim/index';
 import { bridgeA, stableId } from '../tools/bot';
 import { WAGON_REFUND, deadEnd } from '../src/ui/deadEnd';

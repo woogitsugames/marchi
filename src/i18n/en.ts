@@ -414,7 +414,7 @@ export const en: FullDict = {
   'why.pace.wait': 'Pace forecast after the first minute.',
   'why.shared': '{good} also feeds: {rival} — there {there}, here {here} (stock and on the way)',
   'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
-  // session 6 (D-40…): see PENDING_KEYS
+  // session 6 (D-42…): see PENDING_KEYS
   'letter.start': 'To work',
   'why.thin': 'Wagon {wagon} carries only {qty} of {full} — {source} cannot keep up',
   'deadEnd.title': 'The road cannot be saved',

@@ -5,6 +5,8 @@
 // little further along that curve and is damped, wagons keep to the right of two-way roads when
 // meeting traffic (centred on one-lane wooden bridges), wheels turn with the odometer, waiting
 // wagons queue back along the drawn road from the node they wait at.
+// Wheels and the horse's gait advance with the distance the drawn rig actually moves (not with
+// time), so hooves stay planted and wheels roll without slipping at any game speed (gait.ts).
 import {
   BufferGeometry,
   Frustum,
@@ -18,12 +20,13 @@ import {
   Vector3,
 } from 'three';
 import type { Wagon, World } from '../sim/index';
-import { edgeLength, MAX_WAGONS } from '../sim/index';
+import { edgeLength, MAX_WAGONS, TICK_HZ } from '../sim/index';
+import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
 import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts } from './models/cargo';
 import type { ModelPart } from './models/kit';
 import { modelMaterial } from './models/materials';
-import { createHorseWalkMaterial, type HorseWalkMaterial, WAGON, wagonLod1, wagonModel } from './models/wagon';
+import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
 import { wagonDrawLag } from './wagonSpacing';
 
@@ -62,7 +65,29 @@ interface Snap {
   fx: number; fy: number; fz: number;
   visible: boolean;
   seen: number;
+  /** Drawn ground speed in game time (m per sim second), smoothed per tick. */
+  vg: number;
+  /** Gait phase (cycles) and rolled distance (m), both advanced by the drawn displacement. */
+  gph: number;
+  roll: number;
+  /** Walk (0) → trot (1) blend and standing (0) → moving (1) blend. */
+  gb: number;
+  mv: number;
+  /** A rendered position exists from the previous frame. */
+  drawn: boolean;
 }
+
+interface AnimRig {
+  wheelF: Parts;
+  wheelR: Parts;
+  horse: Parts;
+  driver: Parts;
+  /** Per-instance pose attributes of each horse geometry. */
+  poseAttrs: InstancedBufferAttribute[][];
+}
+
+/** Gait state of a render-only (decor) rig. */
+interface DecorGait { odo: number; gph: number; roll: number; mv: number; init: boolean }
 
 class Parts {
   readonly meshes: InstancedMesh[];
@@ -102,6 +127,7 @@ export interface DecorWagon {
   z: number;
   heading: number;
   pitch: number;
+  /** Distance travelled along its path (m), drives wheels and gait. */
   odo: number;
   cargo: CargoGood | null;
   qty: number;
@@ -116,29 +142,43 @@ const _pm = new Matrix4();
 const _sphere = new Sphere(new Vector3(), 5);
 const _p: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
 const _q: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
+const _pose = new Float32Array(POSE_SIZE);
+/** Largest drawn step (m per frame) still treated as motion; larger ones are teleports. */
+const MAX_STEP = 6;
+
+/** Stride (m per gait cycle) at walk/trot blend `gb`. */
+function strideAt(gb: number): number {
+  return strideOf(gaitAt(gb));
+}
+
+/** Cheap idle life for a standing horse: head and tail, in bouts, per-rig offsets. */
+function idleMotion(time: number, seed: number, pose: Float32Array, k: number): void {
+  if (k <= 0) return;
+  const t = time + seed * 7.3;
+  pose[13]! += k * (0.05 * Math.sin(t * 0.55) + 0.025 * Math.sin(t * 1.31 + 1));
+  pose[14]! += k * 0.32 * Math.sin(t * 2.2) * Math.max(0, Math.sin(t * 0.21 + seed));
+}
 
 export class WagonsView {
   readonly group = new Group();
   private snaps = new Map<number, Snap>();
   private body: Parts;
-  private wheelF: Parts;
-  private wheelR: Parts;
-  private horse: Parts;
-  private driver: Parts;
+  /** Animated rig parts at close zoom and at middle distance (the body is shared). */
+  private near: AnimRig;
+  private mid: AnimRig;
   private lod1: Parts;
   private cargo = new Map<CargoGood, Parts>();
   private slots = new Map<CargoGood, Matrix4[]>();
-  private walk: HorseWalkMaterial;
-  private walkAttr: InstancedBufferAttribute;
+  private horseMat: HorseMaterials;
+  private decorGait: DecorGait[] = [];
   private stack = new Map<number, number>();
   private order: Wagon[] = [];
   /** Distance beyond which the low-detail rig is used. */
   lodDist = 110;
+  /** Fraction of `lodDist` within which the full-detail rig is used (mid detail beyond). */
+  nearFrac = 0.4;
   /** Render-only rigs drawn after the sim wagons (menu cinematic). */
   decor: DecorWagon[] = [];
-  /** Estimated sim speed (ticks per real second / TICK_HZ), drives the leg animation. */
-  simSpeed = 1;
-  private tickTimes: number[] = [];
   private head = new Int32Array(0);
   private link = new Int32Array(MAX_WAGONS * 2 + 8);
   private item = new Int32Array(MAX_WAGONS * 2 + 8);
@@ -151,16 +191,26 @@ export class WagonsView {
     const cap = MAX_WAGONS;
     const wm = wagonModel();
     this.body = new Parts(wm.body, cap, this.group, 'wagon-body');
-    this.wheelF = new Parts(wm.wheelFront, cap * 2, this.group, 'wagon-wheelF');
-    this.wheelR = new Parts(wm.wheelRear, cap * 2, this.group, 'wagon-wheelR');
-    this.walk = createHorseWalkMaterial(true);
-    this.walkAttr = new InstancedBufferAttribute(new Float32Array(cap), 1);
-    this.horse = new Parts(wm.horse, cap, this.group, 'wagon-horse', () => this.walk.material, (g) => {
-      const c = g.clone();
-      c.setAttribute('instanceWalk', this.walkAttr);
-      return c;
-    });
-    this.driver = new Parts(wm.driver, cap, this.group, 'wagon-driver');
+    this.horseMat = createHorseMaterial();
+    const rig = (detail: 'near' | 'mid'): AnimRig => {
+      const m = wagonModel(detail);
+      const poseAttrs: InstancedBufferAttribute[][] = [];
+      const horse = new Parts(m.horse, cap, this.group, `wagon-horse-${detail}`, () => this.horseMat.material, (g) => {
+        const c = g.clone();
+        poseAttrs.push(addHorsePoseAttributes(c, cap));
+        return c;
+      });
+      for (const h of horse.meshes) h.customDepthMaterial = this.horseMat.depth;
+      return {
+        wheelF: new Parts(m.wheelFront, cap * 2, this.group, `wagon-wheelF-${detail}`),
+        wheelR: new Parts(m.wheelRear, cap * 2, this.group, `wagon-wheelR-${detail}`),
+        horse,
+        driver: new Parts(m.driver, cap, this.group, `wagon-driver-${detail}`),
+        poseAttrs,
+      };
+    };
+    this.near = rig('near');
+    this.mid = rig('mid');
     this.lod1 = new Parts(wagonLod1(), cap, this.group, 'wagon-lod1');
     for (const g of CARGO_GOODS) {
       this.cargo.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
@@ -169,7 +219,7 @@ export class WagonsView {
   }
 
   setShadows(near: boolean, far: boolean): void {
-    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver]) p.setShadow(near);
+    for (const p of [this.body, ...this.animParts()]) p.setShadow(near);
     this.lod1.setShadow(far);
     for (const p of this.cargo.values()) p.setShadow(near);
   }
@@ -189,8 +239,7 @@ export class WagonsView {
 
   /** Snapshot current sim positions; previous ones become the interpolation start. */
   afterTick(world: World, nowMs: number): void {
-    this.tickTimes.push(nowMs);
-    while (this.tickTimes.length > 1 && nowMs - this.tickTimes[0]! > 1000) this.tickTimes.shift();
+    void nowMs;
     const t = world.terrain;
     const A = _v;
     const wantLag = wagonDrawLag(world);
@@ -200,6 +249,7 @@ export class WagonsView {
         s = {
           id: w.id, init: false, lag: 0, prevAt: -1, prevNext: -1, curAt: -1, curNext: -1, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
+          vg: 0, gph: (w.id * 0.618) % 1, roll: 0, gb: 0, mv: 0, drawn: false,
         };
         this.snaps.set(w.id, s);
       }
@@ -265,6 +315,10 @@ export class WagonsView {
         s.heading = Math.atan2(s.hx, s.hz);
         s.laneS = s.lane;
       }
+      // game-time ground speed of the drawn rig (picks walk or trot; independent of ×1/×2/×4)
+      const step = Math.hypot(s.cx - s.px, s.cz - s.pz);
+      const v = s.moving && step < MAX_STEP ? step * TICK_HZ : 0;
+      s.vg += (v - s.vg) * 0.3;
     }
     this.markOpposing(world);
   }
@@ -322,22 +376,17 @@ export class WagonsView {
 
   frame(world: World, alpha: number, dt: number, camera: PerspectiveCamera, time: number): void {
     const hf = this.hf;
-    if (this.tickTimes.length > 1) {
-      const span = (this.tickTimes[this.tickTimes.length - 1]! - this.tickTimes[0]!) / 1000;
-      const est = span > 0.2 ? (this.tickTimes.length - 1) / span / 10 : 1;
-      this.simSpeed += (est - this.simSpeed) * Math.min(1, dt * 2);
-    }
-    if (this.tickTimes.length && performance.now() - this.tickTimes[this.tickTimes.length - 1]! > 400) this.simSpeed *= 0.9; // paused
-    this.walk.uniforms.uWalkTime.value += dt * Math.max(0.15, this.simSpeed);
-    void time;
     _pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_pm);
     const camPos = camera.position;
     const lod2 = this.lodDist * this.lodDist;
+    const near2 = lod2 * this.nearFrac * this.nearFrac;
     const kTurn = 1 - Math.exp(-dt * 7);
     const kLane = 1 - Math.exp(-dt * 3);
+    const kMove = 1 - Math.exp(-dt * 5);
+    const kGait = 1 - Math.exp(-dt * 1.5);
 
-    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver, this.lod1]) p.begin();
+    for (const p of [this.body, this.lod1, ...this.animParts()]) p.begin();
     for (const p of this.cargo.values()) p.begin();
     this.stack.clear();
     // stable order: moving first doesn't matter; queue index by id order
@@ -357,7 +406,6 @@ export class WagonsView {
       const a = alpha;
       let x = s.px + (s.cx - s.px) * a;
       let z = s.pz + (s.cz - s.pz) * a;
-      const odo = s.podo + (s.codo - s.podo) * a;
       // heading
       if (s.moving) {
         const target = Math.atan2(s.hx, s.hz);
@@ -398,6 +446,14 @@ export class WagonsView {
         y = Math.max(hf.height(x, z), (hF + hB) * 0.5);
         pitch = Math.atan2(hF - hB, 3.2);
       }
+      // distance actually drawn this frame, along the heading (lane drift does not count)
+      let ds = s.drawn ? (x - s.fx) * fx + (z - s.fz) * fz : 0;
+      if (ds < 0 || ds > MAX_STEP) ds = 0;
+      s.gb += (gaitBlend(s.vg) - s.gb) * kGait;
+      s.mv += ((s.moving && s.vg > 0.2 ? 1 : 0) - s.mv) * kMove;
+      s.roll += ds;
+      s.gph = (s.gph + ds / strideAt(s.gb)) % 1;
+      s.drawn = true;
       s.fx = x; s.fy = y; s.fz = z;
       s.visible = !hidden;
       if (hidden) continue;
@@ -405,16 +461,9 @@ export class WagonsView {
       if (!_frustum.intersectsSphere(_sphere)) continue;
       _M.makeRotationY(s.heading).multiply(_R.makeRotationX(-pitch)).setPosition(x, y, z);
       const ddx = x - camPos.x, ddy = y - camPos.y, ddz = z - camPos.z;
-      const near = ddx * ddx + ddy * ddy + ddz * ddz < lod2;
-      if (near) {
-        this.body.push(_M);
-        const hi = this.horse.push(_M);
-        this.walkAttr.setX(hi, s.moving && w.next >= 0 ? 1 : 0);
-        this.driver.push(_M);
-        for (const wh of WAGON.wheels) {
-          _W.copy(_M).multiply(_R.makeTranslation(wh.position.x, wh.position.y, wh.position.z)).multiply(_R.makeRotationX(odo / wh.radius));
-          (wh.kind === 'front' ? this.wheelF : this.wheelR).push(_W);
-        }
+      const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+      if (d2 < lod2) {
+        this.pushRig(d2 < near2 ? this.near : this.mid, s.roll, s.gph, s.gb, s.mv, time, w.id);
       } else {
         this.lod1.push(_M);
       }
@@ -429,29 +478,55 @@ export class WagonsView {
         }
       }
     }
-    for (const d of this.decor) {
+    this.decorGait.length = Math.min(this.decorGait.length, this.decor.length);
+    this.decor.forEach((d, i) => {
+      const g = this.decorGait[i] ?? (this.decorGait[i] = { odo: d.odo, gph: 0, roll: 0, mv: 1, init: false });
+      let ds = g.init ? d.odo - g.odo : 0;
+      if (ds < 0 || ds > MAX_STEP) ds = 0;
+      g.init = true;
+      g.odo = d.odo;
+      const gb = 0; // the menu wagon walks (1.6 m/s)
+      g.roll += ds;
+      g.gph = (g.gph + ds / strideAt(gb)) % 1;
       _M.makeRotationY(d.heading).multiply(_R.makeRotationX(-d.pitch)).setPosition(d.x, d.y, d.z);
-      this.body.push(_M);
-      const hi = this.horse.push(_M);
-      this.walkAttr.setX(hi, 1);
-      this.driver.push(_M);
-      for (const wh of WAGON.wheels) {
-        _W.copy(_M).multiply(_R.makeTranslation(wh.position.x, wh.position.y, wh.position.z)).multiply(_R.makeRotationX(d.odo / wh.radius));
-        (wh.kind === 'front' ? this.wheelF : this.wheelR).push(_W);
-      }
+      this.pushRig(this.near, g.roll, g.gph, gb, g.mv, time, 1000 + i);
       if (d.cargo && d.qty > 0) {
         const parts = this.cargo.get(d.cargo)!;
         const slots = this.slots.get(d.cargo)!;
         for (let i = 0; i < Math.min(slots.length, d.qty); i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
       }
-    }
-    for (const p of [this.body, this.wheelF, this.wheelR, this.horse, this.driver, this.lod1]) p.end();
+    });
+    for (const p of [this.body, this.lod1, ...this.animParts()]) p.end();
     for (const p of this.cargo.values()) p.end();
-    this.walkAttr.needsUpdate = true;
+    for (const r of [this.near, this.mid]) {
+      if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) a.needsUpdate = true;
+    }
+  }
+
+  private animParts(): Parts[] {
+    const n = this.near, m = this.mid;
+    return [n.wheelF, n.wheelR, n.horse, n.driver, m.wheelF, m.wheelR, m.horse, m.driver];
+  }
+
+  /** Near-LOD rig at `_M`: body, posed horse, bobbing driver, wheels rolled by `roll` metres. */
+  private pushRig(r: AnimRig, roll: number, gph: number, gb: number, mv: number, time: number, seed: number): void {
+    this.body.push(_M);
+    const hi = r.horse.push(_M);
+    horsePose(gph, gb, mv, _pose);
+    idleMotion(time, seed, _pose, 1 - mv);
+    _pose[14]! += 0.06 * mv * Math.sin(2 * Math.PI * gph);
+    for (const attrs of r.poseAttrs) writeHorsePose(attrs, hi, _pose);
+    _W.copy(_M).multiply(_R.makeTranslation(0, _pose[15]!, 0));
+    r.driver.push(_W);
+    for (const wh of WAGON.wheels) {
+      _W.copy(_M).multiply(_R.makeTranslation(wh.position.x, wh.position.y, wh.position.z)).multiply(_R.makeRotationX(roll / wh.radius));
+      (wh.kind === 'front' ? r.wheelF : r.wheelR).push(_W);
+    }
   }
 
   dispose(): void {
     for (const c of this.group.children) (c as InstancedMesh).dispose();
-    this.walk.material.dispose();
+    this.horseMat.material.dispose();
+    this.horseMat.depth.dispose();
   }
 }

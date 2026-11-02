@@ -442,7 +442,44 @@ to the new numbers (docs/content/letters-10-12.md). Rejected: changing the dispa
 priority) — it would move every mission hash. Open: X still reads "wood on the way" most of the time (BACKLOG);
 X repeats IX's lesson in isolation; results are sensitive to the action second (dispatcher chaos). (decided)
 
-**D-40 — The castellan's letters are shown in game.** The authored letters of `src/content/letters.ts` (missions
+**D-40 — Horse gait advances with distance, not time; three wagon detail levels.** Owner feedback from the
+phone: the horse ran faster than its legs showed. The leg animation was a time-driven sine swing scaled by an
+estimated game speed, so hooves always slid. Now (`src/render/gait.ts`, pure TS) every rig keeps a gait phase
+advanced by the distance its *drawn* position moves along its heading each frame (`phase += Δd / stride`), and
+the wheels roll by the same distance (`angle = Δd / r`). In stance a fetlock moves back relative to the body by
+exactly `2·reach / duty` per cycle = the stride, so a planted hoof stays put at ×1/×2/×4 and through any frame
+rate (`tests/gait.test.ts` checks the sole's world position over every stance, for walk, trot and the blend, and
+fails when the stride is off by 10 %). Gait choice uses the drawn game-time ground speed per sim tick (render
+snapshot, not sim internals): walk below 2.3 m/s, trot from 3.2 m/s (dirt 3.6 trots, a wooden bridge 2.8 is in
+between, rain/mud slowdowns walk), blended smoothly. Each leg is a pivot → knee/hock → fetlock → hoof chain posed
+by two-bone IK on the CPU (≈0.8 µs per horse) and skinned in the vertex shader from four per-instance vec4s; the
+shadow pass uses the same skinning (`customDepthMaterial`). The body sinks a few cm while moving so the legs can
+reach (half constant, half per-step bob); the driver bobs with the footfalls; a standing horse eases to a square
+stance with a little head and tail movement in bouts. Detail: near (< 0.4·lodDist ≈ 48 m at high) full harness,
+banded hubs, iron tyres, ~5.5k tris per rig; mid (to lodDist) the same skinned rig with fewer segments, ~3.4k
+(the old single LOD0 was ~3.2k); far the static ~620-tri merged rig. Cost with 100 wagons (harness, 412×915):
+mid zoom 49 calls / 423k tris (was 49 / 417k), close zoom 57 calls / 446k (was 51 / 429k). At ×4 the cadence is
+four times higher (no sliding, but on a 30 fps phone the legs strobe at full trot) — accepted over sliding.
+**D-41 — Trees: clump crowns, lit impostors baked from above, dithered LOD crossfade (render only).** The owner
+saw cheap trees on the phone; research `docs/research/2026-11-02-trees.md` found black near trees vs bright flat
+impostors, vertical streaks in the far forest, "matchstick" pines and dead-stick shrubs. Changes: crowns are a few
+large crossed *clump* cards (lobed clump texture, crown+clump blended normals, no back-face normal flip) instead of
+~130 confetti cards; trunks are lathes with root flare and taper on their own `trunk` material (bark maps + tree
+shader); 2 geometry variants per kind plus per-instance hue/value, XZ/Y scale and ±3° lean from a position hash; a
+wider late-autumn palette (russet/ochre accents on oak, ochre/yellow-green birch, olive shrubs). Far cards come from
+an albedo **and** normal atlas baked from 30° above (the camera pitch is 27–52°; a level side view of a spruce is the
+thin spike that made the streaks), lit with the baked normals, atlas treated as premultiplied (no inked fringe),
+silhouette alpha from a finer mip; the blob shadow is pushed away from the light so it no longer cuts its own card in
+half. Near↔far is a 12 m screen-space dithered crossfade (trees in the band sit in both lists; complementary
+discard from the exact camera distance). Canvas textures become straight-alpha data textures (black under
+transparent texels made dark rims); alpha is scaled by the sampled mip level (thin needles no longer vanish at a
+distance). High: alpha-to-coverage on near cards and a height-weighted vertex wind; low keeps plain alpha test, no
+wind, no tree shadows. Cost (412×915 dpr 2, `r.info.render` incl. shadow pass): m1 high near 39→48 draw calls,
+416k→465k tris; mid 37→40, 332k→298k; far 35→35; low near 40→48, 248k→255k; sandbox high near 31→42, 402k→451k
+(the +calls are the second variant per kind). Screens: `docs/shots/trees2-{before,after}-*.jpg`,
+`trees2-closeup-*.jpg`; script `tools/tree-shots.mjs`. Not done: a multi-view (azimuth) impostor atlas. (decided)
+
+**D-42 — The castellan's letters are shown in game.** The authored letters of `src/content/letters.ts` (missions
 I–XII) now open and close each contract. *Opening*: a letter over the paused scene when a contract starts from the
 menu (`buildOpeningLetter`, `src/ui/menu.ts`): mission title, the letter, "Do dzieła"; one gesture closes it (a tap
 anywhere, the button, Escape or Enter), then the game runs at ×1 and mission I's tutorial starts. Not shown for
@@ -451,7 +488,7 @@ debug `?play=` starts (screenshots, bots) nor on the end letter's "Again" (the p
 A language without authored letters falls back to English (D-18) and the paragraphs carry `dir="auto"`, so an
 English letter keeps its punctuation in the Arabic UI. (decided)
 
-**D-41 — A thin load names the shortage at its source (mission X; read-only, no hash change).** In mission X the
+**D-43 — A thin load names the shortage at its source (mission X; read-only, no hash change).** In mission X the
 sawmill reads "wood on the way" most of the time while the real cause is one woodcutter for two workshops:
 starving consumers accept small loads (D-30), so wagons run with 2 of 6 wood. Changing `explainBuilding` would
 move hashes (`accountStalls` writes `ledger.stallSeconds` from it), so the fix is a separate read:
@@ -462,7 +499,7 @@ above the D-38 shared-input note. Measured with `tools/supply-readability.ts` (m
 "on the way" with the cause named 0 % → 64.3 % of 437 s doing nothing, 33.8 % with the late woodcutter, 19.8 % with
 the right fix; final hashes equal with and without the reads (test `tests/thin-delivery.test.ts`). (decided)
 
-**D-42 — "No road to victory" is said at once (contracts; read-only).** `deadEnd(world)` (`src/ui/deadEnd.ts`,
+**D-44 — "No road to victory" is said at once (contracts; read-only).** `deadEnd(world)` (`src/ui/deadEnd.ts`,
 pure read of the sim) reports a contract that can no longer be won for lack of a road: the castle gate has no road
 from the stable (the gap finder `suggestConnection` still needs new cells) and silver + the refund for selling every
 wagon but one (`WAGON_REFUND` = half `WAGON_PRICE`, as `sellWagon`) is below the cheapest connection — or no
@@ -471,7 +508,7 @@ letter "Szlak nie do uratowania" with the cost, the silver and the possible refu
 Not covered (left to the deadline): a connected castle whose producers cannot reach their inputs, or a time
 shortfall — those are forecasts (D-38), not dead ends. (decided)
 
-**D-43 — One formatting module for numbers and time (Intl).** `src/ui/fmt.ts` holds every number / time formatter
+**D-45 — One formatting module for numbers and time (Intl).** `src/ui/fmt.ts` holds every number / time formatter
 of the UI: `fmtInt`, `fmtDec`, `fmtPercent`, `fmtRatio`, `fmtDuration` (game clock m:ss / h:mm:ss) and
 `fmtDayTime` (24 h). Latin digits in every language (`-u-nu-latn`, as before), grouping, decimal separator, the
 percent sign and spacing follow the language (de "90 %", hi "12,34,567"). Formatters are cached for the current
@@ -480,7 +517,7 @@ i18n code so it runs in Node tests (`tests/fmt.test.ts`: en, de, hi, ar, pl). `f
 `ticksClock`, `dayClock` as thin wrappers so existing imports stay. `hud.ts` is not touched (HUD redesign in
 progress); it already formats through these wrappers. (decided)
 
-**D-44 — Saves: one IndexedDB connection, no JSON copy, a metadata store for the list.** `src/platform/save.ts`:
+**D-46 — Saves: one IndexedDB connection, no JSON copy, a metadata store for the list.** `src/platform/save.ts`:
 (1) the connection is opened once per page and reused (dropped on `close` / `versionchange`, reopened on the next
 call; a dead handle is retried once). (2) `saveGame` no longer copies the state through JSON: with the connection
 open the transaction starts in the caller's own turn and `put()` takes IndexedDB's structured clone of the live
@@ -492,7 +529,7 @@ envelopes because it validates them through the save gate. State migrations (STA
 are untouched. Tests on `fake-indexeddb` (dev dependency): one `open` for many operations, metadata-only listing,
 snapshot at call time, v1 → v2 upgrade, legacy `auto` adoption. (decided)
 
-**D-45 — No tools code in the bundle; the debug handle only on request.** The menu backdrop (mission I with the bridge
+**D-47 — No tools code in the bundle; the debug handle only on request.** The menu backdrop (mission I with the bridge
 and two wagons) and the `?bot=1` plan used by screenshots moved from `tools/bot.ts` into `src/game/menuScene.ts`
 (`menuWorld`, `botPlan`, `bridgeA`, `stableId`, `polyline`); `tools/bot.ts` re-exports them, so tests and bots are
 unchanged and `src/ui/app.ts` imports nothing from `tools/`. `window.__marchia` always has `ready` (smoke tests and
@@ -501,7 +538,7 @@ on the Vite dev server (`import.meta.env.DEV`, which the screenshot scripts use)
 `vite preview` (a production build) and now adds `debug=1`. Checked on a production preview: no params → keys
 `ready`; `?debug=1` → `app, findSteepDraft, rankUp, ready`; 0 console errors. (decided)
 
-**D-46 — Android: no INTERNET permission; Auto Backup keeps the saves, not the caches.** The game runs offline
+**D-48 — Android: no INTERNET permission; Auto Backup keeps the saves, not the caches.** The game runs offline
 from the APK: Capacitor serves the web assets to the WebView from local files, every `fetch` in the app is a
 relative asset URL, and the 4K pack downloader (D-24) is not wired into the release (D-21). So
 `android.permission.INTERNET` is removed from `AndroidManifest.xml`. `npx cap sync android` does not add it back

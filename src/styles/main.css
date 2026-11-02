@@ -860,13 +860,13 @@ body.is-side .sheet-grip::before { display: none; }
 .letter .kv { margin-bottom: 18px; }
 .letter .actions { display: flex; gap: 8px; }
 .letter .actions .btn { flex: 1; }
-/* authored castellan letters (D-40): paragraphs, the signature set apart; the opening letter closes on any tap */
+/* authored castellan letters (D-42): paragraphs, the signature set apart; the opening letter closes on any tap */
 .letter .l-body p { margin: 0 0 10px; font-size: 17px; line-height: 1.38; }
 .letter .l-body .l-sign { text-align: end; font-style: italic; color: var(--ink-soft); margin-bottom: 16px; }
 .letter-scrim { cursor: pointer; transition: opacity var(--t-fast) var(--ease); }
 .letter-scrim.is-out { opacity: 0; }
 .letter .actions.l-more { margin-top: 8px; }
-/* sheets take focus on open for assistive tech (D-43 a11y); the container itself draws no ring */
+/* sheets take focus on open for assistive tech (a11y, brief 06 task 4); the container itself draws no ring */
 section.sheet:focus { outline: none; }
 
 @media (max-height: 500px) {
@@ -1686,7 +1686,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .shared-hint svg { flex: none; }
 .shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
-/* mission X: a thin load names the shortage at its source (D-41), same voice as the shared-input note */
+/* mission X: a thin load names the shortage at its source (D-43), same voice as the shared-input note */
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
 .thin-hint svg { flex: none; }
 .thin-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }

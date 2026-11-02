@@ -417,7 +417,7 @@ export const pl = {
   'why.pace.wait': 'Prognoza tempa — po pierwszej minucie dostaw.',
   'why.shared': '{good} bierze też: {rival} — tam {there}, tu {here} (zapas i w drodze)',
   'why.sharedOne': 'Jeden dostawca ({who}) na {n} odbiorców — przyda się drugi.',
-  // session 6 (D-40…): see PENDING_KEYS
+  // session 6 (D-42…): see PENDING_KEYS
   'letter.start': 'Do dzieła',
   'why.thin': 'Wóz {wagon} wiezie tylko {qty} z {full} — {source} nie nadąża z dostawą',
   'deadEnd.title': 'Szlak nie do uratowania',

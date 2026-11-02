@@ -5,7 +5,7 @@ import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
 
 const DB_NAME = 'marchia';
-/** 2: a `meta` store beside `saves` (envelope without the state) so listing does not read whole games (D-44). */
+/** 2: a `meta` store beside `saves` (envelope without the state) so listing does not read whole games (D-46). */
 const DB_VERSION = 2;
 const STORE = 'saves';
 const META = 'meta';
@@ -119,7 +119,7 @@ function metaOf(env: Record<string, unknown>): Record<string, unknown> {
   return rest;
 }
 
-/** One connection per page, reused by every transaction; dropped when the browser closes it (D-44). */
+/** One connection per page, reused by every transaction; dropped when the browser closes it (D-46). */
 let dbPromise: Promise<IDBDatabase> | null = null;
 /** The open connection once ready: transactions then start synchronously, in the caller's own turn. */
 let dbReady: IDBDatabase | null = null;
@@ -205,7 +205,7 @@ function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T>
 /**
  * Writes an envelope and its metadata in one transaction. `make` runs inside the transaction callback, i.e. in the
  * same microtask as put(), which takes IndexedDB's structured clone at once: no game tick can slip between reading
- * the state's tick for the metadata and copying the state (D-44).
+ * the state's tick for the metadata and copying the state (D-46).
  */
 function putEnvelope(make: () => Record<string, unknown>): Promise<void> {
   return run<IDBValidKey>('readwrite', [STORE, META], (t) => {
@@ -247,7 +247,7 @@ export async function verifySave(slot: string): Promise<SaveError | null> {
   return v.ok ? null : new SaveError(v.errors);
 }
 
-/** Saves newest first, read from the metadata store: no game state is loaded (D-44). */
+/** Saves newest first, read from the metadata store: no game state is loaded (D-46). */
 export async function listSaves(): Promise<SaveMeta[]> {
   const all = await run<SaveMeta[]>('readonly', [META], (t) => t.objectStore(META).getAll() as IDBRequest<SaveMeta[]>);
   return all.slice().sort((a, b) => b.savedAt - a.savedAt);

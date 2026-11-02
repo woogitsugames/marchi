@@ -1,4 +1,4 @@
-// Mission X (D-41): how often the sawmill's card names the wood shortage while the sawmill is not working.
+// Mission X (D-43): how often the sawmill's card names the wood shortage while the sawmill is not working.
 // npx tsx tools/supply-readability.ts
 // before: the sim status alone (NO_INPUT CONTESTED) / the D-38 shared-input note (sharedInput);
 // after: + the thin-load note (thinDelivery: "wagon carries only 2 of 6 — the woodcutter cannot keep up").

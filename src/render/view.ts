@@ -26,7 +26,7 @@ import { Effects } from './fx';
 import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
-import { applyTextures, foliageLift, type MatKey } from './models/materials';
+import { applyTextures, foliageLift, type MatKey, setTreeQuality } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
 import { cellAtPoint, rayGround, screenRay } from './picking';
@@ -61,6 +61,7 @@ const MODEL_TEXTURES: [MatKey, TextureName][] = [
   ['stone', 'fieldstone_wall'],
   ['plaster', 'plaster_daub'],
   ['bark', 'bark'],
+  ['trunk', 'bark'],
 ];
 
 const _v = new Vector3();
@@ -376,6 +377,7 @@ class View implements WorldView {
 
     this.buildings!.update(w, dt);
     this.vegetation!.update(cam.position);
+    this.vegetation!.tick(this.time);
     this.cover?.update(this.rig.target, dist);
 
     this.trafficTimer -= dt;
@@ -613,6 +615,7 @@ class View implements WorldView {
     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
     this.vegetation?.setShadows(high);
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
+    setTreeQuality(high);
     if (this.cover) this.cover.radius = high ? 38 : 0;
     this.wagons?.setShadows(true, high);
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;

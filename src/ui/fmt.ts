@@ -1,4 +1,4 @@
-// Numbers, durations and times of day through Intl for the current language (D-18, D-43). Latin digits
+// Numbers, durations and times of day through Intl for the current language (D-18, D-45). Latin digits
 // everywhere ("-u-nu-latn"): counters keep a stable width and read the same in ar / hi; grouping, separators,
 // the percent sign and the 24 h clock follow the language. Formatters are cached for the current language; the
 // cache is dropped when it changes (format.ts calls setFmtLang from onLangChange). No i18n import, so the module
