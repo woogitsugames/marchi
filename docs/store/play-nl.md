@@ -18,6 +18,10 @@ Kasteelcontracten zijn korte missies voor sessies van 5–12 minuten. Lever de g
 
 De vrije vallei is een ontspannen stedenbouwmodus met drie afzonderlijke opslagslots. Laat je nederzetting via verschillende rangen uitgroeien tot een hoofdstad. Ontgrendel visserij, steengroeven voor bestrating en stenen bruggen, houtskoolproductie, mouterijen en brouwerijen. Elke productieketen vraagt nog steeds om echte leveringen per wagen.
 
+Twaalf kasteelmissies (I–XII) behandelen brugfiles, kruiend ijs, leveringen in termijnen, een kleine graanschuur, vis, bestrating voor de storm, ruzie om hout, houtskool, mout en bier. Tik op het ergste knelpunt om de oorzaak te zien.
+
+De vrije vallei heeft drie nederzettingsboeken, rangen tot hoofdstad, seizoenen en een markt. Koninklijke bestellingen, jaarmarkten en een reizende koopman zijn optioneel.
+
 Vijf kenmerken:
 - Met één tik uitleg over stilstaande gebouwen en wagens, inclusief de oorzakenketen.
 - Zichtbare vracht, bestemmingen en verwachte aankomsttijden van wagens.
@@ -25,7 +29,7 @@ Vijf kenmerken:
 - Contracten van 5–12 minuten en een vrije vallei zonder deadline.
 - Echte leveringen van boomstammen, planken, graan, meel en brood: goederen teleporteren niet.
 
-Alle zes missies (I–VI) en de vrije vallei zijn gratis. Geen advertenties, in-app-aankopen, energiesystemen, betaalde voordelen of kunstmatige wachttijden. Je voortgang wordt lokaal op je apparaat opgeslagen.
+Alle twaalf missies (I–XII) en de vrije vallei zijn gratis. Geen advertenties, in-app-aankopen, abonnementen, betaalde voordelen of kunstmatige wachttijden. Het spel werkt offline zonder internet. Opslag blijft lokaal; systeemback-ups kunnen gegevens overzetten.
 
 ## Trefwoorden — ASO-referentie (Google Play heeft geen apart trefwoordenveld)
 middeleeuwse logistiek, strategie, wagens, leveringen, bevoorradingsketen, wegenbouw, bruggen, handelsroutes, contracten, economisch spel

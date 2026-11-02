@@ -21,7 +21,11 @@ Kontrakty na 5–12 minut wymagają dostarczenia określonej ilości dóbr do za
 
 Wolna dolina to spokojny tryb rozbudowy miasta z trzema osobnymi slotami zapisu. Awansuj od Osady przez Wieś targową, Miasteczko, Miasto i Gród aż po Stolicę. Odblokuj rybaka, kamieniołom (kamień do bruku i kamiennych mostów), wypalarnię węgla drzewnego, słodownię i browar. Wszystkie towary nadal trzeba dowieźć wozami.
 
-Wszystkie sześć misji (I–VI) oraz Wolna dolina są darmowe — bez reklam, zakupów w aplikacji, subskrypcji, systemu energii i płatnych przewag. Zapisy gry pozostają na Twoim urządzeniu.
+12 misji kontraktowych obejmuje korki na mostach, krę, dostawy w transzach, mały spichlerz, ryby, bruk przed burzą, spór o drewno oraz łańcuchy węgla drzewnego, słodu i piwa. Karta „Najgorszy zastój” i arkusz „Dlaczego stoi?” pomagają jednym dotknięciem znaleźć przyczynę.
+
+W Wolnej dolinie trzy Księgi osad, rangi Osada–Stolica i pory roku łączą się z targiem, zamówieniami królewskimi, jarmarkami sezonowymi i wędrownym kupcem. Zdarzenia są dobrowolne.
+
+Wszystkie 12 misji (I–XII) oraz Wolna dolina są darmowe — bez reklam, zakupów w aplikacji, subskrypcji, systemu energii i płatnych przewag. Gra działa offline, bez dostępu do Internetu. Zapisy pozostają na urządzeniu; systemowa kopia zapasowa może umożliwić ich przeniesienie.
 
 Marchia to średniowieczna strategia o szlakach, dostawach i znajdowaniu przyczyn przestojów. Liczy się nie liczba budynków, lecz to, czy towary naprawdę docierają do celu.
 

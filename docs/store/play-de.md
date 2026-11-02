@@ -18,6 +18,10 @@ Die Aufträge der Burg sind kurze Missionen für Spielsitzungen von 5 bis 12 Min
 
 Das freie Tal ist ein entspannter Städtebaumodus mit drei unabhängigen Speicherplätzen. Entwickle deine Siedlung über mehrere Ränge bis zur Hauptstadt. Schalte Fischfang, Steinbrüche für Pflaster und Steinbrücken, Köhlerei, Mälzerei und Brauerei frei. Jede Produktionskette braucht weiterhin echte Lieferungen per Wagen.
 
+Zwölf Burgmissionen (I–XII) behandeln Brückenstaus, Eisgang, Lieferungen in Etappen, kleine Speicher, Fischtransport, Pflaster vor dem Sturm, Streit um Holz sowie Holzkohle, Malz und Bier. Tippe auf den schlimmsten Stillstand, um die Ursache zu sehen.
+
+Im freien Tal gibt es drei Siedlungsbücher, Ränge bis zur Hauptstadt, Jahreszeiten und einen Markt. Königliche Bestellungen, Jahrmärkte und fahrende Händler sind freiwillige Ereignisse.
+
 Fünf Merkmale:
 - Erklärungen für stillstehende Gebäude und Wagen per Tipp, einschließlich Ursachenkette.
 - Sichtbare Ladung, Ziele und voraussichtliche Ankunftszeiten.
@@ -25,7 +29,7 @@ Fünf Merkmale:
 - Aufträge von 5 bis 12 Minuten und ein offenes Tal ohne Frist.
 - Physische Lieferungen von Holz, Brettern, Getreide, Mehl und Brot — keine sofortige Teleportation.
 
-Alle sechs Missionen (I–VI) und das freie Tal sind kostenlos. Keine Werbung, In-App-Käufe, Energiesysteme, bezahlten Spielvorteile oder künstlichen Wartezeiten. Dein Fortschritt wird lokal auf dem Gerät gespeichert.
+Alle zwölf Missionen (I–XII) und das freie Tal sind kostenlos. Keine Werbung, In-App-Käufe, Abonnements, bezahlten Vorteile oder künstliche Wartezeiten. Das Spiel funktioniert offline ohne Internet. Spielstände bleiben lokal und können per Systemsicherung übertragen werden.
 
 ## Suchbegriffe — ASO-Referenz (Google Play hat kein eigenes Suchwortfeld)
 mittelalterliche Logistik, Strategie, Wagen, Lieferungen, Lieferketten, Straßenbau, Brücken, Handel, Aufträge, Wirtschaftsspiel

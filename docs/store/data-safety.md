@@ -2,7 +2,9 @@
 
 **Stan założeń: 1 listopada 2026 r.** Propozycje do wprowadzenia w konsolach sklepów. Dotyczą wyłącznie wersji gry opisanej w zleceniu: lokalne zapisy IndexedDB, brak kont, serwera rozgrywki, reklam, analityki i śledzenia. **Nie są wynikiem audytu końcowych pakietów APK/AAB/IPA.**
 
-**Model v1.0 po D-21/D-29:** cała gra jest darmowa: misje I–VI oraz Wolna dolina (trzy lokalne sloty zapisu; rangi Osada–Stolica; łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa). Brak reklam i zakupów w aplikacji. Kamień jest zużywany m.in. do bruku i kamiennych mostów. Stan rozgrywki pozostaje lokalny.
+**Model v1.0 po D-21/D-29 (stan 2 listopada 2026):** cała gra jest darmowa: misje I–XII oraz Wolna dolina (trzy lokalne sloty zapisu; rangi Osada–Stolica; łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa). Brak reklam i zakupów w aplikacji. Kamień jest zużywany m.in. do bruku i kamiennych mostów. Stan rozgrywki pozostaje lokalny.
+
+**Zakres gry:** 12 misji kontraktowych (I–XII): mosty, kra, transze, spichlerz, ryby, bruk, spór o drewno, węgiel drzewny, słód i piwo. Wolna dolina obejmuje trzy Księgi osad, rangi Osada–Stolica, pory roku, targ i dobrowolne zdarzenia (zamówienia królewskie, jarmarki sezonowe, wędrowny kupiec). Karta „Najgorszy zastój” i arkusz „Dlaczego stoi?” pokazują przyczynę przestoju jednym dotknięciem.
 
 ## Google Play Console — Data safety
 
@@ -34,7 +36,7 @@ Lokalne dane gry przetwarzane wyłącznie na urządzeniu nie są traktowane prze
 
 ## Darmowa gra i granice deklaracji „brak zbierania danych”
 
-- **Stan v1.0:** misje I–VI oraz Wolna dolina są darmowe; w grze nie ma reklam ani zakupów w aplikacji. Nie deklaruj płatnego odblokowania misji ani pełnej wersji w konsolach sklepów.
+- **Stan v1.0:** misje I–XII oraz Wolna dolina są darmowe; w grze nie ma reklam ani zakupów w aplikacji. Nie deklaruj płatnego odblokowania misji ani pełnej wersji w konsolach sklepów.
 - **Lokalne zapisy Wolnej doliny:** trzy niezależne sloty obejmują stan osady, rangi od Osady do Stolicy, zasoby oraz łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa. W opisanym modelu te dane pozostają w IndexedDB na urządzeniu.
 - **Weryfikacja przed wydaniem:** sprawdź końcowe APK/AAB/IPA, bibliotekę zależności, uprawnienia i rzeczywiste połączenia sieciowe. Formularze muszą uwzględnić także ewentualną transmisję realizowaną przez SDK, np. diagnostykę, analitykę lub reklamę.
 - **Zmiana modelu w przyszłości:** jeżeli pojawią się reklamy, płatności, usługi sieciowe, synchronizacja lub SDK przesyłające identyfikatory i dane, ponownie przeanalizuj deklaracje i polityki przed publikacją takiej wersji. Nie traktuj obecnego braku zbierania danych jako deklaracji na przyszłość.
@@ -50,8 +52,8 @@ Lokalne dane gry przetwarzane wyłącznie na urządzeniu nie są traktowane prze
   sieciowe, nawet bez danych użytkownika). `npx cap sync android` nie dodaje `INTERNET` z powrotem (sprawdzone;
   manifesty wtyczek Capacitor 8.6 / filesystem 8.1 są puste) — sprawdź scalony manifest gotowego APK.
 - **Kopia zapasowa Androida włączona** (`allowBackup="true"`), z regułami `res/xml/backup_rules.xml` (Android ≤ 11)
-  i `res/xml/data_extraction_rules.xml` (12+): zapisy gry (IndexedDB WebView) i ustawienia przechodzą na nowy
-  telefon przez kopię Google i transfer między urządzeniami; pamięci podręczne WebView są wyłączone. To mechanizm
+  i `res/xml/data_extraction_rules.xml` (12+): zapisy gry (IndexedDB WebView) i ustawienia mogą przejść na nowy
+  telefon przez kopię Google i transfer między urządzeniami (w granicach reguł i limitów systemu); pamięci podręczne WebView są wyłączone. To mechanizm
   systemu (szyfrowany, pod kontrolą użytkownika), nie zbieranie danych przez grę — w Data safety nadal
   „No data collected / shared”. Jeśli wolisz nie przenosić zapisów: `allowBackup="false"` i usunąć oba pliki reguł.
 

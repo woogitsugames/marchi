@@ -18,6 +18,10 @@ Os contratos do castelo são missões curtas para partidas de 5 a 12 minutos. En
 
 O Vale Livre é um modo tranquilo de construção de cidade com três espaços de salvamento independentes. Desenvolva seu povoado por diferentes níveis até chegar a uma capital. Desbloqueie pesca, pedreiras para pavimentação e pontes de pedra, produção de carvão vegetal, maltagem e fabricação de cerveja. Toda cadeia ainda depende de entregas reais por carroças.
 
+Doze missões (I–XII) trazem pontes congestionadas, gelo no rio, entregas por etapas, pequeno celeiro, peixes, pavimentação antes da tempestade, disputa por madeira, carvão vegetal, malte e cerveja. Toque no pior bloqueio para descobrir a causa.
+
+O Vale Livre tem três livros de povoados, níveis até capital, estações do ano e mercado. Encomendas reais, feiras e mercador viajante são opcionais.
+
 Cinco recursos principais:
 - Explicações com um toque para construções e carroças paradas, incluindo a cadeia de causas.
 - Carga visível, destinos e previsões de chegada das carroças.
@@ -25,7 +29,7 @@ Cinco recursos principais:
 - Contratos de 5 a 12 minutos e um vale livre sem prazo.
 - Entregas físicas de toras, tábuas, grãos, farinha e pão, sem teletransporte instantâneo de produtos.
 
-Todas as seis missões (I–VI) e o Vale Livre são gratuitos. Sem anúncios, compras no aplicativo, sistemas de energia, vantagens pagas ou esperas artificiais. O progresso fica salvo localmente no dispositivo.
+Todas as doze missões (I–XII) e o Vale Livre são gratuitos. Sem anúncios, compras no aplicativo, assinaturas, vantagens pagas ou esperas artificiais. Funciona offline sem Internet. Os saves ficam no dispositivo e backups do sistema podem transferi-los.
 
 ## Palavras-chave — referência ASO (o Google Play não tem campo separado para palavras-chave)
 logística medieval, estratégia, carroças, entregas, cadeias de abastecimento, construção de estradas, pontes, rotas comerciais, contratos, jogo econômico

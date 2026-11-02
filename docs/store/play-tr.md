@@ -18,6 +18,10 @@ Kale sözleşmeleri 5–12 dakikalık oturumlar için tasarlanmış kısa görev
 
 Serbest Vadi, üç bağımsız kayıt yuvası sunan sakin bir şehir kurma modudur. Yerleşimini kademeler boyunca başkente dönüştür. Balıkçılığı, taş yollar ve taş köprüler için taş ocaklarını, odun kömürü üretimini, malt yapımını ve bira üretimini aç. Her üretim zincirinde mallar yine arabalarla gerçekten taşınmalıdır.
 
+On iki kale görevi (I–XII) köprü tıkanıklığı, nehir buzu, aşamalı teslimat, küçük ambar, balık, fırtına öncesi yol döşeme, odun anlaşmazlığı, kömür, malt ve bira zincirlerini içerir. En büyük duraklamaya dokunarak nedenini bul.
+
+Serbest Vadi'de üç yerleşim defteri, başkente kadar rütbeler, mevsimler ve pazar vardır. Kraliyet siparişleri, panayırlar ve gezgin tüccar isteğe bağlıdır.
+
 Beş temel özellik:
 - Duran bina ve arabalar için nedenler zinciriyle birlikte tek dokunuşta açıklama.
 - Görünür araba yükleri, hedefler ve tahmini varış süreleri.
@@ -25,7 +29,7 @@ Beş temel özellik:
 - 5–12 dakikalık sözleşmeler ve süre sınırı olmayan açık vadi.
 - Kütük, kalas, tahıl, un ve ekmeğin fiziksel teslimatı; mallar anında ışınlanmaz.
 
-Altı görevin (I–VI) tamamı ve Serbest Vadi ücretsizdir. Reklam, uygulama içi satın alma, enerji sistemi, ücretli üstünlük veya yapay bekleme yoktur. İlerlemen cihazında yerel olarak saklanır.
+On iki görevin (I–XII) tamamı ve Serbest Vadi ücretsizdir. Reklam, uygulama içi satın alma, abonelik, ücretli üstünlük veya yapay bekleme yoktur. Oyun internet olmadan çalışır. Kayıtlar cihazda kalır; sistem yedeklemesi aktarım sağlayabilir.
 
 ## Anahtar kelimeler — ASO başvurusu (Google Play'de ayrı anahtar kelime alanı yoktur)
 orta çağ lojistiği, strateji, arabalar, teslimat, tedarik zinciri, yol yapımı, köprüler, ticaret, sözleşme, ekonomi oyunu
