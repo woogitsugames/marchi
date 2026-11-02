@@ -200,12 +200,14 @@ export function resetSaveConnection(): void {
  */
 function run<T>(mode: IDBTransactionMode, stores: string[], f: (t: IDBTransaction) => IDBRequest<T> | null, retry = true): Promise<T> {
   const exec = (db: IDBDatabase): Promise<T> => withTimeout(new Promise<T>((resolve, reject) => {
-    let t: IDBTransaction;
+    let t: IDBTransaction | undefined;
     let r: IDBRequest<T> | null;
     try {
       t = db.transaction(stores, mode);
       r = f(t);
     } catch (e) {
+      // a put that throws after an earlier one (e.g. meta written, state not cloneable) must not commit half
+      try { t?.abort(); } catch { /* already finished */ }
       // InvalidStateError: the cached connection is closing / closed -> reopen once
       if (retry && e instanceof DOMException && e.name === 'InvalidStateError') {
         dbPromise = null;
@@ -214,9 +216,10 @@ function run<T>(mode: IDBTransactionMode, stores: string[], f: (t: IDBTransactio
       } else reject(e);
       return;
     }
-    t.oncomplete = () => resolve((r ? r.result : undefined) as T);
-    t.onerror = () => reject(t.error);
-    t.onabort = () => reject(t.error ?? new Error('IndexedDB transaction aborted'));
+    const tr = t;
+    tr.oncomplete = () => resolve((r ? r.result : undefined) as T);
+    tr.onerror = () => reject(tr.error ?? new Error('IndexedDB transaction failed'));
+    tr.onabort = () => reject(tr.error ?? new Error('IndexedDB transaction aborted'));
   }), mode);
   return dbReady ? exec(dbReady) : open().then(exec);
 }
@@ -273,7 +276,7 @@ export async function verifySave(slot: string): Promise<SaveError | null> {
 /** Saves newest first, read from the metadata store: no game state is loaded (D-50). */
 export async function listSaves(): Promise<SaveMeta[]> {
   const all = await run<SaveMeta[]>('readonly', [META], (t) => t.objectStore(META).getAll() as IDBRequest<SaveMeta[]>);
-  return all.slice().sort((a, b) => b.savedAt - a.savedAt);
+  return all.slice().sort((a, b) => (Number(b.savedAt) || 0) - (Number(a.savedAt) || 0));
 }
 
 export async function deleteSave(slot: string): Promise<void> {
@@ -325,6 +328,9 @@ export async function readSlots(): Promise<SlotSummary[]> {
 export async function adoptLegacySaves(): Promise<void> {
   const raw = await tx<unknown>('readonly', (s) => s.get(LEGACY_SLOT));
   if (raw === undefined) return;
+  // a damaged or newer-version legacy save must never replace (or be moved over) a playable slot: keep it
+  // in 'auto', where the menu reports it as damaged (research 2026-11-02-save-robustness B1)
+  if (!prepareLoad(raw).ok) return;
   const others = (await listSaves()).filter((x) => x.slot !== LEGACY_SLOT);
   const plan = planLegacy(raw, others);
   if (plan.kind === 'keep') return;

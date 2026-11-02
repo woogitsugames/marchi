@@ -284,3 +284,32 @@ for (const id of ['m1', 'm5', 'm9', 'm12', 'sandbox']) {
     eq(checkInvariants(live).length, 0, 'invariants');
   });
 }
+
+// --- regressions for the bugs found by the robustness research (fixed in save.ts) ------------------------
+
+test('B1: a newer-version legacy auto save never replaces a playable per-mission save', async () => {
+  freshDb();
+  const w3 = createWorld('m3');
+  for (let i = 0; i < 100; i++) step(w3);
+  await saveGame(contractSlot('m3'), w3.state);
+  const w = createWorld('m3');
+  await rawPut({ ...makeEnvelope('auto', w.state, Date.now() + 9999), stateVersion: 8 });
+  await adoptLegacySaves();
+  const back = await loadGame(contractSlot('m3'));
+  assert(back !== null, 'good per-mission save kept');
+  eq(stateHash(worldFromState(back!)), stateHash(w3), 'it is still the good game');
+});
+
+test('B3: a state put that throws after the meta put commits nothing (no orphan meta)', async () => {
+  freshDb();
+  const w = createWorld('m5');
+  const proto = IDBObjectStore.prototype as unknown as { put: (v: unknown, k?: unknown) => IDBRequest };
+  const orig = proto.put;
+  proto.put = function (this: IDBObjectStore, v: unknown, k?: unknown) {
+    if (this.name === 'saves') throw new DOMException('boom', 'DataCloneError');
+    return orig.call(this, v, k);
+  };
+  try { await saveGame(contractSlot('m5'), w.state).catch(() => undefined); } finally { proto.put = orig; }
+  eq((await listSaves()).map((x) => x.slot).join(','), '', 'no metadata without a state');
+  eq(await loadGame(contractSlot('m5')), null, 'and no state');
+});
