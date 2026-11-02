@@ -358,3 +358,15 @@ every mission, not a cosmetic fix. Drawn: m1 bot fleet and m2 show 0 overlapping
 and 78 sampled in the sim positions); the deliberately overloaded 120-wagon bench keeps ~78 % (dozens of
 wagons on a few cells exceed the capped lag).* (decided — revisit as a sim rule together with a balance pass)
 
+
+**D-36 — One save slot per contract mission; starting over always asks (no state change).** Before, every
+contract wrote to the single slot `auto`: starting mission V while mission III was unfinished overwrote III
+after the first autosave (30 s), and pause → "Start over" deleted a contract save at once. Now contracts write
+to `auto-<missionId>` (`src/platform/slots.ts`); the free valley keeps its three ledgers (D-29) unchanged.
+`adoptLegacySaves()` (menu start) moves an old `auto` save into its own slot — a contract into
+`auto-<missionId>` (the newer copy wins if both exist), a valley game into the first empty ledger as before;
+an unreadable one stays in `auto`, which "Continue" still offers so the damaged-save message keeps working.
+The copy is written before `auto` is deleted, so a crash in between leaves two copies, never none. A menu row
+with an unfinished save says "in progress, m:ss"; tapping it opens a ledger-style sheet (Continue / Start
+over → in-row ask), the pause menu asks before "Start over" for contracts too. The end letter's "Again" does
+not ask: the save is already deleted when the contract ends. *(decided)*
