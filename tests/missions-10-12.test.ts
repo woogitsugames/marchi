@@ -93,19 +93,36 @@ for (const id of ['m10', 'm11', 'm12'] as const) {
 }
 
 
-// TEMP: gather exact engine times for alternate partial repairs; remove after tuning.
-test('probe alternative partial repairs', () => {
-  const stableWagon = (w: Parameters<(typeof STRATEGIES)['m10'][number]['cmds']>[0]) =>
-    [{ t: 'buyWagon' as const, stable: w.state.buildings.find((b) => b.type === 'stable')!.id }];
-  for (const [id, seconds] of [
-    ['m10', [0, 20, 30, 60, 90, 120, 180]],
-    ['m11', [330, 360, 390, 420]],
-    ['m12', [60, 90, 120, 150, 180]],
-  ] as const) {
-    for (const after of seconds) {
-      const r = runProposed(id, { name: 'probe wagon at ' + after, after, cmds: stableWagon });
-      console.log('PROBE ' + id + ' at ' + after + 's: ' + r.result + ', ' +
-        r.minutes.toFixed(4) + ' min, ' + r.seals + ' seals');
+// TEMP: test-run only; tune mission strategies and remove.
+test('probe partial fixes and wagon quantities', () => {
+  const buildWagons = (w: Parameters<(typeof STRATEGIES)['m10'][number]['cmds']>[0], n: number) =>
+    Array.from({ length: n }, () => ({ t: 'buyWagon' as const,
+      stable: w.state.buildings.find((b) => b.type === 'stable')!.id }));
+  const wood = { t: 'place' as const, type: 'woodcutter' as const, x: 12, y: 34, facing: 1 };
+  for (const after of [0, 20, 30, 60, 90, 120, 150, 180, 240]) {
+    for (const added of [0, 1]) {
+      const r = runProposed('m10', { name: 'probe wood + ' + added + ' wagons @' + after,
+        after, cmds: (w) => [wood, ...buildWagons(w, added)] });
+      console.log('PROBE M10 wood+' + added + ' @' + after + ' -> ' +
+        r.result + '/' + r.minutes.toFixed(4) + '/seals' + r.seals);
     }
+  }
+  for (const after of [20, 30, 60, 90, 150, 180, 220, 280, 340]) {
+    const r = runProposed('m10', { name: 'probe two wagons @' + after,
+      after, cmds: (w) => buildWagons(w, 2) });
+    console.log('PROBE M10 2wag @' + after + ' -> ' +
+      r.result + '/' + r.minutes.toFixed(4) + '/seals' + r.seals);
+  }
+  for (const after of [335, 340, 345, 350, 355, 365, 370, 375, 380, 385, 400, 405, 410, 415]) {
+    const r = runProposed('m11', { name: 'probe one wagon @' + after,
+      after, cmds: (w) => buildWagons(w, 1) });
+    console.log('PROBE M11 1wag @' + after + ' -> ' +
+      r.result + '/' + r.minutes.toFixed(4) + '/seals' + r.seals);
+  }
+  for (const n of [4, 5, 6]) {
+    const r = runProposed('m11', { name: 'probe '+n+' extra wagons @20',
+      after: 20, cmds: (w) => buildWagons(w, n) });
+    console.log('PROBE M11 '+n+'wag @20 -> ' +
+      r.result + '/' + r.minutes.toFixed(4) + '/seals' + r.seals);
   }
 });
