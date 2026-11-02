@@ -14,9 +14,9 @@ Game progress, map state, resources and save information are stored **only on yo
 
 You can remove local saves by clearing the app's storage or deleting the app from the device. Simply offloading the app may leave its data intact. Backups made by your operating system, if any, are governed by your device settings and the operating-system provider's terms.
 
-## 3. One-time full-version purchase
+## 3. Free game, no ads or in-app purchases
 
-Additional content may be unlocked through a one-time purchase in Google Play or the App Store. The relevant store operator handles payment transactions under its own privacy terms. The game does not collect payment-card details. The store may independently process purchase and account information.
+The game is free, including missions I–VI and Free Valley, with no ads or in-app purchases. Free Valley offers three local save slots and production chains for fish, stone, charcoal, malt and beer. Those saves and resources remain on your device as described above. The game collects no purchase or payment data.
 
 ## 4. Sharing and security
 

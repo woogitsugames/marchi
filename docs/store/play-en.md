@@ -16,6 +16,8 @@ Cargo is visible on every loaded wagon. Inspect its destination and estimated de
 
 Castle contracts are short missions designed for 5–12 minute sessions. Deliver the requested goods before the deadline and earn seals for efficient work. Prefer a quieter pace? Build your transport network freely in a valley without a contract deadline.
 
+Free Valley is a relaxed town builder with three independent save slots. Grow your settlement through ranks from a hamlet to a capital to unlock fishing, quarrying stone for cobbled roads and stone bridges, charcoal burning, malting and brewing beer. Every supply chain still needs real wagon deliveries.
+
 Five key features:
 - One-tap explanations for stalled buildings and wagons, including the chain of causes.
 - Visible wagon cargo, destinations and estimated arrival times.
@@ -23,7 +25,7 @@ Five key features:
 - 5–12 minute contracts plus an open-ended valley without deadlines.
 - Physical deliveries of logs, planks, grain, flour and bread — no instant teleporting goods.
 
-Start for free with missions 1–3 and a small sandbox valley. A single purchase unlocks the full version. No ads, energy systems, pay-to-win upgrades or artificial refill waits. Progress is saved locally on your device.
+All six missions (I–VI) and Free Valley are free. No ads, in-app purchases, energy systems, pay-to-win upgrades or artificial refill waits. Progress is saved locally on your device.
 
 ## Keywords — ASO reference (Google Play has no separate keywords field)
 medieval logistics, strategy, wagons, deliveries, supply chains, road building, bridges, trade routes, contracts, economic game

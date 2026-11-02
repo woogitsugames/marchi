@@ -14,12 +14,19 @@ Zrzuty poniżej należy wykonać **z prawdziwej wersji gry** po doprowadzeniu ws
 
 | Nr | Co pokazać na zrzucie | Podpis PL | Caption EN | Odniesienie w docs/shots/ |
 | --- | --- | --- | --- | --- |
-| 1 | Szeroki kadr doliny w późnojesiennym świetle: rzeka, dwa brzegi, szlaki, tartak i zamek, na drodze załadowany wóz. Minimalny HUD, ale widoczny cel dostawy. | Dolina żyje dzięki szlakom | Roads keep the valley moving | textures.png; models-overview.png |
+| 1 | **Wolna dolina**, rzeczywisty widok rozwijanej osady: rzeka, szlaki, zamek, załadowane wozy i widoczna w HUD ranga miasta. Pokaż swobodną rozbudowę bez licznika kontraktu; trzy sloty zapisu pokaż osobno na prawdziwym ekranie wyboru, nie w fotomontażu. | Twoja dolina, Twoje miasto | Your valley, your town | textures.png; models-overview.png |
 | 2 | Wybrana piekarnia i otwarty panel „Dlaczego stoi?”: konkretny brak mąki oraz łańcuch przyczyn prowadzący do młyna i przerwanej dostawy. Pokaż przyczynę, nie ogólny błąd. | Jedno dotknięcie. Znasz przyczynę | One tap reveals the cause | icons.png; icons.html |
 | 3 | Zbliżenie dwóch wozów z **różnymi widocznymi ładunkami** (np. deski i zboże). Jeden wybrany: karta z towarem, celem i ETA; ładunki nie mogą zostać zasłonięte przez UI. | Wiesz, co wiezie każdy wóz | See what every wagon carries | models-overview.png; icons.png |
-| 4 | Gracz wytycza trasę i przeprawę przez rzekę: różnica między gruntowym traktem a brukiem, widoczny most i koszt budowy w UI. Kadruj tak, aby droga była główną linią obrazu. | Buduj drogi i mosty | Build roads and bridges | textures.png; icons.png |
+| 4 | **Nowe łańcuchy w Wolnej dolinie:** z rzeczywistej rozgrywki pokaż rybaka przy wodzie i/lub kamieniołom; na mapie prawdziwe dostawy kamienia do bruku lub kamiennego mostu. W ujęciach alternatywnych pokaż wypalarnię węgla drzewnego, słodownię i browar; nie dokładaj fikcyjnych elementów UI. | Nowe łańcuchy, nowe dostawy | New chains, new deliveries | textures.png; icons.png |
 | 5 | Prawdziwy przestój przy jednopasmowym drewnianym moście; wybrany wóz ma status oczekiwania na przejazd. Jeśli docelowa misja 2 nie jest gotowa, ustaw odtwarzalną scenę z istniejących mechanik; nie fałszuj panelu. | Znajdź wąskie gardło | Find the bottleneck | models-overview.png; icons.png |
 | 6 | List przewozowy do zamku: „30 desek, 20 chlebów”, postęp realizacji, pieczęcie i czas misji; w tle autentyczny transport. Kontrast dla czytelności tekstu na telefonie. | Kontrakty na 5–12 minut | Castle contracts in 5–12 minutes | icons.png; textures.png |
+
+## Nowe mechaniki do udokumentowania po D-21/D-29
+
+- **Pełna darmowa zawartość:** sześć misji (I–VI) oraz Wolna dolina, bez reklam i zakupów w aplikacji; nie stosuj nakładek sugerujących odblokowanie pełnej wersji.
+- **Budowa miasta:** wolna rozgrywka z trzema lokalnymi slotami zapisu i rangami od Osady przez Wieś targową, Miasteczko, Miasto i Gród do Stolicy. Jeżeli wybór slotu nie mieści się w sześciu kadrach, przygotuj osobny autentyczny kadr rezerwowy.
+- **Pięć nowych dóbr:** ryby, kamień, węgiel drzewny, słód i piwo; łańcuchy rybak → ryby, kamieniołom → kamień (bruk, kamienny most), wypalarnia → węgiel drzewny, słodownia → słód, browar → piwo. Pokazuj tylko funkcje działające w nagrywanym buildzie.
+- **Weryfikacja:** sprawdź, czy dany build rzeczywiście udostępnia trzy sloty i właściwe rangi. Nie twórz inscenizowanych zrzutów przedstawiających przyszłe funkcje jako obecne.
 
 ## Wskazówki do przygotowania
 
@@ -36,4 +43,6 @@ Zrzuty poniżej należy wykonać **z prawdziwej wersji gry** po doprowadzeniu ws
 - [ ] Nie ma elementów z debugowania, placeholderów, testowych ikon ani tekstów niespójnych z aktualnym buildem.
 - [ ] Podpisy mieszczą się w limicie **40 znaków na język**.
 - [ ] UI, widoczne ładunki i powody przestojów odpowiadają aktualnym mechanikom.
+- [ ] Kadry Wolnej doliny pokazują prawdziwe rangi, działające sloty zapisu i wdrożone łańcuchy produkcji.
+- [ ] Materiały sklepowe nie zawierają obietnic zakupów, reklam ani odblokowania pełnej wersji.
 - [ ] Po zaktualizowaniu scen sprawdzono układ na małym ekranie telefonu.

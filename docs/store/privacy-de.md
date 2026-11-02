@@ -14,9 +14,9 @@ Spielfortschritt, Kartenzustand, Ressourcen und Speicherinformationen werden **n
 
 Du kannst lokale Spielstände entfernen, indem du den Speicher der App löschst oder die App vom Gerät entfernst. Das bloße Auslagern der App kann ihre Daten erhalten. Etwaige Sicherungen des Betriebssystems unterliegen deinen Geräteeinstellungen und den Bedingungen des Betriebssystemanbieters.
 
-## 3. Einmaliger Kauf der Vollversion
+## 3. Kostenloses Spiel ohne Werbung oder In-App-Käufe
 
-Zusätzliche Inhalte können durch einen einmaligen Kauf bei Google Play oder im App Store freigeschaltet werden. Der jeweilige Shopbetreiber wickelt Zahlungen nach seinen eigenen Datenschutzbedingungen ab. Das Spiel erhebt keine Zahlungskartendaten. Der Shop kann Kauf- und Kontoinformationen unabhängig verarbeiten.
+Das gesamte Spiel einschließlich der Missionen I–VI und des freien Tals ist kostenlos und enthält weder Werbung noch In-App-Käufe. Das freie Tal bietet drei lokale Speicherplätze sowie Produktionsketten für Fisch, Stein, Holzkohle, Malz und Bier. Spielstände und Ressourcen bleiben wie oben beschrieben auf deinem Gerät. Das Spiel erhebt keine Kauf- oder Zahlungsdaten.
 
 ## 4. Weitergabe und Sicherheit
 

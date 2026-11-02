@@ -16,6 +16,8 @@ Każdy przewożony ładunek widać na wozie. Możesz sprawdzić jego cel oraz pr
 
 Kontrakty dla zamku to krótkie zadania na około 5–12 minut. Dowoź zamówione towary przed terminem i zdobywaj pieczęcie za sprawne wykonanie zlecenia. Wolisz bez presji czasu? W wolnej dolinie rozwijasz sieć transportową we własnym tempie.
 
+Wolna dolina to spokojny tryb budowania miasta z trzema niezależnymi slotami zapisu. Rozwijaj osadę przez kolejne rangi — od Osady przez Wieś targową, Miasteczko, Miasto i Gród aż po Stolicę. Odblokuj rybaka, kamieniołom (kamień do bruku i kamiennych mostów), wypalarnię węgla drzewnego, słodownię i browar. Każdy łańcuch wymaga rzeczywistych dostaw wozami.
+
 Pięć najważniejszych cech:
 - Przyczyna każdego przestoju dostępna jednym dotknięciem, z możliwością sprawdzenia łańcucha dostaw.
 - Widoczny ładunek wozów, kierunek przejazdu i szacowany czas dotarcia.
@@ -23,7 +25,7 @@ Pięć najważniejszych cech:
 - Kontrakty na 5–12 minut oraz swobodna gra bez terminu dostawy.
 - Logistyka drewna, desek, zboża, mąki i chleba — bez magicznego przenoszenia towarów.
 
-Początek gry jest darmowy: misje 1–3 oraz mała dolina do swobodnej gry. Pozostałą zawartość odblokowuje jeden zakup pełnej wersji. Bez reklam, energii, płatnych przewag i przymusowego oczekiwania na odnowienie zasobów. Postępy zapisują się lokalnie na urządzeniu.
+Wszystkie sześć misji (I–VI) i Wolna dolina są darmowe. Bez reklam, zakupów w aplikacji, systemu energii, płatnych przewag i sztucznego oczekiwania. Postępy zapisują się lokalnie na urządzeniu.
 
 ## Słowa kluczowe — materiał do ASO (Google Play nie ma osobnego pola keywords)
 średniowieczna strategia, logistyka, szlaki handlowe, transport, wozy, dostawy, budowa dróg, mosty, ekonomia, kontrakty

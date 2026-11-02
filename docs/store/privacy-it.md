@@ -14,9 +14,9 @@ I progressi, lo stato della mappa, le risorse e i dati dei salvataggi sono memor
 
 Puoi eliminare i salvataggi locali cancellando i dati dell'app o rimuovendola dal dispositivo. La sola rimozione dell'app mantenendone i dati può lasciarli intatti. Gli eventuali backup del sistema operativo sono regolati dalle impostazioni del dispositivo e dalle condizioni del fornitore del sistema operativo.
 
-## 3. Acquisto unico della versione completa
+## 3. Gioco gratuito senza pubblicità né acquisti in-app
 
-È possibile sbloccare contenuti aggiuntivi con un acquisto unico su Google Play o App Store. Il gestore dello store pertinente gestisce le transazioni di pagamento secondo la propria informativa sulla privacy. Il gioco non raccoglie i dati delle carte di pagamento. Lo store può trattare autonomamente informazioni sull'acquisto e sull'account.
+L'intero gioco, comprese le missioni I–VI e la Valle libera, è gratuito e non include pubblicità né acquisti in-app. La Valle libera offre tre slot di salvataggio locali e filiere produttive di pesce, pietra, carbone di legna, malto e birra. I salvataggi e le risorse restano sul dispositivo come descritto sopra. Il gioco non raccoglie dati di acquisto o pagamento.
 
 ## 4. Condivisione e sicurezza
 

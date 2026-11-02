@@ -19,7 +19,9 @@ Każdy załadowany wóz pokazuje przewożony towar. Sprawdzisz również kierune
 
 Kontrakty na 5–12 minut wymagają dostarczenia określonej ilości dóbr do zamku. Za sprawną realizację otrzymujesz pieczęcie. Jeśli wolisz spokojne planowanie, wybierz wolną dolinę bez terminu wykonania zlecenia.
 
-Pierwsze trzy misje i mała dolina są darmowe. Pełną wersję odblokowujesz jednym zakupem — bez subskrypcji, reklam, systemu energii czy płatnych przewag. Zapisy gry pozostają na Twoim urządzeniu.
+Wolna dolina to spokojny tryb rozbudowy miasta z trzema osobnymi slotami zapisu. Awansuj od Osady przez Wieś targową, Miasteczko, Miasto i Gród aż po Stolicę. Odblokuj rybaka, kamieniołom (kamień do bruku i kamiennych mostów), wypalarnię węgla drzewnego, słodownię i browar. Wszystkie towary nadal trzeba dowieźć wozami.
+
+Wszystkie sześć misji (I–VI) oraz Wolna dolina są darmowe — bez reklam, zakupów w aplikacji, subskrypcji, systemu energii i płatnych przewag. Zapisy gry pozostają na Twoim urządzeniu.
 
 Marchia to średniowieczna strategia o szlakach, dostawach i znajdowaniu przyczyn przestojów. Liczy się nie liczba budynków, lecz to, czy towary naprawdę docierają do celu.
 

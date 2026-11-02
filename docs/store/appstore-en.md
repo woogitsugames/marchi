@@ -19,7 +19,9 @@ Each loaded wagon visibly carries its goods. You can also check where it's headi
 
 5–12 minute contracts challenge you to deliver specified goods to the castle before the deadline. Earn seals for efficient deliveries. For a more relaxed session, choose the free valley and plan routes without a contract deadline.
 
-Missions 1–3 and a small sandbox valley are free. Unlock the full version with one purchase — no subscription, ads, energy meter or paid advantages. Game saves remain on your device.
+Free Valley is a relaxed town-building mode with three separate save slots. Grow your settlement through ranks from a hamlet to a capital. Unlock fishing, quarry stone for cobbled roads and stone bridges, burn charcoal, produce malt and brew beer — while keeping every chain supplied by wagons.
+
+All six missions (I–VI) and Free Valley are free, with no ads, in-app purchases, subscriptions, energy meter or paid advantages. Game saves remain on your device.
 
 Marchia is a medieval logistics strategy game about routes, deliveries and finding the causes of stalls. What matters isn't how many buildings you have, but whether the goods actually arrive.
 

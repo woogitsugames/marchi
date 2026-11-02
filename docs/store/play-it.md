@@ -16,6 +16,8 @@ Il carico è visibile su ogni carro carico. Controlla la destinazione e il tempo
 
 I contratti del castello sono brevi missioni pensate per partite di 5–12 minuti. Consegna le merci richieste entro la scadenza e guadagna sigilli lavorando con efficienza. Preferisci un ritmo più tranquillo? Costruisci liberamente la tua rete di trasporto in una valle senza scadenze di contratto.
 
+La Valle libera è una modalità rilassante di costruzione della città con tre slot di salvataggio indipendenti. Fai crescere l'insediamento attraverso vari ranghi fino alla capitale. Sblocca pesca, cave per pietre destinate a selciati e ponti, produzione di carbone di legna, maltazione e birrificazione. Ogni filiera richiede vere consegne con i carri.
+
 Cinque caratteristiche principali:
 - Spiegazioni con un tocco degli arresti di edifici e carri, inclusa la catena delle cause.
 - Carichi visibili sui carri, destinazioni e tempi di arrivo previsti.
@@ -23,7 +25,7 @@ Cinque caratteristiche principali:
 - Contratti di 5–12 minuti e una valle libera senza scadenze.
 - Consegne fisiche di tronchi, assi, grano, farina e pane: le merci non si teletrasportano.
 
-Inizia gratis con le missioni 1–3 e una piccola valle libera. Un acquisto unico sblocca la versione completa. Niente pubblicità, sistemi di energia, potenziamenti a pagamento per vincere o attese artificiali di ricarica. I progressi sono salvati localmente sul dispositivo.
+Tutte e sei le missioni (I–VI) e la Valle libera sono gratuite. Niente pubblicità, acquisti in-app, sistemi di energia, vantaggi a pagamento o attese artificiali. I progressi restano salvati localmente sul dispositivo.
 
 ## Parole chiave — riferimento ASO (Google Play non ha un campo dedicato)
 logistica medievale, strategia, carri, consegne, catene di approvvigionamento, costruzione strade, ponti, rotte commerciali, contratti, gioco economico

@@ -16,6 +16,8 @@ Le chargement est visible sur chaque chariot chargé. Consultez sa destination e
 
 Les contrats du château sont de courtes missions conçues pour des parties de 5 à 12 minutes. Livrez les marchandises demandées avant l’échéance et gagnez des sceaux pour votre efficacité. Envie d’un rythme plus calme ? Construisez librement votre réseau dans une vallée sans échéance de contrat.
 
+La Vallée libre est un mode paisible de construction de ville avec trois emplacements de sauvegarde indépendants. Faites évoluer votre colonie par rangs jusqu'à devenir une capitale. Débloquez la pêche, les carrières de pierre pour les pavés et les ponts, la fabrication de charbon de bois, la malterie et la brasserie. Chaque chaîne dépend toujours des livraisons réelles par chariot.
+
 Cinq points clés :
 - Explication en un geste des arrêts des bâtiments et chariots, avec leur chaîne de causes.
 - Chargements visibles, destinations et heures d’arrivée estimées.
@@ -23,7 +25,7 @@ Cinq points clés :
 - Contrats de 5 à 12 minutes et vallée ouverte sans échéance.
 - Livraisons physiques de bûches, planches, grain, farine et pain, sans téléportation instantanée.
 
-Commencez gratuitement avec les missions 1 à 3 et une petite vallée libre. Un achat unique débloque la version complète. Sans publicité, système d’énergie, amélioration payante donnant un avantage ni attente artificielle de recharge. La progression est enregistrée localement sur votre appareil.
+Les six missions (I–VI) et la Vallée libre sont gratuites. Sans publicité, achats intégrés, système d'énergie, avantages payants ni attentes artificielles. Votre progression est sauvegardée localement sur votre appareil.
 
 ## Mots-clés — référence ASO (Google Play ne propose pas de champ dédié)
 logistique médiévale, stratégie, chariots, livraisons, chaînes d’approvisionnement, routes, ponts, commerce, contrats, jeu économique

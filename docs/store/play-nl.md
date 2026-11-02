@@ -16,6 +16,8 @@ Op elke geladen wagen zie je de vracht. Bekijk de bestemming en verwachte levert
 
 Kasteelcontracten zijn korte missies voor sessies van 5–12 minuten. Lever de gevraagde goederen op tijd en verdien zegels voor efficiënt werk. Liever rustiger spelen? Bouw vrij aan je vervoersnetwerk in een vallei zonder deadline.
 
+De vrije vallei is een ontspannen stedenbouwmodus met drie afzonderlijke opslagslots. Laat je nederzetting via verschillende rangen uitgroeien tot een hoofdstad. Ontgrendel visserij, steengroeven voor bestrating en stenen bruggen, houtskoolproductie, mouterijen en brouwerijen. Elke productieketen vraagt nog steeds om echte leveringen per wagen.
+
 Vijf kenmerken:
 - Met één tik uitleg over stilstaande gebouwen en wagens, inclusief de oorzakenketen.
 - Zichtbare vracht, bestemmingen en verwachte aankomsttijden van wagens.
@@ -23,7 +25,7 @@ Vijf kenmerken:
 - Contracten van 5–12 minuten en een vrije vallei zonder deadline.
 - Echte leveringen van boomstammen, planken, graan, meel en brood: goederen teleporteren niet.
 
-Begin gratis met missies 1–3 en een kleine vrije vallei. Met één aankoop ontgrendel je de volledige versie. Geen advertenties, energiesystemen, betaalde voordelen of kunstmatige wachttijden voor aanvulling. De voortgang wordt lokaal op je apparaat opgeslagen.
+Alle zes missies (I–VI) en de vrije vallei zijn gratis. Geen advertenties, in-app-aankopen, energiesystemen, betaalde voordelen of kunstmatige wachttijden. Je voortgang wordt lokaal op je apparaat opgeslagen.
 
 ## Trefwoorden — ASO-referentie (Google Play heeft geen apart trefwoordenveld)
 middeleeuwse logistiek, strategie, wagens, leveringen, bevoorradingsketen, wegenbouw, bruggen, handelsroutes, contracten, economisch spel
