@@ -40,6 +40,13 @@ const SCENES = [
   { id: 'end', q: 'play=m1&bot=1&ff=900&speed=0' },
   { id: 'tut', q: 'play=m1&tut=1&speed=0' },
   { id: 'left', q: 'play=m1&bot=1&ff=170&speed=0', act: 'left' },
+  { id: 'open', q: 'play=m1&speed=0', act: 'opening' },
+  { id: 'deadend', q: 'play=m1&speed=0', act: 'deadend' },
+  { id: 'end-ar', q: 'play=m1&bot=1&ff=900&speed=0&lang=ar' },
+  { id: 'tutnote', q: 'play=m1&tut=1&speed=0', act: 'tutnote' },
+  { id: 'rank', q: 'play=sandbox&speed=0', act: 'rank' },
+  { id: 'settings', q: 'play=m1&bot=1&ff=170&speed=0', act: 'settings' },
+  { id: 'gamemenu', q: 'play=m1&bot=1&ff=170&speed=0', act: 'pause' },
 ];
 const PLAN = [
   ['m1', 'p412'], ['m1', 'l915'], ['m1', 'f904'], ['m1', 'n360'], ['m1', 'flip'], ['m1', 'flex'],
@@ -50,6 +57,9 @@ const PLAN = [
   ['m9', 'p412'], ['sandbox', 'p412'], ['sandbox', 'l915'], ['sandbox', 'flip'], ['market', 'p412'], ['build', 'p412'], ['build', 'l915'],
   ['wagon', 'p412'], ['pause', 'p412'], ['pause', 'flip'], ['menu', 'flip'], ['menu', 'p412'], ['end', 'p412'], ['tut', 'p412'], ['tut', 'l915'],
   ['left', 'l915'], ['left', 'p412'],
+  ['open', 'p412'], ['open', 'l915'], ['deadend', 'p412'], ['deadend', 'l915'], ['end', 'l915'], ['end', 'n360'], ['end-ar', 'p412'],
+  ['gamemenu', 'l915'], ['tut', 'n360'], ['tutnote', 'p412'], ['tutnote', 'l915'], ['tutnote', 'n360'],
+  ['rank', 'p412'], ['settings', 'p412'], ['open', 'n360'], ['open', 'flip'], ['end', 'flip'], ['deadend', 'f904'], ['m7', 'flip'],
 ];
 
 async function act(page, kind) {
@@ -59,6 +69,11 @@ async function act(page, kind) {
       if (k === "worst") { const e = document.querySelector(".stall-eye"); if (e) e.click(); else A.go("building", A.world.state.buildings.find((b) => b.type === "mill").id, true); }
     if (k === 'castle') A.go('building', A.world.state.mission.contract.castle, true);
     if (k === 'pause') { A.world.state.tick = 7400; A.openGameMenu(); }
+    if (k === 'opening') { A.debugStart = false; A.newGame('m1'); }
+    if (k === 'deadend') { A.world.state.coins = 0; A.checkDeadEnd(); }
+    if (k === 'tutnote') document.querySelector('.letter [data-a="start"]')?.click();
+    if (k === 'rank') window.__marchia.rankUp(1);
+    if (k === 'settings') { A.openGameMenu(); document.querySelector('.sheet [data-a="settings"]')?.click(); }
     if (k === 'left') { A.prefs.leftHanded = true; A.applyHand(); }
   }, kind);
 }
@@ -77,6 +92,7 @@ function measure() {
     if (!vis(e) || e.tagName === 'svg' || e.closest('svg')) continue;
     const cs = getComputedStyle(e);
     if (cs.display === 'inline') continue;
+    if (cs.clipPath === 'inset(50%)') continue; // visually hidden text kept for screen readers
     if (e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && cs.overflowX !== 'auto') clip.push(`${nm(e)} ${e.scrollWidth}>${e.clientWidth}`);
     const r = e.getBoundingClientRect();
     if ((r.right > innerWidth + 1 || r.left < -1) && !e.closest('.bs-cards')) off.push(`${nm(e)} ${Math.round(r.left)}..${Math.round(r.right)}`);
@@ -97,7 +113,7 @@ for (const [sid, vid] of PLAN) {
   page.on('pageerror', (e) => errs.push(String(e)));
   if (v.hinge) await page.addInitScript((hg) => { window.__marchiaFold = { state: 'HALF_OPENED', orientation: 'HORIZONTAL', x: 0, y: hg.y, w: 904, h: hg.h }; }, v.hinge);
   const lang = /lang=/.test(s.q) ? '' : '&lang=pl';
-  await page.goto(`${base}?${s.q}${s.q ? '&' : ''}${LOW}${lang}`, { waitUntil: 'load' });
+  await page.goto(`${base}?${s.q}${s.q ? '&' : ''}${LOW}${lang}&debug=1`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__marchia?.ready, null, { timeout: 60000 });
   if (v.hinge) await page.evaluate(() => window.dispatchEvent(new Event('marchia:fold')));
   await page.waitForTimeout(1500);

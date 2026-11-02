@@ -10,7 +10,6 @@ import { findPath, suggestConnection, type RoadSuggestion, type World } from '..
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, h } from './dom';
 import type { Tool } from './hud';
-import { iconSvg } from './icons';
 
 export type TutorialResult = 'skipped' | 'done';
 
@@ -139,7 +138,7 @@ export class Tutorial {
     this.skipBtn = h('button.tut-skip', { type: 'button' });
     this.skipBtn.addEventListener('click', () => this.end('skipped'));
     const note = h('div.tut-note', null,
-      h('div.tut-head', null, h('span.tut-seal', { html: iconSvg('seal', 20) }), this.noteFrom, this.skipBtn),
+      h('div.tut-head', null, h('i.tut-seal.kseal.on', { 'aria-hidden': 'true' }), this.noteFrom, this.skipBtn),
       this.noteText);
     note.style.clipPath = deckle('bottom', 4127, 5, 22);
     this.noteWrap = h('div.tut-note-wrap', { role: 'note' }, note);

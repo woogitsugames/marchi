@@ -552,11 +552,11 @@ body.is-side .sheet-grip::before { display: none; }
 .letter .l-kicker { font-size: 13px; letter-spacing: .1em; font-variant: small-caps; text-transform: lowercase; color: var(--ink-soft); font-weight: 500; }
 .letter h2 { margin: 2px 0 8px; font-family: var(--font-head); font-weight: 700; font-size: 40px; line-height: 1; }
 .letter p { margin: 0 0 12px; font-size: 17px; }
-.big-seal { position: absolute; top: -28px; inset-inline-end: 22px; color: var(--clay); width: 72px; height: 72px; transform: rotate(8deg); }
-.big-seal.broken { color: var(--iron); clip-path: polygon(0 0, 100% 0, 100% 38%, 62% 52%, 70% 100%, 0 100%); }
+/* the castle's wax sits inside the frame's top corner (D-53), the title keeps clear of it */
+.letter .l-seal { position: absolute; top: 30px; inset-inline-end: 34px; width: 44px; height: 44px; transform: rotate(8deg); filter: drop-shadow(0 1px 1px rgb(30 22 14 / .35)); }
+.letter .l-kicker, .letter h2 { padding-inline-end: 52px; }
 .seals { display: flex; gap: 10px; margin: 10px 0 16px; align-items: center; }
-.seals .s { width: 52px; height: 52px; color: var(--clay); }
-.seals .s.off { color: rgb(74 72 67 / .28); }
+.seals .s { width: 44px; height: 44px; }
 .seals .s-label { font-size: 15px; font-weight: 700; margin-inline-start: 4px; }
 .letter .kv { margin-bottom: 18px; }
 .letter .actions { display: flex; gap: 8px; }
@@ -579,10 +579,8 @@ section.sheet:focus { outline: none; }
   .letter .l-body .l-sign { margin-bottom: 8px; }
   .letter .kv { margin-bottom: 12px; gap: 2px 14px; }
   .seals { margin: 4px 0 8px; }
-  .seals .s { width: 40px; height: 40px; }
-  .seals .s svg { width: 40px; height: 40px; }
-  .big-seal { width: 56px; height: 56px; top: -22px; }
-  .big-seal svg { width: 56px; height: 56px; }
+  .seals .s { width: 34px; height: 34px; }
+  .letter .l-seal { top: 26px; inset-inline-end: 30px; width: 36px; height: 36px; }
 }
 
 /* ---------------------------------------------------------------- perf HUD */
@@ -766,21 +764,22 @@ bdi { unicode-bidi: isolate; }
 @keyframes tut-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .tut-note {
   position: relative;
-  padding: 2px 12px 16px;
-  padding-inline-start: 14px;
-  background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
-  border-inline-start: 3px solid var(--clay);
+  padding: 6px 14px 16px;
+  border-style: solid; border-width: 0;
+  border-image-source: url("/assets/ui/kit/panel@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
+  border-image-slice: 15% 10% fill; border-image-width: 12px; border-image-repeat: stretch;
   hyphens: auto;
   overflow-wrap: anywhere;
 }
 .tut-head { display: flex; align-items: center; gap: 6px; min-height: 40px; }
-.tut-seal { color: var(--clay); width: 20px; height: 20px; flex: none; }
+.tut-seal { width: 24px; height: 24px; flex: none; }
 .tut-from {
   flex: 1; min-width: 0;
   font-family: var(--font-head); font-weight: 600; font-size: 19px; line-height: 1; color: var(--ink);
 }
 .tut-skip {
-  min-height: 44px; min-width: 48px;
+  min-height: 48px; min-width: 48px;
   margin-inline-end: -8px; padding: 0 8px;
   font-size: 13px; font-weight: 700; color: var(--ink-soft);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
@@ -874,8 +873,8 @@ bdi { unicode-bidi: isolate; }
 .rank-letter .rl-unlocks { display: flex; gap: 6px; align-items: flex-start; font-weight: 700; margin: 0; }
 .rank-letter .rl-unlocks svg { color: var(--clay); margin-top: 1px; }
 .rl-seal {
-  position: absolute; top: -14px; inset-inline-end: 14px; width: 56px; height: 56px;
-  color: var(--clay); filter: drop-shadow(1px 1px 0 rgb(43 38 32 / .45));
+  position: absolute; top: 32px; inset-inline-end: 32px; width: 36px; height: 36px;
+  filter: drop-shadow(0 1px 1px rgb(30 22 14 / .35));
   animation: rl-stamp 120ms var(--ease) 120ms both;
 }
 @keyframes rl-stamp { from { opacity: 0; transform: scale(1.16) rotate(8deg); } to { opacity: 1; transform: rotate(8deg); } }
@@ -1203,9 +1202,8 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .slot-row.is-asking { padding-inline-end: 10px; }
 
 /* contract pace (F10): waybill forecast under the clock, castle-card pace rows; shared input (F3) */
-.pace-seals { display: inline-flex; gap: 1px; flex: none; }
-.pace-seals i { display: inline-grid; color: rgb(74 72 67 / .35); }
-.pace-seals i.on { color: var(--clay); }
+.pace-seals { display: inline-flex; gap: 2px; flex: none; }
+.pace-seals .kseal { width: 20px; height: 20px; }
 .pace-fc { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
 .pace-fc.warn { color: #6e3520; }
 .pace-fc.late { color: var(--clay); }
@@ -1239,7 +1237,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 }
 
 .k-panel, .wb-panel, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
-.kbar, .kbar > i, .seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
+.kbar > i, button.seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
   border-style: solid;
   border-width: 0;
   border-image-repeat: stretch;
@@ -1262,7 +1260,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   border-image-slice: 20.45% 7.5% fill;
   border-image-width: 9px 12px;
 }
-.seg.is-on::before {
+button.seg.is-on::before {
   border-image-source: url("/assets/ui/kit/segment-active@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/segment-active@2x.png") 2x, url("/assets/ui/kit/segment-active@3x.png") 3x);
   border-image-slice: 20.45% 22.5% fill;
@@ -1280,17 +1278,9 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   border-image-slice: 25% 16.7% fill;
   border-image-width: 10px 14px;
 }
-.kbar {
-  border-image-source: url("/assets/ui/kit/progress-track@2x.png");
-  border-image-source: image-set(url("/assets/ui/kit/progress-track@2x.png") 2x, url("/assets/ui/kit/progress-track@3x.png") 3x);
-  border-image-slice: 25% 5% fill;
-  border-image-width: 2px 6px;
-}
 .kbar > i {
   border-image-source: url("/assets/ui/kit/progress-fill@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/progress-fill@2x.png") 2x, url("/assets/ui/kit/progress-fill@3x.png") 3x);
-  border-image-slice: 25% 5% fill;
-  border-image-width: 2px 6px;
 }
 .tool {
   border-image-source: url("/assets/ui/kit/card-normal@2x.png");
@@ -1402,17 +1392,17 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
   display: grid;
   grid-template-columns: calc(10px + .2224 * var(--m)) calc(.2941 * var(--m)) calc(.2942 * var(--m)) calc(10px + .1893 * var(--m));
 }
-.seg {
+button.seg {
   position: relative; isolation: isolate;
   min-width: 0; height: 48px;
   display: grid; place-items: center;
   font-size: 18px; font-weight: 700;
   color: #efe0bd;
 }
-.seg > span { display: grid; place-items: center; transition: transform 60ms linear; }
-.seg:active > span { transform: translateY(1px); }
-.seg.is-on { color: var(--ink); }
-.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; inset-inline: 0; z-index: -1; }
+button.seg > span { display: grid; place-items: center; transition: transform 60ms linear; }
+button.seg:active > span { transform: translateY(1px); }
+button.seg.is-on { color: var(--ink); }
+button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; inset-inline: 0; z-index: -1; }
 .rail-hint { display: none; }
 
 /* contract and valley panels */
@@ -1433,17 +1423,17 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
   position: relative;
   margin-top: -8px;
   margin-inline: 10px;
-  padding-block: 14px 8px; padding-inline: 12px;
+  padding-block: 10px 4px; padding-inline: 10px;
   color: var(--ink);
   filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
 }
-.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; flex-wrap: wrap; }
+.wb-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; flex-wrap: wrap; }
 .wb-seals { display: inline-flex; gap: 4px; }
 .wb-seals.is-dim { opacity: .55; }
-.kseal { display: inline-block; width: 30px; height: 30px; flex: none; }
+.kseal { display: inline-block; width: 28px; height: 28px; flex: none; }
 .snow-pill {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 34px; padding-block: 3px; padding-inline: 12px 14px;
+  min-height: 32px; padding-block: 2px; padding-inline: 12px 14px;
   color: #eef0ee; font-size: 15px; white-space: nowrap;
 }
 .snow-pill svg { color: #dfe8ef; }
@@ -1451,21 +1441,39 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
 .snow-pill.late { color: #ffd9c8; }
 .snow-pill.late bdi { color: #ffc2a8; }
 .wb-line {
-  display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding-inline-end: 6px;
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding-inline-end: 4px;
   min-height: 48px; cursor: pointer;
 }
-.wb-gi { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
+.wb-gi { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
   background: radial-gradient(circle, #efe0bf 0 60%, var(--brass) 62% 70%, transparent 72%); }
-.kbar { position: relative; display: block; height: 10px; }
-.kbar > i { position: absolute; inset-block: 0; inset-inline-start: 0; display: block; min-width: 12px; transition: width var(--t-mid) var(--ease); }
+/* progress (D-53): the track is a groove engraved into the parchment — a shade darker than the paper, a dark
+   lip on top and a light one below, brass studs at the ends; the kit's slate track sprite read as a black tube
+   at 0, so only the antique-brass fill sprite is used. Quarter marks are faint cuts, not bars. */
+.kbar {
+  --groove: rgb(120 90 46 / .16);
+  position: relative; display: block; height: 8px;
+  background: linear-gradient(180deg, rgb(92 66 30 / .26), var(--groove) 45%, rgb(255 246 222 / .10));
+  box-shadow: inset 0 1px 1px rgb(74 52 22 / .38), inset 0 0 0 1px rgb(107 81 40 / .28), 0 1px 0 rgb(255 248 230 / .55);
+}
+.kbar::before {
+  /* brass studs closing the groove */
+  content: ''; position: absolute; inset-block: -1px; inset-inline: 0; pointer-events: none;
+  background: linear-gradient(90deg, var(--brass) 0 3px, transparent 3px calc(100% - 3px), var(--brass) calc(100% - 3px));
+  opacity: .7;
+}
+.kbar > i {
+  position: absolute; inset-block: 0; inset-inline-start: 0; display: block; min-width: 8px; z-index: 1;
+  border-image-slice: 25% 5% fill; border-image-width: 2px 4px;
+  transition: width var(--t-mid) var(--ease);
+}
 .kbar > i[style^='width:0.0%'] { display: none; }
 .kbar::after {
-  /* quarter marks engraved into the track */
-  content: ''; position: absolute; inset-block: -2px; inset-inline: 6px;
-  background: linear-gradient(90deg, transparent calc(25% - .75px), rgb(30 24 18 / .75) calc(25% - .75px) calc(25% + .75px), transparent calc(25% + .75px) calc(50% - .75px),
-    rgb(30 24 18 / .75) calc(50% - .75px) calc(50% + .75px), transparent calc(50% + .75px) calc(75% - .75px), rgb(30 24 18 / .75) calc(75% - .75px) calc(75% + .75px), transparent calc(75% + .75px));
+  /* quarter marks: thin cuts in the groove, on top of the fill too */
+  content: ''; position: absolute; inset-block: 1px; inset-inline: 3px; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, transparent calc(25% - .5px), rgb(74 52 22 / .30) calc(25% - .5px) calc(25% + .5px), transparent calc(25% + .5px) calc(50% - .5px),
+    rgb(74 52 22 / .30) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px) calc(75% - .5px), rgb(74 52 22 / .30) calc(75% - .5px) calc(75% + .5px), transparent calc(75% + .5px));
 }
-.wb-line .count { font-size: 18px; font-weight: 700; min-width: 48px; text-align: end; }
+.wb-line .count { font-size: 17px; font-weight: 700; min-width: 48px; text-align: end; }
 .wb-line .count small { font-weight: 400; font-size: 15px; color: var(--ink-soft); }
 .wb-line.done .count { color: var(--meadow); }
 /* pace forecast rows (D-38): full 48 px targets */
@@ -1497,7 +1505,7 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
 .plaque { cursor: pointer; padding-top: 12px; }
 .plaque .pl-next { font-size: 13px; font-weight: 700; color: var(--wine); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
 .plaque .pl-req li { grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 2px; padding-block: 3px; font-size: 14px; }
-.plaque .pl-req .pl-bar { grid-column: 1 / -1; height: 10px; background: none; }
+.plaque .pl-req .pl-bar { grid-column: 1 / -1; height: 8px; }
 .plaque .pl-req .pl-bar > i, .plaque .pl-req li.is-met .pl-bar > i { background: none; }
 .plaque .pl-l { min-width: 0; white-space: normal; }
 .plaque .pl-req li.is-met .pl-l { color: var(--meadow); font-weight: 700; }
@@ -1590,7 +1598,7 @@ body.is-landscape .hud-top, body.is-split .hud-top {
   grid-template-columns: auto auto minmax(0, 1fr) auto auto;
   grid-template-areas: "menu contract . chips speed";
 }
-body.is-landscape .waybill-wrap, body.is-split .waybill-wrap { width: 330px; }
+body.is-landscape .waybill-wrap:not(.is-collapsed), body.is-split .waybill-wrap:not(.is-collapsed) { width: 330px; }
 body.is-landscape .chips, body.is-split .chips { flex-wrap: nowrap; }
 body.is-landscape .rail, body.is-split .rail { flex-direction: row-reverse; align-items: flex-end; justify-content: space-between; gap: 16px; }
 body.is-landscape.left-handed .rail, body.is-split.left-handed .rail { flex-direction: row; }
@@ -1598,10 +1606,45 @@ body.is-landscape .stall-row, body.is-split .stall-row { flex: 0 1 520px; min-wi
 body.is-landscape .rail-tools, body.is-split .rail-tools { flex: 0 1 auto; justify-content: flex-start; margin-inline-end: auto; }
 body.is-landscape.left-handed .rail-tools, body.is-split.left-handed .rail-tools { margin-inline-end: 0; margin-inline-start: auto; }
 body.is-landscape .tool, body.is-split .tool { flex: 0 0 76px; }
-/* a short landscape screen: slimmer contract rows so the panel and the tools both fit */
-body.is-landscape .wb-head { min-height: 34px; }
-body.is-landscape .kseal { width: 26px; height: 26px; }
-@media (max-height: 380px) { body.is-landscape .ribbon { font-size: 19px; } }
+/* a short landscape screen (D-53): a compact contract card, ≤ 30 % of the width and about a third of the height.
+   Seals and the snow pill share one row, the goods sit side by side (icon, count, a slim bar under the count),
+   the pace forecast is one row (the supplier collapses to its good's icon; its words stay for screen readers).
+   Every row a finger can tap stays 48 px tall. */
+body.is-landscape .waybill-wrap:not(.is-collapsed) { width: 272px; }
+body.is-landscape .ribbon { font-size: 19px; padding-inline: 26px; }
+body.is-landscape .wb-panel { margin-inline: 8px; padding-block: 9px 2px; padding-inline: 11px; }
+body.is-landscape .wb-head { min-height: 30px; flex-wrap: nowrap; gap: 6px; }
+body.is-landscape .wb-seals { gap: 2px; }
+body.is-landscape .kseal { width: 24px; height: 24px; }
+body.is-landscape .snow-pill { min-height: 28px; padding-inline: 10px 12px; gap: 4px; font-size: 13px; }
+body.is-landscape .snow-pill svg { width: 15px; height: 15px; }
+body.is-landscape .snow-pill bdi { font-size: 16px; }
+body.is-landscape .wb-goods { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); column-gap: 8px; }
+body.is-landscape .wb-line {
+  grid-template-columns: 24px minmax(0, 1fr); grid-template-areas: "ic n" "ic bar";
+  column-gap: 5px; row-gap: 3px; align-content: center; padding-inline-end: 0;
+}
+body.is-landscape .wb-line .wb-gi { grid-area: ic; width: 24px; height: 24px; }
+body.is-landscape .wb-line .wb-gi svg { width: 18px; height: 18px; }
+body.is-landscape .wb-line .kbar { grid-area: bar; height: 6px; }
+body.is-landscape .wb-line .count { grid-area: n; min-width: 0; font-size: 16px; line-height: 1; }
+body.is-landscape .wb-line .count small { font-size: 13px; }
+body.is-landscape .wb-pace { display: flex; align-items: stretch; margin-top: 0; font-size: 13px; }
+body.is-landscape .wb-pace-eta { flex: 1 1 auto; min-width: 0; }
+body.is-landscape .wb-pace-sup { flex: none; min-width: 48px; justify-content: center; border-top: 0; border-inline-start: 1px solid rgb(74 72 67 / .2); }
+body.is-landscape .wb-pace-sup > span {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+body.is-landscape .wb-tr .tr-goods { gap: 10px; }
+/* later and finished tranches: head and goods / state in one 48 px row */
+body.is-landscape .wb-tr:is(.is-later, .is-done) { display: flex; align-items: center; gap: 8px; padding-block: 0; }
+body.is-landscape .wb-tr:is(.is-later, .is-done) .tr-h { flex: 1 1 auto; min-width: 0; font-size: 13px; }
+body.is-landscape .wb-tr:is(.is-later, .is-done) :is(.tr-goods, .tr-state) { flex: none; padding-inline-start: 0; }
+body.is-landscape .wb-tr.is-now .tr-h { min-height: 24px; }
+body.is-landscape .plaque { padding-block: 11px 6px; }
+body.is-landscape .plaque .pl-req li { padding-block: 1px; font-size: 13px; }
+body.is-landscape .plaque .pl-req .pl-bar { height: 6px; }
+body.is-landscape .pl-foot { margin-top: 2px; }
 
 /* narrow portrait (360 px, old Fold cover) */
 body.is-narrow .chip { font-size: 17px; padding-inline: 8px 14px; }
@@ -1752,9 +1795,9 @@ body.is-narrow .sheet-paper { border-image-width: 30px 32px; padding-inline: 14p
 body.is-mini .sheet-paper { border-image-width: 26px 28px; padding-block: 12px 10px; padding-inline: 12px; }
 body.is-mini .sheet-grip { height: 6px; }
 /* the end letter and the rank letter: the same frame, no torn edge */
-.letter { clip-path: none !important; background: none; padding-block: 44px 26px; padding-inline: 30px; }
+.letter { clip-path: none !important; background: none; padding-block: 44px 38px; padding-inline: 30px; }
 .letter::before { inset: 22px; }
-.rank-letter { clip-path: none !important; background: none; padding-block: 24px 26px; padding-inline: 26px 70px; }
+.rank-letter { clip-path: none !important; background: none; padding-block: 38px 36px; padding-inline: 30px 74px; }
 .rank-letter-wrap .float { filter: drop-shadow(0 3px 3px rgb(20 14 8 / .4)); }
 
 /* "Pokaż przyciski" (clear screen) on a stat plate */
@@ -1770,3 +1813,50 @@ body.is-mini .menu-strip {
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
 .thin-hint svg { flex: none; }
 .thin-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
+
+/* ---- buttons on the kit (D-53): one look in every sheet, letter, menu and note.
+   Secondary = the parchment card with its brass edge (the tool cards' sprites: normal / pressed / active /
+   hatched disabled); primary = wine wax in a dark wax rim. The oak button is gone. */
+.btn:not(.primary):not(.undo-btn) {
+  clip-path: none; background: none; color: var(--ink); font-weight: 600;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+  border-image-slice: 13.9% 15.6% fill; border-image-width: 10px;
+}
+.btn:not(.primary):not(.undo-btn)::before { display: none; }
+.btn:not(.primary):not(.undo-btn):active {
+  border-image-source: url("/assets/ui/kit/card-pressed@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-pressed@2x.png") 2x, url("/assets/ui/kit/card-pressed@3x.png") 3x);
+}
+.btn.is-on:not(.primary):not(.undo-btn) {
+  border-image-source: url("/assets/ui/kit/card-active@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-active@2x.png") 2x, url("/assets/ui/kit/card-active@3x.png") 3x);
+}
+.btn:not(.primary):not(.undo-btn):is([disabled], .is-disabled) {
+  opacity: .6;
+  border-image-source: url("/assets/ui/kit/card-disabled@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-disabled@2x.png") 2x, url("/assets/ui/kit/card-disabled@3x.png") 3x);
+}
+.btn.primary, .sheet .btn.primary, .letter .btn.primary {
+  --frame: #3e1013;
+  --fill: linear-gradient(180deg, #86282e, var(--wine) 48%, #5c171b);
+  color: #f3e5c4; font-weight: 600; text-shadow: 0 1px 0 rgb(43 10 12 / .6);
+  filter: drop-shadow(0 2px 1px rgb(30 22 14 / .35));
+}
+.btn.primary:active, .sheet .btn.primary:active, .letter .btn.primary:active { --fill: linear-gradient(180deg, #6a1c21, #561418); }
+.btn.primary:is([disabled], .is-disabled) {
+  opacity: .55;
+  --fill: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(243 229 196 / .16) 5px 6.5px), #6a4440;
+}
+/* the old dark plate behind a selected language / segment gives way to the active card; the wax diamond stays */
+.seg .btn.is-on, .lang-grid .btn.is-on { color: var(--ink); }
+/* a short landscape screen: the end letter (with its record and ledger) reads in two columns, so its
+   buttons stay on screen without scrolling (D-53) */
+@media (max-height: 500px) and (min-width: 640px) {
+  .letter-wrap:has(.letter .kv) { width: min(720px, calc(100vw - var(--safe-s) - var(--safe-e) - 2 * max(20px, 8vw))); }
+  .letter:has(.kv) { column-count: 2; column-gap: 28px; padding-block: 34px 30px; }
+  .letter:has(.kv) > * { break-inside: avoid; }
+  .letter:has(.kv) .kv { break-before: column; }
+  .letter:has(.kv) h2 { font-size: 28px; }
+}

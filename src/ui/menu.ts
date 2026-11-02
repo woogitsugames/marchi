@@ -427,7 +427,14 @@ function causesHtml(world: World): string {
   return `<div class="ledger"><div class="lg-h">${esc(t('contract.causes'))}</div><ol>${rows}</ol></div>`;
 }
 
-/** The sealed letter at the end of a contract. seals = stars(world) 0..3. */
+/**
+ * The castle's wax on a letter (D-53): the kit seal inside the frame's top corner, pressed (`seal-full`) for an
+ * opening or a won contract, bare (`seal-empty`) for a loss or a dead end. Decorative: the title says it.
+ */
+function letterSeal(pressed: boolean): string {
+  return `<i class="l-seal kseal${pressed ? ' on' : ''}" aria-hidden="true"></i>`;
+}
+
 /** An authored letter as HTML: one <p> per line, the closing "— name" line set as a signature. */
 export function letterHtml(text: string): string {
   return text.split('\n').filter((l) => l.trim()).map((l) =>
@@ -443,13 +450,13 @@ export function buildOpeningLetter(missionId: string, onClose: () => void): HTML
   const text = getContractLetter(missionId, 'opening');
   if (!text) return null;
   const letter = h('div.letter.l-opening' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'opening-title' });
-  letter.innerHTML = `
+  letter.innerHTML = `${letterSeal(true)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2 id="opening-title">${esc(missionTitle(missionId))}</h2>
     <div class="l-body">${letterHtml(text)}</div>
     <div class="actions"><button class="btn primary cf" data-a="start">${esc(t('letter.start'))}</button></div>`;
   letter.style.clipPath = deckle('bottom', 57, 6, 30);
-  const scrim = h('div.scrim.letter-scrim', null, h('div.letter-wrap', null, letter, h('span.big-seal', { html: iconSvg('seal', 72) })));
+  const scrim = h('div.scrim.letter-scrim', null, h('div.letter-wrap', null, letter));
   let closed = false;
   const close = (): void => {
     if (closed) return;
@@ -475,7 +482,7 @@ export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement
   const why = d.cost < 0
     ? esc(t('deadEnd.none'))
     : tHtml('deadEnd.text', { cost: fmtInt(d.cost), coins: fmtInt(d.coins), raise: fmtInt(d.raise) });
-  letter.innerHTML = `
+  letter.innerHTML = `${letterSeal(false)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2 id="deadend-title" dir="auto">${esc(t('deadEnd.title'))}</h2>
     <p dir="auto">${why}</p>
@@ -488,10 +495,10 @@ export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement
   letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
   letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);
   letter.querySelector('[data-a="watch"]')!.addEventListener('click', act.watch);
-  const seal = h('span.big-seal.broken', { html: iconSvg('seal', 72) });
-  return h('div.scrim.deadend-scrim', null, h('div.letter-wrap', null, letter, seal));
+  return h('div.scrim.deadend-scrim', null, h('div.letter-wrap', null, letter));
 }
 
+/** The sealed letter at the end of a contract. seals = stars(world) 0..3. */
 export function buildEndLetter(world: World, seals: number, act: EndActions): HTMLElement {
   const st = world.state;
   const won = st.mission.result === 'won';
@@ -500,11 +507,11 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
     `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: fmtRatio(Math.min(castle?.stock[g] ?? 0, c.need[g]), c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
   const def = MISSIONS[st.mission.id];
-  const sealRow = [0, 1, 2].map((i) => `<span class="s${i < seals ? '' : ' off'}">${iconSvg('seal', 52)}</span>`).join('');
+  const sealRow = [0, 1, 2].map((i) => `<i class="s kseal${i < seals ? ' on' : ''}"></i>`).join('');
   // the castellan's own words by seals (or the loss), the generic line for missions without letters
   const authored = getContractLetter(st.mission.id, won ? 'won' : 'lost', seals);
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
-  letter.innerHTML = `
+  letter.innerHTML = `${letterSeal(won)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2>${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
     ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
@@ -522,7 +529,5 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   letter.style.clipPath = deckle('bottom', 31, 6, 30);
   letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
   letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);
-  const seal = h('span.big-seal', { html: iconSvg('seal', 72) });
-  if (!won) seal.classList.add('broken');
-  return h('div.scrim', null, h('div.letter-wrap', null, letter, seal));
+  return h('div.scrim', null, h('div.letter-wrap', null, letter));
 }
