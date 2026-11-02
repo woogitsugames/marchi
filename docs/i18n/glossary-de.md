@@ -42,3 +42,16 @@ Der Eigenname „Marchia“ bleibt unverändert. Waren stehen als nackte Substan
 | ryby / fish | Fisch | Mass commodity, as with Stein, Holzkohle, Malz and Bier. |
 
 Counts use neutral labels where no noun inflects: `Warensorten {goods}`, `{n} verkauft`, `Kapazität`/`Platz für {n}`. Silber is a mass noun; rank and ledger numbers identify a single rank or ledger. Existing ICU-lite plurals remain unchanged. Tutorial tool names match the existing Weg label.
+
+## Round 06 — seasons and weather
+
+| Polski / English | de |
+| --- | --- |
+| wiosna / spring | Frühling |
+| lato / summer | Sommer |
+| jesień / autumn | Herbst |
+| zima / winter | Winter |
+| roztopy / thaw | Tauwetter |
+| jesienny jarmark / autumn fair | Herbstmarkt |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.
