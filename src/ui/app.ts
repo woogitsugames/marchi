@@ -204,7 +204,7 @@ export class App implements PanelNav {
     const play = this.params.get('play');
     if (isMissionKey(play)) {
       this.debugStart = this.params.get('tut') !== '1';
-      this.newGame(play);
+      this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
     } else {
       await this.showMenu();
@@ -877,6 +877,7 @@ export class App implements PanelNav {
     const ff = Number(p.get('ff') ?? 0);
     if (ff > 0) {
       const target = Math.min(ff * TICK_HZ, 60 * 60 * TICK_HZ);
+      this.lastSaveTick = Number.MAX_SAFE_INTEGER; // no autosaves of half-forwarded states
       while (this.world.state.tick < target && this.world.state.mission.result === 'running') this.loop.tickOnce();
       this.lastSaveTick = this.world.state.tick;
     }

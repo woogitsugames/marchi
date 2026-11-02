@@ -258,7 +258,9 @@ export function valleySheet(act: ValleyActions): SheetContent {
         <div class="slot-acts two"><button class="btn paper cf" data-a="keep">${esc(t('valley.keep'))}</button>
         <button class="btn primary cf" data-a="yes" data-slot="${v}">${esc(t(conf === 'delete' ? 'valley.yesDelete' : 'valley.yesFresh'))}</button></div>`;
     } else {
-      acts = `<div class="slot-acts"><button class="btn primary cf slot-play" data-a="play" data-slot="${v}">${esc(t('valley.play'))}</button>
+      // wax-clay only on the ledger played last (the one primary action); the others are oak
+      const latest = slots?.filter((x) => x.ok).reduce((m, x) => (x.savedAt > m.savedAt ? x : m)).slot === v;
+      acts = `<div class="slot-acts"><button class="btn${latest ? ' primary' : ''} cf slot-play" data-a="play" data-slot="${v}">${esc(t('valley.play'))}</button>
         <button class="btn paper cf slot-small" data-a="ask-fresh" data-slot="${v}">${esc(t('valley.fresh'))}</button>
         <button class="btn paper cf slot-small" data-a="ask-delete" data-slot="${v}">${esc(t('valley.delete'))}</button></div>`;
     }
