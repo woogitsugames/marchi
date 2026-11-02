@@ -42,17 +42,17 @@ const granaryLink = (w: World): Command => ({
 export const STRATEGIES: Record<Mission101112Id, readonly Strategy[]> = {
   m10: [
     { name: 'nic / competing workshops', after: 0, cmds: () => [] },
-    { name: 'czesciowa / woodcutter @2:30', after: 150, cmds: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }] },
-    { name: 'wlasciwa / woodcutter + 2 wagons @0:20', after: 20, cmds: (w) => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }, wagon(w), wagon(w)] },
+    { name: 'czesciowa / woodcutter @1:00', after: 60, cmds: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }] },
+    { name: 'wlasciwa / woodcutter + wagon @0:20', after: 20, cmds: (w) => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }, wagon(w)] },
   ],
   m11: [
     { name: 'nic / three wagons for a long route', after: 0, cmds: () => [] },
     { name: 'czesciowa / one wagon @5:00', after: 300, cmds: (w) => [wagon(w)] },
-    { name: 'wlasciwa / four wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w), wagon(w), wagon(w)] },
+    { name: 'wlasciwa / five wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w), wagon(w), wagon(w), wagon(w)] },
   ],
   m12: [
     { name: 'nic / granary remains full', after: 0, cmds: () => [] },
-    { name: 'czesciowa / one extra wagon @0:30', after: 30, cmds: (w) => [wagon(w)] },
+    { name: 'czesciowa / one extra wagon @2:00', after: 120, cmds: (w) => [wagon(w)] },
     { name: 'wlasciwa / connect granary + wagon @0:20', after: 20, cmds: (w) => [granaryLink(w), wagon(w)] },
   ],
 };
