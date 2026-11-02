@@ -4,7 +4,7 @@ import { AudioEngine } from '../audio/audio';
 import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
-  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
+  TICK_HZ, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
 } from '../sim/index';
@@ -15,7 +15,7 @@ import {
   saveGame, slotFor,
 } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
-import { bridgeA, stableId } from '../../tools/bot';
+import { botPlan, menuWorld } from '../game/menuScene';
 import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
@@ -212,13 +212,16 @@ export class App implements PanelNav {
       this.perfEl = h('div.perf.num');
       this.layers.overlay.append(this.perfEl);
     }
-    (window as unknown as { __marchia: unknown }).__marchia = {
+    // window.__marchia: `ready` always (smoke tests and screenshot scripts wait for it); the App handle and the
+    // screenshot helpers only for ?debug=1 or the Vite dev server, never in a release page (D-45)
+    const debugHandle = this.params.get('debug') === '1' || import.meta.env.DEV;
+    (window as unknown as { __marchia: unknown }).__marchia = debugHandle ? {
       app: this,
       findSteepDraft: () => this.findSteepDraft(),
       /** Screenshots: the rank-up letter without playing ten minutes. */
       rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
       ready: false,
-    };
+    } : { ready: false };
   }
 
   /**
@@ -253,9 +256,7 @@ export class App implements PanelNav {
     document.body.classList.add('mode-menu');
     document.body.classList.remove('mode-game');
     // live scene: mission 1 valley with a bridge already thrown over the river and wagons on it
-    const w = createWorld('m1');
-    applyCommand(w, bridgeA(w));
-    for (let i = 0; i < 2; i++) applyCommand(w, { t: 'buyWagon', stable: stableId(w) });
+    const w = menuWorld();
     this.setWorld(w);
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
     this.loop.speed = 1;
@@ -988,8 +989,7 @@ export class App implements PanelNav {
     this.hud = null; // no toasts for the scripted plan or while fast-forwarding
     if (p.get('bot') === '1') {
       const w = this.world;
-      const plan: Command[] = [bridgeA(w)];
-      for (let i = 0; i < 4; i++) plan.push({ t: 'buyWagon', stable: stableId(w) });
+      const plan: Command[] = botPlan(w);
       for (const c of plan) this.loop.enqueue(c);
       this.loop.flushCommands();
     }

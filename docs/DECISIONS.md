@@ -492,3 +492,12 @@ envelopes because it validates them through the save gate. State migrations (STA
 are untouched. Tests on `fake-indexeddb` (dev dependency): one `open` for many operations, metadata-only listing,
 snapshot at call time, v1 → v2 upgrade, legacy `auto` adoption. (decided)
 
+**D-45 — No tools code in the bundle; the debug handle only on request.** The menu backdrop (mission I with the bridge
+and two wagons) and the `?bot=1` plan used by screenshots moved from `tools/bot.ts` into `src/game/menuScene.ts`
+(`menuWorld`, `botPlan`, `bridgeA`, `stableId`, `polyline`); `tools/bot.ts` re-exports them, so tests and bots are
+unchanged and `src/ui/app.ts` imports nothing from `tools/`. `window.__marchia` always has `ready` (smoke tests and
+every screenshot script wait for it); the `App` handle, `findSteepDraft` and `rankUp` exist only with `?debug=1` or
+on the Vite dev server (`import.meta.env.DEV`, which the screenshot scripts use). `tools/store-shots.mjs` runs on
+`vite preview` (a production build) and now adds `debug=1`. Checked on a production preview: no params → keys
+`ready`; `?debug=1` → `app, findSteepDraft, rankUp, ready`; 0 console errors. (decided)
+
