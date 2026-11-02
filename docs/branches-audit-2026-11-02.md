@@ -138,7 +138,7 @@ Usunięcie zdalnej gałęzi zamyka też powiązany otwarty PR na GitHubie (jako 
 grupy A+B (uruchom w klonie repo):
 
 ```bash
-git push origin --delete <gałąź1> <gałąź2> …
+git push origin --delete task/20-store-graphics claude/hud-mockups <gałąź1> <gałąź2> …
 ```
 
 **Uwaga:** z sesji Claude usuwanie gałęzi jest zablokowane (proxy git zwraca 403 — zasada środowiska), więc
@@ -149,3 +149,6 @@ Gotowe polecenie dla grup A + B (zgoda właściciela 2026-11-02, **103 gałęzie
 ```bash
 git push origin --delete claude/backlog-fix-3 claude/gpt-integration-1 claude/gpt-integration-2 claude/hud-impl claude/hud-polish claude/m7-9-wire claude/s2-asset-pack claude/s2-integration claude/s2-missions claude/s2-replay claude/s2-save-hardening claude/s4-chains-ui claude/s4-wagon-spacing claude/s5-rtl claude/s6-polish claude/seasons-ux claude/seasons-wire claude/sim-fuzz-review claude/w-camera claude/w-dispatch claude/w-eventcard claude/w-events claude/w-hudp3 claude/w-m10ui claude/w-models claude/w-perf claude/w-readab claude/w-research claude/w-research2 claude/w-research3 claude/w-research4 claude/w-research5 claude/w-research6 claude/w-research7 claude/w-research8 claude/w-research9 claude/w-saves claude/w-simfix claude/w-terrain claude/w-trees docs/45-store-refresh-d21-d29-20261102 docs/playtest-why-stalled-30s docs/tutorial-m1-script-09-20261101 feat/16-stall-codex-20261101 feat/app-icon-v3-grenze-woodcut feat/m4-ice-proposal-12 feat/mission-design-m2-m3-04 feature/43-seasons-pure-proposal-20261102 gpt/05-store-listing gpt/15-mission-json gpt/17-contract-letters gpt/21-store-shots-zip03 gpt/24-a11y-audit-zip03 gpt/25-billing-design gpt/44-valley-events gpt/47-playtest-v2 gpt/48-i18n-06 gpt/49-missions-10-12 gpt/50-audio-binaries gpt/51-valley-chronicle gpt/52-sandbox-balance gpt/53-robustness-tests gpt/54-goods-codex gpt/55-ui-art-kit gpt/56-audio-files gpt/57-i18n-07 gpt/58-i18n-08 gpt/59-alert-sounds gpt/61-store-graphics gpt/62-store-copy gpt/balance-grid-26 gpt/i18n-ar gpt/i18n-de gpt/i18n-es gpt/i18n-fr gpt/i18n-hi gpt/i18n-it gpt/i18n-ja gpt/i18n-ko gpt/i18n-nl gpt/i18n-pending-05 gpt/i18n-pt_BR gpt/i18n-ru gpt/i18n-sv gpt/i18n-tr gpt/i18n-uk gpt/i18n-zh_Hans gpt/missions-7-9-42-20261102 gpt/task-18-cc0-recordings i18n/23-de-fr-20261101 review/10-i18n-complete-20261101 review/10-i18n-pl-en-20261101 task-46/cc0-audio-chains feat/44-valley-events-20261102 feat/mission-5-market-waves-13 feature/02-audio-module gpt/mission-5-market-waves-13 gpt/mission-6-tight-granary gpt/08-playtest-protocol-20261101 gpt/11-playtest-protocol gpt/07-realistic-recordings gpt/16-stall-codex gpt/06-app-icon-v2-20261101
 ```
+
+
+*Dopisane 2026-11-02 23:55 (decyzja właściciela):* `task/20-store-graphics` i `claude/hud-mockups` też do usunięcia (dodane do polecenia wyżej).
