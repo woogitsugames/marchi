@@ -45,3 +45,16 @@ Zilver, aanzien en de nieuwe goederen zijn niet-telbare hoeveelheden. Rang- en b
 Tellingen gebruiken waar nodig een label vóór de waarde (“Verkocht: {n}”, “{good}: {count}”), zodat ook
 vooraf opgemaakte getallen en verhoudingen correct blijven. Daarvoor is geen meervoudsblok nodig.
 De marktuitleg noemt expliciet dat de verzadiging elke tien seconden met één afneemt; niet de zilverprijs.
+
+## Round 06 — seasons and weather
+
+| Polski / English | nl |
+| --- | --- |
+| wiosna / spring | lente |
+| lato / summer | zomer |
+| jesień / autumn | herfst |
+| zima / winter | winter |
+| roztopy / thaw | dooi |
+| jesienny jarmark / autumn fair | herfstmarkt |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.
