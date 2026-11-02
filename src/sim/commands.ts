@@ -39,8 +39,12 @@ export type CommandError =
   | { k: 'NOT_NEAR_WATER' }
   /** A quarry needs high, rocky ground (hills, the ridge): QUARRY_MIN_HEIGHT above the water. */
   | { k: 'NOT_ON_ROCK' }
-  /** Free valley: cobbles / stone bridges also need stone lying in the granaries (or castle). */
-  | { k: 'NO_STONE'; need: number; have: number };
+  /**
+   * Free valley / roadStone missions: cobbles and stone bridges also need stone lying in the
+   * granaries (or castle). `incoming`: stone already on its way to them (wagon jobs); `atQuarry`:
+   * unreserved stone waiting at quarries; `quarries`: how many quarries exist (0 = none mines it).
+   */
+  | { k: 'NO_STONE'; need: number; have: number; incoming: number; atQuarry: number; quarries: number };
 
 /** `stone`: units of stone the command takes from the granaries (free valley roads), 0 otherwise. */
 export type CommandResult = { ok: true; cost: number; stone?: number } | { ok: false; err: CommandError };
@@ -88,7 +92,7 @@ export function validateRoad(world: World, cells: readonly number[], surface: Su
   const stone = roadStoneCost(world, cells, surface);
   if (stone > 0) {
     const have = stoneAvailable(world);
-    if (stone > have) return { ok: false, err: { k: 'NO_STONE', need: stone, have } };
+    if (stone > have) return { ok: false, err: { k: 'NO_STONE', need: stone, have, ...stoneOutlook(world) } };
     return { ok: true, cost, stone };
   }
   return { ok: true, cost };
@@ -119,6 +123,19 @@ export function stoneAvailable(world: World): number {
     if (b.type === 'warehouse' || b.type === 'castle') n += b.stock.stone - b.reservedOut.stone;
   }
   return n;
+}
+
+/**
+ * Where the missing building stone is (for NO_STONE): on its way to a granary / the castle, lying
+ * unreserved at a quarry, and how many quarries there are. Read-only.
+ */
+export function stoneOutlook(world: World): { incoming: number; atQuarry: number; quarries: number } {
+  let incoming = 0, atQuarry = 0, quarries = 0;
+  for (const b of world.state.buildings) {
+    if (b.type === 'warehouse' || b.type === 'castle') incoming += b.incoming.stone;
+    else if (b.type === 'quarry') { quarries++; atQuarry += b.stock.stone - b.reservedOut.stone; }
+  }
+  return { incoming, atQuarry, quarries };
 }
 
 /** Take `n` unreserved stone from the granaries (then the castle), lowest id first; it is consumed. */

@@ -366,7 +366,7 @@ export const en: FullDict = {
   'season.summer': 'Summer',
   'season.autumn': 'Autumn',
   'season.winter': 'Winter',
-  'season.when': '{season} · day {day}',
+  'season.when': '{season} · year {year}',
   'season.notice.season': '{season} begins in {time}.',
   'season.notice.thaw-start': 'Thaw will slow dirt roads in {time}.',
   'season.notice.thaw-end': 'Dirt roads will dry in {time}.',
@@ -381,4 +381,9 @@ export const en: FullDict = {
   'season.iceWinter': 'Winter ice recedes on its own; the bridge is not damaged.',
   'wagon.slowThaw': 'thaw — {pct}% of normal speed; cobbles stay firm',
   'demolish.confirm': '{name} cannot be built again in this mission. Tap again to demolish.',
+  // seasons / stall readability playtest fixes (2026-11-02): see PENDING_KEYS
+  'err.NO_STONE.coming': 'On the way to the granaries: {incoming}; waiting at quarries: {quarry}.',
+  'err.NO_STONE.mining': 'The quarry is still cutting — nothing awaits pickup.',
+  'err.NO_STONE.noQuarry': 'Nobody quarries it: build a quarry.',
+  'why.waitsCustomer': 'Full of {good} — waiting for the customer to take more',
 };

@@ -1,13 +1,28 @@
 // Markers that live in the scene: stall bubbles above buildings (and stuck wagons),
 // the ochre ETA tag beside the selected wagon, and the road-draft label near the finger.
 // Positions come from view.anchorOf every frame; DOM nodes are pooled, only transforms change.
-import { wagonEta, type World } from '../sim/index';
+import { outputCustomer, seasonalSupplier, wagonEta, type Building, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
 import { buildingStatusIcon, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonStatusIcon } from './format';
 import { iconSvg } from './icons';
 
 const MIN_STALL_TICKS = 20; // 2 s: avoid flicker on short hiccups
+
+/**
+ * A stall that resolves by itself (output waits for a customer that still takes it, input slowed by
+ * the season): a minor bubble, never the critical one. outputCustomer runs a path search, so the
+ * answer is kept per building until its status, the road network or the second changes.
+ */
+const calmCache = new Map<number, { key: string; calm: boolean }>();
+function calmStall(world: World, b: Building, sig: string): boolean {
+  const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
+  const c = calmCache.get(b.id);
+  if (c && c.key === key) return c.calm;
+  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null;
+  calmCache.set(b.id, { key, calm });
+  return calm;
+}
 /** "Stall fixed" wax stamp: pressed in (120 ms), held, then faded (220 ms). No bounce. */
 const STAMP_HOLD_MS = 650;
 const STAMP_FADE_MS = 220;
@@ -76,11 +91,13 @@ export class Markers {
         if (bd.stalledTicks < MIN_STALL_TICKS) continue;
         const a = view.anchorOf('building', bd.id);
         if (!a.visible) continue;
-        const crit = isCritical(bd.status, bd.stalledTicks);
-        const sig = JSON.stringify(bd.status) + crit;
+        const st = JSON.stringify(bd.status);
+        const calm = calmStall(world, bd, st);
+        const crit = isCritical(bd.status, bd.stalledTicks, calm);
+        const sig = st + crit + calm;
         const b = this.take('building:' + bd.id);
         shown.add(bd.id);
-        b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP');
+        b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP' || calm);
         this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
       }
       for (const w of world.state.wagons) {

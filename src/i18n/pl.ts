@@ -368,7 +368,7 @@ export const pl = {
   'season.summer': 'Lato',
   'season.autumn': 'Jesień',
   'season.winter': 'Zima',
-  'season.when': '{season} · dzień {day}',
+  'season.when': '{season} · rok {year}',
   'season.notice.season': 'Za {time} nowa pora roku: {season}.',
   'season.notice.thaw-start': 'Za {time} roztopy spowolnią gruntowe drogi.',
   'season.notice.thaw-end': 'Za {time} drogi gruntowe obeschną.',
@@ -384,6 +384,11 @@ export const pl = {
   'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
   // demolish tool in contract missions: second tap confirms (see PENDING_KEYS)
   'demolish.confirm': '{name}: w tej misji nie postawisz go ponownie. Dotknij jeszcze raz, by rozebrać.',
+  // seasons / stall readability playtest fixes (2026-11-02): see PENDING_KEYS
+  'err.NO_STONE.coming': 'W drodze do spichlerzy: {incoming}, czeka w kamieniołomach: {quarry}.',
+  'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
+  'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
+  'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -414,6 +419,10 @@ export const PENDING_KEYS = [
   'season.iceWinter',
   'wagon.slowThaw',
   'demolish.confirm',
+  'err.NO_STONE.coming',
+  'err.NO_STONE.mining',
+  'err.NO_STONE.noQuarry',
+  'why.waitsCustomer',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
