@@ -116,7 +116,7 @@
       "downloaded_on_utc": "2026-11-02"
     }
   },
-  "output_bytes": 1626841,
+  "output_bytes": 1626344,
   "tracks": [
     "ambient/morning",
     "ambient/river",
@@ -215,12 +215,12 @@
     "sfx/unload-stone.ogg": "6e5baa5630926d4a3d2f2f5d562e3055de2341c3a9889d5b075fdb7a96943f50",
     "sfx/wax-seal.m4a": "f0ce0d807fd48a3c5b36fc61cdf292eb7470c4c97e3536a224e7ca61dbb48f5f",
     "sfx/wax-seal.ogg": "bfeb8567b85eb457245b98e4677c861b6f0c68f529e201045f55e352d6c16c39",
-    "ui/error.m4a": "c3e522db855f111fd3430bf217addc5cc54fe0598740a323cbd11af27f0c3d89",
-    "ui/error.ogg": "48b6d445454fe38f27041990a04cc1d7b52fa9f416c42a77f8b1601e613cf2b2",
+    "ui/error.m4a": "7669ce648d125db6c9e2852f794ec1f5b98e06f3e0483fd6f371740350aeb3b0",
+    "ui/error.ogg": "ea49b1b6c56d388d83441f6b3fa0ab41e9637536b93ca8a5c46f3996234f30e3",
     "ui/paper.m4a": "d23311cd289091b69f60be3d8f8362e996a6113d6c318c8df7b745269be0dd4e",
     "ui/paper.ogg": "f75c01a203a13730171fb85a517ffe6914e0d7755f8b831fd89a73ebb5d1fdd0",
-    "ui/stall.m4a": "4eb1d251fcea8448302f9f6b24c43ee3f143b844c9d8f379aa95eb92d69ba5a2",
-    "ui/stall.ogg": "7c76a3096fcb4bdebdd43c55093ad893807d786abc4fe838b928fae8efa10885",
+    "ui/stall.m4a": "53925065951aaebec3ffc7a5e3fc41d972646d1d7c584c4f009aec1d17183fec",
+    "ui/stall.ogg": "2bbfaa55f3429dc59ca0c329d36affcedd980c16329dc5eb24bed1b87aecfa56",
     "ui/wood.m4a": "43793e4fcf23af102ca84fce8edc8169c9587f4b0a072d60dd1984189b49f23e",
     "ui/wood.ogg": "7211acb85b683d2d41a965590b2c206bb5b423e26f8158a37c2c49d8713753c6"
   }
