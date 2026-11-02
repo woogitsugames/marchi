@@ -1616,3 +1616,4 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .slot-note .slot-no { font-size: 22px; min-height: 0; width: 32px; padding: 0 8px 0 0; }
 .pause-ask { padding: 10px 10px 12px 6px; border-bottom: 0; }
 .pause-ask .slot-no { font-size: 22px; }
+.slot-row.is-asking { padding-inline-end: 10px; }
