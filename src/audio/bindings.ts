@@ -49,8 +49,10 @@ export function bindAudioEngine(engine: typeof audio): void { audio = engine; }
 const STALLED = new Set<Building['status']['k']>([
   'NO_ROAD', 'NO_INPUT', 'NO_WAGON', 'OUTPUT_FULL', 'STORAGE_FULL',
 ]);
-const WORK_SOUND: Partial<Record<Building['type'], SoundId>> = {
-  woodcutter: 'work.axe', sawmill: 'work.saw', bakery: 'work.oven',
+const WORK_SOUND: Partial<Record<Building['type'], readonly SoundId[]>> = {
+  woodcutter: ['work.axe'], sawmill: ['work.saw'], bakery: ['work.oven'],
+  quarry: ['work.quarry', 'work.quarryRock'], fisher: ['work.fisher', 'work.fisherSplash'],
+  charcoalBurner: ['work.charcoal'], malthouse: ['work.malt'], brewery: ['work.brewery'],
 };
 const ACTIVE_WAGON = new Set<Wagon['status']['k']>(['TO_PICKUP', 'TO_DROPOFF', 'RETURNING']);
 
@@ -67,7 +69,9 @@ function play(id: SoundId, options?: PlayOptions): void {
 }
 function cargoSound(good: Good | null, unload: boolean): SoundId {
   const action = unload ? 'unload' : 'load';
-  return `${action}.${good === 'wood' ? 'log' : good === 'planks' ? 'plank' : 'sack'}` as SoundId;
+  const kind = good === 'wood' || good === 'charcoal' ? 'log' : good === 'planks' ? 'plank'
+    : good === 'stone' ? 'stone' : good === 'fish' ? 'fish' : good === 'beer' ? 'barrel' : 'sack';
+  return `${action}.${kind}` as SoundId;
 }
 function riverProximity(camera: SimAudioCamera): number {
   if (camera.riverLevel !== undefined) return Math.max(0, Math.min(1, camera.riverLevel));
@@ -116,8 +120,9 @@ export function observeSim(prevState: AudioSnapshot, state: Readonly<SimState>, 
         workingMills += Math.max(0, 1 - d / range);
       }
       if (old?.status !== 'WORKING') {
-        const id = WORK_SOUND[b.type];
-        if (id) play(id, p);
+        const ids = WORK_SOUND[b.type];
+        // alternate variants per building and work cycle (audio only; the sim never sees this)
+        if (ids) play(ids[(b.id + (state.tick >> 6)) % ids.length]!, p);
       }
     }
     if (old && STALLED.has(b.status.k) && !STALLED.has(old.status)) stalledNow = true;
