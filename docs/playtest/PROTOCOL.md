@@ -449,36 +449,64 @@ Starsze pola `cohort` (`baseline|onboarding|extended|fold`), `prior_training` (`
 
 **Ważne rozróżnienie:** `fold_state` to starszy skrót stanu, natomiast `screen_mode`/`layout_classes` podają konkretne warunki; `is-split` nie oznacza automatycznie wykrytego zawiasu. Przy S8 używaj `S8_TRANCHE` i `S8_BUFFER`, a w obu wpisz niezależny `preflight_ok`. W `setup_url` nie wymyślaj `fixture`. Ankieta pozostaje oddzielna od danych prób, połączona tylko anonimowym `participant_id`.
 
-## 6. Analiza i decyzje UI
+## 6. Analiza, mediany i decyzje o UI
 
-Po zebraniu wszystkich sesji przedstaw dla **każdego S1–S6**: `n` ważnych prób, `n` nieudanych przygotowań, medianę `time_s`, liczbę i odsetek **`correct=1 AND time_s<30`**, odsetek `opened_why`, `followed_chain`, `action_correct`, medianę dotknięć, 1–2 anonimowe cytaty.
+**Raportuj osobno każdą scenę i kohortę, bez pozornej precyzji przy n=1–2.** Na początek tabela `scenario_id / cohort / n_valid / n_invalid_preflight / n_correct / n_correct_under_30 / median_time_s / median_correct_time_s / median_taps`, a poza diagnozą odrębne tabele dla `task_success` i właściwych wskaźników.
 
-**Zasady liczenia:**
-- Mianownik odsetka `<30 s` = **wszystkie ważne próby** danej sceny, w tym odpowiedzi błędne i timeouty. Próby z `preflight_ok=0`/`invalid_setup=1` nie należą do mianownika, ale **jawnie** raportuj ich liczbę.
-- `median(time_s)` licz ze wszystkich ważnych prób, **timeout=60**. Nazwij to „mediana z ucięciem do 60 s”, nie medianą rzeczywistego czasu nieskończonego czekania. Dodatkowo pokaż medianę tylko poprawnych odpowiedzi (`correct=1`), jeśli takie są.
-- Warunek `<30` jest **ściśle mniejszy**: dokładnie `30.0` = poza sukcesem. `correct=0` nie jest sukcesem nawet przy `time_s=5`.
-- **Wynik główny:** agregat **S1,S2,S3,S4,S6**, wyłącznie zweryfikowane bloki; **S5 pokazuj osobno** jako rozpoznanie spowolnienia. Dla każdego segmentu pokaż liczniki, nie tylko procenty.
-- **Próg decyzyjny (cel projektu, nie obserwacja):** co najmniej **80% trafnych diagnoz <30 s** w każdej scenie. Przy `n=5–8` wnioski są kierunkowe; nie przedstawiaj ich jako dowodu statystycznego.
+**Reguły wyliczeń:**
 
-**Kody problemów (`issue_codes`; koduj tylko zaobserwowane zachowanie):**
+- `valid = preflight_ok=1 && invalid_setup=0`; `n_valid` to liczba **unikalnych, ważnych prób uczestnik × scena**, a `n_invalid_preflight` — nieudane techniczne przygotowania, bez wpisywania ich do mianownika. Gdy ta sama osoba widziała scenę kilka razy, do benchmarku pierwszego kontaktu licz **wyłącznie pierwszą** poprawnie przygotowaną próbę, bez wcześniejszej podpowiedzi.
+- **Odsetek poprawnych diagnoz:** `n(correct=1)/n_valid`. **Główny odsetek <30 s:** `n(correct=1 AND time_s<30)/n_valid`, **nie** tylko z poprawnych. Odpowiedź dokładnie w `30.0` s nie przechodzi; `correct=0` nigdy nie przechodzi, choćby `time_s=5`. Wartość docelowa **>=80% na scenę** jest **hipotezą projektową**, nie wynikiem eksperymentu przy 5–8 osobach.
+- **Mediana czasu:** z `time_s` dla **wszystkich ważnych prób** w danej scenie, **timeout=60 s**. Zawsze nazywaj „mediana z ucięciem do 60 s”; dodatkowo pokaż medianę czasu wśród `correct=1`. Dla zadań planistycznych używaj osobnej mediany `task_time_s` tylko dla rzeczywiście wykonanych ważnych prób; nie podmieniaj pustego pola zerem.
+- **HUD H1:** odsetek `hud_found=1 && hud_find_s<30` oraz mediana `hud_find_s` (timeout 60), osobno odsetek trafnej diagnozy `correct=1 && hud_cause_s<30`. Dla H2 mierzalność cyklu tylko przy `stalls_count>=2`; dla H3 podświetlenie tylko przy aktywnym `cureFor`; dla H4 interpretacja ceny tylko przy `coins<30`.
+- **Ankieta:** każdy `participant_id` raz; dla 12 pytań pokaż `n` odpowiedzi, medianę i zakres (1–5), bez zer za niewykonany moduł. Nie traktuj subiektywnej oceny jako faktu o silniku.
 
-| Kod | Obserwacja | Kandydat na zmianę UI |
+**Oddzielne sekcje raportu po sesjach:**
+
+| Blok | Podsumowanie |
+| --- | --- |
+| **Baseline S1–S6** | Główne niepodpowiadane diagnozy: agregat **S1,S2,S3,S4,S6** oraz **S5 osobno** jako rozpoznanie błota; `opened_why`, `opened_wagon`, `followed_chain`, `action_correct`, mediana dotknięć i 1–2 krótkie anonimowe cytaty na scenę |
+| **Misje IV–VI S7–S9** | Kra `BRIDGE_CLOSED`, transza `S8_TRANCHE` **osobno** od pełnego bufora `S8_BUFFER`, mały spichlerz `cap=12`; n ważnych/nieważnych oraz czas diagnozy tylko, gdy spełniono preflight |
+| **Misje VII–XII S10–S15** | VII: odczyt `Przy tym tempie` i przeprawa; VIII: kamień/bruk przed deszczem; IX/X: liczba par z obu misji, odsetek `ix_x_new_lesson=1` i cytaty wraz z kolejnością; XI: długa trasa zboża; XII: bufor mimo 12 wozów; diagnoza <30 wyłącznie gdy był sprawdzony przestój |
+| **T1–T2** | List kasztelana `letter_understood`, czas pierwszej diagnozy `first_diagnosis_s` z progiem <30 i `first_diagnosis_correct`; rzeczywiście przebyte kroki 1–6 i pominięcia, rodzaj `tutorial_result`; dla naprawy `repair_offered`/`repair_seen`/`repair_used` z mianownikiem faktycznej dostępności |
+| **V1–V6** | Budowanie, trzy warunki rang i tabela 0–5, targ i nasycenie, niezależność `valley1–3` oraz błędy zapisu, zapowiedzi i efekty czterech pór, rozpoznanie 10 towarów; `task_success`, `task_time_s`, `rank_understood`, `season_understood` |
+| **H1–H4** | Odkrycie karty „Najgorszy zastój” **<30 s**, „Pokaż”, licznik pieczęci i przełączanie, karty narzędzi, podświetlenie `Kup wóz` / `Trakt` oraz wyjaśnienie „brak N srebra”; n możliwości interakcji i n samodzielnych sukcesów |
+| **F0–F3 i P1** | Zwykły telefon, Fold złożony/`is-split`, prawdziwy `is-flex` i Flip cover (ew. `is-mini`), ucięcia i błędne gesty, obciążenie ×1/×4, `horse_step_*`, płynność i nagrzewanie; w każdym trybie raportuj **model, ekran i rzeczywistą klasę layoutu**. Brak sprzętu = nieprzetestowano, nie zaliczone |
+
+**Kody problemów (`issue_codes`; nadaj dopiero po zaobserwowanym zachowaniu, nie z samego projektu):**
+
+| Kod | Weryfikowalna pomyłka lub problem | Kandydat na poprawkę / pytanie do audytu |
 | --- | --- | --- |
-| `DISCOVERY` | Nie znajduje obiektu, który stoi | „Co teraz stoi?” w HUD, przejście do najdłuższego przestoju |
-| `NETWORK` | Nie dostrzega brakującej/przerwanej przeprawy | Zaznaczenie przerwy i wskazanie obu stron rozłączonej sieci |
-| `BUSY` | Myli `ALL_BUSY` z brakiem towaru | W łańcuchu przyczyny bezpośredni opis „wszystkie wozy zajęte” i przycisk zakupu |
-| `JAM` | Nie rozróżnia korka od nieistniejącej drogi | W karcie wozu przyczyna jednopasmowego mostu i dwie opcje udrożnienia |
-| `MUD` | Nie potrafi wyjaśnić spadku tempa podczas deszczu | Etykieta „zwalnia przez błoto” wraz z nawierzchnią/porównaniem tempa |
-| `STORAGE` | Nie rozpoznaje `60/60` lub wpływu pełnego magazynu | Pasek pojemności i wyraźny komunikat „brak miejsca na odbiór” |
-| `CHAIN` | Otwiera kartę, ale nie umie przejść do korzenia | Mocniejsza hierarchia i klikalność ogniw „ponieważ” |
-| `TOUCH` | Niecelne kliknięcia, zasłonięty obiekt/karta | Większe cele dotykowe, korekta położenia kamery/arkusza |
+| `DISCOVERY` | Nie odnajduje zastoju | Czy istniejąca karta HUD „Najgorszy zastój” i „Pokaż” są dostrzegalne |
+| `NETWORK` | Nie widzi przerwy w przeprawie | Mocniejsze pokazanie rozłączonej sieci |
+| `BUSY` | Myli zajęte wozy z brakiem towaru | Wyraźniejsze `NO_WAGON/ALL_BUSY` i zakup wozu |
+| `JAM` | Nie odróżnia korka od braku drogi | Opis jednopasmowego mostu i możliwego objazdu |
+| `MUD` | Nie rozpoznaje spadku tempa w błocie | Porównanie przejazdu po gruncie i bruku |
+| `STORAGE` | Nie rozumie pełnej pojemności | Lepszy pasek `zajęte/pojemność` |
+| `CHAIN` | Nie przechodzi do przyczyny źródłowej | Wyraźniejsze klikalne ogniwa „ponieważ” |
+| `TOUCH` | Niecelne dotknięcia/zasłonięta karta | Układ, większe przyciski |
+| `LETTER` | Myli cel listu lub nie wie, jak zacząć | Czytelniejsza treść lub wskazanie celu |
+| `REPAIR` | Nie zauważa dostępnej naprawy w karcie | Widoczność propozycji oraz kosztu |
+| `ICE` | Kra pomylona ze zniszczonym mostem | Doprecyzowanie czasu otwarcia |
+| `TRANCHE` | Suma listów pomylona z transzą | Bieżący list i kolejny termin |
+| `CAP12` | Mały spichlerz mylony z pojemnością 60 | Pokazanie porównania magazynów |
+| `BUILD` | Błąd bramy/pozycji/kolizji podczas budowania | Lepszy ghost i wyjaśnienie walidacji |
+| `RANK` | Nie rozumie łącznych warunków | Trzy wymogi i odblokowania na karcie rangi |
+| `MARKET` | Cena i nasycenie pomylone | Jawne rozdzielenie ceny bazowej/bieżącej |
+| `SAVES` | Myli lub nieumyślnie kasuje księgę | Potwierdzenie operacji i nazwa księgi |
+| `HINGE` | UI nachodzi na fizyczny zawias | Weryfikacja `is-book`/segmentu |
+| `FLEX` | Nieprawidłowy gest w układzie tabletop | Rozdzielenie sceny i HUD |
+| `HUD` | Nie widzi pieczęci albo „Pokaż” | Kontrast i hierarchia w HUD |
+| `CURE` | Nie rozpoznaje podświetlonego lekarstwa | Powiązanie przyczyny z aktywnym narzędziem |
+| `SILVER` | Nie rozumie „brak N srebra” | Nazwanie ceny i brakującej kwoty |
+| `PACE` | Prognoza traktowana jako obietnica | Zastrzeżenie „przy tym tempie” |
+| `STONE` | Nie łączy kamienia w spichlerzu z brukiem | Widoczność warunku budowy |
+| `WOODIX_X` | IX i X odbierane jako ta sama lekcja | Ocena, czy X daje nowe rozróżnienie |
+| `DISTANCE` | Nie dostrzega kosztu dalekiej trasy do słodowni | Wskazanie przebiegu przewozu |
+| `BUFFER` | W XII kupuje wozy zamiast otworzyć spichlerz | Powiązanie produkcji z buforem |
+| `SEASON` | Myli efekty/zapowiedzi sezonu | Jasne zdarzenie i efekt w kalendarzu |
+| `PERF` | Szarpanie, ślizgający koń lub nieprzyjemne ciepło | Rozdzielenie tempa symulacji i animacji |
 
-Dla **TOP 5** grupuj problemy po kodzie, zliczaj **unikalne osoby** (współwystąpienia w kilku scenach tej samej osoby liczą się raz), podaj `liczba/n`, medianę czasu dla dotkniętych prób, stopień utrudnienia `1=kosmetyczny,2=opóźnia,3=uniemożliwia diagnozę`. Ranking: malejąco `liczba_osób × stopień`, potem dłuższa mediana; opisz konkurencyjne wyjaśnienia. Wpisz do `docs/BACKLOG.md` **rzeczywiście zaobserwowane TOP 5** po testach, z licznikami, linkiem do podsumowania i warunkiem akceptacji. W tej wersji backlog zawiera **tylko 5 hipotez do zweryfikowania**, a nie wymyślone wyniki.
+**TOP 5 wniosków:** pogrupuj kody i licz **unikalne osoby**, nie liczbę kliknięć/wystąpień; dla każdego `liczba osób / n osób, które mogły zobaczyć funkcję`, dotkliwość `1` kosmetyczny / `2` opóźnia / `3` uniemożliwia, medianę czasu z dotkniętych prób, krótkie cytaty i alternatywne wyjaśnienia. Sortuj malejąco `liczba_osób × dotkliwość`, następnie malejąco mediana. **Dopiero po rzeczywistych sesjach** wpisz TOP 5 do `docs/BACKLOG.md` z mianownikami, linkiem do raportu i **warunkiem akceptacji**. Nie wymyślaj obserwacji, brakujących prób, temperatur ani „zielonego” wyniku UX.
 
-## 6A. Raport v2 i decyzje
-
-W raporcie zrealizowanych sesji pokaż **oddzielnie**: (a) niepodpowiadany benchmark S1–S4/S6, S5 jako spowolnienie, (b) **S7–S9** z liczbą ważnych i nieważnych przygotowań oraz `n` i odsetkiem trafnych diagnoz **<30 s**, (c) T1: odsetek `letter_understood=1`, przejścia przez kroki 1–6, pominięcia i odsetek ukończeń; T2: widoczność/odnalezienie/naciśnięcie proponowanej naprawy, (d) V1–V4: `task_success`/`task_time_s` oraz utrata danych w V4, (e) F1–F3: wskaźniki układu i problemy w rozbiciu na urządzenie, ekran i tryb. Nie scalaj `correct` z `task_success` ani osób poinstruowanych z niewprowadzonymi w mechanikę. Próg **80% poprawnej diagnozy <30 s** jest hipotezą dla ważnych zadań diagnostycznych, nie celem dla budowania, rankingów, zapisów lub zawiasu.
-
-Dodatkowe kody `issue_codes` do TOP 5 (wpisuj **tylko po rzeczywistej obserwacji**): `LETTER` (niezrozumiały list), `REPAIR` (niewidoczna/myląca naprawa), `ICE` (kra mylona z uszkodzeniem), `TRANCHE` (kolejny list mylony z sumą zamówień), `CAP12` (niezauważona mała pojemność), `BUILD` (brama/walidacja/umiejscowienie), `RANK` (niezrozumiałe trzy warunki), `MARKET` (cena/nasycenie), `SAVES` (mylenie/usunięcie ksiąg), `HINGE` (zawias/pozycja paneli), `FLEX` (gest/układ tabletop). Zachowaj zasadę TOP 5: **unikalni uczestnicy**, stopień utrudnienia i kontrola alternatywnych wyjaśnień; nie generuj z góry wyników.
-
-**Definicja ukończenia v2:** przeprowadzono prawidłowo uzgodnione bloki i uzyskano osobną zgodę na nagrania (jeśli były); wszystkie ważne próby mają preflight, commit i kod osoby; pliki CSV są poprawnie cytowane/anonimowe; czasy i odsetki podano z mianownikami, timeouty i nieudane ustawienia są widoczne; osobno zraportowano m4–m6, list, naprawę, Wolną dolinę i dostępne tryby Fold/Flip, a do `docs/BACKLOG.md` dopisano wyłącznie **zaobserwowane** problemy z warunkami akceptacji. Jeżeli brak urządzenia Flex, zapisz „nieprzetestowano na sprzęcie”, a nie „zaliczone”.
+**Warunek domknięcia protokołu v2:** sesje wykonane w uzgodnionych ścieżkach z 5–8 osobami i osobnymi zgodami na ewentualne nagrania; każda próba ma anonimowy kod, commit, realny URL/preflight, ekran i wynik albo jawny powód nieważności; oba szablony CSV są wypełniane zgodnie ze słownikiem; mediana z timeoutami, odsetki z mianownikami i puste przypadki zostały pokazane osobno; opisano IX/X, m12, HUD v3, rangi, sezony, Fold/Flex/Flip i ×4 tam, gdzie naprawdę testowano. **Brak fizycznego urządzenia lub niemożliwy stan = „nieprzetestowano”, nie „zaliczono”.**
