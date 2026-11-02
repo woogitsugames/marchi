@@ -160,10 +160,7 @@
       "start": 4.2,
       "source": "log",
       "notes": "Real log impact (alternate excerpt from same CC0 recording)"
-    }
-  ],
-  "pending_tracks_note": "Task 46: selected CC0 sources, not rendered yet. Move these entries into 'tracks' only together with the rendered OGG/M4A files, source previews and docs/audio-provenance.json; then add the IDs to src/audio/sounds.ts.",
-  "pending_tracks": [
+    },
     {
       "id": "sfx/quarry-chisel",
       "kind": "sfx",
@@ -268,9 +265,12 @@
       "seconds": 1.35,
       "start": 14,
       "source": "barrel",
-      "notes": "Wooden barrel unloading impact, alternate excerpt"
+      "notes": "Wooden barrel unloading impact; loudest non-silent excerpt selected automatically.",
+      "auto_peak": true
     }
   ],
+  "pending_tracks_note": "Task 50: all 13 pending recordings rendered and verified; src/audio/sounds.ts remains intentionally unchanged.",
+  "pending_tracks": [],
   "sources": {
     "birds": {
       "filename": "park_ambience_birds.wav",
