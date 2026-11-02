@@ -53,3 +53,16 @@
 і працюють також зі значеннями на зразок 30/30. Срібло не отримує вигаданої лічильної одиниці.
 Номери рангу й книги є ідентифікаторами. Для goodGen/goodAcc додано відповідні форми родового та знахідного відмінків.
 У поясненні ринку щодесять секунд на одиницю спадає насичення; це не надбавка одиниці срібла до ціни.
+
+## Round 06 — seasons and weather
+
+| Polski / English | uk |
+| --- | --- |
+| wiosna / spring | весна |
+| lato / summer | літо |
+| jesień / autumn | осінь |
+| zima / winter | зима |
+| roztopy / thaw | відлига |
+| jesienny jarmark / autumn fair | осінній ярмарок |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

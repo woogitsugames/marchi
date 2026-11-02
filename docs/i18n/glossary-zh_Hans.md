@@ -43,3 +43,16 @@
 饱和度对应已售商品数量，每10秒回落一单位，并非价格每次恢复一银。
 数量用“商品：数量”表示；中文不使用复数分支。`why.holdsCount` 的数量还可能是“库存/容量”形式。
 “建路桥”指同时修建道路和桥梁；按钮保留银的价格与货币名称。
+
+## Round 06 — seasons and weather
+
+| Polski / English | zh_Hans |
+| --- | --- |
+| wiosna / spring | 春季 |
+| lato / summer | 夏季 |
+| jesień / autumn | 秋季 |
+| zima / winter | 冬季 |
+| roztopy / thaw | 解冻期 |
+| jesienny jarmark / autumn fair | 秋季集市 |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

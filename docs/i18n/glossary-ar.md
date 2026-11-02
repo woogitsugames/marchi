@@ -52,3 +52,16 @@
 
 تُعرض الكميات بصيغة «الصنف: العدد» لتجنب تغيير اسم البضاعة بحسب العدد. الفضة والحجر اسما مادة؛ لا يحتاجان إلى صيغ جمع اصطناعية. وقد تكون قيمة `why.holdsCount` نسبة المخزون إلى السعة.
 يتراجع التشبع بمقدار وحدة من البضاعة كل عشر ثوانٍ، لا بمقدار وحدة فضة من السعر. تُعزل المعاملات الاتجاهية بعلامتي FSI/PDI كما في الرسائل السابقة.
+
+## Round 06 — seasons and weather
+
+| Polski / English | ar |
+| --- | --- |
+| wiosna / spring | الربيع |
+| lato / summer | الصيف |
+| jesień / autumn | الخريف |
+| zima / winter | الشتاء |
+| roztopy / thaw | ذوبان الثلج |
+| jesienny jarmark / autumn fair | سوق الخريف |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

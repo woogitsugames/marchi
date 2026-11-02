@@ -394,6 +394,11 @@ export const pl = {
   'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
   'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
   'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
+  // per-mission saves and start-over confirmations (D-36): see PENDING_KEYS
+  'save.inProgress': 'w toku, {time}',
+  'save.unfinished': 'Niedokończona gra',
+  'save.confirmFresh': 'Zacząć od nowa? Zapis po {time} gry przepadnie.',
+  'save.confirmRestart': 'Zacząć kontrakt od nowa? Zapis po {time} gry przepadnie.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -404,25 +409,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'menu.m7', 'menu.m7Sub', 'menu.m8', 'menu.m8Sub', 'menu.m9', 'menu.m9Sub',
-  'season.spring',
-  'season.summer',
-  'season.autumn',
-  'season.winter',
-  'season.when',
-  'season.notice.season',
-  'season.notice.thaw-start',
-  'season.notice.thaw-end',
-  'season.notice.ice-start',
-  'season.notice.ice-end',
-  'season.effect.winter-farm',
-  'season.effect.winter-fisher',
-  'season.effect.summer-farm',
-  'season.effect.autumn-fair',
-  'season.effect.spring-thaw',
-  'season.upstream',
-  'season.iceWinter',
-  'wagon.slowThaw',
   'demolish.confirm',
   'err.NO_STONE.coming',
   'err.NO_STONE.mining',
@@ -432,6 +418,10 @@ export const PENDING_KEYS = [
   'road.stone',
   'why.stoneReserve',
   'why.stoneAll',
+  'save.inProgress',
+  'save.unfinished',
+  'save.confirmFresh',
+  'save.confirmRestart',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

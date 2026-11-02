@@ -1,4 +1,4 @@
-// Playwright screenshots for the RTL layout (D-36): docs/shots/rtl-<lang>-<scene>-<size>.png
+// Playwright screenshots for the RTL layout (D-37): docs/shots/rtl-<lang>-<scene>-<size>.png
 // Usage: node tools/shots-rtl.mjs [--lang ar|pl] [--out docs/shots] [--prefix rtl] [scene...]
 //        UI5_SIZE=412x915 node tools/shots-rtl.mjs --lang ar why      (one size only)
 // Own Vite server on the checkout the script lives in; ?quality=low&dynres=0.

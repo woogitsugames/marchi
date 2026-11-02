@@ -80,7 +80,7 @@ export function deckle(edge: 'bottom' | 'right', seed: number, depth = 7, steps 
   return `polygon(${pts.join(', ')})`;
 }
 
-/** The document runs right-to-left (Arabic, D-36): the HUD is mirrored by the CSS logical properties. */
+/** The document runs right-to-left (Arabic, D-37): the HUD is mirrored by the CSS logical properties. */
 export function isRtl(): boolean {
   return document.documentElement.dir === 'rtl';
 }

@@ -391,4 +391,9 @@ export const en: FullDict = {
   'err.NO_STONE.mining': 'The quarry is still cutting — nothing awaits pickup.',
   'err.NO_STONE.noQuarry': 'Nobody quarries it: build a quarry.',
   'why.waitsCustomer': 'Full of {good} — waiting for the customer to take more',
+  // per-mission saves and start-over confirmations (D-36): see PENDING_KEYS
+  'save.inProgress': 'in progress, {time}',
+  'save.unfinished': 'Unfinished game',
+  'save.confirmFresh': 'Start over? The save with {time} of play will be lost.',
+  'save.confirmRestart': 'Start the contract over? The save with {time} of play will be lost.',
 };

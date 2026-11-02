@@ -1,4 +1,4 @@
-// RTL (D-36): the UI stylesheet uses logical properties, so `dir="rtl"` mirrors the HUD and the sheets.
+// RTL (D-37): the UI stylesheet uses logical properties, so `dir="rtl"` mirrors the HUD and the sheets.
 // A physical left/right may only appear on the listed exceptions: boxes placed by JS screen coordinates
 // (markers, ghost labels, tutorial ring), boxes centred with left: 50% + translateX(-50%), explicit
 // [dir='rtl'] overrides, and the definitions of the physical safe-area variables.

@@ -38,3 +38,16 @@
 | ryby / fish | peixe | Mass commodity, as with pedra, carvão vegetal, malte and cerveja. |
 
 Quantidade vendida is a count-independent label and works with all goods. Prata is a mass noun; rank and ledger numbers identify one level or ledger. Existing ICU-lite plurals remain unchanged. The tutorial names the existing Estrada tool; the contested-input message avoids singular/plural verb agreement.
+
+## Round 06 — seasons and weather
+
+| Polski / English | pt_BR |
+| --- | --- |
+| wiosna / spring | primavera |
+| lato / summer | verão |
+| jesień / autumn | outono |
+| zima / winter | inverno |
+| roztopy / thaw | degelo |
+| jesienny jarmark / autumn fair | feira de outono |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

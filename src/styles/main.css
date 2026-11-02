@@ -51,7 +51,7 @@
   color-scheme: light;
 }
 
-/* RTL (Arabic, D-36): the HUD and sheets mirror through logical properties; only the safe-area pair and
+/* RTL (Arabic, D-37): the HUD and sheets mirror through logical properties; only the safe-area pair and
    the x sign flip here. Gestures, camera and the map are not mirrored. */
 :root[dir='rtl'] { --safe-s: var(--safe-r); --safe-e: var(--safe-l); --ix: -1; }
 
@@ -1080,7 +1080,7 @@ body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px))
 :root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; }
 :root[data-script='arabic'] {
   /* the game's Latin faces first (their @font-face unicode-range has no Arabic): the brand title, digits and
-     untranslated fallbacks keep the game typography; Arabic letters fall through to the OS Naskh (D-18, D-36) */
+     untranslated fallbacks keep the game typography; Arabic letters fall through to the OS Naskh (D-18, D-37) */
   --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', serif;
   --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif;
 }
@@ -1107,7 +1107,7 @@ body.is-clear .clear-restore {
 }
 
 
-/* ================================================================ RTL (D-18, D-36)
+/* ================================================================ RTL (D-18, D-37)
    The whole HUD mirrors through logical properties (rail, sheets, waybill, plaque, toasts). The hand
    setting still swaps sides on top of that. Playback-like speed controls and numeric ETA tags keep
    their left-to-right order, like media controls in RTL apps. */

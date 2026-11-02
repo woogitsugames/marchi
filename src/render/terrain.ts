@@ -317,6 +317,21 @@ void sampleLayer(float L, vec2 uv, float k, out vec3 a, out vec3 n, out vec2 ro)
   ro = vec2(o.g, o.r);
 #endif
 }
+// Tiling-free sampling (two offset lookups blended by a slow noise index): the meadow tile no
+// longer repeats every few metres, which read as a plywood/checker pattern from afar.
+void sampleLayerNT(float L, vec2 uv, float k, vec2 wxz, out vec3 a, out vec3 n, out vec2 ro) {
+  float idx = texture(tNoise, wxz / 41.0 + 0.53).g * 8.0;
+  float ia = floor(idx);
+  float f = fract(idx);
+  vec2 offA = sin(vec2(3.0, 7.0) * ia) * 7.31;
+  vec2 offB = sin(vec2(3.0, 7.0) * (ia + 1.0)) * 7.31;
+  vec3 aA; vec3 nA; vec2 roA; vec3 aB; vec3 nB; vec2 roB;
+  sampleLayer(L, uv + offA, k, aA, nA, roA);
+  sampleLayer(L, uv + offB, k, aB, nB, roB);
+  vec3 d = aA - aB;
+  float w = smoothstep(0.2, 0.8, f - 0.1 * (d.x + d.y + d.z));
+  a = mix(aA, aB, w); n = mix(nA, nB, w); ro = mix(roA, roB, w);
+}
 #define BLEND(w, a2, n2, ro2) { A = mix(A, a2, w); N = mix(N, n2, w); RO = mix(RO, ro2, w); }
 float rutProfile(float d) {
   // wheel ruts at ±0.86 m (wagon track 1.72 m)
@@ -346,11 +361,19 @@ const FRAG_MAIN = /* glsl */ `
   vec3 A; vec3 N; vec2 RO;
   vec3 a2; vec3 n2; vec2 ro2;
   // base: wet meadow
-  sampleLayer(0.0, uv, 1.0, A, N, RO);
+  sampleLayerNT(0.0, uv, 1.0, wxz, A, N, RO);
 #ifndef TERRAIN_LOW
   // second scale to break tiling
-  sampleLayer(0.0, uv, 0.29, a2, n2, ro2);
-  A = mix(A, a2, 0.35);
+  // (rotated ~37 deg and at an irrational-ish scale so the two lattices never line up)
+  {
+    mat2 R = mat2(0.8, 0.6, -0.6, 0.8);
+    vec2 uvR = R * uv + 0.37;
+    vec2 sx = gDx, sy = gDy;
+    gDx = R * gDx; gDy = R * gDy;
+    sampleLayer(0.0, uvR, 0.23, a2, n2, ro2);
+    gDx = sx; gDy = sy;
+    A = mix(A, a2, 0.5);
+  }
 #endif
   A *= vec3(0.94, 1.04, 1.0);
   // macro tone variation (kept in the desaturated middle)
@@ -400,12 +423,13 @@ const FRAG_MAIN = /* glsl */ `
   if (wField > 0.003) {
     // ploughed soil with furrows (0.8 m pitch), a little straw stubble left on the ridges
     MUD(1.3)
-    float fc = (gnd.a > 0.5 ? wxz.x : wxz.y) + (nzS.r - 0.5) * 0.6;
+    vec4 nzP0 = texture(tNoise, wxz / 17.0 + 0.19);
+    float fc = (gnd.a > 0.5 ? wxz.x : wxz.y) + (nzS.r - 0.5) * 0.6 + (nzM.r - 0.5) * 3.2;
     float ph = fc * 6.2831853 / 0.8;
-    float fade = 1.0 - smoothstep(0.25, 0.6, fwidth(fc) / 0.8);
+    float fade = 1.0 - smoothstep(0.08, 0.3, fwidth(fc) / 0.8);
     float ridge = mix(0.6, 0.5 + 0.5 * sin(ph), fade);
-    a2 *= mix(0.62, 1.0, ridge);
-    a2 = mix(a2, vec3(0.32, 0.25, 0.15), smoothstep(0.75, 1.0, ridge) * smoothstep(0.4, 0.8, nzS.a) * 0.6);
+    a2 *= mix(0.8, 1.0, ridge) * (0.9 + 0.2 * nzP0.g);
+    a2 = mix(a2, vec3(0.32, 0.25, 0.15), smoothstep(0.75, 1.0, ridge) * smoothstep(0.4, 0.8, nzS.a) * 0.3);
     float dh = cos(ph) * 0.55 * fade;
     vec3 fn = gnd.a > 0.5 ? vec3(-dh, 0.0, 1.0) : vec3(0.0, dh, 1.0);
     n2 = normalize(n2 + fn - vec3(0.0, 0.0, 1.0));

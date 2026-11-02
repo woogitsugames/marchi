@@ -1,0 +1,1782 @@
+{
+  "schemaVersion": 1,
+  "sourceOfTruth": "src/sim/defs.ts",
+  "marketNote": {
+    "pl": "Podane ceny zamkowe są cenami bazowymi za 1 sztukę; nasycenie rynku i wydarzenia sezonowe zmieniają zapłatę.",
+    "en": "Castle prices are base prices for one unit; market saturation and seasonal events change the payout."
+  },
+  "timingNote": {
+    "pl": "Czasy cykli są podane w sekundach symulacji; wartość pochodzi z recipe.ticks / TICK_HZ.",
+    "en": "Cycle times are simulation seconds derived from recipe.ticks / TICK_HZ."
+  },
+  "statusNote": {
+    "pl": "Przestoje używają kluczy status.* z Księgi przyczyn. IDLE, WAITING_DELIVERY, WAITING_PICKUP i WAITING_UPSTREAM nie są samodzielnie awariami.",
+    "en": "Stalls use status.* keys from the Stall Codex. IDLE, WAITING_DELIVERY, WAITING_PICKUP and WAITING_UPSTREAM are not faults by themselves."
+  },
+  "goods": [
+    {
+      "id": "wood",
+      "nameKey": "good.wood",
+      "name": {
+        "pl": "drewno",
+        "en": "logs"
+      },
+      "description": {
+        "pl": "Drwale ścinają pnie, od których zaczyna się praca tartaków i węglarek.",
+        "en": "Woodcutters fell the logs that feed sawmills and charcoal burners."
+      },
+      "producer": "woodcutter",
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.woodcutter.recipe.outputs.wood"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 10,
+          "source": "defs.BUILDINGS.woodcutter.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.wood"
+      },
+      "castleBasePrice": {
+        "value": 1,
+        "source": "defs.MARKET.base.wood"
+      }
+    },
+    {
+      "id": "planks",
+      "nameKey": "good.planks",
+      "name": {
+        "pl": "deski",
+        "en": "planks"
+      },
+      "description": {
+        "pl": "Tartak tnie pnie na deski, które ruszają traktem ku zamkowi.",
+        "en": "The sawmill cuts logs into planks, which travel by road to the castle."
+      },
+      "producer": "sawmill",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.sawmill.recipe.inputs.wood"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "planks",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.sawmill.recipe.outputs.planks"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 10,
+          "source": "defs.BUILDINGS.sawmill.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.planks"
+      },
+      "castleBasePrice": {
+        "value": 3,
+        "source": "defs.MARKET.base.planks"
+      }
+    },
+    {
+      "id": "grain",
+      "nameKey": "good.grain",
+      "name": {
+        "pl": "zboże",
+        "en": "grain"
+      },
+      "description": {
+        "pl": "Na polach dojrzewa zboże przeznaczone do młynów i słodowni.",
+        "en": "Grain ripens in the fields, bound for mills and malthouses."
+      },
+      "producer": "farm",
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.farm.recipe.outputs.grain"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 8,
+          "source": "defs.BUILDINGS.farm.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.grain"
+      },
+      "castleBasePrice": {
+        "value": 1,
+        "source": "defs.MARKET.base.grain"
+      }
+    },
+    {
+      "id": "flour",
+      "nameKey": "good.flour",
+      "name": {
+        "pl": "mąka",
+        "en": "flour"
+      },
+      "description": {
+        "pl": "Młyn miele zboże na mąkę, bez której piekarnia nie rozpocznie wypieku.",
+        "en": "The mill grinds grain into flour; a bakery cannot bake without it."
+      },
+      "producer": "mill",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.mill.recipe.inputs.grain"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "flour",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.mill.recipe.outputs.flour"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 7,
+          "source": "defs.BUILDINGS.mill.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.flour"
+      },
+      "castleBasePrice": {
+        "value": 3,
+        "source": "defs.MARKET.base.flour"
+      }
+    },
+    {
+      "id": "bread",
+      "nameKey": "good.bread",
+      "name": {
+        "pl": "chleb",
+        "en": "bread"
+      },
+      "description": {
+        "pl": "Piekarze wyrabiają chleb z mąki, a wozy dowożą bochny do zamku.",
+        "en": "Bakers make bread from flour, and wagons carry loaves to the castle."
+      },
+      "producer": "bakery",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "flour",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.bakery.recipe.inputs.flour"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "bread",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.bakery.recipe.outputs.bread"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.bakery.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.bread"
+      },
+      "castleBasePrice": {
+        "value": 4,
+        "source": "defs.MARKET.base.bread"
+      }
+    },
+    {
+      "id": "fish",
+      "nameKey": "good.fish",
+      "name": {
+        "pl": "ryby",
+        "en": "fish"
+      },
+      "description": {
+        "pl": "Rybacy wyciągają ryby z wód doliny i oddają je kupcom.",
+        "en": "Fishers draw their catch from the valley waters and bring it to traders."
+      },
+      "producer": "fisher",
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "fish",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.fisher.recipe.outputs.fish"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 9,
+          "source": "defs.BUILDINGS.fisher.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.fish"
+      },
+      "castleBasePrice": {
+        "value": 3,
+        "source": "defs.MARKET.base.fish"
+      }
+    },
+    {
+      "id": "stone",
+      "nameKey": "good.stone",
+      "name": {
+        "pl": "kamień",
+        "en": "stone"
+      },
+      "description": {
+        "pl": "Kamieniołom daje kamień na bruk i mosty; ciężar ogranicza ładunek wozu.",
+        "en": "The quarry yields stone for cobbles and bridges; its weight limits wagon loads."
+      },
+      "producer": "quarry",
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "stone",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.quarry.recipe.outputs.stone"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.quarry.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 4,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.stone"
+      },
+      "castleBasePrice": {
+        "value": 2,
+        "source": "defs.MARKET.base.stone"
+      }
+    },
+    {
+      "id": "charcoal",
+      "nameKey": "good.charcoal",
+      "name": {
+        "pl": "węgiel drzewny",
+        "en": "charcoal"
+      },
+      "description": {
+        "pl": "Węglarnia wypala drewno na węgiel drzewny, który trafia do kupców.",
+        "en": "The charcoal burner turns logs into charcoal for the castle traders."
+      },
+      "producer": "charcoalBurner",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.charcoalBurner.recipe.inputs.wood"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "charcoal",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.charcoalBurner.recipe.outputs.charcoal"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 20,
+          "source": "defs.BUILDINGS.charcoalBurner.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.charcoal"
+      },
+      "castleBasePrice": {
+        "value": 4,
+        "source": "defs.MARKET.base.charcoal"
+      }
+    },
+    {
+      "id": "malt",
+      "nameKey": "good.malt",
+      "name": {
+        "pl": "słód",
+        "en": "malt"
+      },
+      "description": {
+        "pl": "Słodownia przerabia zboże na słód, a browar czeka na dostawę.",
+        "en": "The malthouse turns grain into malt, which the brewery awaits."
+      },
+      "producer": "malthouse",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.malthouse.recipe.inputs.grain"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "malt",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.malthouse.recipe.outputs.malt"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.malthouse.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.malt"
+      },
+      "castleBasePrice": {
+        "value": 4,
+        "source": "defs.MARKET.base.malt"
+      }
+    },
+    {
+      "id": "beer",
+      "nameKey": "good.beer",
+      "name": {
+        "pl": "piwo",
+        "en": "beer"
+      },
+      "description": {
+        "pl": "Browar warzy piwo ze słodu, a wozy zawożą beczki do zamku.",
+        "en": "The brewery brews beer from malt, and wagons haul its barrels to the castle."
+      },
+      "producer": "brewery",
+      "recipe": {
+        "inputs": [
+          {
+            "good": "malt",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.brewery.recipe.inputs.malt"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "beer",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.brewery.recipe.outputs.beer"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 16,
+          "source": "defs.BUILDINGS.brewery.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "wagonLoad": {
+        "value": 6,
+        "source": "defs.WAGON_CAPACITY_BY_GOOD.beer"
+      },
+      "castleBasePrice": {
+        "value": 9,
+        "source": "defs.MARKET.base.beer"
+      }
+    }
+  ],
+  "buildings": [
+    {
+      "id": "woodcutter",
+      "nameKey": "building.woodcutter",
+      "name": {
+        "pl": "Chata drwala",
+        "en": "Woodcutter's hut"
+      },
+      "description": {
+        "pl": "Z chaty drwala wychodzą bale potrzebne tartakom i węglarkom. Bez odbioru skład zapełni się.",
+        "en": "The woodcutter sends logs to sawmills and charcoal burners. Without pickup, the yard fills."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.woodcutter.recipe.outputs.wood"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 10,
+          "source": "defs.BUILDINGS.woodcutter.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.woodcutter.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.woodcutter.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.woodcutter.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.woodcutter.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.woodcutter.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 20,
+        "source": "defs.BUILDINGS.woodcutter.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.woodcutter"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 0,
+          "source": "defs.RANKS.0.unlocks"
+        },
+        "name": {
+          "pl": "Osada",
+          "en": "Settlement"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_WAGON",
+          "fix": {
+            "pl": "Zapewnij wolny wóz z dojazdem do producenta.",
+            "en": "Provide a free wagon that can reach the producer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "sawmill",
+      "nameKey": "building.sawmill",
+      "name": {
+        "pl": "Tartak",
+        "en": "Sawmill"
+      },
+      "description": {
+        "pl": "W tartaku drewno obraca się w deski. Praca ustaje bez bali lub miejsca na wyroby.",
+        "en": "At the sawmill, logs become planks. Work stops without logs or room for finished goods."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.sawmill.recipe.inputs.wood"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "planks",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.sawmill.recipe.outputs.planks"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 10,
+          "source": "defs.BUILDINGS.sawmill.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.sawmill.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.sawmill.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.sawmill.inCap"
+        },
+        "outputPerGood": {
+          "value": 12,
+          "source": "defs.BUILDINGS.sawmill.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.sawmill.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 40,
+        "source": "defs.BUILDINGS.sawmill.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.sawmill"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 0,
+          "source": "defs.RANKS.0.unlocks"
+        },
+        "name": {
+          "pl": "Osada",
+          "en": "Settlement"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.UNREACHABLE",
+          "fix": {
+            "pl": "Napraw połączenie dróg między dostawcą a odbiorcą.",
+            "en": "Repair the road link between supplier and customer."
+          }
+        },
+        {
+          "key": "status.NO_WAGON.ALL_BUSY",
+          "fix": {
+            "pl": "Kup wóz w połączonej stajni albo poczekaj na wolny kurs.",
+            "en": "Buy a wagon at a connected stable or wait for one to finish a trip."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "farm",
+      "nameKey": "building.farm",
+      "name": {
+        "pl": "Gospodarstwo",
+        "en": "Farmstead"
+      },
+      "description": {
+        "pl": "Gospodarstwo zbiera zboże dla młynów i słodowni. Plon musi znaleźć drogę do odbiorcy.",
+        "en": "The farmstead harvests grain for mills and malthouses. Its crop needs a road to a buyer."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.farm.recipe.outputs.grain"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 8,
+          "source": "defs.BUILDINGS.farm.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.farm.w"
+        },
+        "height": {
+          "value": 3,
+          "source": "defs.BUILDINGS.farm.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.farm.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.farm.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.farm.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 30,
+        "source": "defs.BUILDINGS.farm.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.farm"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 0,
+          "source": "defs.RANKS.0.unlocks"
+        },
+        "name": {
+          "pl": "Osada",
+          "en": "Settlement"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_WAGON",
+          "fix": {
+            "pl": "Zapewnij wolny wóz z dojazdem do producenta.",
+            "en": "Provide a free wagon that can reach the producer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "mill",
+      "nameKey": "building.mill",
+      "name": {
+        "pl": "Młyn wodny",
+        "en": "Watermill"
+      },
+      "description": {
+        "pl": "Młyn miele dostarczone zboże na mąkę dla piekarzy. Bez surowca koło stoi.",
+        "en": "The watermill grinds delivered grain into flour for bakers. Without grain, its wheel stands idle."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.mill.recipe.inputs.grain"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "flour",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.mill.recipe.outputs.flour"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 7,
+          "source": "defs.BUILDINGS.mill.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.mill.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.mill.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.mill.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.mill.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.mill.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 40,
+        "source": "defs.BUILDINGS.mill.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.mill"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 1,
+          "source": "defs.RANKS.1.unlocks"
+        },
+        "name": {
+          "pl": "Wieś targowa",
+          "en": "Market village"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.UNREACHABLE",
+          "fix": {
+            "pl": "Napraw połączenie dróg między dostawcą a odbiorcą.",
+            "en": "Repair the road link between supplier and customer."
+          }
+        },
+        {
+          "key": "status.NO_WAGON.NONE_CAN_REACH",
+          "fix": {
+            "pl": "Połącz stajnię drogą z miejscem odbioru towaru.",
+            "en": "Connect the stable by road to the goods pickup point."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "bakery",
+      "nameKey": "building.bakery",
+      "name": {
+        "pl": "Piekarnia",
+        "en": "Bakery"
+      },
+      "description": {
+        "pl": "Piekarze przemieniają mąkę w chleb dla zamku. Brak dostawy wstrzymuje piece.",
+        "en": "Bakers turn flour into bread for the castle. A missing delivery leaves the ovens cold."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "flour",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.bakery.recipe.inputs.flour"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "bread",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.bakery.recipe.outputs.bread"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.bakery.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.bakery.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.bakery.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.bakery.inCap"
+        },
+        "outputPerGood": {
+          "value": 12,
+          "source": "defs.BUILDINGS.bakery.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.bakery.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 40,
+        "source": "defs.BUILDINGS.bakery.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.bakery"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 1,
+          "source": "defs.RANKS.1.unlocks"
+        },
+        "name": {
+          "pl": "Wieś targowa",
+          "en": "Market village"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.CONTESTED",
+          "fix": {
+            "pl": "Zwiększ produkcję surowca lub zapewnij osobną dostawę dla tego odbiorcy.",
+            "en": "Increase input production or arrange a separate delivery to this customer."
+          }
+        },
+        {
+          "key": "status.NO_WAGON.ALL_BUSY",
+          "fix": {
+            "pl": "Kup wóz w połączonej stajni albo poczekaj na wolny kurs.",
+            "en": "Buy a wagon at a connected stable or wait for one to finish a trip."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "fisher",
+      "nameKey": "building.fisher",
+      "name": {
+        "pl": "Chata rybaka",
+        "en": "Fisher's hut"
+      },
+      "description": {
+        "pl": "Rybak rozkłada sieci przy brzegu i oddaje połów woźnicom.",
+        "en": "The fisher sets nets by the shore and hands the catch to wagon drivers."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "fish",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.fisher.recipe.outputs.fish"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 9,
+          "source": "defs.BUILDINGS.fisher.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.fisher.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.fisher.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.fisher.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.fisher.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.fisher.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 30,
+        "source": "defs.BUILDINGS.fisher.price"
+      },
+      "site": {
+        "rule": {
+          "value": "NEAR_WATER",
+          "source": "defs.SITE_RULE.fisher"
+        },
+        "pl": "Równy, suchy teren przy wodzie.",
+        "en": "Flat, dry ground beside water."
+      },
+      "unlock": {
+        "rank": {
+          "value": 2,
+          "source": "defs.RANKS.2.unlocks"
+        },
+        "name": {
+          "pl": "Miasteczko",
+          "en": "Small town"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_WAGON",
+          "fix": {
+            "pl": "Zapewnij wolny wóz z dojazdem do producenta.",
+            "en": "Provide a free wagon that can reach the producer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "quarry",
+      "nameKey": "building.quarry",
+      "name": {
+        "pl": "Kamieniołom",
+        "en": "Quarry"
+      },
+      "description": {
+        "pl": "Kamieniarze wydobywają surowiec przy skalnej grani. Wozy zabierają mniej kamienia niż innych towarów.",
+        "en": "Stonecutters work beside the rocky ridge. Wagons carry less stone than other goods."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [
+          {
+            "good": "stone",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.quarry.recipe.outputs.stone"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.quarry.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.quarry.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.quarry.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.quarry.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.quarry.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.quarry.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 40,
+        "source": "defs.BUILDINGS.quarry.price"
+      },
+      "site": {
+        "rule": {
+          "value": "ON_ROCK",
+          "source": "defs.SITE_RULE.quarry"
+        },
+        "pl": "Równy, suchy teren na skale lub przy niej.",
+        "en": "Flat, dry ground on or next to rock.",
+        "minimumHeightAboveWater": {
+          "value": 5,
+          "source": "defs.QUARRY_MIN_HEIGHT"
+        }
+      },
+      "unlock": {
+        "rank": {
+          "value": 2,
+          "source": "defs.RANKS.2.unlocks"
+        },
+        "name": {
+          "pl": "Miasteczko",
+          "en": "Small town"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_WAGON",
+          "fix": {
+            "pl": "Zapewnij wolny wóz z dojazdem do producenta.",
+            "en": "Provide a free wagon that can reach the producer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "charcoalBurner",
+      "nameKey": "building.charcoalBurner",
+      "name": {
+        "pl": "Węglarnia",
+        "en": "Charcoal burner"
+      },
+      "description": {
+        "pl": "Węglarnia wypala przywiezione drewno na węgiel drzewny. Bez bali wygasa praca.",
+        "en": "The charcoal burner chars delivered logs. Without timber, work dies down."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "wood",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.charcoalBurner.recipe.inputs.wood"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "charcoal",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.charcoalBurner.recipe.outputs.charcoal"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 20,
+          "source": "defs.BUILDINGS.charcoalBurner.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.charcoalBurner.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.charcoalBurner.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.charcoalBurner.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.charcoalBurner.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.charcoalBurner.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 35,
+        "source": "defs.BUILDINGS.charcoalBurner.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.charcoalBurner"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 3,
+          "source": "defs.RANKS.3.unlocks"
+        },
+        "name": {
+          "pl": "Miasto",
+          "en": "Town"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.CONTESTED",
+          "fix": {
+            "pl": "Zwiększ produkcję surowca lub zapewnij osobną dostawę dla tego odbiorcy.",
+            "en": "Increase input production or arrange a separate delivery to this customer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "malthouse",
+      "nameKey": "building.malthouse",
+      "name": {
+        "pl": "Słodownia",
+        "en": "Malthouse"
+      },
+      "description": {
+        "pl": "Słodownia przerabia zboże na słód, zanim trafi on do browaru.",
+        "en": "The malthouse prepares grain as malt before it travels to the brewery."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "grain",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.malthouse.recipe.inputs.grain"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "malt",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.malthouse.recipe.outputs.malt"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 12,
+          "source": "defs.BUILDINGS.malthouse.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 2,
+          "source": "defs.BUILDINGS.malthouse.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.malthouse.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.malthouse.inCap"
+        },
+        "outputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.malthouse.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.malthouse.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 45,
+        "source": "defs.BUILDINGS.malthouse.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.malthouse"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 3,
+          "source": "defs.RANKS.3.unlocks"
+        },
+        "name": {
+          "pl": "Miasto",
+          "en": "Town"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.CONTESTED",
+          "fix": {
+            "pl": "Zwiększ produkcję surowca lub zapewnij osobną dostawę dla tego odbiorcy.",
+            "en": "Increase input production or arrange a separate delivery to this customer."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "brewery",
+      "nameKey": "building.brewery",
+      "name": {
+        "pl": "Browar",
+        "en": "Brewery"
+      },
+      "description": {
+        "pl": "W browarze słód przemienia się w piwo. Beczki czekają na wozy do zamku.",
+        "en": "The brewery turns malt into beer. Barrels await wagons bound for the castle."
+      },
+      "recipe": {
+        "inputs": [
+          {
+            "good": "malt",
+            "quantity": {
+              "value": 1,
+              "source": "defs.BUILDINGS.brewery.recipe.inputs.malt"
+            }
+          }
+        ],
+        "outputs": [
+          {
+            "good": "beer",
+            "quantity": {
+              "value": 2,
+              "source": "defs.BUILDINGS.brewery.recipe.outputs.beer"
+            }
+          }
+        ],
+        "cycle": {
+          "value": 16,
+          "source": "defs.BUILDINGS.brewery.recipe.ticks",
+          "conversion": "ticksToSeconds"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.brewery.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.brewery.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 8,
+          "source": "defs.BUILDINGS.brewery.inCap"
+        },
+        "outputPerGood": {
+          "value": 12,
+          "source": "defs.BUILDINGS.brewery.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.brewery.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 60,
+        "source": "defs.BUILDINGS.brewery.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.brewery"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 4,
+          "source": "defs.RANKS.4.unlocks"
+        },
+        "name": {
+          "pl": "Gród",
+          "en": "Stronghold"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        },
+        {
+          "key": "status.NO_WAGON.ALL_BUSY",
+          "fix": {
+            "pl": "Kup wóz w połączonej stajni albo poczekaj na wolny kurs.",
+            "en": "Buy a wagon at a connected stable or wait for one to finish a trip."
+          }
+        },
+        {
+          "key": "status.OUTPUT_FULL.NO_DESTINATION",
+          "fix": {
+            "pl": "Podłącz odbiorcę albo spichlerz z wolnym miejscem.",
+            "en": "Connect a customer or a granary with free space."
+          }
+        }
+      ]
+    },
+    {
+      "id": "warehouse",
+      "nameKey": "building.warehouse",
+      "name": {
+        "pl": "Spichlerz",
+        "en": "Granary"
+      },
+      "description": {
+        "pl": "Spichlerz przechowuje towary wielu gospodarstw. Gdy się zapełni, dalsze dostawy nie wejdą.",
+        "en": "The granary stores goods from many producers. Once full, it cannot accept new deliveries."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [],
+        "cycle": {
+          "value": null,
+          "source": "defs.BUILDINGS.warehouse.recipe"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.warehouse.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.warehouse.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.warehouse.inCap"
+        },
+        "outputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.warehouse.outCap"
+        },
+        "total": {
+          "value": 60,
+          "source": "defs.BUILDINGS.warehouse.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 30,
+        "source": "defs.BUILDINGS.warehouse.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.warehouse"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 0,
+          "source": "defs.RANKS.0.unlocks"
+        },
+        "name": {
+          "pl": "Osada",
+          "en": "Settlement"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.STORAGE_FULL",
+          "fix": {
+            "pl": "Zbuduj połączony spichlerz lub uruchom odbiór nagromadzonych zapasów.",
+            "en": "Build a connected granary or arrange collection of stored goods."
+          }
+        }
+      ]
+    },
+    {
+      "id": "stable",
+      "nameKey": "building.stable",
+      "name": {
+        "pl": "Stajnia",
+        "en": "Stable"
+      },
+      "description": {
+        "pl": "W stajni czekają wozy, które łączą warsztaty i zamek. Bez drogi nie ruszą po ładunek.",
+        "en": "The stable houses wagons serving workshops and the castle. Without a road, they cannot collect cargo."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [],
+        "cycle": {
+          "value": null,
+          "source": "defs.BUILDINGS.stable.recipe"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 3,
+          "source": "defs.BUILDINGS.stable.w"
+        },
+        "height": {
+          "value": 2,
+          "source": "defs.BUILDINGS.stable.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.stable.inCap"
+        },
+        "outputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.stable.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.stable.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 40,
+        "source": "defs.BUILDINGS.stable.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.stable"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": 0,
+          "source": "defs.RANKS.0.unlocks"
+        },
+        "name": {
+          "pl": "Osada",
+          "en": "Settlement"
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        }
+      ]
+    },
+    {
+      "id": "castle",
+      "nameKey": "building.castle",
+      "name": {
+        "pl": "Zamek",
+        "en": "Castle"
+      },
+      "description": {
+        "pl": "Zamek przyjmuje towary i w Wolnej dolinie wypłaca za nie srebro. W kontraktach wymaga wskazanych dostaw.",
+        "en": "The castle buys goods for silver in Free valley. During contracts, it awaits named deliveries."
+      },
+      "recipe": {
+        "inputs": [],
+        "outputs": [],
+        "cycle": {
+          "value": null,
+          "source": "defs.BUILDINGS.castle.recipe"
+        }
+      },
+      "footprint": {
+        "width": {
+          "value": 4,
+          "source": "defs.BUILDINGS.castle.w"
+        },
+        "height": {
+          "value": 4,
+          "source": "defs.BUILDINGS.castle.h"
+        }
+      },
+      "storage": {
+        "inputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.castle.inCap"
+        },
+        "outputPerGood": {
+          "value": 0,
+          "source": "defs.BUILDINGS.castle.outCap"
+        },
+        "total": {
+          "value": 0,
+          "source": "defs.BUILDINGS.castle.storeCap"
+        }
+      },
+      "constructionPrice": {
+        "value": 0,
+        "source": "defs.BUILDINGS.castle.price"
+      },
+      "site": {
+        "rule": {
+          "value": null,
+          "source": "defs.SITE_RULE.castle"
+        },
+        "pl": "Równy, suchy teren.",
+        "en": "Flat, dry ground."
+      },
+      "unlock": {
+        "rank": {
+          "value": null,
+          "source": "defs.RANKS"
+        },
+        "name": {
+          "pl": "Zamek jest na mapie od początku; nie można go postawić.",
+          "en": "The castle is present from the start and cannot be placed."
+        }
+      },
+      "stalls": [
+        {
+          "key": "status.NO_ROAD",
+          "fix": {
+            "pl": "Połącz bramę z przejezdną siecią dróg.",
+            "en": "Connect the gate to a passable road network."
+          }
+        },
+        {
+          "key": "status.NO_INPUT.NONE_AVAILABLE",
+          "fix": {
+            "pl": "Uruchom dostawcę brakującego surowca i sprawdź jego zapasy.",
+            "en": "Start a supplier of the missing input and check its stock."
+          }
+        }
+      ]
+    }
+  ]
+}

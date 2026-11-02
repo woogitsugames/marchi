@@ -6,6 +6,7 @@ import { generateValley, type ValleySpec } from './terrain';
 import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
 import { S2_MISSIONS } from './missions-s2';
 import { PROPOSED_MISSIONS_7_9 } from './proposals/missions-7-9';
+import { PROPOSED_MISSIONS_10_12 } from './proposals/missions-10-12';
 import { freshMarket, freshTown } from './town';
 import type { World } from './network';
 import type { BuildingType, Good, GoodMap, RainSpell, SimState, Terrain } from './types';
@@ -228,6 +229,9 @@ MISSIONS.m6 = S2_MISSIONS.m6;
 MISSIONS.m7 = PROPOSED_MISSIONS_7_9.m7;
 MISSIONS.m8 = PROPOSED_MISSIONS_7_9.m8;
 MISSIONS.m9 = PROPOSED_MISSIONS_7_9.m9;
+MISSIONS.m10 = PROPOSED_MISSIONS_10_12.m10;
+MISSIONS.m11 = PROPOSED_MISSIONS_10_12.m11;
+MISSIONS.m12 = PROPOSED_MISSIONS_10_12.m12;
 MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 

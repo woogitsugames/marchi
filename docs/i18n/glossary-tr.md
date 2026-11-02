@@ -49,3 +49,16 @@ numaraları için yapay çoğul blokları eklenmez. “{good}: {count}” ve “
 hem biçimlendirilmiş sayıları hem oranları destekler. Dinamik mal adlarına ek getirilmez.
 Doygunluk her on saniyede bir azalır; açıklama, fiyatın bir gümüş arttığı anlamına gelmez.
 “Arayüzü göster” gizlenen denetimleri geri getirir; görünür düğme metni 14 karakterdir.
+
+## Round 06 — seasons and weather
+
+| Polski / English | tr |
+| --- | --- |
+| wiosna / spring | ilkbahar |
+| lato / summer | yaz |
+| jesień / autumn | sonbahar |
+| zima / winter | kış |
+| roztopy / thaw | erime |
+| jesienny jarmark / autumn fair | sonbahar panayırı |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.
