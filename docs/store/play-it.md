@@ -18,6 +18,10 @@ I contratti del castello sono brevi missioni pensate per partite di 5–12 minut
 
 La Valle libera è una modalità rilassante di costruzione della città con tre slot di salvataggio indipendenti. Fai crescere l'insediamento attraverso vari ranghi fino alla capitale. Sblocca pesca, cave per pietre destinate a selciati e ponti, produzione di carbone di legna, maltazione e birrificazione. Ogni filiera richiede vere consegne con i carri.
 
+Dodici missioni (I–XII) comprendono ponti bloccati, ghiaccio sul fiume, consegne a tappe, piccoli granai, pesca, selciati prima della tempesta, disputa per il legno, carbone, malto e birra. Tocca il blocco più grave per scoprirne la causa.
+
+La Valle libera ha tre registri di insediamento, ranghi fino alla capitale, stagioni e mercato. Ordini reali, fiere e mercante itinerante sono eventi facoltativi.
+
 Cinque caratteristiche principali:
 - Spiegazioni con un tocco degli arresti di edifici e carri, inclusa la catena delle cause.
 - Carichi visibili sui carri, destinazioni e tempi di arrivo previsti.
@@ -25,7 +29,7 @@ Cinque caratteristiche principali:
 - Contratti di 5–12 minuti e una valle libera senza scadenze.
 - Consegne fisiche di tronchi, assi, grano, farina e pane: le merci non si teletrasportano.
 
-Tutte e sei le missioni (I–VI) e la Valle libera sono gratuite. Niente pubblicità, acquisti in-app, sistemi di energia, vantaggi a pagamento o attese artificiali. I progressi restano salvati localmente sul dispositivo.
+Tutte le dodici missioni (I–XII) e la Valle libera sono gratuite. Niente pubblicità, acquisti in-app, abbonamenti, vantaggi a pagamento o attese artificiali. Si gioca offline senza Internet. I salvataggi sono locali e il backup di sistema può trasferirli.
 
 ## Parole chiave — riferimento ASO (Google Play non ha un campo dedicato)
 logistica medievale, strategia, carri, consegne, catene di approvvigionamento, costruzione strade, ponti, rotte commerciali, contratti, gioco economico
