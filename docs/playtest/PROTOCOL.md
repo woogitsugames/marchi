@@ -51,24 +51,28 @@ Prowadzący tworzy przed sesjami tabelkę `P01–P08 → ścieżka + planowane s
    location.replace(location.pathname + '?play=m1&ff=90&speed=0');
    ```
    Użyj odpowiedniego URL z tabeli poniżej. **Nie zakładaj**, że `adb shell am start ... ?play=` działa: brak takiej ścieżki w kodzie. Jeżeli WebView nie daje się zdalnie inspekcjonować, przygotuj debugowy ekran wyboru fixtur albo wariant APK z ustalonym adresem startowym **przed rekrutacją**. Scenariusze bez możliwości przygotowania nie są „zaliczone”.
-4. Po wczytaniu upewnij się w konsoli, że `window.__marchia?.ready === true` oraz `__marchia.app.world.state.mission.id` odpowiada misji. Przed oddaniem telefonu zamknij panel diagnostyczny na komputerze i nie zostawiaj otwartego arkusza „Dlaczego stoi?”.
+4. Sprawdź `window.__marchia?.ready === true` oraz (w debug) `window.__marchia.app.world.state.mission.id`. **D-51:** pełny uchwyt `app` jest dostępny w release tylko przy `?debug=1`; w Vite dev również bez flagi (`import.meta.env.DEV`). Bez niej w release zostaje wyłącznie `ready`. Do konsolowych preflightów dodaj `debug=1` na stanowisku prowadzącego, nie pokazując konsoli uczestnikowi. Przed oddaniem telefonu zamknij panel diagnostyczny na komputerze i nie zostawiaj otwartego arkusza „Dlaczego stoi?”.
 5. Każdy przypadek przeładuj **od zera**; nie kontynuuj zapisu z poprzedniego scenariusza. Po przygotowaniu wykonaj kontrolę stanu (`preflight` poniżej), a czas zacznij mierzyć dopiero po przekazaniu telefonu.
 
-**Faktyczne parametry z `src/ui/app.ts` (nie zamieniać ich znaczeń):**
+**Zweryfikowane parametry URL** (`src/ui/app.ts`, `src/ui/menu.ts`, `src/main.ts`):
 
-| Parametr | Stan faktyczny / ograniczenie |
+| Parametr | Działanie i ograniczenia |
 | --- | --- |
-| `play=m1|m2|m3|m4|m5|m6|sandbox` | Obsługiwane klucze w `isMissionKey` z `src/ui/menu.ts`; start nowej gry w danym trybie, **nie** wczytanie zapisu |
-| `tut=1` | Wymusza samouczek **tylko w m1** także przy starcie debugowym; `?play=m1` bez `tut=1` wyłącza samouczek w tym trybie. W normalnym menu samouczek zależy od zapisanej preferencji gracza |
-| `ff=<s>` | Fast-forward w **sekundach symulacji**, limit 3600; tylko do momentu wyniku misji, nie gwarantuje określonego statusu. Przetestuj stan po odczycie, bez podawania ujemnych/nieprawidłowych wartości |
-| `speed=0|1|2|4` | Prędkość (0 = pauza); kod nie waliduje innych liczb, więc ich nie podawaj |
-| `bot=1` | Uruchamia **plan z m1** (most `bridgeA`, `x=41`, i zakup 4 wozów), nawet gdy wybrano inną misję; **stosować tylko w m1**, nigdy w m2/m3 ani w przypadku braku mostu |
-| `open=<buildingType>` | Otwiera **pierwszy budynek danego typu**, np. `castle`, `bakery`, `warehouse`; **nie przyjmuje ID** |
-| `wagon=jam|closed` | Preferuje odpowiednio pierwszy `BRIDGE_JAM` albo `BRIDGE_CLOSED`, a jeśli brak — **pierwszy wóz nie-IDLE**; to nie jest asercja statusu ani wybór po ID |
-| `wagon=<inna_wartość>` | Otwiera pierwszy wóz nie-IDLE; **nie przyjmuje ID** |
-| `tool=road|cobble|demolish|build` | Wybiera narzędzie; przy `tool=build` parametr `pick=<buildingType>` wstępnie wybiera typ (wyłącznie dla prowadzącego) |
-| `slot=valley1|valley2|valley3` | W połączeniu z `play=sandbox` wybiera docelowy zapis nowej doliny; **może nadpisać testowy slot** przy automatycznym zapisie |
-| `market=1` | W debugowym starcie otwiera panel targu, jeżeli dany świat ma targ; tylko do kontroli przed testem, nie do właściwego zadania |
+| `play=m1…m12|sandbox` | Dwanaście misji i Wolna dolina z `isMissionKey`, zawsze **nowy** świat, nie wznowienie zapisu. Bez `play` — menu |
+| `tut=1` | Wymusza samouczek tylko w m1. Dla `play=m1&tut=1` **najpierw list otwierający**, potem (po jego zamknięciu) notatki tutoriala; samo `play=m1` nie pokazuje żadnego z nich |
+| `ff=N` | Fast-forward o N **sekund symulacji**, do 3600 s i nie dalej niż wynik misji; **nie gwarantuje statusu** |
+| `speed=0|1|2|4` | 0 = pauza. Inne wartości nie są wspieranymi trybami HUD, nie podawaj ich |
+| `bot=1` | Uruchamia `botPlan(world)`, plan m1 (most i cztery wozy). Nie stosuj do m2–m12 ani badania samodzielnego wykrycia problemu |
+| `lang=pl|en|…` | Parsowane w `src/main.ts` przez `parseLang`; dla badania ustal jeden język, odnotuj zmianę; lista języków wg `src/i18n/index.ts` |
+| `debug=1` | Pełne `window.__marchia.app` i helpery w buildzie release (D-51), w dev również bez parametru. `ready` zawsze |
+| `perf=1` | Licznik wydajności; pomocniczy odczyt techniczny, **nie** temperatura ani odczucie użytkownika |
+| `open=typ`, `wagon=jam|closed|dowolne` | Otwierają pierwszy budynek typu lub wskazany status wozu, z fallbackiem do pierwszego aktywnego; **nie** wybierają ID i **nie** zapewniają żądanego statusu |
+| `tool=road|cobble|demolish|build`, `pick=typ` | Wybór narzędzia i opcjonalnego typu budynku (`pick` przy `tool=build`); nie zostawiaj podczas testu odkrywalności |
+| `slot=valley1|valley2|valley3` | Nowy sandbox zapisuje do wskazanej księgi; może ją nadpisać przez autosave |
+| `market=1`, `collapsed=1` | Kontrolne otwarcie targu / złożenie listu przewozowego, nie używaj w teście znalezienia elementu |
+| `quality=…`, `dynres=0` | Preferencja jakości i wyłączenie dynamicznej rozdzielczości — zanotuj przy P1 |
+
+**Przykładowe URL dla prowadzącego:** `?play=m1&tut=1&speed=1&lang=pl&debug=1`, `?play=m7&ff=120&speed=0&lang=pl&debug=1`, `?play=m12&ff=180&speed=0&lang=pl&debug=1`, `?play=sandbox&slot=valley2&speed=0&lang=pl&debug=1`. `fixture=…` pozostaje **niezaimplementowaną propozycją**.
 
 `open` i `wagon` używaj **wyłącznie do wstępnej kontroli wizualnej**: otwarty panel zdradza ścieżkę rozwiązania i unieważnia pomiar samodzielnego znalezienia „Dlaczego stoi?”. Aby wykonać próbę z panelem, przeładuj przypadek bez tych parametrów. `ff` nie gwarantuje żądanego **stanu semantycznego** — zawsze weryfikuj status, nie samą liczbę sekund.
 
@@ -219,10 +223,10 @@ Te zadania są **inne niż S1**: tutorial celowo prowadzi gracza, dlatego wyniku
 ### T1 — Czy nowy gracz rozumie list i wskazówki?
 
 - **Start:** świeży uczestnik, świeża m1: `?play=m1&tut=1&speed=1`; **bez** `ff`, `bot`, `open`, `tool`. Jeśli nie da się ustawić URL w APK, rozpocznij nową m1 z menu na świeżym profilu/testowym urządzeniu i sprawdź wyświetlenie notatki; zapisane preferencje mogą ukryć samouczek.
-- **Preflight:** widoczny nagłówek „Pismo od kasztelana”, pierwsza notatka, aktywna misja `m1` i brak przeprawy. Nie pokazuj graczowi konsoli ani listy kroków.
+- **Preflight:** widoczny list otwierający, aktywna `m1` i brak przeprawy. **Pierwsza notatka samouczka nie jest równocześnie widoczna z listem** — pojawia się dopiero po jego zamknięciu. Zapisz, czy gracz przeczytał list, zamknął go przyciskiem lub dotknięciem i dostrzegł pierwszą notatkę. Nie pokazuj graczowi konsoli ani listy kroków.
 - **Polecenie:** „Graj tak, jak zrobił(a)byś to po pierwszym uruchomieniu. Mów, co oznacza list i co zamierzasz zrobić”. Nie instruuj, gdzie jest lista przewozowa ani jak budować most.
 - **Obserwuj:** (1) rozpoznanie zamówienia na **30 desek i 20 chlebów**; (2) samodzielne otwarcie zamku z listu; (3) przejście przynajmniej jednego ogniwa przyczyny; (4) znalezienie narzędzia traktu; (5) utworzenie przeprawy; (6) ponowne otwarcie zamku po połączeniu. Zapisz ostatni zaobserwowany krok 1–6 i powód pominięcia.
-- **Sukces:** `letter_understood=1`, gdy bez podpowiedzi poprawnie objaśnia rolę listu oraz bieżący brak dostawy; `task_success=1`, gdy wykona niezbędną sekwencję i ponownie sprawdzi zamek (nie wymagaj zwycięstwa). Zapisz `task_time_s` do 110 s aktywnego tutoriala, `tutorial_result` i `taps`. **Nie stosuj progu <30 s do całego tutoriala.**
+- **Sukces:** `letter_understood=1`, gdy bez podpowiedzi objaśnia rolę listu, zamówienie i brak dostawy; `task_success=1`, gdy wykona sekwencję i ponownie sprawdzi zamek (bez wymagania zwycięstwa). Zapisz `task_time_s` do 110 s **aktywnego** tutoriala, `tutorial_result` i `taps`. **Osobno**, po zamknięciu listu, spytaj: „Co wstrzymuje dostawę do zamku?” i mierz `first_diagnosis_s` od tego pytania do pierwszej trafnej przyczyny (maks. 60 s; timeout=60), `first_diagnosis_correct` (1/0). `first_diagnosis_s<30` jest osobną miarą pierwszej diagnozy — **nie** czasem ukończenia tutoriala ani niepodpowiadanym S1.
 
 ### T2 — Czy gracz dostrzega i rozumie przycisk naprawy?
 
