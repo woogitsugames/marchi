@@ -12,6 +12,7 @@ import {
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
+import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 
 export interface PanelNav {
@@ -319,7 +320,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still
       const canSell = !w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0;
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
-        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(Math.floor(WAGON_PRICE * 0.5)) })}</span></button></div>` +
+        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(WAGON_REFUND) })}</span></button></div>` +
         (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
       setHtml(sheet.body, html);
       return true;
