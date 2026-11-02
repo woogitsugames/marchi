@@ -11,10 +11,11 @@ import { join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 
-function patch(file: string, subs: [string | RegExp, string][]): void {
+function patch(file: string, subs: [string | RegExp, string][], optional = false): void {
   let s = readFileSync(file, 'utf8');
   for (const [a, b] of subs) {
     const next = typeof a === 'string' ? s.split(a).join(b) : s.replace(a, b);
+    if (next === s && optional) continue;
     if (next === s) throw new Error(`patch miss in ${file}: ${String(a)}`);
     s = next;
   }
@@ -42,7 +43,6 @@ function build(dir: string): void {
   patch(join(dir, 'src/sim/logistics.ts'), [
     ['export function dispatch(world: World): void {',
       P + 'export function dispatch(world: World): void {\n  __P.d0();\n  dispatchI(world);\n  __P.m("diagnose");\n}\nfunction dispatchI(world: World): void {\n  __P.m0();'],
-    ['const t = dc.from(s.gate).dist[d.b.gate]!;', '__P.fz0 = free.length === 0; const t = dc.from(s.gate).dist[d.b.gate]!; __P.fz0 = false;'],
     ['const sourcesOf = ', '__P.m("demands");\n  const sourcesOf = '],
     ['  // --- market (free valley)', '  __P.m("assign");\n  // --- market (free valley)'],
     ['  // --- surplus:', '  __P.m("market");\n  // --- surplus:'],
@@ -51,8 +51,16 @@ function build(dir: string): void {
     ['m = dijkstra(this.world, node, true, false);', 'm = __P.dj(1, node, () => dijkstra(this.world, node, true, false));'],
     ['wagon.pathVer = -1; // replan at the next node', 'wagon.pathVer = -1; __P.jobs++;'],
   ]);
+  // count assign-phase Dijkstras run with no free wagon (pre-fix code only; after fix A there are none)
+  patch(join(dir, 'src/sim/logistics.ts'), [
+    ['const t = dc.from(s.gate).dist[d.b.gate]!;', '__P.fz0 = free.length === 0; const t = dc.from(s.gate).dist[d.b.gate]!; __P.fz0 = false;'],
+  ], true);
   const variants = (process.env.PERF_VARIANT ?? '').split(',');
-  if (variants.includes('pool')) {
+  // Both candidate fixes are in src/ since 2026-11-02 (releaseDistMap, reachable); the variants
+  // below only patch an older checkout that does not have them yet.
+  const srcNet = readFileSync(join(dir, 'src/sim/network.ts'), 'utf8');
+  if (variants.includes('pool') && srcNet.includes('releaseDistMap')) console.error('PERF_VARIANT pool: already in src/, ignored');
+  else if (variants.includes('pool')) {
     // candidate fix A: recycle the per-dispatch distance maps (no behaviour change, only allocation)
     patch(join(dir, 'src/sim/network.ts'), [
       ['const dist = reuse ? sc.dist.fill(Infinity) : new Float64Array(n).fill(Infinity);', 'const dist = reuse ? sc.dist.fill(Infinity) : takeF64(n).fill(Infinity);'],
@@ -65,7 +73,8 @@ function build(dir: string): void {
       ['  diagnose(world, unmet, pushFail, dc);', '  diagnose(world, unmet, pushFail, dc);\n  dc.release();'],
     ]);
   }
-  if (variants.includes('free0')) {
+  if (variants.includes('free0') && srcNet.includes('export function reachable(')) console.error('PERF_VARIANT free0: already in src/, ignored');
+  else if (variants.includes('free0')) {
     // candidate fix B: with no free wagon only reachability matters (nothing can be assigned), so
     // answer it from connected-component labels (built once per netVersion) instead of a full Dijkstra
     patch(join(dir, 'src/sim/network.ts'), [
@@ -220,6 +229,24 @@ async function main(): Promise<void> {
     runSandbox(DECENT, 60, { checkEvery: 1000, onTick: (w: any) => { if (w.state.tick % 3000 === 0) mix(sim.stateHash(w)); } });
     const { hashString } = await import(join(process.cwd(), 'src/sim/hash.ts'));
     console.log(`DIGEST ${out.length} hashes ${hashString(out.join(','))}`);
+    // missions VII-IX (bot-missions-7-9 strategies, same command timing as runProposed): separate
+    // digest so the line above stays comparable with the 2026-11-02 research baseline
+    const { withProposal } = await import(join(process.cwd(), 'tools/bot-missions-7-9.ts'));
+    const out2: string[] = [];
+    for (const id of Object.keys(STRATEGIES)) for (const s of STRATEGIES[id]) {
+      withProposal(id, () => {
+        const w = sim.createWorld(id);
+        let setupDone = false, executed = false;
+        while (w.state.mission.result === 'running' && w.state.tick <= 25 * 60 * TICK_HZ) {
+          if (s.setup && !setupDone && w.state.tick >= s.setup.after * TICK_HZ) { for (const c of s.setup.cmds(w)) sim.applyCommand(w, c); setupDone = true; }
+          if (!executed && w.state.tick >= s.after * TICK_HZ && (s.whenStone === undefined || sim.stoneAvailable(w) >= s.whenStone)) { for (const c of s.cmds(w)) sim.applyCommand(w, c); executed = true; }
+          sim.step(w);
+          if (w.state.tick % 600 === 0) out2.push(sim.stateHash(w));
+        }
+        out2.push(sim.stateHash(w));
+      });
+    }
+    console.log(`DIGEST789 ${out2.length} hashes ${hashString(out2.join(','))}`);
   }
 }
 
