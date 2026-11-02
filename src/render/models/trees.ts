@@ -1,15 +1,17 @@
 /**
  * Trees of a late-autumn Central European march, built for `InstancedMesh`:
- *  - spruce : dark conical crown of ragged, drooping branch tiers (~260 tris)
- *  - pine   : Scots pine, tall bare trunk with an orange upper bark and an irregular flat crown
- *  - oak    : broad crown that keeps its dry brown leaves into November (alpha leaf cards)
- *  - birch  : slender pale trunk, thinning yellow crown
+ *  - spruce : conical crown of ragged, drooping branch tiers round a slim core (~480 tris)
+ *  - pine   : Scots pine, tall trunk with a muted orange upper bark, crown of needle-tuft masses
+ *  - oak    : broad crown of rounded leaf clumps that keep their dry leaves into November
+ *  - birch  : slender pale trunk, loose yellow crown of drooping clumps
  *  - bush   : hazel / blackthorn shrub (~2.6 m) for forest edges, hedgerows and copse rims
  *
- * Origin at the trunk base, unit scale ≈ a mature tree (spruce 15 m, pine 16 m, oak 12 m,
- * birch 11 m); vary per instance with a uniform scale of 0.7–1.2 and random Y rotation.
- * Far LOD: `treeBillboard(kind)` camera-facing cards textured from an atlas baked once at
- * start-up with `bakeTreeBillboards(renderer)`; they cast blob shadows (`billboardDepthMaterial`).
+ * Crowns are built from foliage *clumps* (a few large crossed cards with a clump texture and
+ * blended crown/clump normals), trunks from a lathe with root flare and taper; `TREE_VARIANTS`
+ * geometry variants per kind. Origin at the trunk base, unit scale ≈ a mature tree (spruce
+ * 15 m, pine 16 m, oak 12 m, birch 11 m). Far LOD: `treeBillboard(kind)` camera-facing cards
+ * textured from albedo + normal atlases baked from 30° above (`bakeTreeBillboards`); they cast
+ * blob shadows (`billboardDepthMaterial`). The near/far swap is a dithered crossfade (materials.ts).
  */
 import {
   BufferAttribute,
@@ -19,20 +21,22 @@ import {
   DoubleSide,
   Float32BufferAttribute,
   Group,
-  HemisphereLight,
+  LatheGeometry,
   LinearMipmapLinearFilter,
   Mesh,
-  MeshBasicMaterial,
   MeshDepthMaterial,
   OrthographicCamera,
   RGBADepthPacking,
   Scene,
+  ShaderMaterial,
+  type Texture,
+  Vector2,
   Vector3,
   WebGLRenderer,
   WebGLRenderTarget,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
-import { leafTexture, modelMaterial, needleTexture } from './materials';
+import { leafTexture, modelMaterial, needleTexture, treeUniforms } from './materials';
 import { rod } from './shapes';
 
 export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch' | 'bush';
@@ -48,71 +52,119 @@ export const TREE_SIZE: Record<TreeKind, { height: number; radius: number }> = {
 };
 
 const BARK = '#4a4036';
-const PINE_UPPER = new Color('#8a5e3e');
 
-/** Card cluster: `n` leaf quads scattered in an ellipsoid, normals pointing out of the crown. */
-function leafCards(b: PartBuilder, centre: Vector3, rad: Vector3, n: number, size: number, colors: string[], seed: number, mat: 'leaves' | 'needles' = 'leaves'): void {
+/** Number of geometry variants per kind (each is its own `InstancedMesh` near the camera). */
+export const TREE_VARIANTS = 2;
+
+/** LOD radius factor per kind (shrubs keep full models further out) and tint family. */
+const TREE_ATTR: Record<TreeKind, [number, number]> = {
+  spruce: [1, 0],
+  pine: [1, 0],
+  oak: [1, 1],
+  birch: [1, 1],
+  bush: [1.9, 0], // shrubs: the gentle conifer tint range (no orange swing against the meadow)
+};
+export const treeLodFactor = (kind: TreeKind): number => TREE_ATTR[kind][0];
+
+interface Clump {
+  c: Vector3;
+  r: number;
+}
+
+/**
+ * Foliage clumps: each clump is `cards` large crossed cards carrying the leaf-clump texture.
+ * Vertex normals blend the direction out of the whole crown with the direction out of the clump
+ * (and a little "up"), so a crown shades as a few rounded masses instead of confetti; colour is
+ * lighter on the outer, upper side of the crown and darker in its core.
+ */
+function clumps(b: PartBuilder, mat: 'leaves' | 'needles', list: Clump[], cards: number, crownC: Vector3, crownR: Vector3, colors: string[], seed: number, flat = 0): void {
   const r = rng(seed);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
-  const crown = centre.clone();
-  for (let i = 0; i < n; i++) {
-    // point in ellipsoid shell (biased outward → sparse inside, like a thinning crown)
-    const u = r() * 2 - 1, th = r() * Math.PI * 2, k = Math.pow(r(), 0.35);
-    const s = Math.sqrt(1 - u * u);
-    const p = v3(s * Math.cos(th) * rad.x * k, u * rad.y * k, s * Math.sin(th) * rad.z * k).add(centre);
-    // random card orientation
-    const a = v3(r() - 0.5, r() - 0.5, r() - 0.5).normalize();
-    const t = v3(r() - 0.5, r() - 0.5, r() - 0.5).cross(a).normalize();
-    const sz = size * (0.7 + r() * 0.6);
-    const base = pos.length / 3;
-    const corners: [number, number][] = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-    const nrm = p.clone().sub(crown).normalize();
-    nrm.y = nrm.y * 0.6 + 0.4;
-    nrm.normalize();
-    for (const [cx, cy] of corners) {
-      const q = p.clone().addScaledVector(a, (cx * sz) / 2).addScaledVector(t, (cy * sz) / 2);
-      pos.push(q.x, q.y, q.z);
-      nor.push(nrm.x, nrm.y, nrm.z);
-      uv.push(((cx + 1) / 2) * (mat === 'needles' ? 0.5 : 1), (cy + 1) / 2);
+  const col: string[] = [];
+  const vMax = mat === 'needles' ? 0.5 : 1;
+  for (const { c, r: cr } of list) {
+    const out = c.clone().sub(crownC);
+    out.set(out.x / crownR.x, out.y / crownR.y, out.z / crownR.z);
+    const outN = out.lengthSq() > 1e-4 ? out.clone().normalize() : v3(0, 1, 0);
+    const clumpCol = Math.floor(r() * colors.length);
+    for (let k = 0; k < cards; k++) {
+      // card facing: partly outward, partly random, `flat` biases toward horizontal sprays
+      const f = outN.clone().multiplyScalar(0.55).add(v3(r() - 0.5, r() - 0.5, r() - 0.5).multiplyScalar(1.3));
+      f.y += flat * 1.6;
+      f.normalize();
+      const t = v3(r() - 0.5, r() - 0.5, r() - 0.5).cross(f).normalize();
+      const bt = f.clone().cross(t).normalize();
+      const sz = cr * (1.85 + r() * 0.45);
+      const cc = c.clone().add(v3(r() - 0.5, r() - 0.5, r() - 0.5).multiplyScalar(cr * 0.5));
+      const base = pos.length / 3;
+      const corners: [number, number][] = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+      const tone = colors[(clumpCol + (r() < 0.35 ? 1 + Math.floor(r() * (colors.length - 1)) : 0)) % colors.length]!;
+      for (const [cx, cy] of corners) {
+        const q = cc.clone().addScaledVector(t, (cx * sz) / 2).addScaledVector(bt, (cy * sz) / 2);
+        const dC = q.clone().sub(crownC);
+        dC.set(dC.x / crownR.x, dC.y / crownR.y, dC.z / crownR.z);
+        const dK = q.clone().sub(c);
+        const n = (dC.lengthSq() > 1e-4 ? dC.normalize() : v3(0, 1, 0)).multiplyScalar(0.6)
+          .add((dK.lengthSq() > 1e-4 ? dK.normalize() : v3(0, 1, 0)).multiplyScalar(0.4))
+          .add(v3(0, 0.3, 0))
+          .normalize();
+        pos.push(q.x, q.y, q.z);
+        nor.push(n.x, n.y, n.z);
+        uv.push((cx + 1) / 2, ((cy + 1) / 2) * vMax);
+        col.push(tone);
+      }
+      idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
     }
-    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
   }
   const g = new BufferGeometry();
   g.setAttribute('position', new Float32BufferAttribute(pos, 3));
   g.setAttribute('normal', new Float32BufferAttribute(nor, 3));
   g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
   g.setIndex(idx);
-  let ci = 0;
+  let vi = 0;
   b.add(mat, g, {
-    color: colors[0],
+    color: colors[0]!,
     keepUv: true,
     vary: 0,
-    noise: 0.1,
+    noise: 0.08,
+    noiseFreq: 0.5,
     ao: 0,
     dirt: 0,
-    shade: (p, _n, c) => {
-      // per-card colour pick (4 vertices per card) and inner-crown darkening
-      const card = Math.floor(ci++ / 4);
-      c.set(colors[card % colors.length]);
-      const d = p.clone().sub(crown);
-      const inner = Math.sqrt((d.x / rad.x) ** 2 + (d.y / rad.y) ** 2 + (d.z / rad.z) ** 2);
-      c.multiplyScalar(0.72 + 0.28 * Math.min(1, inner));
+    shade: (p, n, c) => {
+      c.set(col[vi++]!);
+      const d = p.clone().sub(crownC);
+      const inner = Math.min(1, Math.sqrt((d.x / crownR.x) ** 2 + (d.y / crownR.y) ** 2 + (d.z / crownR.z) ** 2));
+      // lit rim of the crown lighter, core a little darker (the shadow map does the rest)
+      c.multiplyScalar(0.84 + 0.22 * inner + 0.1 * Math.max(0, n.y));
     },
   });
+}
+
+/** Points on an ellipsoid shell (k = fraction of the radius, 1 = on the shell). */
+function shell(r: () => number, centre: Vector3, rad: Vector3, n: number, kMin: number, cr: [number, number], below = -0.55): Clump[] {
+  const out: Clump[] = [];
+  for (let i = 0; i < n; i++) {
+    const u = below + r() * (1 - below), th = r() * Math.PI * 2, k = kMin + (1 - kMin) * Math.sqrt(r());
+    const s = Math.sqrt(1 - u * u);
+    out.push({ c: v3(s * Math.cos(th) * rad.x * k, u * rad.y * k, s * Math.sin(th) * rad.z * k).add(centre), r: cr[0] + r() * (cr[1] - cr[0]) });
+  }
+  return out;
 }
 
 /** Spray cards radiating from the trunk in whorls; crown radius follows `radius(y)`. */
 function whorls(b: PartBuilder, y0: number, y1: number, step: number, perTier: number, radius: (y: number) => number, droop: number, colors: string[], seed: number, axisTop: Vector3): void {
   const r = rng(seed);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
+  const tipK: number[] = [];
   let tier = 0;
   for (let y = y0; y <= y1; y += step * (0.85 + r() * 0.3), tier++) {
     const R = radius(y);
-    for (let k = 0; k < perTier; k++) {
-      const a = tier * 2.39996 + (k / perTier) * Math.PI * 2 + r() * 0.5;
+    const n = Math.max(4, Math.round(perTier * Math.min(1, 0.45 + R / 2.4)));
+    for (let k = 0; k < n; k++) {
+      const a = tier * 2.39996 + (k / n) * Math.PI * 2 + r() * 0.5;
       const d = v3(Math.cos(a), 0, Math.sin(a));
       const len = R * (0.85 + r() * 0.3);
-      const wid = Math.max(0.7, len * 0.75);
+      const wid = Math.max(0.8, len * 0.85);
       const axis = v3(axisTop.x * (y / axisTop.y), y, axisTop.z * (y / axisTop.y));
       const start = axis.clone().addScaledVector(d, 0.05);
       const end = axis.clone().addScaledVector(d, len).add(v3(0, -len * droop * (0.7 + r() * 0.6), 0));
@@ -120,14 +172,16 @@ function whorls(b: PartBuilder, y0: number, y1: number, step: number, perTier: n
       // card plane mostly horizontal, rolled a little so some sprays show their face from the side
       const roll = (r() - 0.5) * 0.9;
       const side = v3(-d.z, 0, d.x).applyAxisAngle(along, roll);
-      const nrm = d.clone().multiplyScalar(0.75).add(v3(0, 0.65, 0)).normalize();
       const base = pos.length / 3;
       const corners: [number, number][] = [[0, -1], [1, -1], [1, 1], [0, 1]];
       for (const [u, v] of corners) {
         const q = start.clone().lerp(end, u).addScaledVector(side, (v * wid) / 2);
+        // cone normal: out of the crown and up, rounder toward the tip of the spray
+        const nrm = d.clone().multiplyScalar(0.55 + 0.35 * u).add(v3(0, 0.75, 0)).addScaledVector(side, v * 0.25).normalize();
         pos.push(q.x, q.y, q.z);
         nor.push(nrm.x, nrm.y, nrm.z);
-        uv.push(u * 0.5, (v + 1) / 2);
+        uv.push(u * 0.5, 0.5 + (v + 1) / 4);
+        tipK.push(u);
       }
       idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
     }
@@ -139,159 +193,210 @@ function whorls(b: PartBuilder, y0: number, y1: number, step: number, perTier: n
   g.setIndex(idx);
   let ci = 0;
   b.add('needles', g, {
-    color: colors[0],
+    color: colors[0]!,
     keepUv: true,
     vary: 0,
-    noise: 0.12,
+    noise: 0.1,
     noiseFreq: 0.7,
     ao: 0,
     dirt: 0,
     shade: (p, _n, c) => {
-      const card = Math.floor(ci++ / 4);
-      c.set(colors[card % colors.length]);
-      // inner (near the trunk) darker, tips lighter
-      const rr = Math.hypot(p.x, p.z) / (radius(Math.max(y0, p.y)) + 0.3);
-      c.multiplyScalar(0.82 + 0.3 * Math.min(1, rr));
+      const card = Math.floor(ci / 4);
+      const u = tipK[ci++]!;
+      c.set(colors[(card * 7 + (card >> 2)) % colors.length]!);
+      // near the trunk darker, sunlit tips lighter; the top of the cone fresher
+      c.multiplyScalar(0.8 + 0.34 * u + 0.08 * Math.min(1, p.y / (y1 + 1)));
     },
   });
 }
 
-/** Opaque dark core (cone) using the solid half of the needle texture. */
-function crownCore(b: PartBuilder, y0: number, y1: number, r0: number, color: string, top = v3(0, 1, 0)): void {
-  const g = new CylinderGeometry(0.05, r0, y1 - y0, 7, 2, true);
+/** Thin opaque core (cone) so a dense conifer is not see-through; normals point out and up. */
+function crownCore(b: PartBuilder, y0: number, y1: number, r0: number, color: string): void {
+  const g = new CylinderGeometry(0.05, r0, y1 - y0, 6, 2, true);
   const uv = g.getAttribute('uv');
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, 0.75, 0.5);
-  const lean = Math.atan2(top.x, top.y);
-  b.add('needles', g, { color, keepUv: true, m: trs(0, (y0 + y1) / 2, 0, 0, 0, -lean), ao: 0, dirt: 0, jitter: 0.15, jitterFreq: 0.8, shade: (_p, n, c) => { if (n.y < 0) c.multiplyScalar(0.6); } });
-}
-
-function spruce(b: PartBuilder): void {
-  const H = TREE_SIZE.spruce.height;
-  const R = TREE_SIZE.spruce.radius;
-  rod(b, 'bark', v3(0, -0.2, 0), v3(0, H * 0.97, 0), 0.24, 0.03, 6, { color: '#4b4038', ao: 0.4, dirt: 0.3 }, true);
-  const radius = (y: number) => 0.35 + R * Math.pow(Math.max(0, 1 - (y - 1.2) / (H - 1.2)), 0.95);
-  crownCore(b, 2.4, H - 1.6, R * 0.3, '#34402b');
-  whorls(b, 1.3, H - 0.6, 0.62, 6, radius, 0.3, ['#4f5e43', '#58684a', '#475640', '#5d6b48'], 61, v3(0, 1, 0));
-}
-
-function pine(b: PartBuilder): void {
-  const H = TREE_SIZE.pine.height;
-  const r = rng(11);
-  // slightly leaning trunk: grey-brown at the bottom, orange-brown above
-  const top = v3(0.35, H * 0.86, 0.15);
-  b.add('bark', new CylinderGeometry(0.1, 0.27, H * 0.88, 7, 3, true), {
-    m: trs(top.x / 2, H * 0.44 - 0.2, top.z / 2, 0.012, 0, -0.022),
-    color: '#4c4239',
-    jitter: 0.05,
-    jitterFreq: 0.6,
-    ao: 0.4,
-    dirt: 0.3,
-    shade: (q, _n, c) => {
-      if (q.y > H * 0.45) c.lerp(PINE_UPPER, Math.min(1, (q.y - H * 0.45) / 3));
-    },
-  });
-  // crown branches with needle clusters at their ends (flat, irregular Scots-pine crown)
-  const clumps: Vector3[] = [v3(0.35, H * 0.93, 0.15)];
-  for (let i = 0; i < 5; i++) {
-    const a = i * 2.4 + r() * 0.6;
-    const y = H * (0.66 + i * 0.045);
-    const e = v3(Math.cos(a) * (1.8 + r() * 0.8), y + 1.0, Math.sin(a) * (1.8 + r() * 0.8));
-    rod(b, 'bark', v3(0.3, y, 0.12), e, 0.09, 0.04, 4, { color: '#7a5640', ao: 0 }, true);
-    clumps.push(e);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, 0.75, 0.75);
+  const nr = g.getAttribute('normal');
+  for (let i = 0; i < nr.count; i++) {
+    const n = v3(nr.getX(i), nr.getY(i) + 0.8, nr.getZ(i)).normalize();
+    nr.setXYZ(i, n.x, n.y, n.z);
   }
-  clumps.forEach((c, i) => {
-    leafCards(b, c.clone().add(v3(0, 0.25, 0)), v3(1.5, 0.55, 1.5), 13, 1.5, ['#45533c', '#4e5b42', '#3e4a37'], 70 + i, 'needles');
-  });
+  b.add('needles', g, { color, keepUv: true, m: trs(0, (y0 + y1) / 2, 0), ao: 0, dirt: 0, jitter: 0.12, jitterFreq: 0.8 });
 }
 
-function oak(b: PartBuilder): void {
-  const r = rng(21);
-  const trunkTop = v3(0.1, 3.4, 0);
-  rod(b, 'bark', v3(0, -0.2, 0), trunkTop, 0.45, 0.33, 8, { color: BARK, jitter: 0.06, jitterFreq: 1.5, ao: 0.4, dirt: 0.3 });
+/**
+ * Trunk with a root flare and taper (lathe), slightly crooked by the builder's jitter.
+ * `lean` tips the top by (dx, dz) metres.
+ */
+function trunk(b: PartBuilder, h: number, r0: number, r1: number, seg: number, o: { color: string; shade?: (p: Vector3, n: Vector3, c: Color) => void }, lean = v3(0, 0, 0), flare = 1.5): void {
+  const prof: [number, number][] = [
+    [r0 * flare * 1.05, -0.25],
+    [r0 * flare, 0.0],
+    [r0 * (1 + (flare - 1) * 0.35), 0.35],
+    [r0 * 1.02, 0.9],
+    [r0 * 0.94 + r1 * 0.06, h * 0.35],
+    [r1, h],
+  ];
+  const g = new LatheGeometry(prof.map(([x, y]) => new Vector2(x, y)), seg);
+  const p = g.getAttribute('position');
+  for (let i = 0; i < p.count; i++) {
+    const y = p.getY(i);
+    const t = Math.max(0, y / h);
+    p.setXYZ(i, p.getX(i) + lean.x * t * t, y, p.getZ(i) + lean.z * t * t);
+  }
+  g.computeVertexNormals();
+  b.add('bark', g, { color: o.color, shade: o.shade, jitter: 0.04, jitterFreq: 1.2, ao: 0.45, dirt: 0.35 });
+}
+
+function spruce(b: PartBuilder, v: number): void {
+  const H = TREE_SIZE.spruce.height;
+  const R = TREE_SIZE.spruce.radius * (v ? 0.9 : 1);
+  trunk(b, H * 0.97, 0.26, 0.03, 6, { color: '#4b4038' }, v3(0.1 * v, 0, -0.08 * v), 1.6);
+  const radius = (y: number) => 0.3 + R * Math.pow(Math.max(0, 1 - (y - 1.2) / (H - 1.2)), v ? 1.05 : 0.92);
+  crownCore(b, 2.6, H - 2.2, R * 0.17, '#3d4a35');
+  whorls(b, 1.4, H - 0.5, 0.52, 8, radius, 0.32, ['#506046', '#48573f', '#5a6a4b', '#546444', '#626b4a', '#44523d'], 61 + v * 17, v3(0, 1, 0));
+}
+
+function pine(b: PartBuilder, v: number): void {
+  const H = TREE_SIZE.pine.height;
+  const r = rng(11 + v * 31);
+  // slightly leaning trunk: grey-brown at the bottom, muted orange-brown above
+  const top = v3(v ? -0.3 : 0.35, H * 0.86, v ? 0.25 : 0.15);
+  const upper = new Color('#7e5d45');
+  trunk(b, H * 0.88, 0.27, 0.1, 7, {
+    color: '#4c4239',
+    shade: (q, _n, c) => {
+      if (q.y > H * 0.42) c.lerp(upper, Math.min(1, (q.y - H * 0.42) / 3.5) * 0.65);
+    },
+  }, v3(top.x, 0, top.z), 1.4);
+  // limbs ending in needle tufts: an irregular, flat-topped crown of a few masses
+  const crownC = v3(top.x * 0.9, H * 0.83, top.z * 0.9);
+  const crownR = v3(3.3, 1.9, 3.3);
+  const list: Clump[] = [{ c: v3(top.x, H * 0.93, top.z), r: 1.15 }];
+  const n = 8 + v;
+  for (let i = 0; i < n; i++) {
+    const a = i * 2.4 + r() * 0.6;
+    const y = H * (0.62 + (i / n) * 0.26);
+    const reach = (2.0 + r() * 1.0) * (1 - (i / n) * 0.35);
+    const e = v3(top.x * 0.8 + Math.cos(a) * reach, y + 0.9 + r() * 0.5, top.z * 0.8 + Math.sin(a) * reach);
+    rod(b, 'bark', v3(top.x * (y / top.y), y, top.z * (y / top.y)), e, 0.08, 0.03, 4, { color: '#5a4638', ao: 0, dirt: 0 }, true);
+    list.push({ c: e.clone().add(v3(0, 0.2, 0)), r: 1.0 + r() * 0.35 });
+    list.push({ c: e.clone().lerp(crownC, 0.45).add(v3(0, 0.35, 0)), r: 0.8 });
+  }
+  clumps(b, 'needles', list, 4, crownC, crownR, ['#4c5a40', '#56634a', '#45523b', '#5c6847'], 70 + v * 13, 0.55);
+}
+
+function oak(b: PartBuilder, v: number): void {
+  const r = rng(21 + v * 101);
+  const trunkTop = v3(v ? -0.2 : 0.1, 3.2 + v * 0.4, v ? 0.15 : 0);
+  trunk(b, trunkTop.y + 0.2, 0.46, 0.34, 8, { color: BARK }, v3(trunkTop.x, 0, trunkTop.z), 1.55);
   // main limbs (sub-segmented for a slight crook)
   const ends: Vector3[] = [];
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + r() * 0.6;
-    const mid = v3(Math.cos(a) * 1.6, 5.2 + r() * 1.2, Math.sin(a) * 1.6);
-    const end = v3(Math.cos(a) * (3.4 + r()), 7.2 + r() * 2.5, Math.sin(a) * (3.4 + r()));
-    rod(b, 'bark', trunkTop, mid, 0.24, 0.15, 5, { color: BARK, ao: 0, dirt: 0 }, true);
-    rod(b, 'bark', mid, end, 0.15, 0.05, 4, { color: BARK, ao: 0, dirt: 0 }, true);
-    ends.push(mid, end);
+  const nl = 5 + v;
+  for (let i = 0; i < nl; i++) {
+    const a = (i / nl) * Math.PI * 2 + r() * 0.6;
+    const mid = v3(Math.cos(a) * 1.6, 5.1 + r() * 1.2, Math.sin(a) * 1.6);
+    const end = v3(Math.cos(a) * (3.3 + r()), 7.0 + r() * 2.4, Math.sin(a) * (3.3 + r()));
+    rod(b, 'bark', trunkTop, mid, 0.25, 0.16, 5, { color: BARK, ao: 0, dirt: 0 }, true);
+    rod(b, 'bark', mid, end, 0.16, 0.05, 4, { color: BARK, ao: 0, dirt: 0 }, true);
+    ends.push(end);
   }
-  // leading shoot
-  rod(b, 'bark', trunkTop, v3(0.3, 10.5, -0.2), 0.25, 0.06, 5, { color: BARK, ao: 0, dirt: 0 }, true);
-  // dry, withered brown leaves retained in clumps — sparse, with gaps showing the limbs
-  // (autumn-thinned, but a full silhouette: clumps around each limb end plus an outer shell)
-  const cols = ['#7a5a33', '#6c5232', '#8a6a3c', '#5f4a30', '#6e6038'];
-  leafCards(b, v3(0, 8.0, 0), v3(4.4, 2.7, 4.4), 46, 2.0, cols, 31);
-  leafCards(b, v3(0.2, 10.0, 0), v3(2.6, 1.5, 2.6), 16, 1.8, cols, 32);
-  ends.forEach((e, i) => {
-    if (i % 2 === 1) leafCards(b, e.clone().add(v3(0, 0.3, 0)), v3(1.9, 1.3, 1.9), 11, 1.7, cols, 33 + i);
-  });
+  rod(b, 'bark', trunkTop, v3(0.3, 10.2, -0.2), 0.26, 0.06, 5, { color: BARK, ao: 0, dirt: 0 }, true);
+  // dry leaves kept into November: a broad crown of rounded masses, a few warm lighter ones
+  const crownC = v3(0, 8.2, 0);
+  const crownR = v3(4.6, 2.9, 4.6);
+  const list: Clump[] = ends.map((e) => ({ c: e.clone().add(v3(0, 0.4, 0)), r: 1.5 + r() * 0.4 }));
+  list.push(...shell(r, crownC, crownR, 16, 0.55, [1.3, 1.8], -0.35));
+  list.push({ c: v3(0.2, 10.4, 0), r: 1.7 });
+  const cols = ['#7a5a33', '#6c5232', '#8d6b3a', '#5f4a30', '#9a7440', '#6f6236', '#a5643a'];
+  clumps(b, 'leaves', list, 3, crownC, crownR, cols, 31 + v * 7);
 }
 
-function birch(b: PartBuilder): void {
-  const r = rng(41);
+function birch(b: PartBuilder, v: number): void {
+  const r = rng(41 + v * 53);
   const H = TREE_SIZE.birch.height;
-  const pale = '#b3ab9a';
-  const barkO = {
-    color: pale,
-    ao: 0.3,
-    dirt: 0.2,
-    noise: 0.25,
-    noiseFreq: 3.5,
-    shade: (q: Vector3, _n: Vector3, c: Color) => {
-      // dark lenticel bands and a dark, fissured base
-      const band = fnoise(q.x * 3, q.y * 4.5, q.z * 3, 7);
-      if (band > 0.35) c.multiplyScalar(0.35);
-      if (q.y < 1.2) c.multiplyScalar(0.45 + 0.45 * (q.y / 1.2));
-    },
+  const pale = '#b9b2a2';
+  const shade = (q: Vector3, _n: Vector3, c: Color) => {
+    // dark lenticel bands and a dark, fissured base
+    const band = fnoise(q.x * 3, q.y * 4.5, q.z * 3, 7);
+    if (band > 0.35) c.multiplyScalar(0.4);
+    if (q.y < 1.4) c.multiplyScalar(0.42 + 0.48 * (q.y / 1.4));
   };
-  b.add('bark', new CylinderGeometry(0.06, 0.2, H * 0.92, 7, 5, false), { ...barkO, m: trs(0, H * 0.46 - 0.2, 0, 0.02, 0, 0.03), jitter: 0.05, jitterFreq: 0.5 });
-  const ends: Vector3[] = [];
-  for (let i = 0; i < 9; i++) {
+  const lean = v3(v ? 0.35 : -0.2, 0, v ? -0.15 : 0.25);
+  trunk(b, H * 0.92, 0.2, 0.05, 7, { color: pale, shade }, lean, 1.35);
+  const crownC = v3(lean.x * 0.6, H * 0.68, lean.z * 0.6);
+  const crownR = v3(2.5, 3.3, 2.5);
+  const list: Clump[] = [];
+  for (let i = 0; i < 8; i++) {
     const a = r() * Math.PI * 2;
-    const y = H * (0.35 + 0.55 * (i / 9));
-    const len = 2.6 * (1 - (i / 9) * 0.6);
-    const s = v3(0.08 * Math.cos(a), y, 0.08 * Math.sin(a));
-    const e = v3(Math.cos(a) * len, y + len * 0.9, Math.sin(a) * len);
-    rod(b, 'bark', s, e, 0.06, 0.012, 4, { ...barkO, color: '#5e5249', shade: undefined }, true);
-    // drooping twig tips
-    rod(b, 'bark', e, e.clone().add(v3(Math.cos(a) * 0.6, -0.9, Math.sin(a) * 0.6)), 0.012, 0.006, 3, { color: '#4a3e36', ao: 0, dirt: 0 }, true);
-    ends.push(e);
+    const y = H * (0.36 + 0.5 * (i / 8));
+    const t = y / (H * 0.92);
+    const ax = v3(lean.x * t * t, y, lean.z * t * t);
+    const len = 2.4 * (1 - (i / 8) * 0.55);
+    const e = ax.clone().add(v3(Math.cos(a) * len, len * 0.85, Math.sin(a) * len));
+    rod(b, 'bark', ax, e, 0.065, 0.015, 4, { color: '#5e5249', ao: 0, dirt: 0 }, true);
+    // drooping clumps below the branch end
+    list.push({ c: e.clone().add(v3(Math.cos(a) * 0.3, -0.5, Math.sin(a) * 0.3)), r: 0.95 + r() * 0.3 });
   }
-  // thinning yellow crown: clumps at the branch ends, a looser shell around them
-  const bc = ['#8f7c45', '#7f6d3d', '#6e6038', '#857446'];
-  leafCards(b, v3(0, H * 0.72, 0), v3(2.5, 3.0, 2.5), 30, 1.3, bc, 43);
-  ends.forEach((e, i) => leafCards(b, e.clone().add(v3(0, -0.3, 0)), v3(1.2, 1.1, 1.2), 6, 1.2, bc, 44 + i));
+  list.push(...shell(r, crownC, crownR, 10, 0.5, [0.9, 1.2], -0.5));
+  clumps(b, 'leaves', list, 3, crownC, crownR, ['#a08a45', '#8f7c45', '#b39a4f', '#857446', '#97894a', '#7b7a44'], 43 + v * 11);
 }
 
-function bush(b: PartBuilder): void {
-  const r = rng(51);
-  // a few thin stems fanning out of one root, twiggy tops
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2 + r() * 0.7;
-    const l = 0.9 + r() * 0.8;
-    const e = v3(Math.cos(a) * l, 1.6 + r() * 0.9, Math.sin(a) * l);
-    rod(b, 'bark', v3(Math.cos(a) * 0.1, -0.1, Math.sin(a) * 0.1), e, 0.05, 0.015, 4, { color: '#4a4038', ao: 0.3, dirt: 0.2 }, true);
+function bush(b: PartBuilder, v: number): void {
+  const r = rng(51 + v * 29);
+  // a few stems fanning out of one root, mostly hidden in the leaf mass
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 + r() * 0.7;
+    const l = 0.7 + r() * 0.6;
+    const e = v3(Math.cos(a) * l, 1.3 + r() * 0.7, Math.sin(a) * l);
+    rod(b, 'bark', v3(Math.cos(a) * 0.1, -0.1, Math.sin(a) * 0.1), e, 0.05, 0.02, 4, { color: '#4a4038', ao: 0.3, dirt: 0.2 }, true);
   }
-  const cols = ['#5c5537', '#6b5b36', '#4d4c33', '#776338', '#55583a'];
-  leafCards(b, v3(0, 1.45, 0), v3(1.7, 1.05, 1.7), 34, 1.15, cols, 52);
-  leafCards(b, v3(0.3, 2.1, -0.2), v3(1.1, 0.6, 1.1), 10, 1.0, cols, 53);
+  const crownC = v3(0, 1.35, 0);
+  const crownR = v3(1.75, 1.15, 1.75);
+  const list = shell(r, crownC, crownR, 8 + v, 0.35, [0.7, 0.95], -0.3);
+  list.push({ c: v3(0.15, 1.9, -0.1), r: 0.85 });
+  // hazel/blackthorn in November: dull olive and ochre with a few russet clumps
+  const cols = v
+    ? ['#646541', '#706b3c', '#5a5e3e', '#7b6a3c', '#7f5a3c']
+    : ['#5d6440', '#6a6a3e', '#535b3c', '#74683e', '#6e5636'];
+  clumps(b, 'leaves', list, 3, crownC, crownR, cols, 52 + v * 5);
 }
 
-const BUILD: Record<TreeKind, (b: PartBuilder) => void> = { spruce, pine, oak, birch, bush };
-const cache = new Map<TreeKind, ModelPart[]>();
+const BUILD: Record<TreeKind, (b: PartBuilder, v: number) => void> = { spruce, pine, oak, birch, bush };
+const cache = new Map<string, ModelPart[]>();
 
-/** Full-detail tree (LOD0). */
-export function treeParts(kind: TreeKind): ModelPart[] {
-  const hit = cache.get(kind);
+/** Full-detail tree (LOD0), `variant` in [0, TREE_VARIANTS). */
+export function treeParts(kind: TreeKind, variant = 0): ModelPart[] {
+  const key = `${kind}:${variant}`;
+  const hit = cache.get(key);
   if (hit) return hit;
-  const b = new PartBuilder({ seed: 600 + TREE_KINDS.indexOf(kind), ao: 0.3, aoHeight: 1.5 });
-  BUILD[kind](b);
-  const parts = b.build();
-  cache.set(kind, parts);
+  const b = new PartBuilder({ seed: 600 + TREE_KINDS.indexOf(kind) + variant * 37, ao: 0.3, aoHeight: 1.5 });
+  BUILD[kind](b, variant);
+  // trunks get their own material: bark maps plus the tree shader (LOD dither, sway)
+  const parts = b.build().map((p): ModelPart => ({ geometry: p.geometry, material: p.material === 'bark' ? 'trunk' : p.material }));
+  for (const p of parts) addTreeAttr(p.geometry, kind);
+  cache.set(key, parts);
   return parts;
+}
+
+function addTreeAttr(g: BufferGeometry, kind: TreeKind, lift = 0): void {
+  const n = g.getAttribute('position').count;
+  const a = new Float32Array(n * 3);
+  const [k, t] = TREE_ATTR[kind];
+  for (let i = 0; i < n; i++) { a[i * 3] = k; a[i * 3 + 1] = t; a[i * 3 + 2] = lift; }
+  g.setAttribute('aTree', new BufferAttribute(a, 3));
+}
+
+/** Half-width (max distance from the trunk axis) and top of a kind's variant-0 model. */
+function treeExtent(kind: TreeKind): { half: number; top: number } {
+  let half = 0, top = 0;
+  for (const p of treeParts(kind)) {
+    const pos = p.geometry.getAttribute('position');
+    for (let i = 0; i < pos.count; i++) {
+      half = Math.max(half, Math.hypot(pos.getX(i), pos.getZ(i)));
+      top = Math.max(top, pos.getY(i));
+    }
+  }
+  return { half, top };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -302,30 +407,46 @@ const ATLAS_COLS = TREE_KINDS.length;
 const bbCache = new Map<TreeKind, ModelPart[]>();
 
 /**
+ * Far cards are baked from this elevation (radians): the game camera looks down at 35–60°, and a
+ * level side view of a spruce is a thin spike that turns a distant forest into vertical streaks;
+ * from 30° the sprays show their upper faces and the crown its real width.
+ */
+export const BB_ELEV = 0.52;
+
+/**
+ * Card extent per kind in the elevated view: width = model extent plus an empty margin (no mip
+ * bleed between atlas columns); height in the bake camera's up direction, the trunk foot at 0.
+ */
+function cardSize(kind: TreeKind): { W: number; y0: number; y1: number } {
+  const { half, top } = treeExtent(kind);
+  const c = Math.cos(BB_ELEV), s = Math.sin(BB_ELEV);
+  return { W: half * 2 * 1.16, y0: -0.25 * c - half * s * 1.08, y1: (top + 0.2) * c + half * s * 1.08 };
+}
+
+/**
  * One card (2 triangles) sized to the tree, UV-mapped into the shared billboard atlas column for
- * `kind`. The `billboard` material swings it about its vertical axis to face the camera; it
- * casts a soft blob (`billboardDepthMaterial`) instead of the card's silhouette. Vertex colour
- * darkens toward the base so a card reads as a clump standing on the ground, not a floating
- * leaf. Material key `billboard`; call `bakeTreeBillboards` once to fill its map.
+ * `kind`. The `billboard` material swings it about its vertical axis to face the camera and
+ * shades it with the baked normal atlas; it casts a soft blob (`billboardDepthMaterial`) instead
+ * of the card's silhouette. Vertex colour darkens toward the base so a card reads as a clump
+ * standing on the ground. Material key `billboard`; call `bakeTreeBillboards` once to fill it.
  */
 export function treeBillboard(kind: TreeKind): ModelPart[] {
   const hit = bbCache.get(kind);
   if (hit) return hit;
-  const { height: H, radius: R } = TREE_SIZE[kind];
-  const W = R * 2.3;
+  const { W, y0, y1 } = cardSize(kind);
   const col = TREE_KINDS.indexOf(kind);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], color: number[] = [], idx: number[] = [];
-  const top = H * 1.05;
   const dx = W / 2;
-  const corners: [number, number, number][] = [[-dx, 0, 0], [dx, 0, 1], [dx, top, 1], [-dx, top, 0]];
+  const corners: [number, number, number][] = [[-dx, y0, 0], [dx, y0, 1], [dx, y1, 1], [-dx, y1, 0]];
   for (const [x, y, u] of corners) {
-    pos.push(x, y - 0.2, 0);
-    // soft "dome" normals so the card shades like a volume, not a flat sheet
-    const n = v3(x / (W / 2), 0.9 + y / top, 0).normalize();
+    // stored raised so the bottom edge sits on the ground (the shader moves it toward the camera)
+    pos.push(x, y - y0, 0);
+    // fallback "dome" normals (the normal atlas replaces them once baked)
+    const n = v3(x / (W / 2), 1.2, 0).normalize();
     nor.push(n.x, n.y, n.z);
-    uv.push((col + u) / ATLAS_COLS, y / top);
+    uv.push((col + u) / ATLAS_COLS, (y - y0) / (y1 - y0));
     // ground occlusion: shrubs darken a lot at the base, tall trees only around the trunk foot
-    const k = y > 0 ? 1 : kind === 'bush' ? 0.5 : 0.7;
+    const k = y > 0 ? 1 : 0.88;
     color.push(k, k, k);
   }
   idx.push(0, 1, 2, 0, 2, 3);
@@ -335,6 +456,7 @@ export function treeBillboard(kind: TreeKind): ModelPart[] {
   g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
   g.setAttribute('color', new BufferAttribute(new Float32Array(color), 3));
   g.setIndex(idx);
+  addTreeAttr(g, kind, -y0);
   g.computeBoundingSphere();
   const parts: ModelPart[] = [{ geometry: g, material: 'billboard' }];
   bbCache.set(kind, parts);
@@ -362,6 +484,11 @@ export function billboardDepthMaterial(): MeshDepthMaterial {
   vec3 bbR = vec3(bbF.z, 0.0, -bbF.x);
   vec3 bbLR = normalize(transpose(mat3(instanceMatrix)) * bbR);
   transformed = bbLR * position.x + vec3(0.0, position.y, 0.0);
+  // push the blob away from the light along the shadow camera's depth axis: the ground shadow is
+  // unchanged, but the tree's own camera-facing card is no longer cut in half by it
+  vec3 bbZ = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
+  float bbS2 = dot(instanceMatrix[0].xyz, instanceMatrix[0].xyz);
+  transformed -= transpose(mat3(instanceMatrix)) * bbZ * (6.0 * sqrt(bbS2) / bbS2);
 #endif`,
     );
     sh.fragmentShader = sh.fragmentShader.replace(
@@ -372,59 +499,120 @@ export function billboardDepthMaterial(): MeshDepthMaterial {
 #endif`,
     );
   };
-  m.customProgramCacheKey = () => 'billboard-depth-1';
+  m.customProgramCacheKey = () => 'billboard-depth-2';
   bbDepth = m;
   return m;
 }
 
 let atlas: WebGLRenderTarget | null = null;
 
+// Bake shaders: albedo (vertex colour × card texture) and object-space normals, both cut by the
+// card alpha. Object space = card space for a camera on +Z (x right, y up, z toward the viewer).
+const BAKE_VERT = /* glsl */ `
+attribute vec3 color;
+varying vec3 vN;
+varying vec3 vC;
+varying vec2 vUv;
+void main() {
+  vN = normalize(normalMatrix * normal);
+  vC = color;
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+const BAKE_FRAG = /* glsl */ `
+uniform sampler2D map;
+uniform float useMap;
+uniform float mode;
+varying vec3 vN;
+varying vec3 vC;
+varying vec2 vUv;
+void main() {
+  vec4 t = useMap > 0.5 ? texture2D(map, vUv) : vec4(1.0);
+  if (t.a < 0.5) discard;
+  if (mode > 0.5) gl_FragColor = vec4(normalize(vN) * 0.5 + 0.5, 1.0);
+  // the full model also shades itself through the shadow map (darker, a little greyer in the
+  // crown's depth); the card cannot, so its albedo is pulled down the same way
+  else {
+    vec3 c = vC * t.rgb;
+    gl_FragColor = vec4(mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))), 0.12) * 0.84, 1.0);
+  }
+}`;
+
+function bakeMaterial(map: Texture | null, mode: number): ShaderMaterial {
+  return new ShaderMaterial({
+    vertexShader: BAKE_VERT,
+    fragmentShader: BAKE_FRAG,
+    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode } },
+    side: DoubleSide,
+  });
+}
+
 /**
- * Render every tree kind (albedo only, unlit) into a shared atlas and attach it to the
- * `billboard` material. Call once after the renderer exists; cheap (4 small renders).
+ * Render every tree kind into a shared albedo atlas and a matching normal atlas, attached to
+ * the `billboard` material: the far card is then lit like the full model (same crown normals,
+ * same vertex-colour occlusion), so the LOD swap does not change the value of the forest.
+ * Call once after the renderer exists; cheap (10 small renders).
  */
 export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGLRenderTarget {
   if (atlas) return atlas;
-  const rt = new WebGLRenderTarget(cellPx * ATLAS_COLS, cellPx * 2, { samples: 4 });
-  // mipmapped so distant crowns stay solid instead of sparkling into thin sticks
-  rt.texture.generateMipmaps = true;
-  rt.texture.minFilter = LinearMipmapLinearFilter;
+  const mk = () => {
+    const rt = new WebGLRenderTarget(cellPx * ATLAS_COLS, cellPx * 2, { samples: 4 });
+    // mipmapped so distant crowns stay solid instead of sparkling into thin sticks
+    rt.texture.generateMipmaps = true;
+    rt.texture.minFilter = LinearMipmapLinearFilter;
+    return rt;
+  };
+  const rtA = mk();
+  const rtN = mk();
   const scene = new Scene();
-  scene.add(new HemisphereLight(0xffffff, 0xffffff, 1));
   const prevTarget = renderer.getRenderTarget();
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
-  renderer.setRenderTarget(rt);
-  renderer.setClearColor(0x6a6244, 0); // olive-brown under the alpha, so mip fringes are not black
-  renderer.clear();
-  const leafMat = new MeshBasicMaterial({ vertexColors: true, map: leafTexture(), alphaTest: 0.5, side: DoubleSide });
-  const solidMat = new MeshBasicMaterial({ vertexColors: true });
-  const needleMat = new MeshBasicMaterial({ vertexColors: true, map: needleTexture(), alphaTest: 0.5, side: DoubleSide });
-  TREE_KINDS.forEach((kind, i) => {
-    const { height: H, radius: R } = TREE_SIZE[kind];
-    const W = R * 2.3;
-    const top = H * 1.05;
-    const grp = new Group();
-    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? leafMat : p.material === 'needles' ? needleMat : solidMat));
-    scene.add(grp);
-    const cam = new OrthographicCamera(-W / 2, W / 2, top - 0.2, -0.2, 0.1, 100);
-    cam.position.set(0, 0, 40);
-    cam.lookAt(0, 0, 0);
-    cam.position.y = 0;
-    renderer.setViewport(i * cellPx, 0, cellPx, cellPx * 2);
-    renderer.setScissor(i * cellPx, 0, cellPx, cellPx * 2);
-    renderer.setScissorTest(true);
-    renderer.render(scene, cam);
-    scene.remove(grp);
+  const mats = [0, 1].map((mode) => ({
+    leaves: bakeMaterial(leafTexture(), mode),
+    needles: bakeMaterial(needleTexture(), mode),
+    solid: bakeMaterial(null, mode),
+  }));
+  [rtA, rtN].forEach((rt, mode) => {
+    renderer.setRenderTarget(rt);
+    // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
+    // correct when the card shader divides by alpha (no dark or olive fringe)
+    renderer.setClearColor(0x000000, 0);
+    renderer.clear();
+    const m = mats[mode]!;
+    TREE_KINDS.forEach((kind, i) => {
+      const { W, y0, y1 } = cardSize(kind);
+      const grp = new Group();
+      for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
+      scene.add(grp);
+      // looking down at BB_ELEV: image "up" = (0, cos, -sin), the trunk foot at the origin
+      const cam = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+      cam.position.set(0, Math.sin(BB_ELEV) * 50, Math.cos(BB_ELEV) * 50);
+      cam.lookAt(0, 0, 0);
+      // the target's own viewport/scissor (render-target pixels, independent of the pixel ratio)
+      rt.viewport.set(i * cellPx, 0, cellPx, cellPx * 2);
+      rt.scissor.set(i * cellPx, 0, cellPx, cellPx * 2);
+      rt.scissorTest = true;
+      renderer.setRenderTarget(rt);
+      renderer.render(scene, cam);
+      scene.remove(grp);
+    });
   });
-  renderer.setScissorTest(false);
+  for (const m of mats) for (const x of Object.values(m)) x.dispose();
+  for (const rt of [rtA, rtN]) {
+    rt.scissorTest = false;
+    rt.viewport.set(0, 0, rt.width, rt.height);
+    rt.scissor.set(0, 0, rt.width, rt.height);
+  }
   renderer.setRenderTarget(prevTarget);
   renderer.setClearColor(prevClear, prevAlpha);
-  renderer.setViewport(0, 0, renderer.domElement.width / renderer.getPixelRatio(), renderer.domElement.height / renderer.getPixelRatio());
   const m = modelMaterial('billboard');
-  m.map = rt.texture;
+  m.map = rtA.texture;
   m.alphaTest = 0.4;
+  treeUniforms.uBbNormal.value = rtN.texture;
+  const md = m as unknown as { defines: Record<string, string> };
+  md.defines = { ...md.defines, TREE_BB_NORMAL: '' };
   m.needsUpdate = true;
-  atlas = rt;
-  return rt;
+  atlas = rtA;
+  return rtA;
 }
