@@ -24,7 +24,8 @@ npm test
 
 SHA-256 checksums for source previews and rendered assets are recorded in
 `docs/audio-provenance.json`. Recordings may not be committed without these
-fingerprints and a complete pass of the 46-file (<4 MiB) budget check.
+fingerprints and a complete pass of the manifest-driven file-count (<4 MiB)
+budget check (72 files once task 46 is rendered).
 
 Attribution is included for provenance even though CC0 does not require it.
 Copyrighted or CC-BY/CC-BY-NC Freesound samples must not be added.
