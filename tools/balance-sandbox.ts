@@ -26,6 +26,8 @@ const YEARS = MINUTES / (SEASON_MINUTES * SEASONS.length);
 const at = (w: World, x: number, y: number): number => y * w.terrain.w + x;
 const row = (w: World, y: number, x1: number, x2: number): number[] =>
   lineCells(w.terrain.w, at(w, x1, y), at(w, x2, y));
+const col = (w: World, x: number, y1: number, y2: number): number[] =>
+  lineCells(w.terrain.w, at(w, x, y1), at(w, x, y2));
 const buy: BotStep = {
   name: 'wagon', cmds: (w) => [{ t: 'buyWagon', stable: w.state.buildings.find((b) => b.type === 'stable')!.id }],
 };
@@ -54,8 +56,14 @@ const PLANS: readonly { name: string; plan: readonly BotStep[]; focus: string }[
     plan: [...DECENT.slice(0, 12), ...DECENT.slice(15, 21)],
   },
   {
-    name: 'stone', focus: 'Bread chain, river fish, quarry and stone paving',
-    plan: DECENT.slice(0, 37),
+    name: 'stone', focus: 'Bread, fish, quarry/paving and a working wooden river bridge',
+    plan: [
+      ...DECENT.slice(0, 27),
+      { name: 'wooden river bridge', rank: 2, cmds: (w: World) => [{ t: 'road', surface: 1, cells: col(w, 41, 24, 44) }] },
+      { name: 'south-bank lane', rank: 2, cmds: (w: World) => [{ t: 'road', surface: 1, cells: [...row(w, 44, 41, 44), at(w, 44, 45)] }] },
+      put('south-bank farm', 'farm', 43, 46),
+      ...DECENT.slice(27, 37).filter((s) => s.name !== 'second fisher'),
+    ],
   },
   {
     name: 'beer', focus: 'All chains, extra brewery/malthouse and grain farm',
@@ -101,7 +109,6 @@ export interface BalanceSuite {
   scenario: 'baseline' | 'tuned';
   minutes: number;
   seeds: readonly number[];
-  runtimeMs: number;
   rows: BalanceRun[];
 }
 
@@ -211,7 +218,6 @@ export function runBalanceSuite(tuned = false): BalanceSuite {
   const originalBeerPrice = MARKET.base.beer;
   const brewery = BUILDINGS.brewery.recipe!;
   const originalBreweryTicks = brewery.ticks;
-  const begin = performance.now();
   try {
     if (tuned) {
       MARKET.base.beer = 8;                     // defs.ts: 9 -> 8 silver
@@ -221,7 +227,7 @@ export function runBalanceSuite(tuned = false): BalanceSuite {
     for (const strategy of PLANS) for (const seed of SEEDS) rows.push(runOne(strategy, seed));
     return {
       scenario: tuned ? 'tuned' : 'baseline', minutes: MINUTES, seeds: SEEDS,
-      runtimeMs: Math.round(performance.now() - begin), rows,
+      rows,
     };
   } finally {
     MARKET.base.beer = originalBeerPrice;
@@ -234,7 +240,7 @@ function rankTime(n: number): string { return n < 0 ? '—' : fmt(n); }
 
 export function balanceMarkdown(s: BalanceSuite): string {
   const out = [
-    `# ${s.scenario}: ${s.minutes} min, 3 seeds; runtime ${fmt(s.runtimeMs / 1000)} s`,
+    `# ${s.scenario}: ${s.minutes} min, 3 seeds`,
     '',
     '| Strategy | Seed | Rank | R1 | R2 | R3 | R4 | R5 | Earned | Spring sr/min | Summer | Autumn | Winter | Winter BRIDGE_CLOSED | Fair bonus sr | Errors |',
     '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
