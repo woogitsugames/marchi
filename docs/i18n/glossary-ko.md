@@ -43,3 +43,16 @@
 ‘소읍’은 작은 고을, ‘성읍’은 성벽으로 둘러싼 고을, ‘도성’은 수도를 가리킵니다. 등급 3에는 수도로 오해할 수 있는 ‘도읍’을 쓰지 않습니다.
 상품 수량은 ‘상품: 수량’으로 표시하며, 한국어에는 복수형 블록을 쓰지 않습니다. `why.holdsCount`에는 ‘보관량/용량’ 비율이 들어올 수 있습니다.
 포화도는 판매량에 대응하는 값으로 10초마다 한 개분 줄어듭니다. 가격이 은 한 단위씩 회복된다는 뜻이 아닙니다.
+
+## Round 06 — seasons and weather
+
+| Polski / English | ko |
+| --- | --- |
+| wiosna / spring | 봄 |
+| lato / summer | 여름 |
+| jesień / autumn | 가을 |
+| zima / winter | 겨울 |
+| roztopy / thaw | 해빙기 |
+| jesienny jarmark / autumn fair | 가을 장터 |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.
