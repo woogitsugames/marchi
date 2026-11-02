@@ -76,10 +76,6 @@ def updated_assets(text: str, day: str, rows: list[str], new_bytes: int) -> str:
         "|---|---|---|---|---|---|\n"
         + "\n".join(rows) + "\n\n"
     )
-    marker = "### Original procedural effects retained"
-    if marker not in text:
-        raise ValueError("docs/ASSETS.md: next section missing")
-    text = text.replace(marker, audit + marker, 1)
     text, n = re.subn(
         r"(?s)\*\*Finish locally:\*\*.*?(?=\n### Original procedural effects retained)",
         "**Reproduce task 50:** In a clean checkout run "
@@ -90,10 +86,6 @@ def updated_assets(text: str, day: str, rows: list[str], new_bytes: int) -> str:
     )
     if n != 1:
         raise ValueError("docs/ASSETS.md: outdated completion instructions missing")
-    old = (
-        "The shipped baseline has 23 runtime IDs (46 OGG/M4A files). Task 46 selected\n"
-        "13 more IDs (target **36 sounds / 72 files**); they wait in pending_tracks"
-    )
     # The original paragraph is line-wrapped; replace it by a bounded pattern.
     text, n = re.subn(
         r"(?s)The shipped baseline has 23 runtime IDs \(46 OGG/M4A files\).*?"
@@ -105,7 +97,10 @@ def updated_assets(text: str, day: str, rows: list[str], new_bytes: int) -> str:
     )
     if n != 1:
         raise ValueError("docs/ASSETS.md: outdated baseline statement missing")
-    return text
+    marker = "### Original procedural effects retained"
+    if marker not in text:
+        raise ValueError("docs/ASSETS.md: next section missing")
+    return text.replace(marker, audit + marker, 1)
 
 
 def main() -> None:
