@@ -4,7 +4,7 @@
 import { outputCustomer, seasonalSupplier, wagonEta, type Building, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
-import { buildingStatusIcon, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonStatusIcon } from './format';
+import { buildingName, buildingStatusIcon, buildingStatusText, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
 import { iconSvg } from './icons';
 
 const MIN_STALL_TICKS = 20; // 2 s: avoid flicker on short hiccups
@@ -98,14 +98,16 @@ export class Markers {
         const b = this.take('building:' + bd.id);
         shown.add(bd.id);
         b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP' || calm);
-        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
+        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false,
+          () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world)}`);
       }
       for (const w of world.state.wagons) {
         if (!isWagonWait(w.status)) continue;
         const a = view.anchorOf('wagon', w.id);
         if (!a.visible) continue;
         const crit = w.status.k === 'NO_ROUTE';
-        this.place(this.take('wagon:' + w.id), a.x, a.y, w.status.k + crit, () => wagonStatusIcon(w.status, 26), crit, true);
+        this.place(this.take('wagon:' + w.id), a.x, a.y, w.status.k + crit, () => wagonStatusIcon(w.status, 26), crit, true,
+          () => `${wagonName(w.id)}: ${wagonStatusText(world, w.status)}`);
       }
     }
     for (const b of this.pool) {
@@ -156,11 +158,13 @@ export class Markers {
     this.eta.classList.toggle('is-shown', etaOn);
   }
 
-  private place(b: Bubble, x: number, y: number, sig: string, icon: () => string, crit: boolean, wagon: boolean): void {
+  private place(b: Bubble, x: number, y: number, sig: string, icon: () => string, crit: boolean, wagon: boolean, label: () => string): void {
     if (b.sig !== sig) {
       const first = b.sig === '';
       b.sig = sig;
       b.icon.innerHTML = icon();
+      // the bubble's accessible name is the cause, e.g. "Piekarnia: brak dostępnych zapasów mąki"
+      b.el.setAttribute('aria-label', label());
       b.el.classList.toggle('is-critical', crit);
       b.el.classList.toggle('is-wagon', wagon);
       if (first) {

@@ -25,7 +25,11 @@ export interface Sheet {
   content: SheetContent;
   /** onClose callbacks of replaced contents that asked to wait for the sheet (closeWithSheet). */
   deferred: (() => void)[];
+  /** The element focused before the sheet opened; focus returns there on close (a11y). */
+  returnFocus?: HTMLElement | null;
 }
+
+let sheetSeq = 0;
 
 export class Sheets {
   private stack: Sheet[] = [];
@@ -71,12 +75,15 @@ export class Sheets {
       return top;
     }
     const sheet = this.build(content);
+    sheet.returnFocus = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
     this.stack.push(sheet);
     this.host.append(sheet.el);
     content.update(sheet);
     sheet.el.classList.add('is-entering');
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
+    // keyboard and screen-reader focus into the sheet (the close button), without scrolling the scene
+    requestAnimationFrame(() => (sheet.el.querySelector<HTMLElement>('.close') ?? sheet.el).focus({ preventScroll: true }));
     this.onChange?.();
     return sheet;
   }
@@ -91,6 +98,11 @@ export class Sheets {
     s.content.onClose?.();
     for (const f of s.deferred.splice(0)) f();
     this.detachers.get(s)?.();
+    // focus back to what opened the sheet (a bubble, a card link, a rail button) if it is still there
+    if (s.el.contains(document.activeElement)) {
+      const back = s.returnFocus && s.returnFocus.isConnected ? s.returnFocus : null;
+      if (back) back.focus({ preventScroll: true }); else (document.activeElement as HTMLElement).blur();
+    }
     s.el.classList.add('is-leaving');
     window.setTimeout(() => s.el.remove(), 240);
     this.onChange?.();
@@ -123,13 +135,14 @@ export class Sheets {
   private build(content: SheetContent): Sheet {
     const icon = h('div.sh-icon');
     const kicker = h('div.kicker');
-    const title = h('h3');
+    const title = h('h3', { id: `sheet-title-${++sheetSeq}` });
     const close = h('button.close', { 'aria-label': t('sheet.close'), html: iconSvg('close', 22) });
     const head = h('div.sheet-head', null, icon, h('div.sh-text', null, kicker, title), close);
     const body = h('div.sheet-body');
     const grip = h('div.sheet-grip');
     const inner = h('div.sp-in', null, grip, head, body);
-    const el = h('section.sheet', { role: 'dialog' }, h('div.sheet-paper', null, inner));
+    // a modal dialog for assistive tech, named by its title; focus moves in on open and back on close
+    const el = h('section.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': title.id, tabindex: '-1' }, h('div.sheet-paper', null, inner));
     const sheet: Sheet = { el, icon, kicker, title, body, content, deferred: [] };
     close.addEventListener('click', () => {
       if (this.top === sheet) this.closeTop();
