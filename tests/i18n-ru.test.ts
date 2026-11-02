@@ -9,13 +9,14 @@ function parameters(message: string): string[] {
 }
 
 test('Russian dictionary has exactly the Polish keys', () => {
-  eq(JSON.stringify(Object.keys(ru).sort()), JSON.stringify(Object.keys(pl).sort()), 'keys');
+  eq(JSON.stringify(Object.keys(ru)), JSON.stringify(Object.keys(pl)), 'key order');
 });
 
 test('Russian messages preserve English parameters', () => {
   for (const key of Object.keys(pl) as MessageKey[]) {
+    const value = ru[key];
+    assert(typeof value === 'string' && value.trim().length > 0, `Missing or empty translation: ${key}`);
     if (key.startsWith('goodGen.') || key.startsWith('goodAcc.')) continue;
-    assert(ru[key].trim().length > 0, `${key} is empty`);
-    eq(JSON.stringify(parameters(ru[key])), JSON.stringify(parameters(en[key])), key);
+    eq(JSON.stringify(parameters(value)), JSON.stringify(parameters(en[key])), key);
   }
 });

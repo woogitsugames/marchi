@@ -8,10 +8,12 @@ function placeholders(value: string): string[] {
 }
 
 test('Swedish dictionary has all keys and matching placeholders', () => {
-  const keys = Object.keys(pl).sort();
-  assert(JSON.stringify(Object.keys(sv).sort()) === JSON.stringify(keys), 'Swedish keys differ from Polish');
+  const keys = Object.keys(pl);
+  assert(JSON.stringify(Object.keys(sv)) === JSON.stringify(keys), 'Swedish key order differs from Polish');
   for (const key of Object.keys(en) as (keyof typeof en)[]) {
+    const value = sv[key];
+    assert(typeof value === 'string' && value.trim().length > 0, `Missing or empty translation: ${key}`);
     if (key.startsWith('goodGen.') || key.startsWith('goodAcc.')) continue;
-    assert(JSON.stringify(placeholders(sv[key])) === JSON.stringify(placeholders(en[key])), `Placeholder mismatch: ${key}`);
+    assert(JSON.stringify(placeholders(value)) === JSON.stringify(placeholders(en[key])), `Placeholder mismatch: ${key}`);
   }
 });
