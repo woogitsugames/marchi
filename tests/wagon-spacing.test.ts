@@ -1,6 +1,7 @@
-// Drawn spacing between wagons (D-35): render-only, never touches the sim.
+// Drawn spacing between wagons (D-35) and the waiting row beside the stable (D-43): render-only, never
+// touches the sim.
 import { step, stateHash, type World } from '../src/sim/index';
-import { DRAW_GAP, MAX_DRAW_LAG, wagonDrawLag } from '../src/render/wagonSpacing';
+import { DRAW_GAP, MAX_DRAW_LAG, PARK_PITCH, isParked, parkingBlocked, stableParking, stableSlots, wagonDrawLag } from '../src/render/wagonSpacing';
 import { applyCommand, createWorld } from '../src/sim/index';
 import { bridgeA, stableId } from '../tools/bot';
 import { benchWorld } from '../tools/bench';
@@ -70,5 +71,66 @@ test('drawn spacing is read-only: the simulation hash does not change', () => {
     wagonDrawLag(b);
     step(a); step(b);
   }
+  eq(stateHash(b), stateHash(a), 'same hash');
+});
+
+/** m1 with the bridge built and `n` extra wagons bought: they spawn at the stable gate with nothing to do. */
+function idleFleet(n: number): World {
+  const w = createWorld('m1');
+  w.state.coins = 1e6; // test setup: buy a fleet bigger than the mission budget
+  applyCommand(w, bridgeA(w));
+  for (let i = 0; i < n; i++) applyCommand(w, { t: 'buyWagon', stable: stableId(w) });
+  for (let i = 0; i < 3; i++) step(w);
+  return w;
+}
+
+test('idle wagons at the stable are drawn in a row beside it: one place each, no overlap, horses to the road', () => {
+  const w = idleFleet(14);
+  const stable = w.state.buildings.find((b) => b.type === 'stable')!;
+  const parked = w.state.wagons.filter((q) => isParked(q, new Set([stable.gate])));
+  assert(parked.length >= 10, `${parked.length} wagons wait at the stable gate (the pile being fixed)`);
+  const park = stableParking(w);
+  const free = stableSlots(w, stable, parkingBlocked(w)).length;
+  assert(free >= 12, `${free} waiting places beside the m1 stable`);
+  eq(park.size, Math.min(parked.length, free), 'every waiting wagon has a place (as long as there is room)');
+  const slots = [...park.values()];
+  // the sim keeps them all on one node; drawn rigs (2.3 m wide, 7.4 m long, parallel) never overlap
+  let minGap = Infinity;
+  for (let i = 0; i < slots.length; i++) for (let j = i + 1; j < slots.length; j++) {
+    const a = slots[i]!, b = slots[j]!;
+    const fx = Math.sin(a.heading), fz = Math.cos(a.heading);
+    const along = Math.abs((b.x - a.x) * fx + (b.z - a.z) * fz), across = Math.abs((b.x - a.x) * fz - (b.z - a.z) * fx);
+    assert(along >= 7.4 || across >= PARK_PITCH - 1e-9, `places ${i} and ${j} overlap (along ${along.toFixed(2)}, across ${across.toFixed(2)})`);
+    minGap = Math.min(minGap, Math.hypot(b.x - a.x, b.z - a.z));
+  }
+  // horses face the gate side (the road): heading = the stable's facing (0 = south, +z)
+  const o = [[0, 1], [1, 0], [0, -1], [-1, 0]][stable.facing]!;
+  const blocked = parkingBlocked(w), C = w.terrain.cellSize;
+  for (const s of slots) {
+    assert(Math.abs(Math.sin(s.heading) - o[0]!) < 1e-9 && Math.abs(Math.cos(s.heading) - o[1]!) < 1e-9, 'horses face the road');
+    // the bed and the horse stand on open ground: no road, gate, building, water
+    for (const a of [-2, 1.7, 4]) {
+      const x = s.x + Math.sin(s.heading) * a, z = s.z + Math.cos(s.heading) * a;
+      eq(blocked[Math.floor(z / C) * w.terrain.w + Math.floor(x / C)], 0, 'open ground under the rig');
+    }
+    // beside the stable, not wandering off: within ~4 places of its flank
+    const cx = (stable.x + stable.w / 2) * C, cz = (stable.y + stable.h / 2) * C;
+    assert(Math.hypot(s.x - cx, s.z - cz) < 40, 'close to the stable');
+  }
+  // deterministic: the same state gives the same places, by wagon id
+  const again = stableParking(idleFleet(14));
+  for (const [id, s] of park) eq(JSON.stringify(again.get(id)), JSON.stringify(s), `place of wagon ${id}`);
+  console.log(`     ${parked.length} wagons waiting at the gate -> ${new Set(slots.map((s) => `${s.x},${s.z}`)).size} distinct places, closest pair ${minGap.toFixed(1)} m apart`);
+});
+
+test('the stable waiting row is read-only: the simulation hash does not change', () => {
+  const a = idleFleet(12), b = idleFleet(12);
+  const cache = new Map();
+  let seen = 0;
+  for (let i = 0; i < 3000; i++) {
+    seen = Math.max(seen, stableParking(b, cache).size);
+    step(a); step(b);
+  }
+  assert(seen >= 10, `waiting row used (${seen})`);
   eq(stateHash(b), stateHash(a), 'same hash');
 });
