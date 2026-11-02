@@ -1760,6 +1760,16 @@ body.is-flex .rail { z-index: 1; }
 .bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
 .bubble.is-minor .bb-in svg { opacity: .8; }
 .bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }
+/* running time of a stall (from 20 s): a small slate tally under the pin's tip, never wider than the pin's hit box */
+.bubble .bb-t {
+  position: absolute; top: 46px; left: 50%; transform: translateX(-50%);
+  min-width: 34px; padding: 0 4px; border-radius: 2px;
+  font-size: 12px; line-height: 16px; font-weight: 700; text-align: center; color: #eef0ee;
+  background: var(--slate); box-shadow: 0 1px 1px rgb(20 14 8 / .45);
+  direction: ltr; pointer-events: none;
+}
+.bubble.is-critical .bb-t { background: var(--wine); }
+.bubble .bb-t[hidden] { display: none; }
 @keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
 .eta-tag {
   position: absolute; left: 0; top: 0;

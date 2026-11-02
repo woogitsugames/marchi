@@ -2,7 +2,7 @@
 import {
   BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
-  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
+  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canSurface, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
@@ -14,6 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
+import { cureFor } from './stalls';
 
 export interface PanelNav {
   readonly world: World;
@@ -65,6 +66,31 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
     ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
   return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+}
+
+/**
+ * One remedy under the chain when its root is not a missing road (that one has the road fix above):
+ * every wagon busy -> buy a wagon here (no trip back to the rail); a one-lane wooden bridge jams ->
+ * a second crossing, or a stone bridge once cobbles are unlocked (stone spans have no one-lane rule).
+ */
+function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
+  if (cureFor(world, b.id) === 'wagon') {
+    const stable = world.state.buildings.find((q) => q.type === 'stable');
+    if (!stable) return '';
+    const short = WAGON_PRICE - world.state.coins;
+    const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
+      iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
+    const hint = short > 0
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
+    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+  }
+  const root = chain[chain.length - 1];
+  if (root?.kind === 'wagon' && root.status.k === 'BRIDGE_JAM') {
+    const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
+    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint jam-hint">${iconSvg('bridge_jam', 18)}<span>${esc(text)}</span></div>`;
+  }
+  return '';
 }
 
 /** Delegated clicks: [data-go="building:12"], [data-act="buy:3"]. */
@@ -251,7 +277,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
       const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason);
-      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b, nav.pace));
+      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },
     onClose() { nav.setGhost(null); },

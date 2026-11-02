@@ -226,6 +226,10 @@ export const pl = {
   'fix.bridge': 'Zbuduj drogę i most: {n} srebra',
   'fix.shown': 'Brakujący odcinek zaznaczono na mapie.',
   'fix.short': 'Brakuje {n} srebra',
+  'fix.wagon': 'Kup wóz',
+  'fix.wagonWhy': 'Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.',
+  'fix.jam': 'Most drewniany ma jeden pas. Druga przeprawa obok rozdzieli ruch.',
+  'fix.jamStone': 'Most drewniany ma jeden pas. Wyłóż go kamieniem (bruk) albo zbuduj drugą przeprawę.',
   'contract.causes': 'Gdzie stracono czas',
   'contract.noStalls': 'Żaden szlak nie stanął na dłużej.',
   'contract.deliveredItem': '{count} {good}',
@@ -498,6 +502,10 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  'fix.wagon',
+  'fix.wagonWhy',
+  'fix.jam',
+  'fix.jamStone',
   'wagon.BRIDGE_JAM.ONCOMING',
   'wagon.BRIDGE_JAM.SPAN_FULL',
   'wagon.BRIDGE_JAM.YIELD',
