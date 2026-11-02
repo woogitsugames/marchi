@@ -14,9 +14,9 @@ Oyun ilerlemesi, harita durumu, kaynaklar ve kayıt bilgileri uygulamanın **Ind
 
 Uygulama depolama alanını temizleyerek veya uygulamayı cihazdan silerek yerel kayıtları kaldırabilirsiniz. Uygulamanın yalnızca boşaltılması verilerini koruyabilir. İşletim sisteminizin varsa aldığı yedekler cihaz ayarlarınıza ve işletim sistemi sağlayıcısının koşullarına tabidir.
 
-## 3. Tek seferlik tam sürüm satın alımı
+## 3. Reklamsız ve uygulama içi satın almasız ücretsiz oyun
 
-Ek içerik, Google Play veya App Store'da tek seferlik satın almayla açılabilir. İlgili mağaza işletmecisi ödeme işlemlerini kendi gizlilik koşullarına göre yürütür. Oyun ödeme kartı bilgilerini toplamaz. Mağaza, satın alma ve hesap bilgilerini bağımsız olarak işleyebilir.
+I–VI görevleri ve Serbest Vadi dahil oyunun tamamı ücretsizdir; reklam veya uygulama içi satın alma içermez. Serbest Vadi'de üç yerel kayıt yuvası ile balık, taş, odun kömürü, malt ve bira üretim zincirleri vardır. Oyun kayıtları ve kaynaklar yukarıda açıklandığı gibi cihazında kalır. Oyun satın alma veya ödeme bilgisi toplamaz.
 
 ## 4. Paylaşım ve güvenlik
 

@@ -14,9 +14,9 @@ Spelframsteg, kartans tillstånd, resurser och sparinformation lagras **endast p
 
 Du kan ta bort lokala sparfiler genom att rensa appens lagring eller ta bort appen från enheten. Om appen bara avlastas kan dess data finnas kvar. Eventuella säkerhetskopior från operativsystemet styrs av enhetens inställningar och operativsystemleverantörens villkor.
 
-## 3. Engångsköp av fullversionen
+## 3. Gratis spel utan annonser eller köp i appen
 
-Ytterligare innehåll kan låsas upp genom ett engångsköp i Google Play eller App Store. Den aktuella butiksoperatören hanterar betalningar enligt sina egna integritetsvillkor. Spelet samlar inte in betalkortsuppgifter. Butiken kan självständigt behandla köp- och kontouppgifter.
+Hela spelet, inklusive uppdragen I–VI och den fria dalen, är gratis och innehåller inga annonser eller köp i appen. Den fria dalen har tre lokala sparplatser och produktionskedjor för fisk, sten, träkol, malt och öl. Speldata och resurser stannar på din enhet enligt beskrivningen ovan. Spelet samlar inte in köp- eller betalningsuppgifter.
 
 ## 4. Delning och säkerhet
 
