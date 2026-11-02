@@ -9,7 +9,7 @@ import {
   isRaining, newPaceLog, samplePace, type PaceLog,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
-import type { PickResult, WorldView } from '../render/api';
+import type { PickResult, ScreenOffset, WorldView } from '../render/api';
 import {
   LEGACY_SLOT, adoptLegacySaves, contractSlot, contractSlotMission, deleteSave, isGameSlot, isValleySlot, listSaves, loadGame, readSlots,
   saveGame, slotFor,
@@ -22,6 +22,7 @@ import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { rankStalls } from './stalls';
+import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
   buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
@@ -686,16 +687,57 @@ export class App implements PanelNav {
     if (kind === 'building') {
       const b = buildingById(this.world, id);
       if (!b) return;
-      if (focus) { this.stopFollow(); this.view.camera.focusCell(b.gate); }
+      if (focus) this.stopFollow();
       this.sheets.open(buildingSheet(this, id));
+      this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
     } else {
       const w = this.world.state.wagons.find((q) => q.id === id);
       if (!w) return;
-      if (focus) { this.stopFollow(); this.view.camera.focusCell(w.next >= 0 ? w.next : w.at); }
+      if (focus) this.stopFollow();
       this.sheets.open(wagonSheet(this, id));
+      if (this.followId !== id) this.focusSubject('wagon', id, w.next >= 0 ? w.next : w.at, -1);
     }
     this.select({ kind, id });
     this.tutorial?.onOpen(kind, id, prevTop);
+  }
+
+  /**
+   * Map area the open sheet, the tool rail and the waybill leave visible (CSS px, canvas-relative), and the
+   * offset of its centre from the canvas centre — where the camera puts the subject of a sheet (D-43).
+   */
+  private visibleScene(): { rect: Rect; offset: ScreenOffset } {
+    const c = this.canvas.getBoundingClientRect();
+    const scene: Rect = { l: 0, t: 0, r: c.width, b: c.height };
+    const obstacles: Rect[] = [];
+    const add = (el: HTMLElement | null | undefined, layout = false): void => {
+      if (!el || el.hidden || el.offsetParent === null) return;
+      const r = layout ? layoutRect(el) : el.getBoundingClientRect();
+      const q = 'left' in r ? { l: r.left, t: r.top, r: r.right, b: r.bottom } : r;
+      if (q.r - q.l > 0 && q.b - q.t > 0) obstacles.push({ l: q.l - c.left, t: q.t - c.top, r: q.r - c.left, b: q.b - c.top });
+    };
+    add(this.sheets.top?.el, true);
+    add(this.layers.hud.querySelector<HTMLElement>('.rail'));
+    add(this.layers.hud.querySelector<HTMLElement>('.waybill-wrap'));
+    // HUD v3 (D-43): top chips/speed bar and the worst-stall row also hide the map
+    add(this.layers.hud.querySelector<HTMLElement>('.topbar'));
+    add(this.layers.hud.querySelector<HTMLElement>('.stall-row'));
+    const rect = freeRect(scene, obstacles);
+    return { rect, offset: { x: (rect.l + rect.r - scene.r) / 2, y: (rect.t + rect.b - scene.b) / 2 } };
+  }
+
+  /**
+   * Bring the subject of a just-opened sheet into the visible part of the map (D-43): glide only when its
+   * marker (or, for a building, its gate) is not already well inside; keeps the zoom, restores nothing on close.
+   */
+  private focusSubject(kind: 'building' | 'wagon', id: number, cell: number, gate: number): void {
+    const { rect, offset } = this.visibleScene();
+    const a = this.view.anchorOf(kind, id);
+    let inside = a.visible && wellInside(a.x, a.y, rect);
+    if (inside && gate >= 0 && this.view.cellToScreen) {
+      const g = this.view.cellToScreen(gate);
+      inside = g.visible && wellInside(g.x, g.y, rect, 0.05);
+    }
+    if (!inside) this.view.camera.focusCell(cell, offset);
   }
 
   buyWagon(stable: number): void {
@@ -715,7 +757,7 @@ export class App implements PanelNav {
     if (this.followId === id) this.stopFollow();
     else {
       this.followId = id;
-      this.view.camera.follow(id);
+      this.view.camera.follow(id, this.visibleScene().offset);
     }
     this.sheets.update();
   }

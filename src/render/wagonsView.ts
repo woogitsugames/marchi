@@ -28,7 +28,7 @@ import type { ModelPart } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
-import { wagonDrawLag } from './wagonSpacing';
+import { type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
 
 /** Lateral offset from the road centreline (keep right). */
 const LANE = 1.05;
@@ -38,6 +38,8 @@ const LOOKAHEAD = 2.4;
 const GAP_RELAX = 0.35;
 /** Spacing of wagons queuing at one node. */
 const QUEUE_GAP = 8;
+/** Rate (1/s) at which a wagon eases into / out of its waiting place beside the stable (D-43). */
+const PARK_RATE = 1.6;
 
 interface Snap {
   id: number;
@@ -75,6 +77,10 @@ interface Snap {
   mv: number;
   /** A rendered position exists from the previous frame. */
   drawn: boolean;
+  /** Waiting place beside the stable (D-43), null when not parked. */
+  park: ParkSlot | null;
+  /** Drawn offset (m) from the sim position toward the waiting place; eases in and out. */
+  ox: number; oz: number;
 }
 
 interface AnimRig {
@@ -185,6 +191,9 @@ export class WagonsView {
   private touched: number[] = [];
   private home = new Set<number>();
   private homeVer = -1;
+  /** Stable waiting places per stable id, valid for parkVer (netVersion). */
+  private parkSlots = new Map<number, ParkSlot[]>();
+  private parkVer = -1;
   private cells = [0, 0, 0, 0];
 
   constructor(private readonly hf: Heightfield, private readonly roads: RoadField) {
@@ -243,13 +252,15 @@ export class WagonsView {
     const t = world.terrain;
     const A = _v;
     const wantLag = wagonDrawLag(world);
+    if (this.parkVer !== world.state.netVersion) { this.parkVer = world.state.netVersion; this.parkSlots.clear(); }
+    const parking = stableParking(world, this.parkSlots);
     for (const w of world.state.wagons) {
       let s = this.snaps.get(w.id);
       if (!s) {
         s = {
           id: w.id, init: false, lag: 0, prevAt: -1, prevNext: -1, curAt: -1, curNext: -1, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
-          vg: 0, gph: (w.id * 0.618) % 1, roll: 0, gb: 0, mv: 0, drawn: false,
+          vg: 0, gph: (w.id * 0.618) % 1, roll: 0, gb: 0, mv: 0, drawn: false, park: null, ox: 0, oz: 0,
         };
         this.snaps.set(w.id, s);
       }
@@ -307,6 +318,7 @@ export class WagonsView {
         s.lane = s.bridge && world.state.roads[w.at] === 1 ? 0 : 1;
         s.moving = false;
       }
+      s.park = parking.get(w.id) ?? null;
       s.codo = w.odometer - s.lag;
       s.opp = false;
       if (!s.init) {
@@ -385,6 +397,7 @@ export class WagonsView {
     const kLane = 1 - Math.exp(-dt * 3);
     const kMove = 1 - Math.exp(-dt * 5);
     const kGait = 1 - Math.exp(-dt * 1.5);
+    const kPark = 1 - Math.exp(-dt * PARK_RATE);
 
     for (const p of [this.body, this.lod1, ...this.animParts()]) p.begin();
     for (const p of this.cargo.values()) p.begin();
@@ -415,9 +428,24 @@ export class WagonsView {
         s.heading += d * kTurn;
       }
       s.laneS += (s.lane - s.laneS) * kLane;
+      // waiting place beside the stable (render-only): ease the drawn offset in, and back out on leaving
+      const wox = s.park ? s.park.x - x : 0, woz = s.park ? s.park.z - z : 0;
+      s.ox += (wox - s.ox) * kPark;
+      s.oz += (woz - s.oz) * kPark;
+      const easing = Math.abs(wox - s.ox) + Math.abs(woz - s.oz) > 0.3;
+      if (s.park) {
+        // pulling in: face the way it drives, then turn the horses toward the road
+        const tgt = easing && Math.hypot(wox - s.ox, woz - s.oz) > 2 ? Math.atan2(wox - s.ox, woz - s.oz) : s.park.heading;
+        let d = tgt - s.heading;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        s.heading += d * kTurn * 0.6;
+      }
+      x += s.ox;
+      z += s.oz;
       let fx = Math.sin(s.heading), fz = Math.cos(s.heading);
       let hidden = false;
-      if (!s.moving) {
+      if (!s.moving && !s.park) {
         const k = this.stack.get(w.at) ?? 0;
         this.stack.set(w.at, k + 1);
         if (k > 0) {
@@ -431,8 +459,8 @@ export class WagonsView {
         }
         if (w.status.k === 'IDLE' && home.has(w.at) && k >= 3) hidden = true;
       }
-      // keep right
-      const off = LANE * s.laneS;
+      // keep right (not while standing in the waiting row)
+      const off = s.park ? 0 : LANE * s.laneS;
       x += -fz * off;
       z += fx * off;
       let y: number;
@@ -450,7 +478,7 @@ export class WagonsView {
       let ds = s.drawn ? (x - s.fx) * fx + (z - s.fz) * fz : 0;
       if (ds < 0 || ds > MAX_STEP) ds = 0;
       s.gb += (gaitBlend(s.vg) - s.gb) * kGait;
-      s.mv += ((s.moving && s.vg > 0.2 ? 1 : 0) - s.mv) * kMove;
+      s.mv += (((s.moving && s.vg > 0.2) || (s.park && easing) ? 1 : 0) - s.mv) * kMove;
       s.roll += ds;
       s.gph = (s.gph + ds / strideAt(s.gb)) % 1;
       s.drawn = true;
