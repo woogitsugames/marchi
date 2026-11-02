@@ -48,11 +48,11 @@ export const STRATEGIES: Record<Mission101112Id, readonly Strategy[]> = {
   m11: [
     { name: 'nic / three wagons for a long route', after: 0, cmds: () => [] },
     { name: 'czesciowa / one wagon @2:00', after: 120, cmds: (w) => [wagon(w)] },
-    { name: 'wlasciwa / three wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w), wagon(w)] },
+    { name: 'wlasciwa / four wagons @0:20', after: 20, cmds: (w) => [wagon(w), wagon(w), wagon(w), wagon(w)] },
   ],
   m12: [
     { name: 'nic / granary remains full', after: 0, cmds: () => [] },
-    { name: 'czesciowa / connect large granary @3:00', after: 180, cmds: (w) => [granaryLink(w)] },
+    { name: 'czesciowa / connect large granary @4:00', after: 240, cmds: (w) => [granaryLink(w)] },
     { name: 'wlasciwa / connect granary + wagon @0:20', after: 20, cmds: (w) => [granaryLink(w), wagon(w)] },
   ],
 };
