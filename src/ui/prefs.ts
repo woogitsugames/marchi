@@ -35,3 +35,21 @@ export function loadPrefs(): Prefs {
 export function savePrefs(p: Prefs): void {
   try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* ignore */ }
 }
+
+/** Per-session UI choices (sessionStorage, best effort; gone when the app is closed). Not part of the sim. */
+const SESSION_KEY = 'marchia.session';
+let sessionMem: Record<string, boolean> = {};
+
+export function loadSessionFlag(name: string, fallback: boolean): boolean {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) sessionMem = { ...(JSON.parse(raw) as Record<string, boolean>) };
+  } catch { /* storage unavailable: the in-memory copy still holds this run's choices */ }
+  const v = sessionMem[name];
+  return typeof v === 'boolean' ? v : fallback;
+}
+
+export function saveSessionFlag(name: string, value: boolean): void {
+  sessionMem = { ...sessionMem, [name]: value };
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionMem)); } catch { /* ignore */ }
+}

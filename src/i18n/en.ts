@@ -433,6 +433,7 @@ export const en: FullDict = {
   'events.card.title': 'News from the valley',
   'events.card.fold': 'Fold the valley news',
   'events.card.unfold': 'Open the valley news ({n})',
+  'events.row.open': 'Show: {title}',
   'events.order.reward': 'Reward: {silver} silver · {renown} renown',
   'events.order.accept': 'Accept',
   'events.order.dismiss': 'Set aside',

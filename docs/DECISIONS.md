@@ -727,6 +727,14 @@ R2–R5 about 20–25 % earlier (R5 at 91–105 min instead of 116–124), and a
 ranks and the late-game wall stay; if the playtest finds R5 too quick, halve order renown first (2× → 1× silver).
 Screens `docs/shots/events-*.jpg` (412×915, 915×412, 904×1000, `ar` portrait and landscape, folded): 0 console
 errors, no target under 48 px. (decided)
+*Amended 2026-11-02 (HUD, BACKLOG P2):* with 3–4 events the open card took ~40 % of a portrait screen, so it now
+**starts folded** to its header and count; the player's fold / unfold is kept for the session (sessionStorage via
+`prefs.ts`, never the sim or the save). Open, it shows **one item in full** — the oldest accepted order (it takes
+the castle's deliveries first), else the newest order, else the merchant; the other orders and the merchant are
+48 px rows (title, delivered/required or the silver reward, the merchant's unit price) that open on a tap, one at a
+time. A new event while folded lights the header once (one CSS pass, no repeat) next to the single toast. Tool
+card labels may break into two balanced lines (de, ru, fr, es, it, nl, sv, ja ran past the card), the cost badge
+never covers the label. Screens `docs/shots/events2-*.jpg`.
 
 **D-55 — Landscape side sheet docks opposite the contract, between the top bar and the bottom rail (UI only).**
 On a 915×412 screen the game's side sheet docked at the inline start for a right hand (end for a left hand) and

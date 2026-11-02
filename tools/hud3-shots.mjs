@@ -96,7 +96,14 @@ function measure() {
     const cs = getComputedStyle(e);
     if (cs.display === 'inline') continue;
     if (cs.clipPath === 'inset(50%)') continue; // visually hidden text kept for screen readers
-    if (e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && cs.overflowX !== 'auto') clip.push(`${nm(e)} ${e.scrollWidth}>${e.clientWidth}`);
+    // a tool card's cost badge hangs over its corner on purpose: judge the card by its label instead
+    if (e.classList.contains('tool')) {
+      const l = e.querySelector('.tl'), br = e.getBoundingClientRect();
+      const lr = l?.getBoundingClientRect();
+      if (lr && (lr.left < br.left - 0.5 || lr.right > br.right + 0.5 || lr.bottom > br.bottom + 0.5)) clip.push(`${nm(e)} label ${Math.round(lr.width)}>${Math.round(br.width)}`);
+      const k = e.querySelector('.cost')?.getBoundingClientRect();
+      if (lr && k && k.bottom > lr.top && k.top < lr.bottom && k.right > lr.left && k.left < lr.right) clip.push(`${nm(e)} badge over label`);
+    } else if (e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && cs.overflowX !== 'auto') clip.push(`${nm(e)} ${e.scrollWidth}>${e.clientWidth}`);
     const r = e.getBoundingClientRect();
     if ((r.right > innerWidth + 1 || r.left < -1) && !e.closest('.bs-cards')) off.push(`${nm(e)} ${Math.round(r.left)}..${Math.round(r.right)}`);
   }

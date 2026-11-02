@@ -1,7 +1,10 @@
 // "Wieści z doliny" (D-54): the free valley's event card under the town plaque. Royal orders (accept /
 // set aside, per-good progress, reward), the seasonal fair (announced / open) and the travelling
 // merchant (sell surplus / put aside). Reads the sim only; player choices go out as commands.
-// The header folds the card with one tap; a new event says so once in a toast (no stacking, no timers).
+// The card starts folded to its header and count (the choice is kept for the session, UI prefs only); a new
+// event says so once in a toast and lights the folded header briefly. Open, it shows one item in full (the
+// accepted order, else the newest order, else the merchant); the other orders and the merchant are one-line
+// rows that open on a tap (one open at a time, so 3–4 events stay a short card in portrait).
 import {
   GOODS, fairStage, merchantSurplus,
   type Command, type Good, type RoyalOrder, type ValleyEventState, type World,
@@ -10,6 +13,7 @@ import { getLang, t, type MessageKey } from '../i18n/index';
 import { esc, h, setHtml } from './dom';
 import { fmtDec, fmtInt, goodName } from './format';
 import { iconSvg, type IconId } from './icons';
+import { loadSessionFlag, saveSessionFlag } from './prefs';
 
 export interface EventCardActions {
   command(cmd: Command): void;
@@ -33,12 +37,31 @@ function eventIds(ev: ValleyEventState, tick: number): string[] {
   return ids;
 }
 
+/** A folded item: one 48 px row (icon, title, a short figure, chevron) that opens it in full. */
+function rowHtml(id: string, icon: string, title: string, figure: string, cls: string): string {
+  return `<li class="ev-item ev-row ${cls}"><button class="ev-rowbtn" data-evx="${esc(id)}" aria-expanded="false"
+    aria-label="${esc(t('events.row.open', { title }))}">${icon}<span class="ev-t ev-rt" dir="auto">${esc(title)}</span>${figure}<span class="ev-chev" aria-hidden="true"></span></button></li>`;
+}
+
+/** An order as a row: accepted ones show the delivered / required units, offers the silver reward. */
+function orderRow(o: RoyalOrder): string {
+  const goods = orderGoods(o);
+  const need = goods.reduce((s, g) => s + (o.need[g] ?? 0), 0);
+  const have = goods.reduce((s, g) => s + Math.min(o.need[g] ?? 0, o.delivered[g] ?? 0), 0);
+  const figure = o.accepted
+    ? `<bdi class="num ev-rv">${fmtInt(have)}<small>/${fmtInt(need)}</small></bdi>`
+    : `<bdi class="num ev-rv">${iconSvg('coin', 16)}${fmtInt(o.rewardSilver)}</bdi>`;
+  return rowHtml(o.id, `<span class="ev-seal">${iconSvg('seal', 18)}</span>`, orderTitle(o), figure, `ev-order${o.accepted ? ' is-on' : ''}`);
+}
+
 export class EventCard {
   readonly root: HTMLElement;
   private head: HTMLButtonElement;
   private count: HTMLElement;
   private body: HTMLElement;
-  private open = true;
+  private open = loadSessionFlag('eventsOpen', false);
+  /** The item the player opened by tapping its row (null: the default focus). */
+  private pick: string | null = null;
   private hudFolded = false;
   private sig = '';
   /** Toast bookkeeping: the world it belongs to, ids already seen, orders of the last frame. */
@@ -49,12 +72,19 @@ export class EventCard {
 
   constructor(private act: EventCardActions) {
     this.count = h('bdi.ev-n.num');
-    this.head = h('button.ev-head', { 'aria-expanded': 'true' },
+    this.head = h('button.ev-head', { 'aria-expanded': 'false' },
       h('span.ev-ic', { html: iconSvg('seal', 22) }), h('span.ev-title', null, t('events.card.title')), this.count,
       h('span.ev-chev', { 'aria-hidden': 'true' })) as HTMLButtonElement;
-    this.head.addEventListener('click', () => { this.open = !this.open; this.sig = ''; });
+    this.head.addEventListener('click', () => {
+      this.open = !this.open;
+      saveSessionFlag('eventsOpen', this.open);
+      this.root.classList.remove('is-fresh');
+      this.sig = '';
+    });
     this.body = h('ul.ev-list');
     this.body.addEventListener('click', (e) => {
+      const row = (e.target as HTMLElement).closest<HTMLElement>('[data-evx]');
+      if (row) { this.pick = row.dataset.evx ?? null; this.sig = ''; return; }
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-ev]');
       if (!el || el.getAttribute('aria-disabled') === 'true') return;
       const [k, id] = (el.dataset.ev ?? '').split('|') as [string, string];
@@ -63,6 +93,7 @@ export class EventCard {
     });
     this.root = h('section.ev-card', { 'aria-label': t('events.card.title') }, this.head, this.body);
     this.root.hidden = true;
+    this.root.addEventListener('animationend', (e) => { if (e.target === this.head) this.root.classList.remove('is-fresh'); });
   }
 
   /** The HUD's fold (ribbon, tiny screens): the card shrinks to its header too. */
@@ -81,7 +112,8 @@ export class EventCard {
     const n = ev.orders.length + (ev.merchant ? 1 : 0) + (fairOn !== 'none' ? 1 : 0);
     const surplus = ev.merchant ? Math.min(ev.merchant.quantity, merchantSurplus(st)[ev.merchant.good] ?? 0) : 0;
     const open = this.open && !this.hudFolded;
-    const sig = `${n}|${open}|${fairOn}|${surplus}|${getLang()}|${JSON.stringify(ev.orders)}|${JSON.stringify(ev.merchant)}|${ev.fair?.id}`;
+    const focus = this.focusId(ev);
+    const sig = `${n}|${open}|${focus}|${fairOn}|${surplus}|${getLang()}|${JSON.stringify(ev.orders)}|${JSON.stringify(ev.merchant)}|${ev.fair?.id}`;
     if (sig === this.sig) return;
     this.sig = sig;
     this.root.hidden = n === 0;
@@ -100,19 +132,35 @@ export class EventCard {
       items.push(`<li class="ev-item ev-fair${fairOn === 'active' ? ' is-on' : ''}">
         <span class="ev-gi">${iconSvg(g, 22, goodName(g))}</span><span class="ev-txt" dir="auto">${esc(text)}</span></li>`);
     }
-    for (const o of ev.orders) items.push(this.orderHtml(o));
+    for (const o of ev.orders) items.push(o.id === focus ? this.orderHtml(o) : orderRow(o));
     if (ev.merchant) {
       const m = ev.merchant;
-      const offer = t('events.merchant.offer', { good: goodName(m.good), qty: fmtInt(m.quantity), price: fmtDec(m.unitCents / 100) });
-      const sell = surplus > 0
-        ? `<button class="btn primary cf ev-btn" data-ev="sell|${esc(m.id)}">${iconSvg('coin', 22)}<span>${esc(t('events.merchant.sell', { n: fmtInt(surplus) }))}</span></button>`
-        : `<span class="ev-note">${esc(t('events.merchant.none'))}</span>`;
-      items.push(`<li class="ev-item ev-merchant">
-        <div class="ev-oh"><span class="ev-gi">${iconSvg(m.good, 20, goodName(m.good))}</span><span class="ev-t" dir="auto">${esc(t('events.merchant.title'))}</span></div>
-        <div class="ev-txt" dir="auto">${esc(offer)}</div>
-        <div class="ev-acts">${sell}<button class="btn ev-btn ev-later" data-ev="mdecline|${esc(m.id)}">${esc(t('events.merchant.dismiss'))}</button></div></li>`);
+      if (m.id !== focus) {
+        items.push(rowHtml(m.id, `<span class="ev-gi">${iconSvg(m.good, 20, goodName(m.good))}</span>`, t('events.merchant.title'),
+          `<bdi class="num ev-rv">${iconSvg('coin', 16)}${esc(fmtDec(m.unitCents / 100))}</bdi>`, 'ev-merchant'));
+      } else {
+        const offer = t('events.merchant.offer', { good: goodName(m.good), qty: fmtInt(m.quantity), price: fmtDec(m.unitCents / 100) });
+        const sell = surplus > 0
+          ? `<button class="btn primary cf ev-btn" data-ev="sell|${esc(m.id)}">${iconSvg('coin', 22)}<span>${esc(t('events.merchant.sell', { n: fmtInt(surplus) }))}</span></button>`
+          : `<span class="ev-note">${esc(t('events.merchant.none'))}</span>`;
+        items.push(`<li class="ev-item ev-merchant">
+          <div class="ev-oh"><span class="ev-gi">${iconSvg(m.good, 20, goodName(m.good))}</span><span class="ev-t" dir="auto">${esc(t('events.merchant.title'))}</span></div>
+          <div class="ev-txt" dir="auto">${esc(offer)}</div>
+          <div class="ev-acts">${sell}<button class="btn ev-btn ev-later" data-ev="mdecline|${esc(m.id)}">${esc(t('events.merchant.dismiss'))}</button></div></li>`);
+      }
     }
     setHtml(this.body, items.join(''));
+  }
+
+  /** The one item shown in full: the row the player opened, else the oldest accepted order (it takes the
+   *  deliveries first), else the newest order, else the merchant. */
+  private focusId(ev: ValleyEventState): string | null {
+    const ids = ev.orders.map((o) => o.id);
+    if (ev.merchant) ids.push(ev.merchant.id);
+    if (this.pick && ids.includes(this.pick)) return this.pick;
+    this.pick = null;
+    const acc = ev.orders.find((o) => o.accepted);
+    return acc?.id ?? ev.orders[ev.orders.length - 1]?.id ?? ev.merchant?.id ?? null;
   }
 
   private orderHtml(o: RoyalOrder): string {
@@ -152,10 +200,18 @@ export class EventCard {
     const fresh = ids.filter((id) => !this.seen.has(id));
     if (!fresh.length) return;
     for (const id of fresh) this.seen.add(id);
+    if (!this.open || this.hudFolded) this.flash();
     const id = fresh[0]!;
     const order = ev.orders.find((o) => o.id === id);
     if (order) this.act.toast(t('events.order.new', { title: orderTitle(order) }), 'seal');
     else if (ev.merchant?.id === id) this.act.toast(t('events.merchant.new', { good: goodAcc(ev.merchant.good) }), ev.merchant.good);
     else if (ev.fair) this.act.toast(t('events.fair.upcoming', { good: goodAcc(ev.fair.good) }), ev.fair.good);
+  }
+
+  /** Light the folded header once (CSS one-shot); restarting it for a second event does not stack. */
+  private flash(): void {
+    this.root.classList.remove('is-fresh');
+    void this.root.offsetWidth;
+    this.root.classList.add('is-fresh');
   }
 }
