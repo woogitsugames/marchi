@@ -492,6 +492,12 @@ export const pl = {
   'events.order.t.fair_brewers': 'Przygotowania do jarmarku',
   'events.order.t.royal_progress': 'Przejazd królewskiego dworu',
   'events.order.t.capital_embassy': 'Poselstwo w stołecznym grodzie',
+  'events.order.t.bell_casting': 'Odlew dzwonu',
+  'events.order.t.harvest_home': 'Dożynki na dziedzińcu',
+  'events.order.t.mill_weir': 'Jaz przy młynie',
+  'events.order.t.christmas_court': 'Boże Narodzenie na dworze',
+  'events.order.t.cathedral_works': 'Budowa katedry',
+  'events.order.t.royal_hunt': 'Królewskie łowy',
   // valley chronicle (gpt 51, D-57): see PENDING_KEYS
   'chron.title': 'Kronika doliny',
   'chron.menu': 'Kronika doliny ({n}/{total})',
@@ -694,6 +700,12 @@ export const PENDING_KEYS = [
   'events.order.t.fair_brewers',
   'events.order.t.royal_progress',
   'events.order.t.capital_embassy',
+  'events.order.t.bell_casting',
+  'events.order.t.harvest_home',
+  'events.order.t.mill_weir',
+  'events.order.t.christmas_court',
+  'events.order.t.cathedral_works',
+  'events.order.t.royal_hunt',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

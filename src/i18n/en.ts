@@ -489,6 +489,12 @@ export const en: FullDict = {
   'events.order.t.fair_brewers': 'Preparing for the fair',
   'events.order.t.royal_progress': 'The royal progress',
   'events.order.t.capital_embassy': 'Embassy at the capital stronghold',
+  'events.order.t.bell_casting': 'Casting the bell',
+  'events.order.t.harvest_home': 'Harvest home in the bailey',
+  'events.order.t.mill_weir': 'The mill weir',
+  'events.order.t.christmas_court': 'Christmas at court',
+  'events.order.t.cathedral_works': 'Cathedral works',
+  'events.order.t.royal_hunt': 'The royal hunt',
   // valley chronicle (gpt 51, D-57): see PENDING_KEYS
   'chron.title': 'Valley chronicle',
   'chron.menu': 'Valley chronicle ({n}/{total})',
