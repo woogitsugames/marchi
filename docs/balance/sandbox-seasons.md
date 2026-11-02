@@ -97,7 +97,7 @@ Wartości to **sekundy przypisane do odrębnych przyczyn źródłowych** (łącz
 
 ### Ograniczenie interpretacji
 
-Gospodarka w trakcie 180 min rośnie; porównanie jesień → zima obejmuje **jednocześnie pogodę, sprzedaż jarmarczną i inwestycje bota**, nie jest izolowanym testem przyczynowym produkcji zimowej. Raport mierzy realną sesję gracza, nie „stan stały”. Test 3 seedów potwierdza deterministyczność przy zadanym seedzie, a nie statystyczną reprezentatywność wszystkich map.
+Gospodarka w trakcie 180 min rośnie; porównanie jesień → zima obejmuje **jednocześnie pogodę, sprzedaż jarmarczną i inwestycje bota**, nie jest izolowanym testem przyczynowym produkcji zimowej. Raport mierzy realną sesję gracza, nie „stan stały”. Powtórzone niezależnie na runnerze CI **15/15 niezmienionych scenariuszy** dało bajtowo identyczne dane JSON (bez pól czasowych); trzy seedy nie stanowią natomiast próby reprezentatywnej dla wszystkich możliwych map.
 
 ## Proponowane strojenie (kontrafaktyczne, **nie włączone do gry**)
 
@@ -137,4 +137,4 @@ diff --git a/src/sim/defs.ts b/src/sim/defs.ts
 +  base: goodsOf({ wood: 1, planks: 3, grain: 1, flour: 3, bread: 4, fish: 3, stone: 2, charcoal: 4, malt: 4, beer: 8 }),
 ```
 
-**Brak zmian w obecnych plikach `src/sim` tego PR.** Źródło danych i kontrola CI: [GitHub Actions — D-52 baseline i tuned](https://github.com/woogitsugames/marchi/actions/runs/41432555084). W CI uruchomiono pełny `npm test`, `npm run typecheck`, `npm run build`, `npm run bot` i `npm run perf:sim`; tymczasowy test zbierający dane pomiarowe zostanie usunięty z docelowej gałęzi, pozostawiając samodzielny `tools/balance-sandbox.ts`.
+**Brak zmian w obecnych plikach `src/sim` tego PR.** Źródło danych i kontrola CI: [GitHub Actions — D-52 baseline i tuned](https://github.com/woogitsugames/marchi/actions/runs/41432555084). W CI uruchomiono pełny `npm test`, `npm run typecheck`, `npm run build`, `npm run bot` i `npm run perf:sim`; tymczasowy test zbierający dane pomiarowe usunięto z docelowej gałęzi, pozostawiając samodzielny `tools/balance-sandbox.ts`.
