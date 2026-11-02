@@ -1,6 +1,6 @@
 # Seasons in the Free Valley — D-31 proposal
 
-**Status:** deterministic data-only proposal. The new module src/sim/proposals/seasons.ts is NOT imported by the active simulation. This PR does not enable seasons in the live Free Valley or change any contract mission. Integration is specified below.
+**Status:** wired into the free valley (D-33). The module is `src/sim/seasons.ts`; it runs where `MissionDef.seasons` is set (the sandbox), derived into `World.seasons` — no state field. §2 below is the original integration plan; D-33 records what was built and where it differs (cycle ceil via `Math.floor`, fair through `fairPercent()`, `bridgeIceUntil()` in seasons.ts instead of widening `contract.iceUntil`).
 
 ## 1. Calendar and effects
 

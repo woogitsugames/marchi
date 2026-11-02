@@ -514,7 +514,7 @@ const FRAG_MAIN = /* glsl */ `
   if (uWinter > 0.001) {
     float lum = dot(A, vec3(0.3, 0.59, 0.11));
     // roads keep their colour (they carry the diagnosis) and the river bed stays dark
-    float frost = uWinter * 0.42 * (1.0 - roadCover) * smoothstep(-0.2, 0.6, hW);
+    float frost = uWinter * 0.42 * (1.0 - roadCover) * smoothstep(0.3, 1.2, hW);
     A = mix(A, vec3(lum * 0.9 + 0.28, lum * 0.92 + 0.29, lum * 0.95 + 0.31), frost);
     RO.x = mix(RO.x, RO.x * 0.85, frost);
   }
