@@ -15,6 +15,7 @@ import {
   Matrix4,
   Mesh,
   MeshStandardMaterial,
+  type Object3D,
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
@@ -30,7 +31,7 @@ import { modelMaterial } from '../src/render/models/materials';
 import { addHorsePoseAttributes, createHorseMaterial, wagonLod1, wagonModel, writeHorsePose } from '../src/render/models/wagon';
 import { horsePose, POSE_SIZE } from '../src/render/gait';
 import { BUILDING_KINDS, buildingModel, CHAIN_KINDS, PROP_KINDS, propParts } from '../src/render/models/buildings';
-import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS } from '../src/render/models/trees';
+import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS } from '../src/render/models/trees';
 import { bridgeParts } from '../src/render/models/bridges';
 import { workerParts } from '../src/render/models/people';
 
@@ -127,6 +128,8 @@ function addInstanced(parts: ModelPart[], ms: Matrix4[], material?: MeshStandard
     ms.forEach((m, i) => im.setMatrixAt(i, m));
     im.castShadow = true;
     im.receiveShadow = true;
+    // far tree cards cast one soft blob, as in the game
+    if (p.material === 'billboard') im.customDepthMaterial = billboardDepthMaterial();
     scene.add(im);
   }
 }
@@ -287,20 +290,29 @@ const chainTo = scene.children.length;
 }
 
 // ---------------------------------------------------------------- trees
+// Overview rows at x 80–108 (full models left, far cards right). Close-up views `tree-<kind>`
+// show one species alone: both variants (and a rotated copy) beside three far cards.
 bakeTreeBillboards(renderer);
+const treeObjs = new Map<string, Object3D[]>();
 {
   TREE_KINDS.forEach((kind, k) => {
-    const ms: Matrix4[] = [];
+    const from = scene.children.length;
+    const near: Matrix4[][] = [[], []];
     const far: Matrix4[] = [];
     for (let i = 0; i < 6; i++) {
       const s = 0.85 + ((i * 37) % 10) / 30;
-      ms.push(trs(80 + (i % 3) * 5 + k * 1.3, 0, -4 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
+      near[i % TREE_VARIANTS]!.push(trs(80 + (i % 3) * 5 + k * 1.3, 0, -4 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
       far.push(trs(98 + (i % 3) * 5, 0, -4 - k * 6 - Math.floor(i / 3) * 3.5, 0, i * 1.3, 0, s));
     }
-    addInstanced(treeParts(kind), ms);
+    for (let v = 0; v < TREE_VARIANTS; v++) addInstanced(treeParts(kind, v), near[v]!);
     const bb = treeBillboard(kind);
     addInstanced(bb, far);
-    stats.push(`tree ${kind}: ${triangles(treeParts(kind))} tris, billboard ${triangles(bb)}`);
+    const sp = TREE_SIZE[kind].radius * 2.4 + 1;
+    const cz = 70 + k * 28;
+    for (let v = 0; v < 3; v++) addInstanced(treeParts(kind, v % TREE_VARIANTS), [trs(-1.5 * sp + v * sp, 0, cz, 0, v * 2.1, 0)]);
+    addInstanced(bb, [0, 1, 2].map((i) => trs(1.7 * sp + i * sp, 0, cz, 0, i * 2.1, 0)));
+    treeObjs.set(kind, scene.children.slice(from));
+    stats.push(`tree ${kind}: ${Array.from({ length: TREE_VARIANTS }, (_, v) => triangles(treeParts(kind, v))).join('/')} tris, billboard ${triangles(bb)}`);
   });
 }
 
@@ -335,7 +347,16 @@ const views: Record<string, [Vector3, Vector3]> = {
   people: [new Vector3(60.2, 1.55, 64.6), new Vector3(60.4, 0.95, 60)],
   driver: [new Vector3(67.5, 2.6, 63.2), new Vector3(64.6, 1.4, 59.6)],
 };
+TREE_KINDS.forEach((kind, k) => {
+  const H = TREE_SIZE[kind].height, sp = TREE_SIZE[kind].radius * 2.4 + 1;
+  const cx = 1.1 * sp, cz = 70 + k * 28, back = sp * 5 + H * 0.5;
+  views[`tree-${kind}`] = [new Vector3(cx, H * 0.55 + back * 0.12, cz + back), new Vector3(cx, H * 0.45, cz)];
+});
 const [eye, target] = views[view] ?? views.overview;
+if (view.startsWith('tree-')) {
+  const keep = new Set(treeObjs.get(view.slice(5)) ?? []);
+  scene.children.forEach((c, i) => { if (i >= baseChildren && !keep.has(c)) c.visible = false; });
+}
 // the chain views show only the D-29 set, without the older rows behind it
 if (view.startsWith('chain')) {
   scene.children.forEach((c, i) => {

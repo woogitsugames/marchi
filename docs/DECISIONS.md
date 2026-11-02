@@ -460,3 +460,21 @@ banded hubs, iron tyres, ~5.5k tris per rig; mid (to lodDist) the same skinned r
 (the old single LOD0 was ~3.2k); far the static ~620-tri merged rig. Cost with 100 wagons (harness, 412×915):
 mid zoom 49 calls / 423k tris (was 49 / 417k), close zoom 57 calls / 446k (was 51 / 429k). At ×4 the cadence is
 four times higher (no sliding, but on a 30 fps phone the legs strobe at full trot) — accepted over sliding.
+**D-41 — Trees: clump crowns, lit impostors baked from above, dithered LOD crossfade (render only).** The owner
+saw cheap trees on the phone; research `docs/research/2026-11-02-trees.md` found black near trees vs bright flat
+impostors, vertical streaks in the far forest, "matchstick" pines and dead-stick shrubs. Changes: crowns are a few
+large crossed *clump* cards (lobed clump texture, crown+clump blended normals, no back-face normal flip) instead of
+~130 confetti cards; trunks are lathes with root flare and taper on their own `trunk` material (bark maps + tree
+shader); 2 geometry variants per kind plus per-instance hue/value, XZ/Y scale and ±3° lean from a position hash; a
+wider late-autumn palette (russet/ochre accents on oak, ochre/yellow-green birch, olive shrubs). Far cards come from
+an albedo **and** normal atlas baked from 30° above (the camera pitch is 27–52°; a level side view of a spruce is the
+thin spike that made the streaks), lit with the baked normals, atlas treated as premultiplied (no inked fringe),
+silhouette alpha from a finer mip; the blob shadow is pushed away from the light so it no longer cuts its own card in
+half. Near↔far is a 12 m screen-space dithered crossfade (trees in the band sit in both lists; complementary
+discard from the exact camera distance). Canvas textures become straight-alpha data textures (black under
+transparent texels made dark rims); alpha is scaled by the sampled mip level (thin needles no longer vanish at a
+distance). High: alpha-to-coverage on near cards and a height-weighted vertex wind; low keeps plain alpha test, no
+wind, no tree shadows. Cost (412×915 dpr 2, `r.info.render` incl. shadow pass): m1 high near 39→48 draw calls,
+416k→465k tris; mid 37→40, 332k→298k; far 35→35; low near 40→48, 248k→255k; sandbox high near 31→42, 402k→451k
+(the +calls are the second variant per kind). Screens: `docs/shots/trees2-{before,after}-*.jpg`,
+`trees2-closeup-*.jpg`; script `tools/tree-shots.mjs`. Not done: a multi-view (azimuth) impostor atlas. (decided)

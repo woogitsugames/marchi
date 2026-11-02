@@ -87,6 +87,8 @@ async function boot(): Promise<void> {
     app = new App({ canvas: fresh, ui, view: picked.view, params });
   }
   document.body.dataset.view = picked.kind;
+  // screenshot/perf scripts drive the camera through this handle (debug only, never read by the game)
+  if (params.get('perf') === '1') (window as unknown as { __marchiaView?: WorldView }).__marchiaView = picked.view;
   await app.start();
 }
 
