@@ -392,3 +392,22 @@ right-hander prefers the landscape rail on the right (then "left-handed" reads b
 right-handed player. `App.applyHand()` sets the `left-handed` class to hand XOR RTL, so the logical CSS lands the
 rail physically on the hand's side; `railOnLeft()` then equals the left-handed setting.
 
+
+**D-38 — Horse gait advances with distance, not time; three wagon detail levels.** Owner feedback from the
+phone: the horse ran faster than its legs showed. The leg animation was a time-driven sine swing scaled by an
+estimated game speed, so hooves always slid. Now (`src/render/gait.ts`, pure TS) every rig keeps a gait phase
+advanced by the distance its *drawn* position moves along its heading each frame (`phase += Δd / stride`), and
+the wheels roll by the same distance (`angle = Δd / r`). In stance a fetlock moves back relative to the body by
+exactly `2·reach / duty` per cycle = the stride, so a planted hoof stays put at ×1/×2/×4 and through any frame
+rate (`tests/gait.test.ts` checks the sole's world position over every stance, for walk, trot and the blend, and
+fails when the stride is off by 10 %). Gait choice uses the drawn game-time ground speed per sim tick (render
+snapshot, not sim internals): walk below 2.3 m/s, trot from 3.2 m/s (dirt 3.6 trots, a wooden bridge 2.8 is in
+between, rain/mud slowdowns walk), blended smoothly. Each leg is a pivot → knee/hock → fetlock → hoof chain posed
+by two-bone IK on the CPU (≈0.8 µs per horse) and skinned in the vertex shader from four per-instance vec4s; the
+shadow pass uses the same skinning (`customDepthMaterial`). The body sinks a few cm while moving so the legs can
+reach (half constant, half per-step bob); the driver bobs with the footfalls; a standing horse eases to a square
+stance with a little head and tail movement in bouts. Detail: near (< 0.4·lodDist ≈ 48 m at high) full harness,
+banded hubs, iron tyres, ~5.5k tris per rig; mid (to lodDist) the same skinned rig with fewer segments, ~3.4k
+(the old single LOD0 was ~3.2k); far the static ~620-tri merged rig. Cost with 100 wagons (harness, 412×915):
+mid zoom 49 calls / 423k tris (was 49 / 417k), close zoom 57 calls / 446k (was 51 / 429k). At ×4 the cadence is
+four times higher (no sliding, but on a 30 fps phone the legs strobe at full trot) — accepted over sliding.
