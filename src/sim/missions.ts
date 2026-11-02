@@ -117,6 +117,13 @@ export interface MissionDef {
    * D-32). Copied into `state.mission.roadStone`; the free valley does this through rank gating.
    */
   roadStone?: boolean;
+  /** The seasonal calendar runs (free valley, D-33): derived into World.seasons, never stored in the state. */
+  seasons?: boolean;
+}
+
+/** Does this mission run the seasonal calendar? */
+export function missionSeasons(missionId: string): boolean {
+  return MISSIONS[missionId]?.seasons === true;
 }
 
 /** Building types the player may place in a mission, or 'ranked' for the sandbox (rank gating applies). */
@@ -180,6 +187,7 @@ export const MISSIONS: Record<string, MissionDef> = {
     deadlineMin: 0,
     star3Min: 0,
     star2Min: 0,
+    seasons: true,
   },
   // Test bench (not in the menu): the mission I layout without a contract and with a closed
   // market, i.e. the free valley as it was before the market (state v3). Tests and tools/bench use it.

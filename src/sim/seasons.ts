@@ -1,7 +1,11 @@
-// D-31 proposal only: seasons for the Free Valley, not yet wired into the live sim.
-// All times are simulation ticks; consumers decide whether the sandbox is active.
-import { RAIN_DIRT, TICK_HZ } from '../defs';
-import type { Good, RainSpell } from '../types';
+// Seasons in the free valley (D-31, D-33): a fixed calendar derived from the tick alone, nothing
+// stored in the state. A mission opts in with `MissionDef.seasons`; createWorld / worldFromState copy
+// the flag into `World.seasons` (derived like the terrain), and every hook asks `seasonal(world)`.
+// Contract missions never set it, so they run bit-identically.
+import { RAIN_DIRT, TICK_HZ } from './defs';
+import { iceUntil } from './contract';
+import type { World } from './network';
+import type { BuildingType, Good, RainSpell } from './types';
 
 export const SEASON_TICKS = 15 * 60 * TICK_HZ;
 export const YEAR_TICKS = 4 * SEASON_TICKS;
@@ -142,4 +146,80 @@ export function nextChange(tick: number): SeasonChange {
     announceAtTick,
     announced: tick >= announceAtTick,
   };
+}
+
+
+// --- Live hooks (cheap, allocation-free; the sim calls them every tick) ------------------------
+
+/** Does this world run the seasonal calendar? (Data flag from the mission, never a mission id.) */
+export function seasonal(world: Pick<World, 'seasons'>): boolean {
+  return world.seasons === true;
+}
+
+/** Throughput percentage of a producer type at tick (100 = normal). Only farms and fishers vary. */
+export function yieldPercentAt(type: BuildingType, tick: number): number {
+  if (type !== 'farm' && type !== 'fisher') return 100;
+  const s = seasonIndex(tick);
+  if (s === 3) return type === 'farm' ? 60 : 50;
+  if (s === 1 && type === 'farm') return 120;
+  return 100;
+}
+
+/**
+ * Ticks one production cycle needs at a throughput percentage: the recipe keeps its whole-item
+ * output, the cycle gets longer or shorter (integer ceil without Math.ceil).
+ */
+export function cycleTicksAt(baseTicks: number, percent: number): number {
+  return percent === 100 ? baseTicks : Math.floor((baseTicks * 100 + percent - 1) / percent);
+}
+
+/** Cycle length of a building's recipe in this world right now (base recipe ticks without seasons). */
+export function cycleTicks(world: World, type: BuildingType, baseTicks: number): number {
+  return seasonal(world) ? cycleTicksAt(baseTicks, yieldPercentAt(type, world.state.tick)) : baseTicks;
+}
+
+/** Is the spring thaw slowing land dirt roads at tick? */
+export function thawAt(tick: number): boolean {
+  if (seasonIndex(tick) !== 0) return false;
+  const t = tick % SEASON_TICKS;
+  return t >= THAW_OFFSET.start && t < THAW_OFFSET.end;
+}
+
+/** Thaw in this world right now (false without seasons). */
+export function thawing(world: World): boolean {
+  return seasonal(world) && thawAt(world.state.tick);
+}
+
+/** End tick of the winter ice window covering tick, or -1. */
+export function seasonIceUntilAt(tick: number): number {
+  if (seasonIndex(tick) !== 3) return -1;
+  const start = tick - (tick % SEASON_TICKS);
+  for (const w of ICE_OFFSETS) if (tick >= start + w.start && tick < start + w.end) return start + w.end;
+  return -1;
+}
+
+/**
+ * Wooden bridges closed until this tick, or -1: the mission's authored ice windows (state.ice,
+ * mission IV) composed with the winter ice of a seasonal world. Nothing is written into state.ice.
+ */
+export function bridgeIceUntil(world: World): number {
+  const authored = iceUntil(world.state);
+  if (!seasonal(world)) return authored;
+  const s = seasonIceUntilAt(world.state.tick);
+  return s > authored ? s : authored;
+}
+
+/** Fair price percentage for a good at tick (125 for beer in autumn, else 100). */
+export function fairPercentAt(good: Good, tick: number): number {
+  return good === AUTUMN_FAIR_GOOD && seasonIndex(tick) === 2 ? 125 : 100;
+}
+
+/** Fair price percentage in this world right now (100 without seasons). */
+export function fairPercent(world: World, good: Good): number {
+  return seasonal(world) ? fairPercentAt(good, world.state.tick) : 100;
+}
+
+/** 1-based year of the calendar at tick (for the HUD). */
+export function yearAt(tick: number): number {
+  return Math.floor(tick / YEAR_TICKS) + 1;
 }

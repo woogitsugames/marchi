@@ -6,10 +6,14 @@ export {
   applyCommand, validateRoad, validatePlace, gateCell, lineCells, roadCellCost, roadStoneCost, stoneAvailable, nearWater, onRock, isRockCell,
   type Command, type CommandResult, type CommandError,
 } from './commands';
-export { MISSIONS, VALLEY_W, VALLEY_H, missionBuildable } from './missions';
+export { MISSIONS, VALLEY_W, VALLEY_H, missionBuildable, missionSeasons } from './missions';
 export { isRaining, edgeLength, findPath, pathTime, net, hasEdge, grade, type World } from './network';
 export { buildingById, gateConnected } from './logistics';
-export { explainBuilding, explainWagon, wagonEta, wagonSlowdown, timeOfDay, type ReasonLink, type Slowdown } from './diagnose';
+export { explainBuilding, explainWagon, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
+export {
+  SEASON_TICKS, SEASON_WARNING_TICKS, YEAR_TICKS, AUTUMN_FAIR_GOOD, bridgeIceUntil, cycleTicks, effectsAt, nextChange, seasonAt, seasonal,
+  thawing, yearAt, type Season, type SeasonChange, type SeasonChangeKind, type SeasonEffects,
+} from './seasons';
 export { hashState } from './hash';
 export { suggestConnection, suggestLinkToStable, type RoadSuggestion } from './repair';
 export {

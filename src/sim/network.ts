@@ -3,7 +3,7 @@ import {
   MAX_GRADE, RAIN_COBBLE, RAIN_DIRT, RAIN_WOOD_BRIDGE, SLOPE_K_DOWN, SLOPE_K_EMPTY, SLOPE_K_LOADED,
   SPEED_COBBLE, SPEED_DIRT, SPEED_STONE_BRIDGE, SPEED_WOOD_BRIDGE, TICK_HZ,
 } from './defs';
-import { iceUntil } from './contract';
+import { bridgeIceUntil, thawing } from './seasons';
 import type { SimState, Terrain } from './types';
 
 export const DX = [1, 0, -1, 0, 1, -1, -1, 1];
@@ -20,7 +20,7 @@ export interface NetCache {
   span: Int32Array;
   /** cell*8+dir -> 1 when the edge cell -> neighbour(dir) is drivable. */
   edgeMask: Uint8Array;
-  /** Lazily built edge travel times per (loaded, rain) variant, index cell*8+dir, Infinity = no edge. */
+  /** Lazily built edge travel times per (loaded, rain, thaw) variant, index cell*8+dir, Infinity = no edge. */
   costs: (Float64Array | null)[];
 }
 
@@ -31,6 +31,11 @@ export interface World {
   terrain: Terrain;
   state: SimState;
   cache: NetCache | null;
+  /**
+   * The seasonal calendar runs in this world (free valley, D-33). Derived from the mission definition
+   * when the world is built or loaded, like the terrain; never saved. Missing = false.
+   */
+  seasons?: boolean;
   /** Derived per-tick bridge queue penalties (seconds per span). Not saved; recomputed from state. */
   queue?: { tick: number; ver: number; penalty: Map<number, number> } | null;
   /** Scratch buffers for pathfinding (reused). */
@@ -69,7 +74,7 @@ export function net(world: World): NetCache {
       }
     }
   }
-  world.cache = { ver: st.netVersion, occupied, gateOf, span, edgeMask: new Uint8Array(n * 8), costs: [null, null, null, null] };
+  world.cache = { ver: st.netVersion, occupied, gateOf, span, edgeMask: new Uint8Array(n * 8), costs: [null, null, null, null, null, null, null, null] };
   const mask = world.cache.edgeMask;
   for (let i = 0; i < n; i++) {
     if (!st.roads[i]) continue;
@@ -83,10 +88,13 @@ export function net(world: World): NetCache {
   return world.cache;
 }
 
-/** Edge cost table for a (loaded, rain) variant, cached until the network changes. */
-export function edgeCosts(world: World, loaded: boolean, rain: boolean): Float64Array {
+/**
+ * Edge cost table for a (loaded, rain, thaw) variant, cached until the network changes. Thaw has its
+ * own variants (it slows only land dirt roads, rain also slows cobble and wooden bridges).
+ */
+export function edgeCosts(world: World, loaded: boolean, rain: boolean, thaw = false): Float64Array {
   const c = net(world);
-  const k = (loaded ? 1 : 0) + (rain ? 2 : 0);
+  const k = (loaded ? 1 : 0) + (rain ? 2 : 0) + (thaw ? 4 : 0);
   let tab = c.costs[k];
   if (tab) return tab;
   const w = world.terrain.w, n = w * world.terrain.h;
@@ -96,7 +104,7 @@ export function edgeCosts(world: World, loaded: boolean, rain: boolean): Float64
     const x = i % w, y = (i - x) / w;
     for (let d = 0; d < 8; d++) {
       if (!c.edgeMask[i * 8 + d]) continue;
-      tab[i * 8 + d] = edgeTime(world, i, (y + DY[d]!) * w + x + DX[d]!, loaded, rain);
+      tab[i * 8 + d] = edgeTime(world, i, (y + DY[d]!) * w + x + DX[d]!, loaded, rain, thaw);
     }
   }
   c.costs[k] = tab;
@@ -136,12 +144,16 @@ export function isRaining(st: SimState): boolean {
   return false;
 }
 
-export function cellSpeed(world: World, c: number, rain: boolean): number {
+/**
+ * Speed (m/s) on a cell. `thaw` (spring, free valley) turns land dirt roads to mud like rain does;
+ * when both apply the dirt factor counts once. Cobble and both bridge kinds ignore the thaw.
+ */
+export function cellSpeed(world: World, c: number, rain: boolean, thaw = false): number {
   const surf = world.state.roads[c];
   const water = world.terrain.water[c] === 1;
   if (water) return surf === 2 ? SPEED_STONE_BRIDGE : SPEED_WOOD_BRIDGE * (rain ? RAIN_WOOD_BRIDGE : 1);
   if (surf === 2) return SPEED_COBBLE * (rain ? RAIN_COBBLE : 1);
-  return SPEED_DIRT * (rain ? RAIN_DIRT : 1);
+  return SPEED_DIRT * (rain || thaw ? RAIN_DIRT : 1);
 }
 
 /** Grade from a to b (positive uphill), using horizontal distance. */
@@ -182,16 +194,16 @@ export function slopeFactor(g: number, loaded: boolean): number {
 }
 
 /** Speed (m/s) on the edge a -> b at fraction along it (blended half/half). */
-export function edgeSpeedAt(world: World, a: number, b: number, frac: number, loaded: boolean, rain: boolean): number {
-  const v = frac < 0.5 ? cellSpeed(world, a, rain) : cellSpeed(world, b, rain);
+export function edgeSpeedAt(world: World, a: number, b: number, frac: number, loaded: boolean, rain: boolean, thaw = false): number {
+  const v = frac < 0.5 ? cellSpeed(world, a, rain, thaw) : cellSpeed(world, b, rain, thaw);
   return v * slopeFactor(grade(world.terrain, a, b), loaded);
 }
 
 /** Travel time in seconds for the whole edge a -> b. */
-export function edgeTime(world: World, a: number, b: number, loaded: boolean, rain: boolean): number {
+export function edgeTime(world: World, a: number, b: number, loaded: boolean, rain: boolean, thaw = false): number {
   const len = edgeLength(world.terrain, a, b);
   const sf = slopeFactor(grade(world.terrain, a, b), loaded);
-  return (len * 0.5) / (cellSpeed(world, a, rain) * sf) + (len * 0.5) / (cellSpeed(world, b, rain) * sf);
+  return (len * 0.5) / (cellSpeed(world, a, rain, thaw) * sf) + (len * 0.5) / (cellSpeed(world, b, rain, thaw) * sf);
 }
 
 // --- Pathfinding ------------------------------------------------------------
@@ -261,10 +273,10 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
     return top;
   };
   const rain = isRaining(world.state);
-  const costs = edgeCosts(world, loaded, rain);
+  const costs = edgeCosts(world, loaded, rain, thawing(world));
   const pen = spanPenalties(world);
   const spanOf = net(world).span;
-  const until = iceUntil(world.state);
+  const until = bridgeIceUntil(world);
   const iceLeft = until >= 0 ? (until - world.state.tick) / TICK_HZ : 0;
   dist[start] = 0;
   push(start, 0);
@@ -320,10 +332,10 @@ export function findPath(world: World, from: number, to: number, loaded: boolean
 
 /** Time in seconds along a node path starting at `from`. */
 export function pathTime(world: World, from: number, path: readonly number[], loaded: boolean): number {
-  const rain = isRaining(world.state);
+  const rain = isRaining(world.state), thaw = thawing(world);
   let t = 0, a = from;
   for (const b of path) {
-    t += edgeTime(world, a, b, loaded, rain);
+    t += edgeTime(world, a, b, loaded, rain, thaw);
     a = b;
   }
   return t;

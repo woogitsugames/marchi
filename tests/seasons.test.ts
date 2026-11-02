@@ -3,7 +3,7 @@ import { RAIN_DIRT, TICK_HZ } from '../src/sim/defs';
 import {
   AUTUMN_FAIR_GOOD, YEAR_TICKS, SEASON_TICKS, SEASON_WARNING_TICKS,
   effectsAt, nextChange, seasonAt,
-} from '../src/sim/proposals/seasons';
+} from '../src/sim/seasons';
 
 const minute = 60 * TICK_HZ;
 const spring = 0, summer = SEASON_TICKS, autumn = 2 * SEASON_TICKS, winter = 3 * SEASON_TICKS;

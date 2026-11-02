@@ -363,6 +363,25 @@ export const pl = {
   'menu.m8Sub': 'Kamień na bruk trzeba najpierw przywieźć',
   'menu.m9': 'IX. Piwo na wesele',
   'menu.m9Sub': 'Tartak i węglarz walczą o drewno',
+  // free valley seasons (D-33): see PENDING_KEYS
+  'season.spring': 'Wiosna',
+  'season.summer': 'Lato',
+  'season.autumn': 'Jesień',
+  'season.winter': 'Zima',
+  'season.when': '{season} · dzień {day}',
+  'season.notice.season': 'Za {time} nowa pora roku: {season}.',
+  'season.notice.thaw-start': 'Za {time} roztopy spowolnią gruntowe drogi.',
+  'season.notice.thaw-end': 'Za {time} drogi gruntowe obeschną.',
+  'season.notice.ice-start': 'Za {time} kra zamknie drewniane mosty. Kamienne pozostaną przejezdne.',
+  'season.notice.ice-end': 'Za {time} kra ustąpi i drewniane mosty się otworzą.',
+  'season.effect.winter-farm': 'Zima: gospodarstwa pracują około 40% wolniej.',
+  'season.effect.winter-fisher': 'Zima: rybacy pracują około 50% wolniej.',
+  'season.effect.summer-farm': 'Lato: gospodarstwa produkują około 20% więcej.',
+  'season.effect.autumn-fair': 'Jesienny jarmark: cena piwa +25%.',
+  'season.effect.spring-thaw': 'Roztopy: gruntowe drogi wolniejsze (×0,55).',
+  'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
+  'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
+  'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -374,6 +393,24 @@ export type MessageKey = keyof typeof pl;
  */
 export const PENDING_KEYS = [
   'menu.m7', 'menu.m7Sub', 'menu.m8', 'menu.m8Sub', 'menu.m9', 'menu.m9Sub',
+  'season.spring',
+  'season.summer',
+  'season.autumn',
+  'season.winter',
+  'season.when',
+  'season.notice.season',
+  'season.notice.thaw-start',
+  'season.notice.thaw-end',
+  'season.notice.ice-start',
+  'season.notice.ice-end',
+  'season.effect.winter-farm',
+  'season.effect.winter-fisher',
+  'season.effect.summer-farm',
+  'season.effect.autumn-fair',
+  'season.effect.spring-thaw',
+  'season.upstream',
+  'season.iceWinter',
+  'wagon.slowThaw',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
