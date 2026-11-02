@@ -42,3 +42,16 @@ Le nom propre « Marchia » reste inchangé. Les biens sont désignés par des n
 | ryby / fish | poisson | Mass commodity, as with pierre, charbon de bois, malt and bière. |
 
 Quantité vendue is a count-independent label, so it works with every commodity without gender or plural agreement errors. Argent is a mass noun; rank and ledger numbers identify one rank or ledger. Existing ICU-lite plurals remain unchanged. The tutorial names the existing Route tool.
+
+## Round 06 — seasons and weather
+
+| Polski / English | fr |
+| --- | --- |
+| wiosna / spring | printemps |
+| lato / summer | été |
+| jesień / autumn | automne |
+| zima / winter | hiver |
+| roztopy / thaw | dégel |
+| jesienny jarmark / autumn fair | foire d'automne |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

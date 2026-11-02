@@ -48,3 +48,16 @@
 
 माल की मात्रा ‘माल: संख्या’ के रूप में दी जाती है, ताकि अलग लिंग और वचन वाले नामों पर गलत क्रिया न लगे। चाँदी और पत्थर पदार्थवाचक हैं; उनके लिए कृत्रिम बहुवचन नहीं जोड़ा गया है। `why.holdsCount` में ‘भंडार/क्षमता’ का अनुपात भी आ सकता है।
 संतृप्ति हर दस सेकंड में माल की एक इकाई घटती है; इसका अर्थ कीमत में एक चाँदी की वृद्धि नहीं है। छोटे बटन में सेकंड का मानक संकेत `s` रखा गया है।
+
+## Round 06 — seasons and weather
+
+| Polski / English | hi |
+| --- | --- |
+| wiosna / spring | वसंत |
+| lato / summer | गर्मी |
+| jesień / autumn | पतझड़ |
+| zima / winter | सर्दी |
+| roztopy / thaw | बर्फ पिघलना |
+| jesienny jarmark / autumn fair | पतझड़ का मेला |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

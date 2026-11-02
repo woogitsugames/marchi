@@ -49,3 +49,16 @@ identifierare, inte antal. Etiketter som “Sålt: {n}” och “{good}: {count}
 och fungerar även med redan formaterade tal och kvoter. Bekräftelsen för omstart använder
 “Du förlorar …” för att fungera med både en-ord och ett-ord bland rangnamnen.
 Marknadstexten förklarar att mättnaden minskar med ett var tionde sekund, inte att priset ökar med ett silver.
+
+## Round 06 — seasons and weather
+
+| Polski / English | sv |
+| --- | --- |
+| wiosna / spring | vår |
+| lato / summer | sommar |
+| jesień / autumn | höst |
+| zima / winter | vinter |
+| roztopy / thaw | tjällossning |
+| jesienny jarmark / autumn fair | höstmarknad |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

@@ -46,3 +46,16 @@
 | ryby / fish | pescado | The traded commodity; not live peces. |
 
 Cantidad vendida is a count-independent label and works with all goods. Plata is a mass noun; rank and ledger numbers identify one rank or ledger. Existing ICU-lite plurals remain unchanged. The tutorial names the existing Camino tool; the contested-input message uses a noun phrase to fit singular, plural and mass goods.
+
+## Round 06 — seasons and weather
+
+| Polski / English | es |
+| --- | --- |
+| wiosna / spring | primavera |
+| lato / summer | verano |
+| jesień / autumn | otoño |
+| zima / winter | invierno |
+| roztopy / thaw | deshielo |
+| jesienny jarmark / autumn fair | feria de otoño |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

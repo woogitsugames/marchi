@@ -43,3 +43,16 @@
 市場の飽和度は販売数に相当する値で、10秒ごとに1個分下がります。銀の価格が1ずつ上がるという意味ではありません。
 数量は「商品：数量」と表記し、日本語では複数形のブロックを使いません。`why.holdsCount` の数量には「在庫/容量」の比率も入ります。
 修復ボタンは金額を保つため「道建設{n}銀」「道と橋{n}銀」と短縮しています。金額が3桁までは7文字以内です。
+
+## Round 06 — seasons and weather
+
+| Polski / English | ja |
+| --- | --- |
+| wiosna / spring | 春 |
+| lato / summer | 夏 |
+| jesień / autumn | 秋 |
+| zima / winter | 冬 |
+| roztopy / thaw | 雪解け |
+| jesienny jarmark / autumn fair | 秋の市 |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

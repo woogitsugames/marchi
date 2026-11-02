@@ -46,3 +46,16 @@
 | ryby / fish | pesce | Mass commodity, as with pietra, carbone di legna, malto and birra. |
 
 Quantità venduta is a count-independent label and works with all goods. Argento is a mass noun; rank and ledger numbers identify one rank or ledger. Existing ICU-lite plurals remain unchanged. The tutorial names the existing Strada tool.
+
+## Round 06 — seasons and weather
+
+| Polski / English | it |
+| --- | --- |
+| wiosna / spring | primavera |
+| lato / summer | estate |
+| jesień / autumn | autunno |
+| zima / winter | inverno |
+| roztopy / thaw | disgelo |
+| jesienny jarmark / autumn fair | fiera d'autunno |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.

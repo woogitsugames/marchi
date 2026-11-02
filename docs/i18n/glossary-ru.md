@@ -53,3 +53,16 @@
 Серебро — вещество и валюта без введения новых счётных единиц; номера рангов и книг не требуют
 множественного числа. Для goodGen/goodAcc сохранены отдельные родительные и винительные формы.
 В пояснении рынка на единицу уменьшается насыщение, а не прибавляется одна единица серебра к цене.
+
+## Round 06 — seasons and weather
+
+| Polski / English | ru |
+| --- | --- |
+| wiosna / spring | весна |
+| lato / summer | лето |
+| jesień / autumn | осень |
+| zima / winter | зима |
+| roztopy / thaw | оттепель |
+| jesienny jarmark / autumn fair | осенняя ярмарка |
+
+Thaw slows unpaved roads, not paved ones. Ice closes wooden bridges only; stone bridges stay open.
