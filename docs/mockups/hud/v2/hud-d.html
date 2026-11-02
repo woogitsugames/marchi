@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MARCHIA HUD v2 D</title>
+<script src="icons.js"></script>
+<style>
+/* Concept D: top from A, bottom from B, classic (non-cartoon) treatment.
+   Fonts bundled locally from @fontsource (OFL), latin + latin-ext for Polish.
+   No classic serif is installed, so Grenze Gotisch is used for the ribbon only. */
+@font-face{font-family:"Grenze Gotisch";font-weight:600;font-display:block;src:url(../../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-600-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Grenze Gotisch";font-weight:600;font-display:block;src:url(../../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-ext-600-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";font-weight:500;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";font-weight:500;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-500-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-700-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{
+  --ink:#1f1813;          /* outline */
+  --parch:#e2d3b1;        /* panel parchment, warmer/darker than v2 linen */
+  --parch-2:#cdbb93;      /* wells, tracks */
+  --parch-3:#b9a57b;
+  --wine:#6b1f24;         /* oxblood: alarm */
+  --wine-2:#541619;
+  --slate:#34485a;        /* slate-indigo: snow, wagons */
+  --brass:#b3893d;        /* antique gold: progress, active */
+  --brass-2:#856426;
+  --track:#4a3b2b;
+  --sat:28px; --sab:16px; --sal:0px; --sar:0px;
+}
+@media (orientation:landscape){ :root{ --sat:8px; --sab:10px; --sal:36px; --sar:16px; } }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#3d4a2c}
+body{font-family:"Alegreya Sans",serif;font-weight:500;color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums oldstyle-nums}
+#scene{position:absolute;inset:0;background-size:cover;background-position:center}
+#hud{position:absolute;inset:0}
+.abs{position:absolute!important}
+svg.i{display:block}
+.sc{font-variant-caps:all-small-caps;letter-spacing:.06em;font-weight:700}
+.shadow{box-shadow:0 2px 0 rgba(20,14,10,.55), 0 3px 8px rgba(20,14,10,.25)}
+
+/* parchment panel: thin ink line + fine inner engraved rule */
+.panel{background:var(--parch);border:1.5px solid var(--ink);border-radius:5px;box-shadow:inset 0 0 0 2px var(--parch), inset 0 0 0 3px rgba(31,24,19,.28), 0 2px 0 rgba(20,14,10,.5), 0 3px 8px rgba(20,14,10,.25)}
+.chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 4px;background:var(--parch);border:1.5px solid var(--ink);border-radius:4px;font-size:18px;font-weight:700;line-height:1}
+.chip .ib{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--ink);flex:none}
+.rbtn{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--parch);border:1.5px solid var(--ink);box-shadow:inset 0 0 0 3px var(--parch), inset 0 0 0 4px rgba(31,24,19,.3), 0 2px 0 rgba(20,14,10,.5), 0 3px 8px rgba(20,14,10,.25);position:relative;flex:none}
+.seg{display:flex;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;background:var(--parch)}
+.seg>div{width:48px;height:46px;display:grid;place-items:center;font-size:16px;font-weight:700;border-right:1px solid rgba(31,24,19,.45)}
+.seg>div:last-child{border-right:none}
+.seg>div.on{background:var(--brass);color:var(--ink);box-shadow:inset 0 0 0 2px var(--brass), inset 0 0 0 3px rgba(31,24,19,.35)}
+.badge{position:absolute;min-width:22px;height:22px;padding:0 5px;border-radius:11px;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;gap:3px;font-size:13px;line-height:1;font-weight:700}
+.badge.brass{background:var(--brass);color:var(--ink)}
+
+/* heraldic scroll ribbon */
+.ribbon{position:absolute;height:36px}
+.ribbon .band{position:absolute;inset:0;z-index:2;background:var(--wine);border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;color:#ead9b5;font-family:"Grenze Gotisch",serif;font-weight:600;font-size:20px;letter-spacing:.02em;line-height:1;box-shadow:inset 0 0 0 2px var(--wine), inset 0 0 0 3px rgba(234,217,181,.45), 0 2px 0 rgba(20,14,10,.5)}
+.ribbon .end{position:absolute;z-index:1;top:7px;width:30px;height:36px;background:var(--wine-2)}
+.ribbon .end.l{left:-20px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,38% 50%)}
+.ribbon .end.r{right:-20px;clip-path:polygon(0 0,100% 0,62% 50%,100% 100%,0 100%)}
+.ribbon .end{background:var(--ink)}
+.ribbon .end:after{content:"";position:absolute;inset:1.5px;background:var(--wine-2);clip-path:inherit}
+.ribbon .end.l:after{left:2.5px;right:0}
+.ribbon .end.r:after{right:2.5px;left:0}
+.ribbon .fold{position:absolute;z-index:1;top:30px;width:10px;height:13px;background:#3b0f12}
+.ribbon .fold.l{left:0;clip-path:polygon(0 0,100% 0,100% 100%)}
+.ribbon .fold.r{right:0;clip-path:polygon(0 0,100% 0,0 100%)}
+
+/* embossed wax seal */
+.seal{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:radial-gradient(circle at 40% 35%, #c9b791 0, #a8956c 70%);color:#6d5c3d;border:1.5px solid #5a4a32;
+  box-shadow:inset 0 0 0 2.5px rgba(255,248,230,.18), inset 0 0 0 3.5px rgba(60,45,25,.35)}
+.snow{display:flex;align-items:center;gap:6px;height:30px;padding:0 9px 0 3px;border-radius:15px;background:var(--slate);border:1.5px solid var(--ink);color:#e9e3d2;font-size:16px;font-weight:700;line-height:1}
+.snow .ib{width:22px;height:22px;border-radius:50%;background:#dfe3e2;color:var(--slate);display:grid;place-items:center}
+.snow small{font-size:13px;font-weight:500;opacity:.85}
+.bar{position:relative;height:7px;border-radius:1px;background:var(--track);box-shadow:inset 0 1px 0 rgba(0,0,0,.45), 0 0 0 1px rgba(31,24,19,.6), 0 1px 0 rgba(255,248,230,.35)}
+.bar>i{position:absolute;left:0;top:0;bottom:0;background:var(--brass);box-shadow:inset 0 -1px 0 var(--brass-2)}
+.bar .tick{position:absolute;top:-3px;bottom:-3px;width:1px;background:rgba(31,24,19,.55)}
+.gi{width:28px;height:28px;border-radius:50%;background:var(--parch-2);border:1px solid rgba(31,24,19,.7);display:grid;place-items:center;flex:none}
+.num{font-size:17px;font-weight:700;width:46px;text-align:right}
+.num span{opacity:.55;font-weight:500}
+
+/* bottom: tool cards */
+.tray{display:flex;gap:8px}
+.card{height:70px;border-radius:5px;background:var(--parch);border:1.5px solid var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;font-size:13px;font-weight:700;box-shadow:inset 0 0 0 2px var(--parch), inset 0 0 0 3px rgba(31,24,19,.25), 0 2px 0 rgba(20,14,10,.5), 0 3px 8px rgba(20,14,10,.25)}
+.card .ic{width:34px;height:34px;border-radius:3px;display:grid;place-items:center;background:var(--parch-2);border:1px solid rgba(31,24,19,.55)}
+.card.hint{border-color:var(--brass-2);box-shadow:0 0 0 2px var(--brass), 0 0 0 3px var(--ink), inset 0 0 0 2px var(--parch), 0 3px 8px rgba(20,14,10,.3)}
+.card .cost{top:-11px;right:-8px}
+.coin{width:15px;height:15px;border-radius:50%;background:#c7c8c0;border:1px solid var(--ink);display:grid;place-items:center}
+/* worst-stall card + wax alarm seal */
+.stall{position:absolute;display:flex;align-items:center;gap:10px;padding:7px 7px 7px 14px;border-left:5px solid var(--wine)}
+.stall .why{flex:1;line-height:1.15}
+.stall .why .k{font-size:14px;color:var(--wine)}
+.stall .why .t{font-size:18px;font-weight:700}
+.eye{width:48px;height:48px;border-radius:50%;background:var(--wine);color:#ead9b5;display:grid;place-items:center;border:1.5px solid var(--ink);box-shadow:inset 0 0 0 2px var(--wine), inset 0 0 0 3px rgba(234,217,181,.35);flex:none}
+.alarm{position:absolute;width:70px;height:70px;border-radius:48% 52% 50% 47%/52% 47% 53% 48%;display:grid;place-items:center;color:#ead9b5;
+  background:radial-gradient(circle at 42% 38%, #85292d 0, var(--wine) 55%, var(--wine-2) 100%);border:1.5px solid var(--ink);
+  box-shadow:inset 0 0 0 5px rgba(84,22,25,.0), inset 0 0 0 6px rgba(234,217,181,.28), 0 2px 0 rgba(20,14,10,.5), 0 3px 8px rgba(20,14,10,.3)}
+.tailR{position:absolute;right:-11px;top:50%;margin-top:-9px;width:11px;height:18px;background:var(--ink);clip-path:polygon(0 0,100% 50%,0 100%)}
+.tailR:after{content:"";position:absolute;left:-1px;top:2px;width:8px;height:14px;background:var(--parch);clip-path:polygon(0 0,100% 50%,0 100%)}
+
+/* map markers */
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.pin .head{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--ink);box-shadow:inset 0 0 0 2px currentColor, 0 2px 4px rgba(0,0,0,.4)}
+.pin .tail{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--ink);margin-top:-1px}
+.pin.red .head{background:var(--wine);color:#ead9b5;box-shadow:inset 0 0 0 2px var(--wine), inset 0 0 0 3px rgba(234,217,181,.4), 0 2px 4px rgba(0,0,0,.4)}
+.pin.gold .head{background:var(--brass);color:var(--ink);width:30px;height:30px;box-shadow:inset 0 0 0 2px var(--brass), inset 0 0 0 3px rgba(31,24,19,.35), 0 2px 4px rgba(0,0,0,.4)}
+.eta{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px;height:26px;padding:0 8px 0 3px;border-radius:4px;background:var(--slate);border:1.5px solid var(--ink);color:#e9e3d2;font-size:15px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.eta .ib{width:20px;height:20px;border-radius:50%;background:#dfe3e2;color:var(--slate);display:grid;place-items:center}
+.eta:after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--ink)}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="hud"></div>
+<script>
+const P = innerHeight > innerWidth, W = innerWidth, H = innerHeight;
+document.getElementById('scene').style.backgroundImage = `url(../${P ? 'bg-412x915.jpg' : 'bg-915x412.jpg'})`;
+const hud = document.getElementById('hud');
+const ic = (n, s = 24) => `<svg class="i" viewBox="0 0 24 24" width="${s}" height="${s}">${ICONS[n]}</svg>`;
+const add = (h) => { hud.insertAdjacentHTML('beforeend', h); return hud.lastElementChild; };
+const css = (o) => Object.entries(o).map(([k, v]) => `${k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())}:${typeof v === 'number' ? v + 'px' : v}`).join(';');
+const cv = (n) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n));
+const sat = cv('--sat'), sab = cv('--sab'), sal = cv('--sal'), sar = cv('--sar');
+
+/* Anchors measured on the background frames (CSS px). */
+const M = P
+  ? { mill: [210, 452], second: [137, 366], wagon: [256, 540] }
+  : { mill: [458, 206], second: [662, 262], wagon: [490, 255] };
+
+// --- map markers (tap a pin = the stall bubble opens; not shown here) ---
+add(`<div class="pin red" style="${css({ left: M.mill[0], top: M.mill[1] })}"><div class="head">${ic('no_wagon', 24)}</div><div class="tail"></div></div>`);
+add(`<div class="pin gold" style="${css({ left: M.second[0], top: M.second[1] })}"><div class="head">${ic(P ? 'no_route' : 'output_full', 18)}</div><div class="tail"></div></div>`);
+add(`<div class="eta" style="${css({ left: M.wagon[0], top: M.wagon[1] })}"><span class="ib">${ic('wagon', 15)}</span>0:42</div>`);
+
+// --- TOP (from A): menu, time, silver, speed; ribbon + contract panel ---
+const T0 = sat + 8;
+const chips = `<div class="chip shadow"><span class="ib" style="background:var(--brass)">${ic('sun', 18)}</span>09:18</div>
+  <div class="chip shadow"><span class="ib" style="background:#c7c8c0">${ic('coin', 18)}</span>84</div>`;
+const speed = `<div class="seg shadow"><div>${ic('pause', 20)}</div><div>×1</div><div class="on">×2</div><div>×4</div></div>`;
+add(`<div class="rbtn abs" style="${css({ left: 12 + sal, top: T0 })}">${ic('menu', 22)}</div>`);
+let ry;
+if (P) {
+  add(`<div class="abs" style="${css({ right: 12, top: T0 + 6, display: 'flex', gap: '8px' })}">${chips}</div>`);
+  add(`<div class="abs" style="${css({ right: 12, top: T0 + 52 })}">${speed}</div>`);
+  ry = T0 + 106;
+} else {
+  add(`<div class="abs" style="${css({ right: 12 + sar, top: T0 + 1, display: 'flex', gap: '8px', alignItems: 'center' })}">${chips}${speed}</div>`);
+  ry = T0 + 6;
+}
+const rw = 316, rx = P ? (W - rw) / 2 : 88 + sal;
+const pw = 292;
+add(`<div class="panel abs" style="${css({ left: rx + (rw - pw) / 2, top: ry + 20, width: pw, padding: '24px 10px 10px' })}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div style="display:flex;gap:4px">${[0, 1, 2].map(() => `<div class="seal">${ic('seal', 16)}</div>`).join('')}</div>
+    <div class="snow"><span class="ib">${ic('snow', 16)}</span>4:52<small>do śniegu</small></div>
+  </div>
+  ${[['planks', 18, 30], ['bread', 11, 20]].map(([g, a, b]) => `
+  <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+    <div class="gi">${ic(g, 19)}</div>
+    <div class="bar" style="flex:1"><i style="width:${a / b * 100}%"></i>${[0.25, 0.5, 0.75].map((t) => `<span class="tick" style="left:${t * 100}%"></span>`).join('')}</div>
+    <div class="num">${a}<span>/${b}</span></div>
+  </div>`).join('')}
+</div>`);
+add(`<div class="ribbon" style="${css({ left: rx, top: ry, width: rw })}"><div class="end l"></div><div class="end r"></div><div class="fold l"></div><div class="fold r"></div><div class="band">Do zamku przed pierwszym śniegiem</div></div>`);
+
+// --- BOTTOM (from B): tool cards, worst-stall card, wax alarm seal ---
+const cards = [['road_dirt', 'Droga'], ['road_cobble', 'Bruk'], ['demolish', 'Rozbiórka'], ['buy_wagon', 'Kup wóz', 30], ['overlay_load', 'Ruch']];
+const cw = P ? Math.floor((W - 24 - 4 * 8) / 5) : 66;
+add(`<div class="tray abs" style="${css({ left: 12 + sal, bottom: sab + 12 })}">${cards.map(([n, l, cost]) => `
+  <div class="card${cost ? ' hint' : ''}" style="width:${cw}px"><div class="ic">${ic(n, 24)}</div>${l}${cost ? `<div class="badge brass cost"><span class="coin">${ic('coin', 11)}</span>${cost}</div>` : ''}</div>`).join('')}</div>`);
+const as = 70;
+const ax = W - sar - 14 - as;
+const ay = P ? H - sab - 12 - 70 - 18 - as : H - sab - 12 - as;
+const bw = P ? ax - 12 - 16 : 330;
+add(`<div class="panel stall" style="${css({ left: ax - bw - 16, top: ay + 5, width: bw })}">
+  <div class="why"><div class="k sc">Najgorszy zastój</div><div class="t">Młyn: brak wolnego wozu</div></div>
+  <div class="eye">${ic('follow', 22)}</div><div class="tailR"></div></div>`);
+add(`<div class="alarm" style="${css({ left: ax, top: ay })}">${ic('no_wagon', 34)}<div class="badge brass" style="top:-6px;right:-6px">2</div></div>`);
+
+document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>
