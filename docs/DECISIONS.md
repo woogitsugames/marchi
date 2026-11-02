@@ -478,3 +478,63 @@ wind, no tree shadows. Cost (412×915 dpr 2, `r.info.render` incl. shadow pass):
 416k→465k tris; mid 37→40, 332k→298k; far 35→35; low near 40→48, 248k→255k; sandbox high near 31→42, 402k→451k
 (the +calls are the second variant per kind). Screens: `docs/shots/trees2-{before,after}-*.jpg`,
 `trees2-closeup-*.jpg`; script `tools/tree-shots.mjs`. Not done: a multi-view (azimuth) impostor atlas. (decided)
+
+**D-44 — Owner decisions 2026-11-02: one ledger row per held bridge, an honest "supplier" status, wagon fleet
+numbers (state v7).** Three approved changes that alter sim results, one commit each on `claude/w-simfix`;
+golden hashes re-baselined deliberately. Building statuses do not drive the dispatcher, so no mission plays
+differently: every bot strategy (balance.ts m1–m6, bot-missions-7-9, bot-missions-10-12 incl. the wrong fixes,
+bot-sandbox, mission-bot m1, bot-m2/m3/m4) gives the same result, time and seals before and after (table below;
+`tools/balance.ts` and all `tools/bot-*.ts` outputs byte-identical). The bots now also report the final state hash.
+
+(1) *D-34 fix (F7 in contract missions).* `accountStalls` charges a building whose stall root is a wagon held at
+a bridge (BRIDGE_CLOSED / BRIDGE_JAM) as `span:S:K` in **every** world, not only seasonal ones, so the end
+letter shows one row per jammed / iced crossing instead of span + per-wagon rows. Only the ledger changes (state
+with `ledger.stallSeconds` stripped identical in all 51 runs); changed are exactly the runs whose building chain
+ends at a held wagon on a wooden span: m2 without a stone bridge (one-lane jam), m4 before the bridge is stone
+(ice), m8 right fix (a 10 s one-lane jam, `span:3305:BRIDGE_JAM`), and bench100 after 2500 ticks. Stone-bridge strategies, m1, m3, m5–m7, m9–m12,
+lab and sandbox are unchanged. Test: `stall-readability` "F7 / D-44" (red before the fix).
+
+| run (v4 golden, `chains.test.ts`, v4 view) | before | after |
+|---|---|---|
+| m2 nothing | 7fc1c8d157ed7f29 | 4b902f1db0533e35 |
+| m2 buy 2 wagons | 99d33c2352b3a9c9 | c33b5d92f4dbd83f |
+| m2 buy 2 + 2nd wooden bridge x=63 @45s | 06324d3b475478fa | a1da025a585ea7ce |
+| m4 nothing | a64f6bf76e6f6110 | f033eff4d9820c10 |
+| m4 buy 3 wagons @1:00 | 0b250d6171216846 | 8ec390098e423284 |
+| m8 wagon + cobble (final `stateHash`, bot-missions-7-9) | 4a7b8ec112182e75 | 5e35ed5721e83c37 |
+| bench100 @2500 / @3000 (`dispatch-reachability`) | ab1282712910a464 / 17f1e2a72d8ad006 | 5a58035c13b27844 / c7f0bbc81a0a4cc6 |
+
+(2) *F5, second half.* `upstreamReason` (logistics.ts) counted a supplier in WAITING_DELIVERY as healthy, so the
+consumer said WAITING_UPSTREAM "the supplier is making it now" while the supplier's own input wagon stood at an
+iced bridge. Now a reachable *producing* supplier is preferred; a supplier whose delivery wagon is BRIDGE_CLOSED,
+BRIDGE_JAM or NO_ROUTE is *held*: the consumer reads `NO_INPUT.NONE_AVAILABLE` blamed on it, the chain runs
+consumer → supplier (waiting) → wagon at the bridge, and the ledger charges that span. A supplier whose input is
+merely on the way stays WAITING_UPSTREAM — start-up is not a stall (deadlock.test.ts) — but the card now says
+"the supplier is itself waiting for grain" (`status.WAITING_UPSTREAM.supplierWaits`, pending key; UI text only).
+No new StallReason. Rejected: NO_INPUT for every non-producing supplier — every chain would light up red during
+normal start-up (m2: 4054 status-ticks per run). Effect: m2 ≈205 and m4 845–1180 building-status ticks per run
+change; all final hashes unchanged (the held consumer's root is the span the wagon loop already charges), 4 of 474
+per-minute samples differ (m4 nothing, m4 buy 3). Test: `stall-readability` "F5 / D-44" (m4 ice; 169 wrong
+WAITING_UPSTREAM samples before, 0 after; the chain ends at the held wagon).
+
+(3) *Fleet numbers.* `Wagon.n` (1..N in purchase order, from the new counter `SimState.nextWagonN`; a sold
+wagon's number is **not** reused) replaces the global `nextId` in player text: wagon sheet title, "wóz {wagon}"
+statuses, "czeka przy moście na wóz {blocker}", chain subjects, end-letter ledger (a wagon sold since reads just
+"Wóz"). STATE_VERSION 6 → 7; migration 6→7 numbers existing wagons in id order (= purchase order, ids only grow;
+numbers of wagons sold before v7 are unknown) in fresh-state key order; the save gate requires unique `n <
+nextWagonN` for v7; `checkInvariants` checks the same. Test `save-v7.test.ts` loads a real v6 save written by the
+previous build (`tests/fixtures/save-v6-m2-sold-wagon.json`: m2, 3 bought, first starter sold, ids 12–20, grain and
+wood on wagons) → n = 1..9, nextWagonN 10, invariants and conservation OK, v7 round trip, stable numbers, no reuse
+after a sale, gate rejections. Every state hash changes (two new fields, version 7); with them stripped and version
+6, all 474 per-minute samples of every strategy, the lab, sandbox and bench equal the previous commit. The v4
+golden view strips them; bench golden re-baselined (bench50 7bfba2c9…3e2b9df1, bench100 365d8f9d…2431f477).
+Fuzz 200 runs × 4000 ticks (save/load divergence): 0 failures.
+
+Seal ladder (before = after, minutes | seals): m1 nothing lost 0 · bridge lost 0 · bridge + 2 wagons 10.78 | 1;
+m2 10.81 | 1 · 9.94 | 1 · stone 8.51 | 3 · 2nd wooden 9.52 | 2; m3 8.57 | 1 · 7.41 | 2 · 5.60 | 3; m4 11.65 | 1 ·
+10.49 | 1 · late stone 8.07 | 2 · early stone 6.43 | 3; m5 9.61 | 1 · 9.41 | 1 · 9.16 | 2 · 8.40 | 3 · 8.04 | 3; m6
+8.92 | 1 · 8.80 | 2 · 8.31 | 3 · 8.40 | 3 · 9.76 | 1 · 9.62 | 1; m7 10.90 | 1 · 8.04 | 2 · 6.41 | 3; m8 10.50 | 1 ·
+10.11 | 2 · 9.48 | 3; m9 11.22 | 1 · 10.06 | 2 · 8.70 | 3; m10 lost 0 · 10.14 | 2 · 8.34 | 3 (wrong fix 10.44 | 1);
+m11 10.94 | 1 · 10.06 | 2 · 8.88 | 3; m12 10.36 | 1 · 9.92 | 2 · 8.60 | 3 (wrong fix 10.44 | 1); sandbox decent
+ranks at 10.14 / 26.59 / 45.45 / 78.08 / 123.4 min; mission-bot m1 8.85 | 2. All documented ladders hold
+(1/2/3, X 0/2/3); no mission data changed. (decided)
