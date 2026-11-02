@@ -266,6 +266,7 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     buildings: [],
     wagons: [],
     nextId: 1,
+    nextWagonN: 1,
     rain: [],
     ice: (def.ice ?? []).map((r) => ({ ...r })),
     mission: { id: def.id, contract: null, result: 'running', endTick: -1, roadStone: def.roadStone ?? false },

@@ -119,8 +119,16 @@ export function buildingName(world: World, id: number): string {
   return b ? t(`building.${b.type}` as MessageKey) : '—';
 }
 
-export function wagonName(id: number): string {
-  return t('wagon.name', { id });
+/** Fleet number of a wagon ("Wóz 3", D-44), or null when it is gone (sold). */
+export function wagonNumber(world: World, id: number): number | null {
+  const w = world.state.wagons.find((q) => q.id === id);
+  return w ? w.n : null;
+}
+
+/** "Wóz 3" by fleet number; a sold wagon (e.g. in the end-letter ledger) is just "Wóz". */
+export function wagonName(world: World, id: number): string {
+  const n = wagonNumber(world, id);
+  return n === null ? t('wagon.kicker') : t('wagon.name', { id: n });
 }
 
 /** Status keys: 'status.<k>' or 'status.<k>.<cause>'. */
@@ -144,7 +152,7 @@ export function buildingStatusText(s: BuildingStatus, world?: World): string {
     params.goodGen = t(`goodGen.${s.good}` as MessageKey);
     params.goodAcc = t(`goodAcc.${s.good}` as MessageKey);
   }
-  if ('wagon' in s) params.wagon = s.wagon;
+  if ('wagon' in s) params.wagon = world ? wagonNumber(world, s.wagon) ?? '—' : s.wagon;
   return capFirst(t(key, params));
 }
 
@@ -152,7 +160,7 @@ export function wagonStatusText(world: World, s: WagonStatus): string {
   if (s.k === 'NO_ROUTE') {
     return s.target >= 0 ? t('wagon.NO_ROUTE', { target: buildingName(world, s.target) }) : t('wagon.NO_ROUTE.home');
   }
-  if (s.k === 'BRIDGE_JAM') return t('wagon.BRIDGE_JAM', { blocker: s.blocker });
+  if (s.k === 'BRIDGE_JAM') return t('wagon.BRIDGE_JAM', { blocker: wagonNumber(world, s.blocker) ?? '—' });
   if (s.k === 'BRIDGE_CLOSED') return t('wagon.BRIDGE_CLOSED.in', { time: iso(ticksClock(Math.max(0, s.until - world.state.tick))) });
   return t(`wagon.${s.k}` as MessageKey);
 }
@@ -166,7 +174,7 @@ export function linkText(world: World, l: ReasonLink): string {
 }
 
 export function linkSubject(world: World, l: ReasonLink): string {
-  return l.kind === 'building' ? buildingName(world, l.id) : wagonName(l.id);
+  return l.kind === 'building' ? buildingName(world, l.id) : wagonName(world, l.id);
 }
 
 /** A building status counts as a stall worth a bubble. */

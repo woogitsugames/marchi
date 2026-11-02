@@ -403,7 +403,7 @@ export interface EndActions { again(): void; menu(): void }
 /** Who a ledger key ('building:5:NO_ROAD', 'wagon:9:NO_ROUTE', 'span:812:BRIDGE_JAM') is about. */
 function causeSubject(world: World, kind: string, id: number): string {
   if (kind === 'building') return buildingName(world, id);
-  if (kind === 'wagon') return wagonName(id);
+  if (kind === 'wagon') return wagonName(world, id);
   return t('ledger.bridge');
 }
 

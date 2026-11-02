@@ -342,6 +342,10 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
   num(c, s, 'coins', P, 0, LIMITS.maxInt); // spending is refused when short, so never negative
   int(c, s, 'netVersion', P, 0, LIMITS.maxInt);
   const nextId = int(c, s, 'nextId', P, 1, LIMITS.maxInt);
+  // state v7 (D-44): fleet numbers
+  const fleet = version >= 7 || has(s, 'nextWagonN');
+  const nextWagonN = fleet ? int(c, s, 'nextWagonN', P, 1, LIMITS.maxInt) : null;
+  const wagonNs = new Set<number>();
   const rng = arr(c, s, 'rng', P, 4);
   if (rng) {
     if (rng.length !== 4) e.add('BAD_TYPE', `${P}.rng`, `expected 4 words, got ${rng.length}`);
@@ -427,6 +431,14 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
       if (ids.has(id)) e.add('DUPLICATE_ID', `${wp}.id`, `id ${id} used twice`);
       else ids.set(id, 'wagon');
       if (nextId !== null && id >= nextId) e.add('INCONSISTENT', `${wp}.id`, `id ${id} >= nextId ${nextId}`);
+    }
+    if (fleet) {
+      const n = int(c, w, 'n', wp, 1, LIMITS.maxInt);
+      if (n !== null) {
+        if (wagonNs.has(n)) e.add('DUPLICATE_ID', `${wp}.n`, `wagon number ${n} used twice`);
+        wagonNs.add(n);
+        if (nextWagonN !== null && n >= nextWagonN) e.add('INCONSISTENT', `${wp}.n`, `number ${n} >= nextWagonN ${nextWagonN}`);
+      }
     }
     cell(c, w, 'at', wp, false);
     cell(c, w, 'next', wp, true);

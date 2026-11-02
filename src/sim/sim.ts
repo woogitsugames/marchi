@@ -218,6 +218,15 @@ export function checkInvariants(world: World): string[] {
     const rhs = bal.inStock[g] + bal.onWagons[g];
     if (lhs !== rhs) errs.push(`conservation ${g}: produced-consumed-destroyed=${lhs} but stock+cargo=${rhs}`);
   }
+  // fleet numbers arrived with state v7 (D-44): unique, below the counter
+  if (st.nextWagonN !== undefined) {
+    const seen = new Set<number>();
+    for (const w of st.wagons) {
+      if (!(w.n >= 1 && w.n < st.nextWagonN)) errs.push(`wagon ${w.id} number ${w.n} outside 1..${st.nextWagonN - 1}`);
+      if (seen.has(w.n)) errs.push(`wagon number ${w.n} used twice`);
+      seen.add(w.n);
+    }
+  }
   // market fields arrived with state v4; the save gate runs this on older states before migrating
   if (st.market && st.ledger.sold) for (const g of GOODS) {
     if (n0(st.ledger.sold[g]) > n0(st.ledger.consumed[g])) errs.push(`ledger sold ${g}=${st.ledger.sold[g]} > consumed ${st.ledger.consumed[g]}`);
