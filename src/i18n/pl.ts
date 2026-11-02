@@ -408,21 +408,7 @@ export type MessageKey = keyof typeof pl;
  * (English fallback per key, D-18); tests/i18n-*.test.ts skip them. Remove a key from this list
  * once every language has it.
  */
-export const PENDING_KEYS = [
-  'demolish.confirm',
-  'err.NO_STONE.coming',
-  'err.NO_STONE.mining',
-  'err.NO_STONE.noQuarry',
-  'why.waitsCustomer',
-  'status.NO_INPUT.CONTESTED.to',
-  'road.stone',
-  'why.stoneReserve',
-  'why.stoneAll',
-  'save.inProgress',
-  'save.unfinished',
-  'save.confirmFresh',
-  'save.confirmRestart',
-] as const satisfies readonly MessageKey[];
+export const PENDING_KEYS = [] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
 export type FullDict = Record<MessageKey, string>;
