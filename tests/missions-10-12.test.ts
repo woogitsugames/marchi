@@ -1,7 +1,6 @@
 // Data, causal diagnosis, and deterministic balance acceptance for missions X-XII.
 import {
-  MISSIONS, checkInvariants, createWorld, explainBuilding, findPath, lineCells,
-  missionBuildable, stars,
+  MISSIONS, checkInvariants, createWorld, findPath, lineCells, missionBuildable,
 } from '../src/sim/index';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK, PROPOSED_MISSIONS_10_12 } from '../src/sim/proposals/missions-10-12';
 import { STRATEGIES, runProposed } from '../tools/bot-missions-10-12';
