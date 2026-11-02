@@ -4,7 +4,7 @@ import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, capacityOf, inputGoods, output
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { fairPercent } from './seasons';
-import { dijkstra, hasEdge, net, DX, DY, type DistMap, type World } from './network';
+import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Good, Wagon } from './types';
 
 interface Demand {
@@ -36,6 +36,13 @@ class DistCache {
     let m = this.rev.get(node);
     if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
     return m;
+  }
+  /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
+  release(): void {
+    for (const m of this.fwd.values()) releaseDistMap(this.world, m);
+    for (const m of this.rev.values()) releaseDistMap(this.world, m);
+    this.fwd.clear();
+    this.rev.clear();
   }
 }
 
@@ -141,7 +148,9 @@ export function dispatch(world: World): void {
       const producer = s.type !== 'warehouse';
       if (producer && avail < minQty) continue;
       if (anyAvail === -1) anyAvail = s.id;
-      const t = dc.from(s.gate).dist[d.b.gate]!;
+      // No free wagon: nothing can be assigned, only "is any source reachable" decides the stall
+      // (ALL_BUSY vs UNREACHABLE), so answer it from the component labels, not a full Dijkstra.
+      const t = free.length === 0 ? (reachable(world, s.gate, d.b.gate) ? 0 : Infinity) : dc.from(s.gate).dist[d.b.gate]!;
       if (t < bestT) { bestT = t; best = s; }
     }
     const key = d.b.id + ':' + d.good;
@@ -204,11 +213,12 @@ export function dispatch(world: World): void {
       const cap = capacityOf(g);
       if (avail < Math.max(cap / 2, def.outCap - 2)) continue;
       let best: Building | null = null, bestT = Infinity, fullWh = -1, cutOffWh = -1;
-      const fwd = dc.from(b.gate);
+      // no free wagon: only reachability matters (best !== null, the cut-off granary), see above
+      const fwd = free.length === 0 ? null : dc.from(b.gate);
       for (const wh of st.buildings) {
         if (wh.type !== 'warehouse') continue;
         if (warehouseSpace(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
-        const t = fwd.dist[wh.gate]!;
+        const t = fwd ? fwd.dist[wh.gate]! : reachable(world, b.gate, wh.gate) ? 0 : Infinity;
         if (t === Infinity) { if (cutOffWh === -1) cutOffWh = wh.id; continue; }
         if (t < bestT) { bestT = t; best = wh; }
       }
@@ -227,6 +237,7 @@ export function dispatch(world: World): void {
   }
 
   diagnose(world, unmet, pushFail, dc);
+  dc.release();
 }
 
 /** A building that produces `good` (lowest id, not `except`), or -1. */
