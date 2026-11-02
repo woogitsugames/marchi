@@ -1,28 +1,13 @@
-// Markers that live in the scene: stall bubbles above buildings (and stuck wagons),
-// the ochre ETA tag beside the selected wagon, and the road-draft label near the finger.
+// Markers that live in the scene: stall pins above buildings (and stuck wagons; kit sprites, red =
+// the worst or a critical stall, brass = a lesser one), the slate ETA plaque beside the selected wagon, and the road-draft label near the finger.
 // Positions come from view.anchorOf every frame; DOM nodes are pooled, only transforms change.
-import { outputCustomer, seasonalSupplier, wagonEta, type Building, type World } from '../sim/index';
+import { wagonEta, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
 import { buildingStatusIcon, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonStatusIcon } from './format';
 import { iconSvg } from './icons';
+import { MIN_STALL_TICKS, calmStall } from './stalls';
 
-const MIN_STALL_TICKS = 20; // 2 s: avoid flicker on short hiccups
-
-/**
- * A stall that resolves by itself (output waits for a customer that still takes it, input slowed by
- * the season): a minor bubble, never the critical one. outputCustomer runs a path search, so the
- * answer is kept per building until its status, the road network or the second changes.
- */
-const calmCache = new Map<number, { key: string; calm: boolean }>();
-function calmStall(world: World, b: Building, sig: string): boolean {
-  const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
-  const c = calmCache.get(b.id);
-  if (c && c.key === key) return c.calm;
-  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null;
-  calmCache.set(b.id, { key, calm });
-  return calm;
-}
 /** "Stall fixed" wax stamp: pressed in (120 ms), held, then faded (220 ms). No bounce. */
 const STAMP_HOLD_MS = 650;
 const STAMP_FADE_MS = 220;
@@ -49,7 +34,7 @@ export class Markers {
 
   constructor() {
     this.etaText = h('span.num');
-    this.eta = h('div.eta-tag', null, h('span', { html: iconSvg('waiting', 16) }), this.etaText);
+    this.eta = h('div.eta-tag', null, h('span.eta-ic', { html: iconSvg('wagon', 18) }), this.etaText);
     this.draftMain = h('span');
     this.draftSub = h('span.dt-sub');
     this.draft = h('div.draft-tag.cf.parch', { role: 'status' }, this.draftMain, this.draftSub);
@@ -82,7 +67,8 @@ export class Markers {
     return b;
   }
 
-  update(world: World, view: WorldView, selectedWagon: number | null, hidden: boolean): void {
+  /** worst: the building the HUD's worst-stall card names (always a red pin). */
+  update(world: World, view: WorldView, selectedWagon: number | null, hidden: boolean, worst = -1): void {
     for (const b of this.pool) b.used = false;
     const shown = new Set<number>();
     if (!hidden) {
@@ -94,18 +80,19 @@ export class Markers {
         const st = JSON.stringify(bd.status);
         const calm = calmStall(world, bd, st);
         const crit = isCritical(bd.status, bd.stalledTicks, calm);
-        const sig = st + crit + calm;
+        const isWorst = bd.id === worst;
+        const sig = st + crit + calm + isWorst;
         const b = this.take('building:' + bd.id);
         shown.add(bd.id);
-        b.el.classList.toggle('is-minor', bd.status.k === 'WAITING_PICKUP' || calm);
-        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 26, bd.type), crit, false);
+        b.el.classList.toggle('is-minor', (bd.status.k === 'WAITING_PICKUP' || calm) && !isWorst);
+        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 24, bd.type), crit || isWorst, false);
       }
       for (const w of world.state.wagons) {
         if (!isWagonWait(w.status)) continue;
         const a = view.anchorOf('wagon', w.id);
         if (!a.visible) continue;
         const crit = w.status.k === 'NO_ROUTE';
-        this.place(this.take('wagon:' + w.id), a.x, a.y, w.status.k + crit, () => wagonStatusIcon(w.status, 26), crit, true);
+        this.place(this.take('wagon:' + w.id), a.x, a.y, w.status.k + crit, () => wagonStatusIcon(w.status, 24), crit, true);
       }
     }
     for (const b of this.pool) {
@@ -149,7 +136,7 @@ export class Markers {
         if (e) {
           etaOn = true;
           setText(this.etaText, clock(e.toDest + iceWaitSec(world, w.status)));
-          this.eta.style.transform = `translate3d(${(a.x + 14).toFixed(1)}px, ${(a.y - 4).toFixed(1)}px, 0)`;
+          this.eta.style.transform = `translate3d(${a.x.toFixed(1)}px, ${(a.y - 10).toFixed(1)}px, 0) translate(-50%, -100%)`;
         }
       }
     }

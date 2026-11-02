@@ -416,4 +416,10 @@ export const en: FullDict = {
   'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
   // supplier not producing, its own input on the way (F5; D-44): see PENDING_KEYS
   'status.WAITING_UPSTREAM.supplierWaits': 'Waiting for {good} — the supplier is itself waiting for {supplierGood}',
+  // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
+  'hud.worst': 'Worst stall',
+  'hud.worstShow': 'Show: {name}',
+  'hud.stallsNext': 'Stalls: {n} — show the next one',
+  'contract.toSnow': '{time} to snow',
+  'tool.wagonShort': '{n} short',
 };

@@ -419,6 +419,12 @@ export const pl = {
   'why.sharedOne': 'Jeden dostawca ({who}) na {n} odbiorców — przyda się drugi.',
   // supplier not producing, its own input on the way (F5; D-44): see PENDING_KEYS
   'status.WAITING_UPSTREAM.supplierWaits': 'Czeka na {goodAcc} — dostawca sam czeka na {supplierGoodAcc}',
+  // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
+  'hud.worst': 'Najgorszy zastój',
+  'hud.worstShow': 'Pokaż: {name}',
+  'hud.stallsNext': 'Zastoje: {n} — pokaż kolejny',
+  'contract.toSnow': '{time} do śniegu',
+  'tool.wagonShort': 'brak {n}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -446,6 +452,11 @@ export const PENDING_KEYS = [
   'why.shared',
   'why.sharedOne',
   'status.WAITING_UPSTREAM.supplierWaits',
+  'hud.worst',
+  'hud.worstShow',
+  'hud.stallsNext',
+  'contract.toSnow',
+  'tool.wagonShort',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
