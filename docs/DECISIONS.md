@@ -358,3 +358,21 @@ every mission, not a cosmetic fix. Drawn: m1 bot fleet and m2 show 0 overlapping
 and 78 sampled in the sim positions); the deliberately overloaded 120-wagon bench keeps ~78 % (dozens of
 wagons on a few cells exceed the capped lag).* (decided — revisit as a sim rule together with a balance pass)
 
+**D-36 — Arabic RTL: the whole HUD mirrors through logical CSS.** `dir="rtl"` (set by `index.html` before the
+first paint and by `src/i18n/index.ts` on a language change) now mirrors the UI: `src/styles/main.css` uses only
+logical properties (`inset-inline-*`, `margin/padding-inline-*`, `border-inline-*`, `text-align: start/end`;
+4-value paddings split into `padding-block` + `padding-inline`). Safe areas read through a logical pair
+`--safe-s` / `--safe-e` that swaps in RTL, and `--ix` (+1 / −1) flips the few physical x offsets (shadows
+thrown from the rail and the build shelf, slide-in of side sheets). Mirrored: tool rail (landscape: left edge;
+portrait: tool order), sheets and their dock side, waybill (collapse origin), town plaque, toasts, notices,
+undo, "Pokaż przyciski", menu strip and the valley ledgers. The left-handed setting still swaps sides on top
+(rail side = hand XOR RTL, `railOnLeft()` in `src/ui/dom.ts` for the JS-placed tool caption; swipe-to-close
+follows). Not mirrored: the map, camera and gestures; boxes placed from screen coordinates (stall bubbles,
+ETA tags, ghost labels, tutorial ring); boxes centred with `left: 50%`; the speed buttons and ETA tags keep
+LTR order (playback-like, as in RTL apps); goods and building icons. Direction icons: the chain / "dalej"
+arrow (`.fwd`) and back / undo (`.rtl-flip`) mirror. Numbers: `iso()` / `<bdi>` isolate parameters; plural
+`#` numbers now use Latin digits like `fmtInt` and are isolated in RTL. `tests/css-logical.test.ts` fails on
+any physical left/right outside the listed exceptions. *Owner asked for a mirrored HUD (brief 05); the
+research note (BACKLOG) had suggested mirroring content only — superseded. Open: whether an Arabic
+right-hander prefers the landscape rail on the right (then "left-handed" reads backwards in RTL).* (decided)
+
