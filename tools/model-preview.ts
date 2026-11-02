@@ -27,7 +27,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CARGO_GOODS, type CargoGood, cargoParts } from '../src/render/models/cargo';
 import { fnoise, type ModelPart, triangles, trs } from '../src/render/models/kit';
 import { modelMaterial } from '../src/render/models/materials';
-import { createHorseWalkMaterial, wagonLod1, wagonModel } from '../src/render/models/wagon';
+import { addHorsePoseAttributes, createHorseMaterial, wagonLod1, wagonModel, writeHorsePose } from '../src/render/models/wagon';
+import { horsePose, POSE_SIZE } from '../src/render/gait';
 import { BUILDING_KINDS, buildingModel, CHAIN_KINDS, PROP_KINDS, propParts } from '../src/render/models/buildings';
 import { bakeTreeBillboards, treeBillboard, treeParts, TREE_KINDS } from '../src/render/models/trees';
 import { bridgeParts } from '../src/render/models/bridges';
@@ -132,7 +133,33 @@ function addInstanced(parts: ModelPart[], ms: Matrix4[], material?: MeshStandard
 
 // ---------------------------------------------------------------- wagons (convoy on the road)
 const wm = wagonModel();
-const walk = createHorseWalkMaterial();
+const horseMat = createHorseMaterial();
+/** Posed horses: gait phase per rig, walk/trot blend from ?gait=walk|trot (default walk). */
+const horses: { im: InstancedMesh; attrs: ReturnType<typeof addHorsePoseAttributes>; phases: number[] }[] = [];
+const gaitB = params.get('gait') === 'trot' ? 1 : 0;
+function addHorses(ms: Matrix4[], phase0 = 0.12): void {
+  for (const p of wm.horse) {
+    const g = p.geometry.clone();
+    const attrs = addHorsePoseAttributes(g, ms.length);
+    const im = new InstancedMesh(g, horseMat.material, ms.length);
+    im.customDepthMaterial = horseMat.depth;
+    ms.forEach((m, i) => im.setMatrixAt(i, m));
+    im.castShadow = true;
+    im.receiveShadow = true;
+    scene.add(im);
+    horses.push({ im, attrs, phases: ms.map((_, i) => phase0 + i * 0.37) });
+  }
+}
+const _pose = new Float32Array(POSE_SIZE);
+function poseHorses(t: number): void {
+  for (const h of horses) {
+    h.phases.forEach((ph, i) => {
+      horsePose(ph + t, gaitB, 1, _pose);
+      writeHorsePose(h.attrs, i, _pose);
+    });
+    for (const a of h.attrs) a.needsUpdate = true;
+  }
+}
 const BASE_GOODS: CargoGood[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
 const CHAIN_GOODS: CargoGood[] = CARGO_GOODS.filter((g) => !BASE_GOODS.includes(g));
 const goods = [null, ...BASE_GOODS] as const;
@@ -145,7 +172,7 @@ const goods = [null, ...BASE_GOODS] as const;
   });
   addInstanced(wm.body, rigs);
   addInstanced(wm.driver, rigs);
-  addInstanced(wm.horse, rigs, walk.material);
+  addHorses(rigs);
   for (const w of wm.wheels) {
     const parts = w.kind === 'front' ? wm.wheelFront : wm.wheelRear;
     addInstanced(parts, rigs.map((r, i) => r.clone().multiply(new Matrix4().makeTranslation(w.position)).multiply(new Matrix4().makeRotationX(i * 0.7))));
@@ -159,6 +186,8 @@ const goods = [null, ...BASE_GOODS] as const;
   const t = (parts: ModelPart[]) => triangles(parts);
   const rig = t(wm.body) + t(wm.driver) + t(wm.horse) + 2 * t(wm.wheelFront) + 2 * t(wm.wheelRear);
   stats.push(`wagon LOD0 rig ${rig} tris (body ${t(wm.body)}, wheel F ${t(wm.wheelFront)} R ${t(wm.wheelRear)}, horse ${t(wm.horse)}, driver ${t(wm.driver)})`);
+  const wmid = wagonModel('mid');
+  stats.push(`wagon mid rig ${t(wmid.body) + t(wmid.driver) + t(wmid.horse) + 2 * t(wmid.wheelFront) + 2 * t(wmid.wheelRear)} tris (wheel F ${t(wmid.wheelFront)} R ${t(wmid.wheelRear)}, horse ${t(wmid.horse)}, driver ${t(wmid.driver)})`);
   stats.push(`wagon LOD1 ${t(wagonLod1())} tris`);
   stats.push('cargo x6: ' + BASE_GOODS.map((g) => `${g} ${t(cargoParts(g, 6))}`).join(', '));
 }
@@ -236,7 +265,7 @@ const chainFrom = scene.children.length;
   }));
   addInstanced(wm.body, rigs);
   addInstanced(wm.driver, rigs);
-  addInstanced(wm.horse, rigs, walk.material);
+  addHorses(rigs);
   for (const w of wm.wheels) {
     const parts = w.kind === 'front' ? wm.wheelFront : wm.wheelRear;
     addInstanced(parts, rigs.map((r, i) => r.clone().multiply(new Matrix4().makeTranslation(w.position)).multiply(new Matrix4().makeRotationX(i * 0.7))));
@@ -245,6 +274,17 @@ const chainFrom = scene.children.length;
 }
 
 const chainTo = scene.children.length;
+
+// ---------------------------------------------------------------- people line-up (close-up view 'people')
+{
+  for (let i = 0; i < 4; i++) addParts(workerParts(i, i === 3 ? 'work' : 'stand'), trs(58 + i * 1.1, 0, 60, 0, -0.35 + i * 0.25));
+  // a lone rig beside them so the seated driver can be seen up close
+  const m = trs(64, 0, 59, 0, Math.PI / 2 + 0.5, 0);
+  addInstanced(wm.body, [m]);
+  addInstanced(wm.driver, [m]);
+  addHorses([m], 0.4);
+  for (const w of wm.wheels) addInstanced(w.kind === 'front' ? wm.wheelFront : wm.wheelRear, [m.clone().multiply(new Matrix4().makeTranslation(w.position))]);
+}
 
 // ---------------------------------------------------------------- trees
 bakeTreeBillboards(renderer);
@@ -289,6 +329,11 @@ const views: Record<string, [Vector3, Vector3]> = {
   chainsW: [new Vector3(-17, 13, 42), new Vector3(-17, 1.5, 21)],
   chainsE: [new Vector3(17, 16, 44), new Vector3(17, 1.5, 22)],
   chaincargo: [new Vector3(-14, 10, 50), new Vector3(-12, 1, 36)],
+  // models2 close-ups: horse side view, wagon 3/4, people
+  horse: [new Vector3(-10.6, 1.25, 6.2), new Vector3(-10.6, 0.95, 0)],
+  wagon34: [new Vector3(-6.2, 3.4, 7.2), new Vector3(-13.6, 0.9, 0)],
+  people: [new Vector3(60.2, 1.55, 64.6), new Vector3(60.4, 0.95, 60)],
+  driver: [new Vector3(67.5, 2.6, 63.2), new Vector3(64.6, 1.4, 59.6)],
 };
 const [eye, target] = views[view] ?? views.overview;
 // the chain views show only the D-29 set, without the older rows behind it
@@ -319,7 +364,7 @@ if (nav) for (const k of Object.keys(views)) {
 let frames = 0;
 const t0 = performance.now();
 renderer.setAnimationLoop(() => {
-  walk.uniforms.uWalkTime.value = params.has('still') ? 0.2 : (performance.now() - t0) / 1000;
+  poseHorses(params.has('still') ? 0 : (performance.now() - t0) / 1000 / 1.4);
   controls.update();
   renderer.render(scene, camera);
   if (++frames === 3) {

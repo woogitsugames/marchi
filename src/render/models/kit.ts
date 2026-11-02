@@ -146,8 +146,11 @@ export interface AddOpts {
   renormal?: boolean;
   /** Custom per-vertex colour tweak, model-space position and normal. */
   shade?: (p: Vector3, n: Vector3, c: Color) => void;
-  /** Leg-swing data for the horse walk (phase sign, pivot y, pivot z). */
-  swing?: [number, number, number];
+  /**
+   * Skinning data for an animated model (the horse): called per vertex with the model-space
+   * position, returns the `rig` vertex attribute (see `models/wagon.ts`).
+   */
+  rig?: (p: Vector3) => [number, number, number, number];
 }
 
 const MUD = new Color('#4a3c2e');
@@ -169,7 +172,7 @@ export class PartBuilder {
   private readonly groups = new Map<MatKey, BufferGeometry[]>();
   private readonly settings: Required<BuilderSettings>;
   readonly rand: () => number;
-  private hasSwing = false;
+  private hasRig = false;
 
   constructor(settings: BuilderSettings = {}) {
     this.settings = {
@@ -255,10 +258,10 @@ export class PartBuilder {
     if (!o.keepUv) boxUv(g);
     else if (!g.getAttribute('uv')) boxUv(g);
 
-    if (o.swing) this.hasSwing = true;
-    const sw = new Float32Array(count * 3);
-    if (o.swing) for (let i = 0; i < count; i++) sw.set(o.swing, i * 3);
-    g.setAttribute('swing', new BufferAttribute(sw, 3));
+    if (o.rig) this.hasRig = true;
+    const rg = new Float32Array(count * 4);
+    if (o.rig) for (let i = 0; i < count; i++) rg.set(o.rig(p.set(pos.getX(i), pos.getY(i), pos.getZ(i))), i * 4);
+    g.setAttribute('rig', new BufferAttribute(rg, 4));
 
     let list = this.groups.get(mat);
     if (!list) this.groups.set(mat, (list = []));
@@ -272,7 +275,7 @@ export class PartBuilder {
     for (const [material, list] of this.groups) {
       const merged = mergeGeometries(list, false);
       if (!merged) throw new Error(`merge failed for ${material}`);
-      if (!this.hasSwing) merged.deleteAttribute('swing');
+      if (!this.hasRig) merged.deleteAttribute('rig');
       merged.computeBoundingBox();
       merged.computeBoundingSphere();
       out.push({ geometry: merged, material });
