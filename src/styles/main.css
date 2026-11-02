@@ -1565,6 +1565,20 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .ev-later { flex: none; }
 .ev-note { flex: 1 1 auto; font-size: 13px; line-height: 1.2; color: var(--ink-soft); min-width: 0; }
 .ev-order.is-on { margin-inline: -6px; padding-inline: 4px 6px; border-inline-start: 3px solid var(--brass); background: rgb(160 122 58 / .12); }
+/* folded items (one open at a time): a 48 px row, title cut with an ellipsis, a short figure, a down chevron */
+.ev-row { padding-block: 0; }
+.ev-rowbtn { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 48px; color: var(--ink); text-align: start; }
+.ev-rowbtn .ev-rt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
+.ev-rv { flex: none; display: inline-flex; align-items: center; gap: 3px; font-size: 15px; font-weight: 700; color: #6b4c16; }
+.ev-rv small { font-weight: 400; font-size: 13px; color: var(--ink-soft); }
+.ev-rowbtn .ev-chev { transform: rotate(45deg); }
+:root[dir='rtl'] .ev-rowbtn .ev-chev { transform: rotate(-45deg); }
+.ev-rowbtn:active { background: rgb(160 122 58 / .14); }
+.ev-order.ev-row.is-on { padding-block: 0; }
+/* a new event while folded: the header lights once (fade in 150 ms, hold, fade out 250 ms) — no repeat, no bounce */
+@keyframes ev-fresh { 0% { background-color: transparent; } 8%, 85% { background-color: rgb(160 122 58 / .38); } 100% { background-color: transparent; } }
+.ev-card.is-fresh .ev-head { animation: ev-fresh 1800ms linear 1; }
+.ev-card.is-fresh .ev-n { box-shadow: 0 0 0 2px var(--brass); }
 /* landscape: the card leaves the contract column (the rail sits under it) and hangs under the speed bar, on the
    map's free side; the D-55 side sheet docks over it while open */
 body.is-landscape .ev-card { position: fixed; top: calc(var(--bar-b, 56px) + 8px); inset-inline-end: calc(var(--safe-e) + 10px); margin: 0; }
@@ -1636,7 +1650,9 @@ body.left-handed .stall-row { flex-direction: row-reverse; }
 }
 .tool .ti { display: grid; place-items: center; width: 40px; height: 34px; transition: transform 60ms linear; }
 .tool:active .ti, .tool:active .tl { transform: translateY(1px); }
-.tool .tl { line-height: 1.05; text-align: center; white-space: nowrap; }
+/* a label wider than its card (de „Wagen kaufen”, ru „Купить повозку”, sv „Stenläggning”) breaks into two
+   balanced lines instead of running under the neighbour; one-word labels hyphenate, or break as a last resort */
+.tool .tl { line-height: 1.05; text-align: center; white-space: normal; text-wrap: balance; hyphens: auto; overflow-wrap: anywhere; max-width: 100%; }
 .tool.is-on { color: var(--wine-ink); }
 .tool.is-disabled .ti, .tool.is-disabled .tl { opacity: .6; }
 .tool.is-disabled[data-tool='wagon'] .tl { opacity: 1; color: #6e1a1e; }
