@@ -10,6 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Fold 8 Ultra / Foldy / Flipy: tryb Flex, rozkładanie w trakcie, dynamiczna rozdzielczość (agent) — wymóg właściciela.
 
 ## Do zrobienia
+- [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render); pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki.
 - [ ] P2 — (D-21) Tryb swobodny jako spokojny city builder: UI stawiania budynków (sim ma `place`; podgląd footprintu, brama, koszt, płaskość), sandbox bez terminu, więcej srebra/dochód z dostaw do zamku lub targu, zapis postępów; bez life-simu osadników.
 - [ ] P3 — (D-21) Opisy sklepu i polityka prywatności: usunąć „jednorazowy zakup / pełna wersja”, dopisać tryb swobodny; reklamy dopiero po decyzji o dostawcy (wymaga zmiany deklaracji danych!).
 - [ ] P1 — List końcowy: top 3 przyczyny przestojów i stracony czas (`topStallCauses`) — UI w `buildEndLetter` (menu.ts), po zakończeniu pracy agenta Fold.
@@ -24,9 +25,6 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] — Sklep/płatności/release: odłożone (D-17).
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
 - [ ] P2 — Wczesne wykrycie „brak drogi do zwycięstwa” (brak ścieżki do zamku i srebro < koszt najtańszej przeprawy, a wozów nie ma do sprzedania) → list z przyczyną.
-- [ ] P2 — Drogi z daleka prawie niewidoczne (view-far-*.png): łamie zasadę „drogi są rysunkiem” z ART_DIRECTION — zwiększyć kontrast/szerokość toru przy dalekim zoomie (src/render/terrain.ts) (źródło: claude).
-- [ ] P3 — Daleki widok: rozrzucone brązowe plamy krzewów/dalekich drzew wyglądają jak latające liście nad polami (view-far-landscape.png) — ograniczyć krzewy na polach, poprawić karty dalekich drzew (src/render/vegetation.ts).
-- [ ] P3 — Mgła poranna robi mleczną wodę z bliska; dalekie karty drzew rzucają krzyżowe cienie; żywopłoty jak kropki.
 - [ ] P1 — Trójkąty wzrosły do 370–640k (krzewy pełne do 1,9× dystansu) — sprawdzić na Foldzie, ew. zmniejszyć współczynnik w vegetation.update.
 - [ ] P0 — Błąd kompilacji shadera wody raz zgłoszony (`'z' : vector field selection out of range`), rzeka różowa na jednym zrzucie (src/render/water.ts) — zweryfikować po poprawkach grafiki.
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
@@ -35,7 +33,6 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P2 — Przeprowadzić 5–8 sesji playtestu na Androidzie wg `docs/playtest/PROTOCOL.md`, zebrać CSV, policzyć mediany i odsetek poprawnych diagnoz <30 s oraz zastąpić hipotezy H1–H5 rzeczywistymi TOP 5 problemów z licznikami (źródło: owner, docs/playtest/PROTOCOL.md).
 - [ ] P3 — Ikona: „M” na pieczęci w Grenze Gotisch, kreskowanie koła.
 - [ ] P3 — Turkot wozu, siekiera, piła, koń: wciąż syntetyczne — szukać nagrań CC0.
-- [ ] P3 — Wozy na zakrętach odstają od wygładzonej drogi (~0,6 m); kolejki przy moście mogą wychodzić poza drogę.
 - [ ] P4 — Budowanie budynków w trybie swobodnym (sim ma `place`, brak UI).
 - [ ] P4 — Monetyzacja: pełna wersja jednorazowo (D-10) — sklep na późniejszym etapie.
 
@@ -157,6 +154,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P3 — Sandbox S8 (po decyzji o reklamach): `AdsPort` + opcjonalna nagroda (+40 sr, ≤ 3/sesję, tylko sandbox, poza misją, bez timerów), zgoda UMP/ATT, aktualizacja `docs/store/data-safety.md` i `privacy-*.md` (reklamy = dane zbierane/udostępniane); domyślnie wersja 1.0 bez reklam
 
 ## Zrobione
+- 2026-11-02 — Grafika: drogi czytelne z daleka (ciemny tor + jasne pobocze), krzewy poza polami, pojedyncze karty dalekich drzew z miękkim cieniem, wozy na krzywej drogi (odchyłka 0,73 → 0,25 m), ciemniejsza i bardziej przejrzysta woda z bliska; mniej trójkątów we wszystkich scenach.
 - 2026-11-01 — 15 tłumaczeń od GPT (PR #22–#36) scalone: es, nl, fr, it, de, pt-BR, sv, ru, tr, uk, ko, ja, hi, zh-Hans, ar (słowniki, glosariusze, testy, opisy sklepu, polityki prywatności); `cellsWord` wg reguł liczby mnogiej języka (Intl.PluralRules).
 - 2026-11-01 — Liczenie straconego czasu wg źródła przestoju (`ledger.stallSeconds`, `topStallCauses`, stan v2 + migracja) — dane do podsumowania misji.
 - 2026-11-01 — Szukacz przerwy w sim: `suggestConnection` / `suggestLinkToStable` (najtańsza droga/most w srebrze, zgodna z validateRoad; test na m1).
