@@ -1,7 +1,8 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
-import { BUILDINGS, GOODS, WAGON_CAPACITY, inputGoods, outputGoods, sumGoods } from './defs';
+import { BUILDINGS, GOODS, MARKET, WAGON_CAPACITY, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
+import { marketOpen, unitCents } from './town';
 import { dijkstra, hasEdge, net, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Good, Wagon } from './types';
 
@@ -144,6 +145,35 @@ export function dispatch(world: World): void {
     free.splice(free.indexOf(wagon), 1);
   }
 
+  // --- market (free valley): the castle buys full loads of spare goods, most valuable first.
+  // Runs after the producers' own inputs (they get first call on every source) and before the
+  // granary push. At most MARKET.wagonSharePct of the fleet hauls to the market at once.
+  if (marketOpen(world)) {
+    let slots = Math.max(1, Math.floor((st.wagons.length * MARKET.wagonSharePct) / 100));
+    const markets = st.buildings.filter((b) => b.type === 'castle');
+    for (const w of st.wagons) if (w.job && markets.some((m) => m.id === w.job!.to)) slots--;
+    const goods = GOODS.filter((g) => MARKET.base[g] > 0)
+      .sort((a, c) => unitCents(st, c) - unitCents(st, a) || GOODS.indexOf(a) - GOODS.indexOf(c));
+    for (const m of markets) {
+      for (const g of goods) {
+        if (slots <= 0 || free.length === 0) break;
+        if (MARKET.inflightPerGood - m.incoming[g] < WAGON_CAPACITY) continue;
+        let best: Building | null = null, bestT = Infinity;
+        for (const s of sourcesOf(g)) {
+          if (s.stock[g] - s.reservedOut[g] < WAGON_CAPACITY) continue;
+          const t = dc.from(s.gate).dist[m.gate]!;
+          if (t < bestT) { bestT = t; best = s; }
+        }
+        if (!best) continue;
+        const wagon = pickWagon(best);
+        if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) continue;
+        assignJob(world, wagon, best, m, g, WAGON_CAPACITY);
+        free.splice(free.indexOf(wagon), 1);
+        slots--;
+      }
+    }
+  }
+
   // --- surplus: producers push output to warehouses before they fill up
   for (const b of st.buildings) {
     if (b.type === 'warehouse' || b.type === 'castle' || b.type === 'stable') continue;
@@ -254,6 +284,8 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
   }
   if (b.type === 'castle') {
     const m = world.state.mission;
+    // free valley: the castle is the market; it only needs a road
+    if (marketOpen(world)) return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
     if (!m.contract || m.contract.castle !== b.id) return { k: 'IDLE' };
     if (m.result === 'won') return { k: 'CONTRACT_DONE' };
     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };

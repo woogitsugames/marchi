@@ -8,6 +8,8 @@ import { explainBuilding } from './diagnose';
 import { buildMission, terrainFor } from './missions';
 import type { World } from './network';
 import { stepWagons } from './wagons';
+import { stepTown } from './town';
+import { MARKET } from './defs';
 import type { GoodMap, SimState } from './types';
 
 export type { World } from './network';
@@ -51,6 +53,7 @@ export function step(world: World): void {
     for (let i = 0; i < st.traffic.length; i++) if (st.traffic[i]) st.traffic[i] = st.traffic[i]! >> 1;
   }
   checkMission(world);
+  stepTown(world);
   if (st.tick % TICK_HZ === 0 && st.mission.result === 'running') accountStalls(world);
   for (const b of st.buildings) {
     const k = b.status.k;
@@ -199,6 +202,13 @@ export function checkInvariants(world: World): string[] {
     const rhs = bal.inStock[g] + bal.onWagons[g];
     if (lhs !== rhs) errs.push(`conservation ${g}: produced-consumed-destroyed=${lhs} but stock+cargo=${rhs}`);
   }
+  // market fields arrived with state v4; the save gate runs this on older states before migrating
+  if (st.market && st.ledger.sold) for (const g of GOODS) {
+    if (st.ledger.sold[g] > st.ledger.consumed[g]) errs.push(`ledger sold ${g}=${st.ledger.sold[g]} > consumed ${st.ledger.consumed[g]}`);
+    const sat = st.market.saturation[g];
+    if (sat < 0 || sat > MARKET.cap) errs.push(`market saturation ${g}=${sat} outside 0..${MARKET.cap}`);
+  }
+  if (st.market && (st.market.cents < 0 || st.market.cents > 99)) errs.push(`market cents ${st.market.cents} outside 0..99`);
   // reservations must match active jobs exactly
   const resOut = new Map<string, number>(), inc = new Map<string, number>();
   for (const w of st.wagons) {

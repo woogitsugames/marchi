@@ -3,7 +3,7 @@ import type { BuildingType, Good, GoodMap } from './types';
 
 export const TICK_HZ = 10;
 export const DT = 1 / TICK_HZ;
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 export const GOODS: readonly Good[] = ['wood', 'planks', 'grain', 'flour', 'bread'];
 
@@ -37,6 +37,8 @@ export const COST_WOOD_BRIDGE = 6;
 export const COST_STONE_BRIDGE = 15;
 export const DEMOLISH_REFUND = 0.5;
 export const WAGON_PRICE = 30;
+/** A building demolished this soon after it was placed is refunded in full ("undo", sandbox §2.5). */
+export const UNDO_TICKS = 30 * 10;
 export const MAX_WAGONS = 250;
 
 // --- Wagons ----------------------------------------------------------------
@@ -104,3 +106,55 @@ export function producerOf(good: Good): BuildingType | null {
   }
   return null;
 }
+
+// --- Market and ranks (free valley, docs/design/sandbox.md §1.1-1.2, §4) -------------------------
+// One table for every tuning number of the sandbox economy (tools/balance.ts sandbox, tools/bot-sandbox.ts).
+
+export interface MarketDef {
+  /** Base price per unit in silver at an unsaturated market. */
+  base: GoodMap;
+  /** Saturation units per good at which the price bottoms out at `floorPct`. */
+  cap: number;
+  /** Lowest price as a percentage of the base price. */
+  floorPct: number;
+  /** One saturation unit per good recovers every this many ticks. */
+  recoverTicks: number;
+  /** The dispatcher keeps at most this many units of one good on the way to the market. */
+  inflightPerGood: number;
+  /** Share of the wagon fleet (percent, at least one wagon) that may haul to the market at once. */
+  wagonSharePct: number;
+}
+
+export const MARKET: MarketDef = {
+  base: { wood: 1, planks: 3, grain: 1, flour: 3, bread: 4 },
+  cap: 24,
+  floorPct: 50,
+  recoverTicks: 10 * TICK_HZ,
+  inflightPerGood: 12,
+  wagonSharePct: 75,
+};
+
+/** Flow window: FLOW_BUCKETS buckets of FLOW_BUCKET_TICKS (18 x 10 s = 3 minutes). */
+export const FLOW_BUCKETS = 18;
+export const FLOW_BUCKET_TICKS = 10 * TICK_HZ;
+
+export interface RankDef {
+  /** Renown needed (cumulative silver from sales). */
+  renown: number;
+  /** Distinct goods ever sold. */
+  goods: number;
+  /** Best silver per minute ever reached over the 3-minute flow window (latched). */
+  flow: number;
+  /** Building types this rank unlocks in the free valley. */
+  unlocks: BuildingType[];
+  /** Road surfaces this rank unlocks (2 = cobble and stone bridges). */
+  surfaces: number[];
+}
+
+/** Rank 0..3: Settlement, Market village, Small town, Town. Gating applies only to mission 'sandbox'. */
+export const RANKS: readonly RankDef[] = [
+  { renown: 0, goods: 0, flow: 0, unlocks: ['woodcutter', 'sawmill', 'farm', 'stable', 'warehouse'], surfaces: [1] },
+  { renown: 200, goods: 2, flow: 8, unlocks: ['mill', 'bakery'], surfaces: [] },
+  { renown: 1000, goods: 4, flow: 20, unlocks: [], surfaces: [2] },
+  { renown: 3000, goods: 5, flow: 40, unlocks: [], surfaces: [] },
+];

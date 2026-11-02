@@ -1,5 +1,6 @@
 // IndexedDB save slots with a versioned envelope and migrations.
-import { STATE_VERSION, type SimState } from '../sim/index';
+import { STATE_VERSION, emptyGoods, type SimState } from '../sim/index';
+import { freshMarket, freshTown } from '../sim/town';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope } from './saveGate';
 
 const DB_NAME = 'marchia';
@@ -29,6 +30,22 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
     out.version = 3;
     out.buildings = (s.buildings as Record<string, unknown>[]).map((b) => ({ ...b, capOverride: -1 }));
     out.mission = { ...mission, contract: contract ? { ...contract, tranches: [] } : null };
+    return out;
+  },
+  // v3 -> v4: free valley market and ranks (docs/design/sandbox.md S2-S4). Buildings get
+  // `placedTick` -1 (no undo for old buildings), the ledger counts market income, and the state gets
+  // `market` (open when there is no contract: an old free-valley save starts trading) and `town`.
+  // Appended in the key order of a fresh state (the hash is taken over JSON.stringify).
+  3: (s) => {
+    const mission = s.mission as Record<string, unknown>;
+    const ledger = s.ledger as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(s)) if (k !== 'market' && k !== 'town') out[k] = s[k];
+    out.version = 4;
+    out.buildings = (s.buildings as Record<string, unknown>[]).map((b) => ({ ...b, placedTick: -1 }));
+    out.ledger = { ...ledger, silverEarned: 0, sold: emptyGoods() };
+    out.market = freshMarket(mission.contract === null);
+    out.town = freshTown();
     return out;
   },
 };

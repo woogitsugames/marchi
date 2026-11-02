@@ -210,3 +210,27 @@ reported yet (open: store journal + recorder in the save envelope, or start repo
 (6) The UI keys were not added in this change: every locale file is typed `Dict` and tested for identical keys,
 so adding keys only to pl/en would break typecheck; they are listed in `docs/REPLAY.md` and land with the
 pause-menu button. (decided)
+
+**D-27 — Free valley economy in the sim: market, undo, ranks (STATE_VERSION 4).** Implements design tasks
+S2, S3 and the minimal S4 of docs/design/sandbox.md. (1) *Market*: with no contract and `state.market.open`
+the castle buys every good on arrival (`town.ts sellAt`): stock → `ledger.consumed` (+ `ledger.sold`), so
+conservation holds. Price = base × pct, pct = max(50, 100 − ⌊sat·50/24⌋), integer; payouts counted in
+hundredths (`market.cents` keeps the remainder). Saturation recovers one unit per good every **10 s** (design
+said 20 s: with 20 s one sawmill alone pinned planks at the floor and the decent bot never reached rank 2).
+The dispatcher adds market demand after producer inputs (they get first call) and before the granary push:
+full loads only, most valuable good first, ≤ 12 units of a good in flight, ≤ 75 % of the fleet (min 1).
+(2) *Placement*: `validatePlace` is pure (hash before = after; agrees with `place` on fuzzed input);
+`Building.placedTick` (−1 for map buildings). Demolishing an empty, unreserved building within 30 s
+(`UNDO_TICKS`) refunds 100 %, later 50 % — the undo is the existing `demolish`, no new command, so replays
+and the command allowlist are unchanged. (3) *Ranks* (`state.town`): renown = silver earned from sales; rank
+needs renown + distinct goods sold + best silver/min over an 18 × 10 s ring, latched. Gating only for mission
+`sandbox`: rank 0 woodcutter/sawmill/farm/stable/warehouse, rank 1 mill/bakery, rank 2 cobble + stone bridges
+(`LOCKED{rank}`), castle `NOT_PLACEABLE`. Thresholds tuned with tools/balance.ts sandbox: renown 200/1000/3000
+(design 400/1500/4000), goods 2/4/5 (only 5 goods exist), flow 8/20/40. Measured: decent bot rank 1 at 9.8 min,
+rank 2 at 25.6 min, income covers 40 silver at 2.3 min; "nothing" stays rank 0 (one good) with 204 silver earned.
+(4) *Start*: 260 silver, 2 wagons, woodcutter + sawmill (with 6 planks in stock) by the north road, stable,
+granary, castle on the same bank (≈ 200 m haul, ~60 s each way). The old sandbox (m1 layout, 600 silver,
+4 wagons) stays as hidden mission `lab` with the market closed, for tests and tools/bench. (5) Migration v3→v4
+appends `placedTick: -1`, `ledger.silverEarned/sold`, fresh `market` (open iff no contract: old free-valley
+saves start trading) and `town`; contract missions run byte-identically apart from the new fields (checked on
+m1–m6 after 10 min). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox after changes)

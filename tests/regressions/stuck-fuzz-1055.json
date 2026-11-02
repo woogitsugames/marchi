@@ -10,7 +10,7 @@
   "detail": "wagon 9 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3300,\"blocker\":10,\"since\":4556} at 3493 for 3044 ticks (job {\"id\":32,\"good\":\"wood\",\"qty\":6,\"from\":1,\"to\":7,\"phase\":\"pickup\"}); wagon 10 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3493,\"blocker\":9,\"since\":4508} at 3396 for 3092 ticks (job {\"id\":34,\"good\":\"bread\",\"qty\":6,\"from\":6,\"to\":7,\"phase\":\"pickup\"}); wagon 11 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3300,\"blocker\":10,\"since\":4508} at 3493 for 3092 ticks (job {\"id\":33,\"good\":\"planks\",\"qty\":6,\"from\":2,\"to\":7,\"phase\":\"pickup\"}); wagon 30 stuck as {\"k\":\"BRIDGE_JAM\",\"span\":3493,\"blocker\":9,\"since\":4562} at 3396 for 303"
  },
  "scenario": {
-  "mission": "sandbox",
+  "mission": "lab",
   "coins": null,
   "ticks": 7602,
   "saveAt": -1,

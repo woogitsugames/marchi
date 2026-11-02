@@ -44,7 +44,7 @@ type Phase = 'TO_PICKUP' | 'LOADING' | 'TO_DROPOFF' | 'UNLOADING';
 const PHASES: Phase[] = ['TO_PICKUP', 'LOADING', 'TO_DROPOFF', 'UNLOADING'];
 
 function busyWorld(): World {
-  const w = createWorld('sandbox');
+  const w = createWorld('lab');
   w.state.coins = 5000;
   assert(applyCommand(w, bridgeA(w)).ok, 'bridge A');
   assert(applyCommand(w, bridgeB(w)).ok, 'bridge B');

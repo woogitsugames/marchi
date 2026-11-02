@@ -1,6 +1,9 @@
-// Balance check: compare strategies per mission. npx tsx tools/balance.ts [m2 m3 m4 m5 m6]
+// Balance check: compare strategies per mission. npx tsx tools/balance.ts [m2 m3 m4 m5 m6 sandbox]
 // Target per mission: no action = 1 seal, partial fix = 2, the lesson's fix = 3, 5-12 minutes.
+// The free valley ('sandbox') runs a fixed 30-minute horizon instead (docs/design/sandbox.md §4.5):
+// target rank 1 at 8-12 min and rank 2 at 20-30 min for the decent plan, rank 0 for "nothing".
 import { applyCommand, createWorld, lineCells, step, stars, TICK_HZ, type Command, type World } from '../src/sim/index';
+import { DECENT, report, runSandbox, type BotStep } from './bot-sandbox';
 
 export type Strat = { name: string; at: number; expect?: number; cmds: (w: World) => Command[] };
 const col = (w: World, x: number, y1: number, y2: number) => lineCells(w.terrain.w, y1 * w.terrain.w + x, y2 * w.terrain.w + x);
@@ -52,6 +55,17 @@ export const plans: Record<string, Strat[]> = {
 // cut the third farm off the network (redirecting grain away from the small granary)
 plans.m6![4]!.cmds = (w) => [{ t: 'demolish', cell: 46 * w.terrain.w + 39 }];
 
+/** Free valley strategies (30 sim-minutes). `want` = [rank reached at the end, earliest minute, latest minute] per rank. */
+export type SandboxStrat = { name: string; plan: BotStep[]; endRank?: number; rank1?: [number, number]; rank2?: [number, number] };
+const sbStable = (w: World) => w.state.buildings.find((b) => b.type === 'stable')!.id;
+const sbBuy = (n: number): BotStep[] => Array.from({ length: n }, () => ({ name: 'buy wagon', cmds: (w: World) => [{ t: 'buyWagon', stable: sbStable(w) } as Command] }));
+export const sandboxPlans: SandboxStrat[] = [
+  { name: 'nothing', plan: [], endRank: 0 },
+  { name: 'only wagons (5 more)', plan: sbBuy(5) },
+  { name: 'decent: wagons, farm, mill+bakery', plan: DECENT, rank1: [8, 12], rank2: [20, 30] },
+  { name: '3 wagons + cobble @2:00 (locked)', plan: [...sbBuy(3), { name: 'cobble', after: 120, cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 24, 30, 46) }] }] },
+];
+
 export interface BalanceRow { mission: string; strat: string; result: string; minutes: number; seals: number; missed: number; coins: number; errors: string[] }
 
 export function runStrategy(id: string, s: Strat): BalanceRow {
@@ -70,7 +84,18 @@ export function runStrategy(id: string, s: Strat): BalanceRow {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   let bad = 0;
-  for (const id of process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(plans)) {
+  const ids = process.argv.slice(2).length ? process.argv.slice(2) : [...Object.keys(plans), 'sandbox'];
+  if (ids.includes('sandbox')) {
+    for (const s of sandboxPlans) {
+      const r = runSandbox(s.plan, 30, { checkEvery: 10 });
+      const inRange = (m: number, w?: [number, number]) => !w || (m >= w[0] && m <= w[1]);
+      const ok = (s.endRank === undefined || r.rank === s.endRank) && inRange(r.rankMin[1]!, s.rank1) && inRange(r.rankMin[2]!, s.rank2) &&
+        r.violations.filter((v) => !v.includes('"LOCKED"')).length === 0;
+      if (!ok) bad++;
+      console.log(`sandbox | ${s.name.padEnd(36)} | ${report(r).split('\n').join(' | ')}${r.violations.length ? ' | ' + r.violations.slice(0, 2).join('; ') : ''}${ok ? '' : '  <-- OFF'}`);
+    }
+  }
+  for (const id of ids.filter((x) => x !== 'sandbox')) {
     for (const s of plans[id]!) {
       const r = runStrategy(id, s);
       const ok = s.expect === undefined || s.expect === r.seals;

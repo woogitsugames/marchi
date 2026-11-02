@@ -153,13 +153,20 @@ test(`save migration v2 -> v${STATE_VERSION}: ice, tranches and capOverride are 
   delete v2.ice;
   for (const b of v2.buildings) delete b.capOverride;
   delete v2.mission.contract.tranches;
+  // and the v4 fields (market, town, income ledger, placedTick): a contract mission never trades,
+  // so the migration's defaults equal the fresh state
+  delete v2.market;
+  delete v2.town;
+  delete v2.ledger.silverEarned;
+  delete v2.ledger.sold;
+  for (const b of v2.buildings) delete b.placedTick;
   const frozen = JSON.stringify(v2);
   // cast: the envelope format grows with save hardening; migrate() only reads stateVersion and state
   const env = { format: 1, stateVersion: 2, slot: 'auto', savedAt: 0, missionId: 'm2', tick: 300, state: v2 } as unknown as SaveEnvelope;
   const out = migrate(env);
   eq(JSON.stringify(v2), frozen, 'input not mutated');
   eq(out.stateVersion, STATE_VERSION, 'migrated to current');
-  eq(JSON.stringify(out.state), JSON.stringify(v3), 'identical to a fresh v3 state');
+  eq(JSON.stringify(out.state), JSON.stringify(v3), 'identical to a fresh state');
   const w2 = deserialize(JSON.stringify(out.state));
   for (let i = 0; i < 600; i++) { step(w); step(w2); }
   eq(stateHash(w2), stateHash(w), 'migrated save continues identically');

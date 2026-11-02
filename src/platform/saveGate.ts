@@ -13,7 +13,7 @@
 // inside state objects are tolerated (a newer schema may add e.g. mission.tranches or
 // building.capOverride). Only the fields this module knows are validated; size and depth are capped
 // for everything.
-import { BUILDINGS, GOODS, MAX_WAGONS, STATE_VERSION, WAGON_CAPACITY } from '../sim/defs';
+import { BUILDINGS, FLOW_BUCKETS, GOODS, MARKET, MAX_WAGONS, RANKS, STATE_VERSION, WAGON_CAPACITY } from '../sim/defs';
 import { isMapId, mapSize, terrainFor } from '../sim/missions';
 import { checkInvariants } from '../sim/sim';
 import { terrainHash } from '../sim/terrainHash';
@@ -400,6 +400,11 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     int(c, b, 'stalledTicks', bp, 0, LIMITS.maxInt);
     // state v3 (D-26): per-building granary capacity, -1 = type default
     if (version >= 3 || has(b, 'capOverride')) int(c, b, 'capOverride', bp, -1, LIMITS.maxInt);
+    // state v4: tick the player placed it (-1 = came with the map); a future tick is impossible
+    if (version >= 4 || has(b, 'placedTick')) {
+      const pt = int(c, b, 'placedTick', bp, -1, LIMITS.maxInt);
+      if (pt !== null && typeof s.tick === 'number' && pt > s.tick) e.add('INCONSISTENT', `${bp}.placedTick`, `placed at ${pt} after tick ${s.tick}`);
+    }
     status(c, b, bp, BUILDING_STATUS);
   });
   // gates must not sit under a footprint (net() maps gate -> building)
@@ -528,6 +533,40 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
       if (ss) for (const k of Object.keys(ss)) {
         const v2 = ss[k];
         if (typeof v2 !== 'number' || !Number.isFinite(v2) || v2 < 0) e.add('OUT_OF_RANGE', `${lp}.stallSeconds.${k}`, `expected seconds >= 0, got ${show(v2)}`);
+      }
+    }
+    // state v4: market income
+    if (version >= 4 || has(l, 'silverEarned')) int(c, l, 'silverEarned', lp, 0, LIMITS.maxInt);
+    if (version >= 4 || has(l, 'sold')) goodMap(c, l, 'sold', lp);
+  }
+
+  // state v4: free valley market and town ranks
+  if (version >= 4 || has(s, 'market')) {
+    const mk = obj(c, s, 'market', P);
+    if (mk) {
+      const mp = `${P}.market`;
+      if (typeof mk.open !== 'boolean') e.add('BAD_TYPE', `${mp}.open`, `expected boolean, got ${show(mk.open)}`);
+      const sat = obj(c, mk, 'saturation', mp);
+      if (sat) for (const g of GOODS) int(c, sat, g, `${mp}.saturation`, 0, MARKET.cap);
+      int(c, mk, 'cents', mp, 0, 99);
+    }
+  }
+  if (version >= 4 || has(s, 'town')) {
+    const tw = obj(c, s, 'town', P);
+    if (tw) {
+      const tp = `${P}.town`;
+      int(c, tw, 'renown', tp, 0, LIMITS.maxInt);
+      int(c, tw, 'rank', tp, 0, RANKS.length - 1);
+      int(c, tw, 'bestFlow', tp, 0, LIMITS.maxInt);
+      const rt = arr(c, tw, 'rankTicks', tp, RANKS.length);
+      if (rt) {
+        if (rt.length !== RANKS.length) e.add('BAD_TYPE', `${tp}.rankTicks`, `expected ${RANKS.length} entries, got ${rt.length}`);
+        rt.forEach((v, i) => { if (typeof v !== 'number' || !Number.isInteger(v) || v < -1 || v > LIMITS.maxInt) e.add('OUT_OF_RANGE', `${tp}.rankTicks[${i}]`, `expected tick or -1, got ${show(v)}`); });
+      }
+      const fl = arr(c, tw, 'flow', tp, FLOW_BUCKETS);
+      if (fl) {
+        if (fl.length !== FLOW_BUCKETS) e.add('BAD_TYPE', `${tp}.flow`, `expected ${FLOW_BUCKETS} buckets, got ${fl.length}`);
+        fl.forEach((v, i) => { if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > LIMITS.maxInt) e.add('OUT_OF_RANGE', `${tp}.flow[${i}]`, `expected silver >= 0, got ${show(v)}`); });
       }
     }
   }

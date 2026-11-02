@@ -6,6 +6,7 @@ import {
 import { buildingById, upstreamOf } from './logistics';
 import { grade, net, type World } from './network';
 import { cancelJob } from './wagons';
+import { canPlace, canSurface, demolishQuote } from './town';
 import type { BuildingStatus, BuildingType, SurfaceKind } from './types';
 
 export type Command =
@@ -29,7 +30,11 @@ export type CommandError =
   | { k: 'TOO_MANY_WAGONS' }
   | { k: 'NOT_FLAT'; cell: number }
   | { k: 'BAD_TARGET' }
-  | { k: 'WAGON_BUSY'; wagon: number };
+  | { k: 'WAGON_BUSY'; wagon: number }
+  /** Free valley: this building type / road surface needs a higher town rank. */
+  | { k: 'LOCKED'; rank: number }
+  /** Free valley: the player cannot build this type at all (the castle). */
+  | { k: 'NOT_PLACEABLE' };
 
 export type CommandResult = { ok: true; cost: number } | { ok: false; err: CommandError };
 
@@ -46,6 +51,7 @@ export function validateRoad(world: World, cells: readonly number[], surface: Su
   const t = world.terrain;
   const c = net(world);
   if (cells.length === 0) return { ok: false, err: { k: 'NOT_CONTIGUOUS', cell: -1 } };
+  if (surface !== 1 && surface !== 2) return { ok: false, err: { k: 'BAD_TARGET' } };
   const seen = new Set<number>();
   let cost = 0;
   for (let i = 0; i < cells.length; i++) {
@@ -66,6 +72,10 @@ export function validateRoad(world: World, cells: readonly number[], surface: Su
       seen.add(cell);
       cost += roadCellCost(world, cell, surface);
     }
+  }
+  if (cost > 0) {
+    const gate = canSurface(world, surface);
+    if (!gate.ok) return gate;
   }
   if (cost > world.state.coins) return { ok: false, err: { k: 'NO_COINS', need: cost, have: world.state.coins } };
   return { ok: true, cost };
@@ -147,12 +157,13 @@ function demolishBuilding(world: World, id: number): CommandResult {
     if (!w.job) continue;
     if (w.job.from === id && w.job.phase === 'pickup') cancelJob(world, w);
   }
+  // full refund while the building is fresh (undo window), half afterwards
+  const refund = demolishQuote(world, b).refund;
   for (const g of GOODS) {
     st.ledger.destroyed[g] += b.stock[g];
   }
   st.buildings = st.buildings.filter((x) => x.id !== id);
   // Wagons delivering here keep their cargo; repairJob() re-targets them next tick.
-  const refund = Math.floor(BUILDINGS[b.type].price * 0.5);
   st.coins += refund;
   st.netVersion++;
   return { ok: true, cost: -refund };
@@ -168,10 +179,20 @@ export function gateCell(world: World, x: number, y: number, w: number, h: numbe
   }
 }
 
-/** Place a building. `free` skips cost (map setup). */
-export function place(world: World, type: BuildingType, x: number, y: number, facing: number, free: boolean): CommandResult {
+/**
+ * Validate a building placement without changing anything (pure: the state hash is the same
+ * before and after). `free` (map setup) skips silver and the rank gate. Returns the cost or the
+ * first error; BLOCKED / NOT_FLAT carry the offending cell for the placement ghost.
+ */
+export function validatePlace(world: World, type: BuildingType, x: number, y: number, facing: number, free = false): CommandResult {
   const st = world.state, t = world.terrain;
+  if (!Object.prototype.hasOwnProperty.call(BUILDINGS, type)) return { ok: false, err: { k: 'BAD_TARGET' } };
   const def = BUILDINGS[type];
+  if (!free) {
+    const gate = canPlace(world, type);
+    if (!gate.ok) return gate;
+  }
+  if (!Number.isInteger(x) || !Number.isInteger(y) || !Number.isInteger(facing)) return { ok: false, err: { k: 'OUT_OF_BOUNDS' } };
   const c = net(world);
   if (x < 0 || y < 0 || x + def.w > t.w || y + def.h > t.h) return { ok: false, err: { k: 'OUT_OF_BOUNDS' } };
   const gate = gateCell(world, x, y, def.w, def.h, facing);
@@ -190,15 +211,25 @@ export function place(world: World, type: BuildingType, x: number, y: number, fa
   if (hi - lo > 2.5) return { ok: false, err: { k: 'NOT_FLAT', cell: y * t.w + x } };
   const cost = free ? 0 : def.price;
   if (cost > st.coins) return { ok: false, err: { k: 'NO_COINS', need: cost, have: st.coins } };
-  st.coins -= cost;
+  return { ok: true, cost };
+}
+
+/** Place a building. `free` skips cost and the rank gate (map setup). */
+export function place(world: World, type: BuildingType, x: number, y: number, facing: number, free: boolean): CommandResult {
+  const r = validatePlace(world, type, x, y, facing, free);
+  if (!r.ok) return r;
+  const st = world.state, def = BUILDINGS[type];
+  const gate = gateCell(world, x, y, def.w, def.h, facing);
+  st.coins -= r.cost;
   if (!st.roads[gate]) st.roads[gate] = 1;
   st.buildings.push({
     id: st.nextId++, type, x, y, w: def.w, h: def.h, gate, facing: facing & 3,
     stock: emptyGoods(), reservedOut: emptyGoods(), incoming: emptyGoods(), progress: -1,
     status: initialStatus(world, type), stalledTicks: 0, capOverride: -1,
+    placedTick: free ? -1 : st.tick,
   });
   st.netVersion++;
-  return { ok: true, cost };
+  return r;
 }
 
 /** A fresh building explains itself before the first dispatch (review F-04). */

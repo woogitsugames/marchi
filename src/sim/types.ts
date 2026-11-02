@@ -116,6 +116,8 @@ export interface Building {
   stalledTicks: number;
   /** Warehouse capacity for this building (units, all goods); -1 = the type default (BUILDINGS.storeCap). */
   capOverride: number;
+  /** Tick the player placed this building; -1 for buildings that came with the map (state v4). */
+  placedTick: number;
 }
 
 export interface RainSpell {
@@ -162,6 +164,32 @@ export interface Ledger {
    * `building:5:NO_ROAD`, `wagon:12:NO_ROUTE`, `span:3315:BRIDGE_JAM`. For the end-of-mission summary.
    */
   stallSeconds: Record<string, number>;
+  /** Silver earned by selling goods at the market (state v4). */
+  silverEarned: number;
+  /** Units sold at the market per good; a subset of `consumed` (state v4). */
+  sold: GoodMap;
+}
+
+/** Market prices (free valley). Present in every state; trades only when `open`. */
+export interface MarketState {
+  /** The castle buys every good (missions without a contract, except test maps). */
+  open: boolean;
+  /** Saturation units per good (0..MARKET.cap); one recovers every MARKET.recoverTicks. */
+  saturation: GoodMap;
+  /** Fraction of a silver coin earned but not paid out yet, in hundredths (0..99). */
+  cents: number;
+}
+
+/** Town renown and rank (free valley). Ranks latch: they never go down. */
+export interface TownState {
+  renown: number;
+  rank: number;
+  /** Tick each rank was reached, -1 = not yet (index 0 is the start). */
+  rankTicks: number[];
+  /** Silver earned per 10 s bucket, ring of FLOW_BUCKETS indexed by floor(tick / FLOW_BUCKET_TICKS). */
+  flow: number[];
+  /** Best silver/min ever measured over the full 3-minute window (latched). */
+  bestFlow: number;
 }
 
 export interface SimState {
@@ -185,6 +213,8 @@ export interface SimState {
   ice: RainSpell[];
   mission: MissionState;
   ledger: Ledger;
+  market: MarketState;
+  town: TownState;
 }
 
 export interface Terrain {

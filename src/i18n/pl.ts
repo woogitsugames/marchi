@@ -242,6 +242,20 @@ export const pl = {
   'app.docTitle': 'Marchia — Szlaki Królestwa',
   'why.holdsCount': 'W spichlerzu: {count}',
   'hud.stallFixed': 'Znów pracuje: {name}',
+  // free valley market, ranks and undo (sim S2-S4): see PENDING_KEYS
+  'err.LOCKED': 'Wymaga rangi {rank}',
+  'err.NOT_PLACEABLE': 'Tego nie można zbudować',
+  'rank.0': 'Osada',
+  'rank.1': 'Wieś targowa',
+  'rank.2': 'Miasteczko',
+  'rank.3': 'Miasto',
+  'town.renown': 'Renoma: {n}',
+  'town.flow': 'Przepływ: {n} srebra/min',
+  'town.next': 'Do rangi „{name}”: renoma {renown}, różne towary {goods}, przepływ {flow} srebra/min',
+  'town.rankUp': 'Nowa ranga: {name}',
+  'market.title': 'Targ zamkowy',
+  'market.price': '{price} srebra ({pct}%)',
+  'undo.place': 'Cofnij: {name}, zwrot {n}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -285,6 +299,19 @@ export const PENDING_KEYS = [
   'why.holdsCount',
   'hud.stallFixed',
   'hud.showUi',
+  'err.LOCKED',
+  'err.NOT_PLACEABLE',
+  'rank.0',
+  'rank.1',
+  'rank.2',
+  'rank.3',
+  'town.renown',
+  'town.flow',
+  'town.next',
+  'town.rankUp',
+  'market.title',
+  'market.price',
+  'undo.place',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

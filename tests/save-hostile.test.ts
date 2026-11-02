@@ -97,7 +97,7 @@ function expectOk(r: GateResult | ReturnType<typeof prepareLoad>, what: string):
 test('valid saves of every mission (several points in time) pass the gate and the full load pipeline', () => {
   for (const id of Object.keys(MISSIONS)) {
     const w = createWorld(id);
-    if (id === 'm1' || id === 'sandbox') applyCommand(w, bridgeA(w));
+    if (id === 'm1' || id === 'lab') applyCommand(w, bridgeA(w));
     for (const until of [0, 300, 1500]) {
       while (w.state.tick < until) step(w);
       const env = envOf(w);

@@ -4,6 +4,7 @@ import {
 } from './defs';
 import { contractTarget, iceUntil, storeCapOf } from './contract';
 import { buildingById } from './logistics';
+import { isMarket, sellAt } from './town';
 import { dijkstra, edgeLength, edgeSpeedAt, findPath, hasEdge, isRaining, net, type World } from './network';
 import type { Building, Good, Wagon } from './types';
 
@@ -278,6 +279,7 @@ function alternativeDestination(world: World, w: Wagon, except: number): Buildin
 export function acceptsUpTo(world: World, b: Building, g: Good): number {
   const def = BUILDINGS[b.type];
   if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
+  if (isMarket(world, b)) return WAGON_CAPACITY; // the market buys whatever arrives
   if (b.type === 'castle') {
     const m = world.state.mission;
     if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
@@ -290,6 +292,7 @@ export function acceptsUpTo(world: World, b: Building, g: Good): number {
 export function accepts(world: World, b: Building, g: Good, qty: number): boolean {
   const def = BUILDINGS[b.type];
   if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming) >= qty;
+  if (isMarket(world, b)) return true;
   if (b.type === 'castle') {
     const m = world.state.mission;
     return !!m.contract && m.result === 'running' && m.contract.castle === b.id && contractTarget(m.contract, g) - b.stock[g] - b.incoming[g] >= qty;
@@ -378,6 +381,8 @@ function finishBusy(world: World, w: Wagon): void {
   if (!to) { w.status = { k: 'NO_ROUTE', target: -1, since: world.state.tick }; return; }
   to.stock[j.good] += w.cargoQty;
   to.incoming[j.good] -= j.qty;
+  // the market sells on arrival: stock -> consumed, silver paid (conservation holds)
+  if (isMarket(world, to)) sellAt(world, to, j.good);
   w.cargoQty = 0;
   w.cargoGood = null;
   w.job = null;

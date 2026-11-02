@@ -6,7 +6,7 @@ import { bridgeA, bridgeB, polyline, stableId } from './bot';
 const check = (r: { ok: boolean }) => { if (!r.ok) throw new Error('bench road failed: ' + JSON.stringify(r)); };
 
 export function benchWorld(wagons: number): World {
-  const w = createWorld('sandbox');
+  const w = createWorld('lab');
   w.state.coins = 1e7;
   applyCommand(w, bridgeA(w));
   applyCommand(w, bridgeB(w));

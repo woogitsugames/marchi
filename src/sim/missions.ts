@@ -5,6 +5,7 @@ import { nextInt, seedRng } from './rng';
 import { generateValley, type ValleySpec } from './terrain';
 import { M2_VALLEY, M3_VALLEY, PROPOSED_MISSIONS } from './missions-proposed';
 import { S2_MISSIONS } from './missions-s2';
+import { freshMarket, freshTown } from './town';
 import type { World } from './network';
 import type { BuildingType, GoodMap, RainSpell, SimState, Terrain } from './types';
 
@@ -101,6 +102,8 @@ export interface MissionDef {
   ice?: RainSpell[];
   /** Contract in tranches (mission V). `contract` must equal their sum; the last dueMin is the deadline. */
   tranches?: TrancheDef[];
+  /** The castle buys goods (default: open when there is no contract). Test maps close it. */
+  market?: boolean;
 }
 
 export const MISSIONS: Record<string, MissionDef> = {
@@ -133,8 +136,36 @@ export const MISSIONS: Record<string, MissionDef> = {
     star3Min: 7,
     star2Min: 9,
   },
+  // Free valley (docs/design/sandbox.md §4.1): a settlement whose woodcutter and sawmill already
+  // reach the castle market, so silver flows from the first minute. No contract, no deadline, no loss.
   sandbox: {
     id: 'sandbox',
+    mapId: 'valley1',
+    seed: 1301,
+    coins: 260,
+    wagons: 2,
+    buildings: [
+      { type: 'woodcutter', x: 14, y: 13, facing: 0, stock: { wood: 4 } },
+      { type: 'sawmill', x: 16, y: 20, facing: 3, stock: { wood: 4, planks: 6 } },
+      { type: 'stable', x: 46, y: 21, facing: 0 },
+      { type: 'warehouse', x: 52, y: 21, facing: 0 },
+      { type: 'castle', x: 60, y: 19, facing: 0 },
+    ],
+    roads: [
+      [[15, 15], [15, 24], [62, 24]],
+      [[47, 23], [47, 24]],
+      [[53, 23], [53, 24]],
+      [[62, 23], [62, 24]],
+    ],
+    contract: null,
+    deadlineMin: 0,
+    star3Min: 0,
+    star2Min: 0,
+  },
+  // Test bench (not in the menu): the mission I layout without a contract and with a closed
+  // market, i.e. the free valley as it was before the market (state v3). Tests and tools/bench use it.
+  lab: {
+    id: 'lab',
     mapId: 'valley1',
     seed: 1301,
     coins: 600,
@@ -145,6 +176,7 @@ export const MISSIONS: Record<string, MissionDef> = {
     deadlineMin: 0,
     star3Min: 0,
     star2Min: 0,
+    market: false,
   },
 };
 MISSIONS.m2 = PROPOSED_MISSIONS.m2;
@@ -152,8 +184,8 @@ MISSIONS.m3 = PROPOSED_MISSIONS.m3;
 MISSIONS.m4 = S2_MISSIONS.m4;
 MISSIONS.m5 = S2_MISSIONS.m5;
 MISSIONS.m6 = S2_MISSIONS.m6;
-MISSIONS.sandbox!.buildings = MISSIONS.m1!.buildings;
-MISSIONS.sandbox!.roads = MISSIONS.m1!.roads;
+MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
+MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 
 function rainSpells(rng: SimState['rng']): RainSpell[] {
   const out: RainSpell[] = [];
@@ -189,7 +221,9 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
     rain: [],
     ice: (def.ice ?? []).map((r) => ({ ...r })),
     mission: { id: def.id, contract: null, result: 'running', endTick: -1 },
-    ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods(), stallSeconds: {} },
+    ledger: { produced: emptyGoods(), consumed: emptyGoods(), destroyed: emptyGoods(), stallSeconds: {}, silverEarned: 0, sold: emptyGoods() },
+    market: freshMarket(def.market ?? def.contract === null),
+    town: freshTown(),
   };
   state.rain = rainSpells(state.rng);
   if (def.rain) state.rain = def.rain.map((r) => ({ ...r }));

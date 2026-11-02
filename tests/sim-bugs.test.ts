@@ -6,7 +6,7 @@ import { assert, test } from './harness';
 
 /** A wagon carrying flour whose bakery gets demolished while no other building accepts flour. */
 function strandedFlour(): { w: World; id: number } {
-  const w = createWorld('sandbox');
+  const w = createWorld('lab');
   w.state.coins = 5000;
   const wh = w.state.buildings.find((b) => b.type === 'warehouse')!;
   assert(applyCommand(w, { t: 'demolish', cell: wh.y * w.terrain.w + wh.x }).ok, 'warehouse gone');
