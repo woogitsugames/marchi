@@ -245,3 +245,28 @@ offers only the granary (its 3-seal strategy). Now data: `MissionDef.buildable` 
 targowa / Miasteczko / Miasto add long-term ranks (working names Gród, Stolica) that unlock the new chains.
 (4) Next priority: **new production chains in the valley** — fisher, quarry (stone for cobbles and stone
 bridges), charcoal burner, malthouse + brewery — each teaching a new stall cause. (decided)
+
+**D-30 — Data-driven goods, the valley chains and ranks 4-5 (STATE_VERSION 5).** Implements D-29 (3)-(4) and
+design tasks S1/S5 of docs/design/sandbox.md. (1) *Goods are data*: `GOODS` in `defs.ts` is the only list
+(append-only; `Good`/`GoodMap = Record<Good, number>` derive from it), every goods map is a plain object with
+all goods in GOODS order (`emptyGoods`, `goodsOf`), invariants and the save gate iterate GOODS. New goods: fish,
+stone, charcoal, malt, beer (base prices 3/2/4/4/9, same saturation rules). Wagon loads per good
+(`WAGON_CAPACITY_BY_GOOD`, `capacityOf`): stone 4, everything else 6. (2) *Buildings*: fisher 2×2 (1 fish/9 s,
+footprint or gate 8-adjacent to water, else `NOT_NEAR_WATER`), quarry 3×2 (1 stone/12 s, some cell of the
+footprint or its ring ≥ 5 m above the water: the ridge and the hills, else `NOT_ON_ROCK`), charcoal burner 2×2
+(2 wood → 1 charcoal/20 s), malthouse 2×2 (2 grain → 1 malt/12 s), brewery 3×2 (1 malt → 2 beer/16 s).
+(3) *Competition*: an input that is promised to a consumer of another kind (sawmill vs charcoal burner, mill
+vs malthouse) reads `NO_INPUT{cause: 'CONTESTED', blockedBy: rival}`; same-kind consumers keep the old causes.
+To split fairly a consumer that cannot run one more cycle counts as starving (accepts a small load), and in the
+free valley ties go to the consumer stalled longer (contract missions keep the lower id). Measured: one
+woodcutter, sawmill + burner, 5 wagons: ~55/45 % of the wood. (4) *Stone builds roads* (free valley only):
+`STONE_COBBLE` 1 per cobbled cell, `STONE_STONE_BRIDGE` 3 per stone-bridge cell, taken from unreserved stone in
+granaries (then the castle) and counted as consumed; short → `NO_STONE{need, have}`. Granaries pull a reserve of
+`STONE_RESERVE` 18 before the market, and the market never buys stone out of a granary. (5) *Ranks*: 0-2 as
+D-27 (rank 2 also unlocks fisher + quarry), rank 3 renown 2500 / 6 goods / flow 60 (charcoal burner, malthouse),
+rank 4 Gród 6000 / 7 / 120 (brewery), rank 5 Stolica 13000 / 9 / 160 (no building, `castleLevel` 1).
+Measured with the extended decent bot (tools/bot-sandbox.ts, 150 min): ranks at 9.8 / 25.3 / 44.4 / 75.6 /
+120.5 min. (6) *Saves*: migration v4 → v5 rebuilds every goods map in GOODS order (new goods 0) and grows
+`town.rankTicks` to six entries; the gate expects five goods / four ranks for v1-v4 and ten / six for v5.
+Missions I-VI run bit-identically to state v4 with the new fields stripped (all 26 balance runs compared;
+golden hashes in tests/chains.test.ts). (decided — numbers are a first tuning, re-run tools/balance.ts sandbox)
