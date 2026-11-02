@@ -105,7 +105,6 @@ for (const id of ['m7', 'm8', 'm9'] as const) {
     }
     assert(r[0]!.minutes > r[1]!.minutes && r[1]!.minutes > r[2]!.minutes,
       id + ': repair must beat partial repair, which must beat no action; minutes=' + r.map((x) => x.minutes.toFixed(2)).join('/'));
-    assert(r[0]!.seals <= r[1]!.seals && r[1]!.seals <= r[2]!.seals,
-      id + ': nondecreasing seals; seals=' + r.map((x) => x.seals).join('/'));
+    eq(r.map((x) => x.seals).join('/'), '1/2/3', id + ': measured 1/2/3 seal ladder');
   });
 }

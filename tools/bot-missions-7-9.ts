@@ -45,7 +45,7 @@ export const STRATEGIES: Record<Mission789Id, Strategy[]> = {
   ],
   m9: [
     { name: 'nic / no action', after: 0, cmds: () => [] },
-    { name: 'czesciowa / extra 2 wagons @0:30', after: 30, cmds: (w) => [wagon(w), wagon(w)] },
+    { name: 'czesciowa / second woodcutter late @3:40', after: 220, cmds: () => [{ t: 'place', type: 'woodcutter', ...M9_WOODCUTTER_SITE }] },
     { name: 'wlasciwa / second woodcutter @0:30 + wagons', after: 30,
       cmds: (w) => [{ t: 'place', type: 'woodcutter', ...M9_WOODCUTTER_SITE }, wagon(w), wagon(w)] },
   ],

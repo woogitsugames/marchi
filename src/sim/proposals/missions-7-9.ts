@@ -72,7 +72,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     // The storm makes the southern dirt road expensive in wagon time.
     rain: [{ start: 1000, end: 7200 }],
     contract: { planks: 24, bread: 20 },
-    deadlineMin: 13, star3Min: 8, star2Min: 10.5,
+    deadlineMin: 13, star3Min: 9.7, star2Min: 10.3,
   },
   m9: {
     id: 'm9', mapId: 'valley-m3', seed: M9_VALLEY.seed,
@@ -101,7 +101,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     ],
     rain: [],
     contract: { planks: 36, charcoal: 8, beer: 26 },
-    deadlineMin: 13, star3Min: 8, star2Min: 10.5,
+    deadlineMin: 13, star3Min: 9.2, star2Min: 10.8,
   },
 };
 export const M7_MISSION = PROPOSED_MISSIONS_7_9.m7;
