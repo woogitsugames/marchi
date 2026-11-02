@@ -1,6 +1,6 @@
 // Acceptance suite runs directly against the proposal data, never edits missions.ts.
 import {
-  applyCommand, checkInvariants, createWorld, explainBuilding, findPath, lineCells,
+  checkInvariants, createWorld, explainBuilding, findPath, lineCells,
   onRock, nearWater, stoneAvailable, validatePlace, validateRoad,
 } from '../src/sim/index';
 import {
