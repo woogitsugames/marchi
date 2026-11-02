@@ -13,7 +13,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Pierścień zaznaczenia wozu na moście rysuje się na dnie rzeki? (do sprawdzenia). Odstęp wozów: zostaje w obrazie (D-35, decyzja właściciela 2026-11-02).
 - [ ] P2 — Narzędzie raportu pokrycia tłumaczeń (klucze dodane po paczce 04) + paczka uzupełnień dla GPT; zrzuty `?lang=ar|ja|de|ru` (długość, RTL, glify).
 - [ ] P1 — (D-17) 4K jako pakiet do pobrania: w APK tylko 2K (+low); pobieranie 4K po wyborze Ultra (Play Asset Delivery lub własne pobieranie do pamięci aplikacji), pasek postępu, weryfikacja SHA-256, możliwość usunięcia.
-- [ ] P2 — (D-18) RTL dla arabskiego: przejść CSS na właściwości logiczne (inline-start/end), lustrzane ułożenie listwy i arkuszy, ikony kierunkowe (strzałki) odbite; zrzuty `?lang=ar`.
+- [x] P2 — (D-18) RTL dla arabskiego: CSS na właściwościach logicznych, lustrzany HUD, ikony kierunkowe odbite, zrzuty `?lang=ar` — zrobione (D-37). Do decyzji: czy w RTL ustawienie „leworęczny” ma pozostać „względne” (szyna po lewej domyślnie).
 - [ ] P3 — (D-18) Teksty liczbowe z liczbą mnogą w pl.ts/en.ts przepisać na bloki `{n, plural, …}` (np. „3 pola”, „{n} srebra”), formaty liczb/czasu przez Intl.
 - [ ] — Sklep/płatności/release: odłożone (D-17).
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
