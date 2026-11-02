@@ -78,9 +78,10 @@ def updated_assets(text: str, day: str, rows: list[str], new_bytes: int) -> str:
     )
     text, n = re.subn(
         r"(?s)\*\*Finish locally:\*\*.*?(?=\n### Original procedural effects retained)",
-        "**Reproduce task 50:** In a clean checkout run "
-        "python3 tools/finalize_audio_50.py, then "
-        "python3 tools/process_audio.py --check. "
+        "**Reproduce task 50:** With the promoted manifest and bundled "
+        "source previews in place, run python3 tools/process_audio.py "
+        + " ".join("--track-id " + sid for sid in sorted(EXPECTED))
+        + ", then python3 tools/process_audio.py --check. "
         "Listen to all 13 tracks before merging the PR.\n\n",
         text, count=1,
     )
