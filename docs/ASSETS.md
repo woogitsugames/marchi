@@ -468,3 +468,7 @@ The wax seal's outlined **M** in `art/app-icon.svg` derives from the Google Font
 Source: https://github.com/google/fonts/tree/main/ofl/grenzegotisch
 Only the glyph's filled SVG contours are shipped in the icon, not a font file.
 Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
+
+### UI art kit — proposal 55
+
+`public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra. Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
