@@ -1,5 +1,5 @@
-// Deterministic acceptance/balance runner for proposed missions VII-IX.
-// The proposal is installed only for the duration of each run; missions.ts stays untouched.
+// Deterministic acceptance/balance runner for missions VII-IX (registered in missions.ts; withProposal
+// re-installs the data from src/sim/proposals/missions-7-9.ts for the run, a no-op once registered).
 import {
   MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, lineCells,
   stars, step, stoneAvailable, unexplainedStalls,

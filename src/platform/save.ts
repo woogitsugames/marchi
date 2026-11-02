@@ -80,6 +80,9 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       town: { ...town, rankTicks },
     };
   },
+  // v5 -> v6: `mission.roadStone` (D-32, mission VIII builds cobbles with stone). Saves before v6
+  // never had such a mission: false. Appended last, as in a fresh state (hash over JSON.stringify).
+  5: (s) => ({ ...s, version: 6, mission: { ...(s.mission as Record<string, unknown>), roadStone: false } }),
 };
 
 export function migrate(env: SaveEnvelope): SaveEnvelope {

@@ -1,6 +1,6 @@
-// Acceptance suite runs directly against the proposal data, never edits missions.ts.
+// Acceptance suite for missions VII-IX (registered in missions.ts from src/sim/proposals/missions-7-9.ts).
 import {
-  checkInvariants, createWorld, explainBuilding, findPath, lineCells,
+  MISSIONS, checkInvariants, createWorld, explainBuilding, findPath, lineCells,
   onRock, nearWater, roadStoneCost, stoneAvailable, validatePlace, validateRoad,
 } from '../src/sim/index';
 import {
@@ -14,12 +14,20 @@ import { assert, eq, test } from './harness';
 
 const W = 96;
 const row = (y: number, x1: number, x2: number): number[] => lineCells(W, y * W + x1, y * W + x2);
-// Mission VIII's lesson (stone for cobbles inside a contract mission, granary stone reserve) needs a
-// sim hook that is not part of this proposal (existing sim files stay untouched; see
-// docs/reviews/gpt-integration-2.md). Until it lands, the stone-dependent m8 checks are skipped.
-const M8_ROAD_STONE_HOOK = withProposal('m8', () => roadStoneCost(createWorld('m8'), row(44, 45, 60), 2) > 0);
+
+test('missions VII-IX are registered; only mission VIII builds cobbles with stone (MissionDef.roadStone, D-32)', () => {
+  for (const id of ['m7', 'm8', 'm9'] as const) {
+    eq(MISSIONS[id], PROPOSED_MISSIONS_7_9[id], id + ' registered');
+    eq(MISSIONS[id]!.mapId, 'valley-' + id, id + ' own map id');
+    eq(createWorld(id).state.mission.roadStone, id === 'm8', id + ' road stone flag copied into the state');
+  }
+  assert(roadStoneCost(createWorld('m8'), row(44, 45, 60), 2) > 0, 'm8: cobbles cost stone');
+  for (const id of ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm9']) {
+    eq(roadStoneCost(createWorld(id), row(44, 45, 60), 2), 0, id + ': cobbles cost silver only');
+  }
+});
 for (const [id, spec] of [['m7', M7_VALLEY], ['m8', valleySpec(M8_SEED)], ['m9', M9_VALLEY]] as const) {
-  test(id + ': proposal uses the promised 96x72 valley and an existing terrain alias', () => {
+  test(id + ': uses the promised 96x72 valley under its own map id', () => {
     const data = PROPOSED_MISSIONS_7_9[id];
     eq(spec.w, 96, 'width'); eq(spec.h, 72, 'height');
     eq(data.seed, spec.seed, 'terrain and mission seed agree');
@@ -65,7 +73,6 @@ test('m8: dry quarry rejected, rocky quarry valid, NO_STONE until its 4-unit wag
     const dry = validatePlace(w, 'quarry', M8_FALSE_QUARRY_SITE.x, M8_FALSE_QUARRY_SITE.y, M8_FALSE_QUARRY_SITE.facing);
     assert(!dry.ok, 'dry quarry rejected');
     if (!dry.ok) eq(dry.err.k, 'NOT_ON_ROCK', 'correct geological reason');
-    if (!M8_ROAD_STONE_HOOK) return;
     const path = row(44, 45, 60);
     const blocked = validateRoad(w, path, 2);
     assert(!blocked.ok, 'no stone in granary at start');
@@ -75,7 +82,6 @@ test('m8: dry quarry rejected, rocky quarry valid, NO_STONE until its 4-unit wag
     const wh = w.state.buildings.find((b) => b.type === 'warehouse')!;
     assert(findPath(w, q.gate, wh.gate, true), 'quarry can deliver to granary');
   });
-  if (!M8_ROAD_STONE_HOOK) return;
   const repaired = runProposed('m8', STRATEGIES.m8[2]!);
   assert(repaired.peakStoneStored >= 12, 'quarry brought 12 stone to granary before paving');
   eq(repaired.stoneUsed, 12, '12 units consumed by cobbled road');
@@ -110,7 +116,6 @@ for (const id of ['m7', 'm8', 'm9'] as const) {
       assert(v.minutes > 0 && v.minutes <= PROPOSED_MISSIONS_7_9[id].deadlineMin,
         v.strategy + ': finishes before deadline');
     }
-    if (id === 'm8' && !M8_ROAD_STONE_HOOK) return;
     assert(r[0]!.minutes > r[1]!.minutes && r[1]!.minutes > r[2]!.minutes,
       id + ': repair must beat partial repair, which must beat no action; minutes=' + r.map((x) => x.minutes.toFixed(2)).join('/'));
     eq(r.map((x) => x.seals).join('/'), '1/2/3', id + ': measured 1/2/3 seal ladder');

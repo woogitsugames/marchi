@@ -370,7 +370,7 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
 
 // --- contract missions behave exactly as in state v4 -------------------------------------------------
 
-/** Final state of each balance strategy, as a v4 state: new goods and ranks 4-5 stripped, version 0. */
+/** Final state of each balance strategy, as a v4 state: new goods, ranks 4-5 and mission.roadStone stripped, version 0. */
 function v4View(st: unknown): string {
   const legacy = new Set<string>(GOODS_V4);
   const strip = (v: unknown): unknown => {
@@ -382,6 +382,7 @@ function v4View(st: unknown): string {
       for (const k of Object.keys(o)) if (!goodsMap || legacy.has(k)) out[k] = strip(o[k]);
       if (Array.isArray(out.rankTicks)) out.rankTicks = out.rankTicks.slice(0, 4);
       if ('version' in out && 'mapId' in out) out.version = 0;
+      if ('result' in out && 'endTick' in out) delete out.roadStone; // state v6 (D-32)
       return out;
     }
     return v;

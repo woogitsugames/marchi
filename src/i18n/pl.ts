@@ -356,6 +356,13 @@ export const pl = {
   'rank.4': 'Gród',
   'rank.5': 'Stolica',
   'town.unlockCastle': 'rozbudowa zamku',
+  // missions VII-IX (D-32): see PENDING_KEYS
+  'menu.m7': 'VII. Ryby na post',
+  'menu.m7Sub': 'Rybak potrzebuje brzegu, zamek — mostu',
+  'menu.m8': 'VIII. Bruk przed burzą',
+  'menu.m8Sub': 'Kamień na bruk trzeba najpierw przywieźć',
+  'menu.m9': 'IX. Piwo na wesele',
+  'menu.m9Sub': 'Tartak i węglarz walczą o drewno',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -365,7 +372,9 @@ export type MessageKey = keyof typeof pl;
  * (English fallback per key, D-18); tests/i18n-*.test.ts skip them. Remove a key from this list
  * once every language has it.
  */
-export const PENDING_KEYS = [] as const satisfies readonly MessageKey[];
+export const PENDING_KEYS = [
+  'menu.m7', 'menu.m7Sub', 'menu.m8', 'menu.m8Sub', 'menu.m9', 'menu.m9Sub',
+] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
 export type FullDict = Record<MessageKey, string>;

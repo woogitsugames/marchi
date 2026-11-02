@@ -354,4 +354,11 @@ export const en: FullDict = {
   'rank.4': 'Stronghold',
   'rank.5': 'Capital',
   'town.unlockCastle': 'castle upgrade',
+  // missions VII-IX (D-32): see PENDING_KEYS
+  'menu.m7': 'VII. Fish for the fast',
+  'menu.m7Sub': 'The fisher needs the shore, the castle a bridge',
+  'menu.m8': 'VIII. Paving before the storm',
+  'menu.m8Sub': 'Road stone must be hauled before it is laid',
+  'menu.m9': 'IX. Ale for the wedding',
+  'menu.m9Sub': 'Sawmill and charcoal burner fight for wood',
 };

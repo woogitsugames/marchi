@@ -276,3 +276,21 @@ free valley, gently: announced in advance, change conditions (winter: river ice,
 dirt roads) and teach new stall causes, never destroy the settlement. (3) Next after the chains UI, all in order:
 missions VII–IX → valley events (royal orders, fairs, merchants, soft goals) → playtest + polish; GPT designs part of
 it (pack 06). (4) The title is **„Marchia” in every language**; the subtitle is translated. (decided)
+
+**D-32 — Missions VII–IX in the menu; road stone as mission data (STATE_VERSION 6).** Missions VII–IX
+(order 42, docs/missions/m7–m9.md) are registered in `MISSIONS` from `src/sim/proposals/missions-7-9.ts`
+under own map ids `valley-m7` / `valley-m8` / `valley-m9` (the mission II river, the original valley, the
+mission III valley; same generator input, so the golden terrain hashes equal those maps'). Mission VIII's
+lesson (stone must be hauled to a granary before it can pave) is a data field, never a mission id in sim
+code: `MissionDef.roadStone?: boolean` is copied into `state.mission.roadStone` at build, and the sim reads the
+state. With it set, `roadStoneCost` charges stone for cobbles / stone bridges exactly as in the free valley
+(D-30 (4): `stoneAvailable`, `takeStone`, `NO_STONE{need, have}`) and granaries pull the `STONE_RESERVE`
+before the market. The free valley keeps getting this through rank gating and its flag stays false, so
+pre-v6 valley saves behave the same after migration. Migration v5 → v6 appends `mission.roadStone: false`
+(no earlier mission used stone); the gate requires a boolean from v6 on. Missions I–VI, the lab and the free
+valley run bit-identically with the flag stripped and the version zeroed (final hashes of every balance plan
+and four sandbox plans compared before/after; `tools/balance.ts` output unchanged; golden v4 hashes in
+tests/chains.test.ts). Measured seals (tools/bot-m7…m9.ts): VII 10.90 / 8.04 / 6.41 min → 1/2/3, VIII 10.50 /
+10.11 / 9.48 min → 1/2/3 (repair paves 12 cells after 12 stone reached the granary at 2:59.7), IX 11.22 /
+10.06 / 8.70 min → 1/2/3. Menu names, subtitles and castellan letters PL/EN; the six new i18n keys are in
+`PENDING_KEYS` until the next translation round. (decided)

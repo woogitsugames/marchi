@@ -96,9 +96,9 @@ export function dispatch(world: World): void {
       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
   }
-  // free valley: granaries keep a stone reserve for cobbles and stone bridges (design S5), after
-  // every producer input and before the market (full loads only)
-  if (marketOpen(world)) {
+  // free valley and missions with road stone (D-32): granaries keep a stone reserve for cobbles and
+  // stone bridges (design S5), after every producer input and before the market (full loads only)
+  if (marketOpen(world) || st.mission.roadStone) {
     for (const b of st.buildings) {
       if (b.type !== 'warehouse') continue;
       const want = Math.min(STONE_RESERVE - b.stock.stone - b.incoming.stone, warehouseSpace(b));

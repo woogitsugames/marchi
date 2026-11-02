@@ -1,6 +1,6 @@
-// Mission design proposals VII-IX (order 42).
-// Deliberately NOT registered in missions.ts. Tests and bots register locally.
-// Reuse existing map IDs so integration needs only three MissionDef registrations.
+// Missions VII-IX (order 42), registered in missions.ts (MISSIONS.m7..m9).
+// Own map ids valley-m7..m9 (saves name their map) over the mission II river, the original valley
+// and the mission III valley; mission VIII builds cobbles with stone (MissionDef.roadStone, D-32).
 // Type-only import from missions.ts: missions.ts will import this file to register VII-IX, and a
 // value import (valleySpec) would run before VALLEY_W is initialised in that import cycle.
 import type { MissionDef } from '../missions';
@@ -11,7 +11,7 @@ export type Mission789Id = 'm7' | 'm8' | 'm9';
 
 /** VII: proven river valley, with north-bank fish and a bridge to the southern castle. */
 export const M7_VALLEY: ValleySpec = { ...M2_VALLEY, seed: M2_VALLEY.seed };
-/** VIII: original valley (mapId valley1 = valleySpec(seed)), with the tested rocky quarry site at (57, 7). */
+/** VIII: original valley (mapId valley-m8 = valleySpec(seed)), with the tested rocky quarry site at (57, 7). */
 export const M8_SEED = 1301;
 /** IX: proven dry logistics valley with two competing uses for wood. */
 export const M9_VALLEY: ValleySpec = { ...M3_VALLEY, seed: M3_VALLEY.seed };
@@ -22,10 +22,10 @@ export const M8_QUARRY_SITE = { x: 57, y: 7, facing: 0 } as const;
 export const M8_FALSE_QUARRY_SITE = { x: 30, y: 28, facing: 0 } as const;
 export const M9_WOODCUTTER_SITE = { x: 12, y: 34, facing: 1 } as const;
 
-/** Standalone data: add three assignments to MISSIONS when accepted for release. */
+/** Mission data; missions.ts assigns these to MISSIONS.m7..m9. */
 export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
   m7: {
-    id: 'm7', mapId: 'valley-m2', seed: M7_VALLEY.seed,
+    id: 'm7', mapId: 'valley-m7', seed: M7_VALLEY.seed,
     coins: 180, wagons: 4,
     buildable: ['fisher'],
     buildings: [
@@ -45,7 +45,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     deadlineMin: 12, star3Min: 7.5, star2Min: 9.5,
   },
   m8: {
-    id: 'm8', mapId: 'valley1', seed: M8_SEED,
+    id: 'm8', mapId: 'valley-m8', seed: M8_SEED,
     coins: 410, wagons: 6,
     buildable: ['quarry'],
     buildings: [
@@ -70,13 +70,15 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
       [[43, 39], [43, 44]],
     ],
     roadsOverWater: true,
+    // Cobbles cost stone hauled into the granary first (the lesson of this mission).
+    roadStone: true,
     // The storm makes the southern dirt road expensive in wagon time.
     rain: [{ start: 1000, end: 7200 }],
     contract: { planks: 24, bread: 20 },
     deadlineMin: 13, star3Min: 9.7, star2Min: 10.3,
   },
   m9: {
-    id: 'm9', mapId: 'valley-m3', seed: M9_VALLEY.seed,
+    id: 'm9', mapId: 'valley-m9', seed: M9_VALLEY.seed,
     coins: 220, wagons: 5,
     buildable: ['woodcutter'],
     buildings: [
