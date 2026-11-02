@@ -1,5 +1,10 @@
 # MARCHIA — Szlaki Królestwa · Game design (stage 1)
 
+> **Numbers checked against the code on 2026-11-02** (`src/sim/defs.ts`, `src/sim/missions.ts`). The code is
+> the source of truth; this page describes stage 1. Later additions — missions II–XII, ten goods and the valley
+> chains, granaries with capacity, ice, tranches, seasons, the free-valley market and ranks — are described in
+> `docs/DECISIONS.md` (D-21 onwards), `docs/missions/` and `docs/design/`.
+
 ## Pillar
 
 **A game about diagnosing stalls, not about a pretty settlement.** Goods only exist where they
@@ -22,7 +27,7 @@ No energy, no wait timers, no pay-to-win.
 | Sim tick | 10 Hz (`TICK_HZ`) | fixed step, sim-seconds = real seconds at ×1 |
 | Speeds | pause, ×1, ×2, ×4 | loop runs 0/1/2/4 ticks per 100 ms |
 
-Time is compressed for play: a wagon on a dirt road travels ~3 m/s (a brisk, game-scaled
+Time is compressed for play: a wagon on a dirt road travels ~3.6 m/s (a brisk, game-scaled
 walk). Day/night: one day = 1440 sim-s (24 min), so a 12-minute contract runs from early morning to dusk.
 
 ## Roads
@@ -33,8 +38,8 @@ neighbours are free of buildings/water so wagons don't cut corners through walls
 
 | Surface | Cost / cell | Base speed | In rain | Bridge over water |
 |---|---|---|---|---|
-| Dirt track (grunt) | 1 | 3.0 m/s | ×0.55 (mud) | wooden bridge, **one lane**, 2.4 m/s, 6 / cell |
-| Cobbles (bruk) | 4 | 4.2 m/s | ×0.90 | stone bridge, two lanes, 4.0 m/s, 15 / cell |
+| Dirt track (grunt) | 1 | 3.6 m/s | ×0.55 (mud) | wooden bridge, **one lane**, 2.8 m/s (×0.85 in rain), 6 / cell |
+| Cobbles (bruk) | 4 | 4.8 m/s | ×0.90 | stone bridge, two lanes, 4.6 m/s, 15 / cell |
 
 - **Slope**: grade = Δh / horizontal length. Uphill speed × 1/(1 + k·grade) with k = 6 loaded,
   3 empty; downhill × 1/(1 + 1.5·|grade|) (braking). Segments steeper than **14 %** are rejected
@@ -46,13 +51,14 @@ neighbours are free of buildings/water so wagons don't cut corners through walls
 
 ## Goods and buildings
 
-Goods: **wood (log), planks, grain, flour, bread**. Wagon capacity: 6 units of one good.
+Goods (stage 1): **wood (log), planks, grain, flour, bread**. Wagon capacity: 6 units of one good. Since D-30
+there are ten goods (fish, stone, charcoal, malt, beer added; stone loads 4 per wagon) and five more buildings.
 
 | Building | Size | Recipe | Time | Buffers |
 |---|---|---|---|---|
-| Woodcutter (drwal) | 2×2 | → 1 wood | 12 s | out 8 |
+| Woodcutter (drwal) | 2×2 | → 1 wood | 10 s | out 8 |
 | Sawmill (tartak) | 3×2 | 1 wood → 2 planks | 10 s | in 8, out 12 |
-| Farm (farma) | 3×3 | → 1 grain | 9 s | out 8 |
+| Farm (farma) | 3×3 | → 1 grain | 8 s | out 8 |
 | Mill (młyn) | 2×2 | 1 grain → 1 flour | 7 s | in 8, out 8 |
 | Bakery (piekarnia) | 2×2 | 1 flour → 2 bread | 12 s | in 8, out 12 |
 | Warehouse (magazyn) | 3×2 | stores any good | — | 60 units total |
@@ -97,7 +103,7 @@ farm cut off: no road.*
 
 The castle orders **30 planks and 20 bread**. The valley is split by a river: forest and
 sawmill north, fields and mill south, castle on a rise on the south bank. Start: 2 wagons,
-120 coins, roads on both banks but no crossing. Wagon costs 30. Deadline: 12 sim-minutes
+180 coins, roads on both banks but no crossing. Wagon costs 30. Deadline: 12 sim-minutes
 (the first snow); stars for < 7 and < 9 minutes. Sandbox: same valley, no contract, more coins.
 
 ## Player tools (stage 1)

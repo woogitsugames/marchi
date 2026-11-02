@@ -422,4 +422,11 @@ export const en: FullDict = {
   'hud.stallsNext': 'Stalls: {n} — show the next one',
   'contract.toSnow': '{time} to snow',
   'tool.wagonShort': '{n} short',
+  // session 6 (D-46…): see PENDING_KEYS
+  'letter.start': 'To work',
+  'why.thin': 'Wagon {wagon} carries only {qty} of {full} — {source} cannot keep up',
+  'deadEnd.title': 'The road cannot be saved',
+  'deadEnd.text': 'The castle is cut off from the wagons. The cheapest link costs {cost} silver and you have {coins} — even selling the spare wagons (+{raise}) is not enough.',
+  'deadEnd.none': 'The castle is cut off from the wagons and no road can be built to it any more.',
+  'deadEnd.watch': 'Keep watching',
 };

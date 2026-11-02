@@ -123,6 +123,7 @@ async function openGame(browser, url, scene, lang, size) {
     params.set('lang', lang);
     params.set('quality', 'high');
     params.set('dynres', '0');
+    params.set('debug', '1'); // production preview: window.__marchia.app only with ?debug=1 (D-51)
     await page.goto(url + '?' + params, { waitUntil: 'load', timeout: 60000 });
     await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 120000 });
     await page.evaluate(() => document.fonts.ready);

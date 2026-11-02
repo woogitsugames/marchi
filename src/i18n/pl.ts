@@ -425,6 +425,13 @@ export const pl = {
   'hud.stallsNext': 'Zastoje: {n} — pokaż kolejny',
   'contract.toSnow': '{time} do śniegu',
   'tool.wagonShort': 'brak {n}',
+  // session 6 (D-46…): see PENDING_KEYS
+  'letter.start': 'Do dzieła',
+  'why.thin': 'Wóz {wagon} wiezie tylko {qty} z {full} — {source} nie nadąża z dostawą',
+  'deadEnd.title': 'Szlak nie do uratowania',
+  'deadEnd.text': 'Zamek jest odcięty od drogi wozów. Najtańsze połączenie kosztuje {cost} srebra, a masz {coins} — nawet sprzedaż zbędnych wozów (+{raise}) nie wystarczy.',
+  'deadEnd.none': 'Zamek jest odcięty od drogi wozów i nie da się już do niego zbudować drogi.',
+  'deadEnd.watch': 'Patrz dalej',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -457,6 +464,12 @@ export const PENDING_KEYS = [
   'hud.stallsNext',
   'contract.toSnow',
   'tool.wagonShort',
+  'letter.start',
+  'why.thin',
+  'deadEnd.title',
+  'deadEnd.text',
+  'deadEnd.none',
+  'deadEnd.watch',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

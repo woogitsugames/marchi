@@ -41,6 +41,20 @@ Lokalne dane gry przetwarzane wyłącznie na urządzeniu nie są traktowane prze
 - **Publikacja polityk:** zamień {{CONTACT_EMAIL}} na rzeczywisty adres; opublikuj dostępne publicznie strony HTML pod stałymi adresami HTTPS, ustaw URL w obu sklepach i zapewnij dostęp z samej gry.
 - **Wersje i zmiany:** zaktualizuj deklaracje wraz z każdą zmianą zbierania danych, SDK, monetyzacji lub synchronizacji zapisów.
 
+## Android: uprawnienia i kopia zapasowa (D-52, stan 2 listopada 2026)
+
+- **Brak uprawnień.** `AndroidManifest.xml` nie deklaruje `INTERNET` ani żadnego innego uprawnienia: gra działa
+  w całości z plików APK (Capacitor podaje je WebView z lokalnego zasobu, bez sieci), niczego nie pobiera i nie
+  wysyła. Pakiet tekstur 4K (D-24) nie jest podłączony w wydaniu (D-21: brak hostingu) — gdy wróci, wraz z nim
+  wraca `INTERNET`, a ta sekcja i formularz Data safety wymagają aktualizacji (pobieranie z serwera = połączenie
+  sieciowe, nawet bez danych użytkownika). `npx cap sync android` nie dodaje `INTERNET` z powrotem (sprawdzone;
+  manifesty wtyczek Capacitor 8.6 / filesystem 8.1 są puste) — sprawdź scalony manifest gotowego APK.
+- **Kopia zapasowa Androida włączona** (`allowBackup="true"`), z regułami `res/xml/backup_rules.xml` (Android ≤ 11)
+  i `res/xml/data_extraction_rules.xml` (12+): zapisy gry (IndexedDB WebView) i ustawienia przechodzą na nowy
+  telefon przez kopię Google i transfer między urządzeniami; pamięci podręczne WebView są wyłączone. To mechanizm
+  systemu (szyfrowany, pod kontrolą użytkownika), nie zbieranie danych przez grę — w Data safety nadal
+  „No data collected / shared”. Jeśli wolisz nie przenosić zapisów: `allowBackup="false"` i usunąć oba pliki reguł.
+
 ## Oficjalne wytyczne
 
 - Google Play — [Provide information for your app's Data safety section](https://support.google.com/googleplay/android-developer/answer/10787469?hl=en-GB) (lokalne przetwarzanie bez wysyłki nie jest „collection”; odpowiedzialność za SDK).

@@ -1,43 +1,19 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
 import { BUILDINGS, RANKS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
-import { RTL_LANGS, getLang, t, type MessageKey } from '../i18n/index';
+import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
 
 export function isRtl(): boolean {
   return RTL_LANGS.has(getLang());
 }
 import { iconSvg, struckIconSvg, type IconId } from './icons';
+import { fmtDayTime, fmtDuration, setFmtLang } from './fmt';
 
-// Numbers and times go through Intl for the current language (D-18). Latin digits everywhere
-// ("-u-nu-latn"): HUD counters keep a stable width and read the same in ar / hi; grouping and
-// separators still follow the language. Formatters are cached per language.
-const nfCache = new Map<string, Intl.NumberFormat>();
-function nf(two = false): Intl.NumberFormat {
-  const key = getLang() + (two ? ':2' : '');
-  let f = nfCache.get(key);
-  if (!f) {
-    f = new Intl.NumberFormat(`${getLang()}-u-nu-latn`, two ? { minimumIntegerDigits: 2, useGrouping: false } : { maximumFractionDigits: 0 });
-    nfCache.set(key, f);
-  }
-  return f;
-}
+// formatters follow the UI language (cache dropped on every switch)
+onLangChange(() => setFmtLang(getLang()));
 
-/** Whole number in the current language (grouping, Latin digits). */
-export function fmtInt(n: number): string {
-  return nf().format(Math.round(n));
-}
-
-/** Number with up to `digits` decimals (prices in silver from hundredths). */
-export function fmtDec(n: number, digits = 2): string {
-  const key = `${getLang()}:d${digits}`;
-  let f = nfCache.get(key);
-  if (!f) {
-    f = new Intl.NumberFormat(`${getLang()}-u-nu-latn`, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
-    nfCache.set(key, f);
-  }
-  return f.format(n);
-}
-
+// Numbers and times: src/ui/fmt.ts (Intl, cache per language, D-49); re-exported for existing imports.
+export { fmtDec, fmtInt, fmtPercent, fmtRatio } from './fmt';
 /** Name of a town rank (0..RANKS.length-1: Osada … Stolica). */
 export function rankName(rank: number): string {
   return t(`rank.${Math.max(0, Math.min(RANKS.length - 1, rank))}` as MessageKey);
@@ -45,28 +21,16 @@ export function rankName(rank: number): string {
 
 /** m:ss (or h:mm:ss) from seconds. */
 export function clock(sec: number): string {
-  const s = Math.max(0, Math.round(sec));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  const two = nf(true), one = nf();
-  if (m >= 60) return `${one.format(Math.floor(m / 60))}:${two.format(m % 60)}:${two.format(r)}`;
-  return `${one.format(m)}:${two.format(r)}`;
+  return fmtDuration(sec);
 }
 
 export function ticksClock(ticks: number): string {
-  return clock(ticks / TICK_HZ);
+  return fmtDuration(ticks / TICK_HZ);
 }
 
-const dtCache = new Map<string, Intl.DateTimeFormat>();
 /** Time of day for a day fraction (0 = midnight); 24 h cycle so the rail line never grows an AM/PM. */
 export function dayClock(f: number): string {
-  const mins = Math.floor(f * 24 * 60);
-  let df = dtCache.get(getLang());
-  if (!df) {
-    df = new Intl.DateTimeFormat(`${getLang()}-u-nu-latn`, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
-    dtCache.set(getLang(), df);
-  }
-  return df.format(new Date(Date.UTC(2000, 0, 1, Math.floor(mins / 60) % 24, mins % 60)));
+  return fmtDayTime(f);
 }
 
 /** Short list joined the way the language joins units ("a, b" / "a、b" / "a وb"). */

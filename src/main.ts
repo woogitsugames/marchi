@@ -53,11 +53,13 @@ async function boot(): Promise<void> {
     document.getElementById('scene')?.setAttribute('aria-label', t('app.valley'));
   };
   onLangChange(label);
-  void setLang(lang).then(label);
+  // the dictionary, the document title and the canvas label are ready before the first frame (with the fonts)
+  const langReady = setLang(lang).then(label);
   // Fonts first so the first frame of the menu is set in the right faces.
   try {
     await Promise.race([
       Promise.all([
+        langReady,
         document.fonts.load("600 28px 'Grenze Gotisch'", 'Marchia ąęłńóśźż'),
         document.fonts.load("700 56px 'Grenze Gotisch'", 'Marchia'),
         document.fonts.load("400 15px 'Alegreya Sans'", 'ąęłńóśźż'),

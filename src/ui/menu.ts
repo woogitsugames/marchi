@@ -3,10 +3,12 @@
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
 import { GOODS, MISSIONS, topStallCauses, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
-import { bdi, buildingName, clock, fmtInt, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
 import { saveErrorMessageKey } from '../platform/saveGate';
 import { VALLEY_SLOTS, type SlotSummary, type ValleySlot } from '../platform/save';
 import { iconSvg } from './icons';
+import { getContractLetter } from '../content/letters';
+import type { DeadEnd } from './deadEnd';
 import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
@@ -426,20 +428,86 @@ function causesHtml(world: World): string {
 }
 
 /** The sealed letter at the end of a contract. seals = stars(world) 0..3. */
+/** An authored letter as HTML: one <p> per line, the closing "— name" line set as a signature. */
+export function letterHtml(text: string): string {
+  return text.split('\n').filter((l) => l.trim()).map((l) =>
+    // dir=auto: a letter without a translation falls back to English (D-18) and must keep LTR punctuation in RTL
+    /^\s*[—–-]\s/.test(l) ? `<p class="l-sign" dir="auto">${esc(l.trim())}</p>` : `<p dir="auto">${esc(l)}</p>`).join('');
+}
+
+/**
+ * The castellan's opening letter for a contract (D-46). Closes with one gesture: a tap anywhere, the
+ * button or Escape; `onClose` runs once. Returns null for missions without letters (the free valley).
+ */
+export function buildOpeningLetter(missionId: string, onClose: () => void): HTMLElement | null {
+  const text = getContractLetter(missionId, 'opening');
+  if (!text) return null;
+  const letter = h('div.letter.l-opening' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'opening-title' });
+  letter.innerHTML = `
+    <div class="l-kicker">${esc(t('contract.kicker'))}</div>
+    <h2 id="opening-title">${esc(missionTitle(missionId))}</h2>
+    <div class="l-body">${letterHtml(text)}</div>
+    <div class="actions"><button class="btn primary cf" data-a="start">${esc(t('letter.start'))}</button></div>`;
+  letter.style.clipPath = deckle('bottom', 57, 6, 30);
+  const scrim = h('div.scrim.letter-scrim', null, h('div.letter-wrap', null, letter, h('span.big-seal', { html: iconSvg('seal', 72) })));
+  let closed = false;
+  const close = (): void => {
+    if (closed) return;
+    closed = true;
+    window.removeEventListener('keydown', onKey);
+    if (!scrim.isConnected) return; // removed with the game (back to the menu): nothing to resume
+    scrim.classList.add('is-out');
+    window.setTimeout(() => scrim.remove(), 220);
+    onClose();
+  };
+  const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); close(); } };
+  scrim.addEventListener('click', close); // one tap anywhere, the letter included
+  window.addEventListener('keydown', onKey);
+  requestAnimationFrame(() => letter.querySelector<HTMLButtonElement>('[data-a="start"]')?.focus());
+  return scrim;
+}
+
+export interface DeadEndActions { again(): void; menu(): void; watch(): void }
+
+/** "No road to victory" (D-48): the cause and the numbers, instead of waiting for the deadline. */
+export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement {
+  const letter = h('div.letter.lost' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'deadend-title' });
+  const why = d.cost < 0
+    ? esc(t('deadEnd.none'))
+    : tHtml('deadEnd.text', { cost: fmtInt(d.cost), coins: fmtInt(d.coins), raise: fmtInt(d.raise) });
+  letter.innerHTML = `
+    <div class="l-kicker">${esc(t('contract.kicker'))}</div>
+    <h2 id="deadend-title" dir="auto">${esc(t('deadEnd.title'))}</h2>
+    <p dir="auto">${why}</p>
+    <div class="actions">
+      <button class="btn primary cf" data-a="again">${esc(t('contract.again'))}</button>
+      <button class="btn cf" data-a="menu">${esc(t('contract.menu'))}</button>
+    </div>
+    <div class="actions l-more"><button class="btn cf" data-a="watch">${esc(t('deadEnd.watch'))}</button></div>`;
+  letter.style.clipPath = deckle('bottom', 73, 6, 30);
+  letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
+  letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);
+  letter.querySelector('[data-a="watch"]')!.addEventListener('click', act.watch);
+  const seal = h('span.big-seal.broken', { html: iconSvg('seal', 72) });
+  return h('div.scrim.deadend-scrim', null, h('div.letter-wrap', null, letter, seal));
+}
+
 export function buildEndLetter(world: World, seals: number, act: EndActions): HTMLElement {
   const st = world.state;
   const won = st.mission.result === 'won';
   const c = st.mission.contract;
   const castle = c ? st.buildings.find((b) => b.id === c.castle) : null;
   const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
-    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: `${fmtInt(Math.min(castle?.stock[g] ?? 0, c.need[g]))}/${fmtInt(c.need[g])}`, good: goodName(g) })}</span></span>`).join('') : '';
+    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: fmtRatio(Math.min(castle?.stock[g] ?? 0, c.need[g]), c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
   const def = MISSIONS[st.mission.id];
   const sealRow = [0, 1, 2].map((i) => `<span class="s${i < seals ? '' : ' off'}">${iconSvg('seal', 52)}</span>`).join('');
+  // the castellan's own words by seals (or the loss), the generic line for missions without letters
+  const authored = getContractLetter(st.mission.id, won ? 'won' : 'lost', seals);
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
   letter.innerHTML = `
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2>${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
-    <p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>
+    ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">
       <dt>${esc(t('contract.time'))}</dt><dd>${bdi(ticksClock(st.mission.endTick >= 0 ? st.mission.endTick : st.tick))}${def ? `<span class="of-limit">${bdi(`/ ${clock(def.deadlineMin * 60)}`)}</span>` : ''}</dd>

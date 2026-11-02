@@ -4,7 +4,7 @@ import { AudioEngine } from '../audio/audio';
 import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
-  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
+  TICK_HZ, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
 } from '../sim/index';
@@ -15,7 +15,7 @@ import {
   saveGame, slotFor,
 } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
-import { bridgeA, stableId } from '../../tools/bot';
+import { botPlan, menuWorld } from '../game/menuScene';
 import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
@@ -24,8 +24,9 @@ import { Markers } from './markers';
 import { rankStalls } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
-  buildEndLetter, buildMainMenu, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
+import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -76,6 +77,8 @@ function applyVolumes(p: Prefs): void {
 const MUSIC_FULL = 0.7;
 
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
+/** How often the no-road-to-victory check runs (game time). */
+const DEAD_END_EVERY = 5 * TICK_HZ;
 /** Window for the second tap that confirms demolishing a building a contract cannot replace. */
 const DEMOLISH_CONFIRM_MS = 4000;
 
@@ -138,6 +141,8 @@ export class App implements PanelNav {
   private tutorial: Tutorial | null = null;
   /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
   private debugStart = false;
+  /** The no-road-to-victory letter was shown in this game (D-48): once per game. */
+  private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
   private ghostKey = '';
@@ -209,13 +214,16 @@ export class App implements PanelNav {
       this.perfEl = h('div.perf.num');
       this.layers.overlay.append(this.perfEl);
     }
-    (window as unknown as { __marchia: unknown }).__marchia = {
+    // window.__marchia: `ready` always (smoke tests and screenshot scripts wait for it); the App handle and the
+    // screenshot helpers only for ?debug=1 or the Vite dev server, never in a release page (D-51)
+    const debugHandle = this.params.get('debug') === '1' || import.meta.env.DEV;
+    (window as unknown as { __marchia: unknown }).__marchia = debugHandle ? {
       app: this,
       findSteepDraft: () => this.findSteepDraft(),
       /** Screenshots: the rank-up letter without playing ten minutes. */
       rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
       ready: false,
-    };
+    } : { ready: false };
   }
 
   /**
@@ -250,9 +258,7 @@ export class App implements PanelNav {
     document.body.classList.add('mode-menu');
     document.body.classList.remove('mode-game');
     // live scene: mission 1 valley with a bridge already thrown over the river and wagons on it
-    const w = createWorld('m1');
-    applyCommand(w, bridgeA(w));
-    for (let i = 0; i < 2; i++) applyCommand(w, { t: 'buyWagon', stable: stableId(w) });
+    const w = menuWorld();
     this.setWorld(w);
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
     this.loop.speed = 1;
@@ -362,12 +368,24 @@ export class App implements PanelNav {
   }
 
   /** slot: the valley ledger to play in (free valley only; default the first ledger). */
-  newGame(id: MissionKey, slot: string | null = null): void {
+  /** letter: show the castellan's opening letter (not for debug ?play= starts, not on "Again"). */
+  newGame(id: MissionKey, slot: string | null = null, letter = true): void {
     this.missionId = id;
     this.slot = slotFor(id, slot);
     this.enterGame(createWorld(id));
     const forced = this.params.get('tut') === '1';
-    if (id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'))) this.startTutorial();
+    const tutorial = id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'));
+    const opening = letter && !this.debugStart ? buildOpeningLetter(id, () => {
+      // the game waits paused under the letter; the tutorial (mission I) starts once it is read
+      this.loop.speed = 1;
+      this.hud?.setSpeed(1);
+      if (tutorial) this.startTutorial();
+    }) : null;
+    if (opening) {
+      this.loop.speed = 0;
+      this.hud?.setSpeed(0);
+      this.layers.overlay.append(opening);
+    } else if (tutorial) this.startTutorial();
   }
 
   // ------------------------------------------------------------------ tutorial (mission I)
@@ -456,6 +474,7 @@ export class App implements PanelNav {
   private enterGame(w: World): void {
     this.stopTutorial();
     this.mode = 'game';
+    this.deadEndShown = false;
     this.sheets.closeAll();
     this.layers.menu.innerHTML = '';
     this.layers.overlay.querySelector('.scrim')?.remove();
@@ -592,6 +611,27 @@ export class App implements PanelNav {
     this.prevAudio = captureAudioState(this.world.state);
     if (this.mode === 'game' && this.world.state.mission.result === 'running') music.setMood(isRaining(this.world.state) ? 'rain' : 'play');
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
+    if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();
+  }
+
+  /** D-48: a contract that can no longer be won says why at once (read-only check, every 5 s of game time). */
+  private checkDeadEnd(): void {
+    const d = deadEnd(this.world);
+    if (!d) return;
+    this.deadEndShown = true;
+    const speed = this.loop.speed;
+    this.loop.speed = 0;
+    this.hud?.setSpeed(0);
+    const letter = buildDeadEndLetter(d, {
+      again: () => this.newGame(this.missionId, this.slot, false),
+      menu: () => void this.showMenu(),
+      watch: () => {
+        letter.remove();
+        this.loop.speed = speed || 1;
+        this.hud?.setSpeed(this.loop.speed);
+      },
+    });
+    this.layers.overlay.append(letter);
   }
 
   private async autosave(): Promise<void> {
@@ -610,7 +650,7 @@ export class App implements PanelNav {
     this.setTool('none');
     void deleteSave(this.slot).catch(() => undefined);
     const letter = buildEndLetter(this.world, stars(this.world), {
-      again: () => this.newGame(this.missionId, this.slot),
+      again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
     });
     this.layers.overlay.append(letter);
@@ -1004,8 +1044,7 @@ export class App implements PanelNav {
     this.hud = null; // no toasts for the scripted plan or while fast-forwarding
     if (p.get('bot') === '1') {
       const w = this.world;
-      const plan: Command[] = [bridgeA(w)];
-      for (let i = 0; i < 4; i++) plan.push({ t: 'buyWagon', stable: stableId(w) });
+      const plan: Command[] = botPlan(w);
       for (const c of plan) this.loop.enqueue(c);
       this.loop.flushCommands();
     }
