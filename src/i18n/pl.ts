@@ -225,7 +225,7 @@ export const pl = {
   'fix.short': 'Brakuje {n} srebra',
   'contract.causes': 'Gdzie stracono czas',
   'contract.noStalls': 'Żaden szlak nie stanął na dłużej.',
-  'contract.deliveredItem': '{count} {good}',
+  'contract.deliveredItem': '{good} {count}',
   'cause.NO_ROAD': 'brak drogi do bramy',
   'cause.NO_INPUT.NONE_AVAILABLE': 'brak zapasów do przywiezienia',
   'cause.NO_INPUT.UNREACHABLE': 'brak dojazdu do zapasów',
@@ -374,7 +374,7 @@ export const pl = {
   'menu.m11': 'XI. Słód na zimę',
   'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
   'menu.m12': 'XII. Wielkie warzenie',
-  'menu.m12Sub': 'Zapas piwa na kolejny list',
+  'menu.m12Sub': 'Zapas piwa na kolejną dostawę',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
@@ -422,15 +422,15 @@ export const pl = {
   // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
   'hud.worst': 'Najgorszy zastój',
   'hud.worstShow': 'Pokaż: {name}',
-  'hud.stallsNext': 'Zastoje: {n} — pokaż kolejny',
+  'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
   'contract.toSnow': '{time} do śniegu',
   'tool.wagonShort': 'brak {n}',
   // session 6 (D-46…): see PENDING_KEYS
   'letter.start': 'Do dzieła',
   'why.thin': 'Wóz {wagon} wiezie tylko {qty} z {full} — {source} nie nadąża z dostawą',
   'deadEnd.title': 'Szlak nie do uratowania',
-  'deadEnd.text': 'Zamek jest odcięty od drogi wozów. Najtańsze połączenie kosztuje {cost} srebra, a masz {coins} — nawet sprzedaż zbędnych wozów (+{raise}) nie wystarczy.',
-  'deadEnd.none': 'Zamek jest odcięty od drogi wozów i nie da się już do niego zbudować drogi.',
+  'deadEnd.text': 'Zamek nie ma drogi do stajni. Najtańsze połączenie kosztuje {cost} srebra, a masz {coins} — nawet sprzedaż zbędnych wozów (+{raise}) nie wystarczy.',
+  'deadEnd.none': 'Zamek nie ma drogi do stajni i nie da się już jej zbudować.',
   'deadEnd.watch': 'Patrz dalej',
 } as const;
 
