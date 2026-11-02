@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MARCHIA HUD v2</title>
+<script src="icons.js"></script>
+<style>
+/* Fonts: bundled locally from @fontsource (OFL). latin + latin-ext declared for Polish. */
+@font-face{font-family:"Ruslan Display";font-weight:400;font-display:block;src:url(../../../../node_modules/@fontsource/ruslan-display/files/ruslan-display-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Ruslan Display";font-weight:400;font-display:block;src:url(../../../../node_modules/@fontsource/ruslan-display/files/ruslan-display-latin-ext-400-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Grenze Gotisch";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Grenze Gotisch";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/grenze-gotisch/files/grenze-gotisch-latin-ext-700-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";font-weight:700;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-700-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";font-weight:900;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-900-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";font-weight:900;font-display:block;src:url(../../../../node_modules/@fontsource/alegreya-sans/files/alegreya-sans-latin-ext-900-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{
+  /* earthy, saturated-but-not-candy pigments */
+  --ink:#271c14;        /* outline: lamp-black with umber */
+  --linen:#f4e9cf;      /* light panel */
+  --linen-2:#e2cfa6;    /* panel shade / inactive well */
+  --madder:#b5382a;     /* alarm (madder root red) */
+  --madder-hi:#d5553f;
+  --weld:#e3a72f;       /* weld yellow: gold, progress, active */
+  --weld-lo:#a8741b;
+  --woad:#2e5d7c;       /* woad blue: info, wagons, snow */
+  --woad-hi:#4c86a8;
+  --moss:#6a9a2c;       /* go / build (verdigris-moss) */
+  --moss-lo:#3e6417;
+  --silver:#cfd2cc;
+  --snow:#e7eef0;
+  --umber:#6d4a2c;
+  /* safe areas (simulated device insets; real build uses env()) */
+  --sat:28px; --sab:16px; --sal:0px; --sar:0px;
+}
+@media (orientation:landscape){ :root{ --sat:8px; --sab:10px; --sal:36px; --sar:16px; } }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#3d4a2c}
+body{font-family:"Alegreya Sans",serif;font-weight:700;color:var(--ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+#scene{position:absolute;inset:0;background-size:cover;background-position:center}
+#hud{position:absolute;inset:0}
+.abs{position:absolute!important}
+svg.i{display:block}
+.disp{font-family:"Ruslan Display",serif;font-weight:400;letter-spacing:.02em}
+
+/* ---------- shared chunky primitives ---------- */
+.panel{background:var(--linen);border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.65), inset 0 -3px 0 rgba(120,80,30,.14)}
+.chip{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px 0 4px;background:var(--linen);border:3px solid var(--ink);border-radius:20px;box-shadow:0 3px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.6);font-size:19px;line-height:1}
+.chip .ib{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--ink);flex:none}
+.rbtn{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--linen);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -4px 0 rgba(120,80,30,.18);position:relative;flex:none}
+.rbtn.on{background:var(--weld);box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,240,200,.7), inset 0 -4px 0 var(--weld-lo)}
+.rbtn .lab{position:absolute;top:100%;margin-top:6px;left:50%;transform:translateX(-50%);font-size:13px;white-space:nowrap;color:var(--linen);text-shadow:0 0 3px var(--ink),0 1px 0 var(--ink),0 0 1px var(--ink),1px 1px 0 var(--ink),-1px 1px 0 var(--ink)}
+.badge{position:absolute;min-width:24px;height:24px;padding:0 6px;border-radius:12px;border:2.5px solid var(--ink);display:flex;align-items:center;justify-content:center;gap:2px;font-size:14px;line-height:1;font-weight:900}
+.badge.red{background:var(--madder);color:#fff}
+.badge.gold{background:var(--weld);color:var(--ink)}
+.coin{width:22px;height:22px;border-radius:50%;background:var(--silver);border:2px solid var(--ink);display:grid;place-items:center}
+.outline-text{color:var(--linen);text-shadow:0 2px 0 var(--ink),2px 0 0 var(--ink),-2px 0 0 var(--ink),0 -2px 0 var(--ink),1.5px 1.5px 0 var(--ink),-1.5px 1.5px 0 var(--ink),1.5px -1.5px 0 var(--ink),-1.5px -1.5px 0 var(--ink)}
+
+/* meter */
+.meter{position:relative;height:16px;border-radius:8px;background:#5b4630;border:2.5px solid var(--ink);overflow:hidden;box-shadow:inset 0 3px 0 rgba(0,0,0,.25)}
+.meter>i{position:absolute;left:0;top:0;bottom:0;border-radius:0 6px 6px 0;box-shadow:inset 0 3px 0 rgba(255,255,255,.35)}
+
+/* map markers */
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.pin .head{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.35)}
+.pin .tail{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:12px solid var(--ink);margin-top:-1px}
+.pin.red .head{background:var(--madder);color:#fff}
+.pin.gold .head{background:var(--weld);color:var(--ink);width:36px;height:36px}
+.eta{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:4px;height:28px;padding:0 9px 0 3px;border-radius:14px;background:var(--woad);border:2.5px solid var(--ink);color:#fff;font-size:16px;box-shadow:0 3px 0 var(--ink)}
+.eta .ib{width:22px;height:22px;border-radius:50%;background:var(--snow);color:var(--woad);display:grid;place-items:center;border:2px solid var(--ink)}
+.eta:after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--ink)}
+
+/* ---------- Concept A: Wstęga (ribbon + build fan) ---------- */
+.ribbon{position:absolute;height:50px;display:flex;align-items:center;justify-content:center}
+.ribbon .band{position:relative;z-index:2;height:50px;padding:0 18px;background:var(--madder);border:3px solid var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--linen);box-shadow:0 4px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.25), inset 0 -5px 0 rgba(0,0,0,.18);font-size:15px;text-align:center;line-height:1.15}
+.ribbon .tailL,.ribbon .tailR{position:absolute;z-index:1;top:12px;width:40px;height:42px;background:#8a2a1f;border:3px solid var(--ink)}
+.ribbon .tailL{left:-22px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,30% 50%);border-right:none}
+.ribbon .tailR{right:-22px;clip-path:polygon(0 0,100% 0,70% 50%,100% 100%,0 100%);border-left:none}
+.ribbon .notch{position:absolute;top:12px;width:40px;height:42px}
+.seal{width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;background:#cbb68f;color:#8a7350;box-shadow:0 3px 0 var(--ink)}
+.seal.got{background:var(--madder);color:#f6d9b8}
+.fanbtn{position:absolute;transform:translate(-50%,-50%)}
+.cta{border-radius:50%;display:grid;place-items:center;border:3.5px solid var(--ink);position:absolute;color:#fff}
+.cta.green{background:radial-gradient(circle at 50% 35%, #86b53e 0, var(--moss) 60%);box-shadow:0 5px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.35), inset 0 -6px 0 var(--moss-lo)}
+.cta .ctal{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:var(--linen);color:var(--ink);border:3px solid var(--ink);border-radius:12px;padding:3px 12px 2px;font-size:15px;white-space:nowrap;box-shadow:0 3px 0 var(--ink)}
+.bubble{position:absolute;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:var(--linen);border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.7)}
+.bubble .why{font-size:17px;line-height:1.1}
+.bubble .why small{display:block;font-size:13px;color:var(--madder);letter-spacing:.04em;text-transform:uppercase}
+.gobtn{height:48px;min-width:48px;padding:0 14px;border-radius:24px;border:3px solid var(--ink);display:flex;align-items:center;gap:6px;font-size:17px;color:#fff;background:var(--madder);box-shadow:0 3px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.3), inset 0 -4px 0 rgba(0,0,0,.18)}
+.speed{display:flex;gap:6px;padding:5px;background:var(--linen-2);border:3px solid var(--ink);border-radius:32px;box-shadow:0 4px 0 var(--ink)}
+.speed .rbtn{width:48px;height:48px;box-shadow:0 3px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.7);font-size:17px}
+.speed .rbtn.on{box-shadow:0 3px 0 var(--ink), inset 0 2px 0 rgba(255,240,200,.6), inset 0 -4px 0 var(--weld-lo)}
+
+/* ---------- Concept B: Karty (top board + card tray) ---------- */
+.board{position:absolute;left:0;right:0;top:0;background:var(--linen);border-bottom:3px solid var(--ink);box-shadow:0 4px 0 var(--ink), inset 0 -4px 0 rgba(120,80,30,.12)}
+.tray{display:flex;gap:8px}
+.card{width:64px;height:78px;border-radius:14px;background:var(--linen);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -5px 0 rgba(120,80,30,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;font-size:13px}
+.card .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--linen-2);border:2px solid var(--ink)}
+.card.on{background:var(--weld)}
+.card.on .ic{background:#f6d27c}
+.card .cost{position:absolute;top:-12px;right:-9px}
+.bigalarm{position:absolute;width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 50% 35%, var(--madder-hi) 0, var(--madder) 62%);border:3.5px solid var(--ink);box-shadow:0 5px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.3), inset 0 -6px 0 rgba(0,0,0,.2);display:grid;place-items:center;color:#fff}
+.seg{display:flex;border:3px solid var(--ink);border-radius:26px;overflow:hidden;box-shadow:0 3px 0 var(--ink);background:var(--linen-2)}
+.seg>div{width:48px;height:46px;display:grid;place-items:center;font-size:17px;border-right:2.5px solid var(--ink)}
+.seg>div:last-child{border-right:none}
+.seg>div.on{background:var(--weld);box-shadow:inset 0 -4px 0 var(--weld-lo), inset 0 2px 0 rgba(255,240,200,.6)}
+.plaque{position:absolute;display:flex;align-items:stretch}
+.snowdial{width:86px;height:86px;border-radius:50%;background:var(--woad);border:3.5px solid var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.25);position:relative;z-index:2;flex:none}
+.goodrow{display:flex;align-items:center;gap:8px}
+.goodrow .gi{width:34px;height:34px;border-radius:50%;background:var(--linen);border:2.5px solid var(--ink);display:grid;place-items:center;flex:none}
+.goodrow .num{font-size:18px;min-width:52px;text-align:right}
+.starbar{position:relative}
+.starbar .mk{position:absolute;top:-7px;width:26px;height:26px;border-radius:50%;border:2.5px solid var(--ink);background:#cbb68f;color:#8a7350;display:grid;place-items:center;transform:translateX(-50%)}
+
+/* ---------- Concept C: Kolumna (side column + toast + buy CTA) ---------- */
+.column{position:absolute;display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 6px;background:var(--linen-2);border:3px solid var(--ink);border-radius:34px;box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.5)}
+.column .rbtn{width:50px;height:50px}
+.column .sep{width:30px;height:3px;border-radius:2px;background:var(--ink);opacity:.5}
+.tag{position:absolute;display:flex;flex-direction:column;align-items:center}
+.medal{position:relative;width:64px;height:64px;border-radius:50%;display:grid;place-items:center}
+.medal .core{width:44px;height:44px;border-radius:50%;background:var(--linen);border:3px solid var(--ink);display:grid;place-items:center}
+.medal .ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--ink)}
+.medal .val{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:var(--linen);border:2.5px solid var(--ink);border-radius:10px;padding:1px 7px 0;font-size:15px;white-space:nowrap;box-shadow:0 2px 0 var(--ink)}
+.toast{position:absolute;display:flex;align-items:center;gap:10px;padding:8px;background:var(--linen);border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.7);overflow:hidden}
+.toast .stripe{position:absolute;left:0;top:0;bottom:0;width:10px;background:var(--madder);border-right:3px solid var(--ink)}
+.toast .bi{width:52px;height:52px;border-radius:50%;background:var(--madder);border:3px solid var(--ink);display:grid;place-items:center;color:#fff;flex:none;margin-left:10px;position:relative}
+.rbtn .flag{position:absolute;top:100%;margin-top:-6px;left:50%;transform:translateX(-50%);font-size:13px;white-space:nowrap;background:var(--linen);border:2.5px solid var(--ink);border-radius:9px;padding:1px 7px 0;box-shadow:0 2px 0 var(--ink)}
+.medal .core{width:50px;height:50px;position:relative;z-index:1}
+.speedcol{display:flex;flex-direction:column;gap:8px;align-items:center}
+.speedcol .rbtn{width:48px;height:48px;font-size:17px}
+.board{background:var(--woad);box-shadow:0 4px 0 var(--ink), inset 0 -5px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.18)}
+.card.hint{box-shadow:0 4px 0 var(--ink), 0 0 0 7px var(--weld), 0 4px 0 7px var(--weld-lo), inset 0 2px 0 rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="hud"></div>
+<script>
+const Q = new URLSearchParams(location.search);
+const C = Q.get('c') || 'A';
+const P = innerHeight > innerWidth;
+const W = innerWidth, H = innerHeight;
+document.getElementById('scene').style.backgroundImage = `url(../${P ? 'bg-412x915.jpg' : 'bg-915x412.jpg'})`;
+const hud = document.getElementById('hud');
+const ic = (n, s = 24, col = 'currentColor') => `<svg class="i" viewBox="0 0 24 24" width="${s}" height="${s}" style="color:${col}">${ICONS[n]}</svg>`;
+const add = (html) => { hud.insertAdjacentHTML('beforeend', html); return hud.lastElementChild; };
+const css = (o) => Object.entries(o).map(([k, v]) => `${k}:${typeof v === 'number' ? v + 'px' : v}`).join(';');
+const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat'));
+const sab = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab'));
+const sal = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sal'));
+const sar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sar'));
+
+/* Building anchor points measured on the background frames (CSS px). */
+const M = P
+  ? { mill: [210, 452], farm: [62, 752], cart: [137, 366], wagon: [256, 540] }
+  : { mill: [458, 206], farm: [662, 262], wagon: [490, 255] };
+
+function markers(second = 'farm') {
+  add(`<div class="pin red" style="${css({ left: M.mill[0], top: M.mill[1] })}"><div class="head">${ic('no_wagon', 28)}</div><div class="tail"></div></div>`);
+  add(`<div class="pin gold" style="${css({ left: M[second][0], top: M[second][1] })}"><div class="head">${ic(second === 'cart' ? 'no_route' : 'output_full', 22)}</div><div class="tail"></div></div>`);
+  add(`<div class="eta" style="${css({ left: M.wagon[0], top: M.wagon[1] })}"><span class="ib">${ic('wagon', 16)}</span>0:42</div>`);
+}
+const chipCoin = () => `<div class="chip"><span class="ib" style="background:var(--silver)">${ic('coin', 20)}</span>84</div>`;
+const chipTime = () => `<div class="chip"><span class="ib" style="background:var(--weld)">${ic('sun', 20)}</span>09:18</div>`;
+const seals = (s = 30, i = 18) => [0, 1, 2].map(() => `<div class="seal" style="width:${s}px;height:${s}px">${ic('seal', i)}</div>`).join('');
+const tailDown = (right) => `<div class="abs" style="${right}bottom:-15px;width:24px;height:15px;background:var(--ink);clip-path:polygon(0 0,100% 0,50% 100%)"></div><div class="abs" style="${right.replace(/(\d+)px/, (m, n) => (+n + 4) + 'px')}bottom:-9px;width:16px;height:10px;background:var(--linen);clip-path:polygon(0 0,100% 0,50% 100%)"></div>`;
+const tailSide = (dir, top) => dir === 'L'
+  ? `<div class="abs" style="left:-15px;top:${top}px;width:15px;height:24px;background:var(--ink);clip-path:polygon(100% 0,0 50%,100% 100%)"></div><div class="abs" style="left:-9px;top:${top + 4}px;width:10px;height:16px;background:var(--linen);clip-path:polygon(100% 0,0 50%,100% 100%)"></div>`
+  : `<div class="abs" style="right:-15px;top:${top}px;width:15px;height:24px;background:var(--ink);clip-path:polygon(0 0,100% 50%,0 100%)"></div><div class="abs" style="right:-9px;top:${top + 4}px;width:10px;height:16px;background:var(--linen);clip-path:polygon(0 0,100% 50%,0 100%)"></div>`;
+const goods = [['planks', 18, 30], ['bread', 11, 20]];
+
+/* =============== A — WSTĘGA: ribbon contract, stall speaks from the map, build fan =============== */
+function conceptA() {
+  markers();
+  const top = sat + 8;
+  add(`<div class="rbtn abs" style="${css({ left: 12 + sal, top })}">${ic('menu', 26)}</div>`);
+  add(`<div class="abs" style="${css({ right: 12 + sar, top: top + 6, display: 'flex', gap: '8px' })}">${chipTime()}${chipCoin()}</div>`);
+  // ribbon + contract card
+  const rw = P ? 300 : 300, rx = P ? (W - rw) / 2 : 90 + sal, ry = P ? top + 66 : top + 2;
+  add(`<div class="panel abs" style="${css({ left: rx + 10, top: ry + 30, width: rw - 20, padding: '30px 12px 12px' })}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;gap:4px">${seals(30, 18)}</div>
+        <div class="chip" style="background:var(--woad);color:#fff;height:38px"><span class="ib" style="background:var(--snow);color:var(--woad)">${ic('snow', 20)}</span>4:52<span style="font-size:13px;opacity:.85;margin-left:2px;white-space:nowrap">do śniegu</span></div>
+      </div>
+      ${goods.map(([g, a, b]) => `
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <div class="gi" style="width:34px;height:34px;border-radius:50%;background:var(--linen);border:2.5px solid var(--ink);display:grid;place-items:center">${ic(g, 22)}</div>
+        <div class="meter" style="flex:1"><i style="width:${a / b * 100}%;background:var(--weld)"></i></div>
+        <div style="font-size:18px;width:48px;text-align:right">${a}<span style="opacity:.5">/${b}</span></div>
+      </div>`).join('')}
+    </div>`);
+  add(`<div class="ribbon" style="${css({ left: rx - 10, top: ry, width: rw + 20 })}"><div class="tailL"></div><div class="tailR"></div><div class="band disp" style="width:${rw + 20}px">Do zamku przed<br>pierwszym śniegiem</div></div>`);
+  // stall bubble speaking from the mill marker
+  const pinTop = M.mill[1] - 60;
+  if (P) {
+    add(`<div class="bubble" style="${css({ left: 26, top: pinTop - 86, width: 360 })}">
+      <div class="why" style="flex:1"><small>Zastój 1 z 2</small>Młyn: brak wolnego wozu</div>
+      <div class="gobtn" style="background:var(--moss)">${ic('buy_wagon', 24)}<span>30</span></div>${tailDown('left:172px;')}</div>`);
+  } else {
+    add(`<div class="bubble" style="${css({ left: M.mill[0] + 38, top: pinTop - 30, width: 300 })}">
+      <div class="why" style="flex:1"><small>Zastój 1 z 2</small>Młyn: brak wolnego wozu</div>
+      <div class="gobtn" style="background:var(--moss)">${ic('buy_wagon', 24)}<span>30</span></div>${tailSide('L', 36)}</div>`);
+  }
+  // stall jump button (cycles through stalls)
+  add(`<div class="rbtn abs" style="${css({ left: P ? 78 : 12 + sal, top: P ? top : top + 70, background: 'var(--madder)', color: '#fff' })}">${ic('waiting', 28)}<div class="badge gold" style="top:-8px;right:-10px">2</div></div>`);
+  // speed bottom-left
+  add(`<div class="speed abs" style="${css({ left: 12 + sal, bottom: sab + 14 })}">
+    <div class="rbtn">${ic('pause', 22)}</div><div class="rbtn">×1</div><div class="rbtn on">×2</div><div class="rbtn">×4</div></div>`);
+  // build CTA with open fan
+  const cs = 88, cx = W - sar - 18 - cs / 2, cy = H - sab - 30 - cs / 2;
+  const tools = [['road_dirt', 'Droga'], ['road_cobble', 'Bruk'], ['demolish', 'Rozbiórka'], ['overlay_load', 'Ruch']];
+  const R = P ? 132 : 114, a0 = P ? 196 : 200, a1 = 270;
+  tools.forEach(([n, l], k) => {
+    const a = (a0 + (a1 - a0) * k / (tools.length - 1)) * Math.PI / 180;
+    const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
+    add(`<div class="fanbtn" style="${css({ left: x, top: y })}"><div class="rbtn ${k === 0 ? 'on' : ''}">${ic(n, 28)}<span class="flag">${l}</span></div></div>`);
+  });
+  add(`<div class="cta green" style="${css({ left: cx - cs / 2, top: cy - cs / 2, width: cs, height: cs })}">${ic('build', 44)}<span class="ctal disp">Buduj</span></div>`);
+}
+
+/* =============== B — KARTY: heraldic top board, card tray, alarm seal =============== */
+function conceptB() {
+  markers(P ? 'cart' : 'farm');
+  const bh = sat + 62;
+  add(`<div class="board" style="${css({ height: bh, padding: `${sat + 6}px ${10 + sar}px 0 ${10 + sal}px`, display: 'flex', alignItems: 'center', gap: '8px' })}">
+     ${chipCoin()}${chipTime()}<div style="flex:1"></div>
+     <div class="seg"><div>${ic('pause', 22)}</div><div>×1</div><div class="on">×2</div><div>×4</div></div>
+     <div class="rbtn" style="width:48px;height:48px;margin-left:${P ? 0 : 6}px">${ic('menu', 24)}</div></div>`);
+  const pw = P ? W - 24 : 380, px = 12 + sal, py = bh + 14;
+  add(`<div class="plaque" style="${css({ left: px, top: py, width: pw })}">
+     <div style="display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:2">
+       <div class="snowdial">${ic('snow', 22)}<div class="disp" style="font-size:20px;line-height:1.1">4:52</div><div style="font-size:12px;line-height:1;opacity:.9">do śniegu</div></div>
+     </div>
+     <div class="panel" style="flex:1;margin-left:-22px;padding:9px 12px 12px 32px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div class="disp" style="font-size:13.5px;flex:1;line-height:1.25">Do zamku przed<br>pierwszym śniegiem</div><div style="display:flex;gap:3px">${seals(26, 15)}</div></div>
+        ${goods.map(([g, a, b], k) => `
+        <div class="goodrow" style="margin-top:${k ? 8 : 0}px">
+          <div class="gi">${ic(g, 22)}</div>
+          <div style="flex:1"><div class="meter"><i style="width:${a / b * 100}%;background:var(--weld)"></i></div></div>
+          <div class="num">${a}<span style="opacity:.5">/${b}</span></div>
+        </div>`).join('')}
+     </div>
+   </div>`);
+  // card tray
+  const cards = [['road_dirt', 'Droga'], ['road_cobble', 'Bruk'], ['demolish', 'Rozbiórka'], ['buy_wagon', 'Kup wóz', 30], ['overlay_load', 'Ruch']];
+  const cw = P ? Math.floor((W - 24 - 4 * 8) / 5) : 68;
+  add(`<div class="tray abs" style="${css({ left: 12 + sal, bottom: sab + 14 })}">${cards.map(([n, l, cost]) => `
+     <div class="card${cost ? ' hint' : ''}" style="width:${cw}px"><div class="ic">${ic(n, 28)}</div>${l}${cost ? `<div class="badge gold cost"><span class="coin" style="width:16px;height:16px;border-width:1.5px">${ic('coin', 12)}</span>${cost}</div>` : ''}</div>`).join('')}</div>`);
+  // alarm seal + speech bubble
+  const as = 76;
+  const ax = W - sar - 14 - as, ay = P ? H - sab - 14 - 82 - 20 - as : H - sab - 14 - as - 4;
+  const bw = P ? W - 24 - as - 18 : 340;
+  add(`<div class="bubble" style="${css({ left: ax - bw - 16, top: ay + 6, width: bw })}">
+     <div class="why" style="flex:1"><small>Najgorszy zastój</small>Młyn: brak wolnego wozu</div>
+     <div class="gobtn" style="padding:0 12px">${ic('follow', 22)}</div>${tailSide('R', 20)}</div>`);
+  add(`<div class="bigalarm" style="${css({ left: ax, top: ay })}">${ic('no_wagon', 40)}<div class="badge gold" style="top:-8px;right:-6px;font-size:15px">2</div></div>`);
+}
+
+/* =============== C — KOLUMNA: tool column, medallion tag, stall toast + fix-it CTA =============== */
+function conceptC() {
+  markers();
+  const top = sat + 8;
+  const speedBtns = `<div class="rbtn">${ic('pause', 22)}</div><div class="rbtn">×1</div><div class="rbtn on">×2</div><div class="rbtn">×4</div>`;
+  add(`<div class="column" style="${css({ left: 10 + sal, top })}">
+     <div class="rbtn">${ic('menu', 24)}</div><div class="sep"></div>
+     ${[['road_dirt'], ['road_cobble'], ['demolish'], ['overlay_load']].map(([n], k) => `<div class="rbtn ${k === 3 ? 'on' : ''}">${ic(n, 28)}</div>`).join('')}
+     ${P ? `<div class="sep"></div><div class="speedcol">${speedBtns}</div>` : ''}
+   </div>`);
+  // contract tag hanging from the top edge
+  const tw = 290, tx = W - sar - tw - 12;
+  add(`<div class="panel abs tagp" style="${css({ left: tx, top: -16, width: tw, padding: `${sat + 22}px 10px 16px`, borderRadius: '0 0 24px 24px' })}">
+     <div class="disp" style="font-size:14px;text-align:center;line-height:1.25;margin-bottom:8px">Do zamku przed<br>pierwszym śniegiem</div>
+     <div style="display:flex;align-items:center;justify-content:space-around">
+       ${medal('planks', 18, 30)}
+       <div class="medal" style="width:78px;height:78px">
+          <div class="ring" style="background:conic-gradient(var(--woad-hi) 0 62%, #3b2f24 62% 100%)"></div>
+          <div class="core" style="width:62px;height:62px;background:var(--woad);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative">${ic('snow', 18)}<span class="disp" style="font-size:16px;line-height:1">4:52</span></div><div class="val" style="z-index:2;bottom:-14px;background:var(--snow)">do śniegu</div>
+       </div>
+       ${medal('bread', 11, 20)}
+     </div>
+     <div style="display:flex;justify-content:center;gap:6px;margin-top:24px">${seals(28, 16)}</div>
+   </div>`);
+  if (P) {
+    add(`<div class="abs" style="${css({ right: 12 + sar, top: 252, display: 'flex', gap: '8px' })}">${chipTime()}${chipCoin()}</div>`);
+  } else {
+    add(`<div class="abs" style="${css({ left: 86 + sal, top: top + 4, display: 'flex', gap: '8px' })}">${chipTime()}${chipCoin()}</div>`);
+    add(`<div class="speed abs" style="${css({ left: 86 + sal, top: top + 60 })}">${speedBtns}</div>`);
+  }
+  // primary CTA: buy wagon — the fix for the worst stall
+  const cs = 92;
+  const toastH = 74, toastB = sab + 18;
+  const cx = W - sar - 18 - cs, cy = P ? H - toastB - toastH - 34 - cs : H - sab - 30 - cs;
+  add(`<div class="cta green" style="${css({ left: cx, top: cy, width: cs, height: cs })}">${ic('buy_wagon', 48)}<span class="ctal disp">Kup wóz</span><div class="badge gold" style="top:-6px;right:-8px;height:28px;font-size:16px"><span class="coin" style="width:18px;height:18px">${ic('coin', 13)}</span>30</div></div>`);
+  const tw2 = P ? W - 24 - sal - sar : 420;
+  const tl = P ? 12 + sal : cx - tw2 - 24;
+  add(`<div class="toast" style="${css({ left: tl, bottom: toastB, width: tw2, height: toastH })}">
+     <div class="stripe"></div>
+     <div class="bi">${ic('no_wagon', 30)}<div class="badge gold" style="top:-6px;right:-10px">2</div></div>
+     <div style="flex:1;line-height:1.1"><div style="font-size:13px;color:var(--madder);text-transform:uppercase;letter-spacing:.05em">Zastój · 1 z 2</div><div style="font-size:18px">Młyn: brak wolnego wozu</div></div>
+     <div class="gobtn" style="padding:0 12px">${ic('follow', 22)}${P ? '' : '<span>Pokaż</span>'}</div>
+   </div>`);
+}
+function medal(g, a, b) {
+  const p = Math.round(a / b * 100);
+  return `<div class="medal"><div class="ring" style="background:conic-gradient(var(--weld) 0 ${p}%, #3b2f24 ${p}% 100%)"></div><div class="core">${ic(g, 24)}</div><div class="val">${a}<span style="opacity:.5">/${b}</span></div></div>`;
+}
+
+({ A: conceptA, B: conceptB, C: conceptC })[C]();
+document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>
