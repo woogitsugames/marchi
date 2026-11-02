@@ -163,7 +163,7 @@ async function seekEvidence(page, id) {
         default: return false;
       }
     };
-    const limit = ({1: 2500, 2: 1800, 3: 900, 4: 0, 5: 0, 6: 0})[scene];
+    const limit = ({1: 2500, 2: 1800, 3: 2700, 4: 0, 5: 0, 6: 0})[scene]; // M2 bot observes 45s
     let steps = 0;
     while (!valid() && steps < limit && s.mission.result === 'running') {
       app.loop.tickOnce();
@@ -277,7 +277,7 @@ async function compose(browser, rawPng, caption, orientation, fonts, target) {
 
 async function compress(file, colors = 160) {
   const tmp = file + '.palette.png';
-  await sharp(file).png({ palette: true, colors, effort: 9, compressionLevel: 9, dither: 0.1 }).toFile(tmp);
+  await sharp(file).png({ palette: true, colors, effort: 2, compressionLevel: 6, dither: 0.1 }).toFile(tmp);
   renameSync(tmp, file);
   return statSync(file).size;
 }
