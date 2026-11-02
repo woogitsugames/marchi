@@ -36,7 +36,7 @@ export function marketSheet(world: () => World): SheetContent {
       // prices: one row per good — icon, name, price now (and % of base), saturation bar
       const rows = sb.prices.map((p) => {
         const sat = Math.min(100, (p.saturation / MARKET.cap) * 100);
-        // the % column is the price now against base: saturation and the autumn fair (cents carry both)
+        // the % column is the price now against base: saturation and the valley fair (D-54) (cents carry both)
         const pct = Math.floor((p.pct * p.fairPct) / 100);
         const low = pct <= 75;
         return `<li class="ms-good${low ? ' is-low' : ''}">${iconSvg(p.good, 28, goodName(p.good))}
@@ -46,7 +46,7 @@ export function marketSheet(world: () => World): SheetContent {
       }).join('');
       const headRow = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
       const fair = sb.prices.find((p) => p.fairPct > 100);
-      const fairHint = fair ? `<div class="s-hint season-hint">${iconSvg(fair.good, 18, goodName(fair.good))}<span>${esc(t('season.effect.autumn-fair'))}</span></div>` : '';
+      const fairHint = fair ? `<div class="s-hint season-hint">${iconSvg(fair.good, 18, goodName(fair.good))}<span>${esc(t('events.fair.active', { good: t(`goodAcc.${fair.good}` as MessageKey) }))}</span></div>` : '';
       const prices = `<div class="section-h">${esc(t('market.prices'))}</div><ul class="ms-prices">${headRow}${rows}</ul>
         ${fairHint}<div class="s-hint">${esc(t('market.satHint'))}</div>`;
 

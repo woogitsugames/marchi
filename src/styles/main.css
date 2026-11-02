@@ -1236,13 +1236,13 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   --kparch-dim: #d7c29a;
 }
 
-.k-panel, .wb-panel, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
+.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
 .kbar > i, button.seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
   border-style: solid;
   border-width: 0;
   border-image-repeat: stretch;
 }
-.k-panel, .wb-panel, .toast, .notice, .undo-btn {
+.k-panel, .wb-panel, .ev-card, .toast, .notice, .undo-btn {
   border-image-source: url("/assets/ui/kit/panel@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
   border-image-slice: 15% 10% fill;
@@ -1354,7 +1354,7 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
   inset-inline-end: calc(var(--safe-e) + 10px);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: "menu chips" "speed speed" "contract contract";
+  grid-template-areas: "menu chips" "speed speed" "contract contract" "events events";
   align-items: start;
   gap: 8px;
 }
@@ -1513,6 +1513,68 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .pl-income { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; color: #6b4c16; min-height: 28px; }
 .pl-season { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .pl-season.is-winter { color: var(--slate); }
+/* valley events card (D-54): painted panel under the plaque; the header folds it (one tap), every action 48 px */
+.ev-card {
+  grid-area: events; justify-self: start; width: min(330px, 100%);
+  margin-top: -2px; padding-block: 4px 6px; padding-inline: 10px;
+  color: var(--ink);
+  filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35));
+  pointer-events: auto;
+}
+.ev-card.is-folded { width: auto; padding-block: 2px; }
+.ev-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px;
+  font-family: var(--font-head); font-weight: 600; font-size: 18px; color: var(--wine); text-align: start;
+}
+.ev-head .ev-ic { flex: none; display: grid; place-items: center; color: var(--wine); }
+.ev-head .ev-title { flex: 1 1 auto; min-width: 0; }
+.ev-n { flex: none; min-width: 26px; height: 26px; display: grid; place-items: center; padding-inline: 6px; border-radius: 13px;
+  background: var(--wine); color: #f3e5c4; font-family: var(--font-body, inherit); font-size: 14px; font-weight: 700; }
+.ev-chev { flex: none; width: 10px; height: 10px; margin-inline: 4px 2px; border-inline-end: 2px solid var(--iron); border-block-end: 2px solid var(--iron);
+  transform: rotate(-135deg) translate(-2px, -2px); transition: transform var(--t-fast) var(--ease); }
+.ev-card.is-folded .ev-chev { transform: rotate(45deg); }
+/* RTL: the corner is drawn on the other side, so the same up / down chevron needs the mirrored turn */
+:root[dir='rtl'] .ev-chev { transform: rotate(135deg) translate(2px, -2px); }
+:root[dir='rtl'] .ev-card.is-folded .ev-chev { transform: rotate(-45deg); }
+.ev-list { list-style: none; margin: 0; padding: 0; max-height: 34vh; overflow-y: auto; overscroll-behavior: contain; }
+.ev-item { padding-block: 5px; border-top: 1px solid rgb(74 72 67 / .28); }
+.ev-oh { display: flex; align-items: center; gap: 6px; }
+.ev-seal { flex: none; display: grid; place-items: center; color: var(--wine); }
+.ev-t { flex: 1 1 auto; min-width: 0; font-family: var(--font-head); font-weight: 600; font-size: 17px; line-height: 1.15; }
+.ev-fair { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.ev-txt { flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 1.25; }
+.ev-merchant > .ev-txt { margin-top: 2px; }
+.ev-fair.is-on .ev-txt { font-weight: 700; color: #6b4c16; }
+.ev-gi { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
+  background: radial-gradient(circle, #efe0bf 0 60%, var(--brass) 62% 70%, transparent 72%); }
+.ev-rw { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #6b4c16; }
+.ev-rw svg { flex: none; }
+.ev-tag { margin-inline-start: auto; padding-inline: 6px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--meadow);
+  border: 1px solid currentColor; }
+.ev-ob { display: flex; align-items: center; gap: 8px; }
+.ev-goods { flex: 1 1 auto; min-width: 0; list-style: none; margin: 3px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.ev-goods li { display: grid; grid-template-columns: 28px auto; grid-template-areas: "ic v" "ic bar"; column-gap: 6px; align-items: center; min-width: 78px; }
+.ev-goods .ev-gi { grid-area: ic; }
+.ev-goods .ev-v { grid-area: v; font-size: 16px; font-weight: 700; line-height: 1.1; }
+.ev-goods .ev-v small { font-weight: 400; font-size: 13px; color: var(--ink-soft); }
+.ev-goods .ev-bar { grid-area: bar; height: 6px; }
+.ev-goods li.is-met .ev-v { color: var(--meadow); }
+.ev-acts { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.ev-btn.btn { min-height: 48px; padding-inline: 12px; font-size: 15px; gap: 6px; }
+.ev-acts .ev-btn.primary { flex: 1 1 auto; }
+.ev-later { flex: none; }
+.ev-note { flex: 1 1 auto; font-size: 13px; line-height: 1.2; color: var(--ink-soft); min-width: 0; }
+.ev-order.is-on { margin-inline: -6px; padding-inline: 4px 6px; border-inline-start: 3px solid var(--brass); background: rgb(160 122 58 / .12); }
+/* landscape: the card leaves the contract column (the rail sits under it) and hangs under the speed bar, on the
+   map's free side; the D-55 side sheet docks over it while open */
+body.is-landscape .ev-card { position: fixed; top: calc(var(--bar-b, 56px) + 8px); inset-inline-end: calc(var(--safe-e) + 10px); margin: 0; }
+body.is-landscape .ev-card:not(.is-folded) { width: 300px; }
+body.is-landscape .ev-list { max-height: calc(100dvh - var(--bar-b, 56px) - 156px - var(--safe-b)); min-height: 96px; }
+body.is-landscape .ev-head { font-size: 16px; }
+body.is-landscape .ev-t { font-size: 15px; }
+body.is-split .ev-list { max-height: 52vh; }
+body.is-mini .ev-card { display: none; }
+
 /* folded: the wax seal fills with progress, the time in a slate plaque under it */
 .waybill-wrap.is-collapsed { width: auto; }
 .waybill-wrap.is-collapsed .waybill { display: none; }
@@ -1596,7 +1658,7 @@ body.is-landscape .has-build .tool .tl, body.is-split .has-build .tool .tl { fon
    tools under one thumb, the stall card and the alarm seal under the hand's thumb (D-37: hand only) */
 body.is-landscape .hud-top, body.is-split .hud-top {
   grid-template-columns: auto auto minmax(0, 1fr) auto auto;
-  grid-template-areas: "menu contract . chips speed";
+  grid-template-areas: "menu contract . chips speed" ". events . . .";
 }
 body.is-landscape .waybill-wrap:not(.is-collapsed), body.is-split .waybill-wrap:not(.is-collapsed) { width: 330px; }
 body.is-landscape .chips, body.is-split .chips { flex-wrap: nowrap; }
