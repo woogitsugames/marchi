@@ -22,6 +22,8 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
 - [ ] P2 — Kamera po otwarciu panelu chowa obiekt pod arkuszem: `camera.focusCell(cell, screenOffset)`.
 - [ ] P2 — Przeprowadzić 5–8 sesji playtestu na Androidzie wg `docs/playtest/PROTOCOL.md`, zebrać CSV, policzyć mediany i odsetek poprawnych diagnoz <30 s oraz zastąpić hipotezy H1–H5 rzeczywistymi TOP 5 problemów z licznikami (źródło: owner, docs/playtest/PROTOCOL.md).
+- [ ] P3 — (D-36) Prognoza tempa dla listów z transzami (dziś tylko zamówienie jednorazowe) i strojenie okna 2 min po playteście; m9 nadal 6–7 fałszywych „spóźnień” na przebieg (tartak przyspiesza, gdy węglarz skończy).
+- [ ] P4 — (F3 opcja 2) M9: mniej drewna / wozów na starcie, by sam status CONTESTED trwał ~3 min — zmienia hasze m9 i pieczęcie, decyzja właściciela.
 - [ ] P3 — Ikona: „M” na pieczęci w Grenze Gotisch, kreskowanie koła.
 
 ### Playtest — hipotezy UI do walidacji, **nie wyniki badań**
@@ -103,6 +105,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P4 — Sandbox S6: zamówienia królewskie (maks. 2, bez terminu, odrzucalne) i jarmarki sezonowe (+25% ceny jednego towaru, RNG w stanie); `src/sim/orders.ts`, `tests/orders.test.ts` (sim)
 
 ## Zrobione
+- 2026-11-02 — (research F10/F3, D-36) M7: tempo dostaw i prognoza „przy tym tempie: gotowe za M:SS” z pieczęciami na liście przewozowym i w karcie zamku (`contractForecast`, dziennik tempa w UI); M9: „Drewno bierze też: Węglarnia — tam N, tu M” nad łańcuchem tartaku/węglarza (`sharedInput`), lekcja widoczna 5% → 85% czasu; hasze bez zmian — gałąź `claude/w-readab`.
 - 2026-11-02 — (research P1) Rozbiórka w misjach z kontraktem: budynek, którego typu nie ma na liście budowy misji, rozbiera dopiero drugie dotknięcie w ciągu 4 s (ostrzeżenie `demolish.confirm`); czysty odczyt `demolishIsFinal` w sim, sim nadal przyjmuje komendę (powtórki ważne); test `tests/demolish-guard.test.ts`.
 - 2026-11-02 — Buduj: po postawieniu niepodłączonego budynku narzędzie zostaje otwarte pod kartą z „Naprawą”; pływający „Cofnij” chowa się, gdy karta tego budynku ma własne „Cofnij” (koniec podwójnego przycisku w układach bocznych).
 - 2026-11-02 — Menu 412 px: krótsze podtytuły PL misji VII–VIII (bez osieroconego „mostu” po myślniku), `text-wrap: pretty/balance` dla tytułów i podtytułów.

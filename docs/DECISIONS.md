@@ -358,3 +358,32 @@ every mission, not a cosmetic fix. Drawn: m1 bot fleet and m2 show 0 overlapping
 and 78 sampled in the sim positions); the deliberately overloaded 120-wagon bench keeps ~78 % (dozens of
 wagons on a few cells exceed the capped lag).* (decided — revisit as a sim rule together with a balance pass)
 
+
+**D-36 — Contract pace forecast and shared inputs are read-only diagnosis (F10, F3; no StallReason, no hash
+change).** Implements the F3/F10 proposals of docs/research/2026-11-02-seasons-m7-9.md. (1) *F10*: a slower
+supply is not a stall (design/seasons.md §3), so the waybill and the castle card read a forecast instead of a new
+status. `src/sim/forecast.ts` (pure, sim rules): the UI keeps a `PaceLog` (cumulative `ledger.produced` every 10 s
+of game time, sampled in `App.onTick`, window 2 min plus the first sample; never in `SimState`, reset on a new
+world or an earlier tick). `contractForecast(world, log)` per ordered good: to make = need − castle stock −
+promised − spare producer stock; pace = the better of the 2-min window and the whole log (a passing dip does not
+make it panic, a fix shows within the window); ETA = to make ÷ pace + quickest loaded trip (+ load/unload), or the
+last promised wagon's `wagonEta` when everything missing is already on the way; two ordered goods made from one
+input (m9: planks and charcoal from wood) are also timed as a pool on that input's pace, bounded by the producers'
+full-work rate (without this m9 showed "late" in 30 of 55 samples of a won run). Seals from the star ticks minus
+tranches already missed; `aim` = pace the bottleneck needs for the next better seal. Ready after one minute of
+samples; letters with tranches get no forecast (their waybill reads tranche by tranche). UI (`src/ui/pace.ts`):
+waybill "At this pace: done in M:SS" + three seals (pressed as earned; clay when ≤ 1, "N late" past the deadline)
+and "<producer> ×n · r/min" with a tap to that producer; the castle card leads with "Delivery pace" (per good now /
+at most, e.g. 5.1 vs 6.7 fish/min; "for 3 seals (4:04 left) you need ≈11.2/min") while the castle only waits, or
+shows it under the order when the castle is stalled. (2) *F3*: `sharedInput(world, id)` (diagnose.ts): a consumer
+waiting for an input (WAITING_DELIVERY, NO_WAGON, WAITING_UPSTREAM, NO_INPUT except UNREACHABLE) while a consumer of
+another kind holds or awaits that good; the card puts "Wood also feeds: Charcoal burner — there 6, here 2" (tap →
+rival) above the chain, plus "One supplier (Woodcutter's hut) for 2 customers — a second one would help" while
+there is one producer. The sim's CONTESTED keeps its narrow meaning. Rejected: m9 data changes (start wood, wagons)
+and widening `contestedBy` to reserved stock — both change mission hashes (and the seal tuning). (3) *Proof*
+(`tools/pace-readability.ts`, tests/contract-pace.test.ts): m7 forecast seals = outcome in 100 % / 100 % of samples
+for "no action" / "right fix" (median error 16 / 42 s), late fix 67 % two minutes after the action, never a false
+"late"; m9 61 / 39 / 59 %, 6 / 7 / 1 false "late" samples. m9 lesson on a consumer card: 5.0 % → 84.9 % of the
+game without action (3.3 → 81.0 %, 3.8 → 57.1 % with fixes), 0 wrong rivals. m7 and m9 hashes identical with and
+without reading every tick for all bot strategies. New PL/EN keys in `PENDING_KEYS`. (decided — retune the pace
+window after the playtest)
