@@ -376,7 +376,7 @@ export class Hud {
   }
 
   /** Sealed letter for a new rank: slides in (200 ms), the wax is pressed (120 ms), tap or 6 s to close. */
-  showRankUp(rank: number): void {
+  showRankUp(rank: number, holdMs = 6000): void {
     this.rankLetter?.remove();
     const unlocks = unlockList(rank);
     const letter = h('div.rank-letter', { role: 'status', html: `
@@ -396,7 +396,7 @@ export class Hud {
     wrap.addEventListener('click', close);
     this.rankLetter = wrap;
     this.root.append(wrap);
-    window.setTimeout(close, 6000);
+    window.setTimeout(close, holdMs);
   }
 
   /** Screen-reader only announcement (quiet confirmations that have no visible text). */

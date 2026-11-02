@@ -194,7 +194,7 @@ export class App implements PanelNav {
       app: this,
       findSteepDraft: () => this.findSteepDraft(),
       /** Screenshots: the rank-up letter without playing ten minutes. */
-      rankUp: (r: number) => this.hud?.showRankUp(r),
+      rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
       ready: false,
     };
   }
