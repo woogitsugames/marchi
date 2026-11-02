@@ -414,4 +414,10 @@ export const en: FullDict = {
   'why.pace.wait': 'Pace forecast after the first minute.',
   'why.shared': '{good} also feeds: {rival} — there {there}, here {here} (stock and on the way)',
   'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
+  // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
+  'hud.worst': 'Worst stall',
+  'hud.worstShow': 'Show: {name}',
+  'hud.stallsNext': 'Stalls: {n} — show the next one',
+  'contract.toSnow': '{time} to snow',
+  'tool.wagonShort': '{n} short',
 };
