@@ -354,6 +354,29 @@ console.table(s.buildings.map(b => ({
 console.table(s.wagons.map(w => ({ id: w.id, status: w.status.k })));
 ```
 
+
+## 3F. HUD v3: „Najgorszy zastój”, pieczęć, karty narzędzi (H1–H4)
+
+**Preflight wspólny:** oblicz `rankStalls(world)`, z którego `src/ui/hud.ts` otrzymuje stany. Minimum to **20 ticków = 2 s**, więc dla krótkiego zacięcia karta i alarm są celowo ukryte. „Najgorszy” oznacza najwyższe `score = stalledTicks × waga` (krytyczny > zwykły > samoczynnie ustępujący), **nie po prostu najstarszy**. Wpisz `stalls_count` i `worst_stall_id` na podstawie kodu; resetuj ekran bez otwartej karty. Testuj wybrane sceny S1–S15 po ich potwierdzonym preflighcie.
+
+| ID i polecenie bez podpowiedzi | Sukces / miary |
+| --- | --- |
+| **H1 — odnajdź najgorszy zastój.** „Gdzie widzisz najważniejszy problem? Pokaż go i powiedz, dlaczego powstał”. | `hud_find_s` mierzone od pierwszego słowa pytania do samodzielnego wskazania właściwej karty/obiektu; cel **<30 s**. `hud_show_used=1` gdy użyto przycisku z ikoną oka (dostępna etykieta „Pokaż: [nazwa]”). `hud_cause_s` do pierwszej trafnej przyczyny — **osobny zegar** i `correct` zależny od faktycznego statusu. Samo kliknięcie „Pokaż” nie jest poprawną diagnozą. |
+| **H2 — pieczęć alarmu.** „Co oznacza liczba na pieczęci? Co nastąpi po naciśnięciu?”. | `alarm_count_understood=1` gdy uczestnik rozpoznaje **liczbę aktualnych zastojów**, a nie srebro, terminy lub rangę. `alarm_cycle_used=1` przy świadomym przejściu do następnego problemu. Do testu cyklu potrzebne co najmniej 2 zastoje; przy jednym pole zostaw puste, nie 0. Pieczęć cyklicznie przechodzi po rankingu. |
+| **H3 — karty narzędzi i podświetlenie lekarstwa.** „Co możesz zrobić, żeby usunąć przyczynę, i gdzie znajdziesz tę czynność?”. | `tool_cards_understood=1` jeśli rozróżnia budowę, trakt, bruk, rozbiórkę, kupno wozu oraz podgląd ruchu. `cure_highlight_seen=1`, gdy spontanicznie zauważa podświetlenie `is-cure` narzędzia `road` albo `wagon` **tylko przy rzeczywistej propozycji `cureFor`**. Nie wyciągaj wniosków z braku podświetlenia, jeśli nie ma lekarstwa. |
+| **H4 — „brak N srebra”.** „Dlaczego ten przycisk nie pozwala kupić wozu i ile brakuje?”. | **Preflight:** srebro `coins < 30`, bo `WAGON_PRICE=30`. Karta „Kup wóz” zmienia widoczny opis na `brak {n}`, a `aria-label` wyjaśnia „Brakuje {n} srebra”; `wagon_shortfall_understood=1` przy poprawnym obliczeniu `30 - coins` i zrozumieniu blokady. Jeśli srebra jest >=30, nie raportuj błędnego wyniku — przygotuj inny stan lub `invalid_setup=1`. Przy zbyt małym saldzie karta wozu **nie jest aktywnie wyróżniana** jako lekarstwo. |
+
+**Kontrola czystości próby:** `?open` / `?wagon` są wyłącznie do przygotowania; po ich użyciu przeładuj bez nich. Gdy brak zastoju, `stallRow` jest ukryty, a H1/H2 nie mają ważnego ustawienia. Dla H3, jeżeli budowa jest w danej misji niedostępna, nie karz za niewidoczną kartę. H1/H2/H3/H4 nie są automatycznie czterema osobnymi diagnozami: dla jednej osoby i tego samego stanu raportuj jeden poznawczy wynik, a resztę jako interakcje z HUD.
+
+## 3G. Wydajność odczuwalna: ×1/×4, ciepło i krok konia (P1)
+
+**P1 — ten sam sprzęt i zbliżona liczba obiektów.** Przygotuj `?play=m2&ff=45&speed=1&lang=pl` (lub sandbox z podobnym ruchem), bez otwartych paneli, a następnie poproś o obserwowanie **20–30 s przy ×1**, **20–30 s przy ×4** i powrót do ×1. Nie mierz FPS jako proporcji tempa symulacji. W razie potrzeby uruchom osobną próbę techniczną z `?perf=1` (licznik nie zastępuje oceny uczestnika). Zanotuj jakość/`dynres`, orientację, stan baterii i to, czy aparat był już ciepły przed startem.
+
+- **Płynność:** `perceived_smoothness_x1` i `perceived_smoothness_x4` od 1 (wyraźne cięcia) do 5 (bez zakłóceń). Obserwator notuje widoczne skoki animacji, opóźnienie gestów i stop-klatki.
+- **Krok konia:** `horse_step_x1_ok` i `horse_step_x4_ok` to `1`, gdy animacja kroku naturalnie współgra z przesuwaniem wozu; `0`, gdy koń ślizga się, przebiera nogami z niewłaściwym rytmem albo przeskakuje. Osobno zapisz przy jakiej prędkości.
+- **Ciepło:** `heat_before` i `heat_after` — subiektywna skala dotyku 1 (chłodny) do 5 (nieprzyjemnie gorący). **To nie pomiar temperatury procesora.** Po 30 s nie wolno twierdzić, że urządzenie nigdy się nie nagrzeje podczas długiej gry.
+- **Różne ekrany:** powtarzaj na Fold wewnętrzny / `is-flex` oraz Flip okładka tylko gdy jest obsługiwana. Bez wyświetlenia sceny wpisz `device_unsupported=1`, nie `smoothness=0`. Porównuj ten sam model i stan ekranu, a nie wyniki zbiorcze z Fold, Flip i zwykłego telefonu.
+
 ## 4. Prowadzenie: think-aloud i pomiar
 
 Przed pierwszym zadaniem: „Mów na głos, co widzisz, co Cię dziwi i co chcesz zrobić. Nie musisz tłumaczyć mi zasad ani zgadywać moich oczekiwań”. Przy każdej scenie przeczytaj tylko **wspólne pytanie** z sekcji 3.
