@@ -239,3 +239,9 @@ m1–m6 after 10 min). (decided — numbers are a first tuning, re-run tools/bal
 offers only the granary (its 3-seal strategy). Now data: `MissionDef.buildable` (sim), read via `missionBuildable(id)`
 (sandbox → 'ranked'). Sandbox subtitle uses the new key `menu.valleySub`
 ("Rozbuduj miasteczko, bez terminów"); the old `menu.sandboxSub` stays until translations are refreshed. (decided)
+
+**D-29 — Owner decisions 2026-11-02 (morning).** (1) Free valley: **3 save slots** with a slot picker.
+(2) **No ads** for now (v1.0 ad-free, no data collection). (3) **More ranks right away**: beyond Osada / Wieś
+targowa / Miasteczko / Miasto add long-term ranks (working names Gród, Stolica) that unlock the new chains.
+(4) Next priority: **new production chains in the valley** — fisher, quarry (stone for cobbles and stone
+bridges), charcoal burner, malthouse + brewery — each teaching a new stall cause. (decided)
