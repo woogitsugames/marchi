@@ -419,6 +419,7 @@ export const pl = {
   'why.sharedOne': 'Jeden dostawca ({who}) na {n} odbiorców — przyda się drugi.',
   // session 6 (D-40…): see PENDING_KEYS
   'letter.start': 'Do dzieła',
+  'why.thin': 'Wóz {wagon} wiezie tylko {qty} z {full} — {source} nie nadąża z dostawą',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -446,6 +447,7 @@ export const PENDING_KEYS = [
   'why.shared',
   'why.sharedOne',
   'letter.start',
+  'why.thin',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

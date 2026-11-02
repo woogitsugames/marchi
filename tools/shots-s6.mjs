@@ -29,6 +29,8 @@ const SCENES = {
   'letter-open-m7': { q: '', act: (p) => startFromMenu(p, 6) },
   'letter-won': { q: 'play=m1&bot=1&ff=600', wait: 3000 },
   'letter-lost': { q: 'play=m1&ff=720', wait: 3000 },
+  // mission X: sawmill waiting for a 2-wood load (D-41 thin-load note)
+  'thin': { q: 'play=m10&ff=209&speed=0&open=sawmill', wait: 3000 },
 };
 
 async function server() {

@@ -1,7 +1,7 @@
 // Contract pace on the waybill and the castle card (F10), and the shared-input line on a consumer's
 // card (F3). Both read the sim (contractForecast, sharedInput); nothing here writes state.
 import {
-  GOODS, buildingById, contractForecast, sharedInput, type ContractForecast, type PaceLog, type World,
+  GOODS, buildingById, contractForecast, sharedInput, thinDelivery, type ContractForecast, type PaceLog, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
@@ -97,3 +97,19 @@ export function sharedHtml(world: World, id: number): string {
   if (p) one = `<br><small>${tHtml('why.sharedOne', { who: t(`building.${p.type}` as MessageKey), n: fmtInt(s.consumers) })}</small>`;
   return `<div class="s-hint shared-hint">${iconSvg('contested', 22)}<span>${text}${one}</span></div>`;
 }
+
+/**
+ * "Wood on the way" in a thin load (mission X, D-41): the wagon carries a small part of a full load because
+ * the supplier had no more — name the shortage at the source instead of letting the delivery hide it.
+ */
+export function thinHtml(world: World, id: number): string {
+  const d = thinDelivery(world, id);
+  if (!d) return '';
+  const src = buildingById(world, d.source);
+  if (!src) return '';
+  const name = t(`building.${src.type}` as MessageKey);
+  const text = tHtml('why.thin', { wagon: fmtInt(d.wagon), qty: fmtInt(d.qty), full: fmtInt(d.full), source: '\u0001' })
+    .split(`<bdi class="num">\u0001</bdi>`).join(`<button class="linkish" data-go="building:${src.id}">${esc(name)}</button>`);
+  return `<div class="s-hint thin-hint">${iconSvg(d.good, 22)}<span dir="auto">${text}</span></div>`;
+}
+

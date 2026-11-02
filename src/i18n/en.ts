@@ -416,4 +416,5 @@ export const en: FullDict = {
   'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
   // session 6 (D-40…): see PENDING_KEYS
   'letter.start': 'To work',
+  'why.thin': 'Wagon {wagon} carries only {qty} of {full} — {source} cannot keep up',
 };

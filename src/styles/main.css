@@ -1683,3 +1683,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .shared-hint svg { flex: none; }
 .shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
+/* mission X: a thin load names the shortage at its source (D-41), same voice as the shared-input note */
+.thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
+.thin-hint svg { flex: none; }
+.thin-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }

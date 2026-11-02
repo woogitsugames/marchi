@@ -451,3 +451,14 @@ debug `?play=` starts (screenshots, bots) nor on the end letter's "Again" (the p
 A language without authored letters falls back to English (D-18) and the paragraphs carry `dir="auto"`, so an
 English letter keeps its punctuation in the Arabic UI. (decided)
 
+**D-41 — A thin load names the shortage at its source (mission X; read-only, no hash change).** In mission X the
+sawmill reads "wood on the way" most of the time while the real cause is one woodcutter for two workshops:
+starving consumers accept small loads (D-30), so wagons run with 2 of 6 wood. Changing `explainBuilding` would
+move hashes (`accountStalls` writes `ledger.stallSeconds` from it), so the fix is a separate read:
+`thinDelivery(world, id)` (`src/sim/diagnose.ts`, never called by `step()`) returns the delivery when the building
+is `WAITING_DELIVERY`, the load is at most half a wagon and comes from a producer (a granary sending little is not a
+shortage). The card shows "Wóz 8 wiezie tylko 2 z 6 — Chata drwala nie nadąża z dostawą" with a link to the source,
+above the D-38 shared-input note. Measured with `tools/supply-readability.ts` (m10, idle sawmill seconds):
+"on the way" with the cause named 0 % → 64.3 % of 437 s doing nothing, 33.8 % with the late woodcutter, 19.8 % with
+the right fix; final hashes equal with and without the reads (test `tests/thin-delivery.test.ts`). (decided)
+

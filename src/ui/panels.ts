@@ -12,7 +12,7 @@ import {
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
-import { castlePaceHtml, forecastFor, sharedHtml } from './pace';
+import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 
 export interface PanelNav {
   readonly world: World;
@@ -249,7 +249,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
-      const lead = pace + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason);
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason);
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },

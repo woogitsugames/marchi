@@ -1,5 +1,5 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, inputGoods, outputGoods } from './defs';
+import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
 import { buildingById } from './logistics';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
 import { AUTUMN_FAIR_GOOD, seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
@@ -291,3 +291,35 @@ export function sharedInput(world: World, id: number): SharedInput | null {
   if (rival < 0) return null;
   return { good: g, rival, there, here: b.incoming[g] + b.stock[g], producers, producer, consumers };
 }
+
+/** A consumer's input arrives in a thin load because its supplier cannot keep up (mission X, D-41). */
+export interface ThinDelivery {
+  good: Good;
+  wagon: number;
+  /** Units on the way in this load, and a full load of this good. */
+  qty: number;
+  full: number;
+  /** The producing building the load comes from. */
+  source: number;
+}
+
+/**
+ * Read-only (never called by step(), so no hash changes): the building waits for a delivery that is a
+ * small part of a wagon load and comes from a producer, i.e. the supplier had no more to give. Then
+ * "wood on the way" is true but hides the real cause — the woodcutter cannot keep up.
+ */
+export function thinDelivery(world: World, id: number): ThinDelivery | null {
+  const b = buildingById(world, id);
+  if (!b || b.status.k !== 'WAITING_DELIVERY') return null;
+  const g = b.status.good, wid = b.status.wagon;
+  if (!inputGoods(b.type).includes(g)) return null;
+  const w = world.state.wagons.find((q) => q.id === wid);
+  const j = w?.job;
+  if (!w || !j || j.to !== b.id || j.good !== g) return null;
+  const src = buildingById(world, j.from);
+  if (!src || !outputGoods(src.type).includes(g)) return null; // a granary sending little is not a shortage
+  const full = capacityOf(g);
+  if (j.qty * 2 > full) return null; // half a load or more is a normal run
+  return { good: g, wagon: w.id, qty: j.qty, full, source: src.id };
+}
+
