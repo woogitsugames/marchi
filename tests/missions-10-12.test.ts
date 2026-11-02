@@ -79,6 +79,7 @@ test('m12: full granary and connected alternative are different', () => {
 for (const id of ['m10', 'm11', 'm12'] as const) {
   test(id + ': no action <=1 seal, the repair wins in 5-12 min, difference >=0.8 min', () => {
     const runs = STRATEGIES[id].map((s) => runProposed(id, s));
+    console.log('BALANCE ' + id + ': ' + JSON.stringify(runs.map((x) => ({name:x.strategy,result:x.result,min:x.minutes,seals:x.seals,contested:x.contestedSamples,wait:x.waitingDeliverySamples,busy:x.allBusySamples,full:x.storageFullSamples,blockedMalt:x.blockedMaltSamples,warehouseMalt:x.peakWarehouseMalt,late:x.lateTranches,delivered:x.delivered}))));
     for (const r of runs) {
       eq(r.commandErrors.length, 0, r.strategy + ' commands: ' + r.commandErrors.join('; '));
       eq(r.invariantErrors.length, 0, r.strategy + ' invariants: ' + r.invariantErrors.join('; '));
