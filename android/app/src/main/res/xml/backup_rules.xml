@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auto Backup up to Android 11 (D-46): the game's saves (WebView IndexedDB under app_webview) and settings
+     travel to a new phone; WebView caches are rebuilt on the device and are left out. -->
+<full-backup-content>
+    <exclude domain="root" path="app_webview/Default/GPUCache/" />
+    <exclude domain="root" path="app_webview/Default/Code Cache/" />
+    <exclude domain="root" path="app_webview/Default/Cache/" />
+    <exclude domain="root" path="app_webview/Default/Service Worker/" />
+</full-backup-content>

@@ -501,3 +501,16 @@ on the Vite dev server (`import.meta.env.DEV`, which the screenshot scripts use)
 `vite preview` (a production build) and now adds `debug=1`. Checked on a production preview: no params → keys
 `ready`; `?debug=1` → `app, findSteepDraft, rankUp, ready`; 0 console errors. (decided)
 
+**D-46 — Android: no INTERNET permission; Auto Backup keeps the saves, not the caches.** The game runs offline
+from the APK: Capacitor serves the web assets to the WebView from local files, every `fetch` in the app is a
+relative asset URL, and the 4K pack downloader (D-24) is not wired into the release (D-21). So
+`android.permission.INTERNET` is removed from `AndroidManifest.xml`. `npx cap sync android` does not add it back
+(checked; the manifests of `@capacitor/android` 8.6 and `@capacitor/filesystem` 8.1 declare no permissions), and the
+merged debug manifest built by Gradle has no INTERNET (only androidx's internal signature permission
+`DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`). When the 4K download comes back, INTERNET returns with it and the store
+data-safety forms must be revised. `allowBackup` stays true — moving progress to a new phone is a player benefit —
+with explicit rules (`res/xml/backup_rules.xml` ≤ Android 11, `res/xml/data_extraction_rules.xml` 12+) that keep the
+WebView IndexedDB saves and settings and leave out the WebView caches; docs/store/data-safety.md explains why this is
+not "data collection". Not verified here: a full APK (Maven Central answered 429 during the Kotlin compile of the
+filesystem plugin) — check the morning APK with `aapt dump permissions`. (decided)
+
