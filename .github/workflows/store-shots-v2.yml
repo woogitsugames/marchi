@@ -2,21 +2,63 @@ name: Marchia store screenshots v2 — live gameplay
 
 on:
   push:
-    branches:
-      - gpt/61-store-graphics
+    branches: [gpt/61-store-graphics]
     paths:
       - tools/store-shots-v2.mjs
+      - tools/verify-store-shots-v2.mjs
       - docs/store/screenshots-plan.md
       - .github/workflows/store-shots-v2.yml
   workflow_dispatch:
+
+concurrency:
+  group: marchia-store-graphics-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  authentic-store-shots:
+  capture:
+    name: Render ${{ matrix.lang }} / ${{ matrix.orientation }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: [pl, en]
+        orientation: [portrait, landscape, app]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install game
+        run: npm ci
+      - name: Install Chromium for Playwright
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Render real gameplay and verify each scene
+        shell: bash
+        run: |
+          node tools/store-shots-v2.mjs --lang=${{ matrix.lang }} --orientation=${{ matrix.orientation }}
+          mkdir -p docs/store/shots/logs
+          mv docs/store/shots/manifest.json docs/store/shots/logs/${{ matrix.lang }}-${{ matrix.orientation }}.json
+      - name: Upload capture for aggregation and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-shots-${{ matrix.lang }}-${{ matrix.orientation }}
+          path: docs/store/shots/
+          if-no-files-found: warn
+          retention-days: 30
+
+  merge-and-commit:
+    name: Verify 30 PNGs and publish branch assets
+    needs: capture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,29 +67,22 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Install game dependencies
+      - name: Install dependencies for PNG verification
         run: npm ci
-      - name: Install Playwright and Chromium in CI
-        run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium
-      - name: Generate 30 authentic game screenshot assets (PL + EN)
-        run: node tools/store-shots-v2.mjs
-      - name: Commit generated images and manifest to PR branch
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: store-shots-*
+          path: docs/store/shots/
+          merge-multiple: true
+      - name: Verify and merge 30 genuine PNGs
+        run: node tools/verify-store-shots-v2.mjs
+      - name: Commit store images to PR branch
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f docs/store/shots/pl/*.png docs/store/shots/en/*.png docs/store/shots/manifest.json
+          git add -f docs/store/shots/pl/*.png docs/store/shots/en/*.png docs/store/shots/manifest.json docs/store/shots/logs/*.json
           if ! git diff --cached --quiet; then
-            git commit -m "art(store): capture and optimize 30 real game screenshot PNGs"
+            git commit -m "art(store): add verified 30 genuine gameplay store PNGs (PL/EN)"
             git push origin HEAD:gpt/61-store-graphics
           fi
-      - name: Upload asset artifact for manual full-size review
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: marchia-store-shots-v2-${{ github.run_number }}
-          path: docs/store/shots/
-          if-no-files-found: warn
-          retention-days: 30
