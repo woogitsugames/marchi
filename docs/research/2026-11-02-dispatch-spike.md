@@ -116,3 +116,38 @@ Na telefonie (założone x4-6): p95 bench50 z ok. 40-60 ms do ok. 4-6 ms — spi
 - Brak fixtury dużej osady: sandbox DECENT ma tylko kilkanaście wozów, a benche mają 41 budynków. Przy większej liczbie bramek źródeł (np. 100 budynków) liczba Dijkstr w ticku dispatchu rośnie liniowo z liczbą różnych bramek, więc po A zostaje koszt "z wolnymi wozami" (wariant C wtedy wart rozważenia). Warto powtórzyć pomiar na zapisie dużej osady.
 - Pomiary max są zaszumione (kontener współdzielony); liczniki wywołań i skróty stanu są deterministyczne i to na nich opiera się wniosek o przyczynie.
 - Kopia instrumentowana mierzy własny narzut `performance.now()` (kilkaset ns na wywołanie, głównie w Dijkstrach), więc bezwzględne ms są lekko zawyżone, proporcje nie.
+
+## Wdrożenie A + B (2026-11-02, branch `claude/w-dispatch`)
+
+Wdrożone w `src/sim/network.ts` i `src/sim/logistics.ts`:
+
+- **A:** `reachable(world, a, b)` — etykiety spójnych składowych po `edgeMask` (BFS, etykieta = najmniejszy indeks komórki składowej, -1 poza drogą), liczone leniwie raz na `netVersion` i trzymane w `NetCache.comp` (dane pochodne, nie w stanie, nie w zapisie). W `dispatch()` używane tylko gdy `free.length === 0`: w pętli kandydatów popytu i w surplus push (`fwd = null`). `diagnose` bez zmian (nadal `DistCache`).
+- **B:** `releaseDistMap(world, m)` + pula `world.distPool` (do 64 par `dist/prev`, poza stanem); `dijkstra(reuse=false)` bierze tablice z puli i wypełnia je od nowa (`fill`). `DistCache.release()` na końcu `dispatch()` — mapy nie wychodzą poza wywołanie.
+- `tools/perf-dispatch.ts`: warianty `pool`/`free0` są teraz no-op (już w `src/`), patch licznika „bez wolnego wozu" jest opcjonalny; `PERF_HASHES=1` liczy dodatkowo `DIGEST789` (strategie misji m7-m9 z `tools/bot-missions-7-9.ts`, skrót co 600 ticków i na końcu).
+
+### Równość skrótów stanu
+
+Ten sam zestaw co wyżej (bench 50/100/200 co 500 ticków do 3000, wszystkie strategie `plans` m1-m6, sandbox DECENT 60 min) plus m7-m9:
+
+| kod | DIGEST (273 skróty) | DIGEST789 (91 skrótów) |
+|---|---|---|
+| przed (HEAD `4d4fbdf`, kopia z oryginalnymi `network.ts`/`logistics.ts`) | `a4dc648ba12e5618` | `2549929cbcc63fa6` |
+| po (A + B) | `a4dc648ba12e5618` | `2549929cbcc63fa6` |
+
+Golden hashe w testach bez zmian (`npm test`: 295 passed, 0 failed). Nowy `tests/dispatch-reachability.test.ts`: `reachable` == `dijkstra(...).dist < Infinity` dla wszystkich komórek, 4 wariantów (przód/tył x pusty/załadowany) na 6 losowych sieciach (seed 20261102, deszcz i sztuczna kolejka na każdym moście) i na bench50 przed i po przecięciu sieci; recyklowane mapy == świeże; NO_ROUTE bez wolnego wozu (m1: zamek `NO_INPUT/UNREACHABLE` -> tartak, młyn `NO_WAGON/ALL_BUSY`; m5: drwal `OUTPUT_FULL/NO_DESTINATION` -> odcięty spichlerz); skróty bench50/100 co 500 ticków zapisane z kodu sprzed zmiany.
+
+### Pomiar przed / po
+
+`tools/perf-dispatch.ts`, 3 uruchomienia scalone, ticki dispatchu, ms. Maszyna spokojna (load average 0,4-0,6 na 4 vCPU), dlatego „przed" jest niższe niż tabela bazowa wyżej (load ok. 18); porównywać kolumny tego pomiaru między sobą.
+
+| scenariusz | przed p50 / p95 / p99 / max | po p50 / p95 / p99 / max | przed / po średnio | Dijkstr na dispatch przed / po (śr. / maks.) |
+|---|---|---|---|---|
+| bench50 | 1,04 / 1,90 / 2,71 / 7,81 | 0,10 / 0,69 / 1,04 / 5,80 | 1,00 / 0,19 | 18,58 / 30 -> 1,47 / 16 |
+| bench100 | 0,67 / 1,20 / 1,96 / 13,54 | 0,07 / 0,66 / 0,95 / 4,19 | 0,59 / 0,19 | 11,20 / 27 -> 2,98 / 24 |
+| bench200 | 0,06 / 0,82 / 1,20 / 5,65 | 0,06 / 0,68 / 0,85 / 10,81 | 0,23 / 0,21 | 3,56 / 24 -> 3,56 / 24 |
+| m1 | 0,10 / 0,23 / 0,61 / 3,39 | 0,03 / 0,08 / 0,13 / 3,15 | 0,12 / 0,04 | 3,60 / 6 -> 0,95 / 6 |
+| m5 | 0,08 / 0,16 / 0,48 / 5,44 | 0,02 / 0,05 / 0,13 / 1,93 | 0,10 / 0,03 | 3,46 / 8 -> 0,56 / 8 |
+| m9 | 0,08 / 0,15 / 0,40 / 1,56 | 0,04 / 0,10 / 0,24 / 8,00 | 0,09 / 0,05 | 3,05 / 7 -> 1,25 / 7 |
+| sandbox | 0,09 / 0,21 / 0,80 / 33,70 | 0,03 / 0,11 / 0,21 / 21,54 | 0,11 / 0,05 | 3,43 / 12 -> 0,51 / 8 |
+
+Wnioski: przy 50 wozach p95 spada ok. 2,8x, p99 2,6x, średnia 5x (liczba Dijkstr 12,6x). bench200 prawie bez zmian w liczbie wywołań (tam wolne wozy prawie zawsze są, A się nie włącza) — zysk tylko z B. Kolumna max nadal zaszumiona (GC/host; pojedyncze ticki poza dispatchem też mają max 2-6 ms). Pozostały koszt to Dijkstry „z wolnymi wozami" i `diagnose` (0,9-1,1 wywołania na dispatch w misjach) — kandydat na wariant C dopiero przy dużej osadzie.
