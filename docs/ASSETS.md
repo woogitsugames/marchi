@@ -304,12 +304,17 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 | `public/vendor/basis/basis_transcoder.js`, `.wasm` | copied unmodified from `three@0.181` `examples/jsm/libs/basis/` (Binomial Basis Universal) | Apache-2.0 | `public/licenses/Apache-2.0-basis_universal.txt` |
 
 
-## Audio — CC0 field recordings (tasks 07 and 18)
+## Audio — CC0 field recordings (tasks 07, 18 and 46)
 
-All 23 runtime IDs, paths and OGG/M4A codecs remain unchanged. Ambient is stereo;
-SFX/UI is mono, 24 kHz. The combined **46 runtime files** must remain under 4 MiB,
-excluding public/assets/music. The reproducible asset manifest is
-`tools/audio_sources.json` and fingerprints live in `docs/audio-provenance.json`.
+The shipped baseline has 23 runtime IDs (46 OGG/M4A files). Task 46 selected
+13 more IDs (target **36 sounds / 72 files**); they wait in `pending_tracks` of
+`tools/audio_sources.json` until the binaries are rendered, so the strict
+`python3 tools/process_audio.py --check` keeps passing on the shipped 46 files.
+Ambient is stereo; SFX/UI is mono, 24 kHz. The combined runtime audio (excluding
+music) must remain **below 4 MiB**. The reproducible source manifest is
+`tools/audio_sources.json`; verified source and output SHA-256 values are written
+to `docs/audio-provenance.json` only **after** source files are actually fetched
+and rendered.
 
 ### Task 07 — OpenGameArt CC0 field recordings
 
@@ -365,6 +370,46 @@ a documented bread oven. Each loading/unloading ID uses a different portion
 of a real sack, plank or log recording. Reject modern engines, asphalt and
 intelligible speech after listening — metadata alone cannot guarantee absence.
 
+### Task 46 — New building and logistics sounds (awaiting binaries)
+
+**Status (2026-11-02):** The six newly selected Freesound pages individually
+display the **Creative Commons 0** label (checked by GPT-6, task 46; re-check each
+page when fetching). The existing fireplace CC0 source is reused for charcoal.
+Sources and render settings are in the manifest (`sources` + `pending_tracks`);
+no raw sources or OGG/M4A files exist yet, so the IDs are **not** in
+`src/audio/sounds.ts` (integration 2, docs/reviews/gpt-integration-2.md).
+Do not create source digests from page metadata.
+
+| New runtime ID(s) | Freesound source / author | Licence | Editing note |
+|---|---|---|---|
+| `sfx/quarry-chisel` | [Artiom_Constantinov 841053](https://freesound.org/people/Artiom_Constantinov/sounds/841053/) | CC0 1.0 | Real chisel in quarry; 2.4 s |
+| `sfx/quarry-rock`, `sfx/load-stone`, `sfx/unload-stone` | [Tim_Verberne 576107](https://freesound.org/people/Tim_Verberne/sounds/576107/) | CC0 1.0 | Falling small rocks, alternate excerpts |
+| `sfx/fisher-net`, `sfx/load-fish`, `sfx/unload-fish` | [paulprit 581580](https://freesound.org/people/paulprit/sounds/581580/) | CC0 1.0 | Actual fish being netted in a river; alternate excerpts |
+| `sfx/fisher-splash` | [qubodup 210428](https://freesound.org/people/qubodup/sounds/210428/) | CC0 1.0 | Water splash on soil/plants; fishing-water proxy |
+| `sfx/charcoal-fire` | [ceich93 263864](https://freesound.org/people/ceich93/sounds/263864/) | CC0 1.0 | Fireplace crackle, **not** a kiln field recording |
+| `sfx/malt-bubbles` | [calebrankin 529383](https://freesound.org/people/calebrankin/sounds/529383/) | CC0 1.0 | Water bubbles, **not** an actual fermenting mash |
+| `sfx/brewery-barrels`, `sfx/load-barrel`, `sfx/unload-barrel` | [craigsmith 675975](https://freesound.org/people/craigsmith/sounds/675975/) | CC0 1.0 | Vintage recording of wooden barrels dropping, alternate excerpts |
+
+Planned runtime keys (add to `src/audio/sounds.ts` only with the files):
+`work.quarry.chisel`, `work.quarry.rock`, `work.fisher.net`, `work.fisher.splash`,
+`work.charcoal.fire`, `work.malthouse.bubbles`, `work.brewery.barrels`,
+`load.stone`/`unload.stone`, `load.fish`/`unload.fish`, `load.barrel`/`unload.barrel`. Effects
+use the existing mono 24 kHz FFmpeg processing and OGG Vorbis + AAC/M4A
+encoders; `charcoal-fire` and `malt-bubbles` use short crossfaded loops.
+The strict catalogue checker derives the expected file count and paths from
+the manifest and rejects missing or unexpected assets.
+
+**Finish locally:** move the `pending_tracks` entries into `tracks`, then
+`python3 tools/process_audio.py --only-freesound --fetch`
+(requires network and FFmpeg; this also processes the 11 earlier task-18 sources),
+then `python3 tools/process_audio.py --check`, `python3 -m unittest
+tools/test_process_audio.py`, `npm test`, `npm run typecheck`. Listen for
+silence, modern ambience, preview artefacts and loop seams; adjust excerpt
+offsets based on the actual recordings. Commit 26 new runtime audio files,
+all newly fetched `tools/audio-src/*-hq.ogg` sources and updated
+`docs/audio-provenance.json` in the **same** PR. Audio generation must never
+run in CI.
+
 ### Original procedural effects retained
 
 Only `sfx/wax-seal`, `ui/stall`, `ui/wood`, `ui/paper` and `ui/error` remain
@@ -386,9 +431,9 @@ Do not rerun that generator after rendering these field recordings.
 5. Listen to the cart loops and crossfade seams, hand saw, horse, mill and
    all load/unload effects. The PR stays draft until editorial listening.
 
-The workflow writes SHA-256 hashes for all 46 runtime outputs and all used
-CC0 source previews. The hash manifest must be updated atomically with the
-committed generated files. Runtime audio is limited to 4 × 1024 × 1024 bytes;
+The workflow writes SHA-256 hashes for all runtime OGG/M4A outputs (72
+files once task 46 is finished) and all used CC0 source previews. The hash
+manifest must be updated atomically with the committed generated files. Runtime audio is limited to 4 × 1024 × 1024 bytes;
 `tools/audio-src/` files are review/reproduction inputs and not deployed.
 
 
