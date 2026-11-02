@@ -10,22 +10,22 @@
 ## Numeracja decyzji — uwaga
 
 Baza w trakcie sesji dostała D-40 (chód konia) i D-41 (drzewa). Moje decyzje mają więc numery
-**D-42 … D-48** (w `docs/DECISIONS.md`, komentarzach w kodzie, `docs/BACKLOG.md`, XML Androida).
-**Tematy commitów mają stare numery (o 2 mniejsze: D-40 … D-46)** — commity powstały przed scaleniem.
+**D-46 … D-52** (w `docs/DECISIONS.md`, komentarzach w kodzie, `docs/BACKLOG.md`, XML Androida).
+**Tematy commitów mają stare numery (o 2 mniejsze: D-40 … D-50)** — commity powstały przed scaleniem.
 
 ## Zadania
 
 | # | Zadanie | Status | Decyzja | Najważniejsze pliki |
 |---|---|---|---|---|
-| 1 | Listy kasztelana w grze (otwarcie przy nowej grze; list końcowy wg wyniku i pieczęci) | ✅ | D-42 | `src/ui/menu.ts` (`buildOpeningLetter`, `buildEndLetter`, `letterHtml`), `src/ui/app.ts` (`newGame(id, slot, letter)`) |
-| 2 | Misja X: maskowanie przez „drewno w drodze” | ✅ | D-43 | `src/sim/diagnose.ts` (`thinDelivery`, tylko odczyt), `src/ui/pace.ts` (`thinHtml`), `src/ui/panels.ts` |
-| 3 | Wczesne „brak drogi do zwycięstwa” (kontrakty) | ✅ | D-44 | `src/ui/deadEnd.ts` (`deadEnd`, `WAGON_REFUND`), `src/ui/app.ts` (`checkDeadEnd` co 5 s), `src/ui/menu.ts` (`buildDeadEndLetter`) |
+| 1 | Listy kasztelana w grze (otwarcie przy nowej grze; list końcowy wg wyniku i pieczęci) | ✅ | D-46 | `src/ui/menu.ts` (`buildOpeningLetter`, `buildEndLetter`, `letterHtml`), `src/ui/app.ts` (`newGame(id, slot, letter)`) |
+| 2 | Misja X: maskowanie przez „drewno w drodze” | ✅ | D-47 | `src/sim/diagnose.ts` (`thinDelivery`, tylko odczyt), `src/ui/pace.ts` (`thinHtml`), `src/ui/panels.ts` |
+| 3 | Wczesne „brak drogi do zwycięstwa” (kontrakty) | ✅ | D-48 | `src/ui/deadEnd.ts` (`deadEnd`, `WAGON_REFUND`), `src/ui/app.ts` (`checkDeadEnd` co 5 s), `src/ui/menu.ts` (`buildDeadEndLetter`) |
 | 4 | Dostępność arkuszy | ✅ | — | `src/ui/sheets.ts` (role=dialog, aria-modal, aria-labelledby, fokus do środka i z powrotem), `src/ui/markers.ts` (aria-label dymków), `src/main.ts` (tytuł/język przed 1. klatką), `index.html` (zoom dozwolony) |
 | 5 | Wpisane na sztywno wartości / `WAGON_PRICE` / tooltip `hud.coins` | ✅ | — | stała `WAGON_REFUND`; cena i tooltip były już poprawione wcześniej (odnotowane w backlogu) |
-| 6 | Formatowanie Intl | ✅ | D-45 | nowy `src/ui/fmt.ts` (cache na język, `-u-nu-latn`), `src/ui/format.ts` re-eksportuje, `tests/fmt.test.ts` (ar/hi/de/en) |
-| 7 | `save.ts`: cache IDB, bez klonu JSON, metadane w `listSaves` | ✅ | D-46 | `src/platform/save.ts` (DB v2, store `meta`, migracja), `src/platform/saveGate.ts`, `tests/save-idb.test.ts` (devDependency `fake-indexeddb`) |
-| 8 | Kod deweloperski poza buildem; `__marchia` tylko z `?debug=1` | ✅ | D-47 | nowy `src/game/menuScene.ts` (tło menu + plan bota), `tools/bot.ts` re-eksportuje; bez debug zostaje `{ ready }` |
-| 9 | Android: INTERNET, allowBackup | ⚠️ częściowo | D-48 | `AndroidManifest.xml` (bez INTERNET; `fullBackupContent` + `dataExtractionRules`), `res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`, `docs/store/data-safety.md`. **APK niezbudowany**: Gradle dostał HTTP 429 z Maven Central; sprawdzony tylko scalony manifest |
+| 6 | Formatowanie Intl | ✅ | D-49 | nowy `src/ui/fmt.ts` (cache na język, `-u-nu-latn`), `src/ui/format.ts` re-eksportuje, `tests/fmt.test.ts` (ar/hi/de/en) |
+| 7 | `save.ts`: cache IDB, bez klonu JSON, metadane w `listSaves` | ✅ | D-50 | `src/platform/save.ts` (DB v2, store `meta`, migracja), `src/platform/saveGate.ts`, `tests/save-idb.test.ts` (devDependency `fake-indexeddb`) |
+| 8 | Kod deweloperski poza buildem; `__marchia` tylko z `?debug=1` | ✅ | D-51 | nowy `src/game/menuScene.ts` (tło menu + plan bota), `tools/bot.ts` re-eksportuje; bez debug zostaje `{ ready }` |
+| 9 | Android: INTERNET, allowBackup | ⚠️ częściowo | D-52 | `AndroidManifest.xml` (bez INTERNET; `fullBackupContent` + `dataExtractionRules`), `res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`, `docs/store/data-safety.md`. **APK niezbudowany**: Gradle dostał HTTP 429 z Maven Central; sprawdzony tylko scalony manifest |
 | 10 | Liczby w `DESIGN.md` i `missions/m2.md` | ✅ | — | zgodne z symulacją; pilnuje `tests/docs-numbers.test.ts` |
 
 ## Pomiary
@@ -58,4 +58,4 @@ Zakres: 59 plików, +1032 / −145 (w tym zrzuty ekranu).
 
 1. Zbudować debug APK (`npm run apk`), gdy Maven Central przestanie odpowiadać 429, i sprawdzić kopię zapasową na urządzeniu.
 2. Przetłumaczyć 6 nowych kluczy i18n na pozostałe języki.
-3. Opcjonalnie: przy scalaniu poprawić numery decyzji w tematach commitów (squash), żeby zgadzały się z D-42…D-48.
+3. Opcjonalnie: przy scalaniu poprawić numery decyzji w tematach commitów (squash), żeby zgadzały się z D-46…D-52.

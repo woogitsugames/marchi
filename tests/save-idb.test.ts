@@ -1,4 +1,4 @@
-// IndexedDB layer of src/platform/save.ts on fake-indexeddb (D-46): cached connection, metadata store for
+// IndexedDB layer of src/platform/save.ts on fake-indexeddb (D-50): cached connection, metadata store for
 // the menu list, no JSON copy before put(), v1 -> v2 schema upgrade, legacy 'auto' adoption.
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';

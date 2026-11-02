@@ -12,7 +12,7 @@ import { fmtDayTime, fmtDuration, setFmtLang } from './fmt';
 // formatters follow the UI language (cache dropped on every switch)
 onLangChange(() => setFmtLang(getLang()));
 
-// Numbers and times: src/ui/fmt.ts (Intl, cache per language, D-45); re-exported for existing imports.
+// Numbers and times: src/ui/fmt.ts (Intl, cache per language, D-49); re-exported for existing imports.
 export { fmtDec, fmtInt, fmtPercent, fmtRatio } from './fmt';
 /** Name of a town rank (0..RANKS.length-1: Osada … Stolica). */
 export function rankName(rank: number): string {

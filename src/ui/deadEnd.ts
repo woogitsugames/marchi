@@ -1,4 +1,4 @@
-// Early "no road to victory" (D-44): a contract the player can no longer win because the castle is cut off and
+// Early "no road to victory" (D-48): a contract the player can no longer win because the castle is cut off and
 // even selling the spare wagons would not pay for the cheapest connection. Pure read of the sim (no writes).
 import { WAGON_PRICE, suggestConnection, type World } from '../sim/index';
 

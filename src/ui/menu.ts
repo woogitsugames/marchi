@@ -436,7 +436,7 @@ export function letterHtml(text: string): string {
 }
 
 /**
- * The castellan's opening letter for a contract (D-42). Closes with one gesture: a tap anywhere, the
+ * The castellan's opening letter for a contract (D-46). Closes with one gesture: a tap anywhere, the
  * button or Escape; `onClose` runs once. Returns null for missions without letters (the free valley).
  */
 export function buildOpeningLetter(missionId: string, onClose: () => void): HTMLElement | null {
@@ -469,7 +469,7 @@ export function buildOpeningLetter(missionId: string, onClose: () => void): HTML
 
 export interface DeadEndActions { again(): void; menu(): void; watch(): void }
 
-/** "No road to victory" (D-44): the cause and the numbers, instead of waiting for the deadline. */
+/** "No road to victory" (D-48): the cause and the numbers, instead of waiting for the deadline. */
 export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement {
   const letter = h('div.letter.lost' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'deadend-title' });
   const why = d.cost < 0

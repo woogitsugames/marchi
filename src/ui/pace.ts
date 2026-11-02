@@ -99,7 +99,7 @@ export function sharedHtml(world: World, id: number): string {
 }
 
 /**
- * "Wood on the way" in a thin load (mission X, D-43): the wagon carries a small part of a full load because
+ * "Wood on the way" in a thin load (mission X, D-47): the wagon carries a small part of a full load because
  * the supplier had no more — name the shortage at the source instead of letting the delivery hide it.
  */
 export function thinHtml(world: World, id: number): string {

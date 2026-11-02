@@ -2,7 +2,7 @@ Repozytorium: woogitsugames/marchi, gałąź bazowa: claude/eager-cori-08wt8e (z
 sloty zapisu na misję D-36, Twój RTL D-37 scalony (szyna zależy teraz tylko od ręki), prognoza tempa D-38, misje X–XII
 w menu D-39). Pracuj na gałęzi **claude/s6-polish**; małe commity; na końcu JEDEN PR do bazy (bez scalania i zamykania).
 Komunikacja po polsku, kod/komentarze/commity po angielsku. Zasady: CLAUDE.md (najpierw!), docs/UI_STYLE.md,
-docs/DECISIONS.md (D-36…D-39), docs/BACKLOG.md. Nowe decyzje numeruj od **D-42**.
+docs/DECISIONS.md (D-36…D-39), docs/BACKLOG.md. Nowe decyzje numeruj od **D-46**.
 
 NIE edytuj (pracują nad tym inni): `src/render/**` (modele, drzewa, teren), `src/ui/hud.ts` i wygląd HUD
 (szykujemy nowy HUD z grafik — nie zmieniaj jego stylu), `docs/mockups/**`. `src/sim/**` — tylko gdzie zadanie

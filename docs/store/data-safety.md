@@ -41,7 +41,7 @@ Lokalne dane gry przetwarzane wyłącznie na urządzeniu nie są traktowane prze
 - **Publikacja polityk:** zamień {{CONTACT_EMAIL}} na rzeczywisty adres; opublikuj dostępne publicznie strony HTML pod stałymi adresami HTTPS, ustaw URL w obu sklepach i zapewnij dostęp z samej gry.
 - **Wersje i zmiany:** zaktualizuj deklaracje wraz z każdą zmianą zbierania danych, SDK, monetyzacji lub synchronizacji zapisów.
 
-## Android: uprawnienia i kopia zapasowa (D-48, stan 2 listopada 2026)
+## Android: uprawnienia i kopia zapasowa (D-52, stan 2 listopada 2026)
 
 - **Brak uprawnień.** `AndroidManifest.xml` nie deklaruje `INTERNET` ani żadnego innego uprawnienia: gra działa
   w całości z plików APK (Capacitor podaje je WebView z lokalnego zasobu, bez sieci), niczego nie pobiera i nie

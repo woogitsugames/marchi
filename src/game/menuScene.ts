@@ -1,5 +1,5 @@
 // Scripted worlds the app shows without a player: the menu backdrop and the ?bot=1 debug plan for screenshots.
-// Game code, not tools: the production bundle must not import tools/ (D-47). tools/bot.ts re-exports these.
+// Game code, not tools: the production bundle must not import tools/ (D-51). tools/bot.ts re-exports these.
 import { applyCommand, createWorld, lineCells, type Command, type World } from '../sim/index';
 
 /** Cells of a polyline of map points, joined without repeating the corners. */

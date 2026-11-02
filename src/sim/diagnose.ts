@@ -292,7 +292,7 @@ export function sharedInput(world: World, id: number): SharedInput | null {
   return { good: g, rival, there, here: b.incoming[g] + b.stock[g], producers, producer, consumers };
 }
 
-/** A consumer's input arrives in a thin load because its supplier cannot keep up (mission X, D-43). */
+/** A consumer's input arrives in a thin load because its supplier cannot keep up (mission X, D-47). */
 export interface ThinDelivery {
   good: Good;
   wagon: number;
