@@ -21,3 +21,28 @@
 | zboże | grano | |
 | mąka | farina | |
 | chleb | pane | |
+
+## Round 05 terminology
+
+| Polski / English | Italiano | Usage |
+| --- | --- | --- |
+| ranga / rank | rango | Settlement status. |
+| renoma / renown | fama | Kept distinct from rank. |
+| targ / market | mercato; mercato del castello | The castle buys goods. |
+| nasycenie / saturation | saturazione | Falls by one unit every 10 seconds. |
+| transza / tranche | consegna | A separately timed delivery within the contract. |
+| kra, lód na moście / ice on the bridge | ghiaccio sul ponte | Temporary bridge closure. |
+| Buduj / Build | Costruisci | Tool label. |
+| Cofnij / Undo | Annulla | Timed action with a refund. |
+| przepływ / flow | entrate | Silver earned per minute, not wagon traffic. |
+| kasztelan / castellan | castellano | The castle's administrator. |
+| księga / ledger | registro | A settlement save slot. |
+| Osada / Settlement | Insediamento | Rank 0; compact Nuovo abitato on the creation button. |
+| Wieś targowa / Market village | Villaggio mercantile | Rank 1. |
+| Miasteczko / Small town | Borgo | Rank 2. |
+| Miasto / Town | Città | Rank 3. |
+| Gród / Stronghold | Roccaforte | Rank 4. |
+| Stolica / Capital | Capitale | Rank 5. |
+| ryby / fish | pesce | Mass commodity, as with pietra, carbone di legna, malto and birra. |
+
+Quantità venduta is a count-independent label and works with all goods. Argento is a mass noun; rank and ledger numbers identify one rank or ledger. Existing ICU-lite plurals remain unchanged. The tutorial names the existing Strada tool.
