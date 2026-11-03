@@ -914,6 +914,27 @@ bdi { unicode-bidi: isolate; }
 .tut-arrow .body path { fill: var(--ink); stroke: var(--parchment); stroke-width: 2.6; paint-order: stroke; stroke-linejoin: round; }
 .tut-arrow .cut path { fill: none; stroke: var(--parchment); stroke-width: .9; stroke-linecap: round; }
 
+/* ================================================================ "Co to znaczy?" (stall codex fold, src/ui/codex.ts)
+   A ruled fold under the chain: a 48 px row with a woodcut magnifier and a chevron, the entry on the paper below. */
+.codex { margin-top: 6px; border-top: 1px solid rgb(74 72 67 / .3); }
+.codex-tog {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px;
+  padding-inline: 2px 4px; text-align: start; color: #6e3520; font-size: 15px; font-weight: 700;
+}
+.codex-tog:active { color: var(--clay); }
+.codex-ic { display: grid; place-items: center; flex: none; color: var(--ink); }
+.codex-q { flex: 1; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.codex-chev { flex: none; width: 9px; height: 9px; /* physical sides: the chevron points down / up, never along the reading direction */
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg); margin-block-start: -4px; transition: transform var(--t-fast) var(--ease); }
+.codex.is-open .codex-chev { transform: rotate(225deg); margin-block-start: 4px; }
+.codex-body { padding: 0 2px 8px; font-size: 14px; line-height: 1.32; color: var(--ink); }
+.codex-body p { margin: 0 0 6px; }
+.codex-h { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.codex-fixes { margin: 2px 0 6px; padding-inline-start: 20px; }
+.codex-fixes li { margin-bottom: 2px; }
+.codex-chain { font-style: italic; color: var(--ink-soft); }
+
 /* ================================================================ gap finder (Why sheet) */
 .fix { display: flex; flex-direction: column; gap: 4px; }
 .fix .fix-btn { width: 100%; justify-content: flex-start; padding-inline: 12px 14px; font-size: 17px; text-align: start; line-height: 1.15; }
@@ -1832,6 +1853,10 @@ body.is-landscape .wb-line .count small { font-size: 13px; }
 body.is-landscape .wb-pace { display: flex; align-items: stretch; margin-top: 0; font-size: 13px; }
 body.is-landscape .wb-pace-eta { flex: 1 1 auto; min-width: 0; }
 body.is-landscape .wb-pace-sup { flex: none; min-width: 48px; justify-content: center; border-top: 0; border-inline-start: 1px solid rgb(74 72 67 / .2); }
+/* the supplier's name is screen-reader only here; its pace stays visible beside the good ("4,9/min") */
+.sup-rate { display: none; }
+body.is-landscape .sup-rate { display: block; font-size: 12px; line-height: 1.1; font-weight: 700; white-space: nowrap; color: var(--ink-soft); }
+body.is-landscape .wb-pace-sup { flex-direction: column; gap: 1px; padding-inline: 4px 2px; }
 body.is-landscape .wb-pace-sup > span {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }

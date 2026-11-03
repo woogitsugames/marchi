@@ -1,0 +1,53 @@
+// "Co to znaczy?" (owner decision, day 2 question 1): a fold under the cause in the "Dlaczego stoi?" sheet
+// with the stall codex entry (src/content/stallCodex.ts) for the status at the root of the chain — what it
+// means, how to check it, what to do, an example chain. Collapsed by default; once opened it stays open for
+// the session (the sheet re-renders every second). PL and EN are authored; other languages read the English
+// entry, marked lang="en" so an RTL sheet still lays it out left to right.
+import { getLang, t } from '../i18n/index';
+import { STALL_CODEX, type StallCodexLocale } from '../content/stallCodex';
+import type { BuildingStatus, WagonStatus } from '../sim/index';
+import { esc } from './dom';
+import { iconSvg } from './icons';
+
+let open = false;
+
+/** Codex key of a status: `status.K` / `status.K.CAUSE` for a building, `wagon.K` for a wagon. */
+export function codexKey(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus): string {
+  if (kind === 'wagon') return `wagon.${s.k}`;
+  const cause = (s as { cause?: string }).cause;
+  return cause ? `status.${s.k}.${cause}` : `status.${s.k}`;
+}
+
+/** The entry for a status in the reading language (English outside pl / en), or null when none is authored. */
+export function codexEntry(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus): { e: StallCodexLocale; lang: 'pl' | 'en' } | null {
+  const entry = STALL_CODEX[codexKey(kind, s)];
+  if (!entry) return null;
+  const lang = getLang() === 'pl' ? 'pl' : 'en';
+  return { e: entry[lang], lang };
+}
+
+export function codexHtml(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus): string {
+  const c = codexEntry(kind, s);
+  if (!c) return '';
+  const { e } = c;
+  const foreign = getLang() !== c.lang;
+  const fixes = e.fixes.filter((f): f is string => !!f).map((f) => `<li>${esc(f)}</li>`).join('');
+  return `<div class="codex${open ? ' is-open' : ''}">
+    <button class="codex-tog cf" data-act="codex" aria-expanded="${open}"><span class="codex-ic">${iconSvg('inspect', 20)}</span><span class="codex-q" dir="auto">${esc(t('codex.toggle'))}</span><span class="codex-chev" aria-hidden="true"></span></button>
+    <div class="codex-body"${foreign ? ' lang="en" dir="ltr"' : ''}${open ? '' : ' hidden'}>
+      <p class="codex-name"><b>${esc(e.name)}</b> — ${esc(e.meaning)}</p>
+      <div class="codex-h">${esc(t('codex.check'))}</div><p>${esc(e.check)}</p>
+      <div class="codex-h">${esc(t('codex.fixes'))}</div><ol class="codex-fixes">${fixes}</ol>
+      <div class="codex-h">${esc(t('codex.example'))}</div><p class="codex-chain">${esc(e.chain)}</p>
+    </div></div>`;
+}
+
+/** Tap on the fold: flip it in place (the next re-render keeps the state). */
+export function toggleCodex(btn: HTMLElement): void {
+  open = !open;
+  const root = btn.closest('.codex');
+  root?.classList.toggle('is-open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  const body = root?.querySelector<HTMLElement>('.codex-body');
+  if (body) body.hidden = !open;
+}

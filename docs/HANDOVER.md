@@ -8,8 +8,11 @@
   Testy **412/412**, typecheck i build zielone, smoke I–XII + dolina bez błędów konsoli. Stan symulacji **v8**.
 - Ostatnie APK: **1e60d5d** (13:50). Od niego w bazie: day3 do `62c938e` (pętla bruku, pauza z nazwą kontraktu,
   strzałka samouczka, Flex/Book posture, ostrzeżenia transz, beczki na wozie).
-- **Niedokończone:** gałąź `claude/w-day3`, commit WIP `1630083` (przerwany agent: „i18n keys and CSS” — najpewniej
-  zwinięta sekcja „Co to znaczy?” z Księgi przestojów w „Dlaczego stoi?”, decyzja właściciela). Przejrzyj, dokończ, scal.
+- **Zrobione (sesja `session_01Hk8EbiYMw1x9CXhyu3HM9n`):** WIP `1630083` z `claude/w-day3` dokończony i scalony —
+  zwinięte „Co to znaczy?” (Księga przestojów, `src/ui/codex.ts`) w karcie budynku i wozu, dla przyczyny u korzenia
+  łańcucha; inne języki czytają wpis EN (lang/dir=ltr, szewron fizyczny, `dir=auto` w RTL). Plus tempo dostawcy
+  „4,9/min” obok towaru w poziomym liście. Nowy cykl: `trig_01TCkYqpaE2pikhXkeMNAEq9`. Właściciel: do **2 agentów Opus**
+  naraz, jeden stale od researchu.
 - Decyzje: ostatnia **D-79** w docs/DECISIONS.md (sprawdź, czy day3 dodał nowsze); następna wolna — sprawdź plik.
 - GPT: oddane i scalone do 64; **czeka 65** (hindi, `docs/orders/gpt6-11b/`). 61 (grafiki sklepu) — właściciel: „zrobi kto
   inny, zapomnij”.
