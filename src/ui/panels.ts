@@ -59,6 +59,11 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
   const hint = short > 0
     ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
+  return fixSection(btn, hint, short > 0);
+}
+
+/** The "Naprawa" section: header, the fix button and its hint. */
+function fixSection(btn: string, hint: string, _why: boolean): string {
   return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
 }
 
@@ -85,7 +90,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       : short > 0
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.granaryWhy'))}</div>`;
-    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+    return fixSection(btn, hint, off);
   }
   if (cure === 'wagon') {
     const stable = world.state.buildings.find((q) => q.type === 'stable');
@@ -96,7 +101,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const hint = short > 0
       ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
-    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+    return fixSection(btn, hint, short > 0);
   }
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
   if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
@@ -193,10 +198,35 @@ function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
 }
 
 /** Delegated clicks: [data-go="building:12"], [data-act="buy:3"]. */
+/**
+ * The body's fixed parts (`div.sb-part`, `display: contents`), created once per content; a sheet that navigates
+ * to other content empties its body (Sheets.place), so they are rebuilt then.
+ */
+function sheetParts(body: HTMLElement, n: number): HTMLElement[] {
+  const kids = [...body.children] as HTMLElement[];
+  if (kids.length === n && kids.every((k) => k.classList.contains('sb-part'))) return kids;
+  body.innerHTML = '';
+  (body as HTMLElement & { __html?: string }).__html = undefined;
+  const parts: HTMLElement[] = [];
+  for (let i = 0; i < n; i++) { const d = document.createElement('div'); d.className = 'sb-part'; body.append(d); parts.push(d); }
+  return parts;
+}
+
+/** A finger (or mouse button) is down on the sheet's body: its update waits until it lifts (item 4). */
+function pressed(sheet: Sheet): boolean {
+  return !!(sheet.body as HTMLElement & { __press?: boolean }).__press;
+}
+
 function wire(sheet: Sheet, nav: PanelNav): void {
-  const body = sheet.body as HTMLElement & { __wired?: boolean };
+  const body = sheet.body as HTMLElement & { __wired?: boolean; __press?: boolean };
   if (body.__wired) return;
   body.__wired = true;
+  // hold re-renders while pressed, so the button under the finger is the one the click lands on; a scroll
+  // drag cancels the pointer (touch-action: pan-y) and lifts the hold
+  body.addEventListener('pointerdown', () => { body.__press = true; });
+  // pointerup: lift after the click that follows it in the same task has been dispatched
+  body.addEventListener('pointerup', () => { window.setTimeout(() => { body.__press = false; }, 0); });
+  for (const ev of ['pointercancel', 'pointerleave'] as const) body.addEventListener(ev, () => { body.__press = false; });
   body.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-go],[data-act]');
     if (!el) return;
@@ -353,6 +383,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const b = buildingById(world, id);
       if (!b) return false;
       wire(sheet, nav);
+      if (pressed(sheet)) return true;
       const stalled = isStall(b.status) || b.status.k === 'NO_INPUT';
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
@@ -386,7 +417,12 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
       const codex = stalled ? codexHtml(cl.kind, cl.status, codexCalm(world, cl)) : '';
       const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain) : '') + codex;
-      setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
+      // three parts, each re-rendered only when its own HTML changes: the stall clock ticking in the chain no
+      // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
+      const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
+      setHtml(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
+      setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '');
+      setHtml(pRest!, undo + stockHtml(world, b, nav.pace));
       return true;
     },
     onClose() { nav.setGhost(null); },
@@ -401,6 +437,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       const w = world.state.wagons.find((q) => q.id === id);
       if (!w) return false;
       wire(sheet, nav);
+      if (pressed(sheet)) return true;
       setHtml(sheet.icon, iconSvg('wagon', 36));
       sheet.kicker.textContent = t('wagon.kicker');
       sheet.title.textContent = wagonName(world, id);
@@ -450,7 +487,6 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         html += codexHtml(cl.kind, cl.status);
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;
-        if (fix) html += fixHtml(world, target, fix);
         if (w.status.k === 'BRIDGE_CLOSED') {
           // free valley winter: the same cause as mission IV's ice, plus the reassurance that it passes
           const winter = seasonal(world) && seasonAt(world.state.tick) === 'winter' ? ` ${t('season.iceWinter')}` : '';
@@ -463,7 +499,12 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
         `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(WAGON_REFUND) })}</span></button></div>` +
         (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
-      setHtml(sheet.body, html);
+      // the road fix sits after the chain (and the ice hint) as before, in its own part
+      const cut = html.indexOf('<div class="sheet-actions">');
+      const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
+      setHtml(pLead!, html.slice(0, cut));
+      setHtml(pFix!, fix ? fixHtml(world, target, fix) : '');
+      setHtml(pRest!, html.slice(cut));
       return true;
     },
     onClose() { nav.setGhost(null); },

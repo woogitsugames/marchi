@@ -978,6 +978,8 @@ bdi { unicode-bidi: isolate; }
 .fix .s-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .fix .fix-why { color: #6e3520; font-weight: 700; }
 .fix .fix-why svg { color: var(--clay); }
+/* the sheet body's parts re-render on their own (panels.ts sheetParts) and add no box of their own */
+.sb-part { display: contents; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }
