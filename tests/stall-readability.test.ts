@@ -17,7 +17,11 @@ const row = (w: World, y: number, x1: number, x2: number) => lineCells(w.terrain
 
 test('F1: in winter a mill / malthouse whose grain is CONTESTED names the slowed farm; not in other seasons', () => {
   let winterHits = 0, otherHits = 0;
-  runSandbox(DECENT, 61, {
+  // D-94: in the free valley workshops top up in loads of 4, so with the malthouse's own farms the decent
+  // plan hardly contests grain any more; the malthouse without them shares the mills' farms, a real grain
+  // contest that the winter slowdown turns into CONTESTED (and only in winter)
+  const grainShort = DECENT.filter((s) => s.name !== 'farm for the malthouse' && s.name !== 'second malt farm');
+  runSandbox(grainShort, 61, {
     checkEvery: 1000,
     onTick: (w) => {
       if (w.state.tick % 10) return;

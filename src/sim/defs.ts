@@ -65,6 +65,9 @@ export const STONE_COBBLE = 1;
 export const STONE_STONE_BRIDGE = 3;
 /** Free valley: every granary keeps up to this much stone for building before the market gets any. */
 export const STONE_RESERVE = 18;
+/** Free valley (D-94): a workshop that is not starving asks for input only when at least this many units
+ *  (or a full load, if smaller) fit — fuller wagons instead of one-unit top-ups. Contract missions: off. */
+export const TOP_UP_MIN = 4;
 
 // --- Terrain rules for placement -----------------------------------------------
 /** Quarry: some cell of the footprint or the ring around it is at least this high above the water (m). */
@@ -231,8 +234,8 @@ export const RANKS: readonly RankDef[] = [
   { renown: 0, goods: 0, flow: 0, unlocks: ['woodcutter', 'sawmill', 'farm', 'stable', 'warehouse'], surfaces: [1], castleLevel: 0 },
   { renown: 200, goods: 2, flow: 8, unlocks: ['mill', 'bakery'], surfaces: [], castleLevel: 0 },
   { renown: 1000, goods: 4, flow: 20, unlocks: ['fisher', 'quarry'], surfaces: [2], castleLevel: 0 },
-  { renown: 2500, goods: 6, flow: 60, unlocks: ['charcoalBurner', 'malthouse'], surfaces: [], castleLevel: 0 },
-  { renown: 6000, goods: 7, flow: 120, unlocks: ['brewery'], surfaces: [], castleLevel: 0 },
+  { renown: 3000, goods: 6, flow: 60, unlocks: ['charcoalBurner', 'malthouse'], surfaces: [], castleLevel: 0 },
+  { renown: 7200, goods: 7, flow: 120, unlocks: ['brewery'], surfaces: [], castleLevel: 0 },
   { renown: 13000, goods: 9, flow: 160, unlocks: [], surfaces: [], castleLevel: 1 },
 ];
 

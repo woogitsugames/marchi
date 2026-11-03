@@ -630,4 +630,6 @@ export const en: FullDict = {
   'contract.next': 'Next mission',
   'menu.startHere': 'Start here',
   'menu.m1Sub': 'Bridge the river and deliver before the snow',
+  // free valley top-up in fuller loads (D-94; see PENDING_KEYS)
+  'why.topUp': 'Has {goodGen} to work with; it orders more once {n} fit — a fuller wagon, fewer trips.',
 };

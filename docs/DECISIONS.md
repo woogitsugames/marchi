@@ -1275,3 +1275,39 @@ zdąż przed śniegiem"); `menu.contractSub` stays for the other languages until
 `contract.next`, `menu.startHere`, `menu.m1Sub` are in PENDING_KEYS. Not done (research idea): folding
 missions III-XII into one row — the frame scrolls and the kicker gives the direction; left for playtest.
 `docs/shots/day6-menu-*.jpg`, `day6-end-next-412x915.jpg`. (decided)
+
+**D-94 — Free valley: workshops top up in loads of at least four (owner decision A, day 6; research
+2026-11-03-partial-loads.md, rule "sb4").** In the free valley a workshop that still has input for a cycle (or
+some on the way) asks for more of an input only once `min(load, TOP_UP_MIN = 4)` units fit; a starving one asks
+at once as before. Contract missions are untouched — `topUpHold()` (src/sim/logistics.ts, read-only, also used
+by the card) returns 0 outside `sandbox` — so every mission golden hash, the balance ladder and `npm run bot`
+(m1: won 8.85 min, 2 seals, 26 silver, identical) stay as they were. **No state version bump:** the rule reads
+only `stock`, `incoming` and the recipe; no new field, no migration (`STATE_VERSION` stays 8). An old valley
+ledger simply starts sending fuller wagons after loading; ranks are latched in the state, so a ledger already
+past a raised threshold keeps its rank.
+Rank retune: research measured ranks 3 and 4 ~8 and ~11 min early (38.1 / 66.9 against the 40-50 / 70-90
+windows). The suggested ~+10 % (2750 / 6600 renown) lands on the window edges (40.5 / 71.4 min) — one later
+change away from failing — so ranks 3 and 4 go to **3000 / 7200 renown (+20 %)**, which puts them back near the
+old pace with margin. Valley bot, `tools/balance.ts sandbox`:
+
+| plan | before (base) | after (rule + thresholds) |
+|---|---|---|
+| decent, 150 min: silver earned | 17 188 | 19 706 (+14.7 %) |
+| decent: ranks 1/2/3/4/5 (min) | 10.1 / 26.6 / 45.9 / 77.9 / 122.8 | 10.4 / 22.3 / 42.8 / 76.3 / 108.7 |
+| decent: best flow | 208 sr/min | 225 sr/min |
+| only wagons (5 more), 30 min: earned / rank 1 | 485 / 12.5 min | 446 / 12.7 min |
+| 3 wagons + cobble, 30 min: earned / rank 1 | 474 / 12.7 min | 438 / 13.5 min |
+| nothing, 30 min | 204, rank 0 | 204, rank 0 |
+
+(Rule alone, old thresholds: 20 264 earned, ranks 10.4 / 22.3 / 38.1 / 66.9 / 105.4.) The small-fleet openings
+earn ~8 % less in the first 30 minutes (two wagons wait for a fuller load instead of carrying ones); rank 5 at
+108.7 is inside its 105-135 window but near the edge — watch it in the playtest.
+Tests: two valley tests lost the situation they test, not their meaning, and were re-staged honestly —
+`stall-readability › F1` (winter CONTESTED names the slowed farm) now plays the decent plan without the
+malthouse's own two farms, so malthouse and mills really share grain (344 winter samples, 0 outside winter);
+`diagnosis-audit-fixes › fix 1` (a market surplus stays "worth a wagon") plays it with 7 bought wagons instead
+of 30, so a yard still waits for a wagon. New `tests/valley-top-up.test.ts`: no fed workshop in the valley gets
+a top-up below the threshold; mission I still does. Card: the workshop sheet adds one calm line under its
+inputs while a request is held — "Ma drewna na pracę; dowóz zamówi, gdy zmieści się 4 — pełniejszy wóz, mniej
+kursów." (key `why.topUp`, PENDING_KEYS); status stays "Produkuje", no stall, no cure.
+`docs/shots/day6-valley-topup-412x915.jpg`. (decided)

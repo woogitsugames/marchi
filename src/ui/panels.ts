@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier,
+  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, topUpHold,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -242,6 +242,12 @@ function stockHtml(world: World, b: Building, pace: PaceLog): string {
     if (ins.length) {
       parts.push(`<div class="section-h">${esc(t('why.needs'))}</div><div class="goods">${ins.map((g) =>
         chip(g, b.stock[g], def.inCap, inc(g), b.stock[g] === 0 && b.incoming[g] === 0)).join('')}</div>`);
+      // free valley (D-94): a fed workshop with a small gap waits for a fuller wagon — said calmly, not a stall
+      for (const g of ins) {
+        const n = topUpHold(world, b, g);
+        if (n > 0) parts.push(`<div class="s-hint calm-hint top-up">${iconSvg(g, 22, goodName(g))}<span${translated('why.topUp') ? '' : ' lang="en" dir="ltr"'}>${
+          esc(t('why.topUp', { goodGen: t(`goodGen.${g}` as MessageKey), n: fmtInt(n) }))}</span></div>`);
+      }
     }
     parts.push(`<div class="section-h">${esc(t('why.makes'))}</div><div class="goods">${outs.map((g) =>
       chip(g, b.stock[g], def.outCap, b.reservedOut[g] > 0 ? `<span class="inc">${tHtml('why.reserved', { n: b.reservedOut[g] })}</span>` : '')).join('')}</div>`);

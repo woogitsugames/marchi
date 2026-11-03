@@ -1,6 +1,6 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
-import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { fairPercent, orderOutstanding } from './events';
@@ -81,6 +81,22 @@ export function assignJob(world: World, wagon: Wagon, from: Building, to: Buildi
   wagon.status = { k: 'TO_PICKUP' };
 }
 
+/**
+ * D-94, free valley only: a workshop that still has input for a cycle (or some on the way) asks for more of
+ * `g` only once min(load, TOP_UP_MIN) units fit. Returns that number while the request is held back, else 0
+ * (asks now, starving, full, not an input, or a contract mission). Read-only: the dispatcher and the card's
+ * "waits for a fuller wagon" line use the same test.
+ */
+export function topUpHold(world: World, b: Building, g: Good): number {
+  if (world.state.mission.id !== 'sandbox') return 0;
+  const def = BUILDINGS[b.type];
+  if (!def.recipe || b.type === 'castle' || b.type === 'warehouse' || !inputGoods(b.type).includes(g)) return 0;
+  const want = def.inCap - b.stock[g] - b.incoming[g];
+  const starving = b.stock[g] < (def.recipe.inputs[g] ?? 1) && b.incoming[g] === 0;
+  const need = Math.min(capacityOf(g), TOP_UP_MIN);
+  return want > 0 && !starving && want < need ? need : 0;
+}
+
 export function dispatch(world: World): void {
   const st = world.state;
   const dc = new DistCache(world);
@@ -140,6 +156,9 @@ export function dispatch(world: World): void {
     const cap = capacityOf(d.good);
     // starving = cannot start one more cycle and nothing is on the way (input 1: an empty stock)
     const starving = d.prio === 1 && d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1) && d.b.incoming[d.good] === 0;
+    // free valley (D-94): a workshop with input for a cycle waits until a fuller load fits (contract
+    // missions keep the one-unit top-up their balance and golden hashes were built on)
+    if (d.prio === 1 && topUpHold(world, d.b, d.good) > 0) continue;
     const minQty = Math.min(d.want, starving ? 2 : cap);
     let best: Building | null = null, bestT = Infinity, anyAvail = -1;
     for (const s of st.buildings) {
