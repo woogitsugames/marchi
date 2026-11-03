@@ -1030,3 +1030,14 @@ the quarry's guy rope reading through the block pile from the game camera (pile 
 sawmill were clear. Model preview: `yard-<kind>` (game-camera close-up with a road stub at the gate) and
 `yardtop-<kind>` views. Before/after `docs/shots/day2-yard-piles-before-after.jpg` (mill, quarry, charcoal,
 malthouse). (decided)
+
+**D-75 — The last chamfered parchment surfaces move onto the kit cards (UI only).** After D-43/D-53/D-70 the
+only surfaces still drawn with the old clip-path chamfer and a flat fill were the why-chain links, the goods
+chips (Needs / Produces, castle order), the pace rows, the build shelf cards and the ghost / draft tags over the
+map — in a screenshot they read as plain rounded rectangles next to the painted tools. They now wear the same
+`card-normal` sprite as the rail tools and secondary buttons (pressed sprite on tap; the building's own first link
+`card-active`; a locked build card the hatched `card-disabled`). The cause link, an empty input chip, the pace
+bottleneck and a bad placement take `panel-alert` (its wine edge marks "this one"), drawn on `::before` so the
+edge flips to the start side in RTL. Text, sizes, hit areas and layout unchanged; no new sprites. Layout
+`--quick` and why/build/castle/valley in pl+ar green. `docs/shots/day2-kit-cards.jpg` (why sheet before, after,
+placement with the shelf). (decided)
