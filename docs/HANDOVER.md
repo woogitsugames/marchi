@@ -339,5 +339,7 @@ Każdy punkt: typecheck, `npm test` (412/0), build, `npm run layout -- --quick` 
 4. **Pierścień samouczka** o 3 px szerszy — wewnętrzna linia z obwódką zasłaniała ostatnią cyfrę „0/20” przy krawędzi listu w poziomie.
 5. **Wiersze „etykieta — wartość”** (karta wozu, list końcowy, karta zamku): etykiety wyrównane do środka wiersza, nie do linii bazowej — przy wartości z ikoną (ładunek, prędkość) albo 48-px linku (cel) etykieta spadała o pół wiersza. `day3-kv-align.jpg`.
 6. **Błąd: listy z transzami (V, VI)** — pigułka mówiła „2:00 do śniegu”, licząc do terminu bieżącej dostawy (śnieg dopiero 11:00). Teraz „2:00 do dostawy 1” z klepsydrą; ostatnia transza (termin = śnieg) zostaje „do śniegu”. Nowy klucz `contract.toTranche` (PENDING_KEYS).
+7. **Ostrzeżenia przed terminem transzy** — „Zostały 2 minuty — brakuje jeszcze N” liczyło cały kontrakt (48), nie bieżącą dostawę (12 z 18 chleba); teraz brak tej transzy, z klepsydrą, i cisza, gdy transza już skompletowana.
+8. **Beczki piwa (błąd grafiki)** — losowy „obrót klepek” był odchyleniem całej beczki: na wozie wystawały do 1,11 m w bok (burty ±0,64), na placu browaru / spichlerza / zamku leżały krzywo. Teraz obrót wokół własnej osi; plac browaru 0,1 m w bok (test kolizji). D-81, `day3-beer-barrels.jpg`, widok `beercargo` w model-preview.
 BACKLOG: P3 `{n, plural}` zamknięte (sprawdzone — wszystkie liczniki z rzeczownikiem policzalnym już są blokami; „srebra” niepoliczalne); P2 misja X — po D-47 zostaje tylko pytanie po playteście (sonda: brak wozów czekających u drwala); Flex — częściowo (zostaje sprawdzenie na urządzeniu).
-Nowe klucze: `contract.toTranche`. Następna decyzja: **D-81**.
+Nowe klucze: `contract.toTranche`. Następna decyzja: **D-82**.
