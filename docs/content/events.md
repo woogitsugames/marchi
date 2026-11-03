@@ -1,6 +1,6 @@
 # Wolna dolina — teksty zdarzeń (PL / EN)
 
-**Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień zostają tutaj jako materiał na przyszłe szczegóły karty. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
+**Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień są w i18n jako `events.order.d.<ID>` (PL, EN; noc 2026-11-03) i pokazują się w rozwiniętej, jeszcze nieprzyjętej ofercie. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
 
 ## Zamówienia królewskie — 36 wariantów
 

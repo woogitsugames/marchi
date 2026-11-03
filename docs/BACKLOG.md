@@ -116,7 +116,7 @@ Numery linii z 2026-11-01. Pozycje 1–6: samouczek; 7–16: i18n/RTL; 17–23: 
 
 ### Sandbox (Sonnet)
 Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -> S6 -> S7 -> S8.
-- [ ] P3 — Zdarzenia doliny (D-54) po playteście: jeśli R5 przy przyjmowaniu wszystkich zamówień (~96 min) okaże się za szybko — najpierw renoma zamówień 2× → 1× srebra; tłumaczenia `events.*` na pozostałe 14 języków (dziś PL/EN/AR, reszta EN fallback); klucz `season.effect.autumn-fair` nieużywany — usunąć przy najbliższej rundzie tłumaczeń; ewentualnie pełna narracja zamówienia (docs/content/events.md) po dotknięciu tytułu.
+- [ ] P3 — Zdarzenia doliny (D-54) po playteście: jeśli R5 przy przyjmowaniu wszystkich zamówień (~96 min) okaże się za szybko — najpierw renoma zamówień 2× → 1× srebra; tłumaczenia `events.*` na pozostałe 14 języków (dziś PL/EN/AR, reszta EN fallback); klucz `season.effect.autumn-fair` nieużywany — usunąć przy najbliższej rundzie tłumaczeń; pełna narracja zamówienia — **zrobione w nocy 2**: zdanie z docs/content/events.md (36 × PL/EN, `events.order.d.*`, PENDING_KEYS) w rozwiniętej ofercie, dopóki nie przyjęta; po przyjęciu karta zostaje krótka (zrzuty `docs/shots/night2-events-desc-*`).
 
 ## Zrobione
 - 2026-11-02 — (P2, D-54) Karta „Wieści z doliny”: domyślnie zwinięta (wybór na sesję), jedno zdarzenie w pełni, reszta wierszami 48 px, krótkie podświetlenie nagłówka przy nowym zdarzeniu; etykiety kart narzędzi łamią się w dwie linie zamiast wychodzić poza kartę (de „Wagen kaufen”, ru „Купить повозку”, sv „Stenläggning”); 360×740 / 412×915 / 915×412, pl/de/ru/ar bez kolizji plakietki z etykietą; zrzuty `docs/shots/events2-*.jpg`, 0 błędów konsoli — gałąź `claude/w-eventcard`.

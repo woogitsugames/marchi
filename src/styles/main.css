@@ -1544,6 +1544,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .ev-fair { display: flex; align-items: center; gap: 8px; min-height: 36px; }
 .ev-txt { flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 1.25; }
 .ev-merchant > .ev-txt { margin-top: 2px; }
+.ev-order > .ev-desc { margin-block: 1px 3px; font-style: italic; color: var(--ink-soft); }
 .ev-fair.is-on .ev-txt { font-weight: 700; color: #6b4c16; }
 .ev-gi { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
   background: radial-gradient(circle, #efe0bf 0 60%, var(--brass) 62% 70%, transparent 72%); }

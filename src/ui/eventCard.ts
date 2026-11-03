@@ -176,9 +176,12 @@ export class EventCard {
     const tail = o.accepted
       ? `<div class="ev-ob"><ul class="ev-goods">${goods}</ul>${later}</div>`
       : `<ul class="ev-goods">${goods}</ul><div class="ev-acts"><button class="btn primary cf ev-btn" data-ev="accept|${esc(o.id)}">${iconSvg('seal', 20)}<span>${esc(t('events.order.accept'))}</span></button>${later}</div>`;
+    // the castle's request in a sentence (docs/content/events.md) while it is an offer to weigh; once
+    // accepted the item is about deliveries and stays short
+    const desc = o.accepted ? '' : `<div class="ev-txt ev-desc" dir="auto">${esc(t(`events.order.d.${o.templateId}` as MessageKey))}</div>`;
     return `<li class="ev-item ev-order${o.accepted ? ' is-on' : ''}">
       <div class="ev-oh"><span class="ev-seal">${iconSvg('seal', 18)}</span><span class="ev-t" dir="auto">${esc(orderTitle(o))}</span></div>
-      ${reward}${tail}</li>`;
+      ${desc}${reward}${tail}</li>`;
   }
 
   /** One toast per new event or fulfilled order; nothing on load, a new game or a language change. */
