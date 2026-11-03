@@ -998,3 +998,35 @@ sawmill 51→52, farm 55→56, mill 55→56, woodcutter 49→53 (wood logs: 2 pa
 Test `tests/yard-piles.test.ts` (every producer has a spot; a full load stays on its footprint); model preview shows
 full piles. Shot `docs/shots/day1-yard-sawmill-off-on.jpg`. Not done: the warehouse (many goods) and the castle.
 (decided)
+
+**D-72 — The pressed seal is a vector redraw of the kit seal (UI only; day-1 note).** The seal-press cue (D-69)
+showed the kit `seal-full` (a 28 dp sprite, 84 px in the @3x file) at 96 CSS px — about 3.4× the file on a
+2.6–3 dpr phone, visibly soft. Shrinking the cue to the sprite (28–32 CSS px) would lose the moment; the
+`seal-alert` sprite (72 dp) is the HUD alarm and would mix the meanings. So the press draws
+`public/assets/ui/kit/seal-press.svg`: the same seal redrawn as vector (gold wax rim with ten lobes, the dark
+squeezed ring with gold drops, the red disc with a soft wax gradient, eight cream impressions), colours taken
+from the sprite. Sharp at any size and dpr, 7 kB, no new request on the hot path (shown once per won contract).
+The small seals elsewhere keep the bitmap kit sprites at their native sizes. Comparison at 2.625 dpr
+`docs/shots/day2-seal-press.jpg` (left the vector, right the old sprite at 96 px). (decided)
+
+**D-73 — Contract numerals stay Roman in every language (UI; day-1 question).** The menu medallion repeats the
+numeral each contract title starts with, and all 17 translations (Arabic, Hindi, Japanese, Chinese … included)
+write the titles as "I. …", "XII. …"; the save-slot margin and the valley books use the same numerals. A locale
+digit in the medallion next to a Roman title would show two numbering systems at once, so the numerals are kept
+deliberately as part of the contract's name (like a chapter number), not as a count to localize. If a translator
+changes a title to another form, the medallion still shows the Roman numeral and the title stays whole (the
+existing `startsWith` rule). Comment at `ROMAN_MISSION` in `src/ui/menu.ts`. (decided; owner may overrule —
+the change would be the titles and the medallion together)
+
+**D-74 — Yard pile spots checked on all 10 producers (render only; day-1 question).** A geometric check (now in
+`tests/yard-piles.test.ts`) samples every model triangle every ~5 cm and fails when any point above the ground
+lies inside a pile unit, when the pile reaches within 5 cm of the footprint edge, or when it stands in the 2.2 m
+wagon lane of the road that ends at the gate (last 2.5 m inside the footprint). It found: farm sacks touching the
+step of the house (moved 0.5 m out), mill sacks in the doorway and on the footprint edge (moved to the left of
+the door, clear of the lane), bakery baskets in the road mouth (moved 0.7 m right), fisher creels on the edge,
+charcoal sacks in the hut's base (hut 0.4 m back, sacks to the front-right), malt bags in front of the door and
+into the firewood (moved to the open front-right corner), brewery barrels in the lane (moved 0.55 m right), and
+the quarry's guy rope reading through the block pile from the game camera (pile 0.35 m left). Woodcutter and
+sawmill were clear. Model preview: `yard-<kind>` (game-camera close-up with a road stub at the gate) and
+`yardtop-<kind>` views. Before/after `docs/shots/day2-yard-piles-before-after.jpg` (mill, quarry, charcoal,
+malthouse). (decided)

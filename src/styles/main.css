@@ -591,7 +591,8 @@ body.is-side .sheet-grip::before { display: none; }
   background: rgb(43 38 32 / .42); animation: fade-in var(--t-fast) var(--ease);
 }
 .seal-press .seal-press-wax, .seal-press .seal-press-ring { grid-area: 1 / 1; width: 96px; height: 96px; display: block; }
-.seal-press-wax { filter: drop-shadow(0 3px 2px rgb(30 20 14 / .55)); animation: seal-down 200ms cubic-bezier(.3, 0, .2, 1) both; }
+/* the kit's seal-full is a 28 dp sprite (84 px @3x) — soft at 96 px; the press uses a vector redraw of the same seal */
+.seal-press-wax { background: url("/assets/ui/kit/seal-press.svg") center / contain no-repeat; filter: drop-shadow(0 3px 2px rgb(30 20 14 / .55)); animation: seal-down 200ms cubic-bezier(.3, 0, .2, 1) both; }
 /* the wax squeezed out under the matrix: a dark rim that spreads once as the seal lands */
 .seal-press-ring { border-radius: 50%; box-shadow: 0 0 0 0 rgb(110 30 22 / .5); animation: seal-ring 220ms linear 180ms both; }
 @keyframes seal-down { from { transform: scale(1.45) rotate(-8deg); opacity: 0; } 60% { opacity: 1; } to { transform: scale(1) rotate(-3deg); opacity: 1; } }

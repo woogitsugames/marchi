@@ -505,6 +505,8 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 
 ### UI art kit — proposal 55
 
+`public/assets/ui/kit/seal-press.svg` (D-72): vector redraw of `seal-full` for the large seal-press cue, drawn for Marchia by Claude from the kit sprite's shapes and colours; licence as the game.
+
 `public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra. Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
 
 

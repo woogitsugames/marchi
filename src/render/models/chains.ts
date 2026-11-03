@@ -217,7 +217,7 @@ export function fisher(b: PartBuilder): Partial<BuildingModel> {
   rod(b, 'wood', v3(cx - 2.55, 0, -0.7), v3(cx - 2.38, 2.6, -0.3), 0.03, 0.03, 4, { color: '#76624a' });
   box(b, 'wood', 0.14, 0.5, 0.03, trs(cx - 2.57, 0.3, -0.72, 0, 0.1, 0.05), { color: '#76624a' });
   b.add('wood', new CylinderGeometry(0.16, 0.24, 0.9, 8, 3, true), { color: '#6a5841', m: trs(jx - 0.2, 1.05, -3.0, Math.PI / 2, 0, 0), noise: 0.2, noiseFreq: 14, ao: 0 });
-  return { gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.3), yaw: Math.PI / 2 } };
+  return { gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.0), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -377,7 +377,7 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   rod(b, 'wood', v3(-5.3, 0.5, 1.6), v3(-4.7, 0.95, 1.9), 0.025, 0.022, 4, { color: '#7a6448', ao: 0 });
   box(b, 'metal', 0.06, 0.06, 0.55, trs(-4.72, 0.97, 1.9, 0, 1.1, 0.3), { color: '#4a4744', ao: 0, dirt: 0 });
   fenceRun(b, v3(-6.0, 0, 0.3), v3(-6.0, 0, 3.6), 1.0);
-  return { gate: v3(0.6, 0, 4), yard: { at: v3(-3.4, 0, 2.6), yaw: Math.PI / 2 } };
+  return { gate: v3(0.6, 0, 4), yard: { at: v3(-3.75, 0, 2.6), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -447,7 +447,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
     }
   }
   // burner's hut: cone of poles covered in bark and sod, a dark doorway toward the yard
-  const hx = 2.35, hz = 1.4;
+  const hx = 2.35, hz = 1.0;
   b.add('bark', new CylinderGeometry(0.08, 1.35, 2.5, 10, 3, true), {
     color: '#4a3f33',
     m: trs(hx, 1.2, hz),
@@ -479,7 +479,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
     ao: 0,
     dirt: 0,
   });
-  return { gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(1.2, 0, 2.6), yaw: Math.PI / 2 } };
+  return { gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(2.1, 0, 3.05), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -548,7 +548,7 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   const dx = (mx0 + mx1) / 2 + 0.7;
   sack(b, dx - 1.0, 0.85, 0.2);
   // the pale malt bags by the door are the yard stock (the malthouse's malt, D-71)
-  return { gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz), yard: { at: v3(dx + 1.3, 0, 1.3), yaw: Math.PI / 2 } };
+  return { gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz), yard: { at: v3(2.1, 0, 3.0), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -634,5 +634,5 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   // trestle bench with a tankard-sized cask and a tun
   b.add('wood', new CylinderGeometry(0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
   b.add('plaster', new CylinderGeometry(0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
-  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.2, 0, 2.7), yaw: Math.PI / 2 } };
+  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.75, 0, 2.7), yaw: Math.PI / 2 } };
 }

@@ -32,8 +32,18 @@ const YARD_GOOD: Partial<Record<string, CargoGood>> = {
   woodcutter: 'wood', sawmill: 'planks', farm: 'grain', mill: 'flour', bakery: 'bread',
   fisher: 'fish', quarry: 'stone', charcoalBurner: 'charcoal', malthouse: 'malt', brewery: 'beer',
 };
-function addYard(bm: { kind: string; yard?: { at: Vector3; yaw: number } }, m: Matrix4): void {
+/** World placement of each building with a yard pile, for the `yard-<kind>` close-ups. */
+const yardViews = new Map<string, Matrix4>();
+function addYard(bm: { kind: string; yard?: { at: Vector3; yaw: number }; gate: Vector3; cells: [number, number] }, m: Matrix4): void {
   const g = YARD_GOOD[bm.kind];
+  if (bm.yard && g) {
+    yardViews.set(bm.kind, m.clone());
+    // a road stub from the gate outwards (roads end at the gate on the footprint edge), to judge the pile beside it
+    const road = new Mesh(new PlaneGeometry(2.4, 4), new MeshStandardMaterial({ color: '#8a7656', roughness: 1 }));
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(bm.gate.x, 0.03, bm.gate.z + 2).applyMatrix4(m);
+    scene.add(road);
+  }
   if (!bm.yard || !g) return;
   const pm = m.clone().multiply(new Matrix4().makeTranslation(bm.yard.at.x, 0, bm.yard.at.z))
     .multiply(new Matrix4().makeRotationY(bm.yard.yaw)).multiply(yardPileLocal(g));
@@ -368,13 +378,21 @@ TREE_KINDS.forEach((kind, k) => {
   const cx = 1.1 * sp, cz = 70 + k * 28, back = sp * 5 + H * 0.5;
   views[`tree-${kind}`] = [new Vector3(cx, H * 0.55 + back * 0.12, cz + back), new Vector3(cx, H * 0.45, cz)];
 });
+// yard close-ups (D-71 pile placement): each producer from the game camera's side, the pile in the middle
+for (const [kind, m] of yardViews) {
+  const bm = buildingModel(kind as Parameters<typeof buildingModel>[0]);
+  const at = new Vector3(bm.yard!.at.x, 0.4, bm.yard!.at.z).applyMatrix4(m);
+  views[`yard-${kind}`] = [at.clone().add(new Vector3(5, 7.5, 11)), at];
+  const c = new Vector3(0, 0, 0).applyMatrix4(m);
+  views[`yardtop-${kind}`] = [c.clone().add(new Vector3(0, 30, 0.01)), c];
+}
 const [eye, target] = views[view] ?? views.overview;
 if (view.startsWith('tree-')) {
   const keep = new Set(treeObjs.get(view.slice(5)) ?? []);
   scene.children.forEach((c, i) => { if (i >= baseChildren && !keep.has(c)) c.visible = false; });
 }
 // the chain views show only the D-29 set, without the older rows behind it
-if (view.startsWith('chain')) {
+if (view.startsWith('chain') || /^yard(top)?-(fisher|quarry|charcoalBurner|malthouse|brewery)$/.test(view)) {
   scene.children.forEach((c, i) => {
     if (i >= baseChildren && (i < chainFrom || i >= chainTo)) c.visible = false;
   });
