@@ -499,3 +499,6 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - **~22:40: dokończenie day7 + poprawki z first-10-b oddane innej sesji Claude Code** (prompt od właściciela; gałąź
   `claude/x-day7-finish` z `claude/w-day7`, PR do bazy). Po wznowieniu NIE robić tego samego: deweloper nocny bierze
   grafikę/animacje (tartak, rolnik, rybak) i misję-lekcję kupna wozu; scalić PR tej sesji, gdy przyjdzie.
+- **~22:50 właściciel: także `main`.** Na zdalnym nie było `main` — utworzona z bazy. Po każdym zielonym scaleniu do bazy:
+  `git push origin claude/eager-cori-08wt8e:main` (fast-forward). PR innych sesji kierować do bazy, scalać lokalnie lub przez
+  GitHub, potem przesunąć `main`. Praca autonomiczna, ciągła, PR-y wolno otwierać.
