@@ -208,3 +208,15 @@ Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze ko
    `docs/missions/m3.md` (12:00/08:00/10:00 zamiast 11:00/06:15/08:00, poprawione); `tests/i18n-hygiene` — 19
    martwych kluczy usuniętych ze wszystkich słowników, brak literałów w index.html i budowniczych UI.
 Zrzuty `docs/shots/night3-*.jpg` (4); `npm run shots` (27 zrzutów) bez błędów konsoli. Następne decyzje od **D-63**.
+
+## Stan nocy 4 — 2026-11-03 (gałąź `claude/w-night4`, agent nocny 4)
+Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, push; sim nietknięta, hasze bez zmian):
+1. **Audio (D-63)**: szew pętli `ambient.evening` — przyczyna nie w przenikaniu, tylko w `loudnorm`, który przy
+   przekroczeniu -6 dBTP po cichu przechodził w tryb dynamiczny (wzmocnienie dryfowało 26,6 → 23,9 dB w 30 s, więc
+   koniec i początek pętli miały inne wzmocnienie). `tools/process_audio.py` daje wtedy stałe wzmocnienie + limiter;
+   fragment nagrania przesunięty z 0 s na 198,5 s (ten sam wiatr CC0, równiejsza obwiednia). Szew 200 ms: 5,8 → 0,56 dB
+   (mediana sąsiednich okien w pliku 0,76 dB). Przerenderowany tylko ten plik, `--check` zielony, provenance
+   zaktualizowane. **Do odsłuchu na słuchawkach**: nowy fragment ma mniej dudnienia < 60 Hz (31 % zamiast 90 % energii).
+   `AudioEngine`: po pierwszym geście ładuje wszystkie jednorazowe dźwięki (sfx + ui, ~300 kB; pętle dalej na
+   żądanie), a `play()` w trakcie ładowania czeka w kolejce (jedno na id) zamiast przepadać po 850 ms; odrzuca dopiero
+   po 4 s. Test `tests/audio-preload.test.ts`.

@@ -868,3 +868,22 @@ side sheet without landscape) the game sheet started at the top edge over the ch
 under them like the landscape sheet. (8) The tutorial scene (note ≤ 3 lines from 360 px, checked) showed the Flip-cover arrow running
 through the "open the phone" hint: the hint hides while the tutorial arrow shows, and the note avoids it. (decided; (2) is a behaviour change —
 listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)
+
+**D-63 — Evening ambience loop: constant gain and a calmer excerpt; one-shots preload, a slow first play is
+queued.** The audit (docs/research/2026-11-02-audio-mix.md) measured a +5.8 dB bass step at the `ambient.evening`
+seam. The crossfade itself was sound-continuous (raw render: second difference at the seam 0.2× p99.9); the step
+came from the encoder stage: `loudnorm` with `linear=true` silently falls back to *dynamic* gain when the linear
+offset would push the true peak over -6 dBTP, and the gain drifted 26.6 → 23.9 dB across the 30 s file, so the
+loop's end and start were boosted differently. `tools/process_audio.py` now detects that case and applies a constant
+gain (`volume` + the same `alimiter` used for SFX); tracks where linear loudnorm is feasible get the old filter
+string unchanged. The excerpt moved from 0 s to 198.5 s of the same CC0 wind recording (searched every 0.25 s: the
+first 30 s swing 20 dB per second in the bass, this window ~5 dB and meets itself within 0.3 dB). Result:
+200 ms tail→head 0.56 dB (in-file median between neighbouring 200 ms windows 0.76 dB), -23.5 LUFS, OGG and M4A
+seams clean; only that one file was re-rendered (`--track-id ambient/evening`), provenance updated, `--check`
+green. The new window has less sub-60 Hz rumble (31 % vs 90 % of energy) — on a phone speaker it is audible at
+all now; the owner should listen once on headphones. `AudioEngine`: after the unlock gesture every one-shot
+(sfx + ui, ~300 kB) is fetched and decoded in sequence (ambience/cart loops stay on demand: ~10 MB decoded each).
+A `play()` that arrives while its buffer is still loading is queued — one pending request per id, later calls only
+update its position/gain — and plays when the decode finishes instead of being dropped after 850 ms; only a request
+more than 4 s stale is dropped (the moment on screen has passed). Tests: `tests/audio-preload.test.ts` (fake Web
+Audio). (decided)
