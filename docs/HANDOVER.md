@@ -152,6 +152,16 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
 12. **`npm run layout` w CI?** Pełny przebieg ~14 min (350 zadań), `--quick` ~3,5 min (412×915 + Flip × pl/de/pseudo, 84 zadania).
    Wymaga Playwright + Chromium w CI (dziś nie ma ich w `package.json`, są globalnie w kontenerze). **Rekomendacja:
    `--quick` w `ci.yml` na każdy push (z `npx playwright install chromium`), pełny przed wydaniem/APK.**
+13. **Pieczęcie nigdzie nie zostają (BACKLOG P3 „Opisy”).** Opis sklepu mówi „zdobywaj pieczęcie” i „postępy
+   zapisują się”, a po liście końcowym zapis `auto`/slot kontraktu jest kasowany i nie ma rekordu pieczęci.
+   Opcje: (a) najlepsze pieczęcie per misja w `localStorage` (jak kronika) i trzy małe pieczęcie w wierszu misji w
+   menu — bez zmiany sim i koperty zapisu; (b) to samo w IDB obok zapisów (kopia zapasowa Androida); (c) zmienić opis
+   sklepu. **Rekomendacja: (a) teraz, (b) razem z decyzją 1 (kronika do koperty)** — jedna zmiana formatu zamiast dwóch.
+14. **Misja X: „drewno w drodze — wóz N” maskuje niedobór drewna (BACKLOG P2).** Łańcuch kończy się na wozie, który
+   czeka u drwala. Propozycja: gdy wóz z tym zleceniem jest w odbiorze (`LOADING`/w drodze po towar), dodać ogniwo
+   „producent” (drwal pracuje / stoi) w `explainBuilding` — funkcja tylko czyta stan, hasze bez zmian, ale to
+   `src/sim/diagnose.ts` i zmienia to, co gracz czyta w misjach I–XII (testy czytelności do przejrzenia).
+   **Rekomendacja: tak, po playteście H2** (ta sama pomyłka „brak wozu” vs „brak surowca”), nie przed nim.
 
 ## Stan nocy 2026-11-02/03 (gałąź `claude/w-night`, agent nocny)
 Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian):

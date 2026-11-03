@@ -23,7 +23,8 @@
     "icons:check": "node tools/check-icons.mjs",
     "build:bench": "vite build --config vite.bench.config.ts",
     "layout": "node tools/layout-check.mjs",
-    "i18n:coverage": "tsx tools/i18n-coverage.ts"
+    "i18n:coverage": "tsx tools/i18n-coverage.ts",
+    "a11y": "node tools/a11y-check.mjs"
   },
   "engines": {
     "node": ">=20"

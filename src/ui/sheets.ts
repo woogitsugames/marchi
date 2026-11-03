@@ -106,14 +106,17 @@ export class Sheets {
     s.content.onClose?.();
     for (const f of s.deferred.splice(0)) f();
     this.detachers.get(s)?.();
+    s.el.classList.add('is-leaving');
+    window.setTimeout(() => s.el.remove(), 240);
+    // onChange first: it drops body.has-sheet, which hides the rail in portrait — focus() on the worst-stall eye
+    // or a rail button that is still visibility:hidden silently fails and focus stayed in the closing sheet
+    this.onChange?.();
     // focus back to what opened the sheet (a bubble, a card link, a rail button) if it is still there
     if (s.el.contains(document.activeElement)) {
       const back = s.returnFocus && s.returnFocus.isConnected ? s.returnFocus : null;
-      if (back) back.focus({ preventScroll: true }); else (document.activeElement as HTMLElement).blur();
+      if (back) back.focus({ preventScroll: true });
+      if (!back || document.activeElement !== back) (document.activeElement as HTMLElement).blur();
     }
-    s.el.classList.add('is-leaving');
-    window.setTimeout(() => s.el.remove(), 240);
-    this.onChange?.();
     return true;
   }
 
