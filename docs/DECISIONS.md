@@ -886,7 +886,10 @@ all now; the owner should listen once on headphones. `AudioEngine`: after the un
 A `play()` that arrives while its buffer is still loading is queued — one pending request per id, later calls only
 update its position/gain — and plays when the decode finishes instead of being dropped after 850 ms; only a request
 more than 4 s stale is dropped (the moment on screen has passed). Tests: `tests/audio-preload.test.ts` (fake Web
-Audio). (decided)
+Audio). Also from the audit: `sfx/load-stone` starts 40 ms later in its source (the file opened with 55 ms of
+silence, so the strike lagged the load animation; onset now ~25 ms). Re-rendering a bundled Freesound source used to
+overwrite its provenance record with nulls (preview URL, licence, download date): the pipeline now merges with the
+previous record. (decided)
 
 **D-64 — Far wagons (LOD1) cast no shadow on any quality tier; draw calls counted at the GL level.**
 `WagonsView.setShadows(near, far)` was called (`applyQuality`) with `far = high`, so on high/ultra the far rig

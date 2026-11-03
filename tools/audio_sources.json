@@ -223,9 +223,9 @@
       "id": "sfx/load-stone",
       "kind": "sfx",
       "seconds": 0.8,
-      "start": 0,
+      "start": 0.04,
       "source": "rocks_fall",
-      "notes": "Small rock loading impact"
+      "notes": "Small rock loading impact; starts 40 ms in so the first strike lands ~10 ms after the load cue (was 55 ms of silence)"
     },
     {
       "id": "sfx/unload-stone",

@@ -577,7 +577,10 @@ def main() -> None:
         source_json = dict(previous.get("sources", {}))
         for key, record in sorted(sources.items()):
             meta = manifest["sources"][key]
-            source_json[key] = {
+            # Merge: a bundled source is not re-downloaded, so keep what the download recorded
+            # (preview URL, licence, date) instead of overwriting it with nulls.
+            earlier = source_json.get(key, {})
+            source_json[key] = {**earlier, **{
                 "sha256": record["sha256"],
                 "seconds": round(record["duration"], 4),
                 "original": meta.get("url", meta["page"]),
@@ -588,8 +591,8 @@ def main() -> None:
                     "Freesound public HQ OGG preview"
                     if meta.get("provider") == "freesound" else "original"
                 ),
-                "preview_url": record["download_url"],
-            }
+                "preview_url": record["download_url"] or earlier.get("preview_url"),
+            }}
         output_sha256 = {
             str(p.relative_to(OUT)): sha256(p)
             for p in sorted(OUT.rglob("*"))

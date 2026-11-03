@@ -121,7 +121,7 @@
       "downloaded_on_utc": "2026-11-02"
     }
   },
-  "output_bytes": 1623617,
+  "output_bytes": 1623708,
   "tracks": [
     "ambient/morning",
     "ambient/river",
@@ -192,8 +192,8 @@
     "sfx/load-plank.ogg": "157abf90b57f7774e59117655acf785856287ddec46a949ddce7f1abc7ec7a89",
     "sfx/load-sack.m4a": "0d6d6293ee8cde81665bf54cf224f48853d4d94378d3e483a191e92c3d214096",
     "sfx/load-sack.ogg": "9cf8a742b4a67a30c678684aeb6d5d68addbf333776fe86e554548cea0b3667a",
-    "sfx/load-stone.m4a": "b1c1ee1f3720171587a9d60b664176a43900c9f1c2c8258209c3f8af99137daf",
-    "sfx/load-stone.ogg": "90199708c11a72bb8960eda27a05ce5e671bcf993d1280e65125eebfaa9f0a82",
+    "sfx/load-stone.m4a": "b43bf50b3fe1b84f1eae5b32954e29ebb4f534739f5900ae1afe6080087732b6",
+    "sfx/load-stone.ogg": "5297757c0c1b36e4c7e3d149ca41f33bc1add17442304292907375799d2ba0ec",
     "sfx/malt-bubbles.m4a": "0f261812618888fbfe0756fc84ee68e6dcb3db454ab5c3a72fec54afd2f92fdf",
     "sfx/malt-bubbles.ogg": "146aba729816aca44cec436e23ead110fe564fdb672b2cca8b182214a1117dfc",
     "sfx/mill-wheel.m4a": "2b304d17c971123975fce07bc98a08bf5fd9116c476a7b4948a2fa5b72c5d10f",

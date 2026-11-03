@@ -225,3 +225,6 @@ Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, pu
    −14,9 tys. trójkątów w passie cienia; różnicy w obrazie nie widać (`docs/shots/night4-wagon-far-shadow-on-off.jpg`).
    Uwaga: licznik `drawCalls` w `?perf=1` nie liczy passu cienia (three r181 zeruje `info` po nim). Pierścień
    zaznaczenia na moście — już naprawiony w nocy 2 (`deckRing`), sprawdzone w kodzie.
+3. **Drobne P3**: `load.stone` zaczynał się od 55 ms ciszy (uderzenie spóźnione względem animacji) — fragment
+   przesunięty o 40 ms, przerenderowany tylko ten plik; pipeline przy ponownym renderze źródła Freesound nie kasuje
+   już jego wpisu w provenance (URL, licencja, data). Usunięty zdublowany wpis BACKLOG o numeracji wozów (zrobiony, D-44).
