@@ -10,7 +10,8 @@
  * blended crown/clump normals), trunks from a lathe with root flare and taper; `TREE_VARIANTS`
  * geometry variants per kind. Origin at the trunk base, unit scale ≈ a mature tree (spruce
  * 15 m, pine 16 m, oak 12 m, birch 11 m). Far LOD: `treeBillboard(kind)` camera-facing cards
- * textured from albedo + normal atlases baked from 30° above (`bakeTreeBillboards`); they cast
+ * textured from albedo + normal atlases baked from 30° above and 8 azimuths (`bakeTreeBillboards`,
+ * the card picks/blends the views nearest to the camera in the tree's own frame); they cast
  * blob shadows (`billboardDepthMaterial`). The near/far swap is a dithered crossfade (materials.ts).
  */
 import {
@@ -25,7 +26,10 @@ import {
   LinearMipmapLinearFilter,
   Mesh,
   MeshDepthMaterial,
+  NearestFilter,
+  NoBlending,
   OrthographicCamera,
+  PlaneGeometry,
   RGBADepthPacking,
   Scene,
   ShaderMaterial,
@@ -404,6 +408,13 @@ function treeExtent(kind: TreeKind): { half: number; top: number } {
 // -------------------------------------------------------------------------------------------
 
 const ATLAS_COLS = TREE_KINDS.length;
+/**
+ * Azimuth views per kind in the far-card atlas (rows; view i has the bake camera at i/N turns
+ * around the tree). The card shader picks the two views nearest to the camera direction in the
+ * tree's own frame, so a far tree keeps its yaw and its crown shape changes as the camera orbits
+ * instead of every distant tree showing the same face.
+ */
+export const BB_VIEWS = 8;
 const bbCache = new Map<TreeKind, ModelPart[]>();
 
 /**
@@ -444,7 +455,8 @@ export function treeBillboard(kind: TreeKind): ModelPart[] {
     // fallback "dome" normals (the normal atlas replaces them once baked)
     const n = v3(x / (W / 2), 1.2, 0).normalize();
     nor.push(n.x, n.y, n.z);
-    uv.push((col + u) / ATLAS_COLS, (y - y0) / (y1 - y0));
+    // view 0 row; the shader adds the row offset of the views it samples
+    uv.push((col + u) / ATLAS_COLS, (y - y0) / (y1 - y0) / BB_VIEWS);
     // ground occlusion: shrubs darken a lot at the base, tall trees only around the trunk foot
     const k = y > 0 ? 1 : 0.88;
     color.push(k, k, k);
@@ -505,6 +517,8 @@ export function billboardDepthMaterial(): MeshDepthMaterial {
 }
 
 let atlas: WebGLRenderTarget | null = null;
+let atlasN: WebGLRenderTarget | null = null;
+let atlasCell = 0;
 
 // Bake shaders: albedo (vertex colour × card texture) and object-space normals, both cut by the
 // card alpha. Object space = card space for a camera on +Z (x right, y up, z toward the viewer).
@@ -547,16 +561,37 @@ function bakeMaterial(map: Texture | null, mode: number): ShaderMaterial {
   });
 }
 
+// Row-to-atlas copy: the views are rendered row by row into a small multisampled target and
+// copied into the (single-sample, mipmapped) atlases, so the big atlases need no MSAA buffers.
+const COPY_VERT = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}`;
+const COPY_FRAG = /* glsl */ `
+uniform sampler2D src;
+varying vec2 vUv;
+void main() { gl_FragColor = texture2D(src, vUv); }`;
+
 /**
- * Render every tree kind into a shared albedo atlas and a matching normal atlas, attached to
- * the `billboard` material: the far card is then lit like the full model (same crown normals,
- * same vertex-colour occlusion), so the LOD swap does not change the value of the forest.
- * Call once after the renderer exists; cheap (10 small renders).
+ * Render every tree kind from `BB_VIEWS` azimuths into a shared albedo atlas and a matching
+ * normal atlas (columns = kinds, rows = views), attached to the `billboard` material: the far
+ * card is then lit like the full model (same crown normals, same vertex-colour occlusion), so the
+ * LOD swap does not change the value of the forest. Call once after the renderer exists; cheap
+ * (5 kinds x 8 views x 2 passes of small renders + 16 row copies). `cellPx` is the cell width (the
+ * view.ts tier picks it): atlas = 5·cell x 16·cell RGBA8 + mips, two of them — 128 px (low)
+ * 2 x 7 MB, 224 px (high) 2 x 21 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
+ * re-bakes (old pair disposed).
  */
-export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGLRenderTarget {
-  if (atlas) return atlas;
+export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGLRenderTarget {
+  if (atlas && atlasCell === cellPx) return atlas;
+  // re-bake at another resolution (quality tier switch): free the old pair first
+  atlas?.dispose();
+  atlasN?.dispose();
+  const rowW = cellPx * ATLAS_COLS, rowH = cellPx * 2;
   const mk = () => {
-    const rt = new WebGLRenderTarget(cellPx * ATLAS_COLS, cellPx * 2, { samples: 4 });
+    const rt = new WebGLRenderTarget(rowW, rowH * BB_VIEWS);
     // mipmapped so distant crowns stay solid instead of sparkling into thin sticks
     rt.texture.generateMipmaps = true;
     rt.texture.minFilter = LinearMipmapLinearFilter;
@@ -564,39 +599,73 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGL
   };
   const rtA = mk();
   const rtN = mk();
+  const row = new WebGLRenderTarget(rowW, rowH, { samples: 4 });
+  row.texture.generateMipmaps = false;
+  row.texture.minFilter = NearestFilter;
+  row.texture.magFilter = NearestFilter;
   const scene = new Scene();
+  const copyScene = new Scene();
+  const copyMat = new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: row.texture } }, depthTest: false, depthWrite: false, blending: NoBlending });
+  const quadGeo = new PlaneGeometry(2, 2);
+  const quad = new Mesh(quadGeo, copyMat);
+  quad.frustumCulled = false;
+  copyScene.add(quad);
+  const copyCam = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const prevTarget = renderer.getRenderTarget();
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
+  const prevAutoClear = renderer.autoClear;
   const mats = [0, 1].map((mode) => ({
     leaves: bakeMaterial(leafTexture(), mode),
     needles: bakeMaterial(needleTexture(), mode),
     solid: bakeMaterial(null, mode),
   }));
+  const groups = TREE_KINDS.map((kind) => {
+    const grp = new Group();
+    grp.userData.parts = treeParts(kind);
+    return grp;
+  });
+  // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
+  // correct when the card shader divides by alpha (no dark or olive fringe)
+  renderer.setClearColor(0x000000, 0);
+  renderer.autoClear = false;
   [rtA, rtN].forEach((rt, mode) => {
     renderer.setRenderTarget(rt);
-    // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
-    // correct when the card shader divides by alpha (no dark or olive fringe)
-    renderer.setClearColor(0x000000, 0);
     renderer.clear();
     const m = mats[mode]!;
-    TREE_KINDS.forEach((kind, i) => {
-      const { W, y0, y1 } = cardSize(kind);
-      const grp = new Group();
-      for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
-      scene.add(grp);
-      // looking down at BB_ELEV: image "up" = (0, cos, -sin), the trunk foot at the origin
-      const cam = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
-      cam.position.set(0, Math.sin(BB_ELEV) * 50, Math.cos(BB_ELEV) * 50);
-      cam.lookAt(0, 0, 0);
-      // the target's own viewport/scissor (render-target pixels, independent of the pixel ratio)
-      rt.viewport.set(i * cellPx, 0, cellPx, cellPx * 2);
-      rt.scissor.set(i * cellPx, 0, cellPx, cellPx * 2);
+    for (let v = 0; v < BB_VIEWS; v++) {
+      const az = (v / BB_VIEWS) * Math.PI * 2;
+      row.scissorTest = false;
+      row.viewport.set(0, 0, rowW, rowH);
+      renderer.setRenderTarget(row);
+      renderer.clear();
+      TREE_KINDS.forEach((kind, i) => {
+        const { W, y0, y1 } = cardSize(kind);
+        const grp = groups[i]!;
+        grp.clear();
+        for (const p of grp.userData.parts as ModelPart[]) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
+        scene.add(grp);
+        // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk
+        // foot at the origin
+        const cam = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+        const h = Math.cos(BB_ELEV) * 50;
+        cam.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
+        cam.lookAt(0, 0, 0);
+        // the target's own viewport/scissor (render-target pixels, independent of the pixel ratio)
+        row.viewport.set(i * cellPx, 0, cellPx, rowH);
+        row.scissor.set(i * cellPx, 0, cellPx, rowH);
+        row.scissorTest = true;
+        renderer.setRenderTarget(row);
+        renderer.render(scene, cam);
+        scene.remove(grp);
+      });
+      // copy the resolved row into its atlas row (mips are rebuilt after each copy; 8 per atlas)
+      rt.viewport.set(0, v * rowH, rowW, rowH);
+      rt.scissor.set(0, v * rowH, rowW, rowH);
       rt.scissorTest = true;
       renderer.setRenderTarget(rt);
-      renderer.render(scene, cam);
-      scene.remove(grp);
-    });
+      renderer.render(copyScene, copyCam);
+    }
   });
   for (const m of mats) for (const x of Object.values(m)) x.dispose();
   for (const rt of [rtA, rtN]) {
@@ -604,6 +673,10 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGL
     rt.viewport.set(0, 0, rt.width, rt.height);
     rt.scissor.set(0, 0, rt.width, rt.height);
   }
+  row.dispose();
+  copyMat.dispose();
+  quadGeo.dispose();
+  renderer.autoClear = prevAutoClear;
   renderer.setRenderTarget(prevTarget);
   renderer.setClearColor(prevClear, prevAlpha);
   const m = modelMaterial('billboard');
@@ -611,8 +684,10 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 256): WebGL
   m.alphaTest = 0.4;
   treeUniforms.uBbNormal.value = rtN.texture;
   const md = m as unknown as { defines: Record<string, string> };
-  md.defines = { ...md.defines, TREE_BB_NORMAL: '' };
+  md.defines = { ...md.defines, TREE_BB_NORMAL: '', TREE_BB_VIEWS: BB_VIEWS.toFixed(1) };
   m.needsUpdate = true;
   atlas = rtA;
+  atlasN = rtN;
+  atlasCell = cellPx;
   return rtA;
 }

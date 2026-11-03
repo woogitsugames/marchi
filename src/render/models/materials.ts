@@ -117,6 +117,18 @@ vec3 objectNormal = vec3(normal);
   // basis of the bake camera (looking down at 0.52 rad, see trees.ts BB_ELEV)
   vBbU = normalize(mat3(viewMatrix) * (vec3(0.0, 0.8678, 0.0) - bbF * 0.4969));
   vBbF = normalize(mat3(viewMatrix) * (vec3(0.0, 0.4969, 0.0) + bbF * 0.8678));
+#if defined(TREE_BB_VIEWS) && defined(USE_MAP)
+  // multi-view atlas (trees.ts BB_VIEWS): view i was baked with the camera at azimuth i/N turns
+  // in the tree's own frame. The camera direction in that frame picks the two nearest views
+  // (the tree's yaw is honoured, so the card turns with the model it stands in for).
+  float bbAz = atan(bbLF.x, bbLF.z) * (TREE_BB_VIEWS / 6.2831853);
+  bbAz = bbAz < 0.0 ? bbAz + TREE_BB_VIEWS : bbAz;
+  float bbV0 = min(floor(bbAz), TREE_BB_VIEWS - 1.0);
+  vBbW = clamp(bbAz - bbV0, 0.0, 1.0);
+  float bbV1 = bbV0 + 1.0 >= TREE_BB_VIEWS ? 0.0 : bbV0 + 1.0;
+  vBbUv1 = vec2(vMapUv.x, vMapUv.y + bbV1 / TREE_BB_VIEWS);
+  vMapUv.y += bbV0 / TREE_BB_VIEWS;
+#endif
 #endif
 #ifdef USE_TANGENT
   vec3 objectTangent = vec3(tangent.xyz);
@@ -148,6 +160,8 @@ varying float vLodT;
 varying vec3 vBbR;
 varying vec3 vBbU;
 varying vec3 vBbF;
+varying vec2 vBbUv1;
+varying float vBbW;
 #endif
 `;
 
@@ -195,6 +209,8 @@ varying float vLodT;
 varying vec3 vBbR;
 varying vec3 vBbU;
 varying vec3 vBbF;
+varying vec2 vBbUv1;
+varying float vBbW;
 #ifdef TREE_BB_NORMAL
 uniform sampler2D uBbNormal;
 #endif
@@ -211,15 +227,37 @@ const TREE_FRAG_MIPALPHA = /* glsl */ `
   vec2 tuv = vMapUv * vec2(textureSize(map, 0));
   vec2 tdx = dFdx(tuv), tdy = dFdy(tuv);
   float tlod = max(0.0, 0.5 * log2(max(dot(tdx, tdx), dot(tdy, tdy))));
-#ifdef TREE_FAR
-  // far cards: the atlas is effectively premultiplied (cleared to 0, foliage written opaque), so
-  // colour = rgb / alpha without any dark fringe. The silhouette also takes a finer mip than the
-  // colour, so thin spruce sprays stay solid at a distance.
-  vec4 tFine = textureLod(map, vMapUv, max(0.0, tlod - 1.5));
-  diffuseColor = vec4(diffuse * (sampledDiffuseColor.rgb + tFine.rgb) / max(sampledDiffuseColor.a + tFine.a, 1e-3), opacity * max(sampledDiffuseColor.a, tFine.a));
-#endif
   diffuseColor.a *= 1.0 + tlod * 0.3;
 }
+#endif
+`;
+
+// Far cards replace map_fragment: the atlas is effectively premultiplied (cleared to 0, foliage
+// written opaque), so colour = rgb / alpha without any dark fringe; the silhouette also takes a
+// finer mip than the colour, so thin spruce sprays stay solid at a distance. With a multi-view
+// atlas, high blends the two nearest azimuth views; low picks one of them per pixel (dithered by
+// the blend weight), so it costs the same samples as a single view. `bbUv` / `bbLod` are reused
+// for the normal atlas (TREE_NORMAL).
+const TREE_FRAG_FARMAP = /* glsl */ `
+vec2 bbUv = vMapUv;
+float bbLod = 0.0;
+#ifdef USE_MAP
+{
+  vec2 tuv = vMapUv * vec2(textureSize(map, 0));
+  vec2 tdx = dFdx(tuv), tdy = dFdy(tuv);
+  bbLod = max(0.0, 0.5 * log2(max(dot(tdx, tdx), dot(tdy, tdy))));
+}
+#if defined(TREE_BB_VIEWS) && !defined(TREE_BB_BLEND)
+  if (fract(52.9829189 * fract(dot(gl_FragCoord.yx, vec2(0.06711056, 0.00583715)) + 0.37)) < vBbW) bbUv = vBbUv1;
+#endif
+  vec4 tS = textureLod(map, bbUv, bbLod);
+  vec4 tFine = textureLod(map, bbUv, max(0.0, bbLod - 1.5));
+#if defined(TREE_BB_VIEWS) && defined(TREE_BB_BLEND)
+  tS = mix(tS, textureLod(map, vBbUv1, bbLod), vBbW);
+  tFine = mix(tFine, textureLod(map, vBbUv1, max(0.0, bbLod - 1.5)), vBbW);
+#endif
+  diffuseColor = vec4(diffuse * (tS.rgb + tFine.rgb) / max(tS.a + tFine.a, 1e-3), opacity * max(tS.a, tFine.a));
+  diffuseColor.a *= 1.0 + bbLod * 0.3;
 #endif
 `;
 
@@ -244,7 +282,10 @@ const TREE_NORMAL = /* glsl */ `
 float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;
 vec3 normal = normalize(vNormal);
 #if defined(TREE_FAR) && defined(TREE_BB_NORMAL) && defined(USE_MAP)
-  vec4 bt = texture2D(uBbNormal, vMapUv);
+  vec4 bt = textureLod(uBbNormal, bbUv, bbLod);
+#if defined(TREE_BB_VIEWS) && defined(TREE_BB_BLEND)
+  bt = mix(bt, textureLod(uBbNormal, vBbUv1, bbLod), vBbW);
+#endif
   vec3 bn = bt.a > 0.02 ? bt.xyz / bt.a * 2.0 - 1.0 : vec3(0.0, 0.5, 0.8);
   normal = normalize(normalize(vBbR) * bn.x + normalize(vBbU) * bn.y + normalize(vBbF) * max(bn.z, 0.05));
 #endif
@@ -264,7 +305,7 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
         .replace('#include <morphtarget_vertex>', '#include <morphtarget_vertex>\n' + TREE_VERT_BODY);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\n' + def + TREE_FRAG_HEAD)
-        .replace('#include <map_fragment>', '#include <map_fragment>\n' + TREE_FRAG_MIPALPHA)
+        .replace('#include <map_fragment>', key === 'billboard' ? TREE_FRAG_FARMAP : '#include <map_fragment>\n' + TREE_FRAG_MIPALPHA)
         .replace('#include <color_fragment>', '#include <color_fragment>\n' + TREE_FRAG_DITHER);
       if (foliage) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', TREE_NORMAL);
     }
@@ -284,6 +325,15 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
  */
 export function setTreeQuality(high: boolean): void {
   treeUniforms.uWindAmp.value = high ? 1 : 0;
+  // far cards: blend the two nearest baked azimuth views on high, dither between them on low
+  const bb = modelMaterial('billboard') as unknown as { defines?: Record<string, string>; needsUpdate: boolean };
+  const defs = { ...(bb.defines ?? {}) };
+  if (('TREE_BB_BLEND' in defs) !== high) {
+    if (high) defs.TREE_BB_BLEND = '';
+    else delete defs.TREE_BB_BLEND;
+    bb.defines = defs;
+    bb.needsUpdate = true;
+  }
   // (far cards keep the plain alpha test: their thin sprays read as a ghostly haze through MSAA)
   for (const k of ['leaves', 'needles'] as const) {
     const m = modelMaterial(k);

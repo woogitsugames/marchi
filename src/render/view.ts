@@ -128,7 +128,8 @@ class View implements WorldView {
   /** Terrain arrays that arrived before a TerrainView existed. */
   private pendingTerrainTex: TerrainTextureSet | null = null;
   texturesReady: Promise<void> = Promise.resolve();
-  private baked = false;
+  /** Cell width (px) the far-tree atlases were baked at; re-baked when the tier wants another. */
+  private bakedCell = 0;
   private menu = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
@@ -184,7 +185,6 @@ class View implements WorldView {
     // Deferred: a setQuality() right after mount() (the app does that) picks the tier first,
     // so the default tier is not downloaded only to be thrown away.
     queueMicrotask(() => this.loadTextures());
-    if (this.vegetation && !this.baked) { this.vegetation.bake(r); this.baked = true; }
   }
 
   /**
@@ -258,7 +258,6 @@ class View implements WorldView {
       this.buildings = new BuildingsView(hf);
       this.wagons = new WagonsView(hf, this.roads);
       this.worldGroup.add(this.terrain.group, this.water.mesh, this.water.mist, this.buildings.group, this.wagons.group);
-      if (this.renderer && !this.baked) { this.vegetation.bake(this.renderer); this.baked = true; }
       this.applyQuality();
       if (!this.menu) this.rig.set(hf.sizeX * 0.45, hf.sizeZ * 0.5, 230, -0.3);
     }
@@ -440,6 +439,12 @@ class View implements WorldView {
     this.fx.update(this.time, this.rain, this.rig.target, Math.min(140, 30 + dist * 0.5), env.light);
     this.updateSelectionRing();
 
+    // far-tree atlases per tier (multi-view, D-58): low 128 px cells, high 224, ultra 256
+    const cell = this.quality === 'low' ? 128 : this.quality === 'ultra' ? 256 : 224;
+    if (this.vegetation && this.bakedCell !== cell) {
+      this.vegetation.bake(r, cell);
+      this.bakedCell = cell;
+    }
     r.render(this.scene, cam);
     this.lastStats.calls = r.info.render.calls;
     this.lastStats.triangles = r.info.render.triangles;

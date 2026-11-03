@@ -779,3 +779,19 @@ storage forgets only entries the state no longer shows (momentary: winter, fleet
 No reward, no effect on play or hashes; 66 pl/en keys pending for the other languages. Open for the owner: move
 the list into the save (envelope field or SimState with a migration — then it travels with Android backup / a
 copied save), see HANDOVER „Decyzje na rano”. (decided, storage location open)
+
+**D-58 — Far trees: a multi-view impostor atlas (8 azimuths), per-tier cell size (render only; P3 of D-41).**
+D-41 baked one view per kind, so every distant tree showed the same face whatever its yaw and the camera
+orbit, and the near→far crossfade swapped a rotated model for an unrotated card. Now `bakeTreeBillboards`
+renders each kind from 8 azimuths at the same 30° elevation (`BB_VIEWS`, atlas columns = kinds, rows = views);
+the camera direction in the tree's own frame (`bbLF`, already in the card shader) picks the two nearest views.
+High/ultra blend them (`TREE_BB_BLEND`: 2 × albedo + 2 × fine-mip albedo + 2 × normal samples, was 2 + 1);
+low picks one of the two per pixel, dithered by the blend weight (same 2 + 1 samples as before). Views are baked
+row by row into a small 4× MSAA target and copied into single-sample mipmapped atlases, so the big atlases
+carry no MSAA buffers. Cell width per tier, re-baked on a tier switch: low 128 px (2 × 7 MB; low caps DPR at
+1.25), high 224 px (2 × 21 MB), ultra 256 px (2 × 28 MB) — before: 2 × 1.7 MB textures + 2 × 5.2 MB MSAA
+renderbuffers at 256 px. Bake: 80 small renders + 16 copies, once at the first frame. Draw calls and triangles
+unchanged (m1 412×915 dpr 2: high near/mid/far/copse 57/48/44/56 calls, 470k/305k/256k/294k tris; low
+57/38/40/51, 258k/244k/239k/238k — identical before/after). Not done: the second near variant is not baked
+(the card always shows variant 0; +1 atlas row set per variant = 2× memory). Shots `docs/shots/night2-trees-*`.
+(decided)
