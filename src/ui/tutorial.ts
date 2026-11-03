@@ -329,7 +329,9 @@ export class Tutorial {
     }
 
     const tg = this.target();
-    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 6) : null;
+    // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
+    // edge (the waybill counts in landscape) stays clear of them
+    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 9) : null;
     // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
     const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();
@@ -379,7 +381,8 @@ export class Tutorial {
     cand.sort((a, b) => (b.room + (b.d === 'left' || b.d === 'right' ? 40 : 0)) - (a.room + (a.d === 'left' || a.d === 'right' ? 40 : 0)));
     const note = this.notePlaced;
     // never across other controls (coins, speed, neighbouring tools) or the open card
-    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap')]
+    // (the waybill's ribbon and seal row too: in Flex the rows have the most room above, through the title)
+    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
       .map(visibleBox).filter((b): b is Box => !!b && !hits(grow(box, -8), b));
     for (const c of cand) {
       if (c.room < L + 4) continue;
