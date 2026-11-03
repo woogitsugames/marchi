@@ -6,7 +6,7 @@
 ## Stan teraz
 - Repo `woogitsugames/marchi`, baza **`claude/eager-cori-08wt8e`** (nigdy `main`). Wszystko wypchnięte; drzewo czyste.
   Testy **412/412**, typecheck i build zielone, smoke I–XII + dolina bez błędów konsoli. Stan symulacji **v8**.
-- Ostatnie APK: **1e60d5d** (13:50). Od niego w bazie: day3 do `62c938e` (pętla bruku, pauza z nazwą kontraktu,
+- Ostatnie APK: **f20ffe6** (~18:10, codex, hindi, pieczęć, błoto, pełny magazyn). Następne nie wcześniej niż ~21:00.
   strzałka samouczka, Flex/Book posture, ostrzeżenia transz, beczki na wozie).
 - **Zrobione (sesja `session_01Hk8EbiYMw1x9CXhyu3HM9n`):** WIP `1630083` z `claude/w-day3` dokończony i scalony —
   zwinięte „Co to znaczy?” (Księga przestojów, `src/ui/codex.ts`) w karcie budynku i wozu, dla przyczyny u korzenia
