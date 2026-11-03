@@ -25,7 +25,7 @@ import { Markers } from './markers';
 import { StallRanking } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
-  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, nextMission, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
@@ -395,6 +395,17 @@ export class App implements PanelNav {
     const mid = cells[cells.length >> 1]!;
     const pm = to(mid);
     this.view.camera.focusCell(mid, { x: offset.x + pm.x - (b.l + b.r) / 2, y: offset.y + pm.y - (b.t + b.b) / 2 });
+  }
+
+  /** "Next mission" on a won end letter: straight in, or through the menu's ask sheet when that contract
+   *  has an unfinished save (D-36: never overwrite a save without asking). */
+  private async startNext(m: MissionKey): Promise<void> {
+    const w = this.world;
+    const saved = await listSaves().then((xs) => xs.some((x) => x.slot === slotFor(m)), () => false);
+    if (this.world !== w || this.mode !== 'game') return; // a second tap already moved on
+    if (!saved) { this.newGame(m); return; }
+    await this.showMenu();
+    this.pickMission(m);
   }
 
   /** Wipes the mission's own save, then starts it afresh (never another mission's save). */
@@ -782,9 +793,11 @@ export class App implements PanelNav {
         if (better) this.best = { ...this.best, [id]: { seals, ticks: m.endTick, at: Date.now() } };
       }).catch((e: unknown) => console.warn('best result not kept', e));
     }
+    const next = nextMission(this.missionId);
     const letter = buildEndLetter(this.world, seals, {
       again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
+      next: next ? () => void this.startNext(next) : undefined,
     });
     // a won contract: the castle's seal is pressed onto the waybill first (~1.2 s, a tap skips it), then the
     // letter (D-82). One frame later, so the waybill has unfolded from under the sheets closed above.

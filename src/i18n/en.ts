@@ -626,4 +626,8 @@ export const en: FullDict = {
   // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
   'fix.orderFilled': 'The order for {goodAcc} is filled — the rest stays in the yard, nothing to do.',
   'cause.orderFilled': 'order filled, the rest waits',
+  // day 6 (first ten minutes): end letter onwards, cold-start menu (see PENDING_KEYS)
+  'contract.next': 'Next mission',
+  'menu.startHere': 'Start here',
+  'menu.m1Sub': 'Bridge the river and deliver before the snow',
 };

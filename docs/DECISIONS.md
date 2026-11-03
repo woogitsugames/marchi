@@ -1260,3 +1260,18 @@ tutorial ends, is skipped or times out, the card appears — and because `firstC
 appears with the usual one-time first-stall flash, which is the natural hand-over from the notes to the
 stall card. Rejected: a seventh note pointing at the eye (m1.md caps the tutorial at six notes and 110 s; the
 flash already says "here"). The sim and the ranking are untouched; only what the HUD is handed changes. (decided)
+
+**D-93 — A won contract leads on; the cold-start menu says where to begin (day 6, research P4-P5; UI only).**
+(1) The won end letter gets a wine "Następna misja" button with the next contract's title under it (missions
+I-XI; XII and the free valley have none), above "Jeszcze raz" / "Do menu", which stay. It starts the next
+contract with its opening letter; when that contract has an unfinished save, it goes through the menu's
+existing ask sheet instead (D-36: never overwrite a save unasked). A lost letter is unchanged ("Jeszcze raz"
+stays primary). (2) Until mission I is won, its row carries a small wine "zacznij tutaj" kicker and a rule on
+its start edge (logical border, so it mirrors in RTL); nothing is locked or hidden — the brief's "everything
+unlocked" stands. (3) "Ustawienia" moves out of the scrolling list into the frame's foot, so it is on screen
+at 412x915 (y 839-887) and 915x412 without scrolling; it is still the last `.menu-item` for the tools.
+(4) Mission I's subtitle no longer repeats its title: new key `menu.m1Sub` ("Przerzuć most przez rzekę i
+zdąż przed śniegiem"); `menu.contractSub` stays for the other languages until translated. Keys
+`contract.next`, `menu.startHere`, `menu.m1Sub` are in PENDING_KEYS. Not done (research idea): folding
+missions III-XII into one row — the frame scrolls and the kicker gives the direction; left for playtest.
+`docs/shots/day6-menu-*.jpg`, `day6-end-next-412x915.jpg`. (decided)

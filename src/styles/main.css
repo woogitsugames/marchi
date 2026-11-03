@@ -295,7 +295,13 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .menu-item .mi-seal.is-on { color: var(--clay); opacity: 1; }
 .menu-item .mi-seal svg { display: block; }
 .menu-item .mi-time { font-family: var(--font-body); font-weight: 700; font-size: 12px; color: var(--ink-soft); }
-.menu-foot-row { display: flex; margin-top: 10px; }
+.menu-foot-row { display: flex; flex: none; margin-top: 6px; padding-inline: 10px; }
+/* mission I until it is won: a small wine kicker over the title and a hairline rule at the start edge */
+.menu-item.is-start { border-inline-start: 3px solid var(--wine); padding-inline-start: 8px; }
+.menu-item .mi-start {
+  display: block; font-family: var(--font-body); font-weight: 700; font-size: 12px; line-height: 1.2;
+  font-variant: small-caps; text-transform: lowercase; letter-spacing: .1em; color: var(--wine); margin-bottom: 1px;
+}
 /* Settings: the parchment kit card (the .btn rules give the sprite), a gear-less menu glyph, body font */
 .menu-item.menu-settings { width: auto; min-height: 48px; padding: 0 18px 0 12px; gap: 8px; font-family: var(--font-body); font-size: 17px; font-weight: 600; }
 .menu-item.menu-settings .mi-gear { display: grid; place-items: center; width: 22px; height: 22px; }
@@ -656,6 +662,10 @@ body.is-side .sheet-grip::before { display: none; }
 .letter-scrim { cursor: pointer; transition: opacity var(--t-fast) var(--ease); }
 .letter-scrim.is-out { opacity: 0; }
 .letter .actions.l-more { margin-top: 8px; }
+.letter .actions.l-next { margin-bottom: 8px; }
+.letter .actions.l-next .btn { flex-direction: column; align-items: center; gap: 1px; min-height: 56px; padding-block: 6px; }
+.letter .l-next .ln-t { font-family: var(--font-head); font-size: 21px; line-height: 1.05; }
+.letter .l-next .ln-s { font-size: 13px; font-weight: 500; line-height: 1.2; opacity: .9; }
 /* sheets take focus on open for assistive tech (a11y, brief 06 task 4); the container itself draws no ring */
 section.sheet:focus { outline: none; }
 
