@@ -86,6 +86,12 @@ export interface BuildingModel {
    * their turn (model space). Drawn per frame from the building's stock with the wagons' cargo instances.
    */
   yard?: { at: Vector3; yaw: number };
+  /**
+   * More yard spots for a building without its own output (day 2, D-79): the warehouse shows its two largest
+   * stocks, the contract castle one pile per ordered good (filling as the order comes in). Same units and
+   * layout as `yard`.
+   */
+  piles?: { at: Vector3; yaw: number }[];
 }
 
 export const BUILDING_CELLS: Record<BuildingKind, [number, number]> = {
@@ -732,15 +738,9 @@ function warehouse(b: PartBuilder): Partial<BuildingModel> {
   }
   // a ramp of planks to the floor (plinth height)
   box(b, 'wood', 3.0, 0.08, 1.4, trs(0, 0.22, 2.75, 0.3), { color: C.timberLight });
-  // goods outside: barrels, crates, sacks
-  barrelGeom(b, trs(-4.2, 0, 3.0));
-  barrelGeom(b, trs(-3.55, 0, 3.25, 0, 1));
-  barrelGeom(b, trs(-3.9, 0.35, 3.4, Math.PI / 2, 0.3, 0));
-  crateGeom(b, trs(3.8, 0.3, 3.0, 0, 0.2));
-  crateGeom(b, trs(4.45, 0.3, 3.2, 0, -0.1));
-  crateGeom(b, trs(4.1, 0.9, 3.1, 0, 0.5));
-  sack(b, 2.6, 3.0, 0.5);
-  return { gate: v3(0, 0, 4) };
+  // the goods outside are the stock now: its two largest goods as yard piles either side of the ramp (D-79);
+  // the old barrels, crates and sack would have doubled (or contradicted) them
+  return { gate: v3(0, 0, 4), piles: [{ at: v3(-3.5, 0, 3.08), yaw: Math.PI / 2 }, { at: v3(3.5, 0, 3.08), yaw: Math.PI / 2 }] };
 }
 
 function stable(b: PartBuilder): Partial<BuildingModel> {
@@ -929,7 +929,8 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
   crateGeom(b, trs(5.6, 0.3, 1.6));
   crateGeom(b, trs(6.3, 0.3, 1.8, 0, 0.3));
   barrelGeom(b, trs(5.9, 0, 2.6));
-  return { gate: v3(0, 0, 8) };
+  // the order delivered so far: one pile per ordered good inside the fence, left and right of the lane (D-79)
+  return { gate: v3(0, 0, 8), piles: [{ at: v3(-4.3, 0, 5.7), yaw: Math.PI / 2 }, { at: v3(4.3, 0, 5.7), yaw: Math.PI / 2 }, { at: v3(-4.3, 0, 3.9), yaw: Math.PI / 2 }] };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -981,6 +982,7 @@ export function buildingModel(kind: BuildingKind): BuildingModel {
     smoke: extra.smoke,
     worker: extra.worker,
     yard: extra.yard,
+    piles: extra.piles,
   };
   cache.set(kind, model);
   return model;

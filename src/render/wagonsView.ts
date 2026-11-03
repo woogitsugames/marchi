@@ -18,7 +18,7 @@ import {
   Vector3,
 } from 'three';
 import type { Wagon, World } from '../sim/index';
-import { edgeLength, MAX_WAGONS, TICK_HZ, outputGoods } from '../sim/index';
+import { edgeLength, GOODS, MAX_WAGONS, TICK_HZ, outputGoods, type Building, type Good } from '../sim/index';
 import type { YardPile } from './buildingsView';
 import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
@@ -534,10 +534,10 @@ export class WagonsView {
       let b = null;
       for (let i = 0; i < bs.length; i++) if (bs[i]!.id === y.buildingId) { b = bs[i]!; break; }
       if (!b) continue;
-      const out = outputGoods(b.type);
-      if (!out.length) continue;
-      const good = out[0]!;
-      const qty = b.stock[good];
+      const pick = yardPileGood(world, b, y.slot);
+      if (!pick) continue;
+      const good = pick.good;
+      const qty = pick.qty;
       if (!(qty >= 1)) continue;
       const dx = y.x - camPos.x, dy = y.y - camPos.y, dz = y.z - camPos.z;
       if (dx * dx + dy * dy + dz * dz > lod2) continue;
@@ -546,7 +546,7 @@ export class WagonsView {
       const g = cargoFor(good);
       const parts = this.cargo.get(g)!;
       const slots = this.slots.get(g)!;
-      const n = Math.min(slots.length, Math.floor(qty), parts.cap - parts.count);
+      const n = Math.min(slots.length, Math.floor(pick.frac >= 0 ? Math.max(1, Math.round(pick.frac * slots.length)) : qty), parts.cap - parts.count);
       if (n <= 0) continue;
       _M.multiplyMatrices(y.base, yardPileLocal(g));
       for (let i = 0; i < n; i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
@@ -579,4 +579,43 @@ export class WagonsView {
     this.horseMat.material.dispose();
     this.horseMat.depth.dispose();
   }
+}
+
+const _pick: { good: Good; qty: number; frac: number } = { good: 'wood', qty: 0, frac: -1 };
+/**
+ * What a yard spot shows (D-71, D-79): a producer its first output (`frac` −1: the units are the stock); the
+ * contract castle the `slot`-th ordered good, as the share of it delivered (`frac`: a full pile = the good is
+ * complete); any other store (warehouse) its `slot`-th largest stock (ties in goods order). Null: nothing here.
+ */
+export function yardPileGood(world: World, b: Building, slot: number): typeof _pick | null {
+  if (slot < 0) {
+    const out = outputGoods(b.type);
+    if (!out.length) return null;
+    _pick.good = out[0]!; _pick.qty = b.stock[out[0]!]; _pick.frac = -1;
+    return _pick;
+  }
+  const c = world.state.mission.contract;
+  if (b.type === 'castle') {
+    if (!c || c.castle !== b.id) return null;
+    let k = 0;
+    for (const g of GOODS) {
+      if (c.need[g] <= 0) continue;
+      if (k++ !== slot) continue;
+      _pick.good = g; _pick.qty = b.stock[g]; _pick.frac = Math.min(1, b.stock[g] / c.need[g]);
+      return _pick;
+    }
+    return null;
+  }
+  // the slot-th largest stock without sorting: count the goods that rank above each candidate
+  for (const g of GOODS) {
+    const v = b.stock[g];
+    if (!(v >= 1)) continue;
+    let above = 0;
+    for (const h of GOODS) {
+      const u = b.stock[h];
+      if (u > v || (u === v && GOODS.indexOf(h) < GOODS.indexOf(g))) above++;
+    }
+    if (above === slot) { _pick.good = g; _pick.qty = v; _pick.frac = -1; return _pick; }
+  }
+  return null;
 }

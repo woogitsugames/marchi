@@ -1071,3 +1071,16 @@ before (another good, a sawmill just restarting) said "late" in 18 (m5) and 14 (
 that met every tranche; with it, none (test in `contract-pace.test.ts`). Until then the castle card says
 `why.pace.waitTranche` (new key, PENDING_KEYS). Read-only on the state; hashes unchanged. The 2-minute window
 tuning after the playtest stays open. `docs/shots/day2-tranche-pace.jpg`. (decided)
+
+**D-79 — Yard piles at the warehouse and the contract castle (render only; continues decision 15 / D-71).** D-71
+left the warehouse (many goods) and the castle without piles. A model may now list extra `piles` spots: the
+warehouse shows its two largest stocks either side of the ramp (ties in goods order; its static barrels, crates
+and sack are gone — they doubled or contradicted the stock), the contract castle one pile per ordered good
+inside the order yard (up to three), filled by the share delivered (`round(stock/need × load)`, at least one unit
+once something is there; a full pile = that good is complete). In the free valley the castle (market) shows
+nothing. `yardPileGood` (WagonsView) picks good and amount per spot; same instanced cargo units, same LOD /
+frustum / buffer limits and draw-call note as D-71. `yardPileLocal` now centres a load on its real ground
+footprint (the barrels' unit geometry is off its slot: beer piles sat ~0.5 m off the spot); the brewery spot moved
+0.15 m to keep clear of its rack. The clip test checks every load at the store / castle spots and that the spots
+of one building do not overlap; a new test checks what each spot shows. `docs/shots/day2-castle-store-piles.jpg`
+(m1 castle in game with planks and two baskets of bread delivered; preview of the warehouse). (decided)

@@ -50,7 +50,8 @@ interface Worker {
 interface WorkerParts { legs: Parts; torso: Parts; arms: Parts }
 
 /** Where a building's output pile stands (render-only, D-71): ground point and turn in world space. */
-export interface YardPile { buildingId: number; base: Matrix4; x: number; y: number; z: number }
+/** A yard spot: `slot` −1 = the producer's output (D-71), 0.. = the n-th store / contract pile (D-79). */
+export interface YardPile { buildingId: number; base: Matrix4; x: number; y: number; z: number; slot: number }
 
 /** Most workers of one kind drawn at once (a large valley has a dozen of each at most). */
 const WORKER_CAP = 48;
@@ -199,8 +200,13 @@ export class BuildingsView {
       if (model.yard) {
         const at = model.yard.at.clone().applyMatrix4(m);
         const y = Math.max(baseY, this.hf.height(at.x, at.z));
-        this.yards.push({ buildingId: b.id, base: new Matrix4().makeRotationY(angle + model.yard.yaw).setPosition(at.x, y, at.z), x: at.x, y, z: at.z });
+        this.yards.push({ buildingId: b.id, base: new Matrix4().makeRotationY(angle + model.yard.yaw).setPosition(at.x, y, at.z), x: at.x, y, z: at.z, slot: -1 });
       }
+      model.piles?.forEach((p, slot) => {
+        const at = p.at.clone().applyMatrix4(m);
+        const y = Math.max(baseY, this.hf.height(at.x, at.z));
+        this.yards.push({ buildingId: b.id, base: new Matrix4().makeRotationY(angle + p.yaw).setPosition(at.x, y, at.z), x: at.x, y, z: at.z, slot });
+      });
       if (model.wheel) {
         const wm = m.clone().multiply(new Matrix4().makeTranslation(model.wheel.pivot.x, model.wheel.pivot.y, model.wheel.pivot.z));
         const meshes = model.wheel.parts.map((p) => {

@@ -17,7 +17,7 @@
  * these 30 variants and swap them per wagon); `cargoUnitParts` + `cargoSlots` support
  * per-unit instancing instead.
  */
-import { BoxGeometry, Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
+import { Box3, BoxGeometry, Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
 import { creel, fishGeom } from './chains';
 import { type ModelPart, PartBuilder, trs } from './kit';
 import { box, logGeom } from './shapes';
@@ -45,10 +45,13 @@ const yardCache = new Map<CargoGood, Matrix4>();
 export function yardPileLocal(good: CargoGood): Matrix4 {
   let m = yardCache.get(good);
   if (m) return m;
-  const s = cargoSlots(good);
-  let x = 0, z = 0;
-  for (const t of s) { x += t.elements[12]!; z += t.elements[14]!; }
-  m = new Matrix4().makeTranslation(-x / s.length, -Y, -z / s.length);
+  // centred on the full load's ground footprint (day 2): the slot centres alone left the barrels, whose unit
+  // geometry is not centred on its slot, half a metre off the spot
+  const unit = new Box3();
+  for (const p of cargoUnitParts(good)) { p.geometry.computeBoundingBox(); unit.union(p.geometry.boundingBox!); }
+  const pile = new Box3();
+  for (const t of cargoSlots(good)) pile.union(unit.clone().applyMatrix4(t));
+  m = new Matrix4().makeTranslation(-(pile.min.x + pile.max.x) / 2, -Y, -(pile.min.z + pile.max.z) / 2);
   yardCache.set(good, m);
   return m;
 }
