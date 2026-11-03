@@ -569,6 +569,7 @@ export const pl = {
   'contract.half': 'Połowa kontraktu w zamku: {have}/{total}',
   'contract.twoMin': 'Zostały 2 minuty — brakuje jeszcze {n}',
   'contract.lastMin': 'Ostatnia minuta — brakuje jeszcze {n}',
+  'build.costRoad': '{n} srebra + droga {road} · masz {have}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -713,6 +714,7 @@ export const PENDING_KEYS = [
   'contract.half',
   'contract.twoMin',
   'contract.lastMin',
+  'build.costRoad',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

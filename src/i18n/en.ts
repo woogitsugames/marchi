@@ -566,4 +566,5 @@ export const en: FullDict = {
   'contract.half': 'Half the contract is in the castle: {have}/{total}',
   'contract.twoMin': 'Two minutes left — {n} still to deliver',
   'contract.lastMin': 'Last minute — {n} still to deliver',
+  'build.costRoad': '{n} silver + road {road} · you have {have}',
 };
