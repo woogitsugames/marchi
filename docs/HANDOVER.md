@@ -45,6 +45,12 @@ treść). Jeśli pracuje — tylko sprawdzenie. 2) Nowe gpt/* — przejrzyj, sca
 3) APK w dzień co ~3 h, w nocy nic. 4) Decyzje: w dzień klikalnie, w nocy do HANDOVER. Raport krótki po polsku.
 
 ## Kolejka na start
+00. **Z researchu „pierwsze 10 minut” (częściowy, `docs/research/2026-11-03-first-10-minutes.md`)** — po paczce day5:
+   (1) sprawdzić, czy samouczek m1 krok 5 (most) się nie zacina — notatka zostaje z tekstem kroku 4, przeciągnięcia
+   po duchu nie budują mostu (może artefakt skryptu/SwiftShader; jeśli prawdziwe — P0); (2) notatka samouczka zasłania
+   list przewozowy (`placeNote`); (3) karta „Najgorszy zastój” z alarmem w trakcie samouczka (kroki 4–5); (4) brak
+   „Następna misja” w liście końcowym (`buildEndLetter`); (5) menu na zimno: nic nie wskazuje misji I, „Ustawienia”
+   pod ekranem 412×915; (6) karta zamku gęsta w kroku 2. Poziom i reszta ścieżki — nie zmierzone, ponowić.
 0. **Decyzja właściciela 2026-11-03 ~18:00 (research partial-loads): A — reguła „dowóz dopiero, gdy zmieści się ≥4”
    tylko w wolnej dolinie**; misje i ich hasze bez zmian; przestroić progi rang 3–4 (~+10 %) i test F1, jedno zdanie
    na karcie warsztatu („czeka na pełniejszy wóz”). Spec: `docs/research/2026-11-03-partial-loads.md`. Następna paczka
