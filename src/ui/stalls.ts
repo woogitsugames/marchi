@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { busyOutOfReach, buildingById, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, type Building, type ReasonLink, type World } from '../sim/index';
+import { busyOutOfReach, buildingById, contractFilled, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, type Building, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -24,8 +24,8 @@ export interface StallEntry {
 
 /**
  * A stall that resolves by itself (output waits for a customer that still takes it, input slowed by
- * the season, a surplus nobody needs right now, a full granary next to one with room — audit 2026-11-03
- * fixes 1, 3): a minor pin, never the
+ * the season, a surplus nobody needs right now, a full granary next to one with room, the rest of a filled
+ * order — audit 2026-11-03 fixes 1, 3, 6): a minor pin, never the
  * critical one. outputCustomer runs a path search, so the answer is kept per building until its
  * status, the road network or the second changes.
  */
@@ -35,20 +35,22 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
   const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
-    granaryRelief(world, b.id)?.k === 'ROOM';
+    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null;
   calmCache.set(b.id, { key, calm });
   return calm;
 }
 
 /**
  * A stall with nothing to do about it, for the HUD card's wording (audit 2026-11-03): 'surplus' — a full
- * yard nobody needs right now (fix 1); 'storeRoom' — a full granary while another one has room (fix 3).
+ * yard nobody needs right now (fix 1); 'storeRoom' — a full granary while another one has room (fix 3);
+ * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
+  if (contractFilled(world, b.id)) return 'orderFilled';
   return null;
 }
 
@@ -111,7 +113,8 @@ export function cureFor(world: World, id: number): Cure {
       else if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') cure = busyOutOfReach(world, l.id) >= 0 ? 'road' : 'wagon';
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE') cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
-      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1) cure = 'granary';
+      // (not when the order of this good is complete: nothing needs it any more, fix 6)
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) cure = 'granary';
       // a full granary with no other granary to link or fill: another granary (fix 3)
       else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) cure = 'granary';
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';

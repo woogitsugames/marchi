@@ -623,4 +623,7 @@ export const en: FullDict = {
   // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
   'fix.storeRoom': 'Another granary still has room — new goods go there:',
   'cause.storeRoom': 'full, but another granary has room',
+  // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
+  'fix.orderFilled': 'The order for {goodAcc} is filled — the rest stays in the yard, nothing to do.',
+  'cause.orderFilled': 'order filled, the rest waits',
 };

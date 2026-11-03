@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier,
+  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -109,7 +109,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
 /**
  * A stall with nothing to fix, said plainly instead of a cure that would not work (audit 2026-11-03): a full
  * yard nobody needs right now (fix 1: no "Kup wóz"), a full granary while another one has room (fix 3, with one
- * tap to it). Only when the chain stops at the building itself.
+ * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the building itself.
  */
 function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (chain.length > 1) return '';
@@ -118,6 +118,11 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (s.k === 'OUTPUT_FULL' && outputSurplus(world, b.id) === 'SPARE') {
     return `<div class="s-hint calm-hint">${iconSvg(s.good, 22, goodName(s.good))}<span${en('fix.surplus')}>${
       esc(t('fix.surplus', { goodGen: t(`goodGen.${s.good}` as MessageKey) }))}</span></div>`;
+  }
+  const filled = contractFilled(world, b.id);
+  if (filled) {
+    return `<div class="s-hint calm-hint">${iconSvg(filled, 22, goodName(filled))}<span${en('fix.orderFilled')}>${
+      esc(t('fix.orderFilled', { goodAcc: t(`goodAcc.${filled}` as MessageKey) }))}</span></div>`;
   }
   if (s.k === 'STORAGE_FULL') {
     const r = granaryRelief(world, b.id);

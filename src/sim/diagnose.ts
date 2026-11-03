@@ -236,6 +236,19 @@ export function busyOutOfReach(world: World, id: number): number {
   return first;
 }
 
+/**
+ * Read-only (audit 2026-11-03, fix 6): a full output with nowhere to go (OUTPUT_FULL.NO_DESTINATION) whose
+ * good the contract castle already holds in full, while no other customer takes it: the order of this good
+ * is filled, the stall is the end of the job, not a fault. Returns the good, or null.
+ */
+export function contractFilled(world: World, id: number): Good | null {
+  const b = buildingById(world, id);
+  if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_DESTINATION') return null;
+  const g = b.status.good, k = world.state.mission.contract;
+  if (!k || k.need[g] <= 0 || (buildingById(world, k.castle)?.stock[g] ?? 0) < k.need[g]) return null;
+  return outputCustomer(world, id) < 0 ? g : null;
+}
+
 function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: number } | null {
   switch (s.k) {
     case 'NO_INPUT': return s.blockedBy >= 0 ? { kind: 'building', id: s.blockedBy } : null;

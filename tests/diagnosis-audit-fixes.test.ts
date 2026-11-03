@@ -2,8 +2,8 @@
 // player-view reads (src/sim/diagnose.ts helpers that step() never calls, src/ui/stalls.ts): the sim's own
 // chains, statuses and hashes stay as they were (tests/determinism-reads.test.ts covers the reads).
 import {
-  TICK_HZ, applyCommand, buildingById, busyOutOfReach, createWorld, explainBuilding, findPath, granaryRelief, heldWagon, inputGoods, isHeld,
-  outputGoods, outputSurplus, step, suggestLinkToStable, type World,
+  TICK_HZ, applyCommand, buildingById, busyOutOfReach, contractFilled, createWorld, explainBuilding, findPath, granaryRelief, heldWagon, inputGoods, isHeld,
+  outputCustomer, outputGoods, outputSurplus, step, suggestLinkToStable, type World,
 } from '../src/sim/index';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { calmWhy, cureFor, gapTarget, rankStalls } from '../src/ui/stalls';
@@ -192,4 +192,37 @@ test('audit fix 5: "every wagon busy" with no source in reach of the stable is a
   }
   assert(out > 3, `m1 out-of-reach samples (${out})`);
   assert(busy > 3, `ordinary ALL_BUSY samples (${busy})`);
+});
+
+test('audit fix 6: the rest of a good whose order is filled is the end of the job, not a stall to fix (m9, m10)', () => {
+  let filled = 0;
+  for (const id of ['m9', 'm10']) {
+    run(id, 20 * minute, (w) => {
+      const ranked = rankStalls(w);
+      const k = w.state.mission.contract!;
+      const castle = buildingById(w, k.castle)!;
+      for (const b of w.state.buildings) {
+        const s = b.status;
+        if (s.k !== 'OUTPUT_FULL' || s.cause !== 'NO_DESTINATION') continue;
+        const g = contractFilled(w, b.id);
+        const done = k.need[s.good] > 0 && castle.stock[s.good] >= k.need[s.good] && outputCustomer(w, b.id) < 0;
+        eq(g !== null, done, `${id} ${b.type}#${b.id}: filled exactly when the castle holds the whole order and nobody else takes it`);
+        if (!g) continue;
+        filled++;
+        eq(g, s.good, 'names the good');
+        eq(calmWhy(w, b), 'orderFilled', 'the card says the order is filled');
+        assert(cureFor(w, b.id) !== 'granary', 'no granary for a good nobody needs');
+        const e = ranked.find((x) => x.id === b.id);
+        if (e) assert(e.minor && !e.crit, `${id}: a filled order is a minor pin`);
+      }
+    }, 20);
+  }
+  assert(filled > 10, `filled-order samples (${filled})`);
+  // a stranded good the order still lacks keeps the granary cure
+  const lab = createWorld('m9');
+  const farm = lab.state.buildings.find((b) => b.type === 'farm')!;
+  for (const b of lab.state.buildings) if (b.type === 'malthouse' || b.type === 'mill') b.type = 'stable';
+  farm.status = { k: 'OUTPUT_FULL', good: 'grain', cause: 'NO_DESTINATION', blockedBy: -1 };
+  eq(contractFilled(lab, farm.id), null, 'not a contract good');
+  eq(cureFor(lab, farm.id), 'granary', 'stranded: granary cure');
 });

@@ -1207,3 +1207,13 @@ NONE_CAN_REACH: `cureFor` = road and the gap finder (`gapTarget`, moved from pan
 reach it, re-exported) links the stable to that source (bridge included). Rejected: counting reachability from
 the stable inside the dispatcher (cleaner, but it changes statuses in the state and so every golden hash; not
 before the logistics playtest — BACKLOG). (decided)
+
+**D-89 — A good whose order is filled is the end of the job, not a stall (diagnosis audit 2026-11-03, fix 6;
+UI and read-only diagnosis, no hash change).** In m10 (and m9 after the lesson) the charcoal burner stood waxed
+"pełny magazyn, nie ma dokąd wieźć" with "connect a granary" for 86 % of the card's time, after the castle
+already held all the charcoal the contract asks for — pulling the eye away from the real lesson (a second
+woodcutter). A read-only `contractFilled()` (src/sim/diagnose.ts): OUTPUT_FULL.NO_DESTINATION, the contract
+castle holds its whole order of this good (the total, not only the tranche due) and no other customer takes it
+(`outputCustomer`). Such a stall is calm (minor pin, never wax), the card says "zamówienie wypełnione, reszta
+czeka", the sheet "Zamówienie na węgiel drzewny wypełnione — reszta zostaje na placu, nic nie trzeba robić."
+and no granary cure or hint. Keys `fix.orderFilled`, `cause.orderFilled` (PENDING_KEYS). (decided)
