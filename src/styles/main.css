@@ -502,7 +502,9 @@ body.is-side .sheet-grip::before { display: none; }
 .link.is-self { --frame: #b9b09e; --fill: var(--parchment); }
 .link.is-root { --fill: #e2d3c2; }
 
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: baseline; font-size: 15px; }
+/* rows centre, not baseline: a value led by an icon (cargo, speed) or a 48 px link (destination) has no text
+   baseline of its own, so baseline alignment dropped the label to the icon's bottom edge, ~half a row low */
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; font-size: 15px; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
@@ -2007,6 +2009,9 @@ body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: ca
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
 /* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
 body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+/* Flex, wide (Fold inner half-opened): the open card starts under the coins / time / speed row, never over it —
+   the bottom segment is short, so it keeps its bottom edge (the rail sits beside it, not under it) */
+body.mode-game.is-flex.is-side .sheet { top: calc(var(--bar-b) + 6px); }
 .sheet-paper > .sp-in { clip-path: none; background: none; padding-bottom: 0; }
 body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 30px; }
 body.is-side .sheet-paper > .sp-in { clip-path: none; }
