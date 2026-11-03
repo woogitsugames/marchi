@@ -104,3 +104,28 @@ inaczej pokazują ograniczone dane WebGL. `viewport` obejmuje CSS px, rozmiar bu
 Uzupełnij wiersze danymi JSON z telefonu, zachowując rozmiar ekranu, DPR i wersję aplikacji
 dla porównywalności. Wyniki innych jakości dopisuj jako osobne wiersze. Pomiary na
 fizycznym Foldzie **nie są** zastępowane wynikami desktopowymi.
+
+### Prawdziwa gra: `?diag=1` (czas klatki, noc 5)
+
+Benchmark wyżej mierzy sceny syntetyczne. `?diag=1` mierzy **grę, w którą się gra** (ten sam adres, dowolna
+misja; w APK przez `chrome://inspect` → `location.search='?diag=1&play=m7'`). Panel po lewej pokazuje dla
+bieżącego kubełka tempa: liczbę sekund i klatek, p50/p95/p99 czasu klatki (ms), liczbę klatek > 33,4 ms
+(dwa odświeżenia 60 Hz) i p95 CPU symulacji (`loop.advance`) oraz widoku (`view.frame`). Kubełki: `menu`,
+`pause`, `x1`, `x2`, `x4` — każda klatka trafia do kubełka tempa, w którym była narysowana, więc pauza jest
+pomiarem odniesienia (ta sama scena, bez ticków). Percentyle liczone z ostatnich 14 400 klatek kubełka (2 min
+przy 120 Hz), histogram ze wszystkich od „Od nowa”. `Kopiuj JSON` (`marchia.frame-diag.v1`) kopiuje raport
+wszystkich kubełków z urządzeniem, układem (`phone`/`fold-open`/…, `flex`), jakością, DPR, skalą dynamicznej
+rozdzielczości, liczbą wozów i wywołań rysowania; gdy WebView nie da schowka — pokazuje JSON zaznaczony do
+skopiowania. Z konsoli: `__marchiaDiag.report()`. Karta w tle nie jest liczona.
+
+Protokół na składaku (osobno złożony / rozłożony / Flex; nie zmieniać orientacji w trakcie):
+1. Otworzyć misję (m7 lub dolinę z ≥ 50 wozami), poczekać, aż tekstury dojdą (~20 s), **Od nowa**.
+2. **Odniesienie**: pauza, 30 s bez dotykania ekranu.
+3. **Pomiar**: ×4, 90 s bez dotykania (kamera stoi), potem 30 s przesuwania mapy palcem (nadal ×4).
+4. Powtórzyć kroki 1–3 osiem razy (×8) na zmianę złożony/rozłożony; po każdym `Kopiuj JSON` i wkleić niżej.
+Wniosek wyciągać z różnicy `x4` − `pause` (koszt symulacji i ruchu wozów) i z `jankShare`, nie z samego p50.
+
+| Urządzenie | Układ | Jakość | Wozy | Kubełek | p50 ms | p95 ms | p99 ms | > 33 ms | sim p95 | view p95 |
+|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|
+| Galaxy Z Fold 8 Ultra | fold-open | high | — | pause | — | — | — | — | — | — |
+| Galaxy Z Fold 8 Ultra | fold-open | high | — | x4 | — | — | — | — | — | — |

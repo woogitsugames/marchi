@@ -585,4 +585,8 @@ export const en: FullDict = {
   'events.order.d.christmas_court': 'For the feast days the court gathers ale for its guests and flour for the festive loaves.',
   'events.order.d.cathedral_works': 'The chapter asks for stone for the piers, planks for scaffolding and charcoal for the smiths.',
   'events.order.d.royal_hunt': 'The king\'s hunting party will rest in the valley; ale, bread and fish are needed.',
+  // ?diag=1 frame-time panel (night 5, debug only): see PENDING_KEYS
+  'diag.copy': 'Copy JSON',
+  'diag.copied': 'Copied',
+  'diag.reset': 'Reset',
 };
