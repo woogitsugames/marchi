@@ -71,6 +71,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Llegó la nieve y parte de la carga quedó en el camino. Comprueba el cruce y la recogida de mercancías.\n— Wszebor",
     },
+    it: {
+      opening: "Al custode delle strade: porta al castello 30 assi e 20 pagnotte prima della prima neve. Taglialegna e segheria sono oltre il fiume, ma le rive non sono collegate. Costruisci un passaggio e mantieni il trasporto di farina e pane.\n— Wszebor, castellano di Łozinny Bród",
+      won: {
+        1: "Pane e assi sono arrivati al castello. Un sigillo; La prossima volta manda prima i carri.\n— Wszebor",
+        2: "Pane e assi sono arrivati al castello. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Pane e assi sono arrivati al castello. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "È arrivata la prima neve e parte delle merci è rimasta per strada. Controlla il passaggio e il ritiro dei carichi.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -126,6 +135,15 @@ export const CONTRACT_LETTERS = {
         3: "El pedido cruzó el puente. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "El plazo venció con carros atascados en el puente. Abre una segunda ruta.\n— Wszebor",
+    },
+    it: {
+      opening: "Lo scrivano Mirogniew registra 36 assi e 30 pagnotte per il castello. I carri delle due rive affollano l'unico ponte di legno. Prima della scadenza alleggerisci il passaggio con un secondo ponte o uno in pietra.\n— Wszebor",
+      won: {
+        1: "La merce ha attraversato il ponte. Un sigillo; Riduci la coda al ponte.\n— Wszebor",
+        2: "La merce ha attraversato il ponte. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "La merce ha attraversato il ponte. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "La scadenza è trascorsa con i carri in coda al ponte. Apri un secondo percorso.\n— Wszebor",
     },
   },
   m3: {
@@ -183,6 +201,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "La lluvia siguió y faltaron suministros. Empedra donde los carros avanzan más despacio.\n— Wszebor",
     },
+    it: {
+      opening: "La pioggia ha rovinato la strada sterrata. Servono 24 assi e 16 pagnotte al castello, ma le ruote sprofondano nel fango. Il mugnaio Borzym aspetta il grano. Lastrica i tratti percorsi da più carri.\n— Wszebor",
+      won: {
+        1: "Le scorte sono arrivate nonostante la pioggia. Un sigillo; Lastrica la strada dove il fango trattiene i carri.\n— Wszebor",
+        2: "Le scorte sono arrivate nonostante la pioggia. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Le scorte sono arrivate nonostante la pioggia. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "La pioggia non è cessata e le merci sono mancate. Lastrica dove i carri rallentano.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -238,6 +265,15 @@ export const CONTRACT_LETTERS = {
         3: "El castillo recibió la carga pese al hielo. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "Venció el plazo pese al aviso del hielo. Guarda provisiones junto al castillo o levanta un puente de piedra.\n— Wszebor",
+    },
+    it: {
+      opening: "I ghiacci del fiume chiuderanno il ponte di legno all'ora stabilita. Prima porta le scorte in un granaio dalla parte del castello, oppure costruisci un ponte in pietra. Le merci oltre il fiume non sfameranno nessuno.\n— Wszebor",
+      won: {
+        1: "Il castello è stato rifornito nonostante il ghiaccio. Un sigillo; Prepara le scorte sulla riva del castello.\n— Wszebor",
+        2: "Il castello è stato rifornito nonostante il ghiaccio. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Il castello è stato rifornito nonostante il ghiaccio. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "La chiusura del ponte era annunciata. Accumula scorte presso il castello o costruisci il ponte in pietra.\n— Wszebor",
     },
   },
   m5: {
@@ -295,6 +331,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Al menos una entrega llegó tarde. Cuenta los plazos por separado, no solo el total.\n— Wszebor",
     },
+    it: {
+      opening: "La fiera del castello richiede tre consegne in orari diversi. Lo scrivano Mirogniew le registrerà una per una: pane e assi devono giungere a ciascuna scadenza, non tutti con l'ultimo carro. Prepara le scorte e organizza i viaggi.\n— Wszebor",
+      won: {
+        1: "Le tre consegne sono giunte in tempo. Un sigillo; Dividi le scorte secondo le scadenze.\n— Wszebor",
+        2: "Le tre consegne sono giunte in tempo. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Le tre consegne sono giunte in tempo. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "Almeno una consegna è giunta tardi. Prepara scorte per ogni termine, non solo per il totale.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -350,6 +395,15 @@ export const CONTRACT_LETTERS = {
         3: "El contrato se cumplió pese al almacén lleno. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "Se amontonaron las mercancías y venció el plazo. Revisa el granero y la ruta del molino a la panadería.\n— Wszebor",
+    },
+    it: {
+      opening: "Il granaio è stretto e il grano arriva più in fretta di quanto il mugnaio Borzym riesca a ritirarlo. Quando il deposito è pieno la produzione si ferma e il contratto fallisce. Libera spazio o cambia il percorso dei carri.\n— Wszebor",
+      won: {
+        1: "Le scorte sono arrivate nonostante il deposito pieno. Un sigillo; Libera il granaio e la strada verso il forno.\n— Wszebor",
+        2: "Le scorte sono arrivate nonostante il deposito pieno. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Le scorte sono arrivate nonostante il deposito pieno. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "Le merci si sono accumulate e il tempo è finito. Controlla il granaio pieno e la strada dal mulino al forno.\n— Wszebor",
     },
   },
   m7: {
@@ -407,6 +461,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Faltaron peces al terminar el ayuno. Sitúa la cabaña junto al agua y mantén los carros cruzando el puente.\n— Wszebor",
     },
+    it: {
+      opening: "È tempo di digiuno e le cucine del castello chiedono 54 pesci. Una capanna da pesca sorge già sulla riva nord, ma potrebbe non bastare. Costruiscine un'altra vicino all'acqua, non nell'entroterra, e porta il pescato sul ponte di legno fino a sud.\n— Wszebor",
+      won: {
+        1: "Il pesce è arrivato alle cucine. Un sigillo; Una seconda capanna sull'acqua avrebbe aiutato.\n— Wszebor",
+        2: "Il pesce è arrivato alle cucine. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Il pesce è arrivato alle cucine. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "Il digiuno è finito senza abbastanza pesce. Metti la capanna sull'acqua e mantieni i carri in viaggio sul ponte.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -462,6 +525,15 @@ export const CONTRACT_LETTERS = {
         3: "Los suministros superaron la tormenta. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "La tormenta atrapó los carros en el barro. Lleva primero piedra al granero y luego empedra el camino sur.\n— Wszebor",
+    },
+    it: {
+      opening: "Si avvicina la tempesta. Porta 24 assi e 20 pagnotte prima che il fango rallenti i carri. La pietra della cava non lastrica una strada da sola: trasportala al granaio, quattro unità per carro, poi sistema la strada meridionale.\n— Wszebor",
+      won: {
+        1: "Assi e pane sono arrivati durante la tempesta. Un sigillo; Porta la pietra al granaio prima di lastricare.\n— Wszebor",
+        2: "Assi e pane sono arrivati durante la tempesta. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Assi e pane sono arrivati durante la tempesta. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "La tempesta ha bloccato i carri nel fango. Porta prima la pietra al granaio e poi lastrica la strada a sud.\n— Wszebor",
     },
   },
   m9: {
@@ -519,6 +591,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "La boda llegó antes que las mercancías. Proporciona madera a los dos talleres con otro leñador.\n— Wszebor",
     },
+    it: {
+      opening: "Le nozze si avvicinano. Occorrono 36 assi, 8 di carbone di legna e 26 di birra. Il grano deve arrivare alla malteria e il malto al birrificio. Segheria e carbonaia condividono un solo taglialegna; quando una prende il legno l'altra si ferma. Aumenta legna e carri.\n— Wszebor",
+      won: {
+        1: "Le nozze hanno ricevuto assi, carbone e birra. Un sigillo; Dai abbastanza legna a entrambi i laboratori.\n— Wszebor",
+        2: "Le nozze hanno ricevuto assi, carbone e birra. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Le nozze hanno ricevuto assi, carbone e birra. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "Le nozze sono arrivate prima della merce. Aumenta la fonte di legna per le due botteghe.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -574,6 +655,15 @@ export const CONTRACT_LETTERS = {
         3: "Tablones y carbón llegaron a los talleres. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "El carbón consumió la madera del aserradero. Construye otro leñador: los carros no talan árboles.\n— Wszebor",
+    },
+    it: {
+      opening: "Il fabbro attende carbone e i carpentieri assi: 48 assi e 8 di carbone di legna. Segheria e carbonaia dipendono da un solo taglialegna, insufficiente per entrambe. Costruisci un secondo taglialegna: più carri non producono legna.\n— Wszebor",
+      won: {
+        1: "I laboratori hanno ricevuto assi e carbone. Un sigillo; Aggiungi un taglialegna, non solo carri.\n— Wszebor",
+        2: "I laboratori hanno ricevuto assi e carbone. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "I laboratori hanno ricevuto assi e carbone. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "La carbonaia ha usato la legna della segheria. Costruisci un secondo taglialegna; i carri non tagliano alberi.\n— Wszebor",
     },
   },
   m11: {
@@ -631,6 +721,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Llegó el invierno antes del último barril. Compra carros si todos trabajan y el grano sigue esperando.\n— Wszebor",
     },
+    it: {
+      opening: "Per l'inverno il castello vuole 22 di birra. Il grano cresce a ovest, la malteria è lontana a est. Tre carri servono fattoria, malteria, birrificio e castello. Se tutti i carri sono occupati mentre il grano aspetta, comprane altri alla stalla.\n— Wszebor",
+      won: {
+        1: "La birra è arrivata al castello. Un sigillo; Compra altri carri per i lunghi viaggi.\n— Wszebor",
+        2: "La birra è arrivata al castello. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "La birra è arrivata al castello. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "L'inverno è giunto prima dell'ultima botte. Compra carri se il grano aspetta e tutti i mezzi sono impegnati.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -686,6 +785,15 @@ export const CONTRACT_LETTERS = {
         3: "Se completaron las tres entregas. Tres sellos por tan buena previsión.\n— Wszebor",
       },
       lost: "Venció el último plazo; el almacén lleno paralizó la cervecería. Conecta antes el granero grande.\n— Wszebor",
+    },
+    it: {
+      opening: "La grande produzione richiede 40 pagnotte e 48 di birra in tre consegne: 32 pagnotte entro le 6:00; 8 pagnotte e 12 birra entro le 9:00; infine 36 birra entro le 12:00. Il castello accetta solo la consegna attuale. Collega subito il grande granaio, a due caselle dalla strada, per custodire la birra.\n— Wszebor",
+      won: {
+        1: "Le tre consegne sono state completate. Un sigillo; Collega il grande granaio prima che il birrificio si riempia.\n— Wszebor",
+        2: "Le tre consegne sono state completate. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
+        3: "Le tre consegne sono state completate. Tre sigilli per un'ottima previdenza.\n— Wszebor",
+      },
+      lost: "L'ultimo termine è passato. Il deposito pieno ha fermato il birrificio: collega prima il granaio grande.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
