@@ -235,3 +235,20 @@ Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, pu
 5. **BACKLOG porządki**: `stall.alert`/`ui.error` na głośniku telefonu — już zrobione wcześniej (pliki mają 99 % energii
    w 600–2500 Hz), `screenshots-plan.md` — już przepisany; wpisy zamknięte. Nowy wpis P3: pętla młyna gubi rytm na szwie
    (9,56 okresu na 5,5 s) — źródło Freesound niedostępne z kontenera (403), opis naprawy w BACKLOG. Następne decyzje od **D-66**.
+
+## Decyzje właściciela 2026-11-03 rano (odpowiedzi na „Decyzje na rano” 1–12)
+- 1 Kronika doliny → **w pliku zapisu gry** (envelope, bez zmiany sim; migracja z localStorage).
+- 2 „Naprawa” dla OUTPUT_FULL / NO_DESTINATION → **tak** (Buduj → spichlerz; w misjach bez budowy tylko wskazówka).
+- 3 Benchmark na Foldzie → właściciel uruchomi `?debug=1&bench=device` w APK i wklei JSON do docs/PERF.md.
+- 4 Kolejni ludzie przy pracy → **po ocenie obecnych** przez właściciela (czekać na jego opinię o drwalu/młynarzu/piekarzu).
+- 5 Atlas drzew → **mniejszy na high** (jak low ≈14 MB), pełny tylko na ultra.
+- 6 Koniec kontraktu → **animacja odciśnięcia pieczęci + dźwięk dostawy** (motyw muzyczny Suno — właściciel).
+- 7 Prędkość → **tylko podpowiedź** (toast przy rosnącym przestoju na ×4), bez auto-powrotu.
+- 8 Strzecha → **złagodzić** witki na kalenicy (rzadsze, ciemniejsze, bez kratki).
+- 9 Zwijanie listu przy arkuszu od dołu → **zostaje**. 10 Znikanie pinezek pod HUD → **zostaje**.
+- 11 Listy kasztelana → **tłumaczenie w paczce GPT 11** (listy I–XII + nowe klucze z nocy, 15 języków).
+- 12 CI → **`npm run layout -- --quick` przy każdym pushu**, pełny ręcznie przed APK.
+
+## Plan dnia 2026-11-03 (jeden agent Opus ciągle + koordynator)
+Kolejka: dokończ agenta 5 (`claude/w-night5`) → decyzje 5, 8, 2, 7, 1, 6, 12 (w tej kolejności) → paczka GPT 11 (decyzja 11)
+→ dalej backlog jak w nocy. APK w dzień co ~3 h.
