@@ -349,7 +349,7 @@ the generated runtime pair hashes go in `docs/audio-provenance.json`.
 | Runtime ID(s) | Freesound page (author) | Sound ID | License | Processing / caveats |
 |---|---|---:|---|---|
 | `sfx/cart-dirt` | [craigsmith](https://freesound.org/people/craigsmith/sounds/480020/) | 480020 | CC0 1.0 | Wood wheels rolling on gritty dirt road (vintage archive); 4.8 s loop, 0.45 s overlap |
-| `sfx/cart-cobble` | [craigsmith](https://freesound.org/people/craigsmith/sounds/437092/) | 437092 | CC0 1.0 | Horse-drawn milk wagon on cobblestone, not modern traffic; 3.8 s loop, 0.35 s overlap |
+| `sfx/cart-cobble` | [craigsmith](https://freesound.org/people/craigsmith/sounds/437092/) | 437092 | CC0 1.0 | Horse-drawn milk wagon on cobblestone, not modern traffic; 3.51 s loop (re-cut 2026-11-03, D-80: 11 hits, seam on the beat), 0.1 s crossfade |
 | `sfx/horse-snort` | [o_ciz](https://freesound.org/people/o_ciz/sounds/475483/) | 475483 | CC0 1.0 | Horse snorting; natural animal recording |
 | `sfx/axe` | [xkeril](https://freesound.org/people/xkeril/sounds/753925/) | 753925 | CC0 1.0 | Real small axe chopping a branch, outdoors |
 | `sfx/saw` | [LiezelDippenaar](https://freesound.org/people/LiezelDippenaar/sounds/707527/) | 707527 | CC0 1.0 | Real manual handsaw sawing through wooden plank |
