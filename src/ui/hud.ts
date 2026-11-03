@@ -200,8 +200,9 @@ export class Hud {
     this.waybillWrap = h('div.waybill-wrap', null, waybill, this.sealOnly);
     this.waybillWrap.classList.toggle('is-collapsed', collapsed);
     this.sealOnly.addEventListener('click', () => {
-      if (this.compact) this.act.openCastle();
-      else { this.sheetFold = false; this.setCollapsed(false); }
+      // folded for a tiny screen or under an open sheet: the seal is the contract — it opens the castle card
+      if (this.compact || this.sheetFold) this.act.openCastle();
+      else this.setCollapsed(false);
     });
     waybill.addEventListener('keydown', (e) => {
       const wb = (e.target as HTMLElement).dataset.wb;

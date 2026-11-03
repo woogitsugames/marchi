@@ -1575,6 +1575,181 @@
   "fail": []
  },
  {
+  "tag": "tutorial|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "tutorial|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
   "tag": "valley|360x740|ar",
   "vw": 360,
   "vh": 740,

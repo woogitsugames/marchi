@@ -72,6 +72,7 @@ const SCENES = [
   { name: 'valley', q: 'play=sandbox&speed=0&ff=240&slot=layout' },
   { name: 'market', q: 'play=sandbox&speed=0&market=1&slot=layout' },
   { name: 'opening', q: 'play=m1&tut=1&speed=0' },
+  { name: 'tutorial', q: 'play=m1&tut=1&speed=0', act: async (p) => { await p.click('.letter [data-a="start"]'); await p.waitForSelector('.tut-text', { timeout: 20000 }); } },
   { name: 'rankup', q: 'play=sandbox&speed=0&slot=layout', act: (p) => p.evaluate(() => window.__marchia.rankUp(2)) },
 ];
 
@@ -206,7 +207,11 @@ function measure() {
   //    layers and wrappers paint nothing and are passed through.
   const paints = (el) => {
     if (!shown(el)) return false;
-    if (/^(IMG|SVG|CANVAS|svg)$/.test(el.tagName) || el.closest('svg')) return true;
+    if (/^(IMG|CANVAS)$/.test(el.tagName)) return true;
+    const svg = el.closest('svg');
+    // an outline drawing (every shape unfilled: the tutorial's highlight frame) paints only its stroke, not over
+    // what it frames
+    if (svg) return [...svg.querySelectorAll('path, rect, circle, ellipse, polygon')].some((q) => getComputedStyle(q).fill !== 'none');
     const c = getComputedStyle(el);
     if (c.backgroundImage !== 'none' || c.borderImageSource !== 'none') return true;
     if (!/rgba\(0, 0, 0, 0\)|transparent/.test(c.backgroundColor)) return true;
@@ -255,6 +260,14 @@ function measure() {
     out.overflow.push({ el: label(e), kind: 'covered', by: label(top).slice(0, 40) });
     break;
     }
+  }
+  // 6. the tutorial note stays a note: at most 3 lines of text from 360 px up (BACKLOG P2, 140 characters)
+  const tut = document.querySelector('.tut-text');
+  if (tut && shown(tut) && vw >= 360 && vh >= 600) {
+    const rg = document.createRange();
+    rg.selectNodeContents(tut);
+    const lines = new Set([...rg.getClientRects()].filter((q) => q.width > 2).map((q) => Math.round(q.top / 4)));
+    if (lines.size > 3) out.overflow.push({ el: label(tut), kind: 'lines', dx: lines.size, dy: 0, in: '3 max' });
   }
   out.hscroll = document.documentElement.scrollWidth > vw + 1 || document.body.scrollWidth > vw + 1;
   return out;

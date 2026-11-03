@@ -1598,6 +1598,8 @@ body.is-split .ev-list { max-height: 52vh; }
 body.is-mini .ev-card { display: none; }
 /* Flip cover: an open sheet fills the screen; the HUD strip would only peek out above it (layout check, D-62) */
 body.is-mini.has-sheet .hud-top { visibility: hidden; }
+/* Flip cover: the tutorial's arrow runs through the 'open the phone' hint beside the seal — the note speaks then */
+body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 
 /* folded: the wax seal fills with progress, the time in a slate plaque under it */
 .waybill-wrap.is-collapsed { width: auto; }

@@ -140,7 +140,7 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
    jeśli zbyt „graficzne”: kolor bliżej strzechy (`#655640`) albo tylko dwa pręty bez krzyży. **Rekomendacja: zostawić.**
 9. **Arkusz od dołu zwija list przewozowy (D-62, noc 3 — zrobione, do oceny).** W pionie, gdy otwarta jest karta
    (Dlaczego stoi? / wóz / zamek), list zwija się do pieczęci, a po zamknięciu karty wraca; własne ustawienie
-   gracza (zwinięty/rozwinięty) bez zmian. Powód: na 412×915 rozwinięty list i karta zabierały całą mapę, a
+   gracza (zwinięty/rozwinięty) bez zmian; pieczęć zwiniętego listu otwiera wtedy kartę zamku (jak na Flipie). Powód: na 412×915 rozwinięty list i karta zabierały całą mapę, a
    piekarnia z czerwoną pinezką siedziała pod listem. **Rekomendacja: zostawić**; jeśli przeszkadza na telefonie —
    cofnięcie to jedna linia (`syncSheetFold()` w app.ts).
 10. **Pinezki pod panelami HUD znikają (D-62)** zamiast wystawać zza listu/paska tempa (i łapać ich dotyk).
@@ -181,9 +181,9 @@ Następne decyzje od **D-62**.
 
 ## Stan nocy 3 — 2026-11-03 (gałąź `claude/w-night3`, agent nocny 3)
 Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze kontraktów bez zmian):
-1. **`npm run layout`** (`tools/layout-check.mjs`, D-62) — pomiar zamiast oceny: 13 ekranów (menu, ustawienia, HUD,
-   Dlaczego stoi?, wóz, Buduj, list M7, list końcowy, zamek M5, Wolna dolina, targ, list otwierający, awans) ×
-   412×915, 915×412, 904×1000, 360×740, Flip 360×380 × pl/de/ru/ar/pseudo = 325 zadań, ~13 min (mapa Canvas2D; `--three` na mapie 3D, ~40 s/zadanie). Sprawdza: akcje w
+1. **`npm run layout`** (`tools/layout-check.mjs`, D-62) — pomiar zamiast oceny: 14 ekranów (menu, ustawienia, HUD,
+   Dlaczego stoi?, wóz, Buduj, list M7, list końcowy, zamek M5, Wolna dolina, targ, list otwierający, samouczek,
+   awans) × 412×915, 915×412, 904×1000, 360×740, Flip 360×380 × pl/de/ru/ar/pseudo = 350 zadań, ~14 min (mapa Canvas2D; `--three` na mapie 3D, ~40 s/zadanie). Sprawdza: akcje w
    widoku, przecięcia HUD × arkusz × pinezki, cele ≥ 48 px, tekst poza ramką/ucięty, tekst/przycisk przykryty innym
    elementem, przewijanie w bok, błędy konsoli. Kontrola pozytywna 5/5 (wstrzyknięty zły CSS musi czerwienić).
    Raport `docs/layout/layout-report.json`. Naprawione dzięki niemu: pinezki pod HUD-em gasną, list zwija się przy
@@ -191,6 +191,9 @@ Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze ko
    linki ar ≥ 48 px, **wstęga listu przewozowego malowała się nad nagłówkiem listu końcowego** (warstwy UI izolowane),
    w poziomie komunikat pory roku zakrywał zwiniętą kartę „Wieści z doliny” (teraz pod nią), na Flipie komunikat na
    dymku (teraz na dole), na 904×1000 arkusz boczny zaczynał się na żetonach i tempie (teraz pod nimi).
+   Na Flipie strzałka samouczka szła przez podpowiedź „Otwórz telefon…” (podpowiedź chowa się, notatka ją omija);
+   notatka samouczka ma ≤ 3 wiersze od 360 px (sprawdzane), klucze ≤ 140 znaków we wszystkich językach.
+   Dodatkowo: `tests/i18n-plural` (każdy blok plural w 17 słownikach), `{n} {cells}` → bloki plural, `tests/repo-size`.
 2. **i18n**: `?lang=pseudo` (angielski z akcentami, +40 %, ⟦ ⟧; test), `hyphens:auto` + `overflow-wrap` na
    nagłówkach arkusza/listu/menu/wstęgi i wierszu stanu. Łączenia list (`Intl.ListFormat`) i liczby (fmt.ts) były już
    zrobione; zostaje `{n} {cells}` → blok plural (BACKLOG).

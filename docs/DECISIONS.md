@@ -851,7 +851,8 @@ taps — before, the top of a pin peeked out behind the waybill/speed bar and it
 refreshes the occluder rects 4×/s and on every sheet change (render-only, the sim never sees it). (2) While a bottom
 sheet is open (portrait, not a side sheet) the waybill folds to its seal, so the sheet's subject has map to be
 framed in (D-43): on 412×915 the why-sheet and the expanded waybill used to leave no map at all and the bakery sat
-under the waybill; the player's own fold preference is untouched and the seal unfolds it as before. (3) The framing
+under the waybill; the player's own fold preference is untouched; while folded this way the seal opens the castle card (as on the
+Flip cover), so the tutorial's "tap the waybill" step still takes one tap. (3) The framing
 treated the empty `.topbar` box as the top obstacle; its pieces (menu, chips, speed) are the obstacles now.
 (4) Flip cover: with a sheet open the HUD strip is hidden (it only peeked out above the full-height sheet).
 (5) Arabic one-word link buttons in the wagon sheet got `min-width: 48px`. (6) A second pass added a "covered" check (every
@@ -864,5 +865,6 @@ season notice sat on the folded valley-news card (same corner) — notices now h
 measured with the top cluster; a fixed card has no offsetParent, which had hidden it from the measurement); on the
 Flip cover the notice moves to the bottom edge so it never sits on a toast; on tall unfolded screens (904×1000,
 side sheet without landscape) the game sheet started at the top edge over the chips and speed bar — it now starts
-under them like the landscape sheet. (decided; (2) is a behaviour change —
+under them like the landscape sheet. (8) The tutorial scene (note ≤ 3 lines from 360 px, checked) showed the Flip-cover arrow running
+through the "open the phone" hint: the hint hides while the tutorial arrow shows, and the note avoids it. (decided; (2) is a behaviour change —
 listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)
