@@ -822,3 +822,17 @@ Reads state only; no sim change, hashes untouched. Not done from the backlog ent
 before the end letter and a "hurry" music mood (owner taste; app flow), a delivery sound. Keys `contract.half`,
 `contract.twoMin`, `contract.lastMin` (pl/en, PENDING_KEYS). Shots `docs/shots/night2-delivery-*`,
 `night2-half-*`. (decided)
+
+**D-61 — Building detail pass: thatch ridges, roof wear, daub weathering, ladders (render only).** For the
+commonest thatched and framed buildings (farm, mill, bakery, stable, fisher, malthouse share `thatchRoof` /
+`house`): the ridge saddle is pinned with hazel liggers (two rods along each slope under the roll, crossed spars
+between them — the stitched ridge of a real thatch, the one detail that reads at game zoom); a repaired patch or
+two of paler newer straw in the thatch colour; grey-green lichen on split-shingle roofs, heavier toward the eaves
+(woodcutter, sawmill, warehouse); limewashed daub gets rain-splashed mud above the plinth (the kit's base dirt is
+measured from the ground, so walls on a tall plinth — the mill's upper storey — stayed spotless), grey run-off
+streaks under the wall plate and patchy fresher limewash; a ladder to the mill's hoist window and against the
+farm granary, a bench under the farmhouse window. All in vertex colour or small extra geometry in the merged
+building meshes: no new draw calls, no new textures. Triangles (model): farm 8220→9496, mill 5612→6292, bakery
+5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
+scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
+were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)

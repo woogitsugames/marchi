@@ -22,6 +22,10 @@ import type { MatKey } from './materials';
 export type Opts = Omit<AddOpts, 'm'>;
 
 const MOSS = new Color('#5f5a40');
+/** Re-thatched patches: newer straw, paler and yellower than the weathered roof. */
+const FRESH_STRAW = new Color('#a08a63');
+/** Grey-green lichen on old shingles. */
+const LICHEN = new Color('#5e604d');
 
 /**
  * Box between two points (long axis a→b), cross-section `w` × `h`. The `h` side is oriented
@@ -200,6 +204,10 @@ export function gableRoof(b: PartBuilder, mat: MatKey, s: RoofSpec, extra?: Matr
           c.multiplyScalar(1 + 0.16 * fnoise(along * 3.3, q.y * 0.35, 0.5, 21));
           const patch = fnoise(q.x * 0.35, q.y * 0.5, q.z * 0.35, 22);
           if (patch > 0.25) c.lerp(MOSS, Math.min(0.45, (patch - 0.25) * 1.5));
+        } else {
+          // split shingles grey and gather lichen, more toward the eaves where the water runs
+          const lich = fnoise(q.x * 0.5 + 2.1, q.y * 0.6, q.z * 0.5, 24);
+          if (lich > 0.2) c.lerp(LICHEN, Math.min(0.4, (lich - 0.2) * 1.3) * (0.45 + 0.55 * Math.max(0, Math.min(1, t))));
         }
         if (n.y < -0.3) c.multiplyScalar(0.55);
       },
@@ -589,6 +597,9 @@ export function thatchRoof(b: PartBuilder, s: ThatchSpec): void {
       c.multiplyScalar(1 + 0.18 * fnoise(along * 3.1, q.y * 0.3, 0.5, 21));
       const patch = fnoise(q.x * 0.35, q.y * 0.5, q.z * 0.35, 22);
       if (patch > 0.2) c.lerp(MOSS, Math.min(0.5, (patch - 0.2) * 1.4));
+      // a repaired patch or two of newer straw (a roof is re-thatched piecemeal, never all at once)
+      const fresh = fnoise(q.x * 0.5 + 7.3, q.y * 0.6, q.z * 0.5, 23);
+      if (fresh > 0.32 && patch <= 0.2) c.lerp(FRESH_STRAW, Math.min(0.42, (fresh - 0.32) * 1.6));
       if (nn.y < -0.3) c.multiplyScalar(0.5);
     },
   });
@@ -606,5 +617,25 @@ export function thatchRoof(b: PartBuilder, s: ThatchSpec): void {
       dirt: 0,
       noise: 0.12,
     });
+    // ridge saddle pinned with hazel liggers: two rods along each slope just under the roll,
+    // criss-cross spars between them (reads as the stitched ridge of a real thatch at game zoom)
+    const zc = (s.z0 + s.z1) / 2;
+    const lig: Opts = { color: '#5e5038', ao: 0, dirt: 0, vary: 0.12, noise: 0.05 };
+    const yAt = (x: number, z: number) => f.under(x, z) + t + 0.02;
+    const L0 = t * 0.95, L1 = t * 0.95 + 0.42;
+    for (const sz of [-1, 1]) {
+      for (const d of [L0, L1]) {
+        const z = zc + sz * d;
+        rod(b, 'wood', v3(rx0 + 0.15, yAt(rx0 + 0.15, z), z), v3(rx1 - 0.15, yAt(rx1 - 0.15, z), z), 0.025, 0.025, 4, lig);
+      }
+      const n = Math.max(2, Math.round((len - 0.3) / 0.42));
+      for (let i = 0; i < n; i++) {
+        const xa = rx0 + 0.15 + (i / n) * (len - 0.3), xb = rx0 + 0.15 + ((i + 1) / n) * (len - 0.3);
+        // crossed spars: both diagonals of each bay
+        for (const [za, zb] of [[zc + sz * L0, zc + sz * L1], [zc + sz * L1, zc + sz * L0]] as const) {
+          beam(b, 'wood', v3(xa, yAt(xa, za), za), v3(xb, yAt(xb, zb), zb), 0.024, 0.02, lig);
+        }
+      }
+    }
   }
 }

@@ -23,7 +23,7 @@ import {
   Vector2,
   Vector3,
 } from 'three';
-import { fnoise, type ModelPart, PartBuilder, trs, v3 } from './kit';
+import { fnoise, type ModelPart, PartBuilder, smoothstep, trs, v3 } from './kit';
 import { brewery, charcoalBurner, fisher, malthouse, quarry } from './chains';
 import { addHuman, HUMAN_STYLES, type WorkerKind } from './people';
 import {
@@ -116,6 +116,9 @@ export const C = {
 };
 
 const STREAK = new Color('#4f4b44');
+/** Daub weathering: mud splashed up from the yard, and the grey-brown of rain run-off. */
+const SPLASH = new Color('#6f6250');
+const RUNOFF = new Color('#857b69');
 export const SOOT = new Color('#2e2a26');
 export const stoneO = (color = C.stone): Opts => ({
   color,
@@ -190,6 +193,20 @@ export function house(b: PartBuilder, s: HouseSpec): void {
       jitter: 0.012,
       dirt: 0.45,
       ao: 0.3,
+      shade: (p, n, c) => {
+        // wear on the limewash: rain-splashed mud over the plinth (the base dirt is measured from
+        // the ground, so a wall on a tall plinth stayed spotless), grey run-off streaks below the
+        // wall plate, and patchy fresher limewash
+        const yy = p.y - pt;
+        c.lerp(SPLASH, 0.3 * (1 - smoothstep(0, 0.6, yy)));
+        if (Math.abs(n.y) < 0.5) {
+          const along = Math.abs(n.z) > Math.abs(n.x) ? p.x : p.z;
+          const st = fnoise(along * 2.9, p.y * 0.22, 0.7, 51);
+          if (st > 0.08) c.lerp(RUNOFF, Math.min(0.45, (st - 0.08) * 1.4) * smoothstep(h * 0.3, h, yy));
+        }
+        const lw = fnoise(p.x * 0.7, p.y * 0.7, p.z * 0.7, 52);
+        if (lw > 0.25) c.multiplyScalar(1 + (lw - 0.25) * 0.22);
+      },
     }, 0.5);
     timberFrame(b, v3(x0, pt, z1), v3(1, 0, 0), v3(0, 0, 1), s.len, h, C.timber, [...openFront, ...winOpenings('front', s.len)]);
     timberFrame(b, v3(x1, pt, z0), v3(-1, 0, 0), v3(0, 0, -1), s.len, h, C.timber, winOpenings('back', s.len));
@@ -462,6 +479,19 @@ export function haystack(b: PartBuilder, x: number, z: number, scale = 1): void 
   rod(b, 'wood', v3(x, 2.8 * scale, z), v3(x + 0.04, 3.9 * scale, z), 0.05, 0.035, 5, { color: '#5e4e3d', ao: 0 });
 }
 
+/** Wooden ladder from a foot point to a top point (rails 0.42 m apart, rungs every 0.3 m). */
+export function ladder(b: PartBuilder, foot: Vector3, top: Vector3, side: Vector3): void {
+  const o: Opts = { color: C.timberLight, vary: 0.1, ao: 0, dirt: 0.2 };
+  const len = foot.distanceTo(top);
+  const half = side.clone().normalize().multiplyScalar(0.21);
+  for (const s of [-1, 1]) rod(b, 'wood', foot.clone().addScaledVector(half, s), top.clone().addScaledVector(half, s), 0.035, 0.03, 5, o);
+  const n = Math.floor((len - 0.2) / 0.3);
+  for (let i = 1; i <= n; i++) {
+    const p = foot.clone().lerp(top, (i * 0.3) / len);
+    rod(b, 'wood', p.clone().sub(half), p.clone().add(half), 0.02, 0.02, 4, o);
+  }
+}
+
 function well(b: PartBuilder, x: number, z: number): void {
   b.add('stone', new CylinderGeometry(0.75, 0.8, 0.8, 14, 2, true), { ...stoneO(), m: trs(x, 0.4, z) });
   b.add('stone', new TorusGeometry(0.7, 0.1, 5, 14), { ...stoneO(C.stoneDark), m: trs(x, 0.8, z, Math.PI / 2) });
@@ -583,6 +613,10 @@ function farm(b: PartBuilder): Partial<BuildingModel> {
   well(b, 3.2, 2.0);
   // cart wheel leaning on the house and a few sacks of grain by the door
   b.add('wood', new TorusGeometry(0.55, 0.05, 4, 16), { color: '#5d4c3a', m: trs(-4.6, 0.6, -0.35, -0.2) });
+  // bench under the front eave, and a ladder against the granary gable
+  box(b, 'wood', 1.6, 0.07, 0.34, trs(-2.9, 0.48, -0.25), { color: C.timberLight, dirt: 0.2 });
+  for (const sx of [-1, 1]) box(b, 'wood', 0.07, 0.45, 0.3, trs(-2.9 + sx * 0.65, 0.23, -0.25), { color: C.timber });
+  ladder(b, v3(5.95, 0, -4.4), v3(5.62, 2.5, -4.4), v3(0, 0, 1));
   sack(b, 0.2, -0.1, 0.4);
   sack(b, 0.65, 0.0, 1.9);
   sack(b, 0.45, 0.4, 0.2, '#9c8458', true);
@@ -611,6 +645,8 @@ function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['
   }
   // axle bearing block on the wall
   box(b, 'stone', 0.5, 0.5, 0.6, trs(cx + len / 2 + 0.25, 1.3, cz), stoneO());
+  // a ladder up to the hoist door of the upper storey on the left gable
+  ladder(b, v3(cx - len / 2 - 0.62, 0, cz + 0.4), v3(cx - len / 2 - 0.08, 3.1, cz + 0.4), v3(0, 0, 1));
   // sacks of flour by the door
   sack(b, cx + 1.9, cz + dep / 2 + 0.5, 0.3, '#c4bba6');
   sack(b, cx + 2.3, cz + dep / 2 + 0.9, 1.3, '#c4bba6');
