@@ -922,3 +922,13 @@ no world/pre-warm yet → immediate, as before). The terrain hooks read `this.us
 a clone keys and builds its own variant. (2) The far-tree atlas re-bake per tier disposed its bake and copy
 materials, re-linking them every time; they are kept for the session now (5 small programs). Result: 4/3/2/2 →
 **0/0/0/0** in-frame links over four switches; the tier lands a few hundred ms later. (decided)
+
+**D-66 — "Naprawa" for a stranded output: build a granary next to it (UI only; owner decision 2, 2026-11-03).**
+When the root of a building's cause chain is `OUTPUT_FULL.NO_DESTINATION` (no granary and no customer takes the
+good — a full output whose customer still takes it chains on to the customer and gets no cure), `cureFor` returns
+`granary`. In a world whose build list has the warehouse (free valley, mission VI) the "Dlaczego stoi?" sheet shows
+"Postaw spichlerz −30" (disabled with the rank / silver reason when blocked); one tap closes the sheet, opens the
+build tool and picks the granary with its ghost already on the closest valid site around the stalled building
+(`siteNear`: rings up to 10 cells, the sim's pure `validatePlace`), so "Postaw" is one more tap. The rail's Buduj
+button gets the same cure mark as Kup wóz / Droga. Missions without the warehouse on their build list get a hint
+only ("połącz drogą spichlerz albo odbiorcę"). No sim change. Shots `docs/shots/day1-repair-*`. (decided)

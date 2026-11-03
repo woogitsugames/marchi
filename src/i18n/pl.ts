@@ -594,6 +594,10 @@ export const pl = {
   'diag.reset': 'Od nowa',
   // rain forecast 30 s ahead (night 5): see PENDING_KEYS
   'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
+  // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): see PENDING_KEYS
+  'fix.granary': 'Postaw spichlerz',
+  'fix.granaryWhy': 'Towar nie ma dokąd jechać: spichlerz przy drodze przyjmie go i zwolni plac.',
+  'fix.granaryHint': 'Towar nie ma dokąd jechać. Połącz drogą spichlerz albo odbiorcę, który go przyjmie.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -782,6 +786,9 @@ export const PENDING_KEYS = [
   'diag.copied',
   'diag.reset',
   'hud.rainSoon',
+  'fix.granary',
+  'fix.granaryWhy',
+  'fix.granaryHint',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

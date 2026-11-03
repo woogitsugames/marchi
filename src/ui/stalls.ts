@@ -11,7 +11,7 @@ export const MIN_STALL_TICKS = 20;
 const W_CRIT = 3, W_NORMAL = 1, W_MINOR = 0.25;
 
 /** The tool that fixes the root of a stall chain (the HUD highlights that tool card). */
-export type Cure = 'wagon' | 'road' | null;
+export type Cure = 'wagon' | 'road' | 'granary' | null;
 
 export interface StallEntry {
   id: number;
@@ -57,7 +57,8 @@ export function rankStalls(world: World): StallEntry[] {
 let cureCache: { key: string; cure: Cure } | null = null;
 /**
  * What the player can buy or build against the root of a building's stall chain: a wagon when the
- * root waits for a free wagon, a road when it lacks one. Cached per status and network version.
+ * root waits for a free wagon, a road when it lacks one, a granary when its output has nowhere to go
+ * (OUTPUT_FULL.NO_DESTINATION). Cached per status and network version.
  */
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
@@ -72,6 +73,8 @@ export function cureFor(world: World, id: number): Cure {
       const s = l.status;
       if (s.k === 'NO_ROAD' || (s.k === 'NO_INPUT' && s.cause === 'UNREACHABLE') || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) cure = 'road';
       else if ((s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') || (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON')) cure = 'wagon';
+      // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1) cure = 'granary';
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
   }
   cureCache = { key, cure };

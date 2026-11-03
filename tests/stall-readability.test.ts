@@ -7,6 +7,7 @@ import {
 } from '../src/sim/index';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { makeWorld } from '../tools/fuzz-lib';
+import { cureFor } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 const minute = 60 * TICK_HZ;
@@ -71,6 +72,24 @@ test('F2: OUTPUT_FULL.NO_DESTINATION with a customer that still takes the good c
   farm.status = { k: 'OUTPUT_FULL', good: 'grain', cause: 'NO_DESTINATION', blockedBy: -1 };
   eq(outputCustomer(lab, farm.id), -1, 'no consumer of grain -> stranded');
   eq(explainBuilding(lab, farm.id, 5, true).length, 1, 'stranded chain ends at the producer');
+  // "Naprawa" (owner decision 2, 2026-11-03): a stranded output is cured by a granary
+  eq(cureFor(lab, farm.id), 'granary', 'stranded output -> granary cure');
+});
+
+test('Naprawa: OUTPUT_FULL.NO_DESTINATION with a customer is not a granary cure (it chains to the customer)', () => {
+  const w = createWorld('m9');
+  let seen = 0;
+  while (w.state.mission.result === 'running' && w.state.tick < 6 * minute) {
+    step(w);
+    for (const b of w.state.buildings) {
+      const s = b.status;
+      if (s.k !== 'OUTPUT_FULL' || s.cause !== 'NO_DESTINATION' || s.blockedBy >= 0) continue;
+      if (outputCustomer(w, b.id) < 0) continue;
+      assert(cureFor(w, b.id) !== 'granary', `m9 ${b.type}#${b.id}: no granary cure while a customer takes the good`);
+      seen++;
+    }
+  }
+  assert(seen > 0, 'm9 samples');
 });
 
 test('F4: NO_STONE says how much stone is on its way, waiting at the quarry, or that nobody quarries it', () => {

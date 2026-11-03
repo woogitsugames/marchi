@@ -591,4 +591,8 @@ export const en: FullDict = {
   'diag.reset': 'Reset',
   // rain forecast 30 s ahead (night 5): see PENDING_KEYS
   'hud.rainSoon': 'Rain in half a minute — dirt turns to mud, cobbles keep the pace',
+  // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): see PENDING_KEYS
+  'fix.granary': 'Build a granary',
+  'fix.granaryWhy': 'The goods have nowhere to go: a granary by the road takes them and clears the yard.',
+  'fix.granaryHint': 'The goods have nowhere to go. Link a granary or a buyer that takes them by road.',
 };

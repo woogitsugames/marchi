@@ -7,6 +7,7 @@ import {
   TICK_HZ, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
+  type BuildingType,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, ScreenOffset, WorldView } from '../render/api';
@@ -784,6 +785,14 @@ export class App implements PanelNav {
   }
 
   // ------------------------------------------------------------------ PanelNav
+
+  /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
+  pickBuild(type: BuildingType, near: number): void {
+    if (!buildTypes(this.world).includes(type)) return;
+    this.sheets.closeAll();
+    this.setTool('build');
+    if (this.tool === 'build') this.build.pick(type, near);
+  }
 
   go(kind: 'building' | 'wagon', id: number, focus = true): void {
     const prevTop = this.sheets.top?.content.key ?? null;

@@ -843,6 +843,9 @@ bdi { unicode-bidi: isolate; }
 .fix .s-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .fix .fix-why { color: #6e3520; font-weight: 700; }
 .fix .fix-why svg { color: var(--clay); }
+/* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
+.jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+.jam-hint svg, .granary-hint svg { flex: none; }
 
 /* ================================================================ end letter: where the time went */
 .dl-item { display: inline-flex; align-items: center; gap: 4px; margin-inline-end: 10px; }
