@@ -7,7 +7,7 @@ import { wagonEta } from './diagnose';
 import { buildingById } from './logistics';
 import { findPath, pathTime, type World } from './network';
 import { cycleTicks } from './seasons';
-import type { BuildingType, Good } from './types';
+import type { BuildingType, Good, GoodMap } from './types';
 
 /** One sample every 10 s of game time; the pace is measured over the last two minutes. */
 export const PACE_SAMPLE_TICKS = 10 * TICK_HZ;
@@ -156,11 +156,23 @@ function sealsAt(world: World, tick: number): number {
   return Math.max(1, base - missed);
 }
 
+/** Everything the castle must hold once tranche `i` is complete (tranches add up in order). */
+export function trancheNeed(world: World, i: number): GoodMap | null {
+  const c = world.state.mission.contract;
+  if (!c || i < 0 || i >= c.tranches.length) return null;
+  const out = Object.fromEntries(GOODS.map((g) => [g, 0])) as GoodMap;
+  for (let k = 0; k <= i; k++) for (const g of GOODS) out[g] += c.tranches[k]!.need[g];
+  return out;
+}
+
 /**
  * Forecast of the running contract from the state and a pace log (see samplePace). Pure: reads
- * the world, never writes it. Null without a running contract.
+ * the world, never writes it. Null without a running contract. `need` narrows the order to a part
+ * of it (a tranche: see trancheNeed); `finishTick` is then when that part is in the castle, and
+ * `seals` / `aim` still describe the whole contract's clock (the caller compares with the tranche's
+ * own deadline instead; `aim` is null).
  */
-export function contractForecast(world: World, log: PaceLog): ContractForecast | null {
+export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | null = null): ContractForecast | null {
   const st = world.state;
   const c = st.mission.contract;
   if (!c || st.mission.result !== 'running') return null;
@@ -181,7 +193,7 @@ export function contractForecast(world: World, log: PaceLog): ContractForecast |
   const lags: number[] = [], shorts: number[] = [];
   for (let gi = 0; gi < GOODS.length; gi++) {
     const g = GOODS[gi]!;
-    const need = c.need[g];
+    const need = (needOf ?? c.need)[g];
     if (need <= 0) continue;
     let spare = 0, producers = 0, producer = -1, cap = 0, lag = -1;
     let producerType: BuildingType | null = null;
@@ -229,7 +241,7 @@ export function contractForecast(world: World, log: PaceLog): ContractForecast |
   const b = goods[worst]!;
   const lagB = b.etaTicks - (b.toMake === 0 || b.perMin <= 0 ? 0 : Math.round(b.toMake * 60 * TICK_HZ / b.perMin));
   for (const [s, byTick] of [[3, c.star3Tick], [2, c.star2Tick], [1, c.deadlineTick]] as const) {
-    if (s <= seals) break;
+    if (needOf || s <= seals) break;
     const room = byTick - st.tick - lagB;
     if (room > 0 && b.toMake > 0 && sealsAt(world, byTick) > seals) {
       aim = { seals: sealsAt(world, byTick), byTick, perMin: b.toMake * 60 * TICK_HZ / room };
@@ -237,4 +249,19 @@ export function contractForecast(world: World, log: PaceLog): ContractForecast |
     }
   }
   return { ready: true, finishTick, seals, goods, bottleneck: worst, aim };
+}
+
+/**
+ * The forecast of the tranche now due (D-78), or null: no contract in tranches, all delivered, or the two-minute
+ * pace window does not yet lie inside this tranche (since the start for the first). Before that the pace of the
+ * tranche before (another good, a sawmill still idle) said "late" for a minute or more on runs that met every
+ * tranche (m5, m6 without a player action: 18 and 14 false "late" samples in 10 s steps, none with the gate).
+ */
+export function trancheForecast(world: World, log: PaceLog): ContractForecast | null {
+  const c = world.state.mission.contract;
+  if (!c || world.state.mission.result !== 'running') return null;
+  const cur = c.tranches.findIndex((x) => x.doneTick < 0);
+  if (cur < 0) return null;
+  if (world.state.tick - (cur > 0 ? c.tranches[cur - 1]!.doneTick : 0) < PACE_WINDOW_TICKS) return null;
+  return contractForecast(world, log, trancheNeed(world, cur));
 }

@@ -1058,3 +1058,16 @@ Measured strokes now run 4.82 → 5.40 s across the seam (0.58 s, the period). `
 `seconds: 5.22` for a future render from the source; provenance hashes updated; `process_audio.py --check`
 PASS. `cart.dirt` (irregular 0.3–0.45 s hits, no gap at the seam) needs nothing; `cart.cobble` has one
 0.61 s gap at the seam among 0.3 s hits — left as is (irregular cobbles; a re-cut would need the source). (decided)
+
+**D-78 — Pace forecast for orders in tranches (UI; BACKLOG P3 from D-38).** Missions V and VI (orders in
+tranches) had no pace line: the forecast only knew one order with one deadline. Now `contractForecast` takes an
+optional need (the castle must hold the sum of the tranches up to the one now due, `trancheNeed`), and
+`trancheForecast` gives the forecast of the tranche now due — read against that tranche's deadline (against the
+contract's once it is missed). The waybill shows "Przy tym tempie: gotowe za M:SS" / "spóźnienie M:SS" and the
+bottleneck's supply under the current tranche; the castle card shows the pace rows for it (no seal row — the
+seals belong to the whole order — and no "for N seals you need" aim). A tranche is forecast only once the
+two-minute pace window lies inside it (from the start for the first): without that gate the pace of the tranche
+before (another good, a sawmill just restarting) said "late" in 18 (m5) and 14 (m6) of the 10-s samples on runs
+that met every tranche; with it, none (test in `contract-pace.test.ts`). Until then the castle card says
+`why.pace.waitTranche` (new key, PENDING_KEYS). Read-only on the state; hashes unchanged. The 2-minute window
+tuning after the playtest stays open. `docs/shots/day2-tranche-pace.jpg`. (decided)

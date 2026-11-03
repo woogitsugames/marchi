@@ -22,7 +22,7 @@ export {
   type DemolishQuote, type PriceInfo, type RankGateError, type RankGoal, type SandboxStatus,
 } from './town';
 export {
-  PACE_MIN_TICKS, PACE_SAMPLE_TICKS, PACE_WINDOW_TICKS, contractForecast, newPaceLog, samplePace,
+  PACE_MIN_TICKS, PACE_SAMPLE_TICKS, PACE_WINDOW_TICKS, contractForecast, newPaceLog, samplePace, trancheForecast, trancheNeed,
   type ContractForecast, type GoodPace, type PaceLog,
 } from './forecast';
 export {

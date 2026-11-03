@@ -397,6 +397,7 @@ export const en: FullDict = {
   'why.pace.need': 'For {seals} ({time} left) you need ≈{rate}/min',
   'why.pace.seals': '{n, plural, one {# seal} other {# seals}}',
   'why.pace.wait': 'Pace forecast after the first minute.',
+  'why.pace.waitTranche': 'Forecast for this delivery after its first two minutes.',
   'why.shared': '{good} also feeds: {rival} — there {there}, here {here} (stock and on the way)',
   'why.sharedOne': 'One supplier ({who}) for {n} customers — a second one would help.',
   // supplier not producing, its own input on the way (F5; D-44): see PENDING_KEYS
