@@ -35,6 +35,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "The first snow has come, and part of the order remains on the road. Check the crossing and make sure the wagons can collect their loads.\n— Wszebor",
     },
+    de: {
+      opening: "An den Wegewart: Bringt vor dem ersten Schnee 30 Bretter und 20 Brote zur Burg. Holzfäller und Sägewerk liegen jenseits des Flusses, doch die Ufer sind nicht verbunden. Baut eine Überfahrt und sorgt dafür, dass Mehl und Brot weiterfahren.\n— Wszebor, Burggraf von Łozinny Bród",
+      won: {
+        1: "Die Waren kamen vor dem Schnee, doch die Fuhrleute waren spät. Ein Siegel; schickt sie künftig früher los.\n— Wszebor",
+        2: "Der gut angelegte Weg brachte die Waren mit Zeitreserve. Zwei Siegel für die tüchtigen Fuhrleute.\n— Wszebor",
+        3: "Bretter und Brot lagen bereit, noch ehe die Pferde froren. Drei Siegel für gute Herbstvorsorge.\n— Wszebor",
+      },
+      lost: "Der erste Schnee kam, doch ein Teil der Ladung blieb unterwegs. Prüft die Überfahrt und die Abholung durch die Wagen.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -54,6 +63,15 @@ export const CONTRACT_LETTERS = {
         3: "Goods moved across both banks without needless delay. Three seals; that is how one manages a narrow crossing.\n— Wszebor",
       },
       lost: "The ledger lacks some goods due by the deadline. Inspect the queue at the bridgehead and give the wagons another route.\n— Wszebor",
+    },
+    de: {
+      opening: "Schreiber Mirogniew fordert 36 Bretter und 30 Brote für die Burg. Wagen von beiden Ufern drängen sich auf einer Holzbrücke. Entlastet den Engpass rechtzeitig: Eine zweite Brücke oder ein steinerner Übergang verkürzt die Schlange.\n— Wszebor",
+      won: {
+        1: "Der Auftrag ist erfüllt, wenn auch die Wagen am Brückenkopf standen. Ein Siegel für die eingehaltene Frist.\n— Wszebor",
+        2: "Die Überfahrt gelang besser als die Fuhrleute erwartet hatten. Zwei Siegel für die gut geordneten Fahrten.\n— Wszebor",
+        3: "Beide Ufer wurden ohne unnötigen Verzug versorgt. Drei Siegel für die kluge Führung des Brückenverkehrs.\n— Wszebor",
+      },
+      lost: "In der Burg fehlen Waren. Prüft den Stau am Brückenkopf und eröffnet den Wagen einen zweiten Weg.\n— Wszebor",
     },
   },
   m3: {
@@ -75,6 +93,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "The rain did not let up, and the supplies fell short. Next time, find where the wagons slow down and lay cobbles there.\n— Wszebor",
     },
+    de: {
+      opening: "Regen hat den Erdweg ausgewaschen. Die Burg braucht 24 Bretter und 16 Brote, doch die Räder versinken im Schlamm. Müller Borzym wartet auf Getreide. Pflastert die Abschnitte, die die Wagen am häufigsten befahren.\n— Wszebor",
+      won: {
+        1: "Trotz Regen trafen die Vorräte ein, doch der Schlamm kostete viel Zeit. Ein Siegel.\n— Wszebor",
+        2: "Der Weg hielt dem Herbstregen stand. Zwei Siegel für stetige Lieferungen.\n— Wszebor",
+        3: "Nicht einmal der Wolkenbruch hielt euch auf. Drei Siegel: Gutes Pflaster hilft mehr als eilige Fuhrleute.\n— Wszebor",
+      },
+      lost: "Der Regen hielt an, und die Vorräte reichten nicht. Pflastert dort, wo die Wagen am stärksten gebremst werden.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -94,6 +121,15 @@ export const CONTRACT_LETTERS = {
         3: "A bridge may close, yet a well-planned supply line endures. Three seals for planning the stores and crossing.\n— Wszebor",
       },
       lost: "The deadline passed, though the bridge closure was foretold. Stock the castle bank sooner, or prepare a stone crossing.\n— Wszebor",
+    },
+    de: {
+      opening: "Treibeis nähert sich. Zur festgesetzten Stunde sperrt es die Holzbrücke. Bringt die Vorräte vorher in einen Speicher am Burgufer oder errichtet eine Steinbrücke. Was am anderen Ufer bleibt, ernährt niemanden.\n— Wszebor",
+      won: {
+        1: "Das Eis störte die Fahrten, doch die Burg erhielt die Ware. Ein Siegel für die gewahrte Frist.\n— Wszebor",
+        2: "Als das Eis die Holzbrücke sperrte, stockte der Nachschub nur kurz. Zwei Siegel für die Vorsorge.\n— Wszebor",
+        3: "Auch eine gesperrte Brücke hält gut geplante Lieferungen nicht auf. Drei Siegel für Lager und Überfahrt.\n— Wszebor",
+      },
+      lost: "Die Frist verstrich trotz angekündigter Sperre. Legt Vorräte am Burgufer an oder baut eine Steinbrücke.\n— Wszebor",
     },
   },
   m5: {
@@ -115,6 +151,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "At least one instalment missed its appointed time. Next time, divide the stores by deadline rather than counting only the total.\n— Wszebor",
     },
+    de: {
+      opening: "Zum Burgmarkt sind drei Lieferungen zu verschiedenen Zeiten fällig. Schreiber Mirogniew verzeichnet jede einzeln: Brot und Bretter müssen termingerecht eintreffen, nicht erst mit dem letzten Wagen. Legt Vorräte an und ordnet die Fahrten.\n— Wszebor",
+      won: {
+        1: "Alle drei Lieferungen trafen rechtzeitig ein, doch auf dem Hof herrschte Unordnung. Ein Siegel.\n— Wszebor",
+        2: "Der Markt erhielt jede Lieferung zur rechten Stunde. Zwei Siegel für gute Ordnung.\n— Wszebor",
+        3: "Kein Fuhrmann musste zweimal gerufen werden. Alle drei Lieferungen kamen ohne letzte Hetze. Drei Siegel.\n— Wszebor",
+      },
+      lost: "Mindestens eine Lieferung kam zu spät. Teilt die Vorräte nach den drei Fristen auf; die Gesamtsumme genügt nicht.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -134,6 +179,15 @@ export const CONTRACT_LETTERS = {
         3: "Well-placed stocks kept the mill and bakery from waiting long. Three seals for goods kept moving.\n— Wszebor",
       },
       lost: "Goods piled up, and the deliveries fell short of the deadline. Check the full granary and the route from mill to bakery.\n— Wszebor",
+    },
+    de: {
+      opening: "Der Kornspeicher ist eng, und das Getreide kommt schneller an, als Müller Borzym es abholen kann. Ist das Lager voll, steht die Arbeit und der Burgauftrag leidet. Schafft Platz oder leitet die Wagen anders.\n— Wszebor",
+      won: {
+        1: "Die Lieferung gelang, doch der Speicher war zum Bersten voll. Ein Siegel; behaltet die Lager im Blick.\n— Wszebor",
+        2: "Die Wagen brachten den Überschuss weg, ehe die Werkstätten stillstanden. Zwei Siegel für kluge Lagerhaltung.\n— Wszebor",
+        3: "Gut verteilte Vorräte hielten Mühle und Bäckerei in Gang. Drei Siegel für einen freien Warenfluss.\n— Wszebor",
+      },
+      lost: "Die Waren türmten sich, und die Frist verstrich. Prüft den vollen Speicher und den Weg von Mühle zu Bäckerei.\n— Wszebor",
     },
   },
   m7: {
@@ -155,6 +209,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "The fast is over and the fish fell short. Check that the hut stands by the water and that the wagons keep pace across the bridge.\n— Wszebor",
     },
+    de: {
+      opening: "Die Fastenzeit ist da. Die Burgküche verlangt 54 Fische. Am Nordufer steht schon eine Fischerhütte, doch ihr Fang könnte zu spät eintreffen. Errichtet eine zweite Hütte direkt am Wasser; landeinwärts gibt es keine Fische. Bringt den Fang über die Holzbrücke ans Südufer.\n— Wszebor",
+      won: {
+        1: "Die Fische kamen rechtzeitig, doch die Tafel wartete. Ein Siegel; eine zweite Fischerhütte hätte geholfen.\n— Wszebor",
+        2: "Die Küche erhielt den Fang ohne große Verzögerung. Zwei Siegel; baut künftig die Hütte früher.\n— Wszebor",
+        3: "Netze am Ufer und Wagen auf der Brücke arbeiteten gut zusammen. Drei Siegel für den klugen Standort.\n— Wszebor",
+      },
+      lost: "Die Fastenzeit ging vorüber, ohne dass genug Fisch eintraf. Prüft den Platz der Hütte und die Wagen an der Brücke.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -174,6 +237,15 @@ export const CONTRACT_LETTERS = {
         3: "The stone reached the granary before the rain, and the cobbles kept the wagons moving. Three seals for forethought.\n— Wszebor",
       },
       lost: "The storm held the wagons in the mud. Haul the stone to the granary first, then pave the southern road.\n— Wszebor",
+    },
+    de: {
+      opening: "Ein Sturm zieht auf. Bringt 24 Bretter und 20 Brote zur Burg, ehe der Schlamm den Verkehr lähmt. Der Steinbruch liegt auf festem Fels; doch Stein im Bruch pflastert keinen Weg. Holt ihn mit Wagen zum Speicher, je vier Einheiten pro Wagen, und pflastert erst dann den Südweg.\n— Wszebor",
+      won: {
+        1: "Die Waren kämpften sich durch den Schlamm. Ein Siegel; der Stein lag noch im Bruch statt auf dem Weg.\n— Wszebor",
+        2: "Mehr Wagen glichen manchen Zeitverlust aus. Zwei Siegel; Pflaster wäre noch besser gewesen.\n— Wszebor",
+        3: "Der Stein erreichte vor dem Regen den Speicher, und das Pflaster hielt die Wagen in Fahrt. Drei Siegel.\n— Wszebor",
+      },
+      lost: "Der Sturm hielt die Wagen im Schlamm fest. Holt zuerst Stein zum Speicher, dann pflastert den Südweg.\n— Wszebor",
     },
   },
   m9: {
@@ -195,6 +267,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "The wedding came before the deliveries. Check who takes the woodcutter's logs, and add a second source.\n— Wszebor",
     },
+    de: {
+      opening: "Die Hochzeit naht. Benötigt werden 36 Bretter, 8 Holzkohle und 26 Bier. Getreide muss zur Mälzerei, Malz zur Brauerei. Sägewerk und Köhlerei teilen einen Holzfäller; nimmt einer das Holz, steht der andere still. Erhöht die Holzmenge und stellt genügend Wagen bereit.\n— Wszebor",
+      won: {
+        1: "Die Gäste litten keinen Durst, doch Sägewerk und Köhlerei stritten um jeden Stamm. Ein Siegel.\n— Wszebor",
+        2: "Ein zweiter Holzfäller beendete den Streit. Zwei Siegel; mehr Wagen hätten den Rest beschleunigt.\n— Wszebor",
+        3: "Beide Werkstätten hatten Holz, und das Bier kam pünktlich. Drei Siegel für einen gut geteilten Wald.\n— Wszebor",
+      },
+      lost: "Die Hochzeit begann vor dem Eintreffen der Ware. Prüft den Holzverbrauch und baut eine zweite Holzquelle.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -214,6 +295,15 @@ export const CONTRACT_LETTERS = {
         3: "There was wood for the forge and for the sawmill. Three seals for mending the source rather than the road.\n— Wszebor",
       },
       lost: "The deadline passed and planks fell short: the burner turned to charcoal the wood the sawmill needed. Build a second woodcutter; extra wagons bring no extra wood.\n— Wszebor",
+    },
+    de: {
+      opening: "Der Schmied verlangt Holzkohle, die Zimmerleute Bretter: 48 Bretter und 8 Holzkohle. Sägewerk und Köhlerei hängen an einem Holzfäller. Meldet das Sägewerk Holz beim Köhler, fehlen nicht Wagen, sondern Stämme. Baut einen zweiten Holzfäller; zusätzliche Wagen fällen keine Bäume.\n— Wszebor",
+      won: {
+        1: "Bretter und Kohle kamen an, doch das Sägewerk wartete oft auf Holz. Ein Siegel; ein zweiter Holzfäller hätte geholfen.\n— Wszebor",
+        2: "Ein zweiter Holzfäller beendete den Streit, kam aber spät. Zwei Siegel; vergrößert den Nachschub früher.\n— Wszebor",
+        3: "Für Schmiede und Sägewerk war genug Holz da. Drei Siegel für die Lösung am Ursprung statt am Weg.\n— Wszebor",
+      },
+      lost: "Die Frist verstrich, und Bretter fehlten: Der Köhler verbrauchte das Holz des Sägewerks. Baut einen zweiten Holzfäller.\n— Wszebor",
     },
   },
   m11: {
@@ -235,6 +325,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Winter came before the last barrel. Check whether every wagon is busy while grain waits in the field. Buy wagons before the long road eats all the time.\n— Wszebor",
     },
+    de: {
+      opening: "Zum Winter braucht die Burg 22 Bier. Getreide wächst im Westen, die Mälzerei steht weit im Osten. Drei Wagen versorgen Hof, Mälzerei, Brauerei und Burg. Sind alle Wagen beschäftigt und liegt Getreide auf dem Feld, kauft weitere Wagen im Stall: Der Weg bleibt lang, aber mehr Fahrten laufen zugleich.\n— Wszebor",
+      won: {
+        1: "Das Bier kam an, doch die Wagen waren zu lange unterwegs. Ein Siegel; lange Wege brauchen mehr Wagen.\n— Wszebor",
+        2: "Ein zusätzlicher Wagen half der Mälzerei, doch manche Fahrt wartete noch. Zwei Siegel.\n— Wszebor",
+        3: "Malz gelangte zur Brauerei, Bier zur Burg, ohne Verzug. Drei Siegel: Nicht Getreide, sondern Wagen fehlten.\n— Wszebor",
+      },
+      lost: "Der Winter kam vor dem letzten Fass. Prüft die beschäftigten Wagen und das Getreide auf dem Feld; kauft weitere Wagen.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -254,6 +353,15 @@ export const CONTRACT_LETTERS = {
         3: "Every letter was filled on time. The granary took the beer while the castle did not want it and gave it back when the time came. Three seals.\n— Wszebor",
       },
       lost: "The last deadline passed without the whole order. The brewery stood idle because the full granary took no surplus. Connect the large granary before the shelves fill.\n— Wszebor",
+    },
+    de: {
+      opening: "Zum großen Brauen braucht die Burg 40 Brote und 48 Bier in drei Lieferungen: 32 Brote bis 6:00, 8 Brote und 12 Bier bis 9:00, zuletzt 36 Bier bis 12:00. Die Burg nimmt nur die laufende Lieferung an; die Brauerei füllt sich rasch. Der kleine Speicher ist voller Getreide, der große steht zwei Felder vom Weg. Schließt ihn sofort an, um Bier zu lagern.\n— Wszebor",
+      won: {
+        1: "Die letzten Fässer kamen, doch die Brauerei stand lange voll. Ein Siegel; ein freier Speicher hätte geholfen.\n— Wszebor",
+        2: "Der große Speicher nahm Bier auf, wurde jedoch spät angeschlossen. Zwei Siegel; früheres Anschließen schafft Vorrat.\n— Wszebor",
+        3: "Alle drei Lieferungen trafen rechtzeitig ein. Der Speicher bewahrte das Bier, bis die Burg es annahm. Drei Siegel.\n— Wszebor",
+      },
+      lost: "Die letzte Frist verstrich, und Ware fehlte. Der volle Speicher nahm keinen Überschuss auf. Schließt den großen Speicher rechtzeitig an.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
