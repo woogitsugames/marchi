@@ -174,84 +174,120 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   --fill: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(228 220 203 / .18) 5px 6.5px), var(--oak);
 }
 
-/* ---------------------------------------------------------------- main menu */
+/* ---------------------------------------------------------------- main menu
+   On the painted kit (D-43/D-53; owner 2026-11-03): the lily frame (frame-sheet-dim) holds a scrolling list,
+   the title sits on the wine ribbon, each contract has a brass medallion with its numeral (pressed wax when
+   won), Continue is the wine button and Settings the parchment card. The live valley stays behind. */
 
 #menu { position: absolute; inset: 0; }
+.menu-wrap {
+  position: absolute;
+  top: calc(var(--safe-t) + 8px); bottom: calc(var(--safe-b) + 8px); inset-inline-start: calc(var(--safe-s) + 8px);
+  display: flex; flex-direction: column; justify-content: flex-start;
+  filter: drop-shadow(0 4px 6px rgb(20 14 8 / .45));
+  pointer-events: none;
+}
+.menu-frame {
+  position: relative;
+  width: min(300px, 76vw);
+  max-height: 100%;
+  display: flex; flex-direction: column;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/frame-sheet-dim@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/frame-sheet-dim@2x.png") 2x, url("/assets/ui/kit/frame-sheet-dim@3x.png") 3x);
+  border-image-slice: 16.07% 11.875% fill;
+  border-image-width: 36px 38px;
+  padding: 22px 14px 20px;
+  pointer-events: auto;
+}
 .menu-strip {
   position: relative;
-  width: min(272px, 70vw);
-  max-height: 100vh;
+  min-height: 0;
   overflow-y: auto;
-  padding-block: calc(var(--safe-t) + 36px) 40px; padding-inline: calc(var(--safe-s) + 24px) 22px;
+  overscroll-behavior: contain;
+  padding-inline: 10px;
+  padding-bottom: 18px;
   display: flex;
   flex-direction: column;
-  background: var(--fibre) 0 0 / 220px 220px, var(--parchment);
-  /* deckled bottom edge: clip-path set from JS */
+  /* the list scrolls inside the frame: a fade at its foot says there is more below */
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent);
 }
-.menu-wrap { position: absolute; top: 0; inset-inline-start: 0; filter: var(--shadow); }
-.menu-pin {
-  position: absolute; left: calc(50% - 5px); top: calc(var(--safe-t) + 12px);
-  width: 10px; height: 10px; background: radial-gradient(circle at 35% 35%, #8a8478 0 18%, var(--iron) 22%); clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-}
+.menu-head { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 8px; }
+.menu-ribbon.ribbon { width: calc(100% + 28px); margin-inline: -14px; min-height: 56px; padding-inline: 34px; }
 .menu-strip .title {
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 52px;
-  line-height: .95;
+  font-size: 38px;
+  line-height: 1;
   margin: 0;
-  color: var(--ink);
-  /* long names in other languages (de „Wege des Königreichs”) break at syllables, never past the strip */
+  color: #f3e5c4;
+  text-shadow: 0 1px 0 rgb(43 10 12 / .6);
+  /* long names in other languages (de „Wege des Königreichs”) break at syllables, never past the ribbon */
   overflow-wrap: break-word; hyphens: auto;
 }
 .menu-strip .subtitle {
   margin: 6px 0 0;
-  margin-inline-start: 2px;
+  text-align: center;
   font-variant: small-caps;
   text-transform: lowercase;
   letter-spacing: .14em;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink-soft);
 }
-.menu-strip .rule {
-  height: var(--hair);
-  background: var(--iron);
-  margin: 22px 0 10px;
-  width: 64px;
-}
+.menu-continue { width: 100%; justify-content: flex-start; text-align: start; padding: 6px 16px; margin: 4px 0 6px; }
+.menu-continue .mc-text { display: flex; flex-direction: column; min-width: 0; }
+.menu-continue .mc-title { font-family: var(--font-head); font-size: 23px; line-height: 1.05; }
+.menu-continue .mc-sub { font-size: 13px; font-weight: 500; line-height: 1.25; opacity: .9; overflow-wrap: break-word; }
 .menu-list { list-style: none; margin: 0; padding: 0; }
-.menu-list li { border-bottom: 1px solid rgb(74 72 67 / .35); }
+.menu-list li { border-bottom: 1px solid rgb(74 72 67 / .25); }
+.menu-list li:last-child { border-bottom: 0; }
 .menu-item {
   width: 100%;
   min-height: 56px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-align: start;
   font-family: var(--font-head);
   font-weight: 600;
-  font-size: 26px;
+  font-size: 23px;
   line-height: 1.05;
-  padding: 8px 0;
+  padding: 7px 0;
   color: var(--ink);
   overflow-wrap: break-word; hyphens: auto;
   transition: color var(--t-fast) var(--ease);
 }
-.menu-item:active { color: var(--clay); }
+.menu-item:active { color: var(--wine); }
 .menu-item:active .mi-text { transform: translateY(1px); }
-.menu-item .mi-mark { width: 10px; height: 10px; background: var(--iron); transform: rotate(45deg); flex: none; margin-inline-start: 2px; }
-.menu-item.primary .mi-mark { background: var(--clay); }
+/* brass medallion with the contract's numeral; a won contract's is pressed wax */
+.menu-item .mi-medal {
+  flex: none; width: 38px; height: 38px; display: grid; place-items: center;
+  font-family: var(--font-head); font-weight: 700; font-size: 14px; line-height: 1; color: #3b2a14;
+  text-shadow: 0 1px 0 rgb(255 240 200 / .45);
+  background: image-set(url("/assets/ui/kit/badge@2x.png") 2x, url("/assets/ui/kit/badge@3x.png") 3x) center / contain no-repeat;
+}
+.menu-item .mi-medal.is-won {
+  color: #f3e5c4; text-shadow: 0 1px 0 rgb(43 10 12 / .6);
+  background-image: image-set(url("/assets/ui/kit/seal-full@2x.png") 2x, url("/assets/ui/kit/seal-full@3x.png") 3x);
+}
+.menu-item .mi-medal.is-valley { color: #3b2a14; }
+.menu-item .mi-medal svg { width: 22px; height: 22px; }
+.menu-item .mi-text { display: flex; flex-direction: column; min-width: 0; }
+.menu-item .mi-title { text-wrap: balance; }
 .menu-item .mi-sub {
   display: block;
   font-family: var(--font-body);
   font-weight: 400;
   font-size: 13px;
+  line-height: 1.25;
   color: var(--ink-soft);
   margin-top: 2px;
   /* a subtitle that must wrap keeps whole phrases together (no lone last word under a dash) */
   text-wrap: pretty;
 }
-.menu-item .mi-text { text-wrap: balance; min-width: 0; }
+.menu-item.is-unfinished .mi-sub { color: #6e3520; }
 /* best result of a contract (owner decision 13): three small wax seals, pressed = earned, and the best time */
 .menu-item .mi-best { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
 .menu-item .mi-seals { display: flex; gap: 1px; }
@@ -259,6 +295,10 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .menu-item .mi-seal.is-on { color: var(--clay); opacity: 1; }
 .menu-item .mi-seal svg { display: block; }
 .menu-item .mi-time { font-family: var(--font-body); font-weight: 700; font-size: 12px; color: var(--ink-soft); }
+.menu-foot-row { display: flex; margin-top: 10px; }
+/* Settings: the parchment kit card (the .btn rules give the sprite), a gear-less menu glyph, body font */
+.menu-item.menu-settings { width: auto; min-height: 48px; padding: 0 18px 0 12px; gap: 8px; font-family: var(--font-body); font-size: 17px; font-weight: 600; }
+.menu-item.menu-settings .mi-gear { display: grid; place-items: center; width: 22px; height: 22px; }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
@@ -668,24 +708,26 @@ body.is-relayout *, body.is-relayout *::before { transition: none !important; an
 body.is-split:not(.is-flex) .sheet { top: auto; bottom: calc(var(--rail-h) + var(--safe-b) + 10px); }
 
 /* big screens: a wider menu strip so the mission names do not wrap */
-body.is-split .menu-strip { width: 320px; }
+body.is-split .menu-frame { width: 340px; }
 
 /* ---- narrow portrait (old Fold cover ~344 px): menu button joins the tools row */
-body.is-narrow .menu-strip { width: min(290px, 84vw); padding-inline-end: 16px; }
-body.is-narrow .menu-item { font-size: 23px; }
+body.is-narrow .menu-frame { width: min(300px, calc(100vw - var(--safe-s) - 16px)); }
+body.is-narrow .menu-item { font-size: 22px; }
 
 /* ---- mini (Flip cover, tiny windows): watch mode. Controls at the TOP edge because the Flip
    cover's cameras cut into the bottom of the panel; no building tools, seal instead of waybill. */
 body.is-mini .sheet { max-height: calc(100% - var(--safe-t) - 6px); }
 body.is-mini .sheet-head h3 { font-size: 24px; }
-body.is-mini .menu-strip { width: min(236px, 66vw); padding-block: calc(var(--safe-t) + 16px) 22px; padding-inline: calc(var(--safe-s) + 14px) 14px; }
-body.is-mini .menu-strip .title { font-size: 36px; }
-body.is-mini .menu-strip .subtitle { font-size: 13px; }
-body.is-mini .menu-strip .rule { margin: 10px 0 2px; }
-body.is-mini .menu-item { font-size: 21px; min-height: 48px; padding: 4px 0; }
+body.is-mini .menu-wrap { top: calc(var(--safe-t) + 4px); bottom: calc(var(--safe-b) + 4px); inset-inline-start: calc(var(--safe-s) + 4px); }
+body.is-mini .menu-frame { width: min(262px, 76vw); padding: 16px 8px 14px; }
+body.is-mini .menu-ribbon.ribbon { min-height: 48px; }
+body.is-mini .menu-strip .title { font-size: 30px; }
+body.is-mini .menu-strip .subtitle { font-size: 13px; margin-top: 3px; }
+body.is-mini .menu-item { font-size: 20px; min-height: 48px; padding: 4px 0; }
+body.is-mini .menu-item .mi-medal { width: 32px; height: 32px; font-size: 12px; }
 body.is-mini .menu-item .mi-sub { display: none; }
 body.is-mini .menu-item .mi-best { margin-top: 1px; }
-body.is-mini .menu-pin { top: calc(var(--safe-t) + 4px); }
+body.is-mini .menu-continue .mc-sub { display: none; }
 body.is-mini .scrim { padding: calc(var(--safe-t) + 26px) 10px 10px; align-items: flex-start; }
 
 /* ---- Flex / tabletop mode: horizontal hinge. Scene in the top segment, everything the player
@@ -706,20 +748,14 @@ body.is-flex.is-side .sheet { top: calc(var(--hinge-bottom) + 16px); bottom: cal
 /* Fold inner in Flex mode (wide): three columns in the bottom segment —
    waybill + tools (left thumb) | open sheet | coins, time, speed (right thumb) */
 body.is-flex.is-split .sheet-actions .btn { font-size: 15px; padding: 0 8px; gap: 4px; }
-body.is-flex .menu-wrap { top: var(--hinge-bottom); }
-body.is-flex .menu-strip {
-  width: min(560px, calc(100vw - 24px));
-  max-height: calc(100vh - var(--hinge-bottom));
-  padding-block: 18px 22px; padding-inline: calc(var(--safe-s) + 24px) 22px;
-}
-body.is-flex .menu-strip .title { font-size: 40px; }
-body.is-flex .menu-strip .rule { margin: 12px 0 4px; }
+body.is-flex .menu-wrap { top: calc(var(--hinge-bottom) + 6px); }
+body.is-flex .menu-frame { width: min(580px, calc(100vw - 24px)); }
+body.is-flex .menu-strip .title { font-size: 34px; }
 body.is-flex .menu-list { columns: 2; column-gap: 20px; }
 body.is-flex .menu-list li { break-inside: avoid; }
-body.is-flex .menu-pin { top: 6px; }
 body.is-flex:not(.is-split) .menu-list { columns: 1; }
-body.is-flex:not(.is-split) .menu-strip { width: min(340px, calc(100vw - 24px)); padding-top: 12px; }
-body.is-flex:not(.is-split) .menu-strip .title { font-size: 34px; }
+body.is-flex:not(.is-split) .menu-frame { width: min(340px, calc(100vw - 24px)); }
+body.is-flex:not(.is-split) .menu-strip .title { font-size: 30px; }
 body.is-flex:not(.is-split) .menu-item { min-height: 50px; padding: 4px 0; }
 body.is-flex.mode-menu.is-side .sheet { width: min(380px, calc(100vw - 600px)); min-width: 300px; }
 body.is-flex .scrim { align-items: flex-start; padding-top: calc(var(--hinge-bottom) + 30px); }
@@ -901,7 +937,6 @@ bdi { unicode-bidi: isolate; }
 
 /* ---- main menu: the free valley stands apart from the six contracts */
 .menu-list li:has(> .is-valley) { border-top: var(--hair) solid var(--iron); margin-top: 6px; }
-.menu-item.is-valley .mi-mark { background: var(--ochre); }
 
 /* ---- rank-up: a short sealed letter (slide 200 ms, wax pressed 120 ms after it; no bounce) */
 .rank-letter-wrap {
@@ -1172,9 +1207,13 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 
 /* short landscape screens: seven entries no longer fit one column — two columns on a wider strip */
 @media (max-height: 520px) and (min-width: 640px) {
-  body.mode-menu:not(.is-flex) .menu-strip { width: min(600px, 68vw); padding-top: calc(var(--safe-t) + 18px); padding-bottom: 24px; }
-  body.mode-menu:not(.is-flex) .menu-strip .title { font-size: 40px; }
-  body.mode-menu:not(.is-flex) .menu-strip .rule { margin: 10px 0 2px; }
+  body.mode-menu:not(.is-flex) .menu-frame { width: min(620px, 70vw); }
+  body.mode-menu:not(.is-flex) .menu-strip .title { font-size: 32px; }
+  body.mode-menu:not(.is-flex) .menu-ribbon.ribbon { min-height: 48px; }
+  body.mode-menu:not(.is-flex) .menu-head { flex-direction: row; align-items: center; gap: 12px; }
+  body.mode-menu:not(.is-flex) .menu-head .ribbon { width: auto; flex: none; margin-inline: -14px 0; }
+  body.mode-menu:not(.is-flex) .menu-head .subtitle { margin: 0; text-align: start; }
+  body.mode-menu:not(.is-flex) .menu-continue { width: auto; align-self: flex-start; min-height: 52px; padding-inline: 18px 24px; }
   body.mode-menu:not(.is-flex) .menu-list { columns: 2; column-gap: 22px; }
   body.mode-menu:not(.is-flex) .menu-list li { break-inside: avoid; }
   body.mode-menu:not(.is-flex) .menu-item { font-size: 21px; min-height: 52px; padding: 5px 0; }
@@ -1992,12 +2031,6 @@ body.is-mini .sheet-grip { height: 6px; }
 /* "Pokaż przyciski" (clear screen) on a stat plate */
 body.is-clear .clear-restore { background: none; clip-path: none; color: var(--ink); font-weight: 700; padding-inline: 16px; opacity: 1; }
 
-/* Flip cover: the main menu strip scrolls — a fade at its foot says there is more below */
-body.is-mini .menu-strip {
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent);
-  padding-bottom: 40px;
-}
 /* mission X: a thin load names the shortage at its source (D-47), same voice as the shared-input note */
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
 .thin-hint svg { flex: none; }

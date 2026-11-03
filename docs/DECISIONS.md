@@ -956,7 +956,7 @@ in one read-write transaction; better = more seals, then less time; a lost contr
 mission's subtitle three small wax seals (pressed = earned) and the best time; the row's accessible name says it in
 words (`menu.bestAria`). Tests `tests/save-profile.test.ts` (old v2 database, old envelope, damaged profile,
 localStorage migration); `save-robustness` opens its raw stores at the current version and fakes "newer" as v4.
-Shots `docs/shots/day1-menu-best-*`. (decided)
+Shots `docs/shots/day1-menu-*` (menu restyled right after, D-70). (decided)
 
 **D-69 — End of a won contract: the castle's seal is pressed before the letter; a quiet delivery sound (UI +
 audio only; owner decision 6, 2026-11-03; the rest of D-60's backlog entry).** `pressSeal` (src/ui/sealPress.ts)
@@ -968,3 +968,17 @@ to the letter (no seal to press). Delivery sound: each contract good handed over
 `contract.delivery` — the existing CC0 `sfx/unload-sack`, non-positional on the UI bus at 0.26 with a 1.2 s cooldown,
 so it is heard wherever the camera is (the positional unload stays). No new file (`process_audio.py --check` PASS).
 Music "hurry" mood: still after the playtest. Shot `docs/shots/day1-seal-press-412x915.jpg`. (decided)
+
+**D-70 — Main menu on the painted kit (UI only; owner request 2026-11-03 from a phone screenshot).** The start
+screen was the last screen in the old style (fibre parchment strip, deckled clip, iron pin, diamond bullets). Now:
+the lily frame (`frame-sheet-dim`, as the sheets opened from the menu) holds the list, inset from the safe area; the
+title sits on the kit wine ribbon with the subtitle under it (beside it on short landscape screens); each contract
+row has a brass medallion (`badge`) with its numeral — the numeral leaves the title text when the title starts with
+it (the accessible name keeps the full title, subtitle and best result) — and a won contract's medallion is pressed
+wax (`seal-full`); the best seals and time from D-68 sit under the subtitle; Wolna dolina has the farm glyph in its
+medallion; Continue is the wine kit button with what it continues, Settings the parchment kit card at the foot (still
+the last `.menu-item`, which the layout and screenshot tools click). The list scrolls inside the frame with the fade
+at its foot on every screen; rows ≥ 48 px (56 normally); two columns on short landscape and the Fold in Flex mode;
+RTL mirrors through logical properties. Fonts unchanged (Grenze Gotisch titles, Alegreya Sans text); the live
+valley scene stays behind. `npm run layout` over menu/settings/missionsave/valley scenes (75 jobs, all views) and
+`--quick` green. Before/after `docs/shots/day1-menu-412x915.jpg`, `day1-menu-915x412.jpg`. (decided)

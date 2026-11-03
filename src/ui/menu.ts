@@ -85,24 +85,34 @@ function bestMark(b: BestSeals | undefined): HTMLElement | null {
 
 export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: MissionKey | null = null,
   unfinished: ReadonlyMap<string, SaveInfo> = new Map(), best: Readonly<Record<string, BestSeals>> = {}): HTMLElement {
+  // the painted kit (D-43/D-53, owner 2026-11-03): the lily frame (frame-sheet-dim) around a scrolling list,
+  // the wine ribbon for the title, a brass medallion with the mission's numeral instead of the old diamond,
+  // kit buttons for Continue / Settings; the live valley scene stays behind it
   const items: HTMLElement[] = [];
-  const item = (label: string, sub: string, fn: () => void, primary = false, cls = '', extra: HTMLElement | null = null): void => {
-    const b = h(`button.menu-item${primary ? '.primary' : ''}${cls}` as 'button.menu-item', null,
-      h('span.mi-mark'),
-      h('span.mi-text', null, label, sub ? h('span.mi-sub', null, sub) : null, extra));
+  const row = (mark: HTMLElement, label: string, sub: string, fn: () => void, cls = '', extra: HTMLElement | null = null): void => {
+    const b = h(`button.menu-item${cls}` as 'button.menu-item', null,
+      mark,
+      h('span.mi-text', null, h('span.mi-title', null, label), sub ? h('span.mi-sub', null, sub) : null, extra));
     b.addEventListener('click', fn);
     items.push(h('li', null, b));
   };
-  if (save) {
-    item(t('menu.continue'), t('menu.continueSub', { what: saveWhat(save), time: iso(ticksClock(save.tick)) }), act.continueGame, true);
-  }
-  for (const id of MENU_MISSIONS) {
+  const medal = (numeral: string, won: boolean): HTMLElement => h(`span.mi-medal${won ? '.is-won' : ''}` as 'span.mi-medal', { 'aria-hidden': 'true' }, numeral);
+  MENU_MISSIONS.forEach((id, i) => {
     const u = unfinished.get(id);
     const sub = u ? `${missionSub(id)} · ${t('save.inProgress', { time: iso(ticksClock(u.tick)) })}` : missionSub(id);
-    item(missionTitle(id), sub, () => act.newGame(id), id === 'm1' && !save, '', bestMark(best[id]));
-  }
-  item(missionTitle('sandbox'), missionSub('sandbox'), act.openValley, false, '.is-valley');
-  item(t('menu.settings'), '', act.openSettings);
+    const numeral = ROMAN_MISSION[i] ?? String(i + 1);
+    // the numeral moves into the medallion; a title in another form (a language without it) stays whole
+    const full = missionTitle(id);
+    const label = full.startsWith(numeral + '. ') ? full.slice(numeral.length + 2) : full;
+    const b = best[id];
+    row(medal(numeral, !!b && b.seals > 0), label, sub, () => act.newGame(id), u ? '.is-unfinished' : '', bestMark(b));
+    // the accessible name keeps the numeral ("I. Chleb i deski")
+    (items[items.length - 1]!.firstElementChild as HTMLElement).setAttribute('aria-label',
+      [full, sub, b && b.seals > 0 ? t('menu.bestAria', { n: b.seals, time: iso(ticksClock(b.ticks)) }) : ''].filter(Boolean).join(', '));
+  });
+  const valleyMark = h('span.mi-medal.is-valley', { 'aria-hidden': 'true' });
+  setHtml(valleyMark, iconSvg('farm', 22));
+  row(valleyMark, missionTitle('sandbox'), missionSub('sandbox'), act.openValley, '.is-valley');
   let err: HTMLElement | null = null;
   if (broken) {
     // a damaged valley ledger is dealt with in the picker (delete it there); a contract starts afresh
@@ -110,15 +120,28 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
     again.addEventListener('click', () => { if (broken === 'sandbox') act.openValley(); else act.startFresh(broken); });
     err = h('div.menu-error', { role: 'alert' }, h('p', null, t('menu.saveBroken')), again);
   }
+  let cont: HTMLElement | null = null;
+  if (save) {
+    const b = h('button.btn.primary.cf.menu-continue', null,
+      h('span.mc-text', null, h('span.mc-title', null, t('menu.continue')),
+        h('span.mc-sub', null, t('menu.continueSub', { what: saveWhat(save), time: iso(ticksClock(save.tick)) }))));
+    b.addEventListener('click', act.continueGame);
+    cont = b;
+  }
+  // Settings stays the last .menu-item (screenshot and layout tools open it that way)
+  const settings = h('button.menu-item.btn.cf.menu-settings', null, h('span.mi-gear', { 'aria-hidden': 'true' }), h('span.mi-title', null, t('menu.settings')));
+  setHtml(settings.firstElementChild as HTMLElement, iconSvg('menu', 22));
+  settings.addEventListener('click', act.openSettings);
   const strip = h('div.menu-strip', null,
-    h('h1.title', null, t('app.title')),
-    h('p.subtitle', null, t('app.subtitle')),
-    h('div.rule'),
+    h('div.menu-head', null,
+      h('div.ribbon.menu-ribbon', null, h('h1.title', null, t('app.title'))),
+      h('p.subtitle', null, t('app.subtitle'))),
     err,
+    cont,
     h('ul.menu-list', null, ...items),
+    h('div.menu-foot-row', null, settings),
   );
-  strip.style.clipPath = deckle('bottom', 977, 9, 30);
-  return h('div.menu-wrap', null, strip, h('span.menu-pin'));
+  return h('div.menu-wrap', null, h('div.menu-frame', null, strip));
 }
 
 export interface SettingsActions {
