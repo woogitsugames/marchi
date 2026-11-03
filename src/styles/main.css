@@ -924,10 +924,12 @@ bdi { unicode-bidi: isolate; }
 .codex-tog:active { color: var(--clay); }
 .codex-ic { display: grid; place-items: center; flex: none; color: var(--ink); }
 .codex-q { flex: 1; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.codex-chev { flex: none; width: 9px; height: 9px; /* physical sides: the chevron points down / up, never along the reading direction */
-  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+.codex-chev { flex: none; width: 9px; height: 9px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor;
   transform: rotate(45deg); margin-block-start: -4px; transition: transform var(--t-fast) var(--ease); }
 .codex.is-open .codex-chev { transform: rotate(225deg); margin-block-start: 4px; }
+/* RTL: the inline-end border is on the left, so the turn is mirrored to keep pointing down / up */
+[dir='rtl'] .codex-chev { transform: rotate(-45deg); }
+[dir='rtl'] .codex.is-open .codex-chev { transform: rotate(-225deg); }
 .codex-body { padding: 0 2px 8px; font-size: 14px; line-height: 1.32; color: var(--ink); }
 .codex-body p { margin: 0 0 6px; }
 .codex-h { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
