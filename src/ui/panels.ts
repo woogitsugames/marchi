@@ -7,7 +7,7 @@ import {
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -213,11 +213,9 @@ function wire(sheet: Sheet, nav: PanelNav): void {
 function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wagon', selfId: number): string {
   const because = esc(t('why.because'));
   const last = chain.length - 1;
-  const rootIsStall = (l: ReasonLink): boolean =>
-    l.kind === 'building' ? isStall(l.status) || l.status.k === 'NO_INPUT' : isWagonWait(l.status);
   return `<ol class="chain">${chain.map((l, i) => {
     const self = l.kind === selfKind && l.id === selfId;
-    const root = i === last && chain.length > 1 && rootIsStall(l);
+    const root = i === last && chain.length > 1 && isStallLink(l);
     const tag = root ? `<span class="root-tag">${esc(t('why.root'))}</span>` : '';
     const attrs = self ? 'disabled' : `data-go="${l.kind}:${l.id}"`;
     return `<li data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
@@ -367,9 +365,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
-      // "what does it mean?" for the status at the root of the chain (the one the player has to fix)
-      const root = chain.length > 1 ? chain[chain.length - 1]! : null;
-      const codex = stalled ? (root ? codexHtml(root.kind, root.status) : codexHtml('building', b.status)) : '';
+      // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
+      // producer at work or a wagon on its way (audit fix 4)
+      const cl = codexLink(chain, { kind: 'building', id, status: b.status });
+      const codex = stalled ? codexHtml(cl.kind, cl.status) : '';
       const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
@@ -430,9 +429,9 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       if (waiting) {
         const chain = explainWagon(world, id, 4, true);
         if (chain.length > 1) html += `<div class="section-h">${esc(t('wagon.chain'))}</div>${chainHtml(world, chain, 'wagon', id)}`;
-        // "what does it mean?" for the root of the chain (or the wagon's own status)
-        const root = chain.length > 1 ? chain[chain.length - 1]! : null;
-        html += root ? codexHtml(root.kind, root.status) : codexHtml('wagon', w.status);
+        // "what does it mean?" for the last stall of the chain (or the wagon's own status, audit fix 4)
+        const cl = codexLink(chain, { kind: 'wagon', id, status: w.status });
+        html += codexHtml(cl.kind, cl.status);
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;
         if (fix) html += fixHtml(world, target, fix);

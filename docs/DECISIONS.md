@@ -1175,3 +1175,11 @@ shows for a jammed wagon anywhere in the chain, not only at its end (a jam's cha
 for). Threshold one third: below it the fleet still moves and "every wagon busy" is the honest reading.
 Keys `fix.surplus`, `cause.surplus` (PENDING_KEYS). Tests: `tests/diagnosis-audit-fixes.test.ts`, new reads in
 `tests/determinism-reads.test.ts`. (decided)
+
+**D-86 — "Co to znaczy?" explains the last stall of the chain (diagnosis audit 2026-11-03, fix 4; UI only).**
+The fold took the chain's last link. In 33 % of worst-stall samples that link was no stall at all — a producer
+that is WORKING, a wagon TO_PICKUP / TO_DROPOFF / LOADING — so the player read "Produkuje — pozwól dokończyć
+cykl" under "Dlaczego stoi?". Now `codexLink()` (src/ui/stallKinds.ts, pure) takes the last link that is a stall
+(the same test `chainHtml` already used for the "przyczyna" tag, now shared as `isStallLink`), falling back to
+the subject's own status. Same rule on the building sheet and the wagon card. No new text. `isWagonWait` moved
+to stallKinds.ts (re-exported by format.ts) so headless tests can use it. (decided)
