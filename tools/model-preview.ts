@@ -32,8 +32,30 @@ const YARD_GOOD: Partial<Record<string, CargoGood>> = {
   woodcutter: 'wood', sawmill: 'planks', farm: 'grain', mill: 'flour', bakery: 'bread',
   fisher: 'fish', quarry: 'stone', charcoalBurner: 'charcoal', malthouse: 'malt', brewery: 'beer',
 };
-function addYard(bm: { kind: string; yard?: { at: Vector3; yaw: number } }, m: Matrix4): void {
+/** World placement of each building with a yard pile, for the `yard-<kind>` close-ups. */
+const yardViews = new Map<string, Matrix4>();
+/** Goods shown on the store / contract piles (D-79): the warehouse's two largest stocks, a three-good order. */
+const PILE_GOODS: Partial<Record<string, [CargoGood, number][]>> = {
+  warehouse: [['wood', 6], ['flour', 4]],
+  castle: [['planks', 6], ['bread', 3], ['beer', 2]],
+};
+type Spot = { at: Vector3; yaw: number };
+function addYard(bm: { kind: string; yard?: Spot; piles?: Spot[]; gate: Vector3; cells: [number, number] }, m: Matrix4): void {
   const g = YARD_GOOD[bm.kind];
+  (bm.piles ?? []).forEach((p, i) => {
+    const pg = PILE_GOODS[bm.kind]?.[i];
+    if (!pg) return;
+    addParts(cargoParts(pg[0], pg[1]), m.clone().multiply(new Matrix4().makeTranslation(p.at.x, 0, p.at.z))
+      .multiply(new Matrix4().makeRotationY(p.yaw)).multiply(yardPileLocal(pg[0])));
+  });
+  if ((bm.yard && g) || bm.piles) {
+    yardViews.set(bm.kind, m.clone());
+    // a road stub from the gate outwards (roads end at the gate on the footprint edge), to judge the pile beside it
+    const road = new Mesh(new PlaneGeometry(2.4, 4), new MeshStandardMaterial({ color: '#8a7656', roughness: 1 }));
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(bm.gate.x, 0.03, bm.gate.z + 2).applyMatrix4(m);
+    scene.add(road);
+  }
   if (!bm.yard || !g) return;
   const pm = m.clone().multiply(new Matrix4().makeTranslation(bm.yard.at.x, 0, bm.yard.at.z))
     .multiply(new Matrix4().makeRotationY(bm.yard.yaw)).multiply(yardPileLocal(g));
@@ -368,13 +390,23 @@ TREE_KINDS.forEach((kind, k) => {
   const cx = 1.1 * sp, cz = 70 + k * 28, back = sp * 5 + H * 0.5;
   views[`tree-${kind}`] = [new Vector3(cx, H * 0.55 + back * 0.12, cz + back), new Vector3(cx, H * 0.45, cz)];
 });
+// yard close-ups (D-71 pile placement): each producer from the game camera's side, the pile in the middle
+for (const [kind, m] of yardViews) {
+  const bm = buildingModel(kind as Parameters<typeof buildingModel>[0]);
+  const spot = bm.yard ?? bm.piles![0]!;
+  const at = new Vector3(bm.piles && !bm.yard ? 0 : spot.at.x, 0.4, spot.at.z).applyMatrix4(m);
+  const far = bm.piles && !bm.yard ? 1.9 : 1;
+  views[`yard-${kind}`] = [at.clone().add(new Vector3(5 * far, 7.5 * far, 11 * far)), at];
+  const c = new Vector3(0, 0, 0).applyMatrix4(m);
+  views[`yardtop-${kind}`] = [c.clone().add(new Vector3(0, 30, 0.01)), c];
+}
 const [eye, target] = views[view] ?? views.overview;
 if (view.startsWith('tree-')) {
   const keep = new Set(treeObjs.get(view.slice(5)) ?? []);
   scene.children.forEach((c, i) => { if (i >= baseChildren && !keep.has(c)) c.visible = false; });
 }
 // the chain views show only the D-29 set, without the older rows behind it
-if (view.startsWith('chain')) {
+if (view.startsWith('chain') || /^yard(top)?-(fisher|quarry|charcoalBurner|malthouse|brewery)$/.test(view)) {
   scene.children.forEach((c, i) => {
     if (i >= baseChildren && (i < chainFrom || i >= chainTo)) c.visible = false;
   });
@@ -390,7 +422,9 @@ const info = document.getElementById('info');
 if (info) info.textContent = params.has('still') ? '' : stats.join('\n');
 if (info && params.has('still')) info.style.display = 'none';
 const nav = document.getElementById('views');
-if (nav) for (const k of Object.keys(views)) {
+// the yard close-ups are reached by URL (yard-<kind>, yardtop-<kind>); stills carry no link bar
+if (nav && params.has('still')) nav.style.display = 'none';
+else if (nav) for (const k of Object.keys(views).filter((v) => !/^yard(top)?-/.test(v) || v === 'yard-woodcutter')) {
   const a = document.createElement('a');
   a.href = `?view=${k}`;
   a.textContent = k;

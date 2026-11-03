@@ -46,6 +46,8 @@ export interface SaveInfo { missionId: string; tick: number; slot: string; saved
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 /** Margin numeral of a contract's save entry: the mission's own number. */
+// Contract numbers stay Roman in every language (D-73): they are part of each title in all 17 translations and
+// of the save-slot margin, so the medallion repeats the glyph the title starts with rather than a locale digit.
 const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
 /** "Księga II" for a valley slot. */

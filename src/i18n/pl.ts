@@ -400,6 +400,7 @@ export const pl = {
   'why.pace.need': 'Na {seals} (zostało {time}) trzeba ≈{rate}/min',
   'why.pace.seals': '{n, plural, one {# pieczęć} few {# pieczęcie} many {# pieczęci} other {# pieczęci}}',
   'why.pace.wait': 'Prognoza tempa — po pierwszej minucie dostaw.',
+  'why.pace.waitTranche': 'Prognoza tej dostawy — po dwóch minutach jej zbierania.',
   'why.shared': '{good} — drugi odbiorca: {rival}; tam {there}, tu {here} (zapas i w drodze)',
   'why.sharedOne': 'Jeden dostawca ({who}) obsługuje {n, plural, one {# odbiorcę} few {# odbiorców} many {# odbiorców} other {# odbiorcy}} — przyda się drugi.',
   // supplier not producing, its own input on the way (F5; D-44): see PENDING_KEYS
@@ -795,6 +796,7 @@ export const PENDING_KEYS = [
   'fix.granaryHint',
   'hud.speedHint',
   'menu.bestAria',
+  'why.pace.waitTranche',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

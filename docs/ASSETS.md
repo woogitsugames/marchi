@@ -353,7 +353,7 @@ the generated runtime pair hashes go in `docs/audio-provenance.json`.
 | `sfx/horse-snort` | [o_ciz](https://freesound.org/people/o_ciz/sounds/475483/) | 475483 | CC0 1.0 | Horse snorting; natural animal recording |
 | `sfx/axe` | [xkeril](https://freesound.org/people/xkeril/sounds/753925/) | 753925 | CC0 1.0 | Real small axe chopping a branch, outdoors |
 | `sfx/saw` | [LiezelDippenaar](https://freesound.org/people/LiezelDippenaar/sounds/707527/) | 707527 | CC0 1.0 | Real manual handsaw sawing through wooden plank |
-| `sfx/mill-wheel` | [Berwitz](https://freesound.org/people/Berwitz/sounds/263583/) | 263583 | CC0 1.0 | Watermill wooden wheel turning with rhythmic water; 5.5 s loop, 0.55 s overlap |
+| `sfx/mill-wheel` | [Berwitz](https://freesound.org/people/Berwitz/sounds/263583/) | 263583 | CC0 1.0 | Watermill wooden wheel turning with rhythmic water; 5.22 s loop (9 paddle periods, seam between beats; re-cut 2026-11-03 from the shipped 5.5 s loop with a 0.25 s crossfade, D-77) |
 | `sfx/bridge-wood` | [craigsmith](https://freesound.org/people/craigsmith/sounds/480042/) | 480042 | CC0 1.0 | Heavy wooden cart wheel rolling on wooden floor/bridge |
 | `sfx/load-sack`, `sfx/unload-sack` | [bbrocer](https://freesound.org/people/bbrocer/sounds/382642/) | 382642 | CC0 1.0 | Bag of flour moved from shelf and dropped onto counter |
 | `sfx/load-plank`, `sfx/unload-plank` | [Tim_Verberne](https://freesound.org/people/Tim_Verberne/sounds/537755/) | 537755 | CC0 1.0 | Real small wooden planks dropping to ground |
@@ -504,6 +504,8 @@ Only the glyph's filled SVG contours are shipped in the icon, not a font file.
 Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 
 ### UI art kit — proposal 55
+
+`public/assets/ui/kit/seal-press.svg` (D-72): vector redraw of `seal-full` for the large seal-press cue, drawn for Marchia by Claude from the kit sprite's shapes and colours; licence as the game.
 
 `public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra. Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
 

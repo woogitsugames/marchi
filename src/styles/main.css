@@ -591,7 +591,8 @@ body.is-side .sheet-grip::before { display: none; }
   background: rgb(43 38 32 / .42); animation: fade-in var(--t-fast) var(--ease);
 }
 .seal-press .seal-press-wax, .seal-press .seal-press-ring { grid-area: 1 / 1; width: 96px; height: 96px; display: block; }
-.seal-press-wax { filter: drop-shadow(0 3px 2px rgb(30 20 14 / .55)); animation: seal-down 200ms cubic-bezier(.3, 0, .2, 1) both; }
+/* the kit's seal-full is a 28 dp sprite (84 px @3x) — soft at 96 px; the press uses a vector redraw of the same seal */
+.seal-press-wax { background: url("/assets/ui/kit/seal-press.svg") center / contain no-repeat; filter: drop-shadow(0 3px 2px rgb(30 20 14 / .55)); animation: seal-down 200ms cubic-bezier(.3, 0, .2, 1) both; }
 /* the wax squeezed out under the matrix: a dark rim that spreads once as the seal lands */
 .seal-press-ring { border-radius: 50%; box-shadow: 0 0 0 0 rgb(110 30 22 / .5); animation: seal-ring 220ms linear 180ms both; }
 @keyframes seal-down { from { transform: scale(1.45) rotate(-8deg); opacity: 0; } 60% { opacity: 1; } to { transform: scale(1) rotate(-3deg); opacity: 1; } }
@@ -2094,3 +2095,70 @@ body.is-clear .clear-restore { background: none; clip-path: none; color: var(--i
 .chron-text small { font-size: 13px; line-height: 1.3; color: var(--ink-soft); }
 .chron-row:not(.is-done) .chron-text b { color: var(--ink-soft); font-weight: 500; }
 .chron-row:not(.is-done) .chron-text small { font-style: italic; opacity: .8; }
+
+/* ---- the last chamfered surfaces on the kit (day 2): why-chain links, goods chips, pace rows, build cards and the
+   ghost / draft tags over the map wear the parchment card with its brass edge (the tools' and buttons' sprites).
+   A cause / an empty input / the bottleneck / a bad placement takes the alert panel (wine edge), drawn on ::before
+   so RTL can mirror the edge to the start side; a locked build card takes the hatched disabled card. */
+:is(.link, .good-chip, .pace-row, .build-card, .ghost-tag, .draft-tag) {
+  clip-path: none; background: none;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+  border-image-slice: 13.9% 15.6% fill; border-image-width: 10px;
+}
+:is(.link, .good-chip, .pace-row, .build-card, .ghost-tag, .draft-tag)::before { display: none; }
+:is(.link, .pace-row, .build-card):active {
+  border-image-source: url("/assets/ui/kit/card-pressed@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-pressed@2x.png") 2x, url("/assets/ui/kit/card-pressed@3x.png") 3x);
+}
+.link.is-self {
+  border-image-source: url("/assets/ui/kit/card-active@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-active@2x.png") 2x, url("/assets/ui/kit/card-active@3x.png") 3x);
+}
+/* locked: the kit card under a light hatch (the dark disabled sprite swallows name and price at this size) */
+.build-card.is-locked:active {
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+}
+.build-card.is-locked::before { display: none; }
+.build-card.is-locked::after {
+  content: ''; position: absolute; inset: 4px; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(74 72 67 / .18) 5px 6.5px), rgb(160 150 130 / .25);
+}
+.build-card.is-locked > :not(.bc-lock) { opacity: .6; }
+:is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad) { border-image-source: none; }
+:is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad)::before {
+  display: block; content: ''; position: absolute; inset: 0; z-index: -1; clip-path: none; background: none;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/panel-alert@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel-alert@2x.png") 2x, url("/assets/ui/kit/panel-alert@3x.png") 3x);
+  border-image-slice: 15% 10% fill; border-image-width: 10px 12px;
+}
+:root[dir='rtl'] :is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad)::before { transform: scaleX(-1); }
+.link.is-root:active::before, .pace-row.is-neck:active::before { filter: brightness(.93); }
+.link .l-icon, .link.is-root .l-icon { --icon-halo: #e6dcc6; }
+
+/* ---- market & rank sheet on the kit (day 2): wax seals for the rank requirements (pressed = met), the brass
+   groove for progress and saturation, building chips on the kit card (locked = the hatched card) */
+.ms-req li { grid-template-columns: 22px minmax(0, 1fr) auto; column-gap: 8px; }
+.ms-req .pl-mark.kseal { width: 22px; height: 22px; margin: 0; transform: none; box-shadow: none; }
+.ms-req li.is-met .pl-mark.kseal { background-color: transparent; }
+.ms-req .pl-bar.kbar, .ms-sat .pl-bar.kbar { height: 7px; background-color: transparent; }
+.ms-req .pl-bar.kbar { margin-top: 2px; }
+.ms-sat .pl-bar.kbar > i { background: none; min-width: 4px; }
+.ms-b {
+  background: none; box-shadow: none; min-height: 44px;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+  border-image-slice: 13.9% 15.6% fill; border-image-width: 10px;
+  padding-inline: 8px 12px;
+}
+.ms-b { position: relative; isolation: isolate; }
+/* locked: the kit card dimmed under a light hatch (the dark disabled sprite would swallow the name) */
+.ms-b.is-locked { background: none; color: var(--ink-soft); }
+.ms-b.is-locked::after {
+  content: ''; position: absolute; inset: 4px; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(74 72 67 / .16) 5px 6.5px), rgb(160 150 130 / .22);
+}

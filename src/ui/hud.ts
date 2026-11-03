@@ -551,9 +551,10 @@ export class Hud {
             <div class="tr-state">${esc(t(x.missed ? 'contract.trancheLate' : 'contract.trancheDone'))}</div></li>`;
         }
         if (i === cur) {
+          // the pace forecast for this tranche (D-78): "done in M:SS" or "M:SS late" against its own deadline
           return `<li class="wb-tr is-now${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
             <div class="wb-goods">${tg.map((g) => line(g, got[g], x.need[g])).join('')}</div>
-            ${x.missed ? `<div class="tr-state">${esc(t('contract.trancheLate'))}</div>` : ''}</li>`;
+            ${x.missed ? `<div class="tr-state">${esc(t('contract.trancheLate'))}</div>` : ''}${waybillPaceHtml(world, fc)}</li>`;
         }
         return `<li class="wb-tr is-later" data-wb="castle"><div class="tr-h">${head}</div>
           <div class="tr-goods">${tg.map((g) => `<span>${iconSvg(g, 18, goodName(g))}${bdi(fmtInt(x.need[g]))}</span>`).join('')}</div></li>`;

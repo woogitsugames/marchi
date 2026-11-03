@@ -23,8 +23,9 @@ export function marketSheet(world: () => World): SheetContent {
       const req = (label: string, have: number, need: number, unit = ''): string => {
         const met = have >= need;
         const pct = Math.min(100, (have / Math.max(1, need)) * 100);
-        return `<li class="${met ? 'is-met' : ''}"><i class="pl-mark" aria-hidden="true"></i><span class="pl-l">${esc(label)}</span>
-          <bdi class="num pl-v">${fmtInt(have)}<small>/${fmtInt(need)}${unit}</small></bdi><span class="pl-bar"><i style="width:${pct.toFixed(1)}%"></i></span></li>`;
+        // the kit (day 2): an empty seal pressed in wax once the requirement is met, the brass progress groove
+        return `<li class="${met ? 'is-met' : ''}"><i class="pl-mark kseal${met ? ' on' : ''}" aria-hidden="true"></i><span class="pl-l">${esc(label)}</span>
+          <bdi class="num pl-v">${fmtInt(have)}<small>/${fmtInt(need)}${unit}</small></bdi><span class="kbar pl-bar"><i style="width:${pct.toFixed(1)}%"></i></span></li>`;
       };
       const next = n
         ? `<div class="section-h"><span>${tHtml('town.toNext', { name: rankName(n.rank) })}</span></div>
@@ -42,7 +43,7 @@ export function marketSheet(world: () => World): SheetContent {
         return `<li class="ms-good${low ? ' is-low' : ''}">${iconSvg(p.good, 28, goodName(p.good))}
           <span class="ms-name"><b>${esc(goodName(p.good))}</b><small>${tHtml('market.base', { n: fmtInt(p.base) })} · ${tHtml('market.sold', { n: fmtInt(p.sold) })}</small></span>
           <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(fmtPercent(pct / 100))}</small></span>
-          <span class="ms-sat" title="${esc(t('market.sat'))}"><span class="pl-bar"><i style="width:${sat.toFixed(1)}%"></i></span></span></li>`;
+          <span class="ms-sat" title="${esc(t('market.sat'))}"><span class="kbar pl-bar"><i style="width:${sat.toFixed(1)}%"></i></span></span></li>`;
       }).join('');
       const headRow = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
       const fair = sb.prices.find((p) => p.fairPct > 100);

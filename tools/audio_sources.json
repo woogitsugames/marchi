@@ -90,10 +90,10 @@
     {
       "id": "sfx/mill-wheel",
       "kind": "sfx",
-      "seconds": 5.5,
+      "seconds": 5.22,
       "start": 3,
       "source": "mill_wheel",
-      "notes": "Watermill wooden wheel turning with rhythmic water",
+      "notes": "Watermill wooden wheel turning with rhythmic water; 9 paddle periods (0.58 s) so the loop seam falls between beats (day 2: re-cut from the shipped 5.5 s file, source not reachable)",
       "loop_crossfade": 0.55
     },
     {

@@ -3,7 +3,7 @@
 // contractForecast over a UI-owned pace log, sharedInput on a consumer's card. No state change.
 import {
   PACE_MIN_TICKS, PACE_SAMPLE_TICKS, applyCommand, PACE_WINDOW_TICKS, TICK_HZ, contractForecast, createWorld, hashState, newPaceLog,
-  samplePace, sharedInput, step,
+  samplePace, sharedInput, step, trancheForecast, trancheNeed,
 } from '../src/sim/index';
 import { M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { STRATEGIES } from '../tools/bot-missions-7-9';
@@ -122,5 +122,49 @@ test('F3: one supplier for two customers is named; a second woodcutter removes t
   for (let i = 0; i < 120 * TICK_HZ; i++) {
     step(m7);
     for (const b of m7.state.buildings) eq(sharedInput(m7, b.id), null, 'm7 has no shared input');
+  }
+});
+
+// BACKLOG P3 (D-78): an order in tranches is forecast tranche by tranche — the castle must hold the sum of the
+// tranches up to the one now due; the whole order's seals stay, `aim` is not offered for a part.
+test('D-78: tranche forecast covers the cumulative need of the tranche now due', () => {
+  const w = createWorld('m5');
+  const c = w.state.mission.contract!;
+  eq(c.tranches.length, 3, 'mission V has three tranches');
+  const n0 = trancheNeed(w, 0)!, n1 = trancheNeed(w, 1)!, n2 = trancheNeed(w, 2)!;
+  eq(`${n0.planks}/${n0.bread}`, '6/6', 'first tranche');
+  eq(`${n1.planks}/${n1.bread}`, '6/24', 'up to the second');
+  eq(`${n2.planks}/${n2.bread}`, `${c.need.planks}/${c.need.bread}`, 'the last one is the whole order');
+  eq(trancheNeed(w, 3), null, 'no fourth tranche');
+  const log = newPaceLog();
+  const before = hashState(w.state);
+  for (let i = 0; i < PACE_MIN_TICKS + 20 * TICK_HZ; i++) { step(w); samplePace(log, w); }
+  const f = contractForecast(w, log, n1)!;
+  assert(!!f, 'a forecast');
+  eq(f.goods.map((g) => `${g.good}:${g.need}`).join(','), 'planks:6,bread:24', 'goods of the part with their cumulative need');
+  eq(f.aim, null, 'no aim for a part');
+  if (f.ready) assert(f.finishTick > w.state.tick, 'finishes in the future');
+  const again = createWorld('m5');
+  eq(hashState(again.state), before, 'the same start');
+});
+
+test('D-78: tranche forecasts on m5 / m6 without a player action never say "late" (every tranche is met)', () => {
+  for (const id of ['m5', 'm6']) {
+    const w = createWorld(id);
+    const log = newPaceLog();
+    let shown = 0, falseLate = 0;
+    while (w.state.mission.result === 'running' && w.state.tick < 700 * TICK_HZ) {
+      for (let i = 0; i < 10 * TICK_HZ; i++) { step(w); samplePace(log, w); }
+      const f = trancheForecast(w, log);
+      if (!f?.ready) continue;
+      const c = w.state.mission.contract!;
+      const x = c.tranches.find((t) => t.doneTick < 0)!;
+      shown++;
+      if (f.finishTick > (x.missed ? c.deadlineTick : x.deadlineTick)) falseLate++;
+    }
+    const c = w.state.mission.contract!;
+    assert(c.tranches.every((t) => t.doneTick >= 0 && !t.missed), `${id}: every tranche met`);
+    assert(shown >= 20, `${id}: the forecast is shown (${shown} samples)`);
+    eq(falseLate, 0, `${id}: no false "late"`);
   }
 });

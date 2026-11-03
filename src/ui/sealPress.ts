@@ -13,7 +13,7 @@ export const SEAL_TOTAL_MS = 1200;
  */
 export function pressSeal(host: HTMLElement, done: () => void): () => void {
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const el = h('div.seal-press', { 'aria-hidden': 'true' }, h('i.seal-press-wax.kseal.on'), h('i.seal-press-ring'));
+  const el = h('div.seal-press', { 'aria-hidden': 'true' }, h('i.seal-press-wax'), h('i.seal-press-ring'));
   host.append(el);
   let over = false;
   const finish = (call: boolean): void => {

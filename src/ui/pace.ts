@@ -1,7 +1,7 @@
 // Contract pace on the waybill and the castle card (F10), and the shared-input line on a consumer's
 // card (F3). Both read the sim (contractForecast, sharedInput); nothing here writes state.
 import {
-  GOODS, buildingById, contractForecast, sharedInput, thinDelivery, type ContractForecast, type PaceLog, type World,
+  GOODS, PACE_WINDOW_TICKS, TICK_HZ, buildingById, contractForecast, sharedInput, thinDelivery, trancheForecast, type ContractForecast, type PaceLog, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
@@ -17,14 +17,32 @@ let cache: { key: string; f: ContractForecast | null } | null = null;
 export function forecastFor(world: World, log: PaceLog): ContractForecast | null {
   const st = world.state;
   const c = st.mission.contract;
-  // the order with tranches is read tranche by tranche on the waybill; the forecast is for one order
-  if (!c || c.tranches.length > 0 || st.mission.result !== 'running') return null;
+  if (!c || st.mission.result !== 'running') return null;
+  // an order with tranches is read tranche by tranche (BACKLOG P3, D-78): the forecast covers what the castle
+  // must hold once the tranche now due is complete
+  const cur = c.tranches.findIndex((x) => x.doneTick < 0);
+  if (c.tranches.length > 0 && cur < 0) return null;
   const castle = buildingById(world, c.castle);
   let sum = 0;
   if (castle) for (const g of GOODS) if (c.need[g] > 0) sum += castle.stock[g] * 1000 + castle.incoming[g];
-  const key = `${st.mapId}|${log.ticks[log.ticks.length - 1] ?? -1}|${st.netVersion}|${sum}|${st.buildings.length}`;
-  if (cache?.key !== key) cache = { key, f: contractForecast(world, log) };
+  const key = `${st.mapId}|${log.ticks[log.ticks.length - 1] ?? -1}|${st.netVersion}|${sum}|${st.buildings.length}|${cur}|${cur >= 0 && st.tick - (cur > 0 ? c.tranches[cur - 1]!.doneTick : 0) < PACE_WINDOW_TICKS}`;
+  if (cache?.key !== key) cache = { key, f: cur >= 0 ? trancheForecast(world, log) : contractForecast(world, log) };
   return cache.f;
+}
+
+/** The deadline the forecast is read against: the tranche now due (until it is missed), else the contract's. */
+export function paceDueTick(world: World): number {
+  const c = world.state.mission.contract!;
+  const x = c.tranches.find((t) => t.doneTick < 0);
+  return x && !x.missed ? x.deadlineTick : c.deadlineTick;
+}
+
+/** Late after the deadline now due; a warning when a single order earns one seal or a tranche lands in its last minute. */
+function paceState(world: World, f: ContractForecast): 'late' | 'warn' | '' {
+  const due = paceDueTick(world);
+  if (f.finishTick > due) return 'late';
+  if (world.state.mission.contract!.tranches.length) return due - f.finishTick < 60 * TICK_HZ ? 'warn' : '';
+  return f.seals <= 1 ? 'warn' : '';
 }
 
 /** Three small seals, the first `n` pressed. */
@@ -43,15 +61,15 @@ function producerName(f: ContractForecast, i: number): string {
 export function waybillPaceHtml(world: World, f: ContractForecast | null): string {
   if (!f || !f.ready || f.bottleneck < 0) return '';
   const tick = world.state.tick;
-  const c = world.state.mission.contract!;
-  const late = f.seals === 0;
+  const state = paceState(world, f);
+  const late = state === 'late';
   const eta = late
-    ? tHtml('contract.pace.late', { time: ticksClock(f.finishTick - c.deadlineTick) })
+    ? tHtml('contract.pace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
     : tHtml('contract.pace.eta', { time: ticksClock(f.finishTick - tick) });
   const b = f.goods[f.bottleneck]!;
   const supply = tHtml('contract.pace.supply', { who: producerName(f, f.bottleneck), n: fmtInt(b.producers), rate: fmtDec(b.perMin, 1) });
   const go = b.producer >= 0 ? `data-wb="b:${b.producer}"` : 'data-wb="castle"';
-  return `<div class="wb-pace${late ? ' late' : f.seals <= 1 ? ' warn' : ''}">
+  return `<div class="wb-pace${state ? ' ' + state : ''}">
     <div class="wb-pace-eta" data-wb="castle" role="button" tabindex="0"><span>${eta}</span></div>
     <div class="wb-pace-sup" ${go} role="button" tabindex="0">${iconSvg(b.good, 18, goodName(b.good))}<span>${supply}</span></div></div>`;
 }
@@ -59,8 +77,9 @@ export function waybillPaceHtml(world: World, f: ContractForecast | null): strin
 /** Castle card section: per good the producers' pace now and at most, the forecast and what a better seal needs. */
 export function castlePaceHtml(world: World, f: ContractForecast | null): string {
   const c = world.state.mission.contract;
-  if (!c || c.tranches.length > 0 || world.state.mission.result !== 'running') return '';
-  if (!f || !f.ready) return `<div class="section-h">${esc(t('why.pace.title'))}</div><div class="pace-wait">${esc(t('why.pace.wait'))}</div>`;
+  if (!c || world.state.mission.result !== 'running') return '';
+  if (c.tranches.length > 0 && c.tranches.every((x) => x.doneTick >= 0)) return '';
+  if (!f || !f.ready) return `<div class="section-h">${esc(t('why.pace.title'))}</div><div class="pace-wait">${esc(t(c.tranches.length ? 'why.pace.waitTranche' : 'why.pace.wait'))}</div>`;
   const tick = world.state.tick;
   const rows = f.goods.map((g, i) => {
     if (g.have >= g.need) return '';
@@ -70,10 +89,11 @@ export function castlePaceHtml(world: World, f: ContractForecast | null): string
   }).join('');
   let fc = '';
   if (f.bottleneck >= 0) {
-    const late = f.seals === 0;
-    fc = `<div class="pace-fc${late ? ' late' : f.seals <= 1 ? ' warn' : ''}">${late
-      ? tHtml('contract.pace.late', { time: ticksClock(f.finishTick - c.deadlineTick) })
-      : `<span>${tHtml('contract.pace.eta', { time: ticksClock(f.finishTick - tick) })}</span>${sealRow(f.seals)}`}</div>`;
+    const state = paceState(world, f);
+    // a tranche's forecast is "on time or late" for that part; the seals are the whole order's
+    fc = `<div class="pace-fc${state ? ' ' + state : ''}">${state === 'late'
+      ? tHtml('contract.pace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
+      : `<span>${tHtml('contract.pace.eta', { time: ticksClock(f.finishTick - tick) })}</span>${c.tranches.length ? '' : sealRow(f.seals)}`}</div>`;
   }
   const aim = f.aim
     ? `<div class="pace-aim">${tHtml('why.pace.need', { seals: t('why.pace.seals', { n: f.aim.seals }), time: ticksClock(f.aim.byTick - tick), rate: fmtDec(f.aim.perMin, 1) })}</div>` : '';

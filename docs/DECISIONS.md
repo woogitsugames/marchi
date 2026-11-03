@@ -998,3 +998,89 @@ sawmill 51→52, farm 55→56, mill 55→56, woodcutter 49→53 (wood logs: 2 pa
 Test `tests/yard-piles.test.ts` (every producer has a spot; a full load stays on its footprint); model preview shows
 full piles. Shot `docs/shots/day1-yard-sawmill-off-on.jpg`. Not done: the warehouse (many goods) and the castle.
 (decided)
+
+**D-72 — The pressed seal is a vector redraw of the kit seal (UI only; day-1 note).** The seal-press cue (D-69)
+showed the kit `seal-full` (a 28 dp sprite, 84 px in the @3x file) at 96 CSS px — about 3.4× the file on a
+2.6–3 dpr phone, visibly soft. Shrinking the cue to the sprite (28–32 CSS px) would lose the moment; the
+`seal-alert` sprite (72 dp) is the HUD alarm and would mix the meanings. So the press draws
+`public/assets/ui/kit/seal-press.svg`: the same seal redrawn as vector (gold wax rim with ten lobes, the dark
+squeezed ring with gold drops, the red disc with a soft wax gradient, eight cream impressions), colours taken
+from the sprite. Sharp at any size and dpr, 7 kB, no new request on the hot path (shown once per won contract).
+The small seals elsewhere keep the bitmap kit sprites at their native sizes. Comparison at 2.625 dpr
+`docs/shots/day2-seal-press.jpg` (left the vector, right the old sprite at 96 px). (decided)
+
+**D-73 — Contract numerals stay Roman in every language (UI; day-1 question).** The menu medallion repeats the
+numeral each contract title starts with, and all 17 translations (Arabic, Hindi, Japanese, Chinese … included)
+write the titles as "I. …", "XII. …"; the save-slot margin and the valley books use the same numerals. A locale
+digit in the medallion next to a Roman title would show two numbering systems at once, so the numerals are kept
+deliberately as part of the contract's name (like a chapter number), not as a count to localize. If a translator
+changes a title to another form, the medallion still shows the Roman numeral and the title stays whole (the
+existing `startsWith` rule). Comment at `ROMAN_MISSION` in `src/ui/menu.ts`. (decided; owner may overrule —
+the change would be the titles and the medallion together)
+
+**D-74 — Yard pile spots checked on all 10 producers (render only; day-1 question).** A geometric check (now in
+`tests/yard-piles.test.ts`) samples every model triangle every ~5 cm and fails when any point above the ground
+lies inside a pile unit, when the pile reaches within 5 cm of the footprint edge, or when it stands in the 2.2 m
+wagon lane of the road that ends at the gate (last 2.5 m inside the footprint). It found: farm sacks touching the
+step of the house (moved 0.5 m out), mill sacks in the doorway and on the footprint edge (moved to the left of
+the door, clear of the lane), bakery baskets in the road mouth (moved 0.7 m right), fisher creels on the edge,
+charcoal sacks in the hut's base (hut 0.4 m back, sacks to the front-right), malt bags in front of the door and
+into the firewood (moved to the open front-right corner), brewery barrels in the lane (moved 0.55 m right), and
+the quarry's guy rope reading through the block pile from the game camera (pile 0.35 m left). Woodcutter and
+sawmill were clear. Model preview: `yard-<kind>` (game-camera close-up with a road stub at the gate) and
+`yardtop-<kind>` views. Before/after `docs/shots/day2-yard-piles-before-after.jpg` (mill, quarry, charcoal,
+malthouse). (decided)
+
+**D-75 — The last chamfered parchment surfaces move onto the kit cards (UI only).** After D-43/D-53/D-70 the
+only surfaces still drawn with the old clip-path chamfer and a flat fill were the why-chain links, the goods
+chips (Needs / Produces, castle order), the pace rows, the build shelf cards and the ghost / draft tags over the
+map — in a screenshot they read as plain rounded rectangles next to the painted tools. They now wear the same
+`card-normal` sprite as the rail tools and secondary buttons (pressed sprite on tap; the building's own first link
+`card-active`; a locked build card or market chip the same card under a light hatch — the dark `card-disabled` sprite swallowed the names). The cause link, an empty input chip, the pace
+bottleneck and a bad placement take `panel-alert` (its wine edge marks "this one"), drawn on `::before` so the
+edge flips to the start side in RTL. Text, sizes, hit areas and layout unchanged; no new sprites. Layout
+`--quick` and why/build/castle/valley in pl+ar green. `docs/shots/day2-kit-cards.jpg` (why sheet before, after,
+placement with the shelf). (decided)
+
+**D-76 — Market & rank sheet on the kit (UI only).** The free valley's market sheet still had the old diamond
+bullets, thin flat bars and plain bordered building chips. Rank requirements now carry the kit wax seal (empty,
+pressed once met — the same mark as the contract seals), progress and price saturation use the brass groove
+(`kbar`) of the HUD plaque, and the building chips wear `card-normal` (locked: the same card under a light
+hatch, rank tag kept). Text and order unchanged. `docs/shots/day2-market-kit.jpg` (before / after). (decided)
+
+**D-77 — The mill loop keeps its rhythm across the seam (audio only; BACKLOG P3 from night 4).** `work.mill`
+(`sfx/mill-wheel`) was 5.5 s = 9.5 paddle periods (0.58 s), so the loop seam put two strokes 0.28 s apart — the
+"breath" heard in the audio report. The Freesound source is not reachable from the container, so the shipped
+loop was re-cut instead: decoded (OGG and M4A each from its own file), 9 periods = 5.218 s taken from the
+continuous looped signal, the head crossfaded 0.25 s (raised cosine) from the tail's continuation, which lands
+on the same stroke phase, and encoded with the pipeline's settings (24 kHz mono, 28 kb/s, peak −6 dB kept).
+Measured strokes now run 4.82 → 5.40 s across the seam (0.58 s, the period). `audio_sources.json` says
+`seconds: 5.22` for a future render from the source; provenance hashes updated; `process_audio.py --check`
+PASS. `cart.dirt` (irregular 0.3–0.45 s hits, no gap at the seam) needs nothing; `cart.cobble` has one
+0.61 s gap at the seam among 0.3 s hits — left as is (irregular cobbles; a re-cut would need the source). (decided)
+
+**D-78 — Pace forecast for orders in tranches (UI; BACKLOG P3 from D-38).** Missions V and VI (orders in
+tranches) had no pace line: the forecast only knew one order with one deadline. Now `contractForecast` takes an
+optional need (the castle must hold the sum of the tranches up to the one now due, `trancheNeed`), and
+`trancheForecast` gives the forecast of the tranche now due — read against that tranche's deadline (against the
+contract's once it is missed). The waybill shows "Przy tym tempie: gotowe za M:SS" / "spóźnienie M:SS" and the
+bottleneck's supply under the current tranche; the castle card shows the pace rows for it (no seal row — the
+seals belong to the whole order — and no "for N seals you need" aim). A tranche is forecast only once the
+two-minute pace window lies inside it (from the start for the first): without that gate the pace of the tranche
+before (another good, a sawmill just restarting) said "late" in 18 (m5) and 14 (m6) of the 10-s samples on runs
+that met every tranche; with it, none (test in `contract-pace.test.ts`). Until then the castle card says
+`why.pace.waitTranche` (new key, PENDING_KEYS). Read-only on the state; hashes unchanged. The 2-minute window
+tuning after the playtest stays open. `docs/shots/day2-tranche-pace.jpg`. (decided)
+
+**D-79 — Yard piles at the warehouse and the contract castle (render only; continues decision 15 / D-71).** D-71
+left the warehouse (many goods) and the castle without piles. A model may now list extra `piles` spots: the
+warehouse shows its two largest stocks either side of the ramp (ties in goods order; its static barrels, crates
+and sack are gone — they doubled or contradicted the stock), the contract castle one pile per ordered good
+inside the order yard (up to three), filled by the share delivered (`round(stock/need × load)`, at least one unit
+once something is there; a full pile = that good is complete). In the free valley the castle (market) shows
+nothing. `yardPileGood` (WagonsView) picks good and amount per spot; same instanced cargo units, same LOD /
+frustum / buffer limits and draw-call note as D-71. `yardPileLocal` now centres a load on its real ground
+footprint (the barrels' unit geometry is off its slot: beer piles sat ~0.5 m off the spot); the brewery spot moved
+0.15 m to keep clear of its rack. The clip test checks every load at the store / castle spots and that the spots
+of one building do not overlap; a new test checks what each spot shows. `docs/shots/day2-castle-store-piles.jpg`
+(m1 castle in game with planks and two baskets of bread delivered; preview of the warehouse). (decided)
