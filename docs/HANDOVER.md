@@ -496,3 +496,6 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - **Do zrobienia po wznowieniu (01:51):** `claude/w-day7` ma commit `87fdf14 WIP` (zadania 2–4 gotowe, testy 431/0) —
   rozdzielić na commity, dopisać D-97..D-99 w DECISIONS, zrzuty `day7-codex-*`/`day7-flip-*` do docs/shots,
   BACKLOG; włączyć wariant A domyślnie; scalić do bazy.
+- **~22:40: dokończenie day7 + poprawki z first-10-b oddane innej sesji Claude Code** (prompt od właściciela; gałąź
+  `claude/x-day7-finish` z `claude/w-day7`, PR do bazy). Po wznowieniu NIE robić tego samego: deweloper nocny bierze
+  grafikę/animacje (tartak, rolnik, rybak) i misję-lekcję kupna wozu; scalić PR tej sesji, gdy przyjdzie.
