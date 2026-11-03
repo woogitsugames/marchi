@@ -74,6 +74,27 @@ export function waybillPaceHtml(world: World, f: ContractForecast | null): strin
     <div class="wb-pace-sup" ${go} role="button" tabindex="0">${iconSvg(b.good, 18, goodName(b.good))}<span>${supply}</span><small class="sup-rate" aria-hidden="true">${tHtml('contract.pace.rate', { rate: fmtDec(b.perMin, 1) })}</small></div></div>`;
 }
 
+/**
+ * Watch mode (Flip cover, BACKLOG P3 from D-43): a forecast under the folded waybill's seal. Two variants for
+ * the owner to choose from, shown only behind the URL flag `?sealpace=a|b` (D-99); without it nothing changes.
+ * 'a' — one short line under the seal's clock: "gotowe za 9:40" / "spóźni się 1:20".
+ * 'b' — no words: three small seals, those the order earns at this pace pressed (a tranche order: the seals
+ *       still in reach), the row tinted when late or in the last minute.
+ */
+export function sealPaceHtml(world: World, f: ContractForecast | null, variant: 'a' | 'b'): string {
+  if (!f || !f.ready || f.bottleneck < 0) return '';
+  const state = paceState(world, f);
+  if (variant === 'a') {
+    const text = state === 'late'
+      ? tHtml('contract.sealPace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
+      : tHtml('contract.sealPace.eta', { time: ticksClock(f.finishTick - world.state.tick) });
+    return `<span class="seal-pace${state ? ' ' + state : ''}">${text}</span>`;
+  }
+  const c = world.state.mission.contract!;
+  const n = c.tranches.length ? 3 - c.tranches.filter((x) => x.missed).length - (state === 'late' ? 1 : 0) : f.seals;
+  return `<span class="seal-pace-seals${state ? ' ' + state : ''}">${sealRow(Math.max(0, n))}</span>`;
+}
+
 /** Castle card section: per good the producers' pace now and at most, the forecast and what a better seal needs. */
 export function castlePaceHtml(world: World, f: ContractForecast | null): string {
   const c = world.state.mission.contract;

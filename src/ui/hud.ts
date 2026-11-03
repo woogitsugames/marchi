@@ -15,7 +15,7 @@ import { deckle, esc, h, setHtml, setText } from './dom';
 import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
-import { forecastFor, waybillPaceHtml } from './pace';
+import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
 import { calmWhy, cureFor, type Cure, type StallEntry } from './stalls';
 import { EventCard } from './eventCard';
 
@@ -169,6 +169,11 @@ export class Hud {
   private compact = false;
   /** A bottom sheet is open in portrait: the waybill folds to its seal so the sheet's subject has map (D-62). */
   private sheetFold = false;
+  /** D-99 preview only: `?sealpace=a|b` adds a pace forecast under the folded seal (watch mode); off by default. */
+  private readonly sealPace: 'a' | 'b' | null = ((): 'a' | 'b' | null => {
+    const v = new URLSearchParams(location.search).get('sealpace');
+    return v === 'a' || v === 'b' ? v : null;
+  })();
   /** Stalls ranked worst first (last update) and the one the alarm seal showed last. */
   private stalls: StallEntry[] = [];
   private lastShown = -1;
@@ -534,7 +539,8 @@ export class Hud {
     this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left, dueMissing, !!dueNeed);
     const folded = this.folded();
     if (folded) {
-      setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
+      const extra = this.sealPace && pace ? sealPaceHtml(world, forecastFor(world, pace), this.sealPace) : '';
+      setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)) + extra);
       this.sealOnly.classList.toggle('late', late);
       return;
     }

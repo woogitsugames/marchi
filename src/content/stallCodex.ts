@@ -601,3 +601,38 @@ const CONTENT = {
 
 // The string index signature supports looking up a status key built at runtime.
 export const STALL_CODEX: Record<string, StallCodexEntry> = CONTENT;
+
+/**
+ * Calm variants (D-98): the same status read when nothing needs fixing — a surplus nobody needs right now,
+ * the rest of a filled order, stone already in the granary (calmWhy in src/ui/stalls.ts). The fold then
+ * stops advising "Kup wóz". Keep docs/content/stall-codex.md in sync.
+ */
+const CALM = {
+  "status.OUTPUT_FULL.NO_WAGON": {
+    "pl": {
+      "name": "Pełno — nic pilnego",
+      "meaning": "Wyroby czekają na miejscu, bo teraz nikt ich nie potrzebuje albo zapas już leży w spichlerzu; to nie awaria.",
+      "check": "Przeczytaj spokojną linię wyżej w karcie: mówi, czego jest już dość.",
+      "fixes": [
+        "Nie kupuj wozu z tego powodu — ten postój niczego nie blokuje.",
+        "Zajmij się postojem z czerwoną pieczęcią, jeśli jest.",
+        "Gdy towar znów będzie potrzebny, wóz przyjedzie sam."
+      ],
+      "chain": "Tartak pełen desek → zamówienie desek wypełnione → tartak spokojnie czeka."
+    },
+    "en": {
+      "name": "Full — nothing urgent",
+      "meaning": "The goods wait on site because nobody needs them now or the stock is already in a granary; nothing is broken.",
+      "check": "Read the calm line higher up on the card: it says what there is already enough of.",
+      "fixes": [
+        "Do not buy a wagon for this — this stall blocks nothing.",
+        "Turn to a stall with a red seal, if there is one.",
+        "When the goods are needed again, a wagon comes on its own."
+      ],
+      "chain": "Sawmill full of planks → plank order filled → the sawmill waits calmly."
+    }
+  }
+} as const satisfies Partial<Record<StallCodexKey, StallCodexEntry>>;
+
+/** Calm variants by codex key; only keys whose normal entry advises a cure that a calm stall does not need. */
+export const STALL_CODEX_CALM: Record<string, StallCodexEntry> = CALM;

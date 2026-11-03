@@ -529,3 +529,30 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. If the customer is gone, provide another reachable destination.
 - **Chain:** Wagon carries flour → bridge removed → bakery lacks input → castle gets no bread.
 
+# Wersje spokojne / Calm variants
+
+Gdy postój jest spokojny (nadwyżka, której nikt teraz nie potrzebuje, wypełnione zamówienie, kamień już w spichlerzu),
+fałda „Co to znaczy?” pokazuje ten wariant zamiast zwykłego wpisu (D-98).
+
+## `status.OUTPUT_FULL.NO_WAGON` — spokojny / calm
+
+### PL — Pełno — nic pilnego
+
+- **Co to znaczy:** Wyroby czekają na miejscu, bo teraz nikt ich nie potrzebuje albo zapas już leży w spichlerzu; to nie awaria.
+- **Jak sprawdzić:** Przeczytaj spokojną linię wyżej w karcie: mówi, czego jest już dość.
+- **Naprawy / działania:**
+  1. Nie kupuj wozu z tego powodu — ten postój niczego nie blokuje.
+  2. Zajmij się postojem z czerwoną pieczęcią, jeśli jest.
+  3. Gdy towar znów będzie potrzebny, wóz przyjedzie sam.
+- **Łańcuch:** Tartak pełen desek → zamówienie desek wypełnione → tartak spokojnie czeka.
+
+### EN — Full — nothing urgent
+
+- **Meaning:** The goods wait on site because nobody needs them now or the stock is already in a granary; nothing is broken.
+- **How to check:** Read the calm line higher up on the card: it says what there is already enough of.
+- **Fixes / next steps:**
+  1. Do not buy a wagon for this — this stall blocks nothing.
+  2. Turn to a stall with a red seal, if there is one.
+  3. When the goods are needed again, a wagon comes on its own.
+- **Chain:** Sawmill full of planks → plank order filled → the sawmill waits calmly.
+
