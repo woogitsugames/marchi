@@ -1311,3 +1311,20 @@ a top-up below the threshold; mission I still does. Card: the workshop sheet add
 inputs while a request is held — "Ma drewna na pracę; dowóz zamówi, gdy zmieści się 4 — pełniejszy wóz, mniej
 kursów." (key `why.topUp`, PENDING_KEYS); status stays "Produkuje", no stall, no cure.
 `docs/shots/day6-valley-topup-412x915.jpg`. (decided)
+
+**D-95 — Mission VIII: a quarry waiting for the reserve run says the granary already has paving stone; no "Kup
+wóz" (owner decision, day 6; UI and read-only diagnosis, no hash change).** D-90 left m8's quarry as a waxed
+OUTPUT_FULL.NO_WAGON for ~60 % of the mission with "Kup wóz" as the cure, which helps 0 of 14 times: the granary
+does ask for stone (reserve gap ≥ one load), but the dispatcher serves workshop inputs (prio 1) before the
+stone reserve (prio 2), so a new wagon carries bakery/sawmill inputs first. The owner chose the reading over a
+dispatcher change. A read-only `stoneInStore()` (src/sim/diagnose.ts): a contract mission with road stone, the
+quarry full and waiting for a wagon, the castle needs no more stone, no workshop waits for stone, and the
+granaries (and castle) hold at least one cobbled cell's worth of unreserved stone; it returns that stone. Then
+the stall is calm (minor pin, never wax), the HUD card says "czeka na wóz, a spichlerz ma już kamień na bruk",
+the Why sheet under the count: "W spichlerzu jest 12 kamieni — wystarczy na bruk (12 pól). Kamieniołom poczeka
+na wolny wóz; nowy wóz i tak najpierw wiezie wkład warsztatów." (numbers from the state, plurals by ICU), and
+`cureFor` gives no wagon cure. Not in the free valley (the market buys stone; the valley surplus stays as it is,
+calm with the wagon cure — owner). Keys `cause.stoneStored`, `fix.stoneStored` (PENDING_KEYS). In the m8 baseline
+run every one of the 188 "no wagon" samples of the quarry now reads this way (`tests/m8-stone-stored.test.ts`).
+Rejected: the stone reserve before producer inputs in the dispatcher (hash, mission re-tuning; after the
+playtest, BACKLOG). `docs/shots/day6-m8-stone-412x915*.jpg`. (decided)

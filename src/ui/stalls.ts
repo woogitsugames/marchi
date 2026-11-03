@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { busyOutOfReach, buildingById, contractFilled, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, type Building, type ReasonLink, type World } from '../sim/index';
+import { busyOutOfReach, buildingById, contractFilled, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, stoneInStore, type Building, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -35,7 +35,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
   const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
-    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null;
+    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0;
   calmCache.set(b.id, { key, calm });
   return calm;
 }
@@ -46,11 +46,13 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
   if (contractFilled(world, b.id)) return 'orderFilled';
+  // D-95: the granary already holds stone to pave with (mission VIII's quarry)
+  if (stoneInStore(world, b.id) > 0) return 'stoneStored';
   return null;
 }
 
@@ -111,7 +113,8 @@ export function cureFor(world: World, id: number): Cure {
       if (s.k === 'NO_ROAD' || (s.k === 'NO_INPUT' && s.cause === 'UNREACHABLE') || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) cure = 'road';
       // every wagon busy, but none could reach a source of the good anyway: the road to it (fix 5)
       else if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') cure = busyOutOfReach(world, l.id) >= 0 ? 'road' : 'wagon';
-      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE') cure = 'wagon';
+      // (not when the granary already has paving stone, D-95: a new wagon would carry workshop inputs first)
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE' && stoneInStore(world, l.id) === 0) cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
       // (not when the order of this good is complete: nothing needs it any more, fix 6)
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) cure = 'granary';

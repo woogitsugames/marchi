@@ -1,5 +1,5 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
 import { storeCapOf } from './contract';
 import { marketOpen } from './town';
@@ -195,6 +195,31 @@ export function outputSurplus(world: World, id: number): 'SPARE' | 'MARKET' | nu
     if ((cs.k === 'NO_INPUT' || cs.k === 'NO_WAGON' || cs.k === 'WAITING_UPSTREAM') && cs.good === g && inputGoods(c.type).includes(g)) return null;
   }
   return marketOpen(world) ? 'MARKET' : 'SPARE';
+}
+
+/**
+ * Read-only (D-95, owner decision): a contract quarry whose stone waits for a wagon (OUTPUT_FULL.NO_WAGON)
+ * only because a granary tops up its road-stone reserve (mission VIII), while the granaries already hold
+ * stone to pave with. Returns that unreserved stone (>= one cobbled cell), else 0. Another wagon would not
+ * help: the dispatcher serves workshop inputs before the stone reserve, so a new wagon carries those first.
+ * Not in the free valley (the market buys stone: a wagon there is worth it) and not while the castle or a
+ * workshop still needs stone.
+ */
+export function stoneInStore(world: World, id: number): number {
+  const b = buildingById(world, id);
+  const st = world.state;
+  if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON' || b.status.good !== 'stone') return 0;
+  if (!st.mission.roadStone || marketOpen(world)) return 0;
+  const k = st.mission.contract;
+  if (k && k.need.stone > (buildingById(world, k.castle)?.stock.stone ?? 0)) return 0;
+  let n = 0;
+  for (const q of st.buildings) {
+    if (q.id === id) continue;
+    const cs = q.status;
+    if ((cs.k === 'NO_INPUT' || cs.k === 'NO_WAGON' || cs.k === 'WAITING_UPSTREAM') && cs.good === 'stone' && inputGoods(q.type).includes('stone')) return 0;
+    if (q.type === 'warehouse' || q.type === 'castle') n += q.stock.stone - q.reservedOut.stone;
+  }
+  return n >= STONE_COBBLE ? n : 0;
 }
 
 /**

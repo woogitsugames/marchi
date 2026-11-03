@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, topUpHold,
+  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -119,6 +119,13 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (s.k === 'OUTPUT_FULL' && outputSurplus(world, b.id) === 'SPARE') {
     return `<div class="s-hint calm-hint">${iconSvg(s.good, 22, goodName(s.good))}<span${en('fix.surplus')}>${
       esc(t('fix.surplus', { goodGen: t(`goodGen.${s.good}` as MessageKey) }))}</span></div>`;
+  }
+  // D-95 (owner decision): mission VIII's quarry waits for the granary's reserve run, while the granary already
+  // holds paving stone; the real numbers, and no "Kup wóz" (a new wagon carries workshop inputs first)
+  const stored = stoneInStore(world, b.id);
+  if (stored > 0) {
+    return `<div class="s-hint calm-hint">${iconSvg('stone', 22, goodName('stone'))}<span${en('fix.stoneStored')}>${
+      esc(t('fix.stoneStored', { n: stored, cells: t('road.cells', { n: Math.floor(stored / STONE_COBBLE) }) }))}</span></div>`;
   }
   const filled = contractFilled(world, b.id);
   if (filled) {

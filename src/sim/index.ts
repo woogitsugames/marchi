@@ -9,7 +9,7 @@ export {
 export { MISSIONS, VALLEY_W, VALLEY_H, demolishIsFinal, missionBuildable, missionSeasons } from './missions';
 export { isRaining, edgeLength, findPath, pathTime, net, hasEdge, grade, type World } from './network';
 export { buildingById, gateConnected, topUpHold } from './logistics';
-export { busyOutOfReach, contractFilled, explainBuilding, explainWagon, granaryRelief, heldWagon, isHeld, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
+export { busyOutOfReach, contractFilled, explainBuilding, explainWagon, granaryRelief, heldWagon, isHeld, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
 export {
   SEASON_TICKS, SEASON_WARNING_TICKS, YEAR_TICKS, bridgeIceUntil, cycleTicks, effectsAt, nextChange, seasonAt, seasonal,
   thawing, yearAt, type Season, type SeasonChange, type SeasonChangeKind, type SeasonEffects,

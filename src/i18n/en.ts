@@ -632,4 +632,7 @@ export const en: FullDict = {
   'menu.m1Sub': 'Bridge the river and deliver before the snow',
   // free valley top-up in fuller loads (D-94; see PENDING_KEYS)
   'why.topUp': 'Has {goodGen} to work with; it orders more once {n} fit — a fuller wagon, fewer trips.',
+  // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
+  'cause.stoneStored': 'waits for a wagon, but the granary already has paving stone',
+  'fix.stoneStored': '{n, plural, one {The granary holds # stone} other {The granary holds # stone}} — enough to pave ({cells}). The quarry waits for a free wagon; a new wagon would carry workshop inputs first anyway.',
 };
