@@ -62,6 +62,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "De sneeuw kwam eerder dan een deel van de vracht. Controleer de oversteek en of wagens goederen ophalen.\n— Wszebor",
     },
+    es: {
+      opening: "Al encargado de caminos: lleva 30 tablones y 20 hogazas al castillo antes de la primera nevada. El leñador y el aserradero están al otro lado del río, sin paso entre las orillas. Construye un cruce y mantén el transporte de harina y pan.\n— Wszebor, castellano de Łozinny Bród",
+      won: {
+        1: "El castillo recibió pan y tablones. Un sello; La próxima vez envía los carros antes.\n— Wszebor",
+        2: "El castillo recibió pan y tablones. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "El castillo recibió pan y tablones. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Llegó la nieve y parte de la carga quedó en el camino. Comprueba el cruce y la recogida de mercancías.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -108,6 +117,15 @@ export const CONTRACT_LETTERS = {
         3: "De bestelling kwam over de brug aan. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De termijn verstreek terwijl goederen bij de brug wachtten. Geef de wagens een tweede route.\n— Wszebor",
+    },
+    es: {
+      opening: "El escribano Mirogniew exige 36 tablones y 30 hogazas. Los carros de ambas orillas se agolpan en el único puente de madera. Antes del plazo, construye otro puente o un paso de piedra para aliviar la cola.\n— Wszebor",
+      won: {
+        1: "El pedido cruzó el puente. Un sello; Reduce la espera en el puente.\n— Wszebor",
+        2: "El pedido cruzó el puente. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "El pedido cruzó el puente. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "El plazo venció con carros atascados en el puente. Abre una segunda ruta.\n— Wszebor",
     },
   },
   m3: {
@@ -156,6 +174,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "De regen hield aan en de levering bleef achter. Bestraat de plekken waar wagens vertragen.\n— Wszebor",
     },
+    es: {
+      opening: "La lluvia ha destrozado el camino de tierra. El castillo necesita 24 tablones y 16 hogazas, pero las ruedas se hunden. El molinero Borzym espera grano. Empedra los tramos más transitados.\n— Wszebor",
+      won: {
+        1: "Los suministros llegaron pese a la lluvia. Un sello; Empedra las rutas donde se forma barro.\n— Wszebor",
+        2: "Los suministros llegaron pese a la lluvia. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "Los suministros llegaron pese a la lluvia. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "La lluvia siguió y faltaron suministros. Empedra donde los carros avanzan más despacio.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -202,6 +229,15 @@ export const CONTRACT_LETTERS = {
         3: "Ondanks het ijs kreeg het kasteel zijn goederen. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De aangekondigde brugsluiting was niet voorbereid. Sla goederen op aan de kasteelkant of bouw een stenen brug.\n— Wszebor",
+    },
+    es: {
+      opening: "El hielo a la deriva cerrará el puente de madera a la hora anunciada. Antes, lleva las provisiones al granero de la orilla del castillo o construye un puente de piedra. Lo que queda al otro lado no alimenta a nadie.\n— Wszebor",
+      won: {
+        1: "El castillo recibió la carga pese al hielo. Un sello; Guarda reservas en la orilla del castillo.\n— Wszebor",
+        2: "El castillo recibió la carga pese al hielo. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "El castillo recibió la carga pese al hielo. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Venció el plazo pese al aviso del hielo. Guarda provisiones junto al castillo o levanta un puente de piedra.\n— Wszebor",
     },
   },
   m5: {
@@ -250,6 +286,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Minstens één deel kwam te laat. Plan op de afzonderlijke termijnen, niet enkel op het totaal.\n— Wszebor",
     },
+    es: {
+      opening: "La feria del castillo requiere tres entregas en momentos distintos. El escribano Mirogniew anotará cada una: pan y tablones deben llegar según su plazo, no todos en el último carro. Guarda reservas y ordena los viajes.\n— Wszebor",
+      won: {
+        1: "Las tres entregas llegaron a tiempo. Un sello; Separa las reservas por cada plazo.\n— Wszebor",
+        2: "Las tres entregas llegaron a tiempo. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "Las tres entregas llegaron a tiempo. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Al menos una entrega llegó tarde. Cuenta los plazos por separado, no solo el total.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -296,6 +341,15 @@ export const CONTRACT_LETTERS = {
         3: "De voorraden bereikten het kasteel ondanks de volle schuur. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De goederen hoopten zich op en de termijn verstreek. Controleer de volle schuur en de route van molen naar bakkerij.\n— Wszebor",
+    },
+    es: {
+      opening: "El granero es pequeño y el grano llega más deprisa de lo que el molinero Borzym puede retirarlo. Si se llena, se parará la producción y fallará el contrato. Libera espacio o cambia el recorrido de los carros.\n— Wszebor",
+      won: {
+        1: "El contrato se cumplió pese al almacén lleno. Un sello; Deja espacio en el granero y paso a la panadería.\n— Wszebor",
+        2: "El contrato se cumplió pese al almacén lleno. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "El contrato se cumplió pese al almacén lleno. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Se amontonaron las mercancías y venció el plazo. Revisa el granero y la ruta del molino a la panadería.\n— Wszebor",
     },
   },
   m7: {
@@ -344,6 +398,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Er was te weinig vis. Plaats de hut aan het water en houd het vervoer over de brug op gang.\n— Wszebor",
     },
+    es: {
+      opening: "Llega el ayuno y las cocinas del castillo necesitan 54 peces. Ya hay una cabaña de pescador en la orilla norte, pero quizá no baste. Construye otra junto al agua, nunca tierra adentro, y lleva la pesca por el puente de madera a la orilla sur.\n— Wszebor",
+      won: {
+        1: "La pesca llegó a las cocinas. Un sello; Una segunda cabaña junto al agua habría ayudado.\n— Wszebor",
+        2: "La pesca llegó a las cocinas. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "La pesca llegó a las cocinas. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Faltaron peces al terminar el ayuno. Sitúa la cabaña junto al agua y mantén los carros cruzando el puente.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -390,6 +453,15 @@ export const CONTRACT_LETTERS = {
         3: "De planken en broden kwamen door de storm heen. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De wagens bleven in de modder steken. Breng steen naar de schuur en bestraat daarna de zuidelijke weg.\n— Wszebor",
+    },
+    es: {
+      opening: "Se acerca la tormenta. Entrega 24 tablones y 20 hogazas antes de que el barro frene los carros. La piedra de la cantera no sirve para empedrar hasta que llegue al granero: cuatro unidades por carro. Llévala primero y luego mejora el camino del sur.\n— Wszebor",
+      won: {
+        1: "Los suministros superaron la tormenta. Un sello; Lleva primero la piedra al granero.\n— Wszebor",
+        2: "Los suministros superaron la tormenta. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "Los suministros superaron la tormenta. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "La tormenta atrapó los carros en el barro. Lleva primero piedra al granero y luego empedra el camino sur.\n— Wszebor",
     },
   },
   m9: {
@@ -438,6 +510,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "De bruiloft begon vóór alle goederen er waren. Geef zagerij en houtskoolbrander elk genoeg hout.\n— Wszebor",
     },
+    es: {
+      opening: "Se acerca la boda: hacen falta 36 tablones, 8 de carbón vegetal y 26 de cerveza. Lleva el grano a la maltería y la malta a la cervecería. Aserradero y carbonera comparten un leñador; cuando uno toma la madera, el otro se para. Aumenta la tala y los carros.\n— Wszebor",
+      won: {
+        1: "La boda recibió madera, carbón y cerveza. Un sello; Alimenta los dos talleres con suficiente madera.\n— Wszebor",
+        2: "La boda recibió madera, carbón y cerveza. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "La boda recibió madera, carbón y cerveza. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "La boda llegó antes que las mercancías. Proporciona madera a los dos talleres con otro leñador.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -484,6 +565,15 @@ export const CONTRACT_LETTERS = {
         3: "De ambachtslieden ontvingen planken en houtskool. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De houtskoolbrander verbruikte het hout voor de planken. Bouw een tweede houthakker in plaats van extra wagens.\n— Wszebor",
+    },
+    es: {
+      opening: "El herrero necesita carbón vegetal y los carpinteros tablones: 48 tablones y 8 de carbón. Aserradero y carbonera dependen de un solo leñador, incapaz de abastecer ambos. Construye un segundo puesto de leñador; más carros no producen madera.\n— Wszebor",
+      won: {
+        1: "Tablones y carbón llegaron a los talleres. Un sello; Construye otro leñador, no más carros.\n— Wszebor",
+        2: "Tablones y carbón llegaron a los talleres. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "Tablones y carbón llegaron a los talleres. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "El carbón consumió la madera del aserradero. Construye otro leñador: los carros no talan árboles.\n— Wszebor",
     },
   },
   m11: {
@@ -532,6 +622,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "De winter kwam vóór het laatste vat. Koop wagens als het graan wacht en alle wagens bezet zijn.\n— Wszebor",
     },
+    es: {
+      opening: "Para el invierno, el castillo pide 22 de cerveza. El grano crece al oeste, pero la maltería está lejos, al este. Tres carros deben servir granja, maltería, cervecería y castillo. Si todos están ocupados mientras el grano espera, compra más carros en el establo.\n— Wszebor",
+      won: {
+        1: "La cerveza llegó al castillo. Un sello; Compra carros para los largos trayectos.\n— Wszebor",
+        2: "La cerveza llegó al castillo. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "La cerveza llegó al castillo. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Llegó el invierno antes del último barril. Compra carros si todos trabajan y el grano sigue esperando.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -578,6 +677,15 @@ export const CONTRACT_LETTERS = {
         3: "Alle drie de leveringen kwamen aan. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
       lost: "De laatste levering bleef onvolledig: de volle schuur blokkeerde de brouwerij. Verbind de grote graanschuur eerder.\n— Wszebor",
+    },
+    es: {
+      opening: "La gran elaboración exige 40 hogazas y 48 de cerveza en tres entregas: 32 hogazas antes de las 6:00; 8 hogazas y 12 de cerveza antes de las 9:00; 36 de cerveza antes de las 12:00. El castillo solo acepta la entrega actual. Une el granero grande, a dos casillas del camino, para guardar la cerveza.\n— Wszebor",
+      won: {
+        1: "Se completaron las tres entregas. Un sello; Conecta el granero grande antes de que se llene la cervecería.\n— Wszebor",
+        2: "Se completaron las tres entregas. Dos sellos por los viajes bien organizados.\n— Wszebor",
+        3: "Se completaron las tres entregas. Tres sellos por tan buena previsión.\n— Wszebor",
+      },
+      lost: "Venció el último plazo; el almacén lleno paralizó la cervecería. Conecta antes el granero grande.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
