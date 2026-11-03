@@ -5,7 +5,7 @@
 // The DOM is built once; update() only writes text, widths and classes when a value changes.
 import {
   GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
-  thawing, timeOfDay, TICK_HZ, yearAt,
+  thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
   type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods,
 } from '../sim/index';
@@ -511,7 +511,11 @@ export class Hud {
     const total = goods.reduce((a, g) => a + c.need[g], 0);
     const got = have.reduce((a, v) => a + v, 0);
     const frac = got / Math.max(1, total);
-    this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left);
+    // before a tranche's deadline the warning counts what that delivery still lacks (the castle holds the
+    // tranches cumulatively), not the whole order: "2 minutes left — 12 still to deliver" for 6 of 18 bread
+    const dueNeed = dueTick !== c.deadlineTick ? trancheNeed(world, cur) : null;
+    const dueMissing = dueNeed ? GOODS.reduce((a, g) => a + Math.max(0, dueNeed[g] - stock[g]), 0) : total - got;
+    this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left, dueMissing, !!dueNeed);
     const folded = this.folded();
     if (folded) {
       setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
@@ -579,7 +583,8 @@ export class Hud {
    * own), with how many units are still missing. Milestones already passed when the HUD first sees the
    * contract (a loaded game) stay silent.
    */
-  private contractMilestones(running: boolean, frac: number, got: number, total: number, dueTick: number, left: number): void {
+  private contractMilestones(running: boolean, frac: number, got: number, total: number, dueTick: number, left: number,
+    dueMissing: number, tranche: boolean): void {
     const first = this.milestones === null;
     const seen = (this.milestones ??= new Set());
     const fire = (key: string, icon: IconId, text: string): void => {
@@ -588,11 +593,12 @@ export class Hud {
       if (!first && running) this.showNotice(icon, esc(text));
     };
     if (frac >= 1) return;
-    const missing = fmtInt(total - got);
+    const missing = fmtInt(dueMissing);
     if (frac >= 0.5) fire('half', 'seal', t('contract.half', { have: fmtInt(got), total: fmtInt(total) }));
-    if (left <= 0) return;
-    if (left < 60 * TICK_HZ) fire(`${dueTick}:1`, 'snow', t('contract.lastMin', { n: missing }));
-    else if (left < 120 * TICK_HZ) fire(`${dueTick}:2`, 'snow', t('contract.twoMin', { n: missing }));
+    if (left <= 0 || dueMissing <= 0) return;
+    const icon: IconId = tranche ? 'waiting' : 'snow';
+    if (left < 60 * TICK_HZ) fire(`${dueTick}:1`, icon, t('contract.lastMin', { n: missing }));
+    else if (left < 120 * TICK_HZ) fire(`${dueTick}:2`, icon, t('contract.twoMin', { n: missing }));
   }
 
   /**
