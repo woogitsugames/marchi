@@ -15,3 +15,4 @@ ios/DerivedData/
 .cache/
 /art/store/screens/
 .claude/worktrees/
+__pycache__/
