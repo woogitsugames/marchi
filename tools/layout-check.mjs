@@ -4,6 +4,7 @@
 //   overlap    — two HUD components / the sheet / world bubbles intersect (a component's own badge that
 //                hangs over its edge is not a component, so the intended overhang is not counted)
 //   small      — a touch target under 48 x 48 CSS px
+//   lines      — the tutorial note over 3 lines (from 360 px)
 //   overflow   — text that sticks out of its box, or is clipped / ellipsized inside it
 //   covered    — a text run or control painted over by another element (tested with every element hit-testable)
 //   hscroll    — the page scrolls sideways
@@ -12,17 +13,19 @@
 // tool itself is broken and the run fails.
 //
 // Usage: npm run layout                       full matrix (views x langs x scenes), own Vite server
-//        npm run layout -- --quick            412x915 + Flip cover, pl + de only
+//        npm run layout -- --quick            412x915 + Flip cover, pl / de / pseudo only
 //        npm run layout -- --only 'hud|360'   regex over "scene|view|lang"
 //        npm run layout -- --lang pseudo      other language set (comma list)
 //        npm run layout -- --shots DIR        also save a PNG per job
 //        npm run layout -- --three            over the three.js map instead of the Canvas2D one (slow)
 //        LAYOUT_URL=http://127.0.0.1:5173/ npm run layout   use a running server
-// Output: docs/layout/layout-report.json (+ a short table on stdout). Exit 1 on any failure.
+// Output: docs/layout/layout-report.json for the full default run (partial runs: <tmpdir>/marchia-layout/),
+// one line per job on stdout. Exit 1 on any failure.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -72,7 +75,12 @@ const SCENES = [
   { name: 'valley', q: 'play=sandbox&speed=0&ff=240&slot=layout' },
   { name: 'market', q: 'play=sandbox&speed=0&market=1&slot=layout' },
   { name: 'opening', q: 'play=m1&tut=1&speed=0' },
-  { name: 'tutorial', q: 'play=m1&tut=1&speed=0', act: async (p) => { await p.click('.letter [data-a="start"]'); await p.waitForSelector('.tut-text', { timeout: 20000 }); } },
+  { name: 'tutorial', q: 'play=m1&tut=1&speed=0', act: async (p) => {
+    // a DOM click: under SwiftShader the 3D frames are slow enough for Playwright's "stable" wait to time out
+    await p.waitForSelector('.letter [data-a="start"]', { timeout: 30000 });
+    await p.evaluate(() => document.querySelector('.letter [data-a="start"]').click());
+    await p.waitForSelector('.tut-text', { timeout: 30000 });
+  } },
   { name: 'rankup', q: 'play=sandbox&speed=0&slot=layout', act: (p) => p.evaluate(() => window.__marchia.rankUp(2)) },
 ];
 
@@ -366,8 +374,11 @@ async function main() {
       }
     }));
     res.sort((a, b) => a.tag.localeCompare(b.tag));
-    const outDir = resolve(root, 'docs/layout');
+    // the committed report is the full default matrix only; partial runs report next to the OS temp files
+    const full = !ONLY && !QUICK && !THREE && !arg('--lang');
+    const outDir = full ? resolve(root, 'docs/layout') : resolve(tmpdir(), 'marchia-layout');
     mkdirSync(outDir, { recursive: true });
+    console.log(`report ${resolve(outDir, 'layout-report.json')}`);
     writeFileSync(resolve(outDir, 'layout-report.json'), JSON.stringify(res.map(({ tag, vw, vh, body, fail }) => ({ tag, vw, vh, body, fail })), null, 1) + '\n');
     const failed = res.filter((r) => r.fail.length);
     console.log(`LAYOUT jobs=${res.length} failed=${failed.length} control=${NO_CONTROL ? 'skipped' : bad ? 'BROKEN' : 'ok'}`);
