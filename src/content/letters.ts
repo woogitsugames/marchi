@@ -53,6 +53,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "La première neige est tombée, une partie de la cargaison est restée en route. Vérifiez le passage et les chariots.\n— Wszebor",
     },
+    nl: {
+      opening: "Aan de wegbeheerder: lever vóór de eerste sneeuw 30 planken en 20 broden aan het kasteel. De houthakker en zagerij liggen aan de overkant; er is nog geen verbinding. Bouw een oversteek en houd het vervoer van meel en brood op gang.\n— Wszebor, kastelein van Łozinny Bród",
+      won: {
+        1: "Brood en planken bereikten het kasteel. Eén zegel; Stuur de wagens volgende keer eerder weg.\n— Wszebor",
+        2: "Brood en planken bereikten het kasteel. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "Brood en planken bereikten het kasteel. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De sneeuw kwam eerder dan een deel van de vracht. Controleer de oversteek en of wagens goederen ophalen.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -90,6 +99,15 @@ export const CONTRACT_LETTERS = {
         3: "Les marchandises ont circulé entre les deux rives sans retard inutile. Trois sceaux pour cette bonne ordonnance.\n— Wszebor",
       },
       lost: "Il manque des denrées au registre. Examinez la file au pont et ouvrez une autre voie aux chariots.\n— Wszebor",
+    },
+    nl: {
+      opening: "Kasteelschrijver Mirogniew vraagt 36 planken en 30 broden. Wagens van beide oevers verdringen zich op de enige houten brug. Maak vóór de termijn ruimte: een tweede brug of een stenen oversteek verkort de wachtrij.\n— Wszebor",
+      won: {
+        1: "De bestelling kwam over de brug aan. Eén zegel; Verminder de wachtrij bij de brug.\n— Wszebor",
+        2: "De bestelling kwam over de brug aan. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De bestelling kwam over de brug aan. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De termijn verstreek terwijl goederen bij de brug wachtten. Geef de wagens een tweede route.\n— Wszebor",
     },
   },
   m3: {
@@ -129,6 +147,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "La pluie a duré et les livraisons ont manqué. Repérez où les chariots ralentissent et posez-y des pavés.\n— Wszebor",
     },
+    nl: {
+      opening: "Regen heeft de onverharde weg weggespoeld. Het kasteel heeft 24 planken en 16 broden nodig, maar de wielen zakken in de modder. Molenaar Borzym wacht op graan. Bestraat de drukste stukken weg.\n— Wszebor",
+      won: {
+        1: "De voorraden bereikten het kasteel ondanks de regen. Eén zegel; Bestrating bespaart tijd in de modder.\n— Wszebor",
+        2: "De voorraden bereikten het kasteel ondanks de regen. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De voorraden bereikten het kasteel ondanks de regen. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De regen hield aan en de levering bleef achter. Bestraat de plekken waar wagens vertragen.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -166,6 +193,15 @@ export const CONTRACT_LETTERS = {
         3: "Un pont peut fermer ; un ravitaillement bien ordonné dure. Trois sceaux pour les réserves et le passage.\n— Wszebor",
       },
       lost: "L'échéance est passée malgré l'annonce de la fermeture. Stockez plus tôt sur la rive du château ou bâtissez en pierre.\n— Wszebor",
+    },
+    nl: {
+      opening: "Drijfijs zal op het aangekondigde uur de houten brug afsluiten. Breng vooraf voorraden naar een graanschuur aan de kasteelkant of bouw een stenen brug. Goederen aan de overkant voeden niemand.\n— Wszebor",
+      won: {
+        1: "Ondanks het ijs kreeg het kasteel zijn goederen. Eén zegel; Sla goederen vooraf op bij het kasteel.\n— Wszebor",
+        2: "Ondanks het ijs kreeg het kasteel zijn goederen. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "Ondanks het ijs kreeg het kasteel zijn goederen. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De aangekondigde brugsluiting was niet voorbereid. Sla goederen op aan de kasteelkant of bouw een stenen brug.\n— Wszebor",
     },
   },
   m5: {
@@ -205,6 +241,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Au moins un envoi est arrivé en retard. Répartissez le stock par échéance au lieu de compter seulement le total.\n— Wszebor",
     },
+    nl: {
+      opening: "De kasteelmarkt vereist drie leveringen op verschillende tijden. Schrijver Mirogniew boekt elk deel apart: brood en planken moeten per termijn komen, niet allemaal in de laatste wagen. Leg voorraden aan en verdeel de ritten.\n— Wszebor",
+      won: {
+        1: "Alle drie de leveringen kwamen op tijd. Eén zegel; Verdeel de voorraad naar de termijnen.\n— Wszebor",
+        2: "Alle drie de leveringen kwamen op tijd. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "Alle drie de leveringen kwamen op tijd. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "Minstens één deel kwam te laat. Plan op de afzonderlijke termijnen, niet enkel op het totaal.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -242,6 +287,15 @@ export const CONTRACT_LETTERS = {
         3: "Les réserves bien distribuées ont maintenu moulin et boulangerie en marche. Trois sceaux.\n— Wszebor",
       },
       lost: "Les marchandises se sont accumulées, et le délai a expiré. Vérifiez le grenier et la route du moulin au fournil.\n— Wszebor",
+    },
+    nl: {
+      opening: "De graanschuur is krap en het graan komt sneller binnen dan molenaar Borzym kan afvoeren. Bij een vol magazijn stopt de arbeid en mislukt de opdracht. Maak opslag vrij of stuur wagens via een andere route.\n— Wszebor",
+      won: {
+        1: "De voorraden bereikten het kasteel ondanks de volle schuur. Eén zegel; Houd ruimte vrij en de route naar de bakkerij open.\n— Wszebor",
+        2: "De voorraden bereikten het kasteel ondanks de volle schuur. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De voorraden bereikten het kasteel ondanks de volle schuur. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De goederen hoopten zich op en de termijn verstreek. Controleer de volle schuur en de route van molen naar bakkerij.\n— Wszebor",
     },
   },
   m7: {
@@ -281,6 +335,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Le jeûne est passé, et le poisson a manqué. Vérifiez la cabane près de l'eau et la cadence des chariots sur le pont.\n— Wszebor",
     },
+    nl: {
+      opening: "De vastentijd begint. De kasteelkeuken vraagt 54 vissen. Een vissershut staat al op de noordoever, maar levert mogelijk te traag. Bouw nog een hut aan het water: op het land wordt niets gevangen. Breng de vangst over de houten brug naar het zuiden.\n— Wszebor",
+      won: {
+        1: "De vis kwam bij de kasteelkeuken aan. Eén zegel; Een tweede hut aan de oever verkort het wachten.\n— Wszebor",
+        2: "De vis kwam bij de kasteelkeuken aan. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De vis kwam bij de kasteelkeuken aan. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "Er was te weinig vis. Plaats de hut aan het water en houd het vervoer over de brug op gang.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -318,6 +381,15 @@ export const CONTRACT_LETTERS = {
         3: "La pierre est arrivée au grenier avant la pluie ; les pavés ont permis aux chariots de rouler. Trois sceaux.\n— Wszebor",
       },
       lost: "L'orage a retenu les chariots dans la boue. Portez d'abord la pierre au grenier, puis pavez la route du sud.\n— Wszebor",
+    },
+    nl: {
+      opening: "De storm komt eraan. Bezorg 24 planken en 20 broden vóór de modder het verkeer vertraagt. Steen uit de groeve kan pas bestraten na vervoer naar de schuur, vier eenheden per wagen. Laat daarom eerst de stenen komen en bestraat dan de zuidelijke weg.\n— Wszebor",
+      won: {
+        1: "De planken en broden kwamen door de storm heen. Eén zegel; Haal steen eerst uit de groeve en bestraat de weg.\n— Wszebor",
+        2: "De planken en broden kwamen door de storm heen. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De planken en broden kwamen door de storm heen. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De wagens bleven in de modder steken. Breng steen naar de schuur en bestraat daarna de zuidelijke weg.\n— Wszebor",
     },
   },
   m9: {
@@ -357,6 +429,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Le mariage est venu avant les denrées. Voyez qui prend le bois du bûcheron et créez une seconde source.\n— Wszebor",
     },
+    nl: {
+      opening: "De bruiloft nadert. Nodig zijn 36 planken, 8 houtskool en 26 bier. Breng graan naar de mouterij en mout naar de brouwerij. Zagerij en houtskoolbrander delen één houthakker; de ander valt stil zodra één het hout krijgt. Vergroot de houtaanvoer en zet genoeg wagens in.\n— Wszebor",
+      won: {
+        1: "De bruiloft kreeg planken, houtskool en bier. Eén zegel; Zorg voor hout voor beide werkplaatsen.\n— Wszebor",
+        2: "De bruiloft kreeg planken, houtskool en bier. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De bruiloft kreeg planken, houtskool en bier. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De bruiloft begon vóór alle goederen er waren. Geef zagerij en houtskoolbrander elk genoeg hout.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -394,6 +475,15 @@ export const CONTRACT_LETTERS = {
         3: "Le bois a suffi à la forge et à la scierie. Trois sceaux pour avoir réparé la source, non la route.\n— Wszebor",
       },
       lost: "Le délai a expiré ; la charbonnière a pris le bois nécessaire aux planches. Ajoutez un bûcheron, non des chariots.\n— Wszebor",
+    },
+    nl: {
+      opening: "De smid vraagt houtskool, de timmerlieden planken: 48 planken en 8 houtskool. Zagerij en houtskoolbrander delen één houthakker, die beide niet kan bevoorraden. Bouw een tweede houthakker; extra wagens leveren geen extra hout.\n— Wszebor",
+      won: {
+        1: "De ambachtslieden ontvingen planken en houtskool. Eén zegel; Een tweede houthakker voorkomt een houttekort.\n— Wszebor",
+        2: "De ambachtslieden ontvingen planken en houtskool. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "De ambachtslieden ontvingen planken en houtskool. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De houtskoolbrander verbruikte het hout voor de planken. Bouw een tweede houthakker in plaats van extra wagens.\n— Wszebor",
     },
   },
   m11: {
@@ -433,6 +523,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "L'hiver est arrivé avant le dernier tonneau. Si le grain attend et que tous les chariots roulent, achetez-en d'autres.\n— Wszebor",
     },
+    nl: {
+      opening: "Voor de winter heeft het kasteel 22 bier nodig. Het graan groeit westelijk, de mouterij ligt ver oostelijk. Drie wagens bedienen boerderij, mouterij, brouwerij en kasteel. Zijn alle wagens bezet terwijl graan wacht, koop wagens bij de stal om meer ritten tegelijk te doen.\n— Wszebor",
+      won: {
+        1: "Het bier bereikte het kasteel. Eén zegel; Meer wagens helpen op de lange route.\n— Wszebor",
+        2: "Het bier bereikte het kasteel. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "Het bier bereikte het kasteel. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De winter kwam vóór het laatste vat. Koop wagens als het graan wacht en alle wagens bezet zijn.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -470,6 +569,15 @@ export const CONTRACT_LETTERS = {
         3: "Tous les envois sont arrivés à l'heure. Le grenier a gardé la bière jusqu'à ce que le château l'accepte. Trois sceaux.\n— Wszebor",
       },
       lost: "La dernière échéance a passé. La brasserie était bloquée par le grenier plein. Reliez le grand grenier avant saturation.\n— Wszebor",
+    },
+    nl: {
+      opening: "Voor het grote brouwen zijn 40 broden en 48 bier in drie leveringen nodig: 32 broden vóór 6:00, 8 broden en 12 bier vóór 9:00, daarna 36 bier vóór 12:00. Het kasteel neemt slechts de lopende levering. De kleine schuur zit vol graan; verbind de grote, twee vakken van de weg, om bier op te slaan.\n— Wszebor",
+      won: {
+        1: "Alle drie de leveringen kwamen aan. Eén zegel; Verbind de grote graanschuur voordat de brouwerij volloopt.\n— Wszebor",
+        2: "Alle drie de leveringen kwamen aan. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
+        3: "Alle drie de leveringen kwamen aan. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
+      },
+      lost: "De laatste levering bleef onvolledig: de volle schuur blokkeerde de brouwerij. Verbind de grote graanschuur eerder.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
