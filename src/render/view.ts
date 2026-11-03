@@ -28,7 +28,7 @@ import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
 import { PartBuilder } from './models/kit';
-import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant } from './models/materials';
+import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
 import { ShaderPrewarm } from './prewarm';
@@ -136,6 +136,8 @@ class View implements WorldView {
   private lastStats = { calls: 0, triangles: 0 };
   /** Shader pre-warm (research 2026-11-02): runs after the next rendered frame when set. */
   private warm: ShaderPrewarm | null = null;
+  /** Bumped by every setQuality; a deferred switch applies only if still the latest. */
+  private qualityGen = 0;
   private warmPending = false;
   /** One plain mesh per model material kind: buildings and bridges that are not built yet. */
   private warmKinds: Mesh[] | null = null;
@@ -659,10 +661,24 @@ class View implements WorldView {
   /** Switch tier: view settings at once, textures reloaded in the background (old ones freed after). */
   setQuality(q: Quality): void {
     this.quality = q in DPR_CAP ? q : 'high';
-    this.applyQuality();
-    this.resize(this.cssW, this.cssH, this.dpr);
-    this.loadTextures();
-    this.warmPending = true;
+    const gen = ++this.qualityGen;
+    const apply = (): void => {
+      if (gen !== this.qualityGen) return; // superseded by a newer switch
+      this.applyQuality();
+      this.resize(this.cssW, this.cssH, this.dpr);
+      this.loadTextures();
+      this.warmPending = true;
+    };
+    // Compile the programs the new tier needs (tree A2C/blend variants, low terrain) on clones
+    // first, so the frame after the switch links nothing; the switch lands once they are ready.
+    const high = this.quality !== 'low';
+    const next = treeQualityVariants(high);
+    const terrain = this.terrain?.qualityVariant(!high);
+    if (terrain) next.set(terrain[0], terrain[1]);
+    if (!this.warm || !this.world || !next.size) { apply(); return; }
+    this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, next, this.kindMeshes())
+      .catch((e: unknown) => console.warn('[view] shader pre-warm (quality)', e))
+      .finally(apply);
   }
 
   private applyQuality(): void {
@@ -677,7 +693,9 @@ class View implements WorldView {
     this.water?.setDetail(high);
     this.bridges.setDetail(high);
     if (this.cover) this.cover.radius = high ? 38 : 0;
-    this.wagons?.setShadows(true, high);
+    // Far rig (LOD1, beyond lodDist) casts no shadow on any tier: at 75-120+ m a wagon's shadow is a few
+    // texels, while the pass costs 3 extra draws and ~200 shadow triangles per far wagon (D-64).
+    this.wagons?.setShadows(true, false);
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;
     if (this.terrain) {
       this.terrain.uniforms.uDetail!.value = high ? 1 : 0.7;

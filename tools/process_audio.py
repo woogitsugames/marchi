@@ -376,6 +376,18 @@ def loudnorm_filter(path: Path) -> str:
     )]
     if any(v in ("inf", "-inf", "nan", "-nan") for v in values):
         raise ValueError(f"Invalid LUFS measurement {m}")
+    # loudnorm silently falls back to *dynamic* gain when the linear offset
+    # would push the true peak over -6 dBTP. A drifting gain breaks a loop:
+    # ambient/evening drifted 26.6 -> 23.9 dB over 30 s, a step at the seam.
+    # Keep a constant gain and let a peak limiter catch the few overs instead.
+    gain = -24.0 - float(values[0])
+    if float(values[1]) + gain > -6.0:
+        if abs(gain) > 40:
+            raise ValueError(f"Unacceptable loudness correction {gain} dB: {path}")
+        return (
+            f"volume={gain:.3f}dB,alimiter=limit=0.5012:level=false,"
+            "aresample=24000"
+        )
     return (
         "loudnorm=I=-24:TP=-6:LRA=8:"
         f"measured_I={values[0]}:measured_TP={values[1]}:"
@@ -565,7 +577,10 @@ def main() -> None:
         source_json = dict(previous.get("sources", {}))
         for key, record in sorted(sources.items()):
             meta = manifest["sources"][key]
-            source_json[key] = {
+            # Merge: a bundled source is not re-downloaded, so keep what the download recorded
+            # (preview URL, licence, date) instead of overwriting it with nulls.
+            earlier = source_json.get(key, {})
+            source_json[key] = {**earlier, **{
                 "sha256": record["sha256"],
                 "seconds": round(record["duration"], 4),
                 "original": meta.get("url", meta["page"]),
@@ -576,8 +591,8 @@ def main() -> None:
                     "Freesound public HQ OGG preview"
                     if meta.get("provider") == "freesound" else "original"
                 ),
-                "preview_url": record["download_url"],
-            }
+                "preview_url": record["download_url"] or earlier.get("preview_url"),
+            }}
         output_sha256 = {
             str(p.relative_to(OUT)): sha256(p)
             for p in sorted(OUT.rglob("*"))

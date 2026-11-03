@@ -41,9 +41,9 @@
       "kind": "ambient",
       "seconds": 30,
       "loop_crossfade": 1.5,
-      "start": 0,
+      "start": 198.5,
       "source": "wind",
-      "notes": "Real wind; no unverified owl call was added."
+      "notes": "Real wind; no unverified owl call was added. Excerpt at 198.5 s (was 0 s): the first 30 s swing 20 dB in the bass and the seam jumped +5.8 dB; this window stays within ~5 dB and meets itself within 0.3 dB (see docs/research/2026-11-02-audio-mix.md)."
     },
     {
       "id": "sfx/cart-dirt",
@@ -223,9 +223,9 @@
       "id": "sfx/load-stone",
       "kind": "sfx",
       "seconds": 0.8,
-      "start": 0,
+      "start": 0.04,
       "source": "rocks_fall",
-      "notes": "Small rock loading impact"
+      "notes": "Small rock loading impact; starts 40 ms in so the first strike lands ~10 ms after the load cue (was 55 ms of silence)"
     },
     {
       "id": "sfx/unload-stone",

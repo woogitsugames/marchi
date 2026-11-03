@@ -91,6 +91,20 @@ export class TerrainView {
     this.material.needsUpdate = true;
   }
 
+  /**
+   * A detached copy of the terrain material as `setLowQuality(low)` would leave it, or null when
+   * nothing would change: lets the renderer compile that program before the switch (prewarm.ts).
+   */
+  qualityVariant(low: boolean): [MeshStandardMaterial, MeshStandardMaterial] | null {
+    const m = this.material;
+    if (!!m.userData.low === low) return null;
+    const c = m.clone();
+    c.onBeforeCompile = m.onBeforeCompile;
+    c.customProgramCacheKey = m.customProgramCacheKey;
+    c.userData.low = low;
+    return [m, c];
+  }
+
   /** Bind a texture set; the terrain takes ownership and disposes the previous arrays. */
   setTextures(t: TerrainTextureSet): void {
     const old = this.tex;
@@ -634,7 +648,10 @@ const FRAG_MAIN = /* glsl */ `
 function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0 });
   m.name = 'terrain';
-  m.onBeforeCompile = (sh) => {
+  // Both hooks read `this` (the material being compiled), not the closure's `m`: a clone made to
+  // pre-compile the other quality tier (`qualityVariant`) must key and build its own variant.
+  m.onBeforeCompile = function (this: MeshStandardMaterial, sh) {
+    const low = !!this.userData.low;
     Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\n' + VERT_DECL)
@@ -643,12 +660,12 @@ function makeTerrainMaterial(uniforms: TerrainUniforms): MeshStandardMaterial {
         '#include <begin_vertex>\n vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\n vWNrm = normalize(mat3(modelMatrix) * objectNormal);',
       );
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\n' + (m.userData.low ? '#define TERRAIN_LOW\n' : '') + FRAG_DECL)
+      .replace('#include <common>', '#include <common>\n' + (low ? '#define TERRAIN_LOW\n' : '') + FRAG_DECL)
       .replace('#include <map_fragment>', FRAG_MAIN)
       .replace('#include <roughnessmap_fragment>', 'float roughnessFactor = tRough;')
       .replace('#include <normal_fragment_maps>', 'normal = normalize((viewMatrix * vec4(Nw, 0.0)).xyz);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += tEmis;');
   };
-  m.customProgramCacheKey = () => 'marchia-terrain-4' + (m.userData.low ? '-low' : '');
+  m.customProgramCacheKey = function (this: MeshStandardMaterial) { return 'marchia-terrain-4' + (this.userData.low ? '-low' : ''); };
   return m;
 }

@@ -868,3 +868,47 @@ side sheet without landscape) the game sheet started at the top edge over the ch
 under them like the landscape sheet. (8) The tutorial scene (note ≤ 3 lines from 360 px, checked) showed the Flip-cover arrow running
 through the "open the phone" hint: the hint hides while the tutorial arrow shows, and the note avoids it. (decided; (2) is a behaviour change —
 listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)
+
+**D-63 — Evening ambience loop: constant gain and a calmer excerpt; one-shots preload, a slow first play is
+queued.** The audit (docs/research/2026-11-02-audio-mix.md) measured a +5.8 dB bass step at the `ambient.evening`
+seam. The crossfade itself was sound-continuous (raw render: second difference at the seam 0.2× p99.9); the step
+came from the encoder stage: `loudnorm` with `linear=true` silently falls back to *dynamic* gain when the linear
+offset would push the true peak over -6 dBTP, and the gain drifted 26.6 → 23.9 dB across the 30 s file, so the
+loop's end and start were boosted differently. `tools/process_audio.py` now detects that case and applies a constant
+gain (`volume` + the same `alimiter` used for SFX); tracks where linear loudnorm is feasible get the old filter
+string unchanged. The excerpt moved from 0 s to 198.5 s of the same CC0 wind recording (searched every 0.25 s: the
+first 30 s swing 20 dB per second in the bass, this window ~5 dB and meets itself within 0.3 dB). Result:
+200 ms tail→head 0.56 dB (in-file median between neighbouring 200 ms windows 0.76 dB), -23.5 LUFS, OGG and M4A
+seams clean; only that one file was re-rendered (`--track-id ambient/evening`), provenance updated, `--check`
+green. The new window has less sub-60 Hz rumble (31 % vs 90 % of energy) — on a phone speaker it is audible at
+all now; the owner should listen once on headphones. `AudioEngine`: after the unlock gesture every one-shot
+(sfx + ui, ~300 kB) is fetched and decoded in sequence (ambience/cart loops stay on demand: ~10 MB decoded each).
+A `play()` that arrives while its buffer is still loading is queued — one pending request per id, later calls only
+update its position/gain — and plays when the decode finishes instead of being dropped after 850 ms; only a request
+more than 4 s stale is dropped (the moment on screen has passed). Tests: `tests/audio-preload.test.ts` (fake Web
+Audio). Also from the audit: `sfx/load-stone` starts 40 ms later in its source (the file opened with 55 ms of
+silence, so the strike lagged the load animation; onset now ~25 ms). Re-rendering a bundled Freesound source used to
+overwrite its provenance record with nulls (preview URL, licence, download date): the pipeline now merges with the
+previous record. (decided)
+
+**D-64 — Far wagons (LOD1) cast no shadow on any quality tier; draw calls counted at the GL level.**
+`WagonsView.setShadows(near, far)` was called (`applyQuality`) with `far = high`, so on high/ultra the far rig
+(3 meshes) drew in the shadow pass too. Beyond `lodDist` (120 m high, 75 m low) a wagon's shadow is a few texels of a
+2048 map fitted to up to 320 m, and comparing the frames side by side shows no visible difference
+(`docs/shots/night4-wagon-far-shadow-on-off.jpg`). Measured with `tools/wagon-shadow-calls.mjs` (sandbox, 100
+wagons, camera 200 m, 72 on the far rig, SwiftShader): **90 → 87 GL draws per frame, −14.9 k shadow-pass
+triangles**; the main pass is unchanged (47). Note for future measurements: `renderer.info.render.calls` (the
+`stats()` / `?perf=1` number) is reset by three r181 *after* the shadow pass, so it never counted shadow draws —
+the tool wraps `drawArrays/drawElements(Instanced)` instead. Cargo on far wagons keeps casting (shared instanced
+meshes with the near rig; splitting them would add draws, not save them). (decided)
+
+**D-65 — A quality switch links no shader inside a frame.** Switching high ↔ low in Settings linked 4 (then 3,
+then 2 on every later switch) programs inside the frame (`linkProgram` counted inside `app.frame`, m1, SwiftShader).
+Two causes: (1) the new tier's variants (leaves/needles alpha-to-coverage, the billboard `TREE_BB_BLEND` define,
+`TERRAIN_LOW`) compiled on first draw; `setQuality` now builds detached clones in the target state
+(`treeQualityVariants`, `Terrain.qualityVariant`), compiles them through `ShaderPrewarm.prewarmMaterialSwap`
+(the texture-swap path) and applies the tier once they are linked (a generation counter drops a superseded switch;
+no world/pre-warm yet → immediate, as before). The terrain hooks read `this.userData`, not the closure's material, so
+a clone keys and builds its own variant. (2) The far-tree atlas re-bake per tier disposed its bake and copy
+materials, re-linking them every time; they are kept for the session now (5 small programs). Result: 4/3/2/2 →
+**0/0/0/0** in-frame links over four switches; the tier lands a few hundred ms later. (decided)

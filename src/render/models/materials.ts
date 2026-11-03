@@ -12,6 +12,7 @@ import {
   DoubleSide,
   LinearFilter,
   LinearMipmapLinearFilter,
+  type Material,
   MeshStandardMaterial,
   SRGBColorSpace,
   type Texture,
@@ -342,6 +343,37 @@ export function setTreeQuality(high: boolean): void {
       m.needsUpdate = true;
     }
   }
+}
+
+/**
+ * Detached copies of the tree materials as `setTreeQuality(high)` would leave them (only those that
+ * would change), keyed by the real material: the renderer compiles them before the switch.
+ */
+export function treeQualityVariants(high: boolean): Map<Material, Material> {
+  const out = new Map<Material, Material>();
+  const variant = (m: MeshStandardMaterial): MeshStandardMaterial => {
+    const c = m.clone();
+    c.onBeforeCompile = m.onBeforeCompile;
+    c.customProgramCacheKey = m.customProgramCacheKey;
+    return c;
+  };
+  const bb = modelMaterial('billboard') as MeshStandardMaterial & { defines?: Record<string, string> };
+  if (('TREE_BB_BLEND' in (bb.defines ?? {})) !== high) {
+    const c = variant(bb) as MeshStandardMaterial & { defines?: Record<string, string> };
+    const defs = { ...(bb.defines ?? {}) };
+    if (high) defs.TREE_BB_BLEND = '';
+    else delete defs.TREE_BB_BLEND;
+    c.defines = defs;
+    out.set(bb, c);
+  }
+  for (const k of ['leaves', 'needles'] as const) {
+    const m = modelMaterial(k);
+    if (m.alphaToCoverage === high) continue;
+    const c = variant(m);
+    c.alphaToCoverage = high;
+    out.set(m, c);
+  }
+  return out;
 }
 
 /** Shared material for a kind (created lazily, one instance per kind). */

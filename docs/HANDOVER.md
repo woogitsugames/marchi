@@ -208,3 +208,30 @@ Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze ko
    `docs/missions/m3.md` (12:00/08:00/10:00 zamiast 11:00/06:15/08:00, poprawione); `tests/i18n-hygiene` — 19
    martwych kluczy usuniętych ze wszystkich słowników, brak literałów w index.html i budowniczych UI.
 Zrzuty `docs/shots/night3-*.jpg` (4); `npm run shots` (27 zrzutów) bez błędów konsoli. Następne decyzje od **D-63**.
+
+## Stan nocy 4 — 2026-11-03 (gałąź `claude/w-night4`, agent nocny 4)
+Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, push; sim nietknięta, hasze bez zmian):
+1. **Audio (D-63)**: szew pętli `ambient.evening` — przyczyna nie w przenikaniu, tylko w `loudnorm`, który przy
+   przekroczeniu -6 dBTP po cichu przechodził w tryb dynamiczny (wzmocnienie dryfowało 26,6 → 23,9 dB w 30 s, więc
+   koniec i początek pętli miały inne wzmocnienie). `tools/process_audio.py` daje wtedy stałe wzmocnienie + limiter;
+   fragment nagrania przesunięty z 0 s na 198,5 s (ten sam wiatr CC0, równiejsza obwiednia). Szew 200 ms: 5,8 → 0,56 dB
+   (mediana sąsiednich okien w pliku 0,76 dB). Przerenderowany tylko ten plik, `--check` zielony, provenance
+   zaktualizowane. **Do odsłuchu na słuchawkach**: nowy fragment ma mniej dudnienia < 60 Hz (31 % zamiast 90 % energii).
+   `AudioEngine`: po pierwszym geście ładuje wszystkie jednorazowe dźwięki (sfx + ui, ~300 kB; pętle dalej na
+   żądanie), a `play()` w trakcie ładowania czeka w kolejce (jedno na id) zamiast przepadać po 850 ms; odrzuca dopiero
+   po 4 s. Test `tests/audio-preload.test.ts`.
+2. **Render P3 (D-64)**: dalekie wozy (LOD1) bez cienia na każdej jakości — `setShadows` było wołane, ale z
+   `far = high`. Pomiar `tools/wagon-shadow-calls.mjs` (100 wozów, 72 daleko): 90 → 87 wywołań GL na klatkę,
+   −14,9 tys. trójkątów w passie cienia; różnicy w obrazie nie widać (`docs/shots/night4-wagon-far-shadow-on-off.jpg`).
+   Uwaga: licznik `drawCalls` w `?perf=1` nie liczy passu cienia (three r181 zeruje `info` po nim). Pierścień
+   zaznaczenia na moście — już naprawiony w nocy 2 (`deckRing`), sprawdzone w kodzie.
+3. **Drobne P3**: `load.stone` zaczynał się od 55 ms ciszy (uderzenie spóźnione względem animacji) — fragment
+   przesunięty o 40 ms, przerenderowany tylko ten plik; pipeline przy ponownym renderze źródła Freesound nie kasuje
+   już jego wpisu w provenance (URL, licencja, data). Usunięty zdublowany wpis BACKLOG o numeracji wozów (zrobiony, D-44).
+4. **Zmiana jakości bez kompilacji w klatce (D-65)**: przełączenie wysoka ↔ niska linkowało 2–4 shadery w klatce
+   (przycięcie). Teraz warianty (A2C liści, mieszanie kart drzew, teren low) kompilują się na klonach przed
+   przełączeniem, a materiały wypiekania atlasu drzew zostają w pamięci: 0 linków w klatce w 4 przełączeniach.
+   Jakość wchodzi ~kilkaset ms później (niewidoczne). Obraz po przełączeniu = obraz po świeżym starcie na tej jakości.
+5. **BACKLOG porządki**: `stall.alert`/`ui.error` na głośniku telefonu — już zrobione wcześniej (pliki mają 99 % energii
+   w 600–2500 Hz), `screenshots-plan.md` — już przepisany; wpisy zamknięte. Nowy wpis P3: pętla młyna gubi rytm na szwie
+   (9,56 okresu na 5,5 s) — źródło Freesound niedostępne z kontenera (403), opis naprawy w BACKLOG. Następne decyzje od **D-66**.

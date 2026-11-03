@@ -584,6 +584,13 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  * 2 x 7 MB, 224 px (high) 2 x 21 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
  * re-bakes (old pair disposed).
  */
+/**
+ * Bake materials kept across bakes: disposing them freed their programs, so every tier switch
+ * re-linked them inside the frame that re-baked (2 links per switch, measured with SwiftShader).
+ */
+let bakeMats: { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial }[] | null = null;
+let copyMat: ShaderMaterial | null = null;
+
 export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGLRenderTarget {
   if (atlas && atlasCell === cellPx) return atlas;
   // re-bake at another resolution (quality tier switch): free the old pair first
@@ -605,7 +612,8 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGL
   row.texture.magFilter = NearestFilter;
   const scene = new Scene();
   const copyScene = new Scene();
-  const copyMat = new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: row.texture } }, depthTest: false, depthWrite: false, blending: NoBlending });
+  copyMat ??= new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: null } }, depthTest: false, depthWrite: false, blending: NoBlending });
+  copyMat.uniforms.src!.value = row.texture;
   const quadGeo = new PlaneGeometry(2, 2);
   const quad = new Mesh(quadGeo, copyMat);
   quad.frustumCulled = false;
@@ -615,7 +623,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGL
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
   const prevAutoClear = renderer.autoClear;
-  const mats = [0, 1].map((mode) => ({
+  const mats = bakeMats ??= [0, 1].map((mode) => ({
     leaves: bakeMaterial(leafTexture(), mode),
     needles: bakeMaterial(needleTexture(), mode),
     solid: bakeMaterial(null, mode),
@@ -667,14 +675,13 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGL
       renderer.render(copyScene, copyCam);
     }
   });
-  for (const m of mats) for (const x of Object.values(m)) x.dispose();
   for (const rt of [rtA, rtN]) {
     rt.scissorTest = false;
     rt.viewport.set(0, 0, rt.width, rt.height);
     rt.scissor.set(0, 0, rt.width, rt.height);
   }
   row.dispose();
-  copyMat.dispose();
+  copyMat.uniforms.src!.value = null;
   quadGeo.dispose();
   renderer.autoClear = prevAutoClear;
   renderer.setRenderTarget(prevTarget);

@@ -24,6 +24,8 @@ interface LoopState { voice: Voice; target: number }
 const VOLUME_DEFAULTS: Readonly<Record<VolumeChannel, number>> = {
   master: 0.8, ambient: 0.55, sfx: 0.65, ui: 0.7,
 };
+/** Queued first plays older than this are dropped (the moment on screen has passed). */
+const STALE_PLAY_MS = 4000;
 const cap = (x: number, low = 0, high = 1): number => Number.isFinite(x) ? Math.max(low, Math.min(high, x)) : low;
 
 /**
@@ -35,6 +37,10 @@ export class AudioEngine {
   private channels: Record<VolumeChannel, GainNode> | null = null;
   private readonly volumes: Record<VolumeChannel, number> = { ...VOLUME_DEFAULTS };
   private readonly buffers = new Map<SoundId, Promise<AudioBuffer | null>>();
+  /** Ids whose buffer promise has settled (play can start without waiting). */
+  private readonly decoded = new Set<SoundId>();
+  /** One coalesced request per id while its buffer is still loading (latest options win). */
+  private readonly pending = new Map<SoundId, PlayOptions>();
   private readonly voices = new Set<Voice>();
   private readonly loops = new Map<SoundId, LoopState>();
   private readonly loopTargets = new Map<SoundId, { level: number; rate: number }>();
@@ -74,7 +80,10 @@ export class AudioEngine {
     document.addEventListener('visibilitychange', this.onVisibility);
     try { await context.resume(); } catch { /* autoplay policy: no playback until another gesture */ }
     this.unlocked = context.state === 'running';
-    if (this.unlocked) for (const [id, { level }] of this.loopTargets) if (level > 0) void this.startLoop(id);
+    if (this.unlocked) {
+      for (const [id, { level }] of this.loopTargets) if (level > 0) void this.startLoop(id);
+      void this.preloadOneShots();
+    }
     return this.unlocked;
   }
 
@@ -100,14 +109,43 @@ export class AudioEngine {
     const spatial = this.spatial(options, def.radius);
     if (spatial.gain < 0.008) return null;
     this.cooldowns.set(id, time);
-    const requestedAt = performance.now();
+    let spot = spatial;
+    if (!this.decoded.has(id)) {
+      // First use while the asset is still loading: queue one pending play per id instead of
+      // dropping it (slow first decode used to silence rare sounds); later calls only update it.
+      const queued = this.pending.has(id);
+      this.pending.set(id, options);
+      if (queued) return null;
+      const requestedAt = performance.now();
+      await this.getBuffer(id);
+      const latest = this.pending.get(id) ?? options;
+      this.pending.delete(id);
+      // A one-shot that is many seconds late no longer matches what is on screen.
+      if (!def.loop && performance.now() - requestedAt > STALE_PLAY_MS) return null;
+      spot = this.spatial(latest, def.radius);
+      options = latest;
+    }
     const buffer = await this.getBuffer(id);
-    if (!buffer || !this.ready || !this.alive || (performance.now() - requestedAt > 850 && !def.loop)) return null;
+    if (!buffer || !this.ready || !this.alive || spot.gain < 0.008) return null;
     if (this.voices.size >= this.maxVoices) return null;
     const rate = cap(options.rate ?? 1, 0.5, 2);
-    const voice = this.makeVoice(id, buffer, spatial.gain * cap(options.gain ?? 1, 0, 3), rate,
-      spatial.pan, !!def.loop);
+    const voice = this.makeVoice(id, buffer, spot.gain * cap(options.gain ?? 1, 0, 3), rate,
+      spot.pan, !!def.loop);
     return voice ? { stop: voice.stop } : null;
+  }
+
+  /**
+   * Fetch and decode every one-shot (sfx + ui, ~300 kB) right after the unlock gesture, one at a
+   * time so the first frames are not starved. Loops load on demand (ambience decodes to ~10 MB each).
+   */
+  async preloadOneShots(): Promise<number> {
+    let count = 0;
+    for (const id of Object.keys(SOUNDS) as SoundId[]) {
+      if (!this.alive || !this.context) break;
+      if (SOUNDS[id].loop) continue;
+      if (await this.getBuffer(id)) count++;
+    }
+    return count;
   }
 
   /**
@@ -160,6 +198,8 @@ export class AudioEngine {
     this.loops.clear();
     this.loopTargets.clear();
     this.buffers.clear();
+    this.decoded.clear();
+    this.pending.clear();
     const ctx = this.context;
     this.context = null;
     this.channels = null;
@@ -267,6 +307,7 @@ export class AudioEngine {
       return null;
     })();
     this.buffers.set(id, promise);
+    void promise.then(() => { if (this.buffers.get(id) === promise) this.decoded.add(id); });
     return promise;
   }
 }
