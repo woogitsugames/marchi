@@ -408,7 +408,9 @@ const info = document.getElementById('info');
 if (info) info.textContent = params.has('still') ? '' : stats.join('\n');
 if (info && params.has('still')) info.style.display = 'none';
 const nav = document.getElementById('views');
-if (nav) for (const k of Object.keys(views)) {
+// the yard close-ups are reached by URL (yard-<kind>, yardtop-<kind>); stills carry no link bar
+if (nav && params.has('still')) nav.style.display = 'none';
+else if (nav) for (const k of Object.keys(views).filter((v) => !/^yard(top)?-/.test(v) || v === 'yard-woodcutter')) {
   const a = document.createElement('a');
   a.href = `?view=${k}`;
   a.textContent = k;

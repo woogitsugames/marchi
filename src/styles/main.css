@@ -2116,12 +2116,17 @@ body.is-clear .clear-restore { background: none; clip-path: none; color: var(--i
   border-image-source: url("/assets/ui/kit/card-active@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/card-active@2x.png") 2x, url("/assets/ui/kit/card-active@3x.png") 3x);
 }
-.build-card.is-locked, .build-card.is-locked:active {
-  border-image-source: url("/assets/ui/kit/card-disabled@2x.png");
-  border-image-source: image-set(url("/assets/ui/kit/card-disabled@2x.png") 2x, url("/assets/ui/kit/card-disabled@3x.png") 3x);
+/* locked: the kit card under a light hatch (the dark disabled sprite swallows name and price at this size) */
+.build-card.is-locked:active {
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
 }
 .build-card.is-locked::before { display: none; }
-.build-card.is-locked > :not(.bc-lock) { opacity: .62; }
+.build-card.is-locked::after {
+  content: ''; position: absolute; inset: 4px; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(74 72 67 / .18) 5px 6.5px), rgb(160 150 130 / .25);
+}
+.build-card.is-locked > :not(.bc-lock) { opacity: .6; }
 :is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad) { border-image-source: none; }
 :is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad)::before {
   display: block; content: ''; position: absolute; inset: 0; z-index: -1; clip-path: none; background: none;
@@ -2133,3 +2138,27 @@ body.is-clear .clear-restore { background: none; clip-path: none; color: var(--i
 :root[dir='rtl'] :is(.link.is-root, .good-chip.is-empty, .pace-row.is-neck, .ghost-tag.is-bad, .draft-tag.is-bad)::before { transform: scaleX(-1); }
 .link.is-root:active::before, .pace-row.is-neck:active::before { filter: brightness(.93); }
 .link .l-icon, .link.is-root .l-icon { --icon-halo: #e6dcc6; }
+
+/* ---- market & rank sheet on the kit (day 2): wax seals for the rank requirements (pressed = met), the brass
+   groove for progress and saturation, building chips on the kit card (locked = the hatched card) */
+.ms-req li { grid-template-columns: 22px minmax(0, 1fr) auto; column-gap: 8px; }
+.ms-req .pl-mark.kseal { width: 22px; height: 22px; margin: 0; transform: none; box-shadow: none; }
+.ms-req li.is-met .pl-mark.kseal { background-color: transparent; }
+.ms-req .pl-bar.kbar, .ms-sat .pl-bar.kbar { height: 7px; background-color: transparent; }
+.ms-req .pl-bar.kbar { margin-top: 2px; }
+.ms-sat .pl-bar.kbar > i { background: none; min-width: 4px; }
+.ms-b {
+  background: none; box-shadow: none; min-height: 44px;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/card-normal@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/card-normal@2x.png") 2x, url("/assets/ui/kit/card-normal@3x.png") 3x);
+  border-image-slice: 13.9% 15.6% fill; border-image-width: 10px;
+  padding-inline: 8px 12px;
+}
+.ms-b { position: relative; isolation: isolate; }
+/* locked: the kit card dimmed under a light hatch (the dark disabled sprite would swallow the name) */
+.ms-b.is-locked { background: none; color: var(--ink-soft); }
+.ms-b.is-locked::after {
+  content: ''; position: absolute; inset: 4px; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(74 72 67 / .16) 5px 6.5px), rgb(160 150 130 / .22);
+}

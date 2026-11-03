@@ -1036,8 +1036,14 @@ only surfaces still drawn with the old clip-path chamfer and a flat fill were th
 chips (Needs / Produces, castle order), the pace rows, the build shelf cards and the ghost / draft tags over the
 map — in a screenshot they read as plain rounded rectangles next to the painted tools. They now wear the same
 `card-normal` sprite as the rail tools and secondary buttons (pressed sprite on tap; the building's own first link
-`card-active`; a locked build card the hatched `card-disabled`). The cause link, an empty input chip, the pace
+`card-active`; a locked build card or market chip the same card under a light hatch — the dark `card-disabled` sprite swallowed the names). The cause link, an empty input chip, the pace
 bottleneck and a bad placement take `panel-alert` (its wine edge marks "this one"), drawn on `::before` so the
 edge flips to the start side in RTL. Text, sizes, hit areas and layout unchanged; no new sprites. Layout
 `--quick` and why/build/castle/valley in pl+ar green. `docs/shots/day2-kit-cards.jpg` (why sheet before, after,
 placement with the shelf). (decided)
+
+**D-76 — Market & rank sheet on the kit (UI only).** The free valley's market sheet still had the old diamond
+bullets, thin flat bars and plain bordered building chips. Rank requirements now carry the kit wax seal (empty,
+pressed once met — the same mark as the contract seals), progress and price saturation use the brass groove
+(`kbar`) of the HUD plaque, and the building chips wear `card-normal` (locked: the same card under a light
+hatch, rank tag kept). Text and order unchanged. `docs/shots/day2-market-kit.jpg` (before / after). (decided)
