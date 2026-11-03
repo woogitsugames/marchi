@@ -982,3 +982,19 @@ at its foot on every screen; rows ≥ 48 px (56 normally); two columns on short 
 RTL mirrors through logical properties. Fonts unchanged (Grenze Gotisch titles, Alegreya Sans text); the live
 valley scene stays behind. `npm run layout` over menu/settings/missionsave/valley scenes (75 jobs, all views) and
 `--quick` green. Before/after `docs/shots/day1-menu-412x915.jpg`, `day1-menu-915x412.jpg`. (decided)
+
+**D-71 — Yard piles follow the stock (render only; owner decision 15, 2026-11-03).** Each producer model has a
+`yard` spot (model space point + turn); `BuildingsView` places it like the yard worker and `WagonsView` draws the
+building's first output good there each frame as up to one wagon load (`min(stock, cargoSlots)`: 6, stone 4) of the
+same `cargo-*` instanced units the wagons carry, laid out as on a wagon bed set down on the ground (`yardPileLocal`).
+A full yard (`OUTPUT_FULL`) is therefore visible without a tap; an empty yard shows nothing. The static output piles
+that would now double the stock are gone (woodcutter log pile, the sawmill's plank stack by the gate, the farm's
+grain sack, the mill's flour sacks, the quarry's block stack by the gate, the charcoal sacks, the malt bags); props
+of inputs or tools stay. No new meshes, materials or textures: the piles reuse the 11 cargo instanced meshes (wagon
+cargo is pushed first, piles never overrun the instance buffers), only within the wagon LOD distance and the
+frustum. Draw calls: a pile adds calls only when no visible wagon carries that good (the good's cargo mesh becomes
+visible: +1–4 incl. shadow), bounded by the cargo meshes already in the budget; m1 high 412×915 at ~34 m:
+sawmill 51→52, farm 55→56, mill 55→56, woodcutter 49→53 (wood logs: 2 parts + shadows), triangles +0.1–3k.
+Test `tests/yard-piles.test.ts` (every producer has a spot; a full load stays on its footprint); model preview shows
+full piles. Shot `docs/shots/day1-yard-sawmill-off-on.jpg`. Not done: the warehouse (many goods) and the castle.
+(decided)

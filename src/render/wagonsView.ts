@@ -18,10 +18,11 @@ import {
   Vector3,
 } from 'three';
 import type { Wagon, World } from '../sim/index';
-import { edgeLength, MAX_WAGONS, TICK_HZ } from '../sim/index';
+import { edgeLength, MAX_WAGONS, TICK_HZ, outputGoods } from '../sim/index';
+import type { YardPile } from './buildingsView';
 import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
-import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts } from './models/cargo';
+import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts, yardPileLocal } from './models/cargo';
 import { Parts } from './instancedParts';
 import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
@@ -151,6 +152,8 @@ export class WagonsView {
   nearFrac = 0.4;
   /** Render-only rigs drawn after the sim wagons (menu cinematic). */
   decor: DecorWagon[] = [];
+  /** Output piles by the buildings' yards (BuildingsView.yards): drawn from the stock with the cargo instances (D-71). */
+  yards: readonly YardPile[] = [];
   private head = new Int32Array(0);
   private link = new Int32Array(MAX_WAGONS * 2 + 8);
   private item = new Int32Array(MAX_WAGONS * 2 + 8);
@@ -510,11 +513,43 @@ export class WagonsView {
         for (let i = 0; i < Math.min(slots.length, d.qty); i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
       }
     });
+    this.pushYards(world, camPos, lod2);
     for (let i = 0; i < this.framed.length; i++) this.framed[i]!.end();
     for (const p of this.cargo.values()) p.end();
     for (let k = 0; k < 2; k++) {
       const r = k === 0 ? this.near : this.mid;
       if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) a.needsUpdate = true;
+    }
+  }
+
+  /**
+   * Yard piles (owner decision 15, D-71): each producer's output stock drawn as up to one wagon load of the same
+   * cargo units by its yard — a full yard (OUTPUT_FULL) is visible without a tap. Same instanced meshes as the
+   * wagons' cargo (no new meshes or materials), within the wagon LOD distance and the frustum, and never past the
+   * instance buffers (wagon cargo is pushed first).
+   */
+  private pushYards(world: World, camPos: Vector3, lod2: number): void {
+    const bs = world.state.buildings;
+    for (const y of this.yards) {
+      let b = null;
+      for (let i = 0; i < bs.length; i++) if (bs[i]!.id === y.buildingId) { b = bs[i]!; break; }
+      if (!b) continue;
+      const out = outputGoods(b.type);
+      if (!out.length) continue;
+      const good = out[0]!;
+      const qty = b.stock[good];
+      if (!(qty >= 1)) continue;
+      const dx = y.x - camPos.x, dy = y.y - camPos.y, dz = y.z - camPos.z;
+      if (dx * dx + dy * dy + dz * dz > lod2) continue;
+      _sphere.center.set(y.x, y.y + 0.6, y.z);
+      if (!_frustum.intersectsSphere(_sphere)) continue;
+      const g = cargoFor(good);
+      const parts = this.cargo.get(g)!;
+      const slots = this.slots.get(g)!;
+      const n = Math.min(slots.length, Math.floor(qty), parts.cap - parts.count);
+      if (n <= 0) continue;
+      _M.multiplyMatrices(y.base, yardPileLocal(g));
+      for (let i = 0; i < n; i++) parts.push(_W.multiplyMatrices(_M, slots[i]!));
     }
   }
 

@@ -7,7 +7,7 @@ import { modelMaterial } from './models/materials';
 export class Parts {
   readonly meshes: InstancedMesh[];
   count = 0;
-  constructor(parts: ModelPart[], cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
+  constructor(parts: ModelPart[], readonly cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
     this.meshes = parts.map((p) => {
       const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
       m.count = 0;

@@ -25,7 +25,20 @@ import {
   WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { CARGO_GOODS, type CargoGood, cargoParts } from '../src/render/models/cargo';
+import { CARGO_GOODS, type CargoGood, cargoParts, yardPileLocal } from '../src/render/models/cargo';
+
+/** Output good drawn as the yard pile (D-71), full (6 units) in the preview. */
+const YARD_GOOD: Partial<Record<string, CargoGood>> = {
+  woodcutter: 'wood', sawmill: 'planks', farm: 'grain', mill: 'flour', bakery: 'bread',
+  fisher: 'fish', quarry: 'stone', charcoalBurner: 'charcoal', malthouse: 'malt', brewery: 'beer',
+};
+function addYard(bm: { kind: string; yard?: { at: Vector3; yaw: number } }, m: Matrix4): void {
+  const g = YARD_GOOD[bm.kind];
+  if (!bm.yard || !g) return;
+  const pm = m.clone().multiply(new Matrix4().makeTranslation(bm.yard.at.x, 0, bm.yard.at.z))
+    .multiply(new Matrix4().makeRotationY(bm.yard.yaw)).multiply(yardPileLocal(g));
+  addParts(cargoParts(g, 6), pm);
+}
 import { fnoise, type ModelPart, triangles, trs } from '../src/render/models/kit';
 import { modelMaterial } from '../src/render/models/materials';
 import { addHorsePoseAttributes, createHorseMaterial, wagonLod1, wagonModel, writeHorsePose } from '../src/render/models/wagon';
@@ -210,6 +223,7 @@ const goods = [null, ...BASE_GOODS] as const;
     plate.receiveShadow = true;
     scene.add(plate);
     addParts(bm.parts, m);
+    addYard(bm, m);
     if (bm.wheel) addParts(bm.wheel.parts, m.clone().multiply(new Matrix4().makeTranslation(bm.wheel.pivot)));
     stats.push(`${kind} ${w}x${d} m: ${triangles(bm.parts) + (bm.wheel ? triangles(bm.wheel.parts) : 0)} tris`);
     x += w + 2;
@@ -239,6 +253,7 @@ const chainFrom = scene.children.length;
     plate.receiveShadow = true;
     scene.add(plate);
     addParts(bm.parts, trs(x + w / 2, 0, z));
+    addYard(bm, trs(x + w / 2, 0, z));
     if (kind === 'fisher') {
       const pond = new Mesh(new PlaneGeometry(6.5, 7), new MeshStandardMaterial({ color: '#4c5b5c', roughness: 0.25 }));
       pond.rotation.x = -Math.PI / 2;
