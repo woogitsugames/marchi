@@ -69,6 +69,7 @@ Jarmark wypada co trzeci 15-minutowy sezon symulacji; pierwsza zapowiedź jesien
 | events.merchant.bonus | Cena kupca jest wyższa niż zwykła cena na rynku. | The merchant's price is higher than the ordinary market price. |
 | events.merchant.accept | Sprzedaj nadwyżkę | Sell surplus |
 | events.merchant.dismiss | Odłóż ofertę | Put offer aside |
+| events.merchant.new (.1–.3) | Wędrowny kupiec kupi {good} · Kupiec z wozem pod płótnem stanął przy bramie: kupi {good} · Traktem przyjechał kupiec — chętnie kupi {good} · Wędrowny kupiec szuka towaru: kupi {good} | A travelling merchant will buy {good} · A merchant with a canvas-covered cart waits at the gate: he will buy {good} · A merchant came up the road — he will gladly buy {good} · A travelling merchant is looking for wares: he will buy {good} |
 | events.merchant.noStock | Nadwyżka została już przewieziona. Nie musisz sprzedawać. | The surplus has already been hauled away. You do not need to sell. |
 
 ## Wspólne elementy karty HUD
