@@ -2,6 +2,7 @@
 // ICU-lite plurals via Intl.PluralRules, RTL direction and per-script font stacks.
 import { en } from './en';
 import { pl, type Dict, type MessageKey } from './pl';
+import { pluralize } from './plural';
 import { pseudoize } from './pseudo';
 
 /** Supported languages (owner's list, D-18). Order = order in the settings list. */
@@ -113,9 +114,6 @@ export function onLangChange(f: () => void): () => void {
 }
 
 let pluralCache: Intl.PluralRules | null = null;
-function pluralRules(): Intl.PluralRules {
-  return (pluralCache ??= new Intl.PluralRules(current));
-}
 
 /**
  * ICU-lite plural blocks: `{n, plural, one {# wóz} few {# wozy} many {# wozów} other {# wozu}}`.
@@ -123,16 +121,7 @@ function pluralRules(): Intl.PluralRules {
  * `other` is required. Nested braces inside a branch are not supported (keep messages flat).
  */
 export function formatPlural(s: string, params: Record<string, string | number>): string {
-  return s.replace(/\{(\w+), plural,((?:\s*(?:=\d+|zero|one|two|few|many|other)\s*\{[^{}]*\})+)\s*\}/g, (_m, name: string, body: string) => {
-    const n = Number(params[name] ?? 0);
-    const branches = new Map<string, string>();
-    body.replace(/\s*(=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}/g, (_x, k: string, v: string) => { branches.set(k, v); return ''; });
-    const text = branches.get('=' + n) ?? branches.get(pluralRules().select(n)) ?? branches.get('other') ?? '';
-    // Latin digits like every other number in the UI (format.ts fmtInt uses -u-nu-latn), isolated in RTL
-    // so "11 كتلة" keeps the number with its word (bidi, D-37)
-    const num = new Intl.NumberFormat(`${current}-u-nu-latn`).format(n);
-    return text.split('#').join(RTL_LANGS.has(current) ? `\u2068${num}\u2069` : num);
-  });
+  return pluralize(s, params, current, (pluralCache ??= new Intl.PluralRules(current)), RTL_LANGS.has(current));
 }
 
 /** Translate with plural blocks and {param} substitution; falls back to English, then the key. */

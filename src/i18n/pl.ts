@@ -177,12 +177,9 @@ export const pl = {
 
   'road.cost': '{n} srebra',
   'road.free': 'bez kosztu',
-  'road.bridge': 'most drewniany: {n} {cells}',
-  'road.bridgeStone': 'most kamienny: {n} {cells}',
-  'road.cells': '{n} {cells}',
-  'unit.cell.one': 'pole',
-  'unit.cell.few': 'pola',
-  'unit.cell.many': 'pól',
+  'road.bridge': 'most drewniany: {n, plural, one {# pole} few {# pola} other {# pól}}',
+  'road.bridgeStone': 'most kamienny: {n, plural, one {# pole} few {# pola} other {# pól}}',
+  'road.cells': '{n, plural, one {# pole} few {# pola} other {# pól}}',
 
   'hud.built': 'Zbudowano drogę: −{n} srebra',
   'hud.demolished': 'Rozebrano: +{n} srebra',

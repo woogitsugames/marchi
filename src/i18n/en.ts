@@ -178,12 +178,9 @@ export const en: FullDict = {
 
   'road.cost': '{n} silver',
   'road.free': 'free',
-  'road.bridge': 'wooden bridge: {n} {cells}',
-  'road.bridgeStone': 'stone bridge: {n} {cells}',
-  'road.cells': '{n} {cells}',
-  'unit.cell.one': 'cell',
-  'unit.cell.few': 'cells',
-  'unit.cell.many': 'cells',
+  'road.bridge': 'wooden bridge: {n, plural, one {# cell} few {# cells} other {# cells}}',
+  'road.bridgeStone': 'stone bridge: {n, plural, one {# cell} few {# cells} other {# cells}}',
+  'road.cells': '{n, plural, one {# cell} few {# cells} other {# cells}}',
 
   'hud.built': 'Road built: −{n} silver',
   'hud.demolished': 'Demolished: +{n} silver',

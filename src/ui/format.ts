@@ -67,14 +67,6 @@ export function capFirst(s: string): string {
   return s.length ? s[0]!.toLocaleUpperCase(getLang()) + s.slice(1) : s;
 }
 
-/** Count word for cells with Polish plural rules (1 pole, 2-4 pola, 5+ pól); English uses one/other. */
-export function cellsWord(n: number): string {
-  // CLDR plural category of the current language mapped onto the three stored forms
-  const cat = new Intl.PluralRules(getLang()).select(n);
-  const form = cat === 'one' ? 'one' : cat === 'few' || cat === 'two' ? 'few' : 'many';
-  return t(`unit.cell.${form}` as MessageKey);
-}
-
 export function goodName(g: Good): string {
   return t(`good.${g}` as MessageKey);
 }

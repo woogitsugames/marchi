@@ -3,7 +3,7 @@ import { lineCells, roadCellCost, roadStoneCost, stoneAvailable, validateRoad, t
 import type { WorldView } from '../render/api';
 import { t, type MessageKey } from '../i18n/index';
 import type { Markers } from './markers';
-import { cellsWord, fmtInt, iso, joinList, rankName } from './format';
+import { fmtInt, iso, joinList, rankName } from './format';
 
 export function errorText(err: CommandError): string {
   const key = `err.${err.k}` as MessageKey;
@@ -99,7 +99,7 @@ export class RoadDraft {
     let cost = 0;
     const seen = new Set<number>();
     for (const c of this.cells) if (!seen.has(c)) { seen.add(c); cost += roadCellCost(world, c, this.surface); }
-    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: iso(fmtInt(water)), cells: cellsWord(water) }) : '';
+    const bridge = water > 0 ? t(this.surface === 2 ? 'road.bridgeStone' : 'road.bridge', { n: water }) : '';
     // free valley: cobbles and stone bridges also take stone from the granaries ("4 kamienie (masz 2)")
     const stone = roadStoneCost(world, this.cells, this.surface);
     const silverText = cost > 0 ? t('road.cost', { n: iso(fmtInt(cost)) }) : t('road.free');
@@ -108,7 +108,7 @@ export class RoadDraft {
       : silverText;
     if (r.ok) {
       view.setRoadPreview({ cells: this.cells, valid: true, badCell: -1 });
-      this.markers.setDraft(x, y, costText, joinList([bridge, t('road.cells', { n: iso(fmtInt(seen.size)), cells: cellsWord(seen.size) })]), false);
+      this.markers.setDraft(x, y, costText, joinList([bridge, t('road.cells', { n: seen.size })]), false);
     } else {
       const bad = 'cell' in r.err ? r.err.cell : -1;
       view.setRoadPreview({ cells: this.cells, valid: false, badCell: bad });
