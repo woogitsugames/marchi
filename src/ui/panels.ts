@@ -17,6 +17,7 @@ import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { cureFor } from './stalls';
 import { buildTypes } from './buildTool';
 import { errorText } from './roadTool';
+import { codexHtml, toggleCodex } from './codex';
 
 export interface PanelNav {
   readonly world: World;
@@ -131,6 +132,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
       return;
     }
     const [act, arg] = (el.dataset.act ?? '').split(':');
+    if (act === 'codex') { toggleCodex(el); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
@@ -300,7 +302,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
-      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason);
+      // "what does it mean?" for the status at the root of the chain (the one the player has to fix)
+      const root = chain.length > 1 ? chain[chain.length - 1]! : null;
+      const codex = stalled ? (root ? codexHtml(root.kind, root.status) : codexHtml('building', b.status)) : '';
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },

@@ -395,6 +395,11 @@ export const pl = {
   'contract.pace.eta': 'Przy tym tempie: gotowe za {time}',
   'contract.pace.late': 'Przy tym tempie: spóźnienie {time}',
   'contract.pace.supply': '{who} ×{n} · {rate}/min',
+  'contract.pace.rate': '{rate}/min',
+  'codex.toggle': 'Co to znaczy?',
+  'codex.check': 'Jak sprawdzić',
+  'codex.fixes': 'Co zrobić',
+  'codex.example': 'Przykład',
   'why.pace.title': 'Tempo dostaw',
   'why.pace.good': '{who} ×{n}: teraz {rate}/min, najwyżej {cap}/min',
   'why.pace.need': 'Na {seals} (zostało {time}) trzeba ≈{rate}/min',
@@ -799,6 +804,11 @@ export const PENDING_KEYS = [
   'menu.bestAria',
   'why.pace.waitTranche',
   'contract.toTranche',
+  'contract.pace.rate',
+  'codex.toggle',
+  'codex.check',
+  'codex.fixes',
+  'codex.example',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
