@@ -1885,6 +1885,8 @@ body.is-flex .rail { z-index: 1; }
 body.is-landscape .notice-wrap, body.is-split .notice-wrap { top: calc(max(var(--bar-b), var(--ev-b, 0px)) + 8px); }
 /* Flip cover: toasts take the top, the one notice the bottom (no rail there) — never one over the other */
 body.is-mini .notice-wrap { top: auto; bottom: calc(var(--safe-b) + 10px); }
+/* with a sheet open (any layout) the notice waits under it instead of covering the sheet or sitting on its edge */
+body.has-sheet .notice-wrap { visibility: hidden; }
 .notice {
   display: flex; gap: 8px; align-items: center;
   padding-block: 10px; padding-inline: 14px;
