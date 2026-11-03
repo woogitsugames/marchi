@@ -887,3 +887,14 @@ A `play()` that arrives while its buffer is still loading is queued — one pend
 update its position/gain — and plays when the decode finishes instead of being dropped after 850 ms; only a request
 more than 4 s stale is dropped (the moment on screen has passed). Tests: `tests/audio-preload.test.ts` (fake Web
 Audio). (decided)
+
+**D-64 — Far wagons (LOD1) cast no shadow on any quality tier; draw calls counted at the GL level.**
+`WagonsView.setShadows(near, far)` was called (`applyQuality`) with `far = high`, so on high/ultra the far rig
+(3 meshes) drew in the shadow pass too. Beyond `lodDist` (120 m high, 75 m low) a wagon's shadow is a few texels of a
+2048 map fitted to up to 320 m, and comparing the frames side by side shows no visible difference
+(`docs/shots/night4-wagon-far-shadow-on-off.jpg`). Measured with `tools/wagon-shadow-calls.mjs` (sandbox, 100
+wagons, camera 200 m, 72 on the far rig, SwiftShader): **90 → 87 GL draws per frame, −14.9 k shadow-pass
+triangles**; the main pass is unchanged (47). Note for future measurements: `renderer.info.render.calls` (the
+`stats()` / `?perf=1` number) is reset by three r181 *after* the shadow pass, so it never counted shadow draws —
+the tool wraps `drawArrays/drawElements(Instanced)` instead. Cargo on far wagons keeps casting (shared instanced
+meshes with the near rig; splitting them would add draws, not save them). (decided)

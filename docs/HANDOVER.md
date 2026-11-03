@@ -220,3 +220,8 @@ Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, pu
    `AudioEngine`: po pierwszym geście ładuje wszystkie jednorazowe dźwięki (sfx + ui, ~300 kB; pętle dalej na
    żądanie), a `play()` w trakcie ładowania czeka w kolejce (jedno na id) zamiast przepadać po 850 ms; odrzuca dopiero
    po 4 s. Test `tests/audio-preload.test.ts`.
+2. **Render P3 (D-64)**: dalekie wozy (LOD1) bez cienia na każdej jakości — `setShadows` było wołane, ale z
+   `far = high`. Pomiar `tools/wagon-shadow-calls.mjs` (100 wozów, 72 daleko): 90 → 87 wywołań GL na klatkę,
+   −14,9 tys. trójkątów w passie cienia; różnicy w obrazie nie widać (`docs/shots/night4-wagon-far-shadow-on-off.jpg`).
+   Uwaga: licznik `drawCalls` w `?perf=1` nie liczy passu cienia (three r181 zeruje `info` po nim). Pierścień
+   zaznaczenia na moście — już naprawiony w nocy 2 (`deckRing`), sprawdzone w kodzie.

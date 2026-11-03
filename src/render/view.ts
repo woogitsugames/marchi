@@ -677,7 +677,9 @@ class View implements WorldView {
     this.water?.setDetail(high);
     this.bridges.setDetail(high);
     if (this.cover) this.cover.radius = high ? 38 : 0;
-    this.wagons?.setShadows(true, high);
+    // Far rig (LOD1, beyond lodDist) casts no shadow on any tier: at 75-120+ m a wagon's shadow is a few
+    // texels, while the pass costs 3 extra draws and ~200 shadow triangles per far wagon (D-64).
+    this.wagons?.setShadows(true, false);
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;
     if (this.terrain) {
       this.terrain.uniforms.uDetail!.value = high ? 1 : 0.7;
