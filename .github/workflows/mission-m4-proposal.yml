@@ -1,17 +1,8 @@
 name: Mission IV proposal
 
 on:
-  pull_request:
-    paths:
-      - 'src/sim/proposals/ice.ts'
-      - 'src/sim/proposals/m4.ts'
-      - 'tests/m4-ice.test.ts'
-      - 'tools/bot-m4.ts'
-      - 'docs/missions/m4.md'
-      - '.github/workflows/mission-m4-proposal.yml'
-
-permissions:
-  contents: read
+  # CI minutes are limited (owner, 2026-11-03): manual runs only.
+  workflow_dispatch:
 
 jobs:
   verify-m4:

@@ -295,3 +295,6 @@ Decyzje 13–15 dopisane wyżej. Następne decyzje od **D-66** (ta noc nie doda�
 - 13 Pieczęcie misji → **tak, najlepszy wynik i czas na misję w zapisie gry** (razem z kroniką, decyzja 1), widoczne w menu misji.
 - 14 Łańcuch misji X do producenta → **po playteście**.
 - 15 Stosy towaru na placach wg zapasu → **tak** (instancje ładunku, bez nowych wywołań rysowania).
+- **CI (właściciel 2026-11-03): limit minut GitHub Actions — CI do minimum.** `ci.yml` tylko ręcznie i przy otwarciu PR
+  (bez push, bez synchronize), workflowy propozycji misji tylko ręcznie. Nie dodawać kroków do CI; wszystkie
+  sprawdzenia lokalnie przed pushem. Decyzja 12 (layout w CI) **anulowana**.
