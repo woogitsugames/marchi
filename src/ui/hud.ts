@@ -15,7 +15,7 @@ import { deckle, esc, h, setHtml, setText } from './dom';
 import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
-import { forecastFor, waybillPaceHtml } from './pace';
+import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
 import { calmWhy, cureFor, type Cure, type StallEntry } from './stalls';
 import { EventCard } from './eventCard';
 
@@ -534,7 +534,9 @@ export class Hud {
     this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left, dueMissing, !!dueNeed);
     const folded = this.folded();
     if (folded) {
-      setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
+      // watch mode (Flip cover): the pace forecast under the seal's clock (D-99)
+      const extra = this.compact && pace ? sealPaceHtml(world, forecastFor(world, pace)) : '';
+      setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)) + extra);
       this.sealOnly.classList.toggle('late', late);
       return;
     }

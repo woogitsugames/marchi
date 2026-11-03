@@ -638,6 +638,9 @@ export const pl = {
   // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
   'cause.stoneStored': 'czeka na wóz, a spichlerz ma już kamień na bruk',
   'fix.stoneStored': '{n, plural, one {W spichlerzu jest # kamień} few {W spichlerzu są # kamienie} many {W spichlerzu jest # kamieni} other {W spichlerzu jest # kamienia}} — wystarczy na bruk ({cells}). Kamieniołom poczeka na wolny wóz; nowy wóz i tak najpierw wiezie wkład warsztatów.',
+  // watch-mode seal forecast line (D-99; see PENDING_KEYS)
+  'contract.sealPace.eta': 'gotowe za {time}',
+  'contract.sealPace.late': 'spóźni się {time}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -681,6 +684,8 @@ export const PENDING_KEYS = [
   'why.topUp',
   'cause.stoneStored',
   'fix.stoneStored',
+  'contract.sealPace.eta',
+  'contract.sealPace.late',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

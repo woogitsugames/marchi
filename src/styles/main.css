@@ -1415,7 +1415,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   --kparch-dim: #d7c29a;
 }
 
-.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
+.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .seal-pace, .eta-tag,
 .kbar > i, button.seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
   border-style: solid;
   border-width: 0;
@@ -1451,7 +1451,7 @@ button.seg.is-on::before {
   border-image-slice: 23.5% 19.2% fill;
   border-image-width: 8px 23px;
 }
-.snow-pill, .seal-time, .eta-tag {
+.snow-pill, .seal-time, .seal-pace, .eta-tag {
   border-image-source: url("/assets/ui/kit/eta@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/eta@2x.png") 2x, url("/assets/ui/kit/eta@3x.png") 3x);
   border-image-slice: 25% 16.7% fill;
@@ -1782,6 +1782,10 @@ body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 .so-fill { position: absolute; inset: 0; }
 .seal-time { margin-top: -6px; padding-block: 2px; padding-inline: 10px; font-size: 14px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
 .seal-only.late .seal-time { color: #ffc2a8; }
+/* D-99: pace forecast under the folded seal in watch mode (Flip cover) */
+.seal-pace { margin-top: 2px; padding-block: 1px; padding-inline: 8px; font-size: 12px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
+.seal-pace.warn { color: #ffe0a0; }
+.seal-pace.late { color: #ffc2a8; }
 
 /* ---- bottom rail: worst stall card + alarm seal, the tool cards */
 .rail {

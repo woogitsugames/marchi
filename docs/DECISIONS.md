@@ -1383,3 +1383,15 @@ whole missions: m4 898 calm / 15 ordinary samples, m8 340 / 139 — the ordinary
 where a wagon would help (`day7-codex-wagon-m8-sawmill-412x915.jpg`). Tests: calm variants only for real keys,
 never "Kup wóz"/"Buy a wagon"; the fold follows the calm line on m4/m8/m9. Rejected: deleting the wagon cure from
 the normal entry (it is right for a real stall). `docs/shots/day7-codex-calm-m4-*.jpg`. (decided)
+
+**D-99 — Watch mode (Flip cover): the folded seal shows "gotowe za M:SS" under its clock (day 7; UI only;
+BACKLOG P3 from D-43).** On the Flip cover (`is-mini`) the waybill folds to its seal, which showed only the time
+left; the pace forecast was one tap away in the castle card. Two previews were built behind `?sealpace=a|b`:
+A — one short line under the seal's clock ("gotowe za 3:05", "spóźni się 1:20" when the forecast misses the due
+time, amber in the last minute); B — three small seals pressed by the forecast, no words. Owner chose **A** (~22:30):
+words read on a 360 px cover without decoding three 16 px seals that sit next to the bigger seal of the order, and
+it says the same as the waybill's "Przy tym tempie: gotowe za …" line. A is now the default whenever the HUD is
+in watch mode (`Hud.compact`), with no URL flag; variant B, its CSS and the `?sealpace` flag are removed. The line
+is not added when the player folds the waybill on a big screen (the full waybill is one tap away there). Empty
+until the forecast is ready. Keys `contract.sealPace.eta/.late` (PENDING_KEYS). `day7-flip-a-m3-360x380.jpg`
+(m3, 7:00 left, "gotowe za 3:05"). (decided)

@@ -74,6 +74,20 @@ export function waybillPaceHtml(world: World, f: ContractForecast | null): strin
     <div class="wb-pace-sup" ${go} role="button" tabindex="0">${iconSvg(b.good, 18, goodName(b.good))}<span>${supply}</span><small class="sup-rate" aria-hidden="true">${tHtml('contract.pace.rate', { rate: fmtDec(b.perMin, 1) })}</small></div></div>`;
 }
 
+/**
+ * Watch mode (Flip cover, BACKLOG P3 from D-43; D-99): one short line under the folded seal's clock —
+ * "gotowe za 9:40" at this pace, "spóźni się 1:20" when the forecast misses the due time. Empty until the
+ * forecast is ready.
+ */
+export function sealPaceHtml(world: World, f: ContractForecast | null): string {
+  if (!f || !f.ready || f.bottleneck < 0) return '';
+  const state = paceState(world, f);
+  const text = state === 'late'
+    ? tHtml('contract.sealPace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
+    : tHtml('contract.sealPace.eta', { time: ticksClock(f.finishTick - world.state.tick) });
+  return `<span class="seal-pace${state ? ' ' + state : ''}">${text}</span>`;
+}
+
 /** Castle card section: per good the producers' pace now and at most, the forecast and what a better seal needs. */
 export function castlePaceHtml(world: World, f: ContractForecast | null): string {
   const c = world.state.mission.contract;
