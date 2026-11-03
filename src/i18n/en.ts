@@ -595,4 +595,6 @@ export const en: FullDict = {
   'fix.granary': 'Build a granary',
   'fix.granaryWhy': 'The goods have nowhere to go: a granary by the road takes them and clears the yard.',
   'fix.granaryHint': 'The goods have nowhere to go. Link a granary or a buyer that takes them by road.',
+  // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): see PENDING_KEYS
+  'hud.speedHint': 'At ×4 the stall grows fast: {name}. Slow down to fix it in time.',
 };

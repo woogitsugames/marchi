@@ -29,6 +29,7 @@ import {
 } from './menu';
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
+import { SpeedHint } from './speedHint';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
@@ -135,6 +136,8 @@ export class App implements PanelNav {
   private diagPanel: DiagPanel | null = null;
   /** The mission's first critical stall has had its one-time cue (markers.flash + hud.flashFirstStall). */
   private firstCritSeen = false;
+  /** ×4 while a critical stall grows: one toast per stall (owner decision 7). */
+  private readonly speedHint = new SpeedHint();
   private save: SaveInfo | null = null;
   /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
   private unfinished = new Map<string, SaveInfo>();
@@ -377,6 +380,7 @@ export class App implements PanelNav {
     this.lastSaveTick = w.state.tick;
     this.endShown = false;
     this.firstCritSeen = false;
+    this.speedHint.reset();
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
@@ -635,6 +639,8 @@ export class App implements PanelNav {
         this.markers.flash(stalls[0].id);
         this.hud?.flashFirstStall(this.world, stalls[0].id);
       }
+      const slow = this.speedHint.check(this.world, this.loop.speed, stalls);
+      if (slow >= 0) this.hud?.toast(t('hud.speedHint', { name: buildingName(this.world, slow) }), 'info', 'speed1', 4200);
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();

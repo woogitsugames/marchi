@@ -932,3 +932,11 @@ build tool and picks the granary with its ghost already on the closest valid sit
 (`siteNear`: rings up to 10 cells, the sim's pure `validatePlace`), so "Postaw" is one more tap. The rail's Buduj
 button gets the same cure mark as Kup wóz / Droga. Missions without the warehouse on their build list get a hint
 only ("połącz drogą spichlerz albo odbiorcę"). No sim change. Shots `docs/shots/day1-repair-*`. (decided)
+
+**D-67 — Speed hint, never a speed change (UI only; owner decision 7, 2026-11-03).** BACKLOG P3 "speed as a tool":
+while the game runs at ×4 and the worst stall is critical and has grown for 60 s of game time (~15 s real), one
+toast says "Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić." (4.2 s, speed icon). Once per
+stall — the same building with the same cause is never hinted again in that mission (`SpeedHint`, pure, reset on a
+new world); ×1/×2, a minor or fresh stall, or a finished mission never hint. The speed is never changed for the
+player (an auto-×1 was rejected: a hidden speed change confuses). Test `tests/speed-hint.test.ts`; shots
+`docs/shots/day1-speed-hint-*`. (decided)

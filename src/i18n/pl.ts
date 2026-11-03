@@ -598,6 +598,8 @@ export const pl = {
   'fix.granary': 'Postaw spichlerz',
   'fix.granaryWhy': 'Towar nie ma dokąd jechać: spichlerz przy drodze przyjmie go i zwolni plac.',
   'fix.granaryHint': 'Towar nie ma dokąd jechać. Połącz drogą spichlerz albo odbiorcę, który go przyjmie.',
+  // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): see PENDING_KEYS
+  'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -789,6 +791,7 @@ export const PENDING_KEYS = [
   'fix.granary',
   'fix.granaryWhy',
   'fix.granaryHint',
+  'hud.speedHint',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
