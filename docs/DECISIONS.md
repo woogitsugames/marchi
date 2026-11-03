@@ -836,3 +836,35 @@ building meshes: no new draw calls, no new textures. Triangles (model): farm 822
 5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
 scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
 were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)
+
+**D-62 — Measured layout check; pins under the HUD fade; a bottom sheet folds the waybill.** `npm run layout`
+(`tools/layout-check.mjs`) opens menu, settings, HUD, the why-sheet, the wagon sheet, the build tool, the M7
+waybill, the end letter, the castle and market sheets, the free valley, the opening and rank-up letters at 412×915, 915×412, 904×1000, 360×740 and the Flip cover 360×380, in pl/de/ru/ar and
+the pseudo-locale, and measures instead of eyeballing: action controls inside the viewport (or in a scroller that
+is), no intersection between the floating HUD pieces, the sheet and the world pins (a component's own badge or
+ribbon hanging over its edge is not a component), targets ≥ 48 px, no text spilling out of its box or clipped,
+no sideways scroll, no console errors. A positive control injects five known-bad CSS rules first (overlap, small
+target, overflowing label, rail pushed off-screen, a veil over the tool cards); a check that stays green there fails the run. Default map is
+the Canvas2D view (same DOM, ~10× cheaper under SwiftShader, full matrix ~8 min); `--three` measures over the 3D map.
+Fixes from its first run: (1) stall pins that fall under a HUD panel or the sheet fade out (150 ms) and take no
+taps — before, the top of a pin peeked out behind the waybill/speed bar and its taps hit the panel; the app
+refreshes the occluder rects 4×/s and on every sheet change (render-only, the sim never sees it). (2) While a bottom
+sheet is open (portrait, not a side sheet) the waybill folds to its seal, so the sheet's subject has map to be
+framed in (D-43): on 412×915 the why-sheet and the expanded waybill used to leave no map at all and the bakery sat
+under the waybill; the player's own fold preference is untouched; while folded this way the seal opens the castle card (as on the
+Flip cover), so the tutorial's "tap the waybill" step still takes one tap. (3) The framing
+treated the empty `.topbar` box as the top obstacle; its pieces (menu, chips, speed) are the obstacles now.
+(4) Flip cover: with a sheet open the HUD strip is hidden (it only peeked out above the full-height sheet).
+(5) Arabic one-word link buttons in the wagon sheet got `min-width: 48px`. (6) A second pass added a "covered" check (every
+line of text and every control's middle, hit-tested with all elements hit-testable: the first element that paints
+there must be the element itself) — it found the waybill ribbon (z-index 1 inside the HUD layer) painted over the
+end letter's heading whenever the heading wrapped (de/pl on 360 px); each UI layer (`#markers`, `#hud`, `#menu`,
+`#sheets`, `#tutorial`, `#overlay`) is now `isolation: isolate`, so DOM order alone stacks the layers. (7) Five more
+screens (castle sheet M5, free valley, market sheet, opening letter, rank-up letter) found: in landscape the
+season notice sat on the folded valley-news card (same corner) — notices now hang under the card (`--ev-b`,
+measured with the top cluster; a fixed card has no offsetParent, which had hidden it from the measurement); on the
+Flip cover the notice moves to the bottom edge so it never sits on a toast; on tall unfolded screens (904×1000,
+side sheet without landscape) the game sheet started at the top edge over the chips and speed bar — it now starts
+under them like the landscape sheet. (8) The tutorial scene (note ≤ 3 lines from 360 px, checked) showed the Flip-cover arrow running
+through the "open the phone" hint: the hint hides while the tutorial arrow shows, and the note avoids it. (decided; (2) is a behaviour change —
+listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)

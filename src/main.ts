@@ -16,7 +16,7 @@ import '@fontsource/ruslan-display/cyrillic-400.css';
 import '@fontsource/alegreya-sans/latin-ext-700.css';
 import './styles/main.css';
 
-import { RTL_LANGS, detectLang, onLangChange, parseLang, scriptOf, setLang, t } from './i18n/index';
+import { RTL_LANGS, detectLang, isPseudo, onLangChange, parseLang, scriptOf, setLang, setPseudo, t } from './i18n/index';
 import type { CreateWorldView, WorldView } from './render/api';
 import { App } from './ui/app';
 import { createFlatView } from './ui/flatView';
@@ -47,7 +47,9 @@ async function boot(): Promise<void> {
     location.replace(new URL('tools/device-bench.html', location.href).href);
     return;
   }
-  const lang = parseLang(params.get('lang')) ?? detectLang();
+  // ?lang=pseudo: English with accented, ~40 % longer text for layout checks (i18n/pseudo.ts)
+  if (params.get('lang') === 'pseudo') setPseudo(true);
+  const lang = isPseudo() ? 'en' : parseLang(params.get('lang')) ?? detectLang();
   // lang/dir before the first frame (the dictionary loads lazily); title and the canvas label follow every switch
   const root = document.documentElement;
   root.lang = lang;

@@ -159,6 +159,8 @@ export class Hud {
   private collapsed: boolean;
   /** Watch mode on tiny screens (Flip cover): seal only, no building tools. */
   private compact = false;
+  /** A bottom sheet is open in portrait: the waybill folds to its seal so the sheet's subject has map (D-62). */
+  private sheetFold = false;
   /** Stalls ranked worst first (last update) and the one the alarm seal showed last. */
   private stalls: StallEntry[] = [];
   private lastShown = -1;
@@ -198,7 +200,8 @@ export class Hud {
     this.waybillWrap = h('div.waybill-wrap', null, waybill, this.sealOnly);
     this.waybillWrap.classList.toggle('is-collapsed', collapsed);
     this.sealOnly.addEventListener('click', () => {
-      if (this.compact) this.act.openCastle();
+      // folded for a tiny screen or under an open sheet: the seal is the contract — it opens the castle card
+      if (this.compact || this.sheetFold) this.act.openCastle();
       else this.setCollapsed(false);
     });
     waybill.addEventListener('keydown', (e) => {
@@ -285,13 +288,15 @@ export class Hud {
 
   /**
    * --hud-top: bottom edge of the whole top cluster (bar + contract); --bar-b: bottom of the chips and
-   * speed alone. Notices and the landscape build shelf hang below them. Measured on resize only.
+   * speed alone; --ev-b: bottom of the landscape news card (0 when it is not beside the bar). Notices and the landscape build shelf hang below them. Measured on resize only.
    */
   private measureTop(): void {
-    let y = 0, bar = 0;
+    let y = 0, bar = 0, ev = 0;
     for (const el of this.root.querySelectorAll<HTMLElement>('.hud-top > *, .topbar > *')) {
+      // landscape: the news card hangs beside the contract, not below it; notices go under the card (--ev-b).
+      // (checked first: a position: fixed element has no offsetParent)
+      if (!el.hidden && el.classList.contains('ev-card') && getComputedStyle(el).position === 'fixed') { ev = el.getBoundingClientRect().bottom; continue; }
       if (el.hidden || !el.offsetParent || el.classList.contains('topbar')) continue;
-      if (el.classList.contains('ev-card') && getComputedStyle(el).position === 'fixed') continue; // landscape: beside, not below
       const b = el.getBoundingClientRect().bottom;
       y = Math.max(y, b);
       if (el.matches('.chips, .speed, .menu-btn')) bar = Math.max(bar, b);
@@ -299,6 +304,7 @@ export class Hud {
     const root = document.documentElement.style;
     root.setProperty('--hud-top', `${Math.round(y)}px`);
     root.setProperty('--bar-b', `${Math.round(bar)}px`);
+    root.setProperty('--ev-b', `${Math.round(ev)}px`);
   }
 
   dispose(): void {
@@ -339,7 +345,7 @@ export class Hud {
   }
 
   private applyFold(): void {
-    const f = this.collapsed || this.compact;
+    const f = this.folded();
     this.waybillWrap.classList.toggle('is-collapsed', f);
     this.plaqueWrap.classList.toggle('is-collapsed', f);
     this.events.setHudFolded(f);
@@ -347,6 +353,17 @@ export class Hud {
     this.sealsSig = '';
     this.plaqueSig = '';
     requestAnimationFrame(() => this.measureTop());
+  }
+
+  private folded(): boolean {
+    return this.collapsed || this.compact || this.sheetFold;
+  }
+
+  /** A bottom sheet opened / closed (portrait): fold the waybill meanwhile, keep the player's preference. */
+  setSheetFold(c: boolean): void {
+    if (this.sheetFold === c) return;
+    this.sheetFold = c;
+    this.applyFold();
   }
 
   /** Tiny screen (Flip cover): show only the seal, keep the player's own collapse preference. */
@@ -467,7 +484,7 @@ export class Hud {
     const got = have.reduce((a, v) => a + v, 0);
     const frac = got / Math.max(1, total);
     this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left);
-    const folded = this.collapsed || this.compact;
+    const folded = this.folded();
     if (folded) {
       setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
       this.sealOnly.classList.toggle('late', late);
@@ -578,7 +595,7 @@ export class Hud {
     if (this.lastRank >= 0 && sb.rank > this.lastRank) this.act.rankUp(sb.rank);
     this.lastRank = sb.rank;
     const n = sb.next;
-    const folded = this.collapsed || this.compact;
+    const folded = this.folded();
     const reqs = n ? [
       { label: t('town.renownShort'), have: sb.renown, need: n.renown },
       { label: t('town.goodsShort'), have: sb.goodsSold, need: n.goods },
@@ -666,6 +683,7 @@ export class Hud {
 
   showNotice(icon: IconId, text: string, ms = 5200): void {
     this.notice?.remove();
+    this.measureTop(); // the news card may have appeared since the last resize: the notice goes under it (--ev-b)
     const el = h('div.notice', { role: 'status', html: `${iconSvg(icon, 26)}<span>${text}</span>` });
     const wrap = h('div.notice-wrap', null, el);
     this.notice = wrap;

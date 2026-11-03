@@ -107,6 +107,8 @@ svg { display: block; fill: currentColor; flex: none; }
 }
 
 #ui { position: absolute; inset: 0; pointer-events: none; }
+/* each layer paints as one: a z-index inside the HUD (ribbon, rail) never lifts it over the sheets or a letter */
+#markers, #hud, #menu, #sheets, #tutorial, #overlay { isolation: isolate; }
 #ui > * { pointer-events: none; }
 #ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter, #ui .waybill { pointer-events: auto; }
 .wb-line { cursor: pointer; }
@@ -198,6 +200,8 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   line-height: .95;
   margin: 0;
   color: var(--ink);
+  /* long names in other languages (de „Wege des Königreichs”) break at syllables, never past the strip */
+  overflow-wrap: break-word; hyphens: auto;
 }
 .menu-strip .subtitle {
   margin: 6px 0 0;
@@ -230,6 +234,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   line-height: 1.05;
   padding: 8px 0;
   color: var(--ink);
+  overflow-wrap: break-word; hyphens: auto;
   transition: color var(--t-fast) var(--ease);
 }
 .menu-item:active { color: var(--clay); }
@@ -246,7 +251,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   /* a subtitle that must wrap keeps whole phrases together (no lone last word under a dash) */
   text-wrap: pretty;
 }
-.menu-item .mi-text { text-wrap: balance; }
+.menu-item .mi-text { text-wrap: balance; min-width: 0; }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
@@ -323,7 +328,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .sheet-head .sh-icon { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
 .sheet-head .sh-text { flex: 1; min-width: 0; }
 .sheet-head .kicker { font-size: 13px; color: var(--ink-soft); font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
-.sheet-head h3 { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 28px; line-height: 1.05; }
+.sheet-head h3 { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 28px; line-height: 1.05; overflow-wrap: break-word; hyphens: auto; }
 .sheet-head .close { width: 48px; height: 48px; display: grid; place-items: center; color: var(--ink-soft); }
 .sheet-head .close:active { color: var(--ink); }
 .sheet-body {
@@ -358,7 +363,7 @@ body.is-side .sheet-grip { height: 10px; }
 body.is-side .sheet-grip::before { display: none; }
 
 /* sheet content blocks */
-.status-line { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; overflow-wrap: break-word; hyphens: auto; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
 .status-line.bad { color: #6e3520; }
 .status-line.ok { color: var(--meadow); }
 .status-line .since { margin-inline-start: auto; font-size: 13px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
@@ -454,7 +459,7 @@ body.is-side .sheet-grip::before { display: none; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
-.kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; text-align: start; font-weight: 700; }
+.kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; min-width: 48px; text-align: start; font-weight: 700; }
 .sheet-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .sheet-actions .btn { flex: 1; }
 
@@ -550,7 +555,7 @@ body.is-side .sheet-grip::before { display: none; }
   pointer-events: none;
 }
 .letter .l-kicker { font-size: 13px; letter-spacing: .1em; font-variant: small-caps; text-transform: lowercase; color: var(--ink-soft); font-weight: 500; }
-.letter h2 { margin: 2px 0 8px; font-family: var(--font-head); font-weight: 700; font-size: 40px; line-height: 1; }
+.letter h2 { margin: 2px 0 8px; font-family: var(--font-head); font-weight: 700; font-size: 40px; line-height: 1; overflow-wrap: break-word; hyphens: auto; text-wrap: balance; }
 .letter p { margin: 0 0 12px; font-size: 17px; }
 /* the castle's wax sits inside the frame's top corner (D-53), the title keeps clear of it */
 .letter .l-seal { position: absolute; top: 30px; inset-inline-end: 34px; width: 44px; height: 44px; transform: rotate(8deg); filter: drop-shadow(0 1px 1px rgb(30 22 14 / .35)); }
@@ -699,20 +704,22 @@ body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px))
   --font-head: 'Ruslan Display', 'Alegreya Sans', serif;
 }
 :root[data-script='cjk'] {
-  --font-head: 'Noto Serif CJK JP', 'Noto Serif CJK KR', 'Noto Serif CJK SC', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  --font-body: 'Noto Sans CJK JP', 'Noto Sans CJK KR', 'Noto Sans CJK SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', sans-serif;
+  /* Android ships Noto CJK; iOS has Hiragino (ja) — each OS skips the names it does not have */
+  --font-head: 'Noto Serif CJK JP', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Noto Serif CJK KR', 'Noto Serif CJK SC', serif;
+  --font-body: 'Noto Sans CJK JP', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans CJK KR', 'Noto Sans CJK SC', sans-serif;
 }
-:root[lang='ko'] { --font-head: 'Noto Serif CJK KR', 'Noto Serif KR', serif; --font-body: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; }
-:root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; }
+:root[lang='ko'] { --font-head: 'Noto Serif CJK KR', 'Noto Serif KR', 'Apple SD Gothic Neo', serif; --font-body: 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; }
+:root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', 'PingFang SC', sans-serif; }
 :root[data-script='arabic'] {
-  /* the game's Latin faces first (their @font-face unicode-range has no Arabic): the brand title, digits and
-     untranslated fallbacks keep the game typography; Arabic letters fall through to the OS Naskh (D-18, D-37) */
-  --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', serif;
-  --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif;
+  /* the game's Latin faces first (they have no Arabic glyphs): the brand title, digits and untranslated fallbacks
+     keep the game typography; Arabic letters fall through to the OS face — Noto Naskh on Android, Geeza Pro on iOS
+     (D-18, D-37; font-coverage test) */
+  --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', serif;
+  --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', sans-serif;
 }
 :root[data-script='devanagari'] {
-  --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
-  --font-body: 'Noto Sans Devanagari', sans-serif;
+  --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Devanagari Sangam MN', serif;
+  --font-body: 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Devanagari Sangam MN', sans-serif;
 }
 
 .clear-restore { display: none; }
@@ -1418,7 +1425,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
   color: #f3e5c4; text-align: center;
   text-shadow: 0 1px 0 rgb(43 10 12 / .55);
 }
-.ribbon .rb-t { text-wrap: balance; }
+.ribbon .rb-t { text-wrap: balance; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
 .wb-panel {
   position: relative;
   margin-top: -8px;
@@ -1589,6 +1596,10 @@ body.is-landscape .ev-head { font-size: 16px; }
 body.is-landscape .ev-t { font-size: 15px; }
 body.is-split .ev-list { max-height: 52vh; }
 body.is-mini .ev-card { display: none; }
+/* Flip cover: an open sheet fills the screen; the HUD strip would only peek out above it (layout check, D-62) */
+body.is-mini.has-sheet .hud-top { visibility: hidden; }
+/* Flip cover: the tutorial's arrow runs through the 'open the phone' hint beside the seal — the note speaks then */
+body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 
 /* folded: the wax seal fills with progress, the time in a slate plaque under it */
 .waybill-wrap.is-collapsed { width: auto; }
@@ -1754,6 +1765,9 @@ body.is-flex .rail { z-index: 1; }
   will-change: transform, opacity;
 }
 .bubble.is-shown { opacity: 1; }
+/* under a HUD panel or the sheet (D-62): fades out instead of peeking from behind it and taking its taps */
+.bubble.is-shown.is-under { opacity: 0; }
+#ui .bubble.is-under { pointer-events: none; }
 .bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
 .bubble .bb-in { width: 32px; height: 32px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); --icon-halo: var(--kparch); }
 /* red pin: the kit's red tip plus a wine ring round the cause, so worst / critical reads at a glance */
@@ -1831,7 +1845,9 @@ body.is-flex .rail { z-index: 1; }
   inset-inline-end: calc(var(--safe-e) + 10px);
   max-width: min(300px, calc(100vw - 20px));
 }
-body.is-landscape .notice-wrap, body.is-split .notice-wrap { top: calc(var(--bar-b) + 8px); }
+body.is-landscape .notice-wrap, body.is-split .notice-wrap { top: calc(max(var(--bar-b), var(--ev-b, 0px)) + 8px); }
+/* Flip cover: toasts take the top, the one notice the bottom (no rail there) — never one over the other */
+body.is-mini .notice-wrap { top: auto; bottom: calc(var(--safe-b) + 10px); }
 .notice {
   display: flex; gap: 8px; align-items: center;
   padding-block: 10px; padding-inline: 14px;
@@ -1888,6 +1904,8 @@ body:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: max(45vh, mi
 body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+/* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
+body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
 .sheet-paper > .sp-in { clip-path: none; background: none; padding-bottom: 0; }
 body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 30px; }
 body.is-side .sheet-paper > .sp-in { clip-path: none; }

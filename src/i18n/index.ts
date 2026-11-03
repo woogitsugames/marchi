@@ -2,6 +2,8 @@
 // ICU-lite plurals via Intl.PluralRules, RTL direction and per-script font stacks.
 import { en } from './en';
 import { pl, type Dict, type MessageKey } from './pl';
+import { pluralize } from './plural';
+import { pseudoize } from './pseudo';
 
 /** Supported languages (owner's list, D-18). Order = order in the settings list. */
 export const LANGS = [
@@ -63,6 +65,18 @@ export function availableLangs(): Lang[] {
   return LANGS.filter((l) => l === 'pl' || l === 'en' || `./${l.replace('-', '_')}.ts` in loaders);
 }
 
+/**
+ * Pseudo-locale (`?lang=pseudo`, layout screenshots only): English rules and hyphenation, every message
+ * accented and ~40 % longer (pseudo.ts). Not a language: never listed, never saved.
+ */
+let pseudo: Map<string, string> | null = null;
+export function setPseudo(on: boolean): void {
+  pseudo = on ? new Map() : null;
+}
+export function isPseudo(): boolean {
+  return pseudo !== null;
+}
+
 export function parseLang(x: string | null | undefined): Lang | null {
   return isLang(x) ? x : null;
 }
@@ -82,7 +96,7 @@ export async function setLang(l: Lang): Promise<void> {
   await loadDict(l);
   current = l;
   pluralCache = null;
-  try { localStorage.setItem('marchia.lang', l); } catch { /* ignore */ }
+  if (!pseudo) try { localStorage.setItem('marchia.lang', l); } catch { /* ignore */ }
   const root = document.documentElement;
   root.lang = l;
   root.dir = RTL_LANGS.has(l) ? 'rtl' : 'ltr';
@@ -100,9 +114,6 @@ export function onLangChange(f: () => void): () => void {
 }
 
 let pluralCache: Intl.PluralRules | null = null;
-function pluralRules(): Intl.PluralRules {
-  return (pluralCache ??= new Intl.PluralRules(current));
-}
 
 /**
  * ICU-lite plural blocks: `{n, plural, one {# wóz} few {# wozy} many {# wozów} other {# wozu}}`.
@@ -110,21 +121,17 @@ function pluralRules(): Intl.PluralRules {
  * `other` is required. Nested braces inside a branch are not supported (keep messages flat).
  */
 export function formatPlural(s: string, params: Record<string, string | number>): string {
-  return s.replace(/\{(\w+), plural,((?:\s*(?:=\d+|zero|one|two|few|many|other)\s*\{[^{}]*\})+)\s*\}/g, (_m, name: string, body: string) => {
-    const n = Number(params[name] ?? 0);
-    const branches = new Map<string, string>();
-    body.replace(/\s*(=\d+|zero|one|two|few|many|other)\s*\{([^{}]*)\}/g, (_x, k: string, v: string) => { branches.set(k, v); return ''; });
-    const text = branches.get('=' + n) ?? branches.get(pluralRules().select(n)) ?? branches.get('other') ?? '';
-    // Latin digits like every other number in the UI (format.ts fmtInt uses -u-nu-latn), isolated in RTL
-    // so "11 كتلة" keeps the number with its word (bidi, D-37)
-    const num = new Intl.NumberFormat(`${current}-u-nu-latn`).format(n);
-    return text.split('#').join(RTL_LANGS.has(current) ? `\u2068${num}\u2069` : num);
-  });
+  return pluralize(s, params, current, (pluralCache ??= new Intl.PluralRules(current)), RTL_LANGS.has(current));
 }
 
 /** Translate with plural blocks and {param} substitution; falls back to English, then the key. */
 export function t(key: MessageKey, params?: Record<string, string | number>): string {
   let s: string = dicts[current]?.[key] ?? en[key] ?? key;
+  if (pseudo) {
+    let p = pseudo.get(key);
+    if (p === undefined) { p = pseudoize(en[key] ?? key); pseudo.set(key, p); }
+    s = p;
+  }
   if (params) {
     if (s.includes(', plural,')) s = formatPlural(s, params);
     for (const [k, v] of Object.entries(params)) s = s.split('{' + k + '}').join(String(v));

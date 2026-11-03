@@ -397,7 +397,7 @@ export class Tutorial {
     const q = (s: string): Box | null => visibleBox(document.querySelector(s));
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
-    const obstacles = [waybill, sheet, q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target)].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     const measure = (w: number): number => {

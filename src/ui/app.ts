@@ -83,6 +83,9 @@ const AUTOSAVE_TICKS = 30 * TICK_HZ;
 const DEAD_END_EVERY = 5 * TICK_HZ;
 /** Window for the second tap that confirms demolishing a building a contract cannot replace. */
 const DEMOLISH_CONFIRM_MS = 4000;
+/** What a stall pin must not sit under (D-62): the floating HUD pieces and the open sheets. */
+const OCCLUDERS = '#hud .topbar > .menu-btn, #hud .topbar > .chips, #hud .topbar > .speed, #hud .waybill-wrap .wb-panel, '
+  + '#hud .waybill-wrap .ribbon, #hud .waybill-wrap .seal-only, #hud .ev-card, #hud .stall-row, #hud .rail-tools, #sheets .sheet-paper';
 
 export interface AppOptions {
   canvas: HTMLCanvasElement;
@@ -168,7 +171,7 @@ export class App implements PanelNav {
       this.hud?.announce(t('hud.stallFixed', { name: buildingName(this.world, id) }));
     };
     this.sheets = new Sheets(this.layers.sheets);
-    this.sheets.onChange = () => { this.syncSelection(); document.body.classList.toggle('has-sheet', this.sheets.count > 0); };
+    this.sheets.onChange = () => { this.syncSelection(); document.body.classList.toggle('has-sheet', this.sheets.count > 0); this.syncSheetFold(); this.lastSheetUpdate = 0; };
 
     this.view.mount(this.canvas);
     this.world = createWorld('m1');
@@ -535,6 +538,7 @@ export class App implements PanelNav {
     this.hud.setSpeed(this.loop.speed);
     this.hud.setTool(this.tool, this.overlay);
     this.hud.setCompact(!!this.layout?.mini);
+    this.syncSheetFold();
     this.ranking.invalidate();
     this.hud.update(this.world, this.pace, this.ranking.get(this.world, this.loop.journal.length));
     this.watchRail();
@@ -595,6 +599,7 @@ export class App implements PanelNav {
       if (now - this.lastSheetUpdate > 250) {
         this.lastSheetUpdate = now;
         this.sheets.update();
+        this.markers.occluders = this.occluderRects();
       }
       if (this.world.state.mission.result !== 'running' && !this.endShown) this.showEnd();
     }
@@ -775,11 +780,30 @@ export class App implements PanelNav {
     add(this.sheets.top?.el, true);
     add(this.layers.hud.querySelector<HTMLElement>('.rail'));
     add(this.layers.hud.querySelector<HTMLElement>('.waybill-wrap'));
-    // HUD v3 (D-43): top chips/speed bar and the worst-stall row also hide the map
-    add(this.layers.hud.querySelector<HTMLElement>('.topbar'));
+    // HUD v3 (D-43): top chips/speed bar and the worst-stall row also hide the map. The .topbar box itself is
+    // empty (its pieces sit in the .hud-top grid), so its pieces are the obstacles (layout check, D-62).
+    for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.topbar > .menu-btn, .topbar > .chips, .topbar > .speed')) add(el);
     add(this.layers.hud.querySelector<HTMLElement>('.stall-row'));
     const rect = freeRect(scene, obstacles);
     return { rect, offset: { x: (rect.l + rect.r - scene.r) / 2, y: (rect.t + rect.b - scene.b) / 2 } };
+  }
+
+  /** A bottom sheet (not a side one) folds the waybill while it is open (D-62). */
+  private syncSheetFold(): void {
+    this.hud?.setSheetFold(this.sheets.count > 0 && !document.body.classList.contains('is-side'));
+  }
+
+  /** HUD pieces and sheets above the map, in markers-root px: pins under them fade out (D-62). */
+  private occluderRects(): Rect[] {
+    const o = this.layers.markers.getBoundingClientRect();
+    const out: Rect[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>(OCCLUDERS)) {
+      if (el.offsetParent === null) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1 || getComputedStyle(el).visibility !== 'visible') continue;
+      out.push({ l: r.left - o.left, t: r.top - o.top, r: r.right - o.left, b: r.bottom - o.top });
+    }
+    return out;
   }
 
   /**
@@ -1043,6 +1067,7 @@ export class App implements PanelNav {
     applyLayoutClasses(l);
     if (l.mini && this.tool !== 'none') this.setTool('none');
     this.hud?.setCompact(l.mini);
+    this.syncSheetFold();
     if (prev && prev.dpr !== l.dpr) this.watchDpr();
     // The camera orbits a target at the canvas centre, so the subject stays centred through any resize.
     this.view.resize(l.w, l.sceneH, this.renderDpr());
