@@ -236,7 +236,7 @@ export const RANKS: readonly RankDef[] = [
   { renown: 1000, goods: 4, flow: 20, unlocks: ['fisher', 'quarry'], surfaces: [2], castleLevel: 0 },
   { renown: 3000, goods: 6, flow: 60, unlocks: ['charcoalBurner', 'malthouse'], surfaces: [], castleLevel: 0 },
   { renown: 7200, goods: 7, flow: 120, unlocks: ['brewery'], surfaces: [], castleLevel: 0 },
-  { renown: 13000, goods: 9, flow: 160, unlocks: [], surfaces: [], castleLevel: 1 },
+  { renown: 14500, goods: 9, flow: 160, unlocks: [], surfaces: [], castleLevel: 1 },
 ];
 
 /** Number of ranks in state v1-v4 (town.rankTicks had this many entries). */

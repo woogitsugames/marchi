@@ -1346,3 +1346,25 @@ bridge and moves on (915x412 run: coins 180 -> 150, bridge on the map). Heights 
 placement (a cache), so the scan costs no extra layouts in steady state. Fold book/flex not run: the repro tool
 has no hinge emulation and the machine was saturated (SwiftShader ~1.5 min per step); `tools/fold-audit.mjs`
 remains the check for those. `tools/repro-step5.mjs` gains `LANG_Q` and `ONLY5`. (decided)
+
+**D-97 — Free valley rank 5: 13 000 → 14 500 renown (day 7; sim constant only, missions untouched).** After D-94
+(top-up in loads of four, ranks 3/4 at 3000/7200) the decent-player bot (`tools/bot-sandbox.ts`, plan `DECENT`,
+150 min) reached rank 5 at **108.7 min**, at the very start of the target window 105–135 min, while ranks 1–4 had
+moved to the middle of theirs. Rank 5 unlocks nothing (castle look only), so it is the long goal and should sit
+mid-window. Threshold sweep, same plan, everything else equal (ranks 1–4 10.4 / 22.3 / 42.8 / 76.3 min and 19 706
+silver earned in every run, no invariant violations):
+
+| rank 5 renown | rank 5 reached |
+|---|---|
+| 13 000 (old) | 108.7 min |
+| 14 000 | 116.0 min |
+| **14 500** | **119.7 min** |
+| 15 000 | 123.1 min |
+| 16 000 | 129.1 min |
+
+14 500 lands nearest the middle (120). 16 000 leaves only ~6 min to the top edge (a slower player misses the
+window); 14 000 stays in the lower third. Bench 180 min: "mixed" 106.5–108.7 → 117.7–119.7 min; with
+`--events` 87.5–90.0 → 95.3–96.9 min (still under the window, as before — events add silver; not tuned here).
+`docs/playtest/PROTOCOL.md` rank table updated to 3000 / 7200 / 14 500. Only `RANKS[5].renown` in
+`src/sim/defs.ts` changes: no state field, state version stays 8, mission golden hashes unchanged (no mission
+reads the valley ranks). Owner confirmed 14 500 (~22:30). (decided)
