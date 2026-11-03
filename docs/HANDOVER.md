@@ -162,6 +162,12 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
    „producent” (drwal pracuje / stoi) w `explainBuilding` — funkcja tylko czyta stan, hasze bez zmian, ale to
    `src/sim/diagnose.ts` i zmienia to, co gracz czyta w misjach I–XII (testy czytelności do przejrzenia).
    **Rekomendacja: tak, po playteście H2** (ta sama pomyłka „brak wozu” vs „brak surowca”), nie przed nim.
+15. **Zapasy na podwórzach według stanu magazynu (propozycja, noc 5 — nie zrobione).** Dziś stosy kłód, desek,
+   worków i beczek przy budynkach są stałą dekoracją modelu, niezależną od `stock`. Propozycja: każdy model dostaje
+   miejsca na 6 jednostek wyrobu (`stockSlots`), rysowane tymi samymi instancjami co ładunek wozów (`cargo-*`, bez
+   nowych wywołań rysowania), więc pełne podwórze = `OUTPUT_FULL` widać bez dotykania. Koszt: przejrzenie 12 modeli
+   (stałe stosy wyrobu zamienić na dynamiczne), zrzuty z bliska. **Rekomendacja: tak, po ocenie postaci przy pracy
+   (decyzja 4)** — ten sam przegląd modeli na telefonie.
 
 ## Stan nocy 2026-11-02/03 (gałąź `claude/w-night`, agent nocny)
 Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian):
@@ -245,3 +251,28 @@ Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, pu
 5. **BACKLOG porządki**: `stall.alert`/`ui.error` na głośniku telefonu — już zrobione wcześniej (pliki mają 99 % energii
    w 600–2500 Hz), `screenshots-plan.md` — już przepisany; wpisy zamknięte. Nowy wpis P3: pętla młyna gubi rytm na szwie
    (9,56 okresu na 5,5 s) — źródło Freesound niedostępne z kontenera (403), opis naprawy w BACKLOG. Następne decyzje od **D-66**.
+
+## Stan nocy 5 — 2026-11-03 (gałąź `claude/w-night5`, agent nocny 5)
+Kolejka wg BACKLOG (każde: typecheck, testy, build, `npm run layout -- --quick`, push; sim nietknięta, hasze bez zmian):
+1. `23b7ce1` **P1 provenance muzyki**: `tests/music-provenance.test.ts` — plik bez wpisu w
+   `docs/legal/music_provenance.json` = czerwony test (SHA-256, id Suno w tagu COMMENT WebM, każdy utwór z `music.ts`
+   istnieje, tabela w ASSETS.md); skaner `tools/music-provenance.mjs` (`--write` po przekodowaniu). ASSETS.md: Suno AI,
+   plan płatny. Deklaracja treści AI w sklepach zostaje krokiem wydania.
+2. `9d81f3f` **P2 `?diag=1`**: percentyle czasu klatki p50/p95/p99, klatki > 33 ms, p95 CPU sim/widoku w kubełkach
+   tempa (pauza = odniesienie), „Kopiuj JSON” (`marchia.frame-diag.v1`); protokół na składaku i tabela w docs/PERF.md.
+3. `2f4dd6a` **P2 test optymalności `findPath`** względem niezależnej Dijkstry O(V²) (deszcz, kolejki na mostach,
+   żywy świat 50 wozów).
+4. `5c6f5a7` **P2 raport pokrycia tłumaczeń**: `npm run i18n:coverage` (+ `--pack`), paczka
+   `docs/i18n/pending-pack/` (177 kluczy) gotowa dla GPT.
+5. `83e983c` **P3 „migawka diagnozy”**: pierwszy krytyczny przestój misji — pinezka trzy razy wypuszcza pierścień,
+   karta „Najgorszy zastój” na 2 s mosiężna poświata, czytnik ekranu słyszy przyczynę; kamera stoi, bez nowych kluczy.
+6. `f0f5c5e` + `0aaf913` **P4 zapowiedź deszczu** 30 s przed ulewą (`hud.rainSoon`); przy okazji na Flipie
+   komunikat chowa się pod otwartym arkuszem (stara kolizja wyszła w `layout`); pełny `npm run layout` (350) złapał to
+   samo na 915×412 / 904×1000 / 360×740 w karcie wozu → reguła rozszerzona na każdy układ (`body.has-sheet .notice-wrap`),
+   scena `wagon` 25/25 i `--quick` 84/84 zielone (pełnego przebiegu nie powtórzono — ~25 min).
+7. `326bacd` **P3 `npm run a11y`** (CDP, drzewo dostępności): złapał błąd — po zamknięciu arkusza w pionie fokus nie
+   wracał do oka „Najgorszy zastój” (naprawione w `sheets.ts`).
+BACKLOG: zamknięte jako już zrobione wcześniej (sprawdzone w kodzie): kod deweloperski w buildzie, klon w `saveGame`,
+Intl w liczbach, właściwości logiczne RTL, klucze HUD w 17 językach, samouczek ≤ 140 znaków, ikona v3.
+Nowe klucze (PENDING_KEYS): `diag.copy|copied|reset`, `hud.rainSoon`. Zrzuty `docs/shots/night5-*.jpg` (5).
+Decyzje 13–15 dopisane wyżej. Następne decyzje od **D-66** (ta noc nie dodała wpisów D-NN).
