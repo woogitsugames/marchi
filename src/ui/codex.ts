@@ -4,7 +4,7 @@
 // the session (the sheet re-renders every second). PL and EN are authored; other languages read the English
 // entry, marked lang="en" so an RTL sheet still lays it out left to right.
 import { getLang, t } from '../i18n/index';
-import { STALL_CODEX, type StallCodexLocale } from '../content/stallCodex';
+import { STALL_CODEX, STALL_CODEX_CALM, type StallCodexLocale } from '../content/stallCodex';
 import type { BuildingStatus, WagonStatus } from '../sim/index';
 import { esc } from './dom';
 import { iconSvg } from './icons';
@@ -18,16 +18,18 @@ export function codexKey(kind: 'building' | 'wagon', s: BuildingStatus | WagonSt
   return cause ? `status.${s.k}.${cause}` : `status.${s.k}`;
 }
 
-/** The entry for a status in the reading language (English outside pl / en), or null when none is authored. */
-export function codexEntry(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus): { e: StallCodexLocale; lang: 'pl' | 'en' } | null {
-  const entry = STALL_CODEX[codexKey(kind, s)];
+/** The entry for a status in the reading language (English outside pl / en), or null when none is authored.
+ *  `calm` (D-98): the stall needs nothing done (calmWhy) — its calm variant when one is authored. */
+export function codexEntry(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus, calm = false): { e: StallCodexLocale; lang: 'pl' | 'en' } | null {
+  const key = codexKey(kind, s);
+  const entry = (calm ? STALL_CODEX_CALM[key] : undefined) ?? STALL_CODEX[key];
   if (!entry) return null;
   const lang = getLang() === 'pl' ? 'pl' : 'en';
   return { e: entry[lang], lang };
 }
 
-export function codexHtml(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus): string {
-  const c = codexEntry(kind, s);
+export function codexHtml(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus, calm = false): string {
+  const c = codexEntry(kind, s, calm);
   if (!c) return '';
   const { e } = c;
   const foreign = getLang() !== c.lang;

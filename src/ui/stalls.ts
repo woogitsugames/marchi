@@ -56,6 +56,17 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   return null;
 }
 
+/**
+ * The "Co to znaczy?" fold reads the calm variant of the codex entry for this link (D-98): a building
+ * stall with a calm reason (surplus, filled order, granary with room, stone in store) — the same cases
+ * the sheet's calm line names, so the fold never advises "Kup wóz" under it.
+ */
+export function codexCalm(world: World, l: ReasonLink): boolean {
+  if (l.kind !== 'building') return false;
+  const b = buildingById(world, l.id);
+  return !!b && calmWhy(world, b) !== null;
+}
+
 /** Buildings with a stall worth a pin, worst first (stalledTicks × criticality). */
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];

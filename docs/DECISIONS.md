@@ -1368,3 +1368,18 @@ window); 14 000 stays in the lower third. Bench 180 min: "mixed" 106.5–108.7 �
 `docs/playtest/PROTOCOL.md` rank table updated to 3000 / 7200 / 14 500. Only `RANKS[5].renown` in
 `src/sim/defs.ts` changes: no state field, state version stays 8, mission golden hashes unchanged (no mission
 reads the valley ranks). Owner confirmed 14 500 (~22:30). (decided)
+
+**D-98 — Calm codex variant for a full yard that needs nothing ("Pełno — nic pilnego"; day 7; UI/content only).**
+The "Co to znaczy?" fold under a calm stall (D-85 surplus, a filled order, D-95 stone already in the granary) read
+the ordinary `status.OUTPUT_FULL.NO_WAGON` entry, whose first cure is "Kup wóz w połączonej stajni" — right under
+the calm line that says "Nowy wóz tego nie przyspieszy". Two texts on one card contradicted each other, and the
+codex is what a new player trusts. Now `STALL_CODEX_CALM` (`src/content/stallCodex.ts`, mirrored in
+`docs/content/stall-codex.md` under "Wersje spokojne") holds a calm variant of that key: "Pełno — nic pilnego",
+"to nie awaria", fixes "Nie kupuj wozu z tego powodu…", "Zajmij się postojem z czerwoną pieczęcią…", "Gdy towar
+znów będzie potrzebny, wóz przyjedzie sam." The fold takes it exactly when `calmWhy()` is non-null for the
+chain's last building (`codexCalm()` in `src/ui/stalls.ts`), so the fold and the calm line can never disagree.
+Only keys whose normal entry advises a cure a calm stall does not need get a variant (one today). Measured over
+whole missions: m4 898 calm / 15 ordinary samples, m8 340 / 139 — the ordinary entry (with "Kup wóz") still shows
+where a wagon would help (`day7-codex-wagon-m8-sawmill-412x915.jpg`). Tests: calm variants only for real keys,
+never "Kup wóz"/"Buy a wagon"; the fold follows the calm line on m4/m8/m9. Rejected: deleting the wagon cure from
+the normal entry (it is right for a real stall). `docs/shots/day7-codex-calm-m4-*.jpg`. (decided)

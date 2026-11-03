@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { cureFor, gapTarget } from './stalls';
+import { codexCalm, cureFor, gapTarget } from './stalls';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -384,7 +384,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
-      const codex = stalled ? codexHtml(cl.kind, cl.status) : '';
+      const codex = stalled ? codexHtml(cl.kind, cl.status, codexCalm(world, cl)) : '';
       const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain) : '') + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
