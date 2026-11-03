@@ -89,6 +89,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "A neve chegou e parte da carga ficou pelo caminho. Verifique a travessia e a coleta pelas carroças.\n— Wszebor",
     },
+    sv: {
+      opening: "Till vägförvaltaren: för 30 plankor och 20 bröd till borgen före första snön. Skogshuggaren och sågverket ligger bortom floden, men stränderna saknar förbindelse. Bygg en överfart och håll mjöl och bröd i rörelse.\n— Wszebor, kastellan av Łozinny Bród",
+      won: {
+        1: "Bröd och plankor nådde borgen. Ett sigill; Skicka iväg vagnarna tidigare nästa gång.\n— Wszebor",
+        2: "Bröd och plankor nådde borgen. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Bröd och plankor nådde borgen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Den första snön kom, men en del av lasten var kvar på vägen. Kontrollera överfarten och vagnarnas hämtning.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -162,6 +171,15 @@ export const CONTRACT_LETTERS = {
         3: "A encomenda atravessou a ponte. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "O prazo acabou com mercadorias presas na ponte. Abra uma segunda rota.\n— Wszebor",
+    },
+    sv: {
+      opening: "Borgskrivaren Mirogniew begär 36 plankor och 30 bröd. Vagnar från båda stränderna trängs på den enda träbron. Lätta på kön före tidsfristen: en andra bro eller en stenbro hjälper.\n— Wszebor",
+      won: {
+        1: "Varorna tog sig över bron. Ett sigill; Minska kön vid brofästet.\n— Wszebor",
+        2: "Varorna tog sig över bron. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Varorna tog sig över bron. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Tidsfristen gick ut medan vagnarna stod i brokön. Ge dem en andra väg.\n— Wszebor",
     },
   },
   m3: {
@@ -237,6 +255,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "A chuva não parou e faltaram suprimentos. Calce os trechos que atrasam as carroças.\n— Wszebor",
     },
+    sv: {
+      opening: "Regnet har spolat bort grusvägen. Borgen behöver 24 plankor och 16 bröd, men hjulen fastnar i leran. Mjölnaren Borzym väntar på säd. Stenlägg de vägavsnitt där flest vagnar kör.\n— Wszebor",
+      won: {
+        1: "Förråden nådde fram trots regnet. Ett sigill; Stenlägg där leran sinkar vagnarna.\n— Wszebor",
+        2: "Förråden nådde fram trots regnet. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Förråden nådde fram trots regnet. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Regnet fortsatte och leveranserna uteblev. Stenlägg där vagnarna kör långsamt.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -310,6 +337,15 @@ export const CONTRACT_LETTERS = {
         3: "O castelo recebeu os bens apesar do gelo. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "A ponte fechou como previsto. Armazene provisões junto ao castelo ou construa uma ponte de pedra.\n— Wszebor",
+    },
+    sv: {
+      opening: "Drivisen kommer att stänga träbron vid utsatt tid. Kör förråden till ett magasin på borgens sida i förväg, eller bygg en stenbro. Varor på andra stranden mättar ingen.\n— Wszebor",
+      won: {
+        1: "Borgen fick sina varor trots isen. Ett sigill; Lagra varor på borgens strand i förväg.\n— Wszebor",
+        2: "Borgen fick sina varor trots isen. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Borgen fick sina varor trots isen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Bron stängdes som förutspått. Lagra varor på borgens sida eller bygg en stenbro i förväg.\n— Wszebor",
     },
   },
   m5: {
@@ -385,6 +421,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Ao menos uma entrega chegou tarde. Divida as reservas por prazo, não apenas pela soma.\n— Wszebor",
     },
+    sv: {
+      opening: "Borgmarknaden kräver tre leveranser vid skilda tider. Skrivaren Mirogniew bokför varje del: bröd och plankor ska komma i tid, inte med sista vagnen. Bygg upp ett förråd och ordna körningarna.\n— Wszebor",
+      won: {
+        1: "Alla tre leveranser kom i tid. Ett sigill; Dela upp förråden efter tidsfristerna.\n— Wszebor",
+        2: "Alla tre leveranser kom i tid. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Alla tre leveranser kom i tid. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Minst en delleverans kom för sent. Planera efter varje tidsfrist, inte bara totalsumman.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -458,6 +503,15 @@ export const CONTRACT_LETTERS = {
         3: "As provisões chegaram apesar do depósito cheio. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "As mercadorias se acumularam e o prazo acabou. Verifique o celeiro cheio e a rota do moinho à padaria.\n— Wszebor",
+    },
+    sv: {
+      opening: "Magasinet är trångt, och säden kommer fortare än mjölnaren Borzym kan hämta den. När lagret fylls stannar arbetet och borgens beställning hotas. Frigör plats eller led om vagnarna.\n— Wszebor",
+      won: {
+        1: "Varorna kom fram trots det fulla magasinet. Ett sigill; Håll plats fri i magasinet och vägen till bageriet öppen.\n— Wszebor",
+        2: "Varorna kom fram trots det fulla magasinet. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Varorna kom fram trots det fulla magasinet. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Varorna hopades och tiden tog slut. Se över det fulla magasinet och vägen från kvarn till bageri.\n— Wszebor",
     },
   },
   m7: {
@@ -533,6 +587,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "O jejum acabou sem peixes suficientes. Ponha a cabana junto à água e mantenha as carroças na ponte.\n— Wszebor",
     },
+    sv: {
+      opening: "Fastan börjar. Borgköket kräver 54 fiskar. En fiskarstuga står redan på norra stranden, men fångsten kan bli för sen. Bygg en stuga till vid vattnet, inte inne på land, och för fisken över träbron till södra stranden.\n— Wszebor",
+      won: {
+        1: "Fisken kom fram till köket. Ett sigill; Bygg en andra fiskarstuga vid vattnet.\n— Wszebor",
+        2: "Fisken kom fram till köket. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Fisken kom fram till köket. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Fastan tog slut utan tillräckligt med fisk. Se till att stugan står vid vatten och att vagnarna korsar bron.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -606,6 +669,15 @@ export const CONTRACT_LETTERS = {
         3: "Tábuas e pães venceram a tempestade. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "A tempestade prendeu as carroças na lama. Traga pedra ao celeiro e só depois calce a estrada sul.\n— Wszebor",
+    },
+    sv: {
+      opening: "Stormen närmar sig. Leverera 24 plankor och 20 bröd innan leran sinkar vagnarna. Stenen vid stenbrottet kan inte lägga väg: kör den först till magasinet, fyra enheter per vagn. Stenlägg sedan södra vägen.\n— Wszebor",
+      won: {
+        1: "Bröd och plankor tog sig fram genom stormen. Ett sigill; Kör stenen till magasinet innan du stenlägger.\n— Wszebor",
+        2: "Bröd och plankor tog sig fram genom stormen. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Bröd och plankor tog sig fram genom stormen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Stormen satte fast vagnarna i leran. Kör först stenen till magasinet och stenlägg södra vägen.\n— Wszebor",
     },
   },
   m9: {
@@ -681,6 +753,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "O casamento começou antes das entregas. Dê às duas oficinas fontes suficientes de madeira.\n— Wszebor",
     },
+    sv: {
+      opening: "Bröllopet närmar sig. Det behövs 36 plankor, 8 träkol och 26 öl. Säd ska till mälteriet och malt till bryggeriet. Sågverket och kolmilan delar en skogshuggare; när en tar virket stannar den andra. Öka tillgången på trä och vagnar.\n— Wszebor",
+      won: {
+        1: "Bröllopet fick plankor, kol och öl. Ett sigill; Ge båda verkstäderna tillräckligt med trä.\n— Wszebor",
+        2: "Bröllopet fick plankor, kol och öl. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Bröllopet fick plankor, kol och öl. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Bröllopet kom före varorna. Ge sågverket och kolmilan var sin pålitlig träkälla.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -754,6 +835,15 @@ export const CONTRACT_LETTERS = {
         3: "Tábuas e carvão chegaram às oficinas. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "A carvoaria consumiu a madeira da serraria. Construa outro lenhador; mais carroças não cortam árvores.\n— Wszebor",
+    },
+    sv: {
+      opening: "Smeden väntar på träkol, timmermännen på plankor: 48 plankor och 8 träkol. Sågverket och kolmilan får sitt trä från en enda skogshuggare som inte räcker till. Bygg en till; fler vagnar fäller inga träd.\n— Wszebor",
+      won: {
+        1: "Verkstäderna fick plankor och träkol. Ett sigill; Bygg en andra skogshuggare i stället för fler vagnar.\n— Wszebor",
+        2: "Verkstäderna fick plankor och träkol. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Verkstäderna fick plankor och träkol. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Kolmilan förbrukade sågverkets trä. Bygg en skogshuggare till; fler vagnar ger inte mer trä.\n— Wszebor",
     },
   },
   m11: {
@@ -829,6 +919,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "O inverno chegou antes do último barril. Compre carroças se todas estiverem ocupadas e os grãos parados.\n— Wszebor",
     },
+    sv: {
+      opening: "Inför vintern behöver borgen 22 öl. Säden växer i väster, mälteriet ligger långt österut. Tre vagnar ska betjäna gård, mälteri, bryggeri och borg. Om alla vagnar är upptagna medan säden väntar, köp fler i stallet.\n— Wszebor",
+      won: {
+        1: "Ölet nådde borgen. Ett sigill; Köp fler vagnar för långa turer.\n— Wszebor",
+        2: "Ölet nådde borgen. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Ölet nådde borgen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Vintern kom före sista tunnan. Köp fler vagnar om säden väntar och alla vagnar kör.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -902,6 +1001,15 @@ export const CONTRACT_LETTERS = {
         3: "As três entregas foram concluídas. Três selos pelo excelente planejamento.\n— Wszebor",
       },
       lost: "O último prazo acabou sem tudo. O celeiro cheio travou a cervejaria. Ligue o celeiro grande mais cedo.\n— Wszebor",
+    },
+    sv: {
+      opening: "Till storbrygden behövs 40 bröd och 48 öl i tre leveranser: 32 bröd före 6:00, 8 bröd och 12 öl före 9:00, sedan 36 öl före 12:00. Borgen tar bara emot aktuell leverans. Lilla magasinet är fyllt; anslut det stora, två rutor från vägen, för att lagra öl.\n— Wszebor",
+      won: {
+        1: "Alla tre leveranser fullbordades. Ett sigill; Anslut det stora magasinet innan bryggeriet fylls.\n— Wszebor",
+        2: "Alla tre leveranser fullbordades. Två sigill för välordnade körningar.\n— Wszebor",
+        3: "Alla tre leveranser fullbordades. Tre sigill för utmärkt framförhållning.\n— Wszebor",
+      },
+      lost: "Sista tidsfristen passerade, och det fulla magasinet stoppade bryggeriet. Anslut det stora magasinet tidigare.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
