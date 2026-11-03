@@ -80,6 +80,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "È arrivata la prima neve e parte delle merci è rimasta per strada. Controlla il passaggio e il ritiro dei carichi.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "Ao encarregado das estradas: entregue 30 tábuas e 20 pães ao castelo antes da primeira neve. O lenhador e a serraria ficam do outro lado do rio, sem ligação entre as margens. Construa uma travessia e mantenha o transporte de farinha e pão.\n— Wszebor, castelão de Łozinny Bród",
+      won: {
+        1: "Pães e tábuas chegaram ao castelo. Um selo; Na próxima vez, envie as carroças antes.\n— Wszebor",
+        2: "Pães e tábuas chegaram ao castelo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "Pães e tábuas chegaram ao castelo. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "A neve chegou e parte da carga ficou pelo caminho. Verifique a travessia e a coleta pelas carroças.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -144,6 +153,15 @@ export const CONTRACT_LETTERS = {
         3: "La merce ha attraversato il ponte. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "La scadenza è trascorsa con i carri in coda al ponte. Apri un secondo percorso.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O escriba Mirogniew exige 36 tábuas e 30 pães para o castelo. Carroças das duas margens se amontoam na única ponte de madeira. Antes do prazo, construa outra ponte ou uma passagem de pedra para aliviar a fila.\n— Wszebor",
+      won: {
+        1: "A encomenda atravessou a ponte. Um selo; Reduza a fila na ponte.\n— Wszebor",
+        2: "A encomenda atravessou a ponte. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "A encomenda atravessou a ponte. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "O prazo acabou com mercadorias presas na ponte. Abra uma segunda rota.\n— Wszebor",
     },
   },
   m3: {
@@ -210,6 +228,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "La pioggia non è cessata e le merci sono mancate. Lastrica dove i carri rallentano.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "A chuva destruiu a estrada de terra. O castelo precisa de 24 tábuas e 16 pães, mas as rodas atolam. O moleiro Borzym aguarda grãos. Calce os trechos por onde mais carroças passam.\n— Wszebor",
+      won: {
+        1: "Os suprimentos chegaram apesar da chuva. Um selo; Calce os trechos de lama.\n— Wszebor",
+        2: "Os suprimentos chegaram apesar da chuva. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "Os suprimentos chegaram apesar da chuva. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "A chuva não parou e faltaram suprimentos. Calce os trechos que atrasam as carroças.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -274,6 +301,15 @@ export const CONTRACT_LETTERS = {
         3: "Il castello è stato rifornito nonostante il ghiaccio. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "La chiusura del ponte era annunciata. Accumula scorte presso il castello o costruisci il ponte in pietra.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O gelo à deriva fechará a ponte de madeira na hora marcada. Antes disso, leve os suprimentos a um celeiro na margem do castelo ou construa uma ponte de pedra. Mercadorias do outro lado não alimentam ninguém.\n— Wszebor",
+      won: {
+        1: "O castelo recebeu os bens apesar do gelo. Um selo; Armazene bens na margem do castelo antes do gelo.\n— Wszebor",
+        2: "O castelo recebeu os bens apesar do gelo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "O castelo recebeu os bens apesar do gelo. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "A ponte fechou como previsto. Armazene provisões junto ao castelo ou construa uma ponte de pedra.\n— Wszebor",
     },
   },
   m5: {
@@ -340,6 +376,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Almeno una consegna è giunta tardi. Prepara scorte per ogni termine, non solo per il totale.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "A feira do castelo exige três entregas em momentos diferentes. O escriba Mirogniew registrará cada uma: pão e tábuas devem chegar em seus prazos, não na última carroça. Prepare reservas e organize as viagens.\n— Wszebor",
+      won: {
+        1: "As três entregas chegaram no prazo. Um selo; Separe as reservas por prazo.\n— Wszebor",
+        2: "As três entregas chegaram no prazo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "As três entregas chegaram no prazo. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "Ao menos uma entrega chegou tarde. Divida as reservas por prazo, não apenas pela soma.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -404,6 +449,15 @@ export const CONTRACT_LETTERS = {
         3: "Le scorte sono arrivate nonostante il deposito pieno. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "Le merci si sono accumulate e il tempo è finito. Controlla il granaio pieno e la strada dal mulino al forno.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O celeiro é apertado e os grãos chegam mais rápido do que o moleiro Borzym consegue retirá-los. Quando o depósito encher, o trabalho parará e o contrato sofrerá. Abra espaço ou mude a rota das carroças.\n— Wszebor",
+      won: {
+        1: "As provisões chegaram apesar do depósito cheio. Um selo; Mantenha espaço livre no celeiro e acesso à padaria.\n— Wszebor",
+        2: "As provisões chegaram apesar do depósito cheio. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "As provisões chegaram apesar do depósito cheio. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "As mercadorias se acumularam e o prazo acabou. Verifique o celeiro cheio e a rota do moinho à padaria.\n— Wszebor",
     },
   },
   m7: {
@@ -470,6 +524,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Il digiuno è finito senza abbastanza pesce. Metti la capanna sull'acqua e mantieni i carri in viaggio sul ponte.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "É tempo de jejum. As cozinhas do castelo precisam de 54 peixes. Já há uma cabana de pesca na margem norte, mas talvez não baste. Erga outra junto à água, nunca em terra firme, e leve a pesca pela ponte de madeira até a margem sul.\n— Wszebor",
+      won: {
+        1: "Os peixes chegaram às cozinhas. Um selo; Outra cabana junto à água teria ajudado.\n— Wszebor",
+        2: "Os peixes chegaram às cozinhas. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "Os peixes chegaram às cozinhas. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "O jejum acabou sem peixes suficientes. Ponha a cabana junto à água e mantenha as carroças na ponte.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -534,6 +597,15 @@ export const CONTRACT_LETTERS = {
         3: "Assi e pane sono arrivati durante la tempesta. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "La tempesta ha bloccato i carri nel fango. Porta prima la pietra al granaio e poi lastrica la strada a sud.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "Uma tempestade se aproxima. Entregue 24 tábuas e 20 pães antes que a lama atrase as carroças. A pedra da pedreira só serve para calçar a estrada após chegar ao celeiro, quatro unidades por carroça. Traga as pedras primeiro e calce a estrada sul.\n— Wszebor",
+      won: {
+        1: "Tábuas e pães venceram a tempestade. Um selo; Leve a pedra ao celeiro antes de calçar a estrada.\n— Wszebor",
+        2: "Tábuas e pães venceram a tempestade. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "Tábuas e pães venceram a tempestade. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "A tempestade prendeu as carroças na lama. Traga pedra ao celeiro e só depois calce a estrada sul.\n— Wszebor",
     },
   },
   m9: {
@@ -600,6 +672,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Le nozze sono arrivate prima della merce. Aumenta la fonte di legna per le due botteghe.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "O casamento se aproxima. São necessárias 36 tábuas, 8 de carvão vegetal e 26 de cerveja. Leve grãos à maltaria e malte à cervejaria. Serraria e carvoaria dependem de um só lenhador; quando uma recebe madeira, a outra para. Aumente a produção e as carroças.\n— Wszebor",
+      won: {
+        1: "O casamento recebeu tábuas, carvão e cerveja. Um selo; Garanta madeira para as duas oficinas.\n— Wszebor",
+        2: "O casamento recebeu tábuas, carvão e cerveja. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "O casamento recebeu tábuas, carvão e cerveja. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "O casamento começou antes das entregas. Dê às duas oficinas fontes suficientes de madeira.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -664,6 +745,15 @@ export const CONTRACT_LETTERS = {
         3: "I laboratori hanno ricevuto assi e carbone. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "La carbonaia ha usato la legna della segheria. Costruisci un secondo taglialegna; i carri non tagliano alberi.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O ferreiro precisa de carvão vegetal e os carpinteiros de tábuas: 48 tábuas e 8 de carvão. Serraria e carvoaria dependem do mesmo lenhador, incapaz de atender às duas. Construa outra cabana de lenhador; carroças extras não criam madeira.\n— Wszebor",
+      won: {
+        1: "Tábuas e carvão chegaram às oficinas. Um selo; Construa outro lenhador, não apenas carroças.\n— Wszebor",
+        2: "Tábuas e carvão chegaram às oficinas. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "Tábuas e carvão chegaram às oficinas. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "A carvoaria consumiu a madeira da serraria. Construa outro lenhador; mais carroças não cortam árvores.\n— Wszebor",
     },
   },
   m11: {
@@ -730,6 +820,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "L'inverno è giunto prima dell'ultima botte. Compra carri se il grano aspetta e tutti i mezzi sono impegnati.\n— Wszebor",
     },
+    "pt-BR": {
+      opening: "No inverno o castelo precisa de 22 de cerveja. Os grãos crescem no oeste, mas a maltaria fica longe, no leste. Três carroças atendem fazenda, maltaria, cervejaria e castelo. Se todas estiverem ocupadas enquanto os grãos esperam, compre mais carroças no estábulo.\n— Wszebor",
+      won: {
+        1: "A cerveja chegou ao castelo. Um selo; Compre carroças para a rota longa.\n— Wszebor",
+        2: "A cerveja chegou ao castelo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "A cerveja chegou ao castelo. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "O inverno chegou antes do último barril. Compre carroças se todas estiverem ocupadas e os grãos parados.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -794,6 +893,15 @@ export const CONTRACT_LETTERS = {
         3: "Le tre consegne sono state completate. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
       lost: "L'ultimo termine è passato. Il deposito pieno ha fermato il birrificio: collega prima il granaio grande.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "A grande produção exige 40 pães e 48 de cerveja em três entregas: 32 pães até 6:00; 8 pães e 12 de cerveja até 9:00; 36 de cerveja até 12:00. O castelo aceita apenas a entrega atual. O celeiro pequeno está cheio; ligue o grande, a duas casas da estrada, para guardar cerveja.\n— Wszebor",
+      won: {
+        1: "As três entregas foram concluídas. Um selo; Ligue o celeiro grande antes que a cervejaria fique cheia.\n— Wszebor",
+        2: "As três entregas foram concluídas. Dois selos pelas viagens bem organizadas.\n— Wszebor",
+        3: "As três entregas foram concluídas. Três selos pelo excelente planejamento.\n— Wszebor",
+      },
+      lost: "O último prazo acabou sem tudo. O celeiro cheio travou a cervejaria. Ligue o celeiro grande mais cedo.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
