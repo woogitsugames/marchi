@@ -198,6 +198,8 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   line-height: .95;
   margin: 0;
   color: var(--ink);
+  /* long names in other languages (de „Wege des Königreichs”) break at syllables, never past the strip */
+  overflow-wrap: break-word; hyphens: auto;
 }
 .menu-strip .subtitle {
   margin: 6px 0 0;
@@ -230,6 +232,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   line-height: 1.05;
   padding: 8px 0;
   color: var(--ink);
+  overflow-wrap: break-word; hyphens: auto;
   transition: color var(--t-fast) var(--ease);
 }
 .menu-item:active { color: var(--clay); }
@@ -246,7 +249,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   /* a subtitle that must wrap keeps whole phrases together (no lone last word under a dash) */
   text-wrap: pretty;
 }
-.menu-item .mi-text { text-wrap: balance; }
+.menu-item .mi-text { text-wrap: balance; min-width: 0; }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
@@ -323,7 +326,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .sheet-head .sh-icon { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
 .sheet-head .sh-text { flex: 1; min-width: 0; }
 .sheet-head .kicker { font-size: 13px; color: var(--ink-soft); font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
-.sheet-head h3 { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 28px; line-height: 1.05; }
+.sheet-head h3 { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 28px; line-height: 1.05; overflow-wrap: break-word; hyphens: auto; }
 .sheet-head .close { width: 48px; height: 48px; display: grid; place-items: center; color: var(--ink-soft); }
 .sheet-head .close:active { color: var(--ink); }
 .sheet-body {
@@ -358,7 +361,7 @@ body.is-side .sheet-grip { height: 10px; }
 body.is-side .sheet-grip::before { display: none; }
 
 /* sheet content blocks */
-.status-line { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; overflow-wrap: break-word; hyphens: auto; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
 .status-line.bad { color: #6e3520; }
 .status-line.ok { color: var(--meadow); }
 .status-line .since { margin-inline-start: auto; font-size: 13px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
@@ -550,7 +553,7 @@ body.is-side .sheet-grip::before { display: none; }
   pointer-events: none;
 }
 .letter .l-kicker { font-size: 13px; letter-spacing: .1em; font-variant: small-caps; text-transform: lowercase; color: var(--ink-soft); font-weight: 500; }
-.letter h2 { margin: 2px 0 8px; font-family: var(--font-head); font-weight: 700; font-size: 40px; line-height: 1; }
+.letter h2 { margin: 2px 0 8px; font-family: var(--font-head); font-weight: 700; font-size: 40px; line-height: 1; overflow-wrap: break-word; hyphens: auto; text-wrap: balance; }
 .letter p { margin: 0 0 12px; font-size: 17px; }
 /* the castle's wax sits inside the frame's top corner (D-53), the title keeps clear of it */
 .letter .l-seal { position: absolute; top: 30px; inset-inline-end: 34px; width: 44px; height: 44px; transform: rotate(8deg); filter: drop-shadow(0 1px 1px rgb(30 22 14 / .35)); }
@@ -1418,7 +1421,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
   color: #f3e5c4; text-align: center;
   text-shadow: 0 1px 0 rgb(43 10 12 / .55);
 }
-.ribbon .rb-t { text-wrap: balance; }
+.ribbon .rb-t { text-wrap: balance; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
 .wb-panel {
   position: relative;
   margin-top: -8px;

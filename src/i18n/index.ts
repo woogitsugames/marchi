@@ -2,6 +2,7 @@
 // ICU-lite plurals via Intl.PluralRules, RTL direction and per-script font stacks.
 import { en } from './en';
 import { pl, type Dict, type MessageKey } from './pl';
+import { pseudoize } from './pseudo';
 
 /** Supported languages (owner's list, D-18). Order = order in the settings list. */
 export const LANGS = [
@@ -63,6 +64,18 @@ export function availableLangs(): Lang[] {
   return LANGS.filter((l) => l === 'pl' || l === 'en' || `./${l.replace('-', '_')}.ts` in loaders);
 }
 
+/**
+ * Pseudo-locale (`?lang=pseudo`, layout screenshots only): English rules and hyphenation, every message
+ * accented and ~40 % longer (pseudo.ts). Not a language: never listed, never saved.
+ */
+let pseudo: Map<string, string> | null = null;
+export function setPseudo(on: boolean): void {
+  pseudo = on ? new Map() : null;
+}
+export function isPseudo(): boolean {
+  return pseudo !== null;
+}
+
 export function parseLang(x: string | null | undefined): Lang | null {
   return isLang(x) ? x : null;
 }
@@ -82,7 +95,7 @@ export async function setLang(l: Lang): Promise<void> {
   await loadDict(l);
   current = l;
   pluralCache = null;
-  try { localStorage.setItem('marchia.lang', l); } catch { /* ignore */ }
+  if (!pseudo) try { localStorage.setItem('marchia.lang', l); } catch { /* ignore */ }
   const root = document.documentElement;
   root.lang = l;
   root.dir = RTL_LANGS.has(l) ? 'rtl' : 'ltr';
@@ -125,6 +138,11 @@ export function formatPlural(s: string, params: Record<string, string | number>)
 /** Translate with plural blocks and {param} substitution; falls back to English, then the key. */
 export function t(key: MessageKey, params?: Record<string, string | number>): string {
   let s: string = dicts[current]?.[key] ?? en[key] ?? key;
+  if (pseudo) {
+    let p = pseudo.get(key);
+    if (p === undefined) { p = pseudoize(en[key] ?? key); pseudo.set(key, p); }
+    s = p;
+  }
   if (params) {
     if (s.includes(', plural,')) s = formatPlural(s, params);
     for (const [k, v] of Object.entries(params)) s = s.split('{' + k + '}').join(String(v));
