@@ -253,6 +253,25 @@ test('robust: a versionchange from another tab closes the cached connection inst
   eq(blocked, false, 'upgrade was not blocked by our connection');
 });
 
+test('robust: a database newer than this build (v3) still lists, loads and saves (B6)', async () => {
+  freshDb();
+  const w = mid('m1', 30);
+  await saveGame('auto-m1', w.state);
+  resetSaveConnection();
+  await new Promise<void>((resolve, reject) => {
+    const q = indexedDB.open('marchia', 3);
+    q.onsuccess = () => { q.result.close(); resolve(); };
+    q.onerror = () => reject(q.error);
+  });
+  resetSaveConnection();
+  eq((await listSaves()).map((x) => x.slot).join(','), 'auto-m1', 'listed from the v3 database');
+  const st = await loadGame('auto-m1');
+  eq(st?.tick, w.state.tick, 'loaded');
+  const w2 = mid('m5', 20);
+  await saveGame('auto-m5', w2.state);
+  eq((await listSaves()).length, 2, 'saved into the v3 database');
+});
+
 // (6) round-trip determinism ------------------------------------------------------------------------
 
 for (const id of ['m1', 'm5', 'm9', 'm12', 'sandbox']) {

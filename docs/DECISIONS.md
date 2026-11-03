@@ -753,3 +753,29 @@ into the free area on the start side without code change (checked: m1 "why" farm
 with the rail); folding the contract to its seal while a sheet is open (hides the contract the BACKLOG item wants
 readable, and moves the tutorial anchors). Also (frame-cost item 3, not a rule): `rankStalls` runs once per tick,
 applied command or selection change (`StallRanking`), not every frame. (decided)
+
+**D-56 — On-device benchmark as a hidden second Vite entry (`?debug=1&bench=device`).**
+Owner's decision (2026-11-02 23:55): the WebGL benchmark from `gpt/device-bench-22` ships as a hidden page. Kept
+from the branch: `tools/device-bench.{html,ts}` (no network, no workflow files; fixed 3 × 60 s camera script at
+×4 on the production `GameLoop` with `benchWorld(n)`, JSON export by clipboard or download) and
+`vite.bench.config.ts`, a second build that writes only `dist/tools/device-bench.html` plus its own chunk
+(`emptyOutDir: false`). `npm run build` runs both, so the APK carries the page; `vite.config.ts`, `index.html`
+and every player-facing screen are unchanged and nothing links to it. Entry: `src/main.ts` redirects before boot
+only when `debug=1` **and** `bench=device` are both present. The branch's `src/render/view.ts` changes (textures
+per quality, ultra DPR cap 3, `quality !== 'low'`) were already on the base and were not re-applied. The page's
+copy is Polish only (debug tool, outside i18n by design). Rejected: a menu or settings toggle (player build
+change), a third Vite entry in the main config (changes the player build's manifest). (decided)
+
+**D-57 — Valley chronicle wired to the UI; the recorded list is UI-owned (localStorage per ledger), not state.**
+The gpt-51 proposal (`src/sim/proposals/chronicle.ts`, 30 entries, texts `docs/content/chronicle.md`) is pure:
+`checkChronicle(state, done)` returns newly reached entries and "the caller owns the done IDs". Wired now without
+any sim change: `src/ui/chronicle.ts` keeps the recorded IDs per valley ledger in `localStorage`
+(`marchia.chronicle.<slot>`, best effort); on entering a valley game it adds silently everything the state already
+satisfies (no toast storm after a load), then checks once per game second and shows one toast per new entry
+("Kronika: …"). The pause menu of the free valley has "Kronika doliny (n/30)", opening a ledger page: recorded
+entries with the seal and the scribe's sentence, the others by title in faded ink with "jeszcze niezapisane" (the
+open titles double as gentle goals). A fresh ledger, "start over" and deleting the ledger clear its chronicle. Lost
+storage forgets only entries the state no longer shows (momentary: winter, fleet size after selling a wagon).
+No reward, no effect on play or hashes; 66 pl/en keys pending for the other languages. Open for the owner: move
+the list into the save (envelope field or SimState with a migration — then it travels with Android backup / a
+copied save), see HANDOVER „Decyzje na rano”. (decided, storage location open)

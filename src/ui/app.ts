@@ -31,6 +31,8 @@ import { BuildTool, buildTypes } from './buildTool';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
+import { CHRONICLE } from '../sim/proposals/chronicle';
+import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './chronicle';
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
@@ -103,6 +105,8 @@ export class App implements PanelNav {
   /** Save slot of the running game: the mission's own slot for contracts (D-36), a valley ledger in the free valley (D-29). */
   private slot: string = contractSlot('m1');
   private prevAudio: AudioSnapshot | null = null;
+  /** Valley chronicle entries of the ledger being played (UI-owned, D-57). */
+  private chronicle = new ChronicleLog();
   private sheets: Sheets;
   private hud: Hud | null = null;
   private markers = new Markers();
@@ -304,10 +308,12 @@ export class App implements PanelNav {
       read: () => readSlots(),
       play: (slot) => void this.continueGame(slot),
       fresh: (slot) => {
+        clearChronicle(slot);
         void deleteSave(slot).catch(() => undefined);
         this.newGame('sandbox', slot);
       },
       remove: async (slot) => {
+        clearChronicle(slot);
         await deleteSave(slot);
         void this.refreshSaves();
       },
@@ -485,6 +491,8 @@ export class App implements PanelNav {
     this.view.setMenuMode(false);
     music.setMood(isRaining(w.state) ? 'rain' : 'play');
     this.setWorld(w);
+    if (w.state.mission.id === 'sandbox' && isValleySlot(this.slot)) this.chronicle.attach(this.slot, w);
+    else this.chronicle.detach();
     this.loop.speed = 1;
     this.overlay = false;
     this.view.setOverlay('none');
@@ -612,10 +620,13 @@ export class App implements PanelNav {
         x: l.x, z: l.z, yaw: l.yaw, mapWidth: tr.w, cellSize: tr.cellSize, water: tr.water, audibleRadius: 90,
       });
     }
-    this.prevAudio = captureAudioState(this.world.state);
+    this.prevAudio = captureAudioState(this.world.state, this.prevAudio);
     if (this.mode === 'game' && this.world.state.mission.result === 'running') music.setMood(isRaining(this.world.state) ? 'rain' : 'play');
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
     if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();
+    if (this.mode === 'game' && this.chronicle.active && this.world.state.tick % TICK_HZ === 0) {
+      for (const id of this.chronicle.check(this.world)) this.hud?.toast(t('chron.new', { title: chronicleTitle(id) }), 'info', 'seal', 3200);
+    }
   }
 
   /** D-48: a contract that can no longer be won says why at once (read-only check, every 5 s of game time). */
@@ -944,7 +955,13 @@ export class App implements PanelNav {
     const content = gameMenuSheet({
       resume: () => { this.sheets.closeTop(); },
       settings: () => this.openSettings(),
-      restart: () => { void deleteSave(this.slot).catch(() => undefined); this.newGame(this.missionId, this.slot); },
+      restart: () => {
+        if (isValleySlot(this.slot)) clearChronicle(this.slot);
+        void deleteSave(this.slot).catch(() => undefined);
+        this.newGame(this.missionId, this.slot);
+      },
+      chronicle: this.chronicle.active ? () => this.sheets.open(chronicleSheet(this.chronicle)) : undefined,
+      chronicleCount: () => [this.chronicle.done.size, CHRONICLE.length],
       toMenu: () => { void this.autosave().then(() => this.showMenu()); },
     }, this.world, isValleySlot(this.slot) ? this.slot : null);
     content.onClose = resume;

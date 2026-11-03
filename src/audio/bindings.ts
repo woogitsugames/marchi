@@ -27,19 +27,37 @@ export interface AudioSnapshot {
   readonly wagons: readonly WagonAudio[];
 }
 
-export function captureAudioState(state: Readonly<SimState>): AudioSnapshot {
-  return {
-    tick: state.tick,
-    result: state.mission.result,
-    buildings: state.buildings.map((b) => ({
-      id: b.id, type: b.type, x: b.x, y: b.y, w: b.w, h: b.h, status: b.status.k,
-    })),
-    wagons: state.wagons.map((w) => ({
-      id: w.id, at: w.at, next: w.next, odometer: w.odometer,
-      bridgeFrom: w.bridgeFrom, cargoGood: w.cargoGood, status: w.status.k,
-      good: w.job?.good ?? w.cargoGood,
-    })),
-  };
+/**
+ * `reuse`: the previous snapshot, once observeSim is done with it — its objects are overwritten in place
+ * (one snapshot per tick otherwise allocates an object per building and wagon: GC audit, frame-cost item 5).
+ */
+export function captureAudioState(state: Readonly<SimState>, reuse?: AudioSnapshot | null): AudioSnapshot {
+  type Mut = { -readonly [K in keyof AudioSnapshot]: AudioSnapshot[K] };
+  const snap = (reuse ?? { tick: 0, result: state.mission.result, buildings: [], wagons: [] }) as Mut;
+  snap.tick = state.tick;
+  snap.result = state.mission.result;
+  const bs = snap.buildings as BuildingAudio[];
+  const ws = snap.wagons as WagonAudio[];
+  bs.length = Math.min(bs.length, state.buildings.length);
+  for (let i = 0; i < state.buildings.length; i++) {
+    const b = state.buildings[i]!;
+    const o = bs[i];
+    if (o) { o.id = b.id; o.type = b.type; o.x = b.x; o.y = b.y; o.w = b.w; o.h = b.h; o.status = b.status.k; }
+    else bs.push({ id: b.id, type: b.type, x: b.x, y: b.y, w: b.w, h: b.h, status: b.status.k });
+  }
+  ws.length = Math.min(ws.length, state.wagons.length);
+  for (let i = 0; i < state.wagons.length; i++) {
+    const w = state.wagons[i]!;
+    const good = w.job?.good ?? w.cargoGood;
+    const o = ws[i];
+    if (o) {
+      o.id = w.id; o.at = w.at; o.next = w.next; o.odometer = w.odometer;
+      o.bridgeFrom = w.bridgeFrom; o.cargoGood = w.cargoGood; o.status = w.status.k; o.good = good;
+    } else {
+      ws.push({ id: w.id, at: w.at, next: w.next, odometer: w.odometer, bridgeFrom: w.bridgeFrom, cargoGood: w.cargoGood, status: w.status.k, good });
+    }
+  }
+  return snap;
 }
 
 /** Inject audio once. The sim is not imported into or modified by AudioEngine. */

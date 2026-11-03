@@ -1,6 +1,7 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
 import { BUILDINGS, RANKS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
 import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
+import { bridgeJamCause, type BridgeJamCause } from './bridgeJam';
 import { esc } from './dom';
 
 export function isRtl(): boolean {
@@ -120,11 +121,18 @@ export function buildingStatusText(s: BuildingStatus, world?: World): string {
   return capFirst(t(key, params));
 }
 
+const BRIDGE_JAM_KEY: Record<BridgeJamCause, MessageKey> = {
+  ONCOMING: 'wagon.BRIDGE_JAM.ONCOMING',
+  SPAN_FULL: 'wagon.BRIDGE_JAM.SPAN_FULL',
+  YIELD: 'wagon.BRIDGE_JAM.YIELD',
+  UNKNOWN: 'wagon.BRIDGE_JAM',
+};
+
 export function wagonStatusText(world: World, s: WagonStatus): string {
   if (s.k === 'NO_ROUTE') {
     return s.target >= 0 ? t('wagon.NO_ROUTE', { target: buildingName(world, s.target) }) : t('wagon.NO_ROUTE.home');
   }
-  if (s.k === 'BRIDGE_JAM') return t('wagon.BRIDGE_JAM', { blocker: wagonNumber(world, s.blocker) ?? '—' });
+  if (s.k === 'BRIDGE_JAM') return t(BRIDGE_JAM_KEY[bridgeJamCause(world, s)], { blocker: wagonNumber(world, s.blocker) ?? '—' });
   if (s.k === 'BRIDGE_CLOSED') return t('wagon.BRIDGE_CLOSED.in', { time: iso(ticksClock(Math.max(0, s.until - world.state.tick))) });
   return t(`wagon.${s.k}` as MessageKey);
 }

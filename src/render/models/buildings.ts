@@ -25,7 +25,7 @@ import {
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, trs, v3 } from './kit';
 import { brewery, charcoalBurner, fisher, malthouse, quarry } from './chains';
-import { addHuman, HUMAN_STYLES } from './people';
+import { addHuman, HUMAN_STYLES, type WorkerKind } from './people';
 import {
   beam,
   box,
@@ -79,6 +79,8 @@ export interface BuildingModel {
   gate: Vector3;
   /** Chimney/smoke emitter point, if any. */
   smoke?: Vector3;
+  /** An animated worker in the yard (render-only): where the feet stand and the facing (model space). */
+  worker?: { kind: WorkerKind; at: Vector3; yaw: number };
 }
 
 export const BUILDING_CELLS: Record<BuildingKind, [number, number]> = {
@@ -505,7 +507,7 @@ function woodcutter(b: PartBuilder): Partial<BuildingModel> {
     rod(b, 'wood', v3(-2.0, 0, 2.6 + z), v3(-2.3, 0.85, 2.6 + z), 0.04, 0.035, 5, { color: C.timberLight });
   }
   logGeom(b, trs(-2.3, 0.92, 2.6, Math.PI / 2, 0.1, 0), 0.13, 2.0);
-  return { gate: v3(0.2, 0, 4), smoke: v3(-0.7, 4.6, -1.3) };
+  return { gate: v3(0.2, 0, 4), smoke: v3(-0.7, 4.6, -1.3), worker: { kind: 'chop', at: v3(1.4, 0, 3.0), yaw: Math.PI } };
 }
 
 function sawmill(b: PartBuilder): Partial<BuildingModel> {
@@ -632,7 +634,7 @@ function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['
   }
   rod(wb, 'wood', v3(-1.6, 0, 0), v3(W / 2 + 0.25, 0, 0), 0.13, 0.13, 8, { color: '#4a3d31' });
   const wheel = { parts: wb.build(), pivot: v3(wx, 1.3, cz), axis: 'x' as const };
-  return { gate: v3(cx + 0.8, 0, 4), wheel };
+  return { gate: v3(cx + 0.8, 0, 4), wheel, worker: { kind: 'sack', at: v3(1.9, 0, 2.1), yaw: -Math.PI / 2 - 0.4 } };
 }
 
 function bakery(b: PartBuilder): Partial<BuildingModel> {
@@ -675,7 +677,7 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
     b.add('wood', new CylinderGeometry(0.22, 0.18, 0.18, 12, 1, true), { color: '#7a6242', m: trs(x, 0.68, 1.0), ao: 0 });
     for (let i = 0; i < 3; i++) b.add('cloth', new SphereGeometry(1, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), { color: '#a67a3d', m: trs(x + (i - 1) * 0.1, 0.74, 1.0 + (i % 2) * 0.06, 0, i, 0, 0.1, 0.07, 0.1), ao: 0 });
   }
-  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78) };
+  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78), worker: { kind: 'peel', at: v3(ox, 0, 1.6), yaw: Math.PI } };
 }
 
 function warehouse(b: PartBuilder): Partial<BuildingModel> {
@@ -939,6 +941,7 @@ export function buildingModel(kind: BuildingKind): BuildingModel {
     gate: extra.gate ?? v3(0, 0, (cells[1] * 4) / 2),
     wheel: extra.wheel,
     smoke: extra.smoke,
+    worker: extra.worker,
   };
   cache.set(kind, model);
   return model;

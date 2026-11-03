@@ -356,6 +356,9 @@ export interface GameMenuActions {
   settings(): void;
   restart(): void;
   toMenu(): void;
+  /** Free valley: open the chronicle (D-57); absent in contracts. */
+  chronicle?: () => void;
+  chronicleCount?: () => [number, number];
 }
 
 /** slot: the free-valley ledger being written to (shown under the title), null for contracts. */
@@ -383,6 +386,7 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
       const html = `${note}<div class="sheet-actions" style="flex-direction:column">
         <button class="btn primary cf" data-a="resume">${esc(t('menu.resume'))}</button>
         <button class="btn cf" data-a="settings">${esc(t('menu.settings'))}</button>
+        ${act.chronicle ? `<button class="btn cf" data-a="chronicle">${iconSvg('seal', 24)}<span>${esc(t('chron.menu', { n: act.chronicleCount?.()[0] ?? 0, total: act.chronicleCount?.()[1] ?? 0 }))}</span></button>` : ''}
         ${restart}
         <button class="btn cf" data-a="menu">${esc(t('menu.toMenu'))}</button></div>`;
       if (setHtml(sheet.body, html)) {
@@ -390,6 +394,7 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
           const a = b.dataset.a;
           if (a === 'resume') act.resume();
           if (a === 'settings') act.settings();
+          if (a === 'chronicle') act.chronicle?.();
           if (a === 'ask' || a === 'keep') { asking = a === 'ask'; this.update(sheet); }
           if (a === 'restart') act.restart();
           if (a === 'menu') act.toMenu();

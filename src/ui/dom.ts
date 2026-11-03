@@ -33,7 +33,9 @@ export function fromHtml<T extends Element = HTMLElement>(html: string): T {
   return t.content.firstElementChild as T;
 }
 
+const NEEDS_ESC = /[&<>"]/;
 export function esc(s: string): string {
+  if (!NEEDS_ESC.test(s)) return s; // most labels: no copies (GC audit)
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 

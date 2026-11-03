@@ -17,6 +17,8 @@ import { CELL, type Heightfield } from './heightfield';
 import { buildingModel, castleUpgradeParts, type BuildingKind } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
+import { WORKER_HIP_Y, WORKER_SHOULDER_Y, type WorkerKind, workerPose, workerRig } from './models/people';
+import { Parts } from './instancedParts';
 
 export interface BuildingInfo {
   id: number;
@@ -35,6 +37,20 @@ interface Wheel {
   buildingId: number;
   angle: number;
 }
+
+/** A yard worker: feet on the ground at `base` (position + facing), posed every frame from the building's status. */
+interface Worker {
+  buildingId: number;
+  kind: WorkerKind;
+  base: Matrix4;
+  /** Phase offset (s) so neighbouring yards do not swing in step. */
+  phase: number;
+}
+
+interface WorkerParts { legs: Parts; torso: Parts; arms: Parts }
+
+/** Most workers of one kind drawn at once (a large valley has a dozen of each at most). */
+const WORKER_CAP = 48;
 
 const boundsCache = new Map<ModelPart[], Box3>();
 /** Ground-level footprint of a model (parts below 2.5 m), model space. */
@@ -109,9 +125,30 @@ export class BuildingsView {
   info = new Map<number, BuildingInfo>();
   private meshes: Mesh[] = [];
   private wheels: Wheel[] = [];
+  private workers: Worker[] = [];
+  private workerParts = new Map<WorkerKind, WorkerParts>();
+  private readonly workerGroup = new Group();
+  private time = 0;
   private signature = '';
 
-  constructor(private readonly hf: Heightfield) {}
+  constructor(private readonly hf: Heightfield) {
+    this.workerGroup.name = 'yard-workers';
+    this.group.add(this.workerGroup);
+  }
+
+  private partsFor(kind: WorkerKind): WorkerParts {
+    let p = this.workerParts.get(kind);
+    if (!p) {
+      const rig = workerRig(kind, kind === 'chop' ? 2 : kind === 'sack' ? 3 : 0);
+      p = {
+        legs: new Parts(rig.legs, WORKER_CAP, this.workerGroup, `worker-${kind}-legs`),
+        torso: new Parts(rig.torso, WORKER_CAP, this.workerGroup, `worker-${kind}-torso`),
+        arms: new Parts(rig.arms, WORKER_CAP, this.workerGroup, `worker-${kind}-arms`),
+      };
+      this.workerParts.set(kind, p);
+    }
+    return p;
+  }
 
   /** Rebuild if the set of buildings changed. Returns true when rebuilt. */
   sync(world: World): boolean {
@@ -147,6 +184,12 @@ export class BuildingsView {
           noise: 0.12,
         });
         add(pb.build(), new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeTranslation(pcx * sx, 0, pcz * sz)));
+      }
+      if (model.worker) {
+        const at = model.worker.at.clone().applyMatrix4(m);
+        const base = new Matrix4().makeRotationY(angle + model.worker.yaw).setPosition(at.x, Math.max(baseY, this.hf.height(at.x, at.z)), at.z); // on the yard, like the props
+        this.partsFor(model.worker.kind);
+        this.workers.push({ buildingId: b.id, kind: model.worker.kind, base, phase: (b.id * 0.618) % 1 * 7 });
       }
       if (model.wheel) {
         const wm = m.clone().multiply(new Matrix4().makeTranslation(model.wheel.pivot.x, model.wheel.pivot.y, model.wheel.pivot.z));
@@ -193,6 +236,8 @@ export class BuildingsView {
   }
 
   update(world: World, dt: number): void {
+    this.time += dt;
+    this.updateWorkers(world);
     if (!this.wheels.length) return;
     for (const w of this.wheels) {
       const b = world.state.buildings.find((x) => x.id === w.buildingId);
@@ -207,11 +252,31 @@ export class BuildingsView {
     }
   }
 
+  /** Yard workers: chop / carry / bake while the building is WORKING, stand at rest otherwise. */
+  private updateWorkers(world: World): void {
+    for (const p of this.workerParts.values()) { p.legs.begin(); p.torso.begin(); p.arms.begin(); }
+    const bs = world.state.buildings;
+    for (const w of this.workers) {
+      let working = false;
+      for (let i = 0; i < bs.length; i++) if (bs[i]!.id === w.buildingId) { working = bs[i]!.status.k === 'WORKING'; break; }
+      workerPose(w.kind, this.time + w.phase, working, _pose);
+      const p = this.workerParts.get(w.kind)!;
+      if (p.legs.count >= WORKER_CAP) continue;
+      p.legs.push(w.base);
+      _wt.copy(w.base).multiply(_t.makeTranslation(0, WORKER_HIP_Y, 0)).multiply(ROT.makeRotationX(_pose.bend));
+      p.torso.push(_wt);
+      _wa.copy(_wt).multiply(_t.makeTranslation(0, WORKER_SHOULDER_Y, 0)).multiply(ROT.makeRotationX(_pose.arm));
+      p.arms.push(_wa);
+    }
+    for (const p of this.workerParts.values()) { p.legs.end(); p.torso.end(); p.arms.end(); }
+  }
+
   private clear(): void {
     for (const m of this.meshes) { this.group.remove(m); m.geometry.dispose(); }
     for (const w of this.wheels) for (const m of w.mesh) this.group.remove(m);
     this.meshes = [];
     this.wheels = [];
+    this.workers = [];
     this.info.clear();
   }
 
@@ -221,3 +286,7 @@ export class BuildingsView {
 }
 
 const ROT = new Matrix4();
+const _t = new Matrix4();
+const _wt = new Matrix4();
+const _wa = new Matrix4();
+const _pose = { bend: 0, arm: 0 };

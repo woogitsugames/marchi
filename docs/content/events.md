@@ -2,7 +2,7 @@
 
 **Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień zostają tutaj jako materiał na przyszłe szczegóły karty. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
 
-## Zamówienia królewskie — 30 wariantów
+## Zamówienia królewskie — 36 wariantów
 
 | ID | Ranga min. | Towary | PL — tytuł i treść | EN — title and copy |
 | --- | ---: | --- | --- | --- |
@@ -36,6 +36,12 @@
 | `fair_brewers` | 4 | beer, malt | Przygotowania do jarmarku — Piwniczny zamku zamawia piwo i słód przed przyjazdem kupców. | Preparing for the fair — The castle cellarer requests ale and malt before traders arrive. |
 | `royal_progress` | 5 | beer, bread, planks | Przejazd królewskiego dworu — Na postój władcy potrzebne są piwo, chleb oraz deski do ustawienia stołów. | The royal progress — A stop by the ruler's travelling court requires ale, bread and planks for tables. |
 | `capital_embassy` | 5 | beer, stone, charcoal | Poselstwo w stołecznym grodzie — Dwór przygotowuje piwo dla gości, kamień dla murarzy i węgiel do prac przy bramie. | Embassy at the capital stronghold — The court prepares ale for guests, stone for masons and charcoal for gate repairs. |
+| `bell_casting` | 3 | charcoal, stone | Odlew dzwonu — Ludwisarz przy kościele prosi o węgiel drzewny do pieca i kamień na obmurowanie formy. | Casting the bell — The bell-founder by the church asks for charcoal for his furnace and stone to wall the mould. |
+| `harvest_home` | 3 | malt, bread | Dożynki na dziedzińcu — Na dożynki kasztelan zamawia chleb dla żniwiarzy i słód dla piwowara. | Harvest home in the bailey — For the harvest feast the castellan orders bread for the reapers and malt for the brewer. |
+| `mill_weir` | 4 | stone, planks | Jaz przy młynie — Wiosenna woda podmyła jaz; młynarz prosi o kamień na narzut i deski na zastawki. | The mill weir — Spring water has undercut the weir; the miller asks for stone for the bank and planks for the sluices. |
+| `christmas_court` | 4 | beer, flour | Boże Narodzenie na dworze — Na święta dwór gromadzi piwo dla gości i mąkę na świąteczne kołacze. | Christmas at court — For the feast days the court gathers ale for its guests and flour for the festive loaves. |
+| `cathedral_works` | 5 | stone, planks, charcoal | Budowa katedry — Kapituła prosi o kamień na filary, deski na rusztowania i węgiel dla kowali przy hucie. | Cathedral works — The chapter asks for stone for the piers, planks for scaffolding and charcoal for the smiths. |
+| `royal_hunt` | 5 | beer, bread, fish | Królewskie łowy — Na postój królewskiego polowania w dolinie potrzeba piwa, chleba i ryb. | The royal hunt — The king's hunting party will rest in the valley; ale, bread and fish are needed. |
 
 Wymagania towarowe HUD wyświetla osobno, np. „Deski 8/12 · Ziarno 5/9”. Generator wymaga rangi **i kompletnego istniejącego łańcucha** dla każdego towaru. Dla każdej pozycji dostępne są polska i angielska narracja; to jedynie teksty, bez kodu wykonawczego.
 

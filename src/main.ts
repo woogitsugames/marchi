@@ -42,6 +42,11 @@ async function pickView(params: URLSearchParams): Promise<{ view: WorldView; kin
 
 async function boot(): Promise<void> {
   const params = new URLSearchParams(location.search);
+  // Hidden on-device benchmark (separate Vite entry, D-56): only with ?debug=1&bench=device, never linked from menus.
+  if (params.get('debug') === '1' && params.get('bench') === 'device') {
+    location.replace(new URL('tools/device-bench.html', location.href).href);
+    return;
+  }
   const lang = parseLang(params.get('lang')) ?? detectLang();
   // lang/dir before the first frame (the dictionary loads lazily); title and the canvas label follow every switch
   const root = document.documentElement;

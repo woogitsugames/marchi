@@ -1760,6 +1760,16 @@ body.is-flex .rail { z-index: 1; }
 .bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
 .bubble.is-minor .bb-in svg { opacity: .8; }
 .bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }
+/* running time of a stall (from 20 s): a small slate tally under the pin's tip, never wider than the pin's hit box */
+.bubble .bb-t {
+  position: absolute; top: 46px; left: 50%; transform: translateX(-50%);
+  min-width: 34px; padding: 0 4px; border-radius: 2px;
+  font-size: 12px; line-height: 16px; font-weight: 700; text-align: center; color: #eef0ee;
+  background: var(--slate); box-shadow: 0 1px 1px rgb(20 14 8 / .45);
+  direction: ltr; pointer-events: none;
+}
+.bubble.is-critical .bb-t { background: var(--wine); }
+.bubble .bb-t[hidden] { display: none; }
 @keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
 .eta-tag {
   position: absolute; left: 0; top: 0;
@@ -1939,3 +1949,15 @@ body.is-mini .menu-strip {
   .letter:has(.kv) .kv { break-before: column; }
   .letter:has(.kv) h2 { font-size: 28px; }
 }
+
+/* valley chronicle (D-57): a ledger page — recorded entries sealed, the rest by title in faded ink */
+.chron-intro { margin: 0 0 10px; font-size: 14px; color: var(--ink-soft); }
+.chron-list { list-style: none; margin: 0; padding: 0; }
+.chron-row { display: flex; align-items: flex-start; gap: 10px; padding-block: 7px; border-bottom: 1px solid rgb(74 72 67 / .18); }
+.chron-row:last-child { border-bottom: 0; }
+.chron-mark { flex: none; width: 24px; height: 24px; display: grid; place-items: center; color: var(--wine); }
+.chron-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chron-text b { font-size: 15px; }
+.chron-text small { font-size: 13px; line-height: 1.3; color: var(--ink-soft); }
+.chron-row:not(.is-done) .chron-text b { color: var(--ink-soft); font-weight: 500; }
+.chron-row:not(.is-done) .chron-text small { font-style: italic; opacity: .8; }

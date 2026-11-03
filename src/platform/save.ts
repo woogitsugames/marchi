@@ -186,7 +186,28 @@ function open(): Promise<IDBDatabase> {
       dbReady = db;
       resolve(db);
     };
-    req.onerror = () => reject(req.error);
+    req.onerror = () => {
+      // B6 (research 2026-11-02-save-robustness): the database is newer than this build (a later build ran,
+      // or another tab upgraded it). Open it at its own version and use it if our stores are there: saves and
+      // autosave keep working instead of failing silently; the save gate still rejects newer envelopes.
+      if (req.error?.name !== 'VersionError') { reject(req.error); return; }
+      let any: IDBOpenDBRequest;
+      try { any = indexedDB.open(DB_NAME); } catch (e) { reject(e); return; }
+      any.onsuccess = () => {
+        const db = any.result;
+        if (!db.objectStoreNames.contains(STORE) || !db.objectStoreNames.contains(META)) {
+          db.close();
+          reject(req.error);
+          return;
+        }
+        const drop = (): void => { if (dbPromise === p) dbPromise = null; if (dbReady === db) dbReady = null; };
+        db.onversionchange = () => { db.close(); drop(); };
+        db.onclose = drop;
+        dbReady = db;
+        resolve(db);
+      };
+      any.onerror = () => reject(req.error);
+    };
     req.onblocked = () => reject(new Error('IndexedDB open blocked'));
   }), 'open');
   dbPromise = p;

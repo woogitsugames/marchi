@@ -144,6 +144,13 @@ export const ORDER_TEMPLATES = [
   { id: 'fair_brewers', minRank: 4, goods: ['beer', 'malt'] },
   { id: 'royal_progress', minRank: 5, goods: ['beer', 'bread', 'planks'] },
   { id: 'capital_embassy', minRank: 5, goods: ['beer', 'stone', 'charcoal'] },
+  // night 2026-11-02: more variants for ranks 3-5 (they had 2-4 each)
+  { id: 'bell_casting', minRank: 3, goods: ['charcoal', 'stone'] },
+  { id: 'harvest_home', minRank: 3, goods: ['malt', 'bread'] },
+  { id: 'mill_weir', minRank: 4, goods: ['stone', 'planks'] },
+  { id: 'christmas_court', minRank: 4, goods: ['beer', 'flour'] },
+  { id: 'cathedral_works', minRank: 5, goods: ['stone', 'planks', 'charcoal'] },
+  { id: 'royal_hunt', minRank: 5, goods: ['beer', 'bread', 'fish'] },
 ] as const satisfies readonly OrderTemplate[];
 
 /** Fixed seasonal pools; no fair is scheduled for a good this settlement cannot produce. */

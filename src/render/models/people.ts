@@ -4,7 +4,8 @@
  * shoulder cape and liripipe, a brimmed felt hat or a linen coif. Built from smooth
  * lathe/cylinder pieces, ~600–800 triangles at the default segment count.
  */
-import { CylinderGeometry, Matrix4, SphereGeometry, Vector3 } from 'three';
+import { type BufferGeometry, CylinderGeometry, Matrix4, SphereGeometry, Vector3 } from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type ModelPart, PartBuilder, trs, v3 } from './kit';
 import { box, lathe, rod, type Opts } from './shapes';
 
@@ -38,7 +39,11 @@ const flesh = (color: string): Opts => ({ color, ao: 0, dirt: 0, vary: 0.03, noi
  * the seat surface under the pelvis (sit); facing +Z. `hands` (builder space, sit pose) is
  * where both hands meet, e.g. holding the reins.
  */
-export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: HumanPose = 'stand', seg = 8, hands?: Vector3): void {
+/** Which pieces addHuman builds: everything, or one rig part of an animated worker (legs / torso + head / arms). */
+export type HumanPart = 'all' | 'legs' | 'torso' | 'arms';
+
+export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: HumanPose = 'stand', seg = 8, hands?: Vector3, part: HumanPart = 'all'): void {
+  const want = (p: HumanPart): boolean => part === 'all' || part === p;
   const P = (x: number, y: number, z: number) => v3(x, y, z).applyMatrix4(m);
   const sit = pose === 'sit';
   /** Small details (purse, wraps, face, liripipe) only at the near segment counts. */
@@ -50,6 +55,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
   const T = (x: number, y: number, z: number) => P(x, y + dy, z + y * lean); // ≈ torso rotated by `lean`
   const torsoM = m.clone().multiply(trs(0, dy, 0, lean, 0, 0)).multiply(trs(0, 0, 0, 0, 0, 0, 1, 1, 0.7));
 
+  if (want('torso')) {
   // --- torso: tunic lathe (the skirt flares over the thighs when standing)
   const prof: [number, number][] = sit
     ? [[0.001, 0.86], [0.18, 0.86], [0.195, 0.95], [0.168, 1.04], [0.182, 1.16], [0.195, 1.28], [0.188, 1.35], [0.15, 1.41], [0.075, 1.465], [0.001, 1.47]]
@@ -70,8 +76,9 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
   if (fine) box(b, 'hide', 0.035, 0.035, 0.012, m.clone().multiply(trs(0, 1.04 + dy, 0.122 + 0.14 * lean)), { color: '#5a554b', ao: 0, dirt: 0 });
   if (fine) box(b, 'hide', 0.085, 0.1, 0.035, m.clone().multiply(trs(0.12, 0.97 + dy, 0.08, 0, 0.5, 0)), { color: '#4a3b2d', ao: 0, dirt: 0.1 });
 
+  }
   // --- legs: hose, leg wraps from ankle to below the knee, turnshoes
-  for (const s of [-1, 1]) {
+  if (want('legs')) for (const s of [-1, 1]) {
     const hx = 0.09 * s;
     let hip: Vector3, knee: Vector3, ankle: Vector3;
     if (sit) {
@@ -98,7 +105,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
   }
 
   // --- arms: sleeves with a cuff, hands
-  for (const s of [-1, 1]) {
+  if (want('arms')) for (const s of [-1, 1]) {
     const sh = T(0.195 * s, 1.37, 0);
     let elbow: Vector3, wrist: Vector3;
     if (sit && hands) {
@@ -127,6 +134,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
     b.add('skin', new SphereGeometry(1, 5, 3), { ...flesh(style.skin), m: hm.multiply(new Matrix4().makeScale(0.04, 0.03, 0.065)) });
   }
 
+  if (!want('torso')) return;
   // --- neck + head (face with a nose, jaw and brow so the profile reads)
   rod(b, 'skin', T(0, 1.43, 0), T(0, 1.53, 0.012), 0.048, 0.046, 6, flesh(style.skin), true);
   const hc = T(0, 1.6, 0.015);
@@ -179,4 +187,111 @@ export function workerParts(variant = 0, pose: HumanPose = 'stand'): ModelPart[]
   const b = new PartBuilder({ seed: 40 + variant, ao: 0.2 });
   addHuman(b, new Matrix4(), HUMAN_STYLES[variant % HUMAN_STYLES.length], pose);
   return b.build();
+}
+
+/** Animated yard workers (render-only): rig parts that the buildings view poses every frame. */
+export type WorkerKind = 'chop' | 'sack' | 'peel';
+
+export interface WorkerRig {
+  /** Legs and shoes, origin between the feet, facing +Z. */
+  legs: ModelPart[];
+  /** Tunic, belt, head; origin at the hip pivot (HIP_Y above the feet). */
+  torso: ModelPart[];
+  /** Both arms and the tool in the hands; origin at the shoulder axis (SHOULDER_Y above the hip). */
+  arms: ModelPart[];
+}
+
+export const WORKER_HIP_Y = 0.9;
+export const WORKER_SHOULDER_Y = 1.37 - WORKER_HIP_Y;
+
+const rigCache = new Map<string, WorkerRig>();
+
+/** The rig of a worker kind (cached; shared geometry). Arms rest forward in the 'work' pose. */
+export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
+  const key = `${kind}:${variant}`;
+  const hit = rigCache.get(key);
+  if (hit) return hit;
+  const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
+  const seed = 60 + variant * 3 + (kind === 'chop' ? 0 : kind === 'sack' ? 1 : 2);
+  const lb = new PartBuilder({ seed, ao: 0.2 });
+  addHuman(lb, new Matrix4(), style, 'work', 7, undefined, 'legs');
+  const tb = new PartBuilder({ seed: seed + 100, ao: 0.2 });
+  addHuman(tb, new Matrix4().makeTranslation(0, -WORKER_HIP_Y, 0), style, 'work', 7, undefined, 'torso');
+  const ab = new PartBuilder({ seed: seed + 200, ao: 0.2 });
+  addHuman(ab, new Matrix4().makeTranslation(0, -1.37, 0), style, 'work', 7, undefined, 'arms');
+  // tools, in the shoulder frame: the hands meet ~0.19 m below and 0.45 m in front of the shoulder axis
+  const handle = { color: '#6b5440', vary: 0.05, noise: 0.06, ao: 0, dirt: 0.2 };
+  if (kind === 'chop') {
+    // felling axe: a 0.8 m haft held near its end, the iron head with the bit pointing down
+    rod(ab, 'wood', v3(0, -0.2, 0.36), v3(0, -0.13, 1.12), 0.018, 0.016, 5, handle);
+    box(ab, 'metal', 0.035, 0.1, 0.07, trs(0, -0.12, 1.1), { color: '#5d5d58', ao: 0, dirt: 0.1 });
+    box(ab, 'metal', 0.012, 0.13, 0.11, trs(0, -0.2, 1.12), { color: '#7a7a72', ao: 0, dirt: 0.05 });
+  } else if (kind === 'peel') {
+    // baker's peel: a long ash pole with a flat blade to slide loaves in and out of the oven
+    rod(ab, 'wood', v3(0, -0.21, 0.3), v3(0, -0.14, 1.85), 0.017, 0.017, 5, handle);
+    box(ab, 'wood', 0.3, 0.018, 0.34, trs(0, -0.14, 2.0), { color: '#8a7354', ao: 0, dirt: 0.15 });
+  } else {
+    // a flour sack held against the body
+    ab.add('cloth', new SphereGeometry(1, 9, 6), { color: '#c4bba6', m: trs(0, -0.36, 0.42, 0, 0, 0, 0.22, 0.3, 0.17), vary: 0.04, noise: 0.1, ao: 0, dirt: 0.15, jitter: 0.02, jitterFreq: 4 });
+  }
+  const rig = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()), arms: oneMesh(ab.build()) };
+  rigCache.set(key, rig);
+  return rig;
+}
+
+const RIG_ATTRS = ['position', 'normal', 'color'];
+/**
+ * One draw call per rig piece: every material of a worker merged under 'cloth' (the colour is in the
+ * vertices; at yard scale skin, leather and the axe iron read the same under the cloth sheen).
+ */
+function oneMesh(parts: ModelPart[]): ModelPart[] {
+  const geos: BufferGeometry[] = [];
+  for (const p of parts) {
+    const g = (p.geometry.index ? p.geometry.toNonIndexed() : p.geometry.clone());
+    for (const k of Object.keys(g.attributes)) if (!RIG_ATTRS.includes(k)) g.deleteAttribute(k);
+    geos.push(g);
+  }
+  const merged = mergeGeometries(geos, false);
+  for (const g of geos) g.dispose();
+  if (!merged) return parts;
+  merged.computeBoundingSphere();
+  return [{ ...parts[0]!, material: 'cloth', geometry: merged }];
+}
+
+function smooth01(t: number): number {
+  const x = t < 0 ? 0 : t > 1 ? 1 : t;
+  return x * x * (3 - 2 * x);
+}
+
+/**
+ * Pose of a worker at time `t` (s): hip bend `bend` and arm swing `arm` (radians about the
+ * side axis; > 0 = forward / down). `working` false = the rest pose with a slow breath.
+ */
+export function workerPose(kind: WorkerKind, t: number, working: boolean, out: { bend: number; arm: number }): void {
+  if (!working) {
+    out.bend = 0.03 + 0.015 * Math.sin(t * 1.3);
+    out.arm = kind === 'peel' ? -0.05 : 0.35;
+    return;
+  }
+  const D = Math.PI / 180;
+  if (kind === 'chop') {
+    // 1.7 s: raise the axe over the head, a quick stroke into the block, a short pause, pull it free
+    const p = (t / 1.7) % 1;
+    const up = smooth01(p / 0.5), strike = smooth01((p - 0.55) / 0.12), free = smooth01((p - 0.82) / 0.18);
+    out.arm = 15 * D + (-145 * D) * up + (160 * D) * strike + (-15 * D) * free;
+    out.bend = 12 * D + (-20 * D) * up + (22 * D) * strike + (-14 * D) * free;
+  } else if (kind === 'peel') {
+    // 3.2 s: lean in and slide the peel into the oven, hold, draw it back
+    const p = (t / 3.2) % 1;
+    const k = smooth01(p / 0.35) - smooth01((p - 0.6) / 0.35);
+    out.bend = 4 * D + 16 * D * k;
+    out.arm = -out.bend * 0.85 - 4 * D;
+  } else {
+    // 3.6 s: bend down to the sack, straighten up with it against the chest, set it down again
+    const p = (t / 3.6) % 1;
+    const down = smooth01(p / 0.3) - smooth01((p - 0.38) / 0.3);
+    const lift = smooth01((p - 0.4) / 0.25) - smooth01((p - 0.82) / 0.18);
+    out.bend = 70 * D * down;
+    out.arm = 25 * D * down - 55 * D * lift;
+  }
 }
