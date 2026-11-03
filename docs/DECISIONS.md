@@ -1150,3 +1150,28 @@ ends at a full one shows the same count with that building's name as a link. Not
 cure section (buy a wagon / build a granary only where the mission lets you build one, otherwise the hint) stays
 the only action. Pending keys read the English fallback as `lang="en" dir="ltr"` (new `translated()` in
 i18n/index.ts), as the codex does. Keys `why.full.*` (PENDING_KEYS). `docs/shots/day4-full-*.jpg`. (decided)
+
+**D-85 — A full yard nobody needs is a calm surplus; a fleet held at a bridge is the cause of "no wagon"
+(diagnosis audit 2026-11-03, fixes 1 + 2; UI and read-only diagnosis, no hash change).** The audit found
+`OUTPUT_FULL.NO_WAGON` behind 27 % of all worst-stall samples, waxed critical in 74 % of them, while "Kup wóz"
+cleared it within 60 s only 11 % of the time: the dispatcher hauls a surplus to the granary last, so the new
+wagon takes a more urgent job. A consumer actually waiting for the good was there in 6 of 140 samples.
+Now a read-only `outputSurplus()` (src/sim/diagnose.ts) calls such a yard **SPARE** when no consumer waits for
+the good (NO_INPUT / NO_WAGON / WAITING_UPSTREAM on it), the contract castle holds its whole order of it, and no
+granary asks for road stone by the dispatcher's own rule (a reserve gap of at least one full load — the
+audit's estimate used "any gap", which kept m8's quarry red although no wagon would ever carry that stone;
+we follow the dispatcher, so the card never promises a run that cannot happen). A SPARE yard is a calm stall
+(minor pin, never wax), the HUD card says "nadwyżka, nikt jej teraz nie potrzebuje", the sheet replaces "Kup
+wóz" with one plain line ("Nadwyżka: nikt teraz nie potrzebuje zboża, poczeka na placu. Nowy wóz tego nie
+przyspieszy.") and the wagon tool is not highlighted. In the free valley the market still buys it: **MARKET** —
+calm (minor, no wax) but the wagon cure stays, since three wagons cleared it there in half the samples (the
+audit's section 5 wording; its section 4 estimate left the valley unchanged — we chose the minor pin because
+surplus for sale is an opportunity, not an alarm).
+Fix 2: in the player's chain (`explainBuilding(..., customers = true)`; the sim's ledger chain is untouched),
+NO_WAGON.ALL_BUSY and OUTPUT_FULL.NO_WAGON go on to the nearest held wagon (BRIDGE_CLOSED / BRIDGE_JAM /
+NO_ROUTE) when at least a third of the fleet is held. The existing ice hint, jam hint and road fix then apply
+by themselves, and `cureFor` stops at a held wagon (a new wagon would wait at the same bridge). The jam hint now
+shows for a jammed wagon anywhere in the chain, not only at its end (a jam's chain ends at the wagon it waits
+for). Threshold one third: below it the fleet still moves and "every wagon busy" is the honest reading.
+Keys `fix.surplus`, `cause.surplus` (PENDING_KEYS). Tests: `tests/diagnosis-audit-fixes.test.ts`, new reads in
+`tests/determinism-reads.test.ts`. (decided)

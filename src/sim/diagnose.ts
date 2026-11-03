@@ -1,6 +1,8 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
+import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
+import { storeCapOf } from './contract';
+import { marketOpen } from './town';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
 import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
 import { fairStage } from './events';
@@ -45,6 +47,7 @@ export function explainBuilding(world: World, id: number, maxDepth = 5, customer
       }
       chain.push({ kind: 'building', id: b.id, status: b.status });
       cur = nextFromBuilding(b.status);
+      if (!cur && customers) cur = playerNext(world, b);
     } else {
       const w = wagonById(world, cur.id);
       if (!w) break;
@@ -119,6 +122,74 @@ export function seasonalSupplier(world: World, id: number): { from: number; note
     if (n) return { from: p.id, note: n };
   }
   return null;
+}
+
+/**
+ * Player chains only (`customers`): where a chain that the sim ends at this building really goes on.
+ * - waiting for a free wagon (NO_WAGON.ALL_BUSY, OUTPUT_FULL.NO_WAGON) while a third or more of the fleet
+ *   is held at a bridge or cut off: the nearest held wagon (audit 2026-11-03, fix 2 — mission IV's ice).
+ */
+function playerNext(world: World, b: { id: number; gate: number; status: BuildingStatus }): { kind: 'building' | 'wagon'; id: number } | null {
+  const s = b.status;
+  if ((s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') || (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON')) {
+    const w = heldWagon(world, b.gate);
+    return w >= 0 ? { kind: 'wagon', id: w } : null;
+  }
+  return null;
+}
+
+/** A wagon status that holds it in place (ice, a one-lane jam, a cut road). */
+export function isHeld(s: WagonStatus): boolean {
+  return s.k === 'BRIDGE_CLOSED' || s.k === 'BRIDGE_JAM' || s.k === 'NO_ROUTE';
+}
+
+/**
+ * Read-only (audit 2026-11-03, fix 2): when at least a third of the fleet is held (isHeld), the held wagon
+ * nearest to `cell` (straight-line, lowest id on ties) — the reason "every wagon is busy" is not cured by
+ * one more wagon. -1 when the fleet moves.
+ */
+export function heldWagon(world: World, cell: number): number {
+  const ws = world.state.wagons;
+  const tw = world.terrain.w;
+  const cx = cell % tw, cy = (cell - cx) / tw;
+  let held = 0, best = -1, bestD = Infinity;
+  for (const w of ws) {
+    if (!isHeld(w.status)) continue;
+    held++;
+    const x = w.at % tw, y = (w.at - x) / tw;
+    const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+    if (d < bestD) { bestD = d; best = w.id; }
+  }
+  return held > 0 && held * 3 >= ws.length ? best : -1;
+}
+
+/**
+ * Read-only (audit 2026-11-03, fix 1): a full output waiting for a free wagon (OUTPUT_FULL.NO_WAGON) that
+ * nobody needs right now — no consumer waits for this good (NO_INPUT / NO_WAGON / WAITING_UPSTREAM on it),
+ * the contract castle has its whole order of it, and no granary asks for road stone (the dispatcher's own
+ * full-load rule). The dispatcher hauls such a surplus last, so one more wagon rarely moves it.
+ * 'MARKET': the free valley's market still buys it (worth a wagon, but not an alarm); 'SPARE': it simply
+ * waits in the yard. null: someone needs it, or the status is another one.
+ */
+export function outputSurplus(world: World, id: number): 'SPARE' | 'MARKET' | null {
+  const b = buildingById(world, id);
+  if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON') return null;
+  const g = b.status.good, st = world.state;
+  const k = st.mission.contract;
+  if (k && k.need[g] > (buildingById(world, k.castle)?.stock[g] ?? 0)) return null;
+  if (g === 'stone' && (st.mission.roadStone || marketOpen(world))) {
+    for (const q of st.buildings) {
+      if (q.type !== 'warehouse') continue;
+      const want = Math.min(STONE_RESERVE - q.stock.stone - q.incoming.stone, storeCapOf(q) - sumGoods(q.stock) - sumGoods(q.incoming));
+      if (want >= capacityOf('stone')) return null;
+    }
+  }
+  for (const c of st.buildings) {
+    if (c.id === id) continue;
+    const cs = c.status;
+    if ((cs.k === 'NO_INPUT' || cs.k === 'NO_WAGON' || cs.k === 'WAITING_UPSTREAM') && cs.good === g && inputGoods(c.type).includes(g)) return null;
+  }
+  return marketOpen(world) ? 'MARKET' : 'SPARE';
 }
 
 function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: number } | null {

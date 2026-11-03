@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { explainBuilding, outputCustomer, seasonalSupplier, type Building, type World } from '../sim/index';
+import { explainBuilding, outputCustomer, outputSurplus, seasonalSupplier, type Building, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -24,17 +24,28 @@ export interface StallEntry {
 
 /**
  * A stall that resolves by itself (output waits for a customer that still takes it, input slowed by
- * the season): a minor pin, never the critical one. outputCustomer runs a path search, so the answer
- * is kept per building until its status, the road network or the second changes.
+ * the season, a surplus nobody needs right now — audit 2026-11-03 fix 1): a minor pin, never the
+ * critical one. outputCustomer runs a path search, so the answer is kept per building until its
+ * status, the road network or the second changes.
  */
 const calmCache = new Map<number, { key: string; calm: boolean }>();
 export function calmStall(world: World, b: Building, sig: string): boolean {
   const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
-  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null;
+  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null;
   calmCache.set(b.id, { key, calm });
   return calm;
+}
+
+/**
+ * A stall with nothing to do about it, for the HUD card's wording (audit 2026-11-03): 'surplus' — a full
+ * yard nobody needs right now (fix 1). null: the status text says it right.
+ */
+export type CalmWhy = 'surplus' | null;
+export function calmWhy(world: World, b: Building): CalmWhy {
+  if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
+  return null;
 }
 
 /** Buildings with a stall worth a pin, worst first (stalledTicks × criticality). */
@@ -58,7 +69,9 @@ let cureCache: { key: string; cure: Cure } | null = null;
 /**
  * What the player can buy or build against the root of a building's stall chain: a wagon when the
  * root waits for a free wagon, a road when it lacks one, a granary when its output has nowhere to go
- * (OUTPUT_FULL.NO_DESTINATION). Cached per status and network version.
+ * (OUTPUT_FULL.NO_DESTINATION). Nothing when the chain runs into a wagon held at a bridge (ice, a
+ * one-lane jam: a new wagon would wait there too) or when the full output is a surplus nobody needs
+ * (audit 2026-11-03, fixes 1-2). Cached per status and network version.
  */
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
@@ -72,10 +85,12 @@ export function cureFor(world: World, id: number): Cure {
     if (l.kind === 'building') {
       const s = l.status;
       if (s.k === 'NO_ROAD' || (s.k === 'NO_INPUT' && s.cause === 'UNREACHABLE') || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) cure = 'road';
-      else if ((s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') || (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON')) cure = 'wagon';
+      else if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') cure = 'wagon';
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE') cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1) cure = 'granary';
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
+    else if (l.status.k === 'BRIDGE_CLOSED' || l.status.k === 'BRIDGE_JAM') break;
   }
   cureCache = { key, cure };
   return cure;

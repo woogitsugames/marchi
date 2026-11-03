@@ -16,7 +16,7 @@ import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fm
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, waybillPaceHtml } from './pace';
-import { cureFor, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, type Cure, type StallEntry } from './stalls';
 import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
@@ -101,6 +101,9 @@ function stallReason(world: World, id: number): string {
   const b = buildingById(world, id);
   if (!b) return '';
   const s = b.status;
+  // a stall with nothing to fix says so instead of its raw cause (audit 2026-11-03)
+  const calm = calmWhy(world, b);
+  if (calm) return t(`cause.${calm}` as MessageKey);
   const cause = 'cause' in s ? s.cause : null;
   for (const k of [cause ? `cause.${s.k}.${cause}` : '', `cause.${s.k}`]) {
     if (!k) continue;
@@ -493,7 +496,7 @@ export class Hud {
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
     this.cure = b ? cureFor(world, b.id) : null;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';

@@ -617,4 +617,7 @@ export const en: FullDict = {
   'hud.speedHint': 'At ×4 the stall grows fast: {name}. Slow down to fix it in time.',
   // best seals and time per contract in the mission menu (day 1, owner decision 13): see PENDING_KEYS
   'menu.bestAria': 'Best result: {n} of 3 seals, time {time}',
+  // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
+  'fix.surplus': 'Surplus: nobody needs more {goodGen} right now; it waits in the yard. Another wagon would not move it sooner.',
+  'cause.surplus': 'surplus, nobody needs it right now',
 };

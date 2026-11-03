@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
+  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -109,10 +109,25 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
   }
-  const root = chain[chain.length - 1];
-  if (root?.kind === 'wagon' && root.status.k === 'BRIDGE_JAM') {
+  // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
+  if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
     const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint jam-hint">${iconSvg('bridge_jam', 18)}<span>${esc(text)}</span></div>`;
+  }
+  return calmHtml(world, b, chain);
+}
+
+/**
+ * A stall with nothing to fix, said plainly instead of a cure that would not work (audit 2026-11-03): a full
+ * yard nobody needs right now (fix 1: no "Kup wóz"). Only when the chain stops at the building itself.
+ */
+function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
+  if (chain.length > 1) return '';
+  const en = (k: MessageKey): string => (translated(k) ? '' : ' lang="en" dir="ltr"');
+  const s = b.status;
+  if (s.k === 'OUTPUT_FULL' && outputSurplus(world, b.id) === 'SPARE') {
+    return `<div class="s-hint calm-hint">${iconSvg(s.good, 22, goodName(s.good))}<span${en('fix.surplus')}>${
+      esc(t('fix.surplus', { goodGen: t(`goodGen.${s.good}` as MessageKey) }))}</span></div>`;
   }
   return '';
 }
