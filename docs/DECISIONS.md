@@ -836,3 +836,23 @@ building meshes: no new draw calls, no new textures. Triangles (model): farm 822
 5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
 scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
 were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)
+
+**D-62 — Measured layout check; pins under the HUD fade; a bottom sheet folds the waybill.** `npm run layout`
+(`tools/layout-check.mjs`) opens menu, settings, HUD, the why-sheet, the wagon sheet, the build tool, the M7
+waybill and the end letter at 412×915, 915×412, 904×1000, 360×740 and the Flip cover 360×380, in pl/de/ru/ar and
+the pseudo-locale, and measures instead of eyeballing: action controls inside the viewport (or in a scroller that
+is), no intersection between the floating HUD pieces, the sheet and the world pins (a component's own badge or
+ribbon hanging over its edge is not a component), targets ≥ 48 px, no text spilling out of its box or clipped,
+no sideways scroll, no console errors. A positive control injects four known-bad CSS rules first (overlap, small
+target, overflowing label, rail pushed off-screen); a check that stays green there fails the run. Default map is
+the Canvas2D view (same DOM, ~10× cheaper under SwiftShader, full matrix ~8 min); `--three` measures over the 3D map.
+Fixes from its first run: (1) stall pins that fall under a HUD panel or the sheet fade out (150 ms) and take no
+taps — before, the top of a pin peeked out behind the waybill/speed bar and its taps hit the panel; the app
+refreshes the occluder rects 4×/s and on every sheet change (render-only, the sim never sees it). (2) While a bottom
+sheet is open (portrait, not a side sheet) the waybill folds to its seal, so the sheet's subject has map to be
+framed in (D-43): on 412×915 the why-sheet and the expanded waybill used to leave no map at all and the bakery sat
+under the waybill; the player's own fold preference is untouched and the seal unfolds it as before. (3) The framing
+treated the empty `.topbar` box as the top obstacle; its pieces (menu, chips, speed) are the obstacles now.
+(4) Flip cover: with a sheet open the HUD strip is hidden (it only peeked out above the full-height sheet).
+(5) Arabic one-word link buttons in the wagon sheet got `min-width: 48px`. (decided; (2) is a behaviour change —
+listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)

@@ -454,7 +454,7 @@ body.is-side .sheet-grip::before { display: none; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
-.kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; text-align: start; font-weight: 700; }
+.kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; min-width: 48px; text-align: start; font-weight: 700; }
 .sheet-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .sheet-actions .btn { flex: 1; }
 
@@ -1589,6 +1589,8 @@ body.is-landscape .ev-head { font-size: 16px; }
 body.is-landscape .ev-t { font-size: 15px; }
 body.is-split .ev-list { max-height: 52vh; }
 body.is-mini .ev-card { display: none; }
+/* Flip cover: an open sheet fills the screen; the HUD strip would only peek out above it (layout check, D-62) */
+body.is-mini.has-sheet .hud-top { visibility: hidden; }
 
 /* folded: the wax seal fills with progress, the time in a slate plaque under it */
 .waybill-wrap.is-collapsed { width: auto; }
@@ -1754,6 +1756,9 @@ body.is-flex .rail { z-index: 1; }
   will-change: transform, opacity;
 }
 .bubble.is-shown { opacity: 1; }
+/* under a HUD panel or the sheet (D-62): fades out instead of peeking from behind it and taking its taps */
+.bubble.is-shown.is-under { opacity: 0; }
+#ui .bubble.is-under { pointer-events: none; }
 .bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
 .bubble .bb-in { width: 32px; height: 32px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); --icon-halo: var(--kparch); }
 /* red pin: the kit's red tip plus a wine ring round the cause, so worst / critical reads at a glance */

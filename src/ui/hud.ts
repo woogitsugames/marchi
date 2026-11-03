@@ -159,6 +159,8 @@ export class Hud {
   private collapsed: boolean;
   /** Watch mode on tiny screens (Flip cover): seal only, no building tools. */
   private compact = false;
+  /** A bottom sheet is open in portrait: the waybill folds to its seal so the sheet's subject has map (D-62). */
+  private sheetFold = false;
   /** Stalls ranked worst first (last update) and the one the alarm seal showed last. */
   private stalls: StallEntry[] = [];
   private lastShown = -1;
@@ -199,7 +201,7 @@ export class Hud {
     this.waybillWrap.classList.toggle('is-collapsed', collapsed);
     this.sealOnly.addEventListener('click', () => {
       if (this.compact) this.act.openCastle();
-      else this.setCollapsed(false);
+      else { this.sheetFold = false; this.setCollapsed(false); }
     });
     waybill.addEventListener('keydown', (e) => {
       const wb = (e.target as HTMLElement).dataset.wb;
@@ -339,7 +341,7 @@ export class Hud {
   }
 
   private applyFold(): void {
-    const f = this.collapsed || this.compact;
+    const f = this.folded();
     this.waybillWrap.classList.toggle('is-collapsed', f);
     this.plaqueWrap.classList.toggle('is-collapsed', f);
     this.events.setHudFolded(f);
@@ -347,6 +349,17 @@ export class Hud {
     this.sealsSig = '';
     this.plaqueSig = '';
     requestAnimationFrame(() => this.measureTop());
+  }
+
+  private folded(): boolean {
+    return this.collapsed || this.compact || this.sheetFold;
+  }
+
+  /** A bottom sheet opened / closed (portrait): fold the waybill meanwhile, keep the player's preference. */
+  setSheetFold(c: boolean): void {
+    if (this.sheetFold === c) return;
+    this.sheetFold = c;
+    this.applyFold();
   }
 
   /** Tiny screen (Flip cover): show only the seal, keep the player's own collapse preference. */
@@ -467,7 +480,7 @@ export class Hud {
     const got = have.reduce((a, v) => a + v, 0);
     const frac = got / Math.max(1, total);
     this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left);
-    const folded = this.collapsed || this.compact;
+    const folded = this.folded();
     if (folded) {
       setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
       this.sealOnly.classList.toggle('late', late);
@@ -578,7 +591,7 @@ export class Hud {
     if (this.lastRank >= 0 && sb.rank > this.lastRank) this.act.rankUp(sb.rank);
     this.lastRank = sb.rank;
     const n = sb.next;
-    const folded = this.collapsed || this.compact;
+    const folded = this.folded();
     const reqs = n ? [
       { label: t('town.renownShort'), have: sb.renown, need: n.renown },
       { label: t('town.goodsShort'), have: sb.goodsSold, need: n.goods },

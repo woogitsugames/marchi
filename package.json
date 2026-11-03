@@ -21,7 +21,8 @@
     "setup:android": "bash tools/setup-android-sdk.sh",
     "icons": "node tools/make-icons.mjs",
     "icons:check": "node tools/check-icons.mjs",
-    "build:bench": "vite build --config vite.bench.config.ts"
+    "build:bench": "vite build --config vite.bench.config.ts",
+    "layout": "node tools/layout-check.mjs"
   },
   "engines": {
     "node": ">=20"
