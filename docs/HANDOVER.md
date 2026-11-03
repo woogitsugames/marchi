@@ -1,4 +1,55 @@
-# Handover — MARCHIA (stan 2026-11-02, ~15:20 Europe/Brussels)
+# Handover — MARCHIA (stan 2026-11-03, ~15:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
+
+> Sesja `session_01QWRid6hScCk3PSEu7RfFHs` kończy pracę (limit tygodniowy). Poniżej: stan, zasady, otwarte sprawy.
+> Starsze sekcje niżej to historia dnia 2–3 XI (decyzje i stany nocy/dnia) — czytaj je jako kontekst.
+
+## Stan teraz
+- Repo `woogitsugames/marchi`, baza **`claude/eager-cori-08wt8e`** (nigdy `main`). Wszystko wypchnięte; drzewo czyste.
+  Testy **412/412**, typecheck i build zielone, smoke I–XII + dolina bez błędów konsoli. Stan symulacji **v8**.
+- Ostatnie APK: **1e60d5d** (13:50). Od niego w bazie: day3 do `62c938e` (pętla bruku, pauza z nazwą kontraktu,
+  strzałka samouczka, Flex/Book posture, ostrzeżenia transz, beczki na wozie).
+- **Niedokończone:** gałąź `claude/w-day3`, commit WIP `1630083` (przerwany agent: „i18n keys and CSS” — najpewniej
+  zwinięta sekcja „Co to znaczy?” z Księgi przestojów w „Dlaczego stoi?”, decyzja właściciela). Przejrzyj, dokończ, scal.
+- Decyzje: ostatnia **D-79** w docs/DECISIONS.md (sprawdź, czy day3 dodał nowsze); następna wolna — sprawdź plik.
+- GPT: oddane i scalone do 64; **czeka 65** (hindi, `docs/orders/gpt6-11b/`). 61 (grafiki sklepu) — właściciel: „zrobi kto
+  inny, zapomnij”.
+- Gałęzie do usunięcia: lista i polecenie w `docs/branches-audit-2026-11-02.md` — **z sesji Claude usuwanie jest
+  zablokowane (proxy 403)**, robi właściciel.
+
+## Zasady pracy (właściciel)
+- Rozmowa po polsku; kod/komentarze/commity po angielsku; zasady `CLAUDE.md`.
+- **Praca ciągła i autonomiczna z JEDNYM agentem Opus naraz** (koordynator też może kodować). Agent w worktree
+  `/workspace/marchi-saves` (ręczny worktree + symlink `node_modules`), gałąź `claude/w-*`; koordynator scala do bazy,
+  `npm run typecheck`, `npm test`, `npm run build`, smoke (skrypt Playwright: menu + `?play=m1…m12|sandbox&quality=low&dynres=0&speed=4`,
+  0 błędów konsoli), `npm run layout -- --quick` (84 zadania, ~3,5 min), push.
+- **CI ma limit minut**: `ci.yml` tylko ręcznie i przy otwarciu PR — nie dodawać kroków, nie zmieniać workflowów,
+  sprawdzać lokalnie; agenci pushują rzadko (paczkami) i scalają bazę przed pushem.
+- APK: w dzień (7–23) nie częściej niż co ~3 h, gdy istotnie lepsze; w nocy nic, jedno rano. `npm run setup:android`
+  raz w kontenerze, `npm run apk -- --skip-web` (Maven 429 → ponawiać), SendUserFile.
+- Decyzje właściciela: klikalnie (AskUserQuestion) z rekomendacją; w nocy zapisywać do „Decyzje na rano”.
+- Nie zamykać PR-ów bez prośby. Commity kończyć `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` +
+  `Claude-Session: <link nowej sesji>`.
+- Limit 5-godzinny: przy ostrzeżeniu zatrzymaj agenta, zapisz WIP, wznów po resecie.
+- Triggery: utwórz w nowej sesji godzinny cykl (min. odstęp 1 h) z promptem z sekcji „Prompt cyklu” niżej; stary cykl
+  `trig_01SUuiU1pXy1yo2Wj2sfPrJx` jest **wyłączony**.
+
+## Prompt cyklu (do create_trigger, „42 * * * *”)
+Godzinny cykl MARCHIA (praca ciągła, jeden agent Opus naraz; koordynator też rozwija). Repo /workspace/marchi, baza
+claude/eager-cori-08wt8e (nigdy main). 1) Agent w /workspace/marchi-saves: jeśli skończył/przerwany — scal (konflikty
+BACKLOG/DECISIONS/i18n PENDING_KEYS: obie strony), typecheck, test, build, smoke, layout --quick, push; uruchom
+następnego z kolejnymi pozycjami (HANDOVER „Plan”, potem backlog: błędy > wydajność > czytelność > modele/animacje >
+treść). Jeśli pracuje — tylko sprawdzenie. 2) Nowe gpt/* — przejrzyj, scal, raport przyjęto/poprawiono/odrzucono.
+3) APK w dzień co ~3 h, w nocy nic. 4) Decyzje: w dzień klikalnie, w nocy do HANDOVER. Raport krótki po polsku.
+
+## Kolejka na start
+1. Dokończ WIP `claude/w-day3` (Księga przestojów „Co to znaczy?”), scal, APK.
+2. Scal GPT 65 (hindi) gdy przyjdzie; zdejmij przetłumaczone klucze z PENDING_KEYS (`npx tsx tools/i18n-reorder.ts`).
+3. Czekają na właściciela: ocena postaci przy pracy (decyzja: dodać kolejnych po jego ocenie), benchmark Fold
+   (`?debug=1&bench=device`, `?diag=1` → JSON do docs/PERF.md), motyw muzyczny końca kontraktu (Suno — właściciel).
+4. Po playteście: łańcuch misji X do producenta, strojenie nagród zdarzeń doliny, okno prognozy tempa.
+5. Dalej backlog (docs/BACKLOG.md).
+
+---
 
 Nowa sesja przejmuje autonomiczny rozwój gry od poprzedniej (kończy się jej limit). Rozmawiaj z właścicielem
 **po polsku**; kod/komentarze/commity po angielsku. Zasady: `CLAUDE.md` (najpierw!). Decyzje: `docs/DECISIONS.md` (D-01…D-35).
