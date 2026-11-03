@@ -841,6 +841,11 @@ building meshes: no new draw calls, no new textures. Triangles (model): farm 822
 5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
 scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
 were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)
+*Amendment 2026-11-03 (owner decision 8):* the ridge liggers are softened — the crossed spars (both diagonals
+every 0.42 m, `#5e5038`) read as a truss/checker up close. Now one spar per ~0.9 m bay, alternating direction (a
+loose zig-zag), rods and spars thinner (0.02 m) and darker (`#4a3f2c`, close to the shaded straw), sunk 8 mm
+deeper into the thatch. Fewer triangles (bakery 5906→5498, mill/farm/stable similar). Close-up before/after:
+`docs/shots/day1-ridge-before-after.jpg` (model preview view `ridge`).
 
 **D-62 — Measured layout check; pins under the HUD fade; a bottom sheet folds the waybill.** `npm run layout`
 (`tools/layout-check.mjs`) opens menu, settings, HUD, the why-sheet, the wagon sheet, the build tool, the M7

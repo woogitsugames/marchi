@@ -337,6 +337,7 @@ const views: Record<string, [Vector3, Vector3]> = {
   bridges: [new Vector3(-28, 14, 12), new Vector3(-44, 0, -12)],
   props: [new Vector3(2, 5, 16), new Vector3(-2, 0.8, 6)],
   mill: [new Vector3(25, 8, -9), new Vector3(12, 2, -20)],
+  ridge: [new Vector3(25, 8.5, -13), new Vector3(22, 4.6, -20)],
   chains: [new Vector3(0, 31, 86), new Vector3(0, 0, 34)],
   chainsW: [new Vector3(-17, 13, 42), new Vector3(-17, 1.5, 21)],
   chainsE: [new Vector3(17, 16, 44), new Vector3(17, 1.5, 22)],
