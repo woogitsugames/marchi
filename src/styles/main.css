@@ -702,20 +702,22 @@ body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px))
   --font-head: 'Ruslan Display', 'Alegreya Sans', serif;
 }
 :root[data-script='cjk'] {
-  --font-head: 'Noto Serif CJK JP', 'Noto Serif CJK KR', 'Noto Serif CJK SC', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
-  --font-body: 'Noto Sans CJK JP', 'Noto Sans CJK KR', 'Noto Sans CJK SC', 'Noto Sans JP', 'Noto Sans KR', 'Noto Sans SC', sans-serif;
+  /* Android ships Noto CJK; iOS has Hiragino (ja) — each OS skips the names it does not have */
+  --font-head: 'Noto Serif CJK JP', 'Noto Serif JP', 'Hiragino Mincho ProN', 'Noto Serif CJK KR', 'Noto Serif CJK SC', serif;
+  --font-body: 'Noto Sans CJK JP', 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans CJK KR', 'Noto Sans CJK SC', sans-serif;
 }
-:root[lang='ko'] { --font-head: 'Noto Serif CJK KR', 'Noto Serif KR', serif; --font-body: 'Noto Sans CJK KR', 'Noto Sans KR', sans-serif; }
-:root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif; }
+:root[lang='ko'] { --font-head: 'Noto Serif CJK KR', 'Noto Serif KR', 'Apple SD Gothic Neo', serif; --font-body: 'Noto Sans CJK KR', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; }
+:root[lang='zh-Hans'] { --font-head: 'Noto Serif CJK SC', 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif; --font-body: 'Noto Sans CJK SC', 'Noto Sans SC', 'PingFang SC', sans-serif; }
 :root[data-script='arabic'] {
-  /* the game's Latin faces first (their @font-face unicode-range has no Arabic): the brand title, digits and
-     untranslated fallbacks keep the game typography; Arabic letters fall through to the OS Naskh (D-18, D-37) */
-  --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', serif;
-  --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', sans-serif;
+  /* the game's Latin faces first (they have no Arabic glyphs): the brand title, digits and untranslated fallbacks
+     keep the game typography; Arabic letters fall through to the OS face — Noto Naskh on Android, Geeza Pro on iOS
+     (D-18, D-37; font-coverage test) */
+  --font-head: 'Grenze Gotisch', 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', serif;
+  --font-body: 'Alegreya Sans', 'Noto Naskh Arabic', 'Noto Sans Arabic', 'Geeza Pro', sans-serif;
 }
 :root[data-script='devanagari'] {
-  --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
-  --font-body: 'Noto Sans Devanagari', sans-serif;
+  --font-head: 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Devanagari Sangam MN', serif;
+  --font-body: 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Devanagari Sangam MN', sans-serif;
 }
 
 .clear-restore { display: none; }
