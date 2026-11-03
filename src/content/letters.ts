@@ -14,7 +14,7 @@ export interface ContractLetterSet {
   readonly lost: string;
 }
 
-/** Localized story content; signatures count toward the character limits. */
+/** Localized story content. Limits: opening 400, victory/defeat 200 UTF-16 characters, including the signature and newline. */
 export const CONTRACT_LETTERS = {
   m1: {
     pl: {
@@ -1876,14 +1876,13 @@ export const CONTRACT_LETTERS = {
       lost: "अंतिम समय बीत गया। भरे भंडार ने भट्टी रोक दी। बड़े भंडार को पहले ही सड़क से जोड़ो।\n— Wszebor",
     },
   },
-} as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
+} as const satisfies Record<ContractMissionId, Record<Lang, ContractLetterSet>>;
 
 /** Get all variants for a known contract; no letters exist for sandbox. */
 export function getContractLetters(missionId: string, lang: Lang = getLang()): ContractLetterSet | null {
   if (!Object.prototype.hasOwnProperty.call(CONTRACT_LETTERS, missionId)) return null;
-  // Languages without authored letters fall back to English (D-18).
-  const byLang: Partial<Record<Lang, ContractLetterSet>> = CONTRACT_LETTERS[missionId as ContractMissionId];
-  return byLang[lang] ?? byLang.en ?? null;
+  // All supported languages have authored letters; never fall back to English.
+  return CONTRACT_LETTERS[missionId as ContractMissionId][lang];
 }
 
 /** Resolve a start, loss, or seal-specific victory letter. Invalid selections return null. */
