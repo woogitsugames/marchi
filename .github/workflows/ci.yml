@@ -1,12 +1,14 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - 'claude/**'
-      - 'gpt/**'
+  # CI minutes are limited (owner, 2026-11-03): no runs on push; checks run locally before every push.
+  workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

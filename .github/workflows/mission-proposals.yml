@@ -1,16 +1,8 @@
 name: Missions 2 and 3 proposals
 
 on:
-  push:
-    branches:
-      - feat/mission-design-m2-m3-04
-  pull_request:
-    paths:
-      - 'docs/missions/**'
-      - 'src/sim/missions-proposed.ts'
-      - 'tools/bot-m2.ts'
-      - 'tools/bot-m3.ts'
-      - '.github/workflows/mission-proposals.yml'
+  # CI minutes are limited (owner, 2026-11-03): manual runs only.
+  workflow_dispatch:
 
 jobs:
   verify-missions:
