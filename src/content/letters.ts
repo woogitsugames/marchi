@@ -44,6 +44,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Der erste Schnee kam, doch ein Teil der Ladung blieb unterwegs. Prüft die Überfahrt und die Abholung durch die Wagen.\n— Wszebor",
     },
+    fr: {
+      opening: "Au prévôt des routes : faites livrer au château 30 planches et 20 pains avant les premières neiges. Bûcheron et scierie sont au-delà de la rivière, sans liaison entre les rives. Tracez un passage, puis veillez au transport de farine et de pain.\n— Wszebor, châtelain de Łozinny Bród",
+      won: {
+        1: "Les denrées sont arrivées avant la neige, mais trop tardivement. Un sceau ; envoyez les chariots plus tôt.\n— Wszebor",
+        2: "Une route bien tracée a permis de livrer largement avant l'échéance. Deux sceaux pour les charretiers.\n— Wszebor",
+        3: "La porte s'est ouverte avant que les chevaux ne prennent froid. Pains et planches sont rangés sans retard. Trois sceaux.\n— Wszebor",
+      },
+      lost: "La première neige est tombée, une partie de la cargaison est restée en route. Vérifiez le passage et les chariots.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -72,6 +81,15 @@ export const CONTRACT_LETTERS = {
         3: "Beide Ufer wurden ohne unnötigen Verzug versorgt. Drei Siegel für die kluge Führung des Brückenverkehrs.\n— Wszebor",
       },
       lost: "In der Burg fehlen Waren. Prüft den Stau am Brückenkopf und eröffnet den Wagen einen zweiten Weg.\n— Wszebor",
+    },
+    fr: {
+      opening: "Le scribe Mirogniew réclame 36 planches et 30 pains pour le château. Les chariots des deux rives encombrent l'unique pont de bois. Avant l'échéance, soulagez le passage : un second pont ou un ouvrage de pierre réduira l'attente.\n— Wszebor",
+      won: {
+        1: "La commande est livrée malgré la file au pont. Un sceau pour avoir tenu l'échéance.\n— Wszebor",
+        2: "Le passage a mieux fonctionné que ne le disaient les charretiers. Deux sceaux pour les trajets bien réglés.\n— Wszebor",
+        3: "Les marchandises ont circulé entre les deux rives sans retard inutile. Trois sceaux pour cette bonne ordonnance.\n— Wszebor",
+      },
+      lost: "Il manque des denrées au registre. Examinez la file au pont et ouvrez une autre voie aux chariots.\n— Wszebor",
     },
   },
   m3: {
@@ -102,6 +120,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Der Regen hielt an, und die Vorräte reichten nicht. Pflastert dort, wo die Wagen am stärksten gebremst werden.\n— Wszebor",
     },
+    fr: {
+      opening: "La pluie a raviné la route de terre. Le château attend 24 planches et 16 pains, mais les roues s'enlisent dans les ornières. Borzym, le meunier, attend son grain. Pavez les tronçons les plus fréquentés.\n— Wszebor",
+      won: {
+        1: "Le château a été servi malgré l'averse, mais la boue a coûté du temps. Un sceau.\n— Wszebor",
+        2: "La chaussée a résisté aux pluies d'automne. Deux sceaux pour une livraison régulière.\n— Wszebor",
+        3: "Même l'averse ne vous a pas arrêtés. Trois sceaux : un bon pavage vaut mieux que la hâte d'un charretier.\n— Wszebor",
+      },
+      lost: "La pluie a duré et les livraisons ont manqué. Repérez où les chariots ralentissent et posez-y des pavés.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -130,6 +157,15 @@ export const CONTRACT_LETTERS = {
         3: "Auch eine gesperrte Brücke hält gut geplante Lieferungen nicht auf. Drei Siegel für Lager und Überfahrt.\n— Wszebor",
       },
       lost: "Die Frist verstrich trotz angekündigter Sperre. Legt Vorräte am Burgufer an oder baut eine Steinbrücke.\n— Wszebor",
+    },
+    fr: {
+      opening: "Les glaces descendent la rivière et fermeront le pont de bois à l'heure dite. Avant cela, entreposez les vivres sur la rive du château ou bâtissez un pont de pierre. Les provisions laissées de l'autre côté ne nourriront personne.\n— Wszebor",
+      won: {
+        1: "La glace a gêné les chariots, mais le château a été servi. Un sceau pour le délai tenu.\n— Wszebor",
+        2: "Quand la glace a fermé le pont de bois, les livraisons n'ont guère cessé. Deux sceaux pour la prévoyance.\n— Wszebor",
+        3: "Un pont peut fermer ; un ravitaillement bien ordonné dure. Trois sceaux pour les réserves et le passage.\n— Wszebor",
+      },
+      lost: "L'échéance est passée malgré l'annonce de la fermeture. Stockez plus tôt sur la rive du château ou bâtissez en pierre.\n— Wszebor",
     },
   },
   m5: {
@@ -160,6 +196,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Mindestens eine Lieferung kam zu spät. Teilt die Vorräte nach den drei Fristen auf; die Gesamtsumme genügt nicht.\n— Wszebor",
     },
+    fr: {
+      opening: "La foire du château exige trois livraisons à des heures distinctes. Le scribe Mirogniew inscrira chacune au registre : pains et planches doivent arriver à chaque échéance, non par le dernier chariot. Préparez des réserves et ordonnez les voyages.\n— Wszebor",
+      won: {
+        1: "Les trois livraisons sont arrivées à temps malgré le désordre de la cour. Un sceau.\n— Wszebor",
+        2: "La foire a reçu chaque cargaison à l'heure voulue. Deux sceaux pour l'ordre des livraisons.\n— Wszebor",
+        3: "Nul charretier n'a dû être rappelé. Chaque envoi est arrivé sans course de dernière heure. Trois sceaux.\n— Wszebor",
+      },
+      lost: "Au moins un envoi est arrivé en retard. Répartissez le stock par échéance au lieu de compter seulement le total.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -188,6 +233,15 @@ export const CONTRACT_LETTERS = {
         3: "Gut verteilte Vorräte hielten Mühle und Bäckerei in Gang. Drei Siegel für einen freien Warenfluss.\n— Wszebor",
       },
       lost: "Die Waren türmten sich, und die Frist verstrich. Prüft den vollen Speicher und den Weg von Mühle zu Bäckerei.\n— Wszebor",
+    },
+    fr: {
+      opening: "Le grenier est étroit ; le grain arrive plus vite que Borzym, le meunier, ne peut l'enlever. Un entrepôt plein arrêtera les ateliers et nuira à la commande du château. Trouvez de la place ou détournez les chariots.\n— Wszebor",
+      won: {
+        1: "La commande est livrée, mais le grenier débordait. Un sceau ; surveillez les réserves.\n— Wszebor",
+        2: "Les chariots ont dégagé le surplus avant l'arrêt des ateliers. Deux sceaux pour la bonne gestion.\n— Wszebor",
+        3: "Les réserves bien distribuées ont maintenu moulin et boulangerie en marche. Trois sceaux.\n— Wszebor",
+      },
+      lost: "Les marchandises se sont accumulées, et le délai a expiré. Vérifiez le grenier et la route du moulin au fournil.\n— Wszebor",
     },
   },
   m7: {
@@ -218,6 +272,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Die Fastenzeit ging vorüber, ohne dass genug Fisch eintraf. Prüft den Platz der Hütte und die Wagen an der Brücke.\n— Wszebor",
     },
+    fr: {
+      opening: "Le jeûne approche. Les cuisines du château exigent 54 poissons. Une cabane se trouve déjà sur la rive nord, mais la pêche risque d'arriver trop tard. Bâtissez une autre cabane près de l'eau : la terre ferme ne donne pas de poissons. Faites franchir le pont de bois aux chariots vers la rive sud.\n— Wszebor",
+      won: {
+        1: "Le poisson est arrivé à temps, mais la table a attendu. Un sceau ; une seconde cabane aurait aidé.\n— Wszebor",
+        2: "Les cuisines ont reçu la pêche sans grand retard. Deux sceaux ; bâtissez la cabane plus tôt.\n— Wszebor",
+        3: "Filets sur la rive et chariots sur le pont ont œuvré de concert. Trois sceaux pour l'emplacement choisi.\n— Wszebor",
+      },
+      lost: "Le jeûne est passé, et le poisson a manqué. Vérifiez la cabane près de l'eau et la cadence des chariots sur le pont.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -246,6 +309,15 @@ export const CONTRACT_LETTERS = {
         3: "Der Stein erreichte vor dem Regen den Speicher, und das Pflaster hielt die Wagen in Fahrt. Drei Siegel.\n— Wszebor",
       },
       lost: "Der Sturm hielt die Wagen im Schlamm fest. Holt zuerst Stein zum Speicher, dann pflastert den Südweg.\n— Wszebor",
+    },
+    fr: {
+      opening: "L'orage menace la vallée. Je demande 24 planches et 20 pains avant que la boue ne ralentisse les livraisons. La carrière est sur la roche, mais ses pierres ne pavent pas la route d'elles-mêmes. Transportez-les au grenier, quatre unités par chariot, puis pavez la route du sud.\n— Wszebor",
+      won: {
+        1: "Les denrées ont traversé la boue. Un sceau ; la pierre aurait dû quitter la carrière plus tôt.\n— Wszebor",
+        2: "Davantage de chariots ont compensé une part du retard. Deux sceaux ; les pavés auraient mieux fait.\n— Wszebor",
+        3: "La pierre est arrivée au grenier avant la pluie ; les pavés ont permis aux chariots de rouler. Trois sceaux.\n— Wszebor",
+      },
+      lost: "L'orage a retenu les chariots dans la boue. Portez d'abord la pierre au grenier, puis pavez la route du sud.\n— Wszebor",
     },
   },
   m9: {
@@ -276,6 +348,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Die Hochzeit begann vor dem Eintreffen der Ware. Prüft den Holzverbrauch und baut eine zweite Holzquelle.\n— Wszebor",
     },
+    fr: {
+      opening: "Le mariage approche. Il faut 36 planches, 8 mesures de charbon de bois et 26 de bière. Le grain doit gagner la malterie, puis le malt la brasserie. Scierie et charbonnière dépendent du même bûcheron : si l'une prend le bois, l'autre s'arrête. Augmentez la coupe et les chariots.\n— Wszebor",
+      won: {
+        1: "Les invités n'ont pas eu soif, mais scierie et charbonnière se disputaient chaque bûche. Un sceau.\n— Wszebor",
+        2: "Un second bûcheron a réglé la querelle. Deux sceaux ; d'autres chariots auraient hâté le reste.\n— Wszebor",
+        3: "Les deux ateliers ont eu leur bois et la bière a coulé à temps. Trois sceaux pour la juste répartition.\n— Wszebor",
+      },
+      lost: "Le mariage est venu avant les denrées. Voyez qui prend le bois du bûcheron et créez une seconde source.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -304,6 +385,15 @@ export const CONTRACT_LETTERS = {
         3: "Für Schmiede und Sägewerk war genug Holz da. Drei Siegel für die Lösung am Ursprung statt am Weg.\n— Wszebor",
       },
       lost: "Die Frist verstrich, und Bretter fehlten: Der Köhler verbrauchte das Holz des Sägewerks. Baut einen zweiten Holzfäller.\n— Wszebor",
+    },
+    fr: {
+      opening: "Le forgeron attend du charbon et les charpentiers des planches : il faut 48 planches et 8 mesures de charbon de bois. Scierie et charbonnière se partagent un seul bûcheron. Si la scierie manque de bois, ce ne sont pas les chariots qui font défaut. Bâtissez une seconde cabane de bûcheron.\n— Wszebor",
+      won: {
+        1: "Planches et charbon sont arrivés, mais la scierie a longtemps attendu les bûches. Un sceau.\n— Wszebor",
+        2: "Un second bûcheron a mis fin à la querelle, trop tard pourtant. Deux sceaux ; augmentez la coupe sans attendre.\n— Wszebor",
+        3: "Le bois a suffi à la forge et à la scierie. Trois sceaux pour avoir réparé la source, non la route.\n— Wszebor",
+      },
+      lost: "Le délai a expiré ; la charbonnière a pris le bois nécessaire aux planches. Ajoutez un bûcheron, non des chariots.\n— Wszebor",
     },
   },
   m11: {
@@ -334,6 +424,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Der Winter kam vor dem letzten Fass. Prüft die beschäftigten Wagen und das Getreide auf dem Feld; kauft weitere Wagen.\n— Wszebor",
     },
+    fr: {
+      opening: "Pour l'hiver, le château attend 22 mesures de bière. Le grain pousse à l'ouest ; la malterie se trouve loin à l'est. Trois chariots desservent ferme, malterie, brasserie et château. Si tous roulent alors que le grain attend au champ, achetez des chariots à l'écurie : plusieurs voyages pourront partir ensemble.\n— Wszebor",
+      won: {
+        1: "La bière est arrivée, mais les chariots ont trop tardé. Un sceau ; une longue route exige davantage de véhicules.\n— Wszebor",
+        2: "Un chariot de plus a aidé la malterie, mais d'autres courses attendaient. Deux sceaux.\n— Wszebor",
+        3: "Malt et bière ont atteint leur destination sans retard. Trois sceaux : il manquait des chariots, non du grain.\n— Wszebor",
+      },
+      lost: "L'hiver est arrivé avant le dernier tonneau. Si le grain attend et que tous les chariots roulent, achetez-en d'autres.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -362,6 +461,15 @@ export const CONTRACT_LETTERS = {
         3: "Alle drei Lieferungen trafen rechtzeitig ein. Der Speicher bewahrte das Bier, bis die Burg es annahm. Drei Siegel.\n— Wszebor",
       },
       lost: "Die letzte Frist verstrich, und Ware fehlte. Der volle Speicher nahm keinen Überschuss auf. Schließt den großen Speicher rechtzeitig an.\n— Wszebor",
+    },
+    fr: {
+      opening: "Pour le grand brassage : 40 pains et 48 mesures de bière en trois envois. Avant 6:00, 32 pains ; avant 9:00, 8 pains et 12 bières ; avant 12:00, 36 bières. Le château n'accepte que l'envoi courant. Le petit grenier est plein de grain ; le grand, à deux cases de la route. Reliez-le vite pour stocker la bière.\n— Wszebor",
+      won: {
+        1: "Les derniers tonneaux sont arrivés, mais la brasserie est longtemps restée pleine. Un sceau ; un grenier libre aurait aidé.\n— Wszebor",
+        2: "Le grand grenier a reçu la bière, mais trop tard. Deux sceaux ; le relier plus tôt permet de stocker davantage.\n— Wszebor",
+        3: "Tous les envois sont arrivés à l'heure. Le grenier a gardé la bière jusqu'à ce que le château l'accepte. Trois sceaux.\n— Wszebor",
+      },
+      lost: "La dernière échéance a passé. La brasserie était bloquée par le grenier plein. Reliez le grand grenier avant saturation.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
