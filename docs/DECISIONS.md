@@ -795,6 +795,11 @@ unchanged (m1 412×915 dpr 2: high near/mid/far/copse 57/48/44/56 calls, 470k/30
 57/38/40/51, 258k/244k/239k/238k — identical before/after). Not done: the second near variant is not baked
 (the card always shows variant 0; +1 atlas row set per variant = 2× memory). Shots `docs/shots/night2-trees-*`.
 (decided)
+*Amendment 2026-11-03 (owner decision 5):* high now bakes the low-size atlas (128 px cells, 2 × 7 MB =
+14.0 MB measured by `view.stats().treeAtlasMB`, was 2 × 21.4 MB = 42.8 MB at 224 px); the full 256 px atlas
+(55.9 MB) only on ultra. Reason: the Fold WebView shares GPU memory with the 4× MSAA canvas, and 224 px vs 128 px
+cells are hard to tell apart in the far band (cards cover ≤ ~60 px on screen). Draw calls/triangles unchanged
+(m1 412×915 dpr 2 high near/mid 55/40 calls, 472k/303k tris).
 
 **D-59 — Water edge and bridge detail (render only).** Water shader: on high/ultra (`uDetail`) the waterline laps
 up to 5 cm up the bank and back (slow, out of phase along the river) and a second thin foam line drifts in and
