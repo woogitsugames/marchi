@@ -379,6 +379,8 @@ const views: Record<string, [Vector3, Vector3]> = {
   chainsW: [new Vector3(-17, 13, 42), new Vector3(-17, 1.5, 21)],
   chainsE: [new Vector3(17, 16, 44), new Vector3(17, 1.5, 22)],
   chaincargo: [new Vector3(-14, 10, 50), new Vector3(-12, 1, 36)],
+  // the six-barrel beer load from behind-left (day 3: the barrels' random roll used to turn them off the bed)
+  beercargo: [new Vector3(23.5, 5.5, 39.5), new Vector3(19, 1.3, 33)],
   // models2 close-ups: horse side view, wagon 3/4, people
   horse: [new Vector3(-10.6, 1.25, 6.2), new Vector3(-10.6, 0.95, 0)],
   wagon34: [new Vector3(-6.2, 3.4, 7.2), new Vector3(-13.6, 0.9, 0)],

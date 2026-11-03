@@ -634,5 +634,5 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   // trestle bench with a tankard-sized cask and a tun
   b.add('wood', new CylinderGeometry(0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
   b.add('plaster', new CylinderGeometry(0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
-  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.6, 0, 2.7), yaw: Math.PI / 2 } };
+  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.5, 0, 2.7), yaw: Math.PI / 2 } };
 }

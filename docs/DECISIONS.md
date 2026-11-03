@@ -1096,3 +1096,13 @@ both crossfade halves lie between hits. Peak kept (−6.3 dB), pipeline settings
 onsets of the decoded files: seam gap 0.32 s (OGG) / 0.35 s (M4A, its own encode) among 0.23–0.38 s hits.
 `audio_sources.json` says `seconds: 3.51`; provenance hashes and ASSETS.md updated; `process_audio.py --check`
 PASS. (decided)
+
+**D-81 — Beer barrels lie on the wagon bed and in their pile (render only; bug).** Each barrel unit got a random
+"roll" as the yaw of the same Euler that laid it on its side (`trs(…, π/2, r, 0)`, order YXZ: the yaw is applied
+last, about the world vertical), so instead of turning the staves about the barrel's own axis it swung the whole
+barrel in a random direction from its slot: on the wagon the six-barrel load reached x 1.11 m (side boards at
+±0.64) and z −1.86, barrels hung over the side, in the brewery yard pile and in the castle / warehouse piles they
+lay askew in a heap. This is the "barrels' unit geometry is off its slot" of D-79. The roll is now a separate
+rotation about the barrel's axis after laying it down; load bounds x ±0.61, z −1.44..0.25. The brewery yard spot
+moved 0.1 m (x 1.6 → 1.5) so the straight two-by-two pile clears its rack (clip test). Model-preview view
+`beercargo`. `docs/shots/day3-beer-barrels.jpg` (wagon and yard, before / after). (decided)
