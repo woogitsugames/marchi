@@ -781,7 +781,7 @@ body.is-book.is-split:not(.is-landscape) .hud-top {
 body.is-book.is-split .rail-tools, body.is-book.is-split .stall-row {
   max-width: calc(min(var(--book-start), var(--seg-right-w)) - 2 * 8px - 8px);
 }
-body.is-book.is-split .tool { flex: 1 1 0; }
+body.is-book.is-split .tool { flex: 0 1 76px; width: 76px; }
 /* toasts centred in the start segment, over the tools (the open card docks in the end one), not across the crease;
    no translate: in RTL the start edge is the right one (the base left: 50% then yields to it, over-constrained) */
 body.is-book.is-split:not(.is-flex) .toasts {
