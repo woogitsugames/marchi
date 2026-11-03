@@ -45,6 +45,10 @@ treść). Jeśli pracuje — tylko sprawdzenie. 2) Nowe gpt/* — przejrzyj, sca
 3) APK w dzień co ~3 h, w nocy nic. 4) Decyzje: w dzień klikalnie, w nocy do HANDOVER. Raport krótki po polsku.
 
 ## Kolejka na start
+0. **Decyzja właściciela 2026-11-03 ~18:00 (research partial-loads): A — reguła „dowóz dopiero, gdy zmieści się ≥4”
+   tylko w wolnej dolinie**; misje i ich hasze bez zmian; przestroić progi rang 3–4 (~+10 %) i test F1, jedno zdanie
+   na karcie warsztatu („czeka na pełniejszy wóz”). Spec: `docs/research/2026-11-03-partial-loads.md`. Następna paczka
+   dewelopera po poprawkach audytu diagnozy (`claude/w-day5`).
 1. Dokończ WIP `claude/w-day3` (Księga przestojów „Co to znaczy?”), scal, APK.
 2. Scal GPT 65 (hindi) gdy przyjdzie; zdejmij przetłumaczone klucze z PENDING_KEYS (`npx tsx tools/i18n-reorder.ts`).
 3. Czekają na właściciela: ocena postaci przy pracy (decyzja: dodać kolejnych po jego ocenie), benchmark Fold
