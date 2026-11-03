@@ -232,3 +232,5 @@ Kolejka nocy 4 (każde: typecheck, testy, build, `npm run layout -- --quick`, pu
    (przycięcie). Teraz warianty (A2C liści, mieszanie kart drzew, teren low) kompilują się na klonach przed
    przełączeniem, a materiały wypiekania atlasu drzew zostają w pamięci: 0 linków w klatce w 4 przełączeniach.
    Jakość wchodzi ~kilkaset ms później (niewidoczne). Obraz po przełączeniu = obraz po świeżym starcie na tej jakości.
+5. **BACKLOG porządki**: `stall.alert`/`ui.error` na głośniku telefonu — już zrobione wcześniej (pliki mają 99 % energii
+   w 600–2500 Hz), `screenshots-plan.md` — już przepisany; wpisy zamknięte. Następne decyzje od **D-66**.
