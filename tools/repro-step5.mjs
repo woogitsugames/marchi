@@ -5,6 +5,7 @@ const { chromium } = require('playwright');
 const URL0 = process.env.URL0 ?? 'http://127.0.0.1:5194/';
 const MODE = process.env.MODE ?? 'mouse'; // mouse | touch
 const OUT = process.env.OUT ?? '';
+const LANG = process.env.LANG_Q ?? 'pl'; // e.g. ar: the RTL layout (rail under the other thumb)
 const [w, h] = (process.argv[2] ?? '412x915').split('x').map(Number);
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: MODE === 'touch', hasTouch: MODE === 'touch', locale: 'pl-PL' });
@@ -19,8 +20,8 @@ const state = () => page.evaluate(() => {
   return { step: t ? t.current : 0, text: document.querySelector('.tutorial .tut-text')?.textContent?.slice(0, 50), ring: ring ? [...Object.values(ring.getBoundingClientRect().toJSON())].map(Math.round).slice(0, 4).join(',') : null,
     tool: a.hud?.tool ?? a.tool ?? null, tick: a.world.state.tick, speed: a.loop.speed, roads: a.world.state.netVersion, ghost: a.ghosts?.tut?.length ?? null, top: (() => { const e = document.querySelector('#sheets .sheet:last-child'); return e ? 'sheet ' + [...Object.values(e.getBoundingClientRect().toJSON())].map(Math.round).slice(0, 4).join(',') : null; })(), note: document.querySelector('.tut-note-wrap')?.style.transform + ' w' + document.querySelector('.tut-note-wrap')?.offsetWidth + ' h' + document.querySelector('.tut-note-wrap')?.offsetHeight + ' ' + document.querySelector('.tut-note-wrap')?.className, paused: document.querySelector('.tutorial')?.className };
 });
-await page.goto(URL0 + '?debug=1&lang=pl&quality=low');
-await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 120000 });
+await page.goto(URL0 + `?debug=1&lang=${LANG}&quality=low`);
+await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 300000 });
 await page.waitForTimeout(1000);
 await tapSel('.menu-item >> nth=0');
 await page.waitForSelector('.letter [data-a="start"]', { timeout: 30000 });
@@ -32,7 +33,7 @@ let guard = 0;
 while (guard++ < 30) {
   const s = await state();
   log(JSON.stringify(s));
-  if (OUT && !seen.has(s.step)) { seen.add(s.step); await page.waitForTimeout(600); await page.screenshot({ path: OUT + `-s${s.step}.jpg`, type: 'jpeg', quality: 55, timeout: 120000 }); }
+  if (OUT && !process.env.ONLY5 && !seen.has(s.step)) { seen.add(s.step); await page.waitForTimeout(600); await page.screenshot({ path: OUT + `-s${s.step}.jpg`, type: 'jpeg', quality: 55, timeout: 300000 }); }
   if (s.step === 0 || s.step >= 5) break;
   if (s.step === 4) {
     // tap once and wait for the frame: under SwiftShader a frame takes ~1 s, and a second tap on
@@ -53,7 +54,7 @@ while (guard++ < 30) {
 }
 // observe step 5 for a few seconds
 for (let i = 0; i < 4; i++) { await page.waitForTimeout(700); log('obs', JSON.stringify(await state())); }
-if (OUT) await page.screenshot({ path: OUT + '-step5.jpg', type: 'jpeg', quality: 55, timeout: 120000 });
+if (OUT) await page.screenshot({ path: OUT + '-step5.jpg', type: 'jpeg', quality: 55, timeout: 300000 });
 await page.evaluate(() => {
   const a = window.__marchia.app, d = a.draft; window.__dlog = [];
   for (const k of ['start', 'end', 'cancel']) { const f = d[k].bind(d); d[k] = (...args) => { window.__dlog.push(k + ' ' + args.map(Math.round).join(',') + ' cells=' + (d.cells?.length ?? '?') + ' first=' + d.cells?.[0] + ' last=' + d.cells?.[d.cells.length - 1]); return f(...args); }; }
@@ -87,7 +88,7 @@ for (let attempt = 0; attempt < (Number(process.env.TRIES) || 3); attempt++) {
   const toast = await page.evaluate(() => document.querySelector('.toasts')?.textContent?.trim() ?? '');
   log('dlog', JSON.stringify(await page.evaluate(() => window.__dlog.splice(0))));
   log('after drag', JSON.stringify(await state()), 'toast:', toast);
-  if (OUT) await page.screenshot({ path: OUT + `-drag${attempt}.jpg`, type: 'jpeg', quality: 55, timeout: 120000 });
+  if (OUT) await page.screenshot({ path: OUT + `-drag${attempt}.jpg`, type: 'jpeg', quality: 55, timeout: 300000 });
   if ((await state()).step !== 5) break;
 }
 await browser.close();

@@ -1328,3 +1328,21 @@ calm with the wagon cure — owner). Keys `cause.stoneStored`, `fix.stoneStored`
 run every one of the 188 "no wagon" samples of the quarry now reads this way (`tests/m8-stone-stored.test.ts`).
 Rejected: the stone reserve before producer inputs in the dispatcher (hash, mission re-tuning; after the
 playtest, BACKLOG). `docs/shots/day6-m8-stone-412x915*.jpg`. (decided)
+
+**D-96 — Tutorial note placement: free-slot scan before the fallback; the fallback looks at both sides and
+spares the rail and the open card's head (day 7; BACKLOG P2 from D-91).** At 915x412 in step 5 every band
+`placeNote` tried (the waybill's row, under the waybill, under the target, around the crossing) crossed the
+waybill, the clock chips, the docked card or the ghost crossing, so the note fell back to "x = 10, the slot that
+hides least", which weighed the tool rail at 2 against 6 for the ghost — and lay on "Droga", the tool step 5
+needs. Now: (1) after the fixed bands, `tryBand` is tried every 12 px down the screen, so any free slot wins
+(landscape with no card open: under the waybill, `day7-tut-step5-915x412.jpg`); (2) the fallback tries both the
+left and the right edge, the rail weighs 6 in step 5, and the open card's head (title and close button) weighs
+6, so the note never sits on the X of a card. Measured with `tools/repro-step5.mjs` (real input, built game):
+915x412 with the wagon card docked on the right — note bottom right, clear of rail and crossing, over the
+card's lower edge only (`-sheet.jpg`); `?lang=ar` (card on the left, rail mirrored) — note right of the
+crossing, clear of rail, card and waybill (`-ar.jpg`; before the card-head weight it lay on the card's close
+button); 412x915 — unchanged, between the waybill and the crossing. The drag across the river still builds the
+bridge and moves on (915x412 run: coins 180 -> 150, bridge on the map). Heights are measured once per width per
+placement (a cache), so the scan costs no extra layouts in steady state. Fold book/flex not run: the repro tool
+has no hinge emulation and the machine was saturated (SwiftShader ~1.5 min per step); `tools/fold-audit.mjs`
+remains the check for those. `tools/repro-step5.mjs` gains `LANG_Q` and `ONLY5`. (decided)
