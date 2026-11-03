@@ -843,8 +843,8 @@ waybill and the end letter at 412×915, 915×412, 904×1000, 360×740 and the Fl
 the pseudo-locale, and measures instead of eyeballing: action controls inside the viewport (or in a scroller that
 is), no intersection between the floating HUD pieces, the sheet and the world pins (a component's own badge or
 ribbon hanging over its edge is not a component), targets ≥ 48 px, no text spilling out of its box or clipped,
-no sideways scroll, no console errors. A positive control injects four known-bad CSS rules first (overlap, small
-target, overflowing label, rail pushed off-screen); a check that stays green there fails the run. Default map is
+no sideways scroll, no console errors. A positive control injects five known-bad CSS rules first (overlap, small
+target, overflowing label, rail pushed off-screen, a veil over the tool cards); a check that stays green there fails the run. Default map is
 the Canvas2D view (same DOM, ~10× cheaper under SwiftShader, full matrix ~8 min); `--three` measures over the 3D map.
 Fixes from its first run: (1) stall pins that fall under a HUD panel or the sheet fade out (150 ms) and take no
 taps — before, the top of a pin peeked out behind the waybill/speed bar and its taps hit the panel; the app
@@ -854,5 +854,9 @@ framed in (D-43): on 412×915 the why-sheet and the expanded waybill used to lea
 under the waybill; the player's own fold preference is untouched and the seal unfolds it as before. (3) The framing
 treated the empty `.topbar` box as the top obstacle; its pieces (menu, chips, speed) are the obstacles now.
 (4) Flip cover: with a sheet open the HUD strip is hidden (it only peeked out above the full-height sheet).
-(5) Arabic one-word link buttons in the wagon sheet got `min-width: 48px`. (decided; (2) is a behaviour change —
+(5) Arabic one-word link buttons in the wagon sheet got `min-width: 48px`. (6) A second pass added a "covered" check (every
+line of text and every control's middle, hit-tested with all elements hit-testable: the first element that paints
+there must be the element itself) — it found the waybill ribbon (z-index 1 inside the HUD layer) painted over the
+end letter's heading whenever the heading wrapped (de/pl on 360 px); each UI layer (`#markers`, `#hud`, `#menu`,
+`#sheets`, `#tutorial`, `#overlay`) is now `isolation: isolate`, so DOM order alone stacks the layers. (decided; (2) is a behaviour change —
 listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)

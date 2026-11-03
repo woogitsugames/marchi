@@ -138,6 +138,17 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
    pytania gracza. **Rekomendacja: tylko podpowiedź raz na misję; auto-×1 nie** (ukryta zmiana prędkości myli).
 8. **Wygląd kalenicy strzechy (D-61)** — lasce na krzyż czytają się z bliska jako wyraźna kratka. Ocenić na telefonie;
    jeśli zbyt „graficzne”: kolor bliżej strzechy (`#655640`) albo tylko dwa pręty bez krzyży. **Rekomendacja: zostawić.**
+9. **Arkusz od dołu zwija list przewozowy (D-62, noc 3 — zrobione, do oceny).** W pionie, gdy otwarta jest karta
+   (Dlaczego stoi? / wóz / zamek), list zwija się do pieczęci, a po zamknięciu karty wraca; własne ustawienie
+   gracza (zwinięty/rozwinięty) bez zmian. Powód: na 412×915 rozwinięty list i karta zabierały całą mapę, a
+   piekarnia z czerwoną pinezką siedziała pod listem. **Rekomendacja: zostawić**; jeśli przeszkadza na telefonie —
+   cofnięcie to jedna linia (`syncSheetFold()` w app.ts).
+10. **Pinezki pod panelami HUD znikają (D-62)** zamiast wystawać zza listu/paska tempa (i łapać ich dotyk).
+   Najgorszy przestój nadal widać w karcie „najgorszy” na dole. **Rekomendacja: zostawić**; alternatywa (droższa) —
+   pinezka „przyklejona” do krawędzi panelu ze strzałką.
+11. **Listy kasztelana po niemiecku (i w 14 innych językach) są po angielsku** (`src/content/letters.ts`, widać na
+   `docs/shots/night3-de-end-360x740.jpg`). To treść do paczki tłumaczeń, nie układ. **Rekomendacja: dołożyć do
+   najbliższej paczki GPT razem z kluczami PENDING_KEYS.**
 
 ## Stan nocy 2026-11-02/03 (gałąź `claude/w-night`, agent nocny)
 Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian):
@@ -168,3 +179,23 @@ Nowe klucze (PENDING_KEYS): `contract.half|twoMin|lastMin`, `build.costRoad`, `e
 SwiftShaderem po 10–20 s — wcześniejsze zrzuty „bez tekstur” to za krótki czas oczekiwania, nie błąd gry.
 Następne decyzje od **D-62**.
 
+## Stan nocy 3 — 2026-11-03 (gałąź `claude/w-night3`, agent nocny 3)
+Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze kontraktów bez zmian):
+1. **`npm run layout`** (`tools/layout-check.mjs`, D-62) — pomiar zamiast oceny: 8 ekranów (menu, ustawienia, HUD,
+   Dlaczego stoi?, wóz, Buduj, list M7, list końcowy) × 412×915, 915×412, 904×1000, 360×740, Flip 360×380 ×
+   pl/de/ru/ar/pseudo = 200 zadań, ~8 min (mapa Canvas2D; `--three` na mapie 3D, ~40 s/zadanie). Sprawdza: akcje w
+   widoku, przecięcia HUD × arkusz × pinezki, cele ≥ 48 px, tekst poza ramką/ucięty, tekst/przycisk przykryty innym
+   elementem, przewijanie w bok, błędy konsoli. Kontrola pozytywna 5/5 (wstrzyknięty zły CSS musi czerwienić).
+   Raport `docs/layout/layout-report.json`. Naprawione dzięki niemu: pinezki pod HUD-em gasną, list zwija się przy
+   arkuszu od dołu, kadr kamery liczy menu/żetony/tempo jako przeszkody, pasek Flip ukryty pod arkuszem, przyciski-
+   linki ar ≥ 48 px, **wstęga listu przewozowego malowała się nad nagłówkiem listu końcowego** (warstwy UI izolowane).
+2. **i18n**: `?lang=pseudo` (angielski z akcentami, +40 %, ⟦ ⟧; test), `hyphens:auto` + `overflow-wrap` na
+   nagłówkach arkusza/listu/menu/wstęgi i wierszu stanu. Łączenia list (`Intl.ListFormat`) i liczby (fmt.ts) były już
+   zrobione; zostaje `{n} {cells}` → blok plural (BACKLOG).
+3. **Czcionki**: `tests/font-coverage` czyta cmap WOFF — Grenze Gotisch ma wszystkie litery 10 języków łacińskich,
+   Ruslan + Alegreya całą cyrylicę; stosy ar/hi/ja/ko/zh dostały nazwy iOS (Geeza Pro, Kohinoor Devanagari, Hiragino,
+   Apple SD Gothic Neo, PingFang SC).
+4. **Bramki dokumentów**: `tests/docs-numbers` dla misji II–XII (start, termin, progi pieczęci, ilości) — złapał
+   `docs/missions/m3.md` (12:00/08:00/10:00 zamiast 11:00/06:15/08:00, poprawione); `tests/i18n-hygiene` — 19
+   martwych kluczy usuniętych ze wszystkich słowników, brak literałów w index.html i budowniczych UI.
+Zrzuty `docs/shots/night3-*.jpg` (4). Następne decyzje od **D-63**.

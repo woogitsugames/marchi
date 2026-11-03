@@ -5,6 +5,7 @@
 //                hangs over its edge is not a component, so the intended overhang is not counted)
 //   small      — a touch target under 48 x 48 CSS px
 //   overflow   — text that sticks out of its box, or is clipped / ellipsized inside it
+//   covered    — a text run or control painted over by another element (tested with every element hit-testable)
 //   hscroll    — the page scrolls sideways
 //   console    — console errors / page errors
 // A positive control runs first: known-bad CSS is injected and each check must turn red, otherwise the
@@ -194,6 +195,62 @@ function measure() {
       out.overflow.push({ el: label(box), kind: bcs.textOverflow === 'ellipsis' ? 'ellipsis' : 'clipped', sw: box.scrollWidth, cw: box.clientWidth });
     else if (!inView({ left: l, top: t, right: r, bottom: b }, 2) && !sc) out.overflow.push({ el: label(e), kind: 'offscreen-text', ...R({ left: l, top: t, right: r, bottom: b }) });
   }
+  // 5. covered: walk everything painted at the middle of each text run / action control, top first; the first
+  //    element that paints anything (background, border image, text, image) must be that element or inside it —
+  //    else something is drawn over it (a HUD ribbon over a letter, a panel over a label). Empty full-screen
+  //    layers and wrappers paint nothing and are passed through.
+  const paints = (el) => {
+    if (!shown(el)) return false;
+    if (/^(IMG|SVG|CANVAS|svg)$/.test(el.tagName) || el.closest('svg')) return true;
+    const c = getComputedStyle(el);
+    if (c.backgroundImage !== 'none' || c.borderImageSource !== 'none') return true;
+    if (!/rgba\(0, 0, 0, 0\)|transparent/.test(c.backgroundColor)) return true;
+    if (['Top', 'Right', 'Bottom', 'Left'].some((k) => parseFloat(c['border' + k + 'Width']) > 0 && !/rgba\(0, 0, 0, 0\)/.test(c['border' + k + 'Color']))) return true;
+    return [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+  };
+  for (const e of vis) {
+    const own = [...e.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim());
+    if (!own.length && !e.matches(ACTION)) continue;
+    // every line of the text (a two-line heading can be half under something), or the control's middle
+    const pts = [];
+    if (own.length) {
+      const rg = document.createRange();
+      for (const n of own) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width > 2) pts.push([q.left + q.width / 2, q.top + q.height / 2]); }
+    } else {
+      const r = e.getBoundingClientRect();
+      pts.push([r.left + r.width / 2, r.top + r.height / 2]);
+    }
+    const sc = scroller(e);
+    if (sc) {
+      // partly scrolled out of its list (and into the list's edge fade): the player scrolls to it
+      const sr = sc.getBoundingClientRect(), er = e.getBoundingClientRect();
+      if (er.top < sr.top + 40 || er.bottom > sr.bottom - 40) continue;
+    }
+    for (const [x, y] of pts) {
+      if (x < 0 || y < 0 || x >= vw || y >= vh) continue;
+      // elementsFromPoint ignores pointer-events: none, so hit-testing is forced on for this one read
+      const force = document.createElement('style');
+      force.textContent = '* { pointer-events: auto !important; }';
+      document.head.append(force);
+      const stack = document.elementsFromPoint(x, y);
+      force.remove();
+      // an ancestor listed before e paints over it through a pseudo-element (its own box paints under its children)
+      const top = stack.find((el) => el === e || e.contains(el) || el.contains(e) || paints(el));
+      if (!top || top === e || e.contains(top)) continue;
+      // a modal (sheet, letter) over the screen below it covers that screen on purpose
+      if (top.closest('.sheet, .scrim, [aria-modal="true"]') && !e.closest('.sheet, .scrim, [aria-modal="true"]')) continue;
+      // the point lies in a part of e its scroll box / clip has cut away: not on screen, not covered
+      let clipped = false;
+      for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) {
+        if (getComputedStyle(p).overflow === 'visible') continue;
+        const pr = p.getBoundingClientRect();
+        if (x < pr.left || x > pr.right || y < pr.top || y > pr.bottom) { clipped = true; break; }
+    }
+    if (clipped) continue;
+    out.overflow.push({ el: label(e), kind: 'covered', by: label(top).slice(0, 40) });
+    break;
+    }
+  }
   out.hscroll = document.documentElement.scrollWidth > vw + 1 || document.body.scrollWidth > vw + 1;
   return out;
 }
@@ -240,7 +297,10 @@ export function failures(m) {
   for (const x of m.offscreen ?? []) f.push(`offscreen ${x.el} [${x.l},${x.t},${x.r},${x.b}]`);
   for (const x of m.overlap ?? []) f.push(`overlap ${x.a} x ${x.b} ${x.px2}px2`);
   for (const x of m.small ?? []) f.push(`small ${x.el} ${x.w}x${x.h}`);
-  for (const x of m.overflow ?? []) f.push(`overflow(${x.kind}) ${x.el}${x.dx != null ? ` in ${x.in} dx=${x.dx} dy=${x.dy}` : x.sw ? ` ${x.sw}>${x.cw}` : ''}`);
+  for (const x of m.overflow ?? []) {
+    if (x.kind === 'covered') f.push(`covered ${x.el} by ${x.by}`);
+    else f.push(`overflow(${x.kind}) ${x.el}${x.dx != null ? ` in ${x.in} dx=${x.dx} dy=${x.dy}` : x.sw ? ` ${x.sw}>${x.cw}` : ''}`);
+  }
   if (m.hscroll) f.push('hscroll');
   for (const c of m.console ?? []) f.push(`console ${c.slice(0, 120)}`);
   return f;
@@ -252,6 +312,7 @@ const CONTROLS = [
   { check: 'small', css: '.hud-top .menu-btn { width: 30px !important; height: 30px !important; min-width: 0 !important; min-height: 0 !important; }' },
   { check: 'overflow', css: '.tool .tl { font-size: 34px !important; white-space: nowrap !important; max-width: none !important; }' },
   { check: 'offscreen', css: '.rail { transform: translateY(70px) !important; }' },
+  { check: 'covered', css: '.rail-tools::after { content: ""; position: absolute; inset: 0; z-index: 5; background: rgb(0 0 0 / .3); }' },
 ];
 
 async function main() {

@@ -1,0 +1,1402 @@
+[
+ {
+  "tag": "build|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "build|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "end|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "end|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-notice",
+  "fail": []
+ },
+ {
+  "tag": "hud|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "hud|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "menu|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "menu|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu",
+  "fail": []
+ },
+ {
+  "tag": "settings|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "settings|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-menu has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "wagon|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "waybill-m7|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game",
+  "fail": []
+ },
+ {
+  "tag": "why|360x740|ar",
+  "vw": 360,
+  "vh": 740,
+  "body": "left-handed is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|360x740|de",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|360x740|pl",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|360x740|pseudo",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|360x740|ru",
+  "vw": 360,
+  "vh": 740,
+  "body": "is-narrow mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|412x915|ar",
+  "vw": 412,
+  "vh": 915,
+  "body": "left-handed mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|412x915|de",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|412x915|pseudo",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|412x915|ru",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|904x1000|ar",
+  "vw": 904,
+  "vh": 1000,
+  "body": "left-handed is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|904x1000|de",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|904x1000|pseudo",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|904x1000|ru",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|915x412|ar",
+  "vw": 915,
+  "vh": 412,
+  "body": "left-handed is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|915x412|de",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|915x412|pseudo",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|915x412|ru",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|flip360x380|ar",
+  "vw": 360,
+  "vh": 380,
+  "body": "left-handed is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|flip360x380|de",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|flip360x380|pl",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|flip360x380|pseudo",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ },
+ {
+  "tag": "why|flip360x380|ru",
+  "vw": 360,
+  "vh": 380,
+  "body": "is-mini mode-game has-sheet",
+  "fail": []
+ }
+]

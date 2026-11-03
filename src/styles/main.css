@@ -107,6 +107,8 @@ svg { display: block; fill: currentColor; flex: none; }
 }
 
 #ui { position: absolute; inset: 0; pointer-events: none; }
+/* each layer paints as one: a z-index inside the HUD (ribbon, rail) never lifts it over the sheets or a letter */
+#markers, #hud, #menu, #sheets, #tutorial, #overlay { isolation: isolate; }
 #ui > * { pointer-events: none; }
 #ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter, #ui .waybill { pointer-events: auto; }
 .wb-line { cursor: pointer; }
