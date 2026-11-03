@@ -75,7 +75,7 @@ test('all missions have five signed letters in every supported language, within 
       }
       validate('lost', string(prop(byPhase, 'lost'), label + '/lost'), 200, mission, lang);
       if (mission === 'm1') {
-        assert(opening.includes('Łozinny Bród'), `place name changed: ${label}`);
+        assert(lang === 'pl' ? opening.includes('Łozinnego Brodu') : opening.includes('Łozinny Bród'), `place name changed: ${label}`);
         for (const n of ['30', '20']) assert(opening.includes(n), `missing ${n}: ${label}`);
       }
       if (mission === 'm12') {
