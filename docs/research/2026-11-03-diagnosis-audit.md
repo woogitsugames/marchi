@@ -286,7 +286,7 @@ dodatkowo, co objaśnia fałda kodeksu (`codexLink`).
 | `STORAGE_FULL` jako korzeń: próbek / krytyczny / jakaś rada | 38 / 89% / 0% | 19 / 21% / 100% (15 × „inny spichlerz ma miejsce”, 4 × przycisk spichlerza); pozostałe 19 kończą się na `NO_ROAD` z przyciskiem drogi |
 | `OUTPUT_FULL.NO_WAGON` jako korzeń: próbek / krytyczny / „Kup wóz” | 140 / 74% / 100% | 106 / **31%** / 75% (26 × linia „Nadwyżka…”; reszta to m8 i rynek doliny) |
 | przycisk „Kup wóz” w arkuszu: próbek / działa | ≈175 / ≈21% | 115 / 29% |
-| m1 / nic, `ALL_BUSY` bez dojazdu ze stajni | „Kup wóz” (0/2) | przycisk mostu do gospodarstwa (30 srebra, 2/2); sam most w 60 s postoju nie usuwa — wozy dalej jeżdżą, dopiero lekcja (most + 2 wozy) |
+| m1 / nic, `ALL_BUSY` bez dojazdu ze stajni | „Kup wóz” (działa 0/2) | przycisk mostu do gospodarstwa (30 srebra) w 2/2 próbkach; sam most w 60 s postoju nie usuwa — wozy dalej jeżdżą, dopiero lekcja (most + 2 wozy) |
 | kodeks objaśnia prawdziwy postój | 67% | **100%** (fałda bierze ostatnie ogniwo-postój) |
 
 Uwagi do porównania:
