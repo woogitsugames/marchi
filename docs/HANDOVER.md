@@ -479,3 +479,26 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - Samouczek m1 krok 5: **jedno przesunięcie kamery nad przeprawę — akceptowane** (wyjątek od „nigdy nie rusza kamery”, D-91).
 - m8: kamieniołom czekający na rezerwę kamienia — **spokojna pinezka** z linią „W spichlerzu jest N kamieni” (D-95) — zostaje.
 - Od ~21:00 znów do 2 agentów Opus (deweloper + researcher).
+
+## Stan dnia 7 — 2026-11-03 (gałąź `claude/w-day7`, agent dzienny 7; przerwane z powodu limitu użycia)
+**Zrobione i zatwierdzone:** zadanie 1 — notatka samouczka w kroku 5 w poziomie nie leży już na „Droga” ani na
+przycisku zamknięcia karty (D-96, 4ce0565). Sprawdzone przez `tools/repro-step5.mjs` (prawdziwe dotknięcia, zbudowana gra):
+915×412 pl z kartą i bez, `?lang=ar`, 412×915; most nadal się buduje. Zrzuty `docs/shots/day7-tut-step5-*.jpg`.
+Fold book/flex nie sprawdzone (narzędzie nie emuluje zawiasu, maszyna przeciążona). Typecheck OK, `npm test` **431/0**,
+złote hasze bez zmian.
+**Gotowe w drzewie roboczym, NIEZATWIERDZONE** (typecheck i 431/0 przeszły na tym drzewie; przed commitem dopisać
+D-97…D-99 i zrobić zrzuty):
+- Zadanie 2 — ranga 5 doliny 13 000 → **14 500** (`src/sim/defs.ts`; tabela rang w `docs/playtest/PROTOCOL.md` też
+  poprawiona na 3000/7200/14 500). Bot DECENT: R5 108,7 → **119,7 min** (środek okna 105–135); próg 14 000 → 116,0,
+  15 000 → 123,1. Ławka 180 min: „mixed” 106,5–108,7 → 117,7–119,7; z `--events` 87,5–90,0 → 95,3–96,9 (nadal poniżej okna,
+  jak dotąd). Srebro, rangi 1–4 i pozostałe plany bez zmian. Rangi 3/4 zostają 3000/7200.
+- Zadanie 3 — spokojny wariant kodeksu `OUTPUT_FULL.NO_WAGON` („Pełno — nic pilnego”, bez „Kup wóz”):
+  `STALL_CODEX_CALM` w `src/content/stallCodex.ts`, sekcja „Wersje spokojne” w `docs/content/stall-codex.md`,
+  `codexCalm()` w `src/ui/stalls.ts`, `codexHtml(…, calm)` w `codex.ts`/`panels.ts`, 2 nowe testy w `tests/stall-codex.test.ts`.
+  m4: 898 spokojnych / 15 zwykłych próbek, m8: 340 / 139. Zrzut 412×915 obejrzany (`tools/day7-shots.mjs WHAT=codex`).
+- Zadanie 4 — dwa podglądy prognozy na pieczęci w trybie zegarka, tylko z flagą `?sealpace=a|b` (`sealPaceHtml` w
+  `src/ui/pace.ts`, `hud.ts`, CSS `.seal-pace*`, klucze `contract.sealPace.eta/.late` w PENDING_KEYS). A: „gotowe za 3:05”
+  pod zegarem; B: trzy małe pieczęcie bez słów. Zrzuty 360×380 zrobione (`tools/day7-shots.mjs WHAT=flip`), jeszcze nie w
+  `docs/shots/`. **Do decyzji właściciela: A czy B** (rekomendacja: A).
+**Zostało:** zatwierdzić zadania 2–4 (każde osobno, z D-97/D-98/D-99), zrzuty `day7-codex-*`/`day7-flip-*` do
+`docs/shots/`, BACKLOG (zamknąć P2 „notatka w poziomie” i P3 „kodeks Kup wóz”, przy P3 Flip dopisać warianty).
