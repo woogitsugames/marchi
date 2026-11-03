@@ -562,4 +562,8 @@ export const en: FullDict = {
   'chron.beer_at_market.s': 'The first beer found a buyer at the castle market.',
   'chron.seven_trade_goods.t': 'Seven kinds of goods',
   'chron.seven_trade_goods.s': 'Seven kinds of goods reached market as the trade grew swift.',
+  // contract milestones (D-60): see PENDING_KEYS
+  'contract.half': 'Half the contract is in the castle: {have}/{total}',
+  'contract.twoMin': 'Two minutes left — {n} still to deliver',
+  'contract.lastMin': 'Last minute — {n} still to deliver',
 };

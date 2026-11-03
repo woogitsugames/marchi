@@ -808,3 +808,17 @@ foam collar and a short broken wake downstream (+x, as the water shader's curren
 one draw call for all bridges, discarding empty texels. Cost: +1 draw call on every tier when a bridge exists;
 triangles per 4 m segment wood 536→560, stone ≈1100→1312, +348 (wood) / +676 (stone) per bank end; m1 bridge
 view high 54→55 calls, 351.6k→352.4k tris. Shots `docs/shots/night2-bridge-*`. (decided)
+
+**D-60 — Contract progress you can feel: delivery tags at the castle gate, a flash on the waybill line, three
+milestone notices (UI only).** BACKLOG P2 "10-minute session" (visible delivery progress; countdown with hope).
+`Markers` compares the castle's contract goods frame to frame; a rise shows "+N" with the good's icon on the slate
+ETA plaque just above the castle gate (where the wagon hands over; the castle's pin anchor tops the keep, mostly
+under the waybill), one tag per good, at most three stacked, 180 ms in, 1.3 s held while drifting up 24 px
+(linear), 220 ms out; first sight / load / restart only seeds the counts. The waybill line of a good that rose
+flashes once (240 ms). `Hud` shows one notice per milestone while the contract runs: half the goods in the castle
+("Połowa kontraktu w zamku: 36/50"), two minutes and the last minute before the deadline now due (per tranche),
+each with the units still missing — milestones already passed when the HUD first sees the contract stay silent.
+Reads state only; no sim change, hashes untouched. Not done from the backlog entry: the seal-press animation
+before the end letter and a "hurry" music mood (owner taste; app flow), a delivery sound. Keys `contract.half`,
+`contract.twoMin`, `contract.lastMin` (pl/en, PENDING_KEYS). Shots `docs/shots/night2-delivery-*`,
+`night2-half-*`. (decided)

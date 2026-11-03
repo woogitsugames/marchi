@@ -135,6 +135,10 @@ export class Hud {
   private notice: HTMLElement | null = null;
   private live: HTMLElement;
   private lastSig = '';
+  /** Contract milestones already announced (D-60): 'half', '<dueTick>:2', '<dueTick>:1'; seeded on the first update. */
+  private milestones: Set<string> | null = null;
+  /** Contract goods in the castle at the last update (for the bar flash). */
+  private prevHave = new Map<Good, number>();
   private sealsSig = '';
   private plaqueSig = '';
   private stallSig = '';
@@ -460,7 +464,9 @@ export class Hud {
     const left = Math.max(0, dueTick - st.tick);
     const late = left < 120 * TICK_HZ;
     const total = goods.reduce((a, g) => a + c.need[g], 0);
-    const frac = have.reduce((a, v) => a + v, 0) / Math.max(1, total);
+    const got = have.reduce((a, v) => a + v, 0);
+    const frac = got / Math.max(1, total);
+    this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left);
     const folded = this.collapsed || this.compact;
     if (folded) {
       setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
@@ -484,7 +490,7 @@ export class Hud {
     const sig = `${have.join(',')}|${tr.map((x) => `${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}`).join('')}|${fcSig}|${getLang()}`;
     if (sig === this.lastSig) return;
     this.lastSig = sig;
-    const line = (g: Good, got: number, need: number): string => `<div class="wb-line${got >= need ? ' done' : ''}" data-wb="castle" role="button" tabindex="0">
+    const line = (g: Good, got: number, need: number): string => `<div class="wb-line${got >= need ? ' done' : ''}" data-wb="castle" data-g="${g}" role="button" tabindex="0">
         <span class="wb-gi">${iconSvg(g, 22, goodName(g))}</span>${bar(got / Math.max(1, need))}
         <bdi class="count num">${fmtInt(got)}<small>/${fmtInt(need)}</small></bdi></div>`;
     let body: string;
@@ -509,6 +515,34 @@ export class Hud {
       }).join('')}</ol>`;
     }
     setHtml(this.wbBody, body);
+    // a delivery: the line of each good that rose flashes once (240 ms, CSS), so the eye finds what changed
+    goods.forEach((g, i) => {
+      const before = this.prevHave.get(g);
+      if (before !== undefined && have[i]! > before) this.wbBody.querySelector(`.wb-line[data-g="${g}"]`)?.classList.add('is-bump');
+      this.prevHave.set(g, have[i]!);
+    });
+  }
+
+  /**
+   * One notice per milestone while the contract runs (BACKLOG P2 "10-minute session"): half the goods
+   * in the castle, two minutes and the last minute before the deadline now due (each tranche has its
+   * own), with how many units are still missing. Milestones already passed when the HUD first sees the
+   * contract (a loaded game) stay silent.
+   */
+  private contractMilestones(running: boolean, frac: number, got: number, total: number, dueTick: number, left: number): void {
+    const first = this.milestones === null;
+    const seen = (this.milestones ??= new Set());
+    const fire = (key: string, icon: IconId, text: string): void => {
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (!first && running) this.showNotice(icon, esc(text));
+    };
+    if (frac >= 1) return;
+    const missing = fmtInt(total - got);
+    if (frac >= 0.5) fire('half', 'seal', t('contract.half', { have: fmtInt(got), total: fmtInt(total) }));
+    if (left <= 0) return;
+    if (left < 60 * TICK_HZ) fire(`${dueTick}:1`, 'snow', t('contract.lastMin', { n: missing }));
+    else if (left < 120 * TICK_HZ) fire(`${dueTick}:2`, 'snow', t('contract.twoMin', { n: missing }));
   }
 
   /**

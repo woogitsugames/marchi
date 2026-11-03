@@ -9,7 +9,7 @@ import { assert, test } from './harness';
 const CSS = fileURLToPath(new URL('../src/styles/main.css', import.meta.url));
 
 /** Rules whose box JS positions with a transform from screen coordinates (left: 0; top: 0 anchor). */
-const SCREEN_PLACED = ['.bubble', '.eta-tag', '.draft-tag', '.tut-', '.fix-stamp', '.ghost-tag', '.gate-pin'];
+const SCREEN_PLACED = ['.bubble', '.eta-tag', '.draft-tag', '.tut-', '.fix-stamp', '.ghost-tag', '.gate-pin', '.dlv-tag'];
 
 interface Decl { line: number; selector: string; prop: string; value: string }
 

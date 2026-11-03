@@ -565,6 +565,10 @@ export const pl = {
   'chron.beer_at_market.s': 'Pierwsze piwo znalazło nabywcę na zamkowym targu.',
   'chron.seven_trade_goods.t': 'Siedem towarów',
   'chron.seven_trade_goods.s': 'Siedem rodzajów dóbr zasiliło targ, gdy obrót nabrał tempa.',
+  // contract milestones (D-60): see PENDING_KEYS
+  'contract.half': 'Połowa kontraktu w zamku: {have}/{total}',
+  'contract.twoMin': 'Zostały 2 minuty — brakuje jeszcze {n}',
+  'contract.lastMin': 'Ostatnia minuta — brakuje jeszcze {n}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -706,6 +710,9 @@ export const PENDING_KEYS = [
   'events.order.t.christmas_court',
   'events.order.t.cathedral_works',
   'events.order.t.royal_hunt',
+  'contract.half',
+  'contract.twoMin',
+  'contract.lastMin',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
