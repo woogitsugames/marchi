@@ -261,3 +261,41 @@ ewentualnie `stall-codex`.
 Kolejność wdrożenia: 1 i 2 razem (dotyczą tego samego statusu i tej samej rady „Kup wóz”), potem 4 (najtańsza),
 3, 5, 6. Po wdrożeniu: ponowić `node tools/diagnosis-audit-run.mjs` — tabela z rozdz. 4 powinna się zgodzić z kolumną
 „po regułach”, a kolumna „naprawa działa” dla `OUTPUT_FULL.NO_WAGON` przestaje mieć sens (przycisku tam nie będzie).
+
+## Po naprawach (dzień 5, gałąź `claude/w-day5`)
+
+Wdrożone naprawy 1+2, 4, 3, 5, 6 z rozdz. 5 (D-85…D-90), wszystkie w UI i czytających funkcjach `diagnose.ts`
+(`outputSurplus`, `heldWagon`, `granaryRelief`, `busyOutOfReach`, `contractFilled`) — złote hashe bez zmian,
+`tests/determinism-reads.test.ts` pilnuje odczytów w m1/m4/m6/m10/m12. Ponowny przebieg:
+`node tools/diagnosis-audit-run.mjs` (te same scenariusze, 635 próbek, 511 z postojem). Narzędzie mierzy teraz
+dodatkowo, co objaśnia fałda kodeksu (`codexLink`).
+
+| miara | przed | po |
+|---|---|---|
+| krytyczny najgorszy postój (wszystkie próbki) | 282 / 635 | **189 / 635** (szacunek z rozdz. 4: 224) |
+| m4 / nic · lekcja — krytyczny | 91% · 75% | **17% · 17%** |
+| m4 / nic — wskazówka o lodzie w oknie 330–480 s | 0% | **30% próbek misji** (łańcuch → wóz `BRIDGE_CLOSED`) |
+| m5 / lekcja — krytyczny | 62% | **15%** |
+| m6 / lekcja — krytyczny | 100% | **38%** (reszta: oba spichlerze naprawdę pełne pod koniec, przycisk „Postaw spichlerz”) |
+| m12 / lekcja — krytyczny | 53% | **13%** |
+| m1 / lekcja — krytyczny | 47% | 32% |
+| m9 / lekcja · m10 / nic — krytyczny | 15% · 86% | **0% · 0%** (zamówienie węgla wypełnione) |
+| dolina DECENT — krytyczny | 33% | **0%** (nadwyżka na rynek: pinezka drugorzędna, „Kup wóz” zostaje) |
+| m1, m5, m6, m12 / nic — krytyczny (prawdziwe braki drogi) | 100% | 100% (bez zmian, dobrze) |
+| m6 / nic · m12 / nic — przycisk naprawy | 76% · 85% | **100% · 100%** (pełny spichlerz → spichlerz bez drogi) |
+| `STORAGE_FULL` jako korzeń: próbek / krytyczny / jakaś rada | 38 / 89% / 0% | 19 / 21% / 100% (15 × „inny spichlerz ma miejsce”, 4 × przycisk spichlerza); pozostałe 19 kończą się na `NO_ROAD` z przyciskiem drogi |
+| `OUTPUT_FULL.NO_WAGON` jako korzeń: próbek / krytyczny / „Kup wóz” | 140 / 74% / 100% | 106 / **31%** / 75% (26 × linia „Nadwyżka…”; reszta to m8 i rynek doliny) |
+| przycisk „Kup wóz” w arkuszu: próbek / działa | ≈175 / ≈21% | 115 / 29% |
+| m1 / nic, `ALL_BUSY` bez dojazdu ze stajni | „Kup wóz” (działa 0/2) | przycisk mostu do gospodarstwa (30 srebra) w 2/2 próbkach; sam most w 60 s postoju nie usuwa — wozy dalej jeżdżą, dopiero lekcja (most + 2 wozy) |
+| kodeks objaśnia prawdziwy postój | 67% | **100%** (fałda bierze ostatnie ogniwo-postój) |
+
+Uwagi do porównania:
+- **m8 bez zmian (70–71%).** Spichlerz naprawdę prosi o kamień (luka rezerwy 6 ≥ ładunek 4 — audyt w 3A błędnie
+  podał „6 < pełny ładunek”), więc reguła nadwyżki, wierna dyspozytorowi, nie wycisza kamieniołomu; „Kup wóz” dalej
+  nie działa (0/14), bo nowy wóz bierze najpierw wejścia piekarni i tartaku. Uczciwa rada wymaga albo zmiany
+  dyspozytora (hash), albo nowego odczytu z 3G — decyzja właściciela (BACKLOG).
+- „Naprawa działa” dla `NO_ROAD` spadła z 98% do 91%, bo pod ten korzeń trafiły pełne spichlerze z m6/m12, a miara
+  liczy, czy zniknie postój **spichlerza** — ten zostaje pełny (zboże z niego nie wyjeżdża), choć producenci za nim
+  ruszają. To artefakt miary, nie regres.
+- Dolina wyszła ostrożniej niż szacunek (0% zamiast 29%), bo rozdz. 5 p. 1 każe nadwyżkę na rynek pokazywać jako
+  pinezkę drugorzędną; jeśli właściciel woli wosk dla niesprzedanego towaru — jedna linia w `calmStall`.

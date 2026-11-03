@@ -141,7 +141,7 @@ export function linkSubject(world: World, l: ReasonLink): string {
   return l.kind === 'building' ? buildingName(world, l.id) : wagonName(world, l.id);
 }
 
-export { isCritical, isStall } from './stallKinds';
+export { codexLink, isCritical, isStall, isStallLink, isWagonWait } from './stallKinds';
 
 /** Icon markup for a building status (missing good = good icon with a stroke-through). */
 export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof typeof BUILDINGS): string {
@@ -171,10 +171,6 @@ export function iceWaitSec(world: World, s: WagonStatus): number {
   return s.k === 'BRIDGE_CLOSED' ? Math.max(0, s.until - world.state.tick) / TICK_HZ : 0;
 }
 
-/** A wagon status that is a wait worth explaining (bubble, red status line, cause chain). */
-export function isWagonWait(s: WagonStatus): boolean {
-  return s.k === 'BRIDGE_JAM' || s.k === 'NO_ROUTE' || s.k === 'BRIDGE_CLOSED';
-}
 
 export function linkIcon(world: World, l: ReasonLink, size: number): string {
   if (l.kind === 'wagon') return wagonStatusIcon(l.status, size);

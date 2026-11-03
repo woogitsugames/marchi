@@ -1,20 +1,22 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
+  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { cureFor } from './stalls';
+import { cureFor, gapTarget } from './stalls';
+
+export { gapTarget };
 import { buildTypes } from './buildTool';
 import { errorText } from './roadTool';
 import { codexHtml, toggleCodex } from './codex';
@@ -40,19 +42,6 @@ export interface PanelNav {
 }
 
 // ---------------------------------------------------------------- gap finder
-
-/** Building whose missing link to the stable is the root of this chain, or -1. */
-export function gapTarget(world: World, chain: ReasonLink[]): number {
-  const root = chain[chain.length - 1];
-  if (!root) return -1;
-  if (root.kind === 'building') {
-    const s = root.status;
-    if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
-    return -1;
-  }
-  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0 && buildingById(world, root.status.target)) return root.status.target;
-  return -1;
-}
 
 let gapCache: { key: string; s: RoadSuggestion | null } | null = null;
 /** suggestLinkToStable runs a whole-grid Dijkstra: compute once per road network version. */
@@ -109,10 +98,39 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
   }
-  const root = chain[chain.length - 1];
-  if (root?.kind === 'wagon' && root.status.k === 'BRIDGE_JAM') {
+  // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
+  if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
     const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint jam-hint">${iconSvg('bridge_jam', 18)}<span>${esc(text)}</span></div>`;
+  }
+  return '';
+}
+
+/**
+ * A stall with nothing to fix, said plainly instead of a cure that would not work (audit 2026-11-03): a full
+ * yard nobody needs right now (fix 1: no "Kup wóz"), a full granary while another one has room (fix 3, with one
+ * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the
+ * building itself; placed right under the count, above the codex fold, so it is read before the generic advice.
+ */
+function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
+  if (chain.length > 1) return '';
+  const en = (k: MessageKey): string => (translated(k) ? '' : ' lang="en" dir="ltr"');
+  const s = b.status;
+  if (s.k === 'OUTPUT_FULL' && outputSurplus(world, b.id) === 'SPARE') {
+    return `<div class="s-hint calm-hint">${iconSvg(s.good, 22, goodName(s.good))}<span${en('fix.surplus')}>${
+      esc(t('fix.surplus', { goodGen: t(`goodGen.${s.good}` as MessageKey) }))}</span></div>`;
+  }
+  const filled = contractFilled(world, b.id);
+  if (filled) {
+    return `<div class="s-hint calm-hint">${iconSvg(filled, 22, goodName(filled))}<span${en('fix.orderFilled')}>${
+      esc(t('fix.orderFilled', { goodAcc: t(`goodAcc.${filled}` as MessageKey) }))}</span></div>`;
+  }
+  if (s.k === 'STORAGE_FULL') {
+    const r = granaryRelief(world, b.id);
+    if (r?.k === 'ROOM') {
+      return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.storeRoom')}>${esc(t('fix.storeRoom'))} <button class="linkish" data-go="building:${r.granary}">${
+        esc(buildingName(world, r.granary))}</button></span></div>`;
+    }
   }
   return '';
 }
@@ -198,11 +216,9 @@ function wire(sheet: Sheet, nav: PanelNav): void {
 function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wagon', selfId: number): string {
   const because = esc(t('why.because'));
   const last = chain.length - 1;
-  const rootIsStall = (l: ReasonLink): boolean =>
-    l.kind === 'building' ? isStall(l.status) || l.status.k === 'NO_INPUT' : isWagonWait(l.status);
   return `<ol class="chain">${chain.map((l, i) => {
     const self = l.kind === selfKind && l.id === selfId;
-    const root = i === last && chain.length > 1 && rootIsStall(l);
+    const root = i === last && chain.length > 1 && isStallLink(l);
     const tag = root ? `<span class="root-tag">${esc(t('why.root'))}</span>` : '';
     const attrs = self ? 'disabled' : `data-go="${l.kind}:${l.id}"`;
     return `<li data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
@@ -352,10 +368,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
-      // "what does it mean?" for the status at the root of the chain (the one the player has to fix)
-      const root = chain.length > 1 ? chain[chain.length - 1]! : null;
-      const codex = stalled ? (root ? codexHtml(root.kind, root.status) : codexHtml('building', b.status)) : '';
-      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + codex;
+      // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
+      // producer at work or a wagon on its way (audit fix 4)
+      const cl = codexLink(chain, { kind: 'building', id, status: b.status });
+      const codex = stalled ? codexHtml(cl.kind, cl.status) : '';
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain) : '') + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },
@@ -415,9 +432,9 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       if (waiting) {
         const chain = explainWagon(world, id, 4, true);
         if (chain.length > 1) html += `<div class="section-h">${esc(t('wagon.chain'))}</div>${chainHtml(world, chain, 'wagon', id)}`;
-        // "what does it mean?" for the root of the chain (or the wagon's own status)
-        const root = chain.length > 1 ? chain[chain.length - 1]! : null;
-        html += root ? codexHtml(root.kind, root.status) : codexHtml('wagon', w.status);
+        // "what does it mean?" for the last stall of the chain (or the wagon's own status, audit fix 4)
+        const cl = codexLink(chain, { kind: 'wagon', id, status: w.status });
+        html += codexHtml(cl.kind, cl.status);
         target = gapTarget(world, chain.length ? chain : [{ kind: 'wagon', id, status: w.status }]);
         fix = target >= 0 ? gapSuggestion(world, target) : null;
         if (fix) html += fixHtml(world, target, fix);

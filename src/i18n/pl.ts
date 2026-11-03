@@ -620,6 +620,15 @@ export const pl = {
   'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',
   // best seals and time per contract in the mission menu (day 1, owner decision 13): localized
   'menu.bestAria': 'Najlepszy wynik: {n} z 3 pieczęci, czas {time}',
+  // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
+  'fix.surplus': 'Nadwyżka: nikt teraz nie potrzebuje {goodGen}, poczeka na placu. Nowy wóz tego nie przyspieszy.',
+  'cause.surplus': 'nadwyżka, nikt jej teraz nie potrzebuje',
+  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
+  'fix.storeRoom': 'Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:',
+  'cause.storeRoom': 'pełny, ale inny spichlerz ma miejsce',
+  // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
+  'fix.orderFilled': 'Zamówienie na {goodAcc} wypełnione — reszta zostaje na placu, nic nie trzeba robić.',
+  'cause.orderFilled': 'zamówienie wypełnione, reszta czeka',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -651,6 +660,12 @@ export const PENDING_KEYS = [
   'why.full.refuses',
   'why.full.waiting',
   'why.full.blocked',
+  'fix.surplus',
+  'cause.surplus',
+  'fix.storeRoom',
+  'cause.storeRoom',
+  'fix.orderFilled',
+  'cause.orderFilled',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

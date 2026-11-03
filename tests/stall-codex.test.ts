@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as ts from 'typescript';
 import { STALL_CODEX } from '../src/content/stallCodex';
+import { TICK_HZ, createWorld, explainBuilding, explainWagon, step } from '../src/sim/index';
+import { codexLink, isStallLink, isWagonWait } from '../src/ui/stallKinds';
+import { rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 function read(path: string): string {
@@ -98,4 +101,35 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
     `## \`${key}\`\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('');
   eq(read('../docs/content/stall-codex.md').replace(/\r\n/g, '\n'), expected,
     'Markdown content must stay in sync with src/content/stallCodex.ts');
+});
+
+test('audit fix 4: the codex fold explains the last stall of the chain, never a building at work or a moving wagon', () => {
+  const key = (l: { kind: 'building' | 'wagon'; status: { k: string; cause?: string } }): string =>
+    l.kind === 'wagon' ? `wagon.${l.status.k}` : l.status.cause ? `status.${l.status.k}.${l.status.cause}` : `status.${l.status.k}`;
+  let past = 0, wagons = 0;
+  for (const id of ['m2', 'm3', 'm11']) {
+    const w = createWorld(id);
+    while (w.state.mission.result === 'running' && w.state.tick < 12 * 60 * TICK_HZ) {
+      step(w);
+      if (w.state.tick % 50) continue;
+      for (const e of rankStalls(w)) {
+        const b = w.state.buildings.find((q) => q.id === e.id)!;
+        const chain = explainBuilding(w, b.id, 5, true);
+        const l = codexLink(chain, { kind: 'building', id: b.id, status: b.status });
+        assert(isStallLink(l), `${id}: codex for a stall, got ${key(l)}`);
+        assert(Object.hasOwn(STALL_CODEX, key(l)), 'entry exists: ' + key(l));
+        // the old rule took the chain's end, which is often not a stall
+        if (!isStallLink(chain[chain.length - 1]!)) past++;
+      }
+      for (const q of w.state.wagons) {
+        if (!isWagonWait(q.status)) continue;
+        const chain = explainWagon(w, q.id, 4, true);
+        const l = codexLink(chain, { kind: 'wagon', id: q.id, status: q.status });
+        assert(isStallLink(l), `${id}: wagon codex for a wait, got ${key(l)}`);
+        wagons++;
+      }
+    }
+  }
+  assert(past > 20, `chains ending at a non-stall now explained by their last stall (${past})`);
+  assert(wagons > 0, `waiting wagons sampled (${wagons})`);
 });

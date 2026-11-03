@@ -970,6 +970,11 @@ bdi { unicode-bidi: isolate; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }
+/* a stall with nothing to fix (surplus, room in another granary, a filled order; audit 2026-11-03): plain ink,
+   no alert colour — it is read before the codex fold, in place of a cure that would not work */
+.calm-hint { display: flex; align-items: center; gap: 8px; margin-block: 8px; font-size: 14px; line-height: 1.3; color: var(--ink); }
+.calm-hint svg { flex: none; }
+.calm-hint .linkish { min-height: 48px; font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
 /* ================================================================ end letter: where the time went */
 .dl-item { display: inline-flex; align-items: center; gap: 4px; margin-inline-end: 10px; }

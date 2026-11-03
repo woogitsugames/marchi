@@ -617,4 +617,13 @@ export const en: FullDict = {
   'hud.speedHint': 'At ×4 the stall grows fast: {name}. Slow down to fix it in time.',
   // best seals and time per contract in the mission menu (day 1, owner decision 13): see PENDING_KEYS
   'menu.bestAria': 'Best result: {n} of 3 seals, time {time}',
+  // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
+  'fix.surplus': 'Surplus: nobody needs more {goodGen} right now; it waits in the yard. Another wagon would not move it sooner.',
+  'cause.surplus': 'surplus, nobody needs it right now',
+  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
+  'fix.storeRoom': 'Another granary still has room — new goods go there:',
+  'cause.storeRoom': 'full, but another granary has room',
+  // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
+  'fix.orderFilled': 'The order for {goodAcc} is filled — the rest stays in the yard, nothing to do.',
+  'cause.orderFilled': 'order filled, the rest waits',
 };

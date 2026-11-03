@@ -1150,3 +1150,80 @@ ends at a full one shows the same count with that building's name as a link. Not
 cure section (buy a wagon / build a granary only where the mission lets you build one, otherwise the hint) stays
 the only action. Pending keys read the English fallback as `lang="en" dir="ltr"` (new `translated()` in
 i18n/index.ts), as the codex does. Keys `why.full.*` (PENDING_KEYS). `docs/shots/day4-full-*.jpg`. (decided)
+
+**D-85 — A full yard nobody needs is a calm surplus; a fleet held at a bridge is the cause of "no wagon"
+(diagnosis audit 2026-11-03, fixes 1 + 2; UI and read-only diagnosis, no hash change).** The audit found
+`OUTPUT_FULL.NO_WAGON` behind 27 % of all worst-stall samples, waxed critical in 74 % of them, while "Kup wóz"
+cleared it within 60 s only 11 % of the time: the dispatcher hauls a surplus to the granary last, so the new
+wagon takes a more urgent job. A consumer actually waiting for the good was there in 6 of 140 samples.
+Now a read-only `outputSurplus()` (src/sim/diagnose.ts) calls such a yard **SPARE** when no consumer waits for
+the good (NO_INPUT / NO_WAGON / WAITING_UPSTREAM on it), the contract castle holds its whole order of it, and no
+granary asks for road stone by the dispatcher's own rule (a reserve gap of at least one full load, 4 stone —
+the audit's estimate used "any gap"; we follow the dispatcher, so a calm card never hides a run the dispatcher
+would make. In m8 the granary's gap is 6 ≥ 4, so the quarry stays a real "no wagon" stall — see D-90). A SPARE yard is a calm stall
+(minor pin, never wax), the HUD card says "nadwyżka, nikt jej teraz nie potrzebuje", the sheet replaces "Kup
+wóz" with one plain line ("Nadwyżka: nikt teraz nie potrzebuje zboża, poczeka na placu. Nowy wóz tego nie
+przyspieszy.") and the wagon tool is not highlighted. In the free valley the market still buys it: **MARKET** —
+calm (minor, no wax) but the wagon cure stays, since three wagons cleared it there in half the samples (the
+audit's section 5 wording; its section 4 estimate left the valley unchanged — we chose the minor pin because
+surplus for sale is an opportunity, not an alarm).
+Fix 2: in the player's chain (`explainBuilding(..., customers = true)`; the sim's ledger chain is untouched),
+NO_WAGON.ALL_BUSY and OUTPUT_FULL.NO_WAGON go on to the nearest held wagon (BRIDGE_CLOSED / BRIDGE_JAM /
+NO_ROUTE) when at least a third of the fleet is held. The existing ice hint, jam hint and road fix then apply
+by themselves, and `cureFor` stops at a held wagon (a new wagon would wait at the same bridge). The jam hint now
+shows for a jammed wagon anywhere in the chain, not only at its end (a jam's chain ends at the wagon it waits
+for). Threshold one third: below it the fleet still moves and "every wagon busy" is the honest reading.
+Keys `fix.surplus`, `cause.surplus` (PENDING_KEYS). Tests: `tests/diagnosis-audit-fixes.test.ts`, new reads in
+`tests/determinism-reads.test.ts`. (decided)
+
+**D-86 — "Co to znaczy?" explains the last stall of the chain (diagnosis audit 2026-11-03, fix 4; UI only).**
+The fold took the chain's last link. In 33 % of worst-stall samples that link was no stall at all — a producer
+that is WORKING, a wagon TO_PICKUP / TO_DROPOFF / LOADING — so the player read "Produkuje — pozwól dokończyć
+cykl" under "Dlaczego stoi?". Now `codexLink()` (src/ui/stallKinds.ts, pure) takes the last link that is a stall
+(the same test `chainHtml` already used for the "przyczyna" tag, now shared as `isStallLink`), falling back to
+the subject's own status. Same rule on the building sheet and the wagon card. No new text. `isWagonWait` moved
+to stallKinds.ts (re-exported by format.ts) so headless tests can use it. (decided)
+
+**D-87 — A full granary points at the granary to link, or stays calm when another has room (diagnosis audit
+2026-11-03, fix 3; UI and read-only diagnosis, no hash change).** `STORAGE_FULL` offered nothing in 100 % of the
+audit samples, though in m6/m12 a large granary without a road stood next to the full small one (2 silver of
+road solves the mission), and after the lesson the small granary stayed a waxed worst stall (m6: 94 % of the
+time) while the large one had room. A read-only `granaryRelief()` (src/sim/diagnose.ts) now answers, in this
+order: **ROOM** — another granary on the roads, reachable from this one, has room (held + promised under its
+cap, the sim's own STORAGE_FULL count): a calm stall, minor pin, the card says "pełny, ale inny spichlerz ma
+miejsce", the sheet "Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:" with one tap to it;
+**UNLINKED** — another granary has no road: the player chain goes on to it, so the existing road fix (gap
+finder) offers the cheapest link from the stable; otherwise `cureFor` = granary (a granary where the mission
+lets you build one, else the existing hint). ROOM wins over UNLINKED: with room nearby the second link is not
+needed. Keys `fix.storeRoom`, `cause.storeRoom` (PENDING_KEYS). (decided)
+
+**D-88 — "Every wagon busy" with no source in reach of the stable is a missing road (diagnosis audit
+2026-11-03, fix 5; UI only).** In mission I before the bridge the sim says NO_WAGON.ALL_BUSY as soon as both
+wagons are out: while no wagon is free the dispatcher only asks whether the source reaches the customer
+(component labels), not whether a wagon from the stable can reach the source. The card offered "Kup wóz",
+which never helped (the farm is across the river). A read-only `busyOutOfReach()` (src/sim/diagnose.ts) finds
+that case — sources of the good exist, none is in reach of any stable — and the UI treats it like
+NONE_CAN_REACH: `cureFor` = road and the gap finder (`gapTarget`, moved from panels.ts to stalls.ts so tests can
+reach it, re-exported) links the stable to that source (bridge included). Rejected: counting reachability from
+the stable inside the dispatcher (cleaner, but it changes statuses in the state and so every golden hash; not
+before the logistics playtest — BACKLOG). (decided)
+
+**D-89 — A good whose order is filled is the end of the job, not a stall (diagnosis audit 2026-11-03, fix 6;
+UI and read-only diagnosis, no hash change).** In m10 (and m9 after the lesson) the charcoal burner stood waxed
+"pełny magazyn, nie ma dokąd wieźć" with "connect a granary" for 86 % of the card's time, after the castle
+already held all the charcoal the contract asks for — pulling the eye away from the real lesson (a second
+woodcutter). A read-only `contractFilled()` (src/sim/diagnose.ts): OUTPUT_FULL.NO_DESTINATION, the contract
+castle holds its whole order of this good (the total, not only the tranche due) and no other customer takes it
+(`outputCustomer`). Such a stall is calm (minor pin, never wax), the card says "zamówienie wypełnione, reszta
+czeka", the sheet "Zamówienie na węgiel drzewny wypełnione — reszta zostaje na placu, nic nie trzeba robić."
+and no granary cure or hint. Keys `fix.orderFilled`, `cause.orderFilled` (PENDING_KEYS). (decided)
+
+**D-90 — Calm lines sit above the codex fold; m8's quarry left as it is (diagnosis audit follow-up).** The calm
+lines of D-85/D-87/D-89 first rendered in the cure slot, below "Co to znaczy?", whose generic entry for
+OUTPUT_FULL.NO_WAGON still says "Kup wóz": the player met the advice before the reason it does not apply. They
+now sit right under the full-storage count (`.calm-hint`: plain ink, no alert colour, 48 px link). The codex
+text is not specialised per calm case (it stays one entry per status, D-codex). m8 after the re-run: the quarry
+is still a waxed "no wagon" stall in 70 % of samples and one more wagon clears it in 0/14 — the granary does
+ask for stone (gap 6 ≥ load 4), but the new wagon takes the bread/planks inputs first (prio 1). An honest
+answer there needs either a dispatcher change (hash) or a new reading ("W spichlerzu jest 12 kamienia —
+wystarczy na bruk", audit 3G); left for the owner (BACKLOG). `docs/shots/day5-*.jpg`. (decided)
