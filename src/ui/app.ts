@@ -753,13 +753,18 @@ export class App implements PanelNav {
       again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
     });
-    // a won contract: the castle's seal is pressed first (~1.2 s, a tap skips it), then the letter
+    // a won contract: the castle's seal is pressed onto the waybill first (~1.2 s, a tap skips it), then the
+    // letter (D-82). One frame later, so the waybill has unfolded from under the sheets closed above.
     if (m.result === 'won' && m.contract) {
       const w = this.world;
-      this.cancelSeal = pressSeal(this.layers.overlay, () => {
-        this.cancelSeal = null;
-        if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+      let cancelPress: (() => void) | null = null;
+      const raf = requestAnimationFrame(() => {
+        cancelPress = pressSeal(this.layers.overlay, () => {
+          this.cancelSeal = null;
+          if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+        }, this.hud?.sealTarget() ?? null);
       });
+      this.cancelSeal = () => { cancelAnimationFrame(raf); cancelPress?.(); };
     } else this.layers.overlay.append(letter);
   }
 

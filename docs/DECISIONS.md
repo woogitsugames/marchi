@@ -1106,3 +1106,18 @@ lay askew in a heap. This is the "barrels' unit geometry is off its slot" of D-7
 rotation about the barrel's axis after laying it down; load bounds x ±0.61, z −1.44..0.25. The brewery yard spot
 moved 0.1 m (x 1.6 → 1.5) so the straight two-by-two pile clears its rack (clip test). Model-preview view
 `beercargo`. `docs/shots/day3-beer-barrels.jpg` (wagon and yard, before / after). (decided)
+
+**D-82 — A won contract's seal is pressed onto the waybill, not over the middle of the screen (UI only).** The
+first version of the seal moment (owner decision 6) pressed the seal in the middle of a dimmed screen — a generic
+"achievement" stamp that had nothing to do with the document the player had watched all game. Now the seal lands
+on the waybill itself: the map and the rest of the HUD dim around a lit window over the waybill's parchment
+(`box-shadow` spread from a transparent box in the overlay layer, so the HUD layer underneath keeps its own pixels
+and nothing is cloned), the seal comes down 260 ms (scale 1.5 → 1 → 0.96, rotate −12° → −5°, shadow from lifted to
+tight on the paper — monotonic, no overshoot), the squeezed wax rim spreads once, and the impression rests on the
+goods until the letter at 1.2 s. It is placed below the waybill's head (earned seals and the clock stay readable),
+at 64 % of the line (36 % in RTL), size 64–96 px by the body height (landscape 64 px). A folded waybill gets the seal
+on its medallion. The waybill's three seals switch from the forecast to the seals actually earned at the moment of
+winning (they showed three empty seals). Sound: the existing `contract.won` (`sfx/wax-seal`) already fires on the
+tick of the win from the audio bindings — kept there (tests/audio.test.ts) rather than moved into the UI.
+`prefers-reduced-motion`: no cue at all, straight to the letter (it held a collapsed stamp for 0.5 s before). One
+tap or key still skips. Lost contracts unchanged. `docs/shots/day4-seal-*.jpg`. (decided)
