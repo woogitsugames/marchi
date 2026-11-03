@@ -7,7 +7,7 @@ import {
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -346,8 +346,11 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
         const slow = w.next >= 0 ? wagonSlowdown(world, id) : null;
         if (slow && slow.factor < 0.93) {
           const pct = Math.round(slow.factor * 100);
-          const why = tHtml(slow.thaw ? 'wagon.slowThaw' : slow.mud ? 'wagon.slowMud' : slow.grade > 0.02 ? 'wagon.slowUphill' : 'wagon.slowOther', { pct: fmtInt(pct) });
-          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd>${iconSvg(slow.mud && !slow.thaw ? 'rain' : 'road_dirt', 20)}<span>${why}</span></dd>`);
+          // mud is a pace, not a stall (H4): one plain comparison with the same stretch paved, no alert colour
+          const why = slow.mud
+            ? tHtml(slow.thaw ? 'wagon.thawVsCobble' : 'wagon.mudVsCobble', { pct: fmtPercent(pct / 100), paved: fmtPercent(Math.round(slow.paved * 100) / 100) })
+            : tHtml(slow.grade > 0.02 ? 'wagon.slowUphill' : 'wagon.slowOther', { pct: fmtInt(pct) });
+          rows.push(`<dt>${esc(t('wagon.pace'))}</dt><dd class="pace-note">${iconSvg(slow.mud && !slow.thaw ? 'rain' : 'road_dirt', 20)}<span dir="auto">${why}</span></dd>`);
         }
         if (job && job.phase === 'pickup') {
           const to = buildingById(world, job.to);

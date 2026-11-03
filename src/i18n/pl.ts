@@ -65,6 +65,9 @@ export const pl = {
   'wagon.slowMud': 'błoto — {pct}% normalnej prędkości; bruk pomoże',
   'wagon.slowUphill': 'pod górę — {pct}% normalnej prędkości',
   'wagon.slowOther': '{pct}% normalnej prędkości',
+  // H4: mud read as a pace, not a stall — the same edge on cobbles beside it (percent via Intl)
+  'wagon.mudVsCobble': 'Błoto: {pct} prędkości — na bruku {paved}',
+  'wagon.thawVsCobble': 'Roztopy: {pct} prędkości — na bruku {paved}',
   'wagon.cargo': 'Ładunek',
   'wagon.empty': 'pusty',
   'wagon.dest': 'Cel',
@@ -631,6 +634,8 @@ export const PENDING_KEYS = [
   'codex.check',
   'codex.fixes',
   'codex.example',
+  'wagon.mudVsCobble',
+  'wagon.thawVsCobble',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -1121,3 +1121,17 @@ winning (they showed three empty seals). Sound: the existing `contract.won` (`sf
 tick of the win from the audio bindings — kept there (tests/audio.test.ts) rather than moved into the UI.
 `prefers-reduced-motion`: no cue at all, straight to the letter (it held a collapsed stamp for 0.5 s before). One
 tap or key still skips. Lost contracts unchanged. `docs/shots/day4-seal-*.jpg`. (decided)
+
+**D-83 — Mud on the wagon card: one plain comparison with cobbles, both against the normal (dry dirt) pace
+(BACKLOG H4).** The pace row said "mud — 52% of normal speed; cobbles help": the player learnt the loss but not
+what paving would buy. It now reads "Błoto: 52% prędkości — na bruku 114%" / "Mud: 52% speed — on cobbles 114%"
+(thaw: "Roztopy: …"). Both numbers share one baseline — the wagon's dry, flat pace on the stretch it is on — so the
+cobble figure is honestly above 100 % (cobbles 4.8 vs dirt 3.6, ×0.9 in rain; the thaw does not soften them)
+and carries the same grade and load factor as the mud figure. Rejected: "on cobbles 100 %" (percent of each
+surface's own dry pace) — it hides that cobbles are also faster in dry weather, which is the reason to pave. The
+number comes from a read-only field `Slowdown.paved` in `wagonSlowdown` (src/sim/diagnose.ts; no state, no hash
+change). The row is ink-coloured, the status line stays the driving status and never turns red; a test checks a
+muddy wagon never carries a stall status (`tests/mud-pace.test.ts`). Percentages through `fmtPercent` (Intl);
+`dir="auto"` on the text, so the English fallback reads correctly in RTL until the translation round. New keys
+`wagon.mudVsCobble`, `wagon.thawVsCobble` (PENDING_KEYS); `wagon.slowMud`/`wagon.slowThaw` are now unused
+(left for the dictionary clean-up, like `hud.coins`). `docs/shots/day4-mud-*.jpg`. (decided)

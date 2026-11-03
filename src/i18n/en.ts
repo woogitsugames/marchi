@@ -66,6 +66,9 @@ export const en: FullDict = {
   'wagon.slowMud': 'mud — {pct}% of normal speed; cobbles help',
   'wagon.slowUphill': 'uphill — {pct}% of normal speed',
   'wagon.slowOther': '{pct}% of normal speed',
+  // H4: mud read as a pace, not a stall — the same edge on cobbles beside it (percent via Intl)
+  'wagon.mudVsCobble': 'Mud: {pct} speed — on cobbles {paved}',
+  'wagon.thawVsCobble': 'Thaw mud: {pct} speed — on cobbles {paved}',
   'wagon.cargo': 'Cargo',
   'wagon.empty': 'empty',
   'wagon.dest': 'Destination',

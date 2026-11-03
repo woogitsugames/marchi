@@ -508,6 +508,10 @@ body.is-side .sheet-grip::before { display: none; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
+/* mud / slope pace (H4): icon beside the one-line comparison, ink colour — a pace, never a stall */
+.kv dd.pace-note { flex-wrap: nowrap; align-items: center; font-weight: 600; }
+.kv dd.pace-note > span { min-width: 0; }
+.kv dd.pace-note > svg { flex: none; }
 .kv .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; min-width: 48px; text-align: start; font-weight: 700; }
 .sheet-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .sheet-actions .btn { flex: 1; }
