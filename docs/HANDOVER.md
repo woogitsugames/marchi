@@ -298,3 +298,18 @@ Decyzje 13–15 dopisane wyżej. Następne decyzje od **D-66** (ta noc nie doda�
 - **CI (właściciel 2026-11-03): limit minut GitHub Actions — CI do minimum.** `ci.yml` tylko ręcznie i przy otwarciu PR
   (bez push, bez synchronize), workflowy propozycji misji tylko ręcznie. Nie dodawać kroków do CI; wszystkie
   sprawdzenia lokalnie przed pushem. Decyzja 12 (layout w CI) **anulowana**.
+
+## Stan dnia 1 — 2026-11-03 (gałąź `claude/w-day1`, agent dzienny)
+Każdy punkt: typecheck, `npm test` (408/0), build, `npm run layout -- --quick` (84/84) zielone; hasze złote bez zmian (sim nietknięta).
+1. **Decyzja 5** — atlas drzew: high = 128 px (2 × 7 MB = 14,0 MB, było 42,8 MB), ultra 256 px (55,9 MB); `view.stats().treeAtlasMB`. D-58 poprawka.
+2. **Decyzja 8** — kalenica strzechy: jeden pręt na ~0,9 m naprzemiennie (zygzak), cieńsze i ciemniejsze (`#4a3f2c`), bez kratki. D-61 poprawka; przed/po `day1-ridge-before-after.jpg` (widok `ridge` w model-preview).
+3. **Decyzja 2** — „Naprawa” dla OUTPUT_FULL/NO_DESTINATION (korzeń łańcucha): „Postaw spichlerz −30” zamyka kartę, otwiera Buduj ze spichlerzem na najbliższym wolnym miejscu obok budynku; w misjach bez spichlerza na liście — sama wskazówka. Przycisk Buduj w szynie dostaje znacznik lekarstwa. D-66.
+4. **Decyzja 7** — toast „Na ×4 przestój rośnie szybko: {budynek}. Zwolnij…” raz na przestój (krytyczny, ≥ 60 s gry), bez zmiany tempa. D-67.
+5. **Decyzje 1 + 13** — kronika w kopercie zapisu księgi (`chronicle`, opcjonalne, czytane łagodnie; localStorage scalany raz i kasowany po zapisie; nowy wpis = autozapis); najlepsze pieczęcie + czas per kontrakt w nowym magazynie IDB `profile` (DB v3), zapis przy liście końcowym, w menu trzy małe pieczęcie i czas pod podtytułem. Testy: stara baza v2, stara koperta, uszkodzony profil, migracja localStorage. D-68.
+6. **Decyzja 6** — pieczęć zamku odciskana 200 ms (bez sprężyny), trzymana do 1,2 s, tap/klawisz pomija, potem list; dźwięk dostawy przy każdym towarze kontraktu w zamku (`contract.delivery` = istniejący CC0 `unload-sack`, cicho, bez pozycji); `process_audio --check` PASS. D-69. Muzyka „hurry” — po playteście.
+7. **Decyzja 12 (CI) — pominięta** na polecenie właściciela (limit minut CI; workflowy nietknięte, baza `cd5b8a3` wyłączyła CI na push).
+8. **Priorytet właściciela (zrzut z telefonu)** — menu główne na zestawie UI: rama z liliami (`frame-sheet-dim`), tytuł na wstędze, mosiężne medaliony z numerem misji (wygrana = woskowa pieczęć), Kontynuuj = wiśniowy przycisk, Ustawienia = karta; przewijanie z wygaszeniem, 2 kolumny w krótkim poziomie/Flex, RTL. Layout 75 zadań menu/ustawienia/zapis/dolina we wszystkich widokach zielone. D-70; przed/po `day1-menu-*.jpg`.
+9. **Decyzja 15** — stosy towaru przy podwórzach wg zapasu: do jednego ładunku (6, kamień 4) instancjami `cargo-*` wozów; stałe stosy wyrobu usunięte z 7 modeli. Wywołania: +1–4 tylko gdy żaden widoczny wóz nie wiezie tego towaru. D-71; `day1-yard-sawmill-off-on.jpg`.
+Nowe klucze (PENDING_KEYS, PL+EN): `fix.granary`, `fix.granaryWhy`, `fix.granaryHint`, `hud.speedHint`, `menu.bestAria`. Następna decyzja: **D-72**.
+Do oceny na telefonie: rozmiar pieczęci przy liście (sprite 84 px — większa byłaby miękka), numery rzymskie w medalionach przy arabskim, stosy na podwórzach (miejsca na 10 modelach).
+
