@@ -44,6 +44,8 @@ export interface HudActions {
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 
 /** Existing woodcut icons stand in for the seasons (no new art, docs/design/seasons.md §5 is pending). */
+/** Rain forecast lead time: 30 s of game time. */
+const RAIN_WARN_TICKS = 30 * TICK_HZ;
 const SEASON_ICON: Record<Season, IconId> = { spring: 'rain', summer: 'sun', autumn: 'beer', winter: 'snow' };
 /** What a season (or the thaw) changes, said once when it begins. Spring itself changes nothing until the thaw. */
 const SEASON_EFFECT: Partial<Record<Season | 'thaw', MessageKey>> = {
@@ -152,6 +154,8 @@ export class Hud {
   private events: EventCard;
   private rankLetter: HTMLElement | null = null;
   private wasRaining = false;
+  /** Start tick of the rain spell already announced 30 s ahead (BACKLOG P4 rain forecast). */
+  private rainWarned = -1;
   /** Season bookkeeping for notices (null = not seen yet: loading a game announces nothing old). */
   private lastSeason: Season | null = null;
   private wasThaw = false;
@@ -410,6 +414,17 @@ export class Hud {
     }
     if (raining && !this.wasRaining && st.tick > 0) this.showNotice('rain', t('hud.rain'));
     this.wasRaining = raining;
+    // rain forecast (BACKLOG P4): the spells are scheduled in the state, so warn half a minute ahead — time to
+    // pave the busiest stretch before it turns to mud, not after
+    if (!raining && st.mission.result === 'running') {
+      for (const r of st.rain) {
+        if (r.start > st.tick && r.start - st.tick <= RAIN_WARN_TICKS && r.start !== this.rainWarned) {
+          this.rainWarned = r.start;
+          this.showNotice('rain', t('hud.rainSoon'));
+          break;
+        }
+      }
+    }
 
     const cobble = this.toolBtns.get('cobble');
     if (cobble) {
@@ -444,6 +459,19 @@ export class Hud {
     setText(this.wagonLabel, short > 0 ? t('tool.wagonShort', { n: fmtInt(short) }) : t('tool.wagon'));
     b.setAttribute('aria-label', short > 0 ? `${t('tool.wagon')} — ${t('fix.short', { n: fmtInt(short) })}` : t('tool.wagon'));
     for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road'));
+  }
+
+  /**
+   * "Diagnosis snapshot" (BACKLOG P3): the worst-stall card lights up once for ~2 s when the mission's first
+   * critical stall appears, and the screen reader hears its cause. No camera move, no new text: the card already
+   * says what stands and why, and its eye button is the "show me".
+   */
+  flashFirstStall(world: World, id: number): void {
+    this.stallRow.classList.remove('is-first');
+    void this.stallRow.offsetWidth; // restart the transition if it is still running
+    this.stallRow.classList.add('is-first');
+    window.setTimeout(() => this.stallRow.classList.remove('is-first'), 2000);
+    this.announce(`${buildingName(world, id)}: ${stallReason(world, id)}`);
   }
 
   /** Worst stall card and alarm seal; only rewritten when the worst stall, its cause or the count change. */

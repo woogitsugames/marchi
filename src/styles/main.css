@@ -602,6 +602,32 @@ section.sheet:focus { outline: none; }
   pointer-events: none;
 }
 
+/* ?diag=1 frame-time panel (debug only, src/ui/diagPanel.ts) */
+.diag {
+  position: absolute;
+  top: 42%;
+  inset-inline-start: calc(var(--safe-s, 0px) + 8px);
+  max-width: min(360px, calc(100vw - 16px));
+  padding: 6px 8px;
+  background: rgb(43 38 32 / .86);
+  color: var(--mist);
+  font-size: 13px;
+  line-height: 1.3;
+  z-index: 5;
+}
+.diag-text { white-space: pre; }
+.diag-row { display: flex; gap: 8px; margin-top: 6px; }
+.diag-btn {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--mist);
+  background: transparent;
+  border: 1px solid currentColor;
+}
+.diag-json { display: block; width: 100%; height: 120px; margin-top: 6px; font: 11px/1.2 monospace; }
+
 /* ================================================================ foldables & big screens
    Body classes come from src/ui/layout.ts: is-split (tools bottom-left, speed bottom-right),
    is-mini (Flip cover: watch mode), is-narrow (< 400 px, old Fold cover), is-flex (horizontal
@@ -1786,6 +1812,17 @@ body.is-flex .rail { z-index: 1; }
 .bubble.is-critical .bb-t { background: var(--wine); }
 .bubble .bb-t[hidden] { display: none; }
 @keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
+/* first critical stall of the mission (BACKLOG P3 "diagnosis snapshot"): a wine ring leaves the pin's head three
+   times (240 ms each, then still), and the worst-stall card warms for 2 s — no bounce, the camera stays */
+.bubble.is-first .bb::after {
+  content: ''; position: absolute; inset-block-start: 4px; inset-inline-start: 4px; width: 32px; height: 32px; border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--wine), 0 0 0 4.5px rgb(238 228 204 / .7); opacity: 0; pointer-events: none;
+  animation: pin-ring 660ms ease-out 3;
+}
+.bubble .bb { position: relative; }
+@keyframes pin-ring { 0% { opacity: .9; transform: scale(1); } 36% { opacity: 0; transform: scale(1.75); } 100% { opacity: 0; transform: scale(1.75); } }
+.stall-row .stall-card { transition: filter 200ms var(--ease); }
+.stall-row.is-first .stall-card { filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35)) drop-shadow(0 0 2px rgb(226 182 92)) drop-shadow(0 0 6px rgb(200 150 62)); }
 .eta-tag {
   position: absolute; left: 0; top: 0;
   display: flex; align-items: center; gap: 6px;

@@ -588,6 +588,12 @@ export const pl = {
   'events.order.d.christmas_court': 'Na święta dwór gromadzi piwo dla gości i mąkę na świąteczne kołacze.',
   'events.order.d.cathedral_works': 'Kapituła prosi o kamień na filary, deski na rusztowania i węgiel dla kowali przy hucie.',
   'events.order.d.royal_hunt': 'Na postój królewskiego polowania w dolinie potrzeba piwa, chleba i ryb.',
+  // ?diag=1 frame-time panel (night 5, debug only): see PENDING_KEYS
+  'diag.copy': 'Kopiuj JSON',
+  'diag.copied': 'Skopiowano',
+  'diag.reset': 'Od nowa',
+  // rain forecast 30 s ahead (night 5): see PENDING_KEYS
+  'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -772,6 +778,10 @@ export const PENDING_KEYS = [
   'events.order.d.christmas_court',
   'events.order.d.cathedral_works',
   'events.order.d.royal_hunt',
+  'diag.copy',
+  'diag.copied',
+  'diag.reset',
+  'hud.rainSoon',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -471,6 +471,13 @@ FFmpeg: `loudnorm I=-18 LUFS, TP -1.5 dB`, Opus 48 kbps constrained VBR stereo 4
 `public/assets/music/` (14 tracks, ~13 MB; was 25 MB as AAC 96 kbps). Streamed through
 `<audio>` (`src/audio/music.ts`), never decoded to buffers.
 
+Made with **Suno AI** (paid plan on the owner's account at generation time, owner confirmed 2026-11-01, D-16);
+mark AI-generated content in the Google Play / App Store questionnaires at release. Per-file provenance (shipped
+SHA-256, source mp3 path and SHA-256, Suno id) lives in `docs/legal/music_provenance.json`;
+`tests/music-provenance.test.ts` fails when a shipped file has no entry, its hash changed, its Suno COMMENT tag is
+gone, an entry has no file, `music.ts` plays a missing track, or this table misses a file. After re-encoding:
+`node tools/music-provenance.mjs --write` (report only without the flag).
+
 | File | Original title | Use |
 |---|---|---|
 | menu-hush-before-sunrise.webm | Hush Before Sunrise | main menu |

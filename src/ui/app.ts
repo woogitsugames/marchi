@@ -36,6 +36,7 @@ import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
+import { DiagPanel } from './diagPanel';
 import { fmtInt, iso, buildingName } from './format';
 import type { IconId } from './icons';
 import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
@@ -129,6 +130,10 @@ export class App implements PanelNav {
   private readonly ranking = new StallRanking();
   private perfEl: HTMLElement | null = null;
   private perfAt = 0;
+  /** ?diag=1: frame-time percentiles per speed bucket, JSON for docs/PERF.md (BACKLOG P2). */
+  private diagPanel: DiagPanel | null = null;
+  /** The mission's first critical stall has had its one-time cue (markers.flash + hud.flashFirstStall). */
+  private firstCritSeen = false;
   private save: SaveInfo | null = null;
   /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
   private unfinished = new Map<string, SaveInfo>();
@@ -223,6 +228,7 @@ export class App implements PanelNav {
       this.perfEl = h('div.perf.num');
       this.layers.overlay.append(this.perfEl);
     }
+    if (this.params.get('diag') === '1') this.diagPanel = new DiagPanel(this.layers.overlay, () => this.diagMeta());
     // window.__marchia: `ready` always (smoke tests and screenshot scripts wait for it); the App handle and the
     // screenshot helpers only for ?debug=1 or the Vite dev server, never in a release page (D-51)
     const debugHandle = this.params.get('debug') === '1' || import.meta.env.DEV;
@@ -369,6 +375,7 @@ export class App implements PanelNav {
     this.view.setWorld(w);
     this.lastSaveTick = w.state.tick;
     this.endShown = false;
+    this.firstCritSeen = false;
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
@@ -569,6 +576,28 @@ export class App implements PanelNav {
     document.body.classList.remove('has-undo', 'build-open', 'build-placing');
   }
 
+  /** What a ?diag=1 report needs to be compared with another run (device, layout, quality, load). */
+  private diagMeta(): Record<string, unknown> {
+    const s = this.view.stats();
+    const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
+    return {
+      ua: navigator.userAgent,
+      viewport: [window.innerWidth, window.innerHeight],
+      dpr: window.devicePixelRatio || 1,
+      renderDpr: this.renderDpr(),
+      scale: this.dynres.scale,
+      quality: this.effectiveQuality(),
+      layout: this.layout ? `${this.layout.cls}${this.layout.flex ? ' flex' : ''}` : null,
+      posture: devicePosture()?.type ?? null,
+      mission: this.mode === 'game' ? this.world.state.mission.id : null,
+      wagons: this.mode === 'game' ? this.world.state.wagons.length : 0,
+      tick: this.world.state.tick,
+      drawCalls: s.drawCalls,
+      triangles: s.triangles,
+      heapMB: mem ? Math.round(mem.usedJSHeapSize / 1048576) : null,
+    };
+  }
+
   private rebuildUi(): void {
     if (this.mode === 'menu') this.renderMenu();
     else this.buildHud();
@@ -579,7 +608,8 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ frame & ticks
 
   private frame(now: number): void {
-    const dt = Math.min(250, now - this.lastFrame);
+    const raw = now - this.lastFrame;
+    const dt = Math.min(250, raw);
     this.lastFrame = now;
     if (document.visibilityState === 'visible' && this.dynres.sample(dt, now)) this.applyRenderSize();
     if (now - this.foldCheckAt > 500) {
@@ -587,12 +617,23 @@ export class App implements PanelNav {
       const sig = foldSignature();
       if (sig !== this.foldSig) { this.foldSig = sig; this.scheduleLayout(); }
     }
+    const t0 = this.diagPanel ? performance.now() : 0;
     const alpha = this.loop.advance(dt);
+    const t1 = this.diagPanel ? performance.now() : 0;
     this.view.frame(alpha, dt);
+    if (this.diagPanel && document.visibilityState === 'visible') {
+      const key = this.mode !== 'game' ? 'menu' : this.loop.speed === 0 ? 'pause' : `x${this.loop.speed}`;
+      this.diagPanel.frame(key, raw, t1 - t0, performance.now() - t1, now);
+    }
     if (this.mode === 'game') {
       const stalls = this.ranking.get(this.world, this.loop.journal.length);
       this.hud?.update(this.world, this.pace, stalls);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
+      if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
+        this.firstCritSeen = true;
+        this.markers.flash(stalls[0].id);
+        this.hud?.flashFirstStall(this.world, stalls[0].id);
+      }
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();

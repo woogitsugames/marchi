@@ -1,5 +1,5 @@
 {
- "_note": "Generated from source files; the source mp3 ID3 metadata is not preserved by transcoding, hence source hashes.",
+ "_note": "Source mp3 ID3 frames are not carried over by transcoding, hence source hashes; the shipped WebM keeps the Suno COMMENT tag (checked by tests/music-provenance.test.ts). Refresh with node tools/music-provenance.mjs --write.",
  "tracks": [
   {
    "file": "public/assets/music/lost-frost-on-the-rooftops.webm",
