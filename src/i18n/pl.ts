@@ -197,7 +197,7 @@ export const pl = {
   'contract.delivered': 'Dostarczono',
   'contract.left': 'Srebro',
 
-  // UI round 2 (tutorial, gap finder, end-letter ledger, i18n hygiene): see PENDING_KEYS
+  // UI round 2 (tutorial, gap finder, end-letter ledger, i18n hygiene): localized
   'tutorial.m1.from': 'Pismo od kasztelana',
   'tutorial.m1.skip': 'Pomiń',
   'tutorial.m1.step1': 'Kasztelan zamawia 30 desek i 20 bochenków. Dotknij pozycji na liście przewozowym, by sprawdzić stan zamku.',
@@ -234,7 +234,7 @@ export const pl = {
   'app.docTitle': 'Marchia — Szlaki Królestwa',
   'why.holdsCount': 'W spichlerzu: {count}',
   'hud.stallFixed': 'Znów pracuje: {name}',
-  // free valley market, ranks and undo (sim S2-S4): see PENDING_KEYS
+  // free valley market, ranks and undo (sim S2-S4): localized
   'err.LOCKED': 'Wymaga rangi {rank}',
   'err.NOT_PLACEABLE': 'Tego nie można zbudować',
   'rank.0': 'Osada',
@@ -243,7 +243,7 @@ export const pl = {
   'rank.3': 'Miasto',
   'town.rankUp': 'Nowa ranga: {name}',
   'undo.place': 'Cofnij: {name}, zwrot {n}',
-  // UI round 3 (missions IV-VI, free valley plaque, market sheet, build tool): see PENDING_KEYS
+  // UI round 3 (missions IV-VI, free valley plaque, market sheet, build tool): localized
   'menu.valleySub': 'Rozbuduj miasteczko, bez terminów',
   'tool.build': 'Buduj',
   'build.shelf': 'Półka budynków',
@@ -288,7 +288,7 @@ export const pl = {
   'market.notYet': 'jeszcze nie',
   'town.willUnlock': 'Odblokuje: {list}',
   'market.colPrice': 'cena teraz',
-  // UI round 4 (free valley ledgers, D-29): see PENDING_KEYS
+  // UI round 4 (free valley ledgers, D-29): localized
   'valley.title': 'Księgi osad',
   'valley.slot': 'Księga {n}',
   'valley.new': 'Nowa osada',
@@ -312,7 +312,7 @@ export const pl = {
   'valley.saving': 'Zapis w księdze {n}',
   'valley.brokenOpen': 'Otwórz księgi doliny',
   'valley.what': '{mode}, {slot}',
-  // free valley chains and ranks 4-5 (sim, D-29): see PENDING_KEYS
+  // free valley chains and ranks 4-5 (sim, D-29): localized
   'good.fish': 'ryby',
   'good.stone': 'kamień',
   'good.charcoal': 'węgiel drzewny',
@@ -341,26 +341,26 @@ export const pl = {
   'rank.4': 'Gród',
   'rank.5': 'Stolica',
   'town.unlockCastle': 'rozbudowa zamku',
-  // UI round 5 (valley chains): see PENDING_KEYS
+  // UI round 5 (valley chains): localized
   'status.NO_INPUT.CONTESTED.to': '{good} → {rival}',
   'road.stone': '{n, plural, one {# kamień} few {# kamienie} many {# kamieni} other {# kamienia}} (masz {have})',
   'why.stoneReserve': 'Rezerwa kamienia na bruk i mosty: {n} z {max}',
   'why.stoneAll': 'Kamień do budowy we wszystkich spichlerzach: {n}',
-  // missions VII-IX (D-32): see PENDING_KEYS
+  // missions VII-IX (D-32): localized
   'menu.m7': 'VII. Ryby na post',
   'menu.m7Sub': 'Rybak nad wodą, zamek za mostem',
   'menu.m8': 'VIII. Bruk przed burzą',
   'menu.m8Sub': 'Najpierw przywieź kamień na bruk',
   'menu.m9': 'IX. Piwo na wesele',
   'menu.m9Sub': 'Tartak i węglarz walczą o drewno',
-  // missions X-XII (D-36): see PENDING_KEYS
+  // missions X-XII (D-36): localized
   'menu.m10': 'X. Węgiel dla kowala',
   'menu.m10Sub': 'Jeden drwal na dwa warsztaty',
   'menu.m11': 'XI. Słód na zimę',
   'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
   'menu.m12': 'XII. Wielkie warzenie',
   'menu.m12Sub': 'Zapas piwa na kolejną dostawę',
-  // free valley seasons (D-33): see PENDING_KEYS
+  // free valley seasons (D-33): localized
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
   'season.autumn': 'Jesień',
@@ -379,19 +379,19 @@ export const pl = {
   'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
   'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
   'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
-  // demolish tool in contract missions: second tap confirms (see PENDING_KEYS)
+  // demolish tool in contract missions: second tap confirms (localized)
   'demolish.confirm': '{name}: w tej misji nie postawisz go ponownie. Dotknij jeszcze raz, by rozebrać.',
-  // seasons / stall readability playtest fixes (2026-11-02): see PENDING_KEYS
+  // seasons / stall readability playtest fixes (2026-11-02): localized
   'err.NO_STONE.coming': 'W drodze do spichlerzy: {incoming}, czeka w kamieniołomach: {quarry}.',
   'err.NO_STONE.mining': 'Kamieniołom jeszcze wydobywa — nic nie czeka na odbiór.',
   'err.NO_STONE.noQuarry': 'Nikt go nie wydobywa: postaw kamieniołom.',
   'why.waitsCustomer': 'Pełno {goodGen} — czeka, aż odbiorca weźmie więcej',
-  // per-mission saves and start-over confirmations (D-36): see PENDING_KEYS
+  // per-mission saves and start-over confirmations (D-36): localized
   'save.inProgress': 'w toku, {time}',
   'save.unfinished': 'Niedokończona gra',
   'save.confirmFresh': 'Zacząć od nowa? Zapis po {time} gry przepadnie.',
   'save.confirmRestart': 'Zacząć kontrakt od nowa? Zapis po {time} gry przepadnie.',
-  // contract pace forecast and shared inputs (F10, F3; D-38): see PENDING_KEYS
+  // contract pace forecast and shared inputs (F10, F3; D-38): localized
   'contract.pace.eta': 'Przy tym tempie: gotowe za {time}',
   'contract.pace.late': 'Przy tym tempie: spóźnienie {time}',
   'contract.pace.supply': '{who} ×{n} · {rate}/min',
@@ -402,22 +402,22 @@ export const pl = {
   'why.pace.wait': 'Prognoza tempa — po pierwszej minucie dostaw.',
   'why.shared': '{good} — drugi odbiorca: {rival}; tam {there}, tu {here} (zapas i w drodze)',
   'why.sharedOne': 'Jeden dostawca ({who}) obsługuje {n, plural, one {# odbiorcę} few {# odbiorców} many {# odbiorców} other {# odbiorcy}} — przyda się drugi.',
-  // supplier not producing, its own input on the way (F5; D-44): see PENDING_KEYS
+  // supplier not producing, its own input on the way (F5; D-44): localized
   'status.WAITING_UPSTREAM.supplierWaits': 'Czeka na {goodAcc} — dostawca sam czeka na {supplierGoodAcc}',
-  // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
+  // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: localized
   'hud.worst': 'Najgorszy zastój',
   'hud.worstShow': 'Pokaż: {name}',
   'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
   'contract.toSnow': '{time} do śniegu',
   'tool.wagonShort': 'brak {n}',
-  // session 6 (D-46…): see PENDING_KEYS
+  // session 6 (D-46…): localized
   'letter.start': 'Do dzieła',
   'why.thin': 'Wóz {wagon} wiezie tylko {qty} z {full} — {source} nie nadąża z dostawą',
   'deadEnd.title': 'Szlak nie do uratowania',
   'deadEnd.text': 'Zamek nie ma drogi do stajni. Najtańsze połączenie kosztuje {cost} srebra, a masz {coins} — nawet sprzedaż zbędnych wozów (+{raise}) nie wystarczy.',
   'deadEnd.none': 'Zamek nie ma drogi do stajni i nie da się już jej zbudować.',
   'deadEnd.watch': 'Patrz dalej',
-  // valley events (D-54): event card, orders, fair, merchant: see PENDING_KEYS
+  // valley events (D-54): event card, orders, fair, merchant: localized
   'events.card.title': 'Wieści z doliny',
   'events.card.fold': 'Zwiń wieści z doliny',
   'events.card.unfold': 'Rozwiń wieści z doliny ({n})',
@@ -479,7 +479,7 @@ export const pl = {
   'events.order.t.christmas_court': 'Boże Narodzenie na dworze',
   'events.order.t.cathedral_works': 'Budowa katedry',
   'events.order.t.royal_hunt': 'Królewskie łowy',
-  // valley chronicle (gpt 51, D-57): see PENDING_KEYS
+  // valley chronicle (gpt 51, D-57): localized
   'chron.title': 'Kronika doliny',
   'chron.menu': 'Kronika doliny ({n}/{total})',
   'chron.new': 'Kronika: {title}',
@@ -546,12 +546,12 @@ export const pl = {
   'chron.beer_at_market.s': 'Pierwsze piwo znalazło nabywcę na zamkowym targu.',
   'chron.seven_trade_goods.t': 'Siedem towarów',
   'chron.seven_trade_goods.s': 'Siedem rodzajów dóbr zasiliło targ, gdy obrót nabrał tempa.',
-  // contract milestones (D-60): see PENDING_KEYS
+  // contract milestones (D-60): localized
   'contract.half': 'Połowa kontraktu w zamku: {have}/{total}',
   'contract.twoMin': 'Zostały 2 minuty — brakuje jeszcze {n}',
   'contract.lastMin': 'Ostatnia minuta — brakuje jeszcze {n}',
   'build.costRoad': '{n} srebra + droga {road} · masz {have}',
-  // royal order narration (docs/content/events.md), shown on an open offer: see PENDING_KEYS
+  // royal order narration (docs/content/events.md), shown on an open offer: localized
   'events.order.d.palisade_repair': 'Kasztelan prosi o drewno do wzmocnienia palisady przy grodowej bramie.',
   'events.order.d.bridge_planking': 'Po wiosennych wodach most wymaga nowych desek, zanim przejadą nim królewskie wozy.',
   'events.order.d.winter_granary': 'Zarządca spichlerza zamkowego zbiera ziarno na czas zimowych gości i straży.',
@@ -588,11 +588,11 @@ export const pl = {
   'events.order.d.christmas_court': 'Na święta dwór gromadzi piwo dla gości i mąkę na świąteczne kołacze.',
   'events.order.d.cathedral_works': 'Kapituła prosi o kamień na filary, deski na rusztowania i węgiel dla kowali przy hucie.',
   'events.order.d.royal_hunt': 'Na postój królewskiego polowania w dolinie potrzeba piwa, chleba i ryb.',
-  // ?diag=1 frame-time panel (night 5, debug only): see PENDING_KEYS
+  // ?diag=1 frame-time panel (night 5, debug only): localized
   'diag.copy': 'Kopiuj JSON',
   'diag.copied': 'Skopiowano',
   'diag.reset': 'Od nowa',
-  // rain forecast 30 s ahead (night 5): see PENDING_KEYS
+  // rain forecast 30 s ahead (night 5): localized
   'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
 } as const;
 
@@ -603,188 +603,10 @@ export type MessageKey = keyof typeof pl;
  * (English fallback per key, D-18); tests/i18n-*.test.ts skip them. Remove a key from this list
  * once every language has it.
  */
-export const PENDING_KEYS = [
-  'chron.title',
-  'chron.menu',
-  'chron.new',
-  'chron.intro',
-  'chron.open',
-  'chron.count',
-  'chron.planks_at_market.t',
-  'chron.planks_at_market.s',
-  'chron.two_forest_goods.t',
-  'chron.two_forest_goods.s',
-  'chron.third_wagon.t',
-  'chron.third_wagon.s',
-  'chron.another_woodcutter.t',
-  'chron.another_woodcutter.s',
-  'chron.grain_at_market.t',
-  'chron.grain_at_market.s',
-  'chron.grain_wagonload.t',
-  'chron.grain_wagonload.s',
-  'chron.market_village.t',
-  'chron.market_village.s',
-  'chron.mill_turns.t',
-  'chron.mill_turns.s',
-  'chron.flour_at_market.t',
-  'chron.flour_at_market.s',
-  'chron.oven_fires.t',
-  'chron.oven_fires.s',
-  'chron.bread_at_market.t',
-  'chron.bread_at_market.s',
-  'chron.three_grain_stages.t',
-  'chron.three_grain_stages.s',
-  'chron.five_wagons.t',
-  'chron.five_wagons.s',
-  'chron.second_sawmill.t',
-  'chron.second_sawmill.s',
-  'chron.working_granary.t',
-  'chron.working_granary.s',
-  'chron.diverse_flow.t',
-  'chron.diverse_flow.s',
-  'chron.small_town.t',
-  'chron.small_town.s',
-  'chron.fish_at_market.t',
-  'chron.fish_at_market.s',
-  'chron.stone_at_market.t',
-  'chron.stone_at_market.s',
-  'chron.stone_paved_road.t',
-  'chron.stone_paved_road.s',
-  'chron.four_goods_flow.t',
-  'chron.four_goods_flow.s',
-  'chron.winter_bread_record.t',
-  'chron.winter_bread_record.s',
-  'chron.town_rank.t',
-  'chron.town_rank.s',
-  'chron.charcoal_at_market.t',
-  'chron.charcoal_at_market.s',
-  'chron.malt_at_market.t',
-  'chron.malt_at_market.s',
-  'chron.wood_for_two_trades.t',
-  'chron.wood_for_two_trades.s',
-  'chron.stronghold_rank.t',
-  'chron.stronghold_rank.s',
-  'chron.brewery_brews.t',
-  'chron.brewery_brews.s',
-  'chron.beer_at_market.t',
-  'chron.beer_at_market.s',
-  'chron.seven_trade_goods.t',
-  'chron.seven_trade_goods.s',
-  'fix.wagon',
-  'fix.wagonWhy',
-  'fix.jam',
-  'fix.jamStone',
-  'wagon.BRIDGE_JAM.ONCOMING',
-  'wagon.BRIDGE_JAM.SPAN_FULL',
-  'wagon.BRIDGE_JAM.YIELD',
-  'events.card.title',
-  'events.card.fold',
-  'events.card.unfold',
-  'events.row.open',
-  'events.order.reward',
-  'events.order.accept',
-  'events.order.dismiss',
-  'events.order.accepted',
-  'events.order.progress',
-  'events.order.new',
-  'events.order.done',
-  'events.fair.upcoming',
-  'events.fair.active',
-  'events.merchant.title',
-  'events.merchant.offer',
-  'events.merchant.sell',
-  'events.merchant.none',
-  'events.merchant.dismiss',
-  'events.merchant.new',
-  'events.merchant.sold',
-  'err.NO_EVENT',
-  'err.NO_SURPLUS',
-  'events.order.t.palisade_repair',
-  'events.order.t.bridge_planking',
-  'events.order.t.winter_granary',
-  'events.order.t.toll_house',
-  'events.order.t.castle_stores',
-  'events.order.t.border_watch',
-  'events.order.t.pilgrim_shelter',
-  'events.order.t.neighbor_siege',
-  'events.order.t.wedding_bread',
-  'events.order.t.abbey_flour',
-  'events.order.t.knights_assembly',
-  'events.order.t.harvest_almshouse',
-  'events.order.t.pilgrimage_rations',
-  'events.order.t.court_bakers',
-  'events.order.t.lenten_fish',
-  'events.order.t.church_masonry',
-  'events.order.t.river_garrison',
-  'events.order.t.stone_gate',
-  'events.order.t.bridge_footings',
-  'events.order.t.court_banquet',
-  'events.order.t.forge_charcoal',
-  'events.order.t.abbey_malt',
-  'events.order.t.smithy_repair',
-  'events.order.t.brewers_supplies',
-  'events.order.t.guardhouse_ale',
-  'events.order.t.guild_meeting',
-  'events.order.t.abbey_hospitality',
-  'events.order.t.fair_brewers',
-  'events.order.t.royal_progress',
-  'events.order.t.capital_embassy',
-  'events.order.t.bell_casting',
-  'events.order.t.harvest_home',
-  'events.order.t.mill_weir',
-  'events.order.t.christmas_court',
-  'events.order.t.cathedral_works',
-  'events.order.t.royal_hunt',
-  'contract.half',
-  'contract.twoMin',
-  'contract.lastMin',
-  'build.costRoad',
-  'events.merchant.new.1',
-  'events.merchant.new.2',
-  'events.merchant.new.3',
-  'events.order.d.palisade_repair',
-  'events.order.d.bridge_planking',
-  'events.order.d.winter_granary',
-  'events.order.d.toll_house',
-  'events.order.d.castle_stores',
-  'events.order.d.border_watch',
-  'events.order.d.pilgrim_shelter',
-  'events.order.d.neighbor_siege',
-  'events.order.d.wedding_bread',
-  'events.order.d.abbey_flour',
-  'events.order.d.knights_assembly',
-  'events.order.d.harvest_almshouse',
-  'events.order.d.pilgrimage_rations',
-  'events.order.d.court_bakers',
-  'events.order.d.lenten_fish',
-  'events.order.d.church_masonry',
-  'events.order.d.river_garrison',
-  'events.order.d.stone_gate',
-  'events.order.d.bridge_footings',
-  'events.order.d.court_banquet',
-  'events.order.d.forge_charcoal',
-  'events.order.d.abbey_malt',
-  'events.order.d.smithy_repair',
-  'events.order.d.brewers_supplies',
-  'events.order.d.guardhouse_ale',
-  'events.order.d.guild_meeting',
-  'events.order.d.abbey_hospitality',
-  'events.order.d.fair_brewers',
-  'events.order.d.royal_progress',
-  'events.order.d.capital_embassy',
-  'events.order.d.bell_casting',
-  'events.order.d.harvest_home',
-  'events.order.d.mill_weir',
-  'events.order.d.christmas_court',
-  'events.order.d.cathedral_works',
-  'events.order.d.royal_hunt',
-  'diag.copy',
-  'diag.copied',
-  'diag.reset',
-  'hud.rainSoon',
-] as const satisfies readonly MessageKey[];
+/** Keys awaiting localization. Empty after completing batch 09 (all 15 languages). */
+export const PENDING_KEYS = [] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
 export type FullDict = Record<MessageKey, string>;
-/** A translated dictionary: every key except the pending ones. */
+/** Locale dictionary; all keys required unless a future batch adds pending keys. */
 export type Dict = Omit<FullDict, PendingKey> & Partial<Record<PendingKey, string>>;
