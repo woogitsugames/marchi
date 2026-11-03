@@ -3,6 +3,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const URL0 = process.env.URL0 ?? 'http://127.0.0.1:5194/';
+// Env: SKIP=1 taps "Pomiń" in step 5; END=1 finishes step 6 after the bridge; both log the tool afterwards
+// (first-10-minutes-b item 3: the tutorial's end puts the road tool away).
 const MODE = process.env.MODE ?? 'mouse'; // mouse | touch
 const OUT = process.env.OUT ?? '';
 const LANG = process.env.LANG_Q ?? 'pl'; // e.g. ar: the RTL layout (rail under the other thumb)
@@ -52,6 +54,13 @@ while (guard++ < 30) {
   if (r) await tap(r[0], r[1]);
   await page.waitForTimeout(900);
 }
+if (process.env.SKIP) {
+  await tapSel('.tut-skip');
+  await page.waitForTimeout(1500);
+  log('after skip', JSON.stringify(await state()));
+  await browser.close();
+  process.exit(0);
+}
 // observe step 5 for a few seconds
 for (let i = 0; i < 4; i++) { await page.waitForTimeout(700); log('obs', JSON.stringify(await state())); }
 if (OUT) await page.screenshot({ path: OUT + '-step5.jpg', type: 'jpeg', quality: 55, timeout: 300000 });
@@ -90,5 +99,17 @@ for (let attempt = 0; attempt < (Number(process.env.TRIES) || 3); attempt++) {
   log('after drag', JSON.stringify(await state()), 'toast:', toast);
   if (OUT) await page.screenshot({ path: OUT + `-drag${attempt}.jpg`, type: 'jpeg', quality: 55, timeout: 300000 });
   if ((await state()).step !== 5) break;
+}
+if (process.env.END) {
+  for (let i = 0; i < 6; i++) {
+    const s = await state();
+    if (s.step !== 6) break;
+    const r = await page.evaluate(() => { const ring = document.querySelector('.tutorial .tut-ring.is-shown'); if (!ring) return null; const b = ring.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; });
+    if (r) await tap(r[0], r[1]);
+    await page.waitForTimeout(1500);
+  }
+  await page.waitForFunction(() => !window.__marchia.app.tutorial, null, { timeout: 60000 }).catch(() => {});
+  log('after end', JSON.stringify(await state()));
+  if (OUT) await page.screenshot({ path: OUT + '-end.jpg', type: 'jpeg', quality: 55, timeout: 300000 });
 }
 await browser.close();

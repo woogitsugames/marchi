@@ -217,8 +217,12 @@ export class Tutorial {
       if (!subj || top !== keyOf(subj) || (!this.chainLink() && since > LINK_WAIT_MS)) this.afterChain(false);
     }
     if (this.step === 4) {
-      if (tool === 'road') this.go(5);
-      else if (this.closeAt >= 0 && performance.now() >= this.closeAt) {
+      if (tool === 'road') {
+        this.go(5);
+        // the crossing needs the map: a card still open from step 3 (docked beside the map in landscape) closes,
+        // so the note gets a free band clear of the rail (first-10-minutes-b, item 2)
+        if (top) this.host.closeSheets();
+      } else if (this.closeAt >= 0 && performance.now() >= this.closeAt) {
         this.closeAt = -1;
         // only if the card actually hides the Track button (portrait); docked side sheets stay
         if (this.covered(document.querySelector('.rail [data-tool="road"]'))) this.host.closeSheets();
