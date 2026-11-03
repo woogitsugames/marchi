@@ -292,3 +292,6 @@ BACKLOG: zamknięte jako już zrobione wcześniej (sprawdzone w kodzie): kod dew
 Intl w liczbach, właściwości logiczne RTL, klucze HUD w 17 językach, samouczek ≤ 140 znaków, ikona v3.
 Nowe klucze (PENDING_KEYS): `diag.copy|copied|reset`, `hud.rainSoon`. Zrzuty `docs/shots/night5-*.jpg` (5).
 Decyzje 13–15 dopisane wyżej. Następne decyzje od **D-66** (ta noc nie dodała wpisów D-NN).
+- 13 Pieczęcie misji → **tak, najlepszy wynik i czas na misję w zapisie gry** (razem z kroniką, decyzja 1), widoczne w menu misji.
+- 14 Łańcuch misji X do producenta → **po playteście**.
+- 15 Stosy towaru na placach wg zapasu → **tak** (instancje ładunku, bez nowych wywołań rysowania).
