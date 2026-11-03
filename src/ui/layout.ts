@@ -156,8 +156,15 @@ export function applyLayoutClasses(l: LayoutInfo): void {
     root.removeProperty('--hinge-top');
     root.removeProperty('--hinge-bottom');
   }
-  if (l.book) root.setProperty('--seg-right-w', `${Math.round(l.w - l.book.end)}px`);
-  else root.removeProperty('--seg-right-w');
+  if (l.book) {
+    root.setProperty('--seg-right-w', `${Math.round(l.w - l.book.end)}px`);
+    root.setProperty('--book-start', `${Math.round(l.book.start)}px`);
+    root.setProperty('--book-end', `${Math.round(l.book.end)}px`);
+  } else {
+    root.removeProperty('--seg-right-w');
+    root.removeProperty('--book-start');
+    root.removeProperty('--book-end');
+  }
   root.setProperty('--scene-h', `${l.sceneH}px`);
 }
 

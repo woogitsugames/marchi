@@ -770,6 +770,26 @@ body.is-flex .perf { top: 8px; bottom: auto; }
 
 /* ---- book posture (vertical hinge): a side sheet stays inside the right-hand segment */
 body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px)); }
+/* the coins / time chips and the speed pad stack in the right-hand segment: in one row (≈ 460 px) they ran
+   into the crease of a Fold inner screen (right segment ≈ 440 px) */
+body.is-book.is-split:not(.is-landscape) .hud-top {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu contract . chips" "menu contract . speed" ". events . .";
+}
+/* the rail keeps each half in its own segment: the tools (six in the valley ≈ 490 px) shrink towards 48 px
+   instead of running over the crease, and the worst-stall card stays on the other side of it */
+body.is-book.is-split .rail-tools, body.is-book.is-split .stall-row {
+  max-width: calc(min(var(--book-start), var(--seg-right-w)) - 2 * 8px - 8px);
+}
+body.is-book.is-split .tool { flex: 1 1 0; }
+/* toasts centred in the start segment, over the tools (the open card docks in the end one), not across the crease;
+   no translate: in RTL the start edge is the right one (the base left: 50% then yields to it, over-constrained) */
+body.is-book.is-split:not(.is-flex) .toasts {
+  --seg: min(var(--book-start), var(--seg-right-w));
+  width: min(380px, calc(var(--seg) - 24px));
+  inset-inline-start: calc((var(--seg) - min(380px, calc(var(--seg) - 24px))) / 2);
+  transform: none;
+}
 
 /* hidden helpers */
 [hidden] { display: none !important; }
