@@ -623,6 +623,9 @@ export const pl = {
   // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
   'fix.surplus': 'Nadwyżka: nikt teraz nie potrzebuje {goodGen}, poczeka na placu. Nowy wóz tego nie przyspieszy.',
   'cause.surplus': 'nadwyżka, nikt jej teraz nie potrzebuje',
+  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
+  'fix.storeRoom': 'Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:',
+  'cause.storeRoom': 'pełny, ale inny spichlerz ma miejsce',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -656,6 +659,8 @@ export const PENDING_KEYS = [
   'why.full.blocked',
   'fix.surplus',
   'cause.surplus',
+  'fix.storeRoom',
+  'cause.storeRoom',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

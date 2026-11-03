@@ -620,4 +620,7 @@ export const en: FullDict = {
   // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
   'fix.surplus': 'Surplus: nobody needs more {goodGen} right now; it waits in the yard. Another wagon would not move it sooner.',
   'cause.surplus': 'surplus, nobody needs it right now',
+  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
+  'fix.storeRoom': 'Another granary still has room — new goods go there:',
+  'cause.storeRoom': 'full, but another granary has room',
 };

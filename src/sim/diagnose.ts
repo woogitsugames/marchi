@@ -3,7 +3,7 @@ import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, S
 import { buildingById } from './logistics';
 import { storeCapOf } from './contract';
 import { marketOpen } from './town';
-import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
+import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, reachable, slopeFactor, type World } from './network';
 import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
 import { fairStage } from './events';
 import type { BuildingStatus, BuildingType, Good, Wagon, WagonStatus } from './types';
@@ -127,13 +127,18 @@ export function seasonalSupplier(world: World, id: number): { from: number; note
 /**
  * Player chains only (`customers`): where a chain that the sim ends at this building really goes on.
  * - waiting for a free wagon (NO_WAGON.ALL_BUSY, OUTPUT_FULL.NO_WAGON) while a third or more of the fleet
- *   is held at a bridge or cut off: the nearest held wagon (audit 2026-11-03, fix 2 — mission IV's ice).
+ *   is held at a bridge or cut off: the nearest held wagon (audit 2026-11-03, fix 2 — mission IV's ice);
+ * - a full granary while another granary stands without a road: that granary (fix 3 — mission VI).
  */
 function playerNext(world: World, b: { id: number; gate: number; status: BuildingStatus }): { kind: 'building' | 'wagon'; id: number } | null {
   const s = b.status;
   if ((s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') || (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON')) {
     const w = heldWagon(world, b.gate);
     return w >= 0 ? { kind: 'wagon', id: w } : null;
+  }
+  if (s.k === 'STORAGE_FULL') {
+    const r = granaryRelief(world, b.id);
+    return r && r.k === 'UNLINKED' ? { kind: 'building', id: r.granary } : null;
   }
   return null;
 }
@@ -190,6 +195,24 @@ export function outputSurplus(world: World, id: number): 'SPARE' | 'MARKET' | nu
     if ((cs.k === 'NO_INPUT' || cs.k === 'NO_WAGON' || cs.k === 'WAITING_UPSTREAM') && cs.good === g && inputGoods(c.type).includes(g)) return null;
   }
   return marketOpen(world) ? 'MARKET' : 'SPARE';
+}
+
+/**
+ * Read-only (audit 2026-11-03, fix 3): what relieves a full granary (STORAGE_FULL). 'ROOM': another
+ * granary on the roads, reachable from this one, still has room — goods go there, the stall is harmless.
+ * 'UNLINKED': another granary stands without a road — linking it is the cure. null: no relief (another
+ * granary is the cure). Lowest id first.
+ */
+export function granaryRelief(world: World, id: number): { k: 'ROOM' | 'UNLINKED'; granary: number } | null {
+  const b = buildingById(world, id);
+  if (!b || b.status.k !== 'STORAGE_FULL') return null;
+  let unlinked = -1;
+  for (const q of world.state.buildings) {
+    if (q.type !== 'warehouse' || q.id === id) continue;
+    if (q.status.k === 'NO_ROAD') { if (unlinked < 0) unlinked = q.id; continue; }
+    if (sumGoods(q.stock) + sumGoods(q.incoming) < storeCapOf(q) && reachable(world, b.gate, q.gate)) return { k: 'ROOM', granary: q.id };
+  }
+  return unlinked >= 0 ? { k: 'UNLINKED', granary: unlinked } : null;
 }
 
 function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: number } | null {

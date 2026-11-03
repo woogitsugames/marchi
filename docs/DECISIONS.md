@@ -1183,3 +1183,16 @@ cykl" under "Dlaczego stoi?". Now `codexLink()` (src/ui/stallKinds.ts, pure) tak
 (the same test `chainHtml` already used for the "przyczyna" tag, now shared as `isStallLink`), falling back to
 the subject's own status. Same rule on the building sheet and the wagon card. No new text. `isWagonWait` moved
 to stallKinds.ts (re-exported by format.ts) so headless tests can use it. (decided)
+
+**D-87 — A full granary points at the granary to link, or stays calm when another has room (diagnosis audit
+2026-11-03, fix 3; UI and read-only diagnosis, no hash change).** `STORAGE_FULL` offered nothing in 100 % of the
+audit samples, though in m6/m12 a large granary without a road stood next to the full small one (2 silver of
+road solves the mission), and after the lesson the small granary stayed a waxed worst stall (m6: 94 % of the
+time) while the large one had room. A read-only `granaryRelief()` (src/sim/diagnose.ts) now answers, in this
+order: **ROOM** — another granary on the roads, reachable from this one, has room (held + promised under its
+cap, the sim's own STORAGE_FULL count): a calm stall, minor pin, the card says "pełny, ale inny spichlerz ma
+miejsce", the sheet "Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:" with one tap to it;
+**UNLINKED** — another granary has no road: the player chain goes on to it, so the existing road fix (gap
+finder) offers the cheapest link from the stable; otherwise `cureFor` = granary (a granary where the mission
+lets you build one, else the existing hint). ROOM wins over UNLINKED: with room nearby the second link is not
+needed. Keys `fix.storeRoom`, `cause.storeRoom` (PENDING_KEYS). (decided)

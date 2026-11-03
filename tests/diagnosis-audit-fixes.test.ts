@@ -2,7 +2,8 @@
 // player-view reads (src/sim/diagnose.ts helpers that step() never calls, src/ui/stalls.ts): the sim's own
 // chains, statuses and hashes stay as they were (tests/determinism-reads.test.ts covers the reads).
 import {
-  TICK_HZ, buildingById, createWorld, explainBuilding, heldWagon, inputGoods, isHeld, outputSurplus, step, type World,
+  TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, granaryRelief, heldWagon, inputGoods, isHeld, outputSurplus, step,
+  suggestLinkToStable, type World,
 } from '../src/sim/index';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { calmWhy, cureFor, rankStalls } from '../src/ui/stalls';
@@ -118,4 +119,50 @@ test('audit fix 2: heldWagon picks the nearest held wagon and needs a third of t
   const d = (c: number) => { const x = c % tw, y = (c - x) / tw, gx = gate % tw, gy = (gate - gx) / tw; return (x - gx) ** 2 + (y - gy) ** 2; };
   const best = [...ws].sort((a, b) => d(a.at) - d(b.at) || a.id - b.id)[0]!;
   eq(heldWagon(w, gate), best.id, 'nearest to the gate');
+});
+
+test('audit fix 3: a full granary chains to the granary without a road (cure: road), or is calm when another has room (m6, m12)', () => {
+  let unlinked = 0, room = 0, none = 0;
+  for (const id of ['m6', 'm12']) {
+    for (const lesson of [false, true]) {
+      const w = createWorld(id);
+      let linked = false;
+      while (w.state.mission.result === 'running' && w.state.tick < 12 * minute) {
+        // the lesson in short: the cut-off granary gets its road at 0:30 (the cheapest link to the stable)
+        if (lesson && !linked && w.state.tick === 30 * TICK_HZ) {
+          for (const g of w.state.buildings.filter((b) => b.type === 'warehouse' && b.status.k === 'NO_ROAD')) {
+            const s = suggestLinkToStable(w, g.id);
+            if (s) { w.state.coins += s.cost; assert(applyCommand(w, { t: 'road', surface: 1, cells: s.cells }).ok, 'link the granary'); }
+          }
+          linked = true;
+        }
+        step(w);
+        if (w.state.tick % 20) continue;
+        const ranked = rankStalls(w);
+        for (const b of w.state.buildings) {
+          if (b.status.k !== 'STORAGE_FULL') continue;
+          const r = granaryRelief(w, b.id);
+          const chain = explainBuilding(w, b.id, 5, true);
+          eq(explainBuilding(w, b.id).length, 1, 'the sim chain is unchanged');
+          const e = ranked.find((x) => x.id === b.id);
+          if (r?.k === 'ROOM') {
+            room++;
+            eq(chain.length, 1, 'room elsewhere: nothing to chain to');
+            eq(calmWhy(w, b), 'storeRoom', 'the card says another granary has room');
+            eq(cureFor(w, b.id), null, 'nothing to buy or build');
+            if (e) assert(e.minor && !e.crit, `${id}: a full granary next to one with room is a minor pin`);
+          } else if (r?.k === 'UNLINKED') {
+            unlinked++;
+            const l = chain[1]!;
+            assert(l && l.kind === 'building' && l.id === r.granary && l.status.k === 'NO_ROAD', 'chain goes on to the granary without a road');
+            eq(cureFor(w, b.id), 'road', 'cure: the road to it');
+          } else {
+            none++;
+            eq(cureFor(w, b.id), 'granary', 'no other granary to fill: another granary');
+          }
+        }
+      }
+    }
+  }
+  assert(unlinked > 10 && room > 10, `samples: unlinked ${unlinked}, room ${room}, none ${none}`);
 });
