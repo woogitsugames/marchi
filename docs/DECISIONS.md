@@ -1227,3 +1227,25 @@ is still a waxed "no wagon" stall in 70 % of samples and one more wagon clears i
 ask for stone (gap 6 ≥ load 4), but the new wagon takes the bread/planks inputs first (prio 1). An honest
 answer there needs either a dispatcher change (hash) or a new reading ("W spichlerzu jest 12 kamienia —
 wystarczy na bruk", audit 3G); left for the owner (BACKLOG). `docs/shots/day5-*.jpg`. (decided)
+
+**D-91 — Mission I tutorial, step 5: the ghost is the part to draw, on screen, never under the note (day 6,
+first-ten-minutes research P0; UI only, no hash change).** The research run reported the step "stuck": the
+note still showed step 4 while `tutorial.current` read 5, and six drags along the ghost built nothing.
+Reproduced with real Playwright input (`tools/repro-step5.mjs`, cold start, 412x915, mouse and CDP touch).
+Verdict: **the stale text was a scripting artefact, the failed drag was a real bug.** (1) `current` changes
+in the tap handler, the note on the next frame; under SwiftShader a frame takes ~1 s, so the script read 5
+with step-4 text, tapped "Droga" a second time and toggled the tool off, which correctly sends the
+tutorial back to step 4 — on a phone the frame is 16 ms. (2) Real: the ghost was `suggestConnection`'s whole
+sawmill-gate-to-castle-gate route, 62 cells with both ends off a 412 px screen and mostly drawn over
+existing road; the part to draw started under the note or off the left edge, and after step 3 the camera
+is wherever the wagon card glided it (in one run the river was not on screen at all). Fix:
+`crossingSpan()` (src/ui/tutorialCrossing.ts, read-only, tested headless) cuts the ghost to the new cells
+plus one road cell at each end (17 cells in mission I); on entering step 5 the camera glides once so the
+whole crossing, both road ends included, lies in the free part of the map (zooming out only if it does
+not fit) — the tutorial's only camera move; the note treats the ghost as an obstacle. With these, the
+same touch drag from the north road end to the south one builds the bridge and moves to step 6 (portrait,
+three runs). Note placement (research P2): the note no longer slides (`transition: transform` removed —
+it slid from its last spot across the waybill, which is what the step 1/4 shots caught), and the
+no-free-band fallback picks the full-width slot that hides least (target and waybill weighted) instead of
+"top of the waybill". Steps 2-3 scroll the chain link into a short card's view once (landscape 915x412:
+the link lay below the fold, so no ring was drawn). `docs/shots/day6-tut-step5-412x915.jpg`. (decided)

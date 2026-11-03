@@ -891,7 +891,8 @@ bdi { unicode-bidi: isolate; }
 .tut-note-wrap {
   position: absolute; left: 0; top: 0;
   filter: var(--shadow);
-  transition: transform var(--t-mid) var(--ease), opacity var(--t-fast) var(--ease);
+  /* no transform transition: sliding from the last spot dragged the note across the waybill (day 6) */
+  transition: opacity var(--t-fast) var(--ease);
 }
 .tut-note-wrap.is-gone { opacity: 0; }
 .tut-note-wrap.is-new .tut-note { animation: tut-in 200ms var(--ease) 1; }

@@ -370,6 +370,33 @@ export class App implements PanelNav {
     }, m, u));
   }
 
+  /**
+   * Tutorial step 5: the whole ghost crossing (both road ends included, where the drag starts and ends) in
+   * the free part of the map. A card opened in step 3 may have glided the camera away; the crossing's
+   * middle cell is not the middle of its box (the path bends), so the glide offsets by the difference.
+   * Zooms out first only when the crossing is larger than the free area.
+   */
+  private frameCells(cells: number[]): void {
+    const to = this.view.cellToScreen?.bind(this.view);
+    if (!to || !cells.length) return;
+    const { rect, offset } = this.visibleScene();
+    const box = (): { l: number; t: number; r: number; b: number; ok: boolean } => {
+      const ps = cells.map(to);
+      const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+      const b = { l: Math.min(...xs), t: Math.min(...ys), r: Math.max(...xs), b: Math.max(...ys) };
+      return { ...b, ok: ps.every((p) => p.visible && wellInside(p.x, p.y, rect, 0.04)) };
+    };
+    let b = box();
+    if (b.ok) return;
+    this.stopFollow();
+    const fw = (rect.r - rect.l) * 0.8, fh = (rect.b - rect.t) * 0.8;
+    const k = Math.max((b.r - b.l) / fw, (b.b - b.t) / fh);
+    if (k > 1) { this.view.camera.zoom(Math.min(2, k), (b.l + b.r) / 2, (b.t + b.b) / 2); b = box(); }
+    const mid = cells[cells.length >> 1]!;
+    const pm = to(mid);
+    this.view.camera.focusCell(mid, { x: offset.x + pm.x - (b.l + b.r) / 2, y: offset.y + pm.y - (b.t + b.b) / 2 });
+  }
+
   /** Wipes the mission's own save, then starts it afresh (never another mission's save). */
   private startFresh(m: MissionKey): void {
     const slot = slotFor(m);
@@ -435,6 +462,8 @@ export class App implements PanelNav {
       tool: () => this.tool,
       closeSheets: () => this.sheets.closeAll(),
       setGhost: (cells) => { this.ghosts.tut = cells; },
+      cellScreen: (cell) => this.view.cellToScreen?.(cell) ?? null,
+      showCells: (cells) => this.frameCells(cells),
       finish: (r) => {
         this.prefs.tutorialM1 = r;
         savePrefs(this.prefs);
