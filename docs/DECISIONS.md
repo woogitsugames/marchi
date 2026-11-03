@@ -1047,3 +1047,14 @@ bullets, thin flat bars and plain bordered building chips. Rank requirements now
 pressed once met — the same mark as the contract seals), progress and price saturation use the brass groove
 (`kbar`) of the HUD plaque, and the building chips wear `card-normal` (locked: the same card under a light
 hatch, rank tag kept). Text and order unchanged. `docs/shots/day2-market-kit.jpg` (before / after). (decided)
+
+**D-77 — The mill loop keeps its rhythm across the seam (audio only; BACKLOG P3 from night 4).** `work.mill`
+(`sfx/mill-wheel`) was 5.5 s = 9.5 paddle periods (0.58 s), so the loop seam put two strokes 0.28 s apart — the
+"breath" heard in the audio report. The Freesound source is not reachable from the container, so the shipped
+loop was re-cut instead: decoded (OGG and M4A each from its own file), 9 periods = 5.218 s taken from the
+continuous looped signal, the head crossfaded 0.25 s (raised cosine) from the tail's continuation, which lands
+on the same stroke phase, and encoded with the pipeline's settings (24 kHz mono, 28 kb/s, peak −6 dB kept).
+Measured strokes now run 4.82 → 5.40 s across the seam (0.58 s, the period). `audio_sources.json` says
+`seconds: 5.22` for a future render from the source; provenance hashes updated; `process_audio.py --check`
+PASS. `cart.dirt` (irregular 0.3–0.45 s hits, no gap at the seam) needs nothing; `cart.cobble` has one
+0.61 s gap at the seam among 0.3 s hits — left as is (irregular cobbles; a re-cut would need the source). (decided)
