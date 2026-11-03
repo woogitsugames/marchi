@@ -901,3 +901,14 @@ triangles**; the main pass is unchanged (47). Note for future measurements: `ren
 `stats()` / `?perf=1` number) is reset by three r181 *after* the shadow pass, so it never counted shadow draws —
 the tool wraps `drawArrays/drawElements(Instanced)` instead. Cargo on far wagons keeps casting (shared instanced
 meshes with the near rig; splitting them would add draws, not save them). (decided)
+
+**D-65 — A quality switch links no shader inside a frame.** Switching high ↔ low in Settings linked 4 (then 3,
+then 2 on every later switch) programs inside the frame (`linkProgram` counted inside `app.frame`, m1, SwiftShader).
+Two causes: (1) the new tier's variants (leaves/needles alpha-to-coverage, the billboard `TREE_BB_BLEND` define,
+`TERRAIN_LOW`) compiled on first draw; `setQuality` now builds detached clones in the target state
+(`treeQualityVariants`, `Terrain.qualityVariant`), compiles them through `ShaderPrewarm.prewarmMaterialSwap`
+(the texture-swap path) and applies the tier once they are linked (a generation counter drops a superseded switch;
+no world/pre-warm yet → immediate, as before). The terrain hooks read `this.userData`, not the closure's material, so
+a clone keys and builds its own variant. (2) The far-tree atlas re-bake per tier disposed its bake and copy
+materials, re-linking them every time; they are kept for the session now (5 small programs). Result: 4/3/2/2 →
+**0/0/0/0** in-frame links over four switches; the tier lands a few hundred ms later. (decided)
