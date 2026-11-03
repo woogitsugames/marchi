@@ -491,3 +491,8 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - Researcher w nocy: **balans misji I–XII** (boty na różnych strategiach, osiągalność 1/2/3 pieczęci po dzisiejszych zmianach),
   potem dokończyć pomiar „pierwszych 10 minut” (`node tools/first10-minutes.mjs 915x412`, potem `412x915`, osobno).
 - W nocy bez APK (jedno rano), decyzje do „Decyzje na rano”.
+- **Decyzje właściciela ~22:30:** Flip — **wariant A** (linia pod zegarem pieczęci, „gotowe za 3:05”) jako domyślny
+  w trybie zegarka, wariant B usunąć; ranga 5 doliny **14 500** — zostaje.
+- **Do zrobienia po wznowieniu (01:51):** `claude/w-day7` ma commit `87fdf14 WIP` (zadania 2–4 gotowe, testy 431/0) —
+  rozdzielić na commity, dopisać D-97..D-99 w DECISIONS, zrzuty `day7-codex-*`/`day7-flip-*` do docs/shots,
+  BACKLOG; włączyć wariant A domyślnie; scalić do bazy.
