@@ -473,3 +473,9 @@ Zrzuty: `docs/shots/day6-*.jpg`. Narzędzia: `tools/repro-step5.mjs`, `tools/day
 - **m8: kamieniołom spokojny** (bez wosku), nie tylko bez „Kup wóz” — spójne z D-85; jeśli ma zostać alarmem, to jedna linia w `calmStall`.
 Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pasku narzędzi (BACKLOG); pozostała część pomiaru pierwszych
 10 minut (BACKLOG P2).
+
+## Decyzje właściciela 2026-11-03 ~21:30
+- Progi rang doliny 3/4 = **3000/7200** (+20 %, D-94) — zostają.
+- Samouczek m1 krok 5: **jedno przesunięcie kamery nad przeprawę — akceptowane** (wyjątek od „nigdy nie rusza kamery”, D-91).
+- m8: kamieniołom czekający na rezerwę kamienia — **spokojna pinezka** z linią „W spichlerzu jest N kamieni” (D-95) — zostaje.
+- Od ~21:00 znów do 2 agentów Opus (deweloper + researcher).
