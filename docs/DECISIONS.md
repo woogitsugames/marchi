@@ -1158,9 +1158,9 @@ cleared it within 60 s only 11 % of the time: the dispatcher hauls a surplus to 
 wagon takes a more urgent job. A consumer actually waiting for the good was there in 6 of 140 samples.
 Now a read-only `outputSurplus()` (src/sim/diagnose.ts) calls such a yard **SPARE** when no consumer waits for
 the good (NO_INPUT / NO_WAGON / WAITING_UPSTREAM on it), the contract castle holds its whole order of it, and no
-granary asks for road stone by the dispatcher's own rule (a reserve gap of at least one full load — the
-audit's estimate used "any gap", which kept m8's quarry red although no wagon would ever carry that stone;
-we follow the dispatcher, so the card never promises a run that cannot happen). A SPARE yard is a calm stall
+granary asks for road stone by the dispatcher's own rule (a reserve gap of at least one full load, 4 stone —
+the audit's estimate used "any gap"; we follow the dispatcher, so a calm card never hides a run the dispatcher
+would make. In m8 the granary's gap is 6 ≥ 4, so the quarry stays a real "no wagon" stall — see D-90). A SPARE yard is a calm stall
 (minor pin, never wax), the HUD card says "nadwyżka, nikt jej teraz nie potrzebuje", the sheet replaces "Kup
 wóz" with one plain line ("Nadwyżka: nikt teraz nie potrzebuje zboża, poczeka na placu. Nowy wóz tego nie
 przyspieszy.") and the wagon tool is not highlighted. In the free valley the market still buys it: **MARKET** —
@@ -1217,3 +1217,13 @@ castle holds its whole order of this good (the total, not only the tranche due) 
 (`outputCustomer`). Such a stall is calm (minor pin, never wax), the card says "zamówienie wypełnione, reszta
 czeka", the sheet "Zamówienie na węgiel drzewny wypełnione — reszta zostaje na placu, nic nie trzeba robić."
 and no granary cure or hint. Keys `fix.orderFilled`, `cause.orderFilled` (PENDING_KEYS). (decided)
+
+**D-90 — Calm lines sit above the codex fold; m8's quarry left as it is (diagnosis audit follow-up).** The calm
+lines of D-85/D-87/D-89 first rendered in the cure slot, below "Co to znaczy?", whose generic entry for
+OUTPUT_FULL.NO_WAGON still says "Kup wóz": the player met the advice before the reason it does not apply. They
+now sit right under the full-storage count (`.calm-hint`: plain ink, no alert colour, 48 px link). The codex
+text is not specialised per calm case (it stays one entry per status, D-codex). m8 after the re-run: the quarry
+is still a waxed "no wagon" stall in 70 % of samples and one more wagon clears it in 0/14 — the granary does
+ask for stone (gap 6 ≥ load 4), but the new wagon takes the bread/planks inputs first (prio 1). An honest
+answer there needs either a dispatcher change (hash) or a new reading ("W spichlerzu jest 12 kamienia —
+wystarczy na bruk", audit 3G); left for the owner (BACKLOG). `docs/shots/day5-*.jpg`. (decided)

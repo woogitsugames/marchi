@@ -18,6 +18,8 @@ test('stall ranking cache: identical to rankStalls, recomputed once per tick', (
       assert(a === b && b === c, 'same array on frames without a tick');
       eq(JSON.stringify(a), JSON.stringify(rankStalls(w)), `identical ranking at tick ${w.state.tick}`);
       if (a.length) nonEmpty++;
+      // a calm stall (surplus, room in another granary, a filled order, a customer still taking it) is never waxed
+      for (const e of a) assert(!(e.minor && e.crit), `minor and critical at once: #${e.id}`);
       // a command applied in pause bumps the version; invalidate() forces a recompute
       r.get(w, 1);
       eq(r.computed, before + 2, 'version change recomputes');

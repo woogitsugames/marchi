@@ -21,7 +21,7 @@ import { rankStalls, cureFor } from '../src/ui/stalls';
 import { codexKey } from '../src/ui/codex';
 import { STALL_CODEX } from '../src/content/stallCodex';
 import { buildingSheet, gapTarget, gapSuggestion } from '../src/ui/panels';
-import { buildingStatusText, isStall, isWagonWait } from '../src/ui/format';
+import { buildingStatusText, codexLink, isStall, isWagonWait } from '../src/ui/format';
 import { plans } from './balance';
 import { STRATEGIES as S789 } from './bot-missions-7-9';
 import { STRATEGIES as S1012, WRONG_FIXES } from './bot-missions-10-12';
@@ -236,7 +236,7 @@ function probe(w: World, id: number): Record<string, unknown> {
 export interface Sample {
   mission: string; scenario: string; tick: number; sec: number;
   worst: string | null; crit?: boolean; ownKey?: string; chain?: string[]; rootKey?: string; rootStall?: boolean;
-  codex?: boolean; offers?: string[]; cure?: string | null; hud?: string; sheet?: string;
+  codex?: boolean; /** The fold's status (codexLink, audit fix 4) is a stall. */ codexFold?: boolean; offers?: string[]; cure?: string | null; hud?: string; sheet?: string;
   /** Efficacy (ticks to clear, -1 none; null = not applicable). */
   ctrl?: number; cureTry?: { ok: boolean; err?: string; ttc: number } | null;
   wagonTry?: { ok: boolean; err?: string; ttc: number }; lessonTry?: { ok: boolean; err?: string; ttc: number } | null;
@@ -308,7 +308,8 @@ function sample(w: World, sc: Scenario, pace: ReturnType<typeof newPaceLog>, les
     : null;
   return {
     ...base, worst: `${b.type}#${b.id}`, crit: e.crit, ownKey: codexKey('building', b.status), chain: chain.map((l) => linkStr(w, l)),
-    rootKey: linkKey(root), rootStall: rootIsStall(root), codex: !!STALL_CODEX[linkKey(root)], offers: off, cure,
+    rootKey: linkKey(root), rootStall: rootIsStall(root), codex: !!STALL_CODEX[linkKey(root)],
+    codexFold: rootIsStall(codexLink(chain, { kind: 'building', id: b.id, status: b.status })), offers: off, cure,
     fleet: fleet(w), fix, extra,
     hud: `${t(`building.${b.type}` as MessageKey)}: ${hudReason(w, b.id)}`, sheet: sheet.text, ctrl, cureTry, wagonTry, lessonTry,
   };
@@ -394,6 +395,10 @@ for (const key of [...new Set(all.map((s) => `${s.mission}|${s.scenario}`))]) {
   const [m, sc] = key.split('|');
   const ss = all.filter((s) => s.mission === m && s.scenario === sc);
   console.log(`| ${m} / ${sc} | ${pct(ss.filter((s) => s.crit).length, ss.length)} | ${pct(ss.filter((s) => s.after?.crit).length, ss.length)} |`);
+}
+{
+  const st = all.filter((s) => s.worst);
+  console.log(`\nkodeks trafny wg końca łańcucha: ${pct(st.filter((s) => s.codex && s.rootStall).length, st.length)}, wg fałdy (codexLink): ${pct(st.filter((s) => s.codexFold).length, st.length)} (n=${st.length})`);
 }
 // per root status over every mission: how often the button / the wagon / the lesson clear it
 console.log('\n| status korzenia | próbek | krytyczny | przycisk | naprawa działa | +1 wóz działa | lekcja działa |');

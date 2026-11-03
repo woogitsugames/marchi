@@ -103,13 +103,14 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint jam-hint">${iconSvg('bridge_jam', 18)}<span>${esc(text)}</span></div>`;
   }
-  return calmHtml(world, b, chain);
+  return '';
 }
 
 /**
  * A stall with nothing to fix, said plainly instead of a cure that would not work (audit 2026-11-03): a full
  * yard nobody needs right now (fix 1: no "Kup wóz"), a full granary while another one has room (fix 3, with one
- * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the building itself.
+ * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the
+ * building itself; placed right under the count, above the codex fold, so it is read before the generic advice.
  */
 function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (chain.length > 1) return '';
@@ -371,7 +372,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
       const codex = stalled ? codexHtml(cl.kind, cl.status) : '';
-      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + codex;
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain) : '') + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },
