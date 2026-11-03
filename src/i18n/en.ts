@@ -589,4 +589,6 @@ export const en: FullDict = {
   'diag.copy': 'Copy JSON',
   'diag.copied': 'Copied',
   'diag.reset': 'Reset',
+  // rain forecast 30 s ahead (night 5): see PENDING_KEYS
+  'hud.rainSoon': 'Rain in half a minute — dirt turns to mud, cobbles keep the pace',
 };

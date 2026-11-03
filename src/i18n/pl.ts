@@ -592,6 +592,8 @@ export const pl = {
   'diag.copy': 'Kopiuj JSON',
   'diag.copied': 'Skopiowano',
   'diag.reset': 'Od nowa',
+  // rain forecast 30 s ahead (night 5): see PENDING_KEYS
+  'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -779,6 +781,7 @@ export const PENDING_KEYS = [
   'diag.copy',
   'diag.copied',
   'diag.reset',
+  'hud.rainSoon',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
