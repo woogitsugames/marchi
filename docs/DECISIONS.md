@@ -1135,3 +1135,18 @@ muddy wagon never carries a stall status (`tests/mud-pace.test.ts`). Percentages
 `dir="auto"` on the text, so the English fallback reads correctly in RTL until the translation round. New keys
 `wagon.mudVsCobble`, `wagon.thawVsCobble` (PENDING_KEYS); `wagon.slowMud`/`wagon.slowThaw` are now unused
 (left for the dictionary clean-up, like `hud.coins`). `docs/shots/day4-mud-*.jpg`. (decided)
+
+**D-84 — Full storage says its count, its cap and its effect (BACKLOG H5; UI only).** "Pełno zboża — brak wozu
+do odbioru" named the state but not that the yard is at its limit, and "Spichlerz pełny" had no numbers; the
+output chip with 8/8 sat at the bottom of the card. Now, right under the status (or the chain), a panel-alert
+box (the kit's wine-edged panel, mirrored in RTL) reads "8/8 zboża — brak miejsca na nowy towar" (a yard short of
+room for one more batch: "7/8 … — następna partia (2) się nie zmieści") or, for a granary, "12/12 — brak miejsca
+na odbiór" (held + already promised, the same count the sim uses for STORAGE_FULL). Below it the effect, in the
+chain's terms: "Skutek: produkcja stoi, dopóki towar nie wyjedzie." / "Skutek: spichlerz nie przyjmie nic
+więcej.", then the buildings that suffer, one tap each (48 px): those whose cause chain runs through this one
+(a producer refused by a full granary) and, for a full yard, the customers short of this very good meanwhile
+("Na drewno czeka: Tartak" — the wood lies here while the sawmill waits for a wagon). A building whose chain
+ends at a full one shows the same count with that building's name as a link. Nothing is promised: the existing
+cure section (buy a wagon / build a granary only where the mission lets you build one, otherwise the hint) stays
+the only action. Pending keys read the English fallback as `lang="en" dir="ltr"` (new `translated()` in
+i18n/index.ts), as the codex does. Keys `why.full.*` (PENDING_KEYS). `docs/shots/day4-full-*.jpg`. (decided)

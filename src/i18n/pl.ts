@@ -159,6 +159,14 @@ export const pl = {
   'why.needs': 'Potrzebuje',
   'why.makes': 'Produkuje',
   'why.order': 'Zamówienie zamku',
+  // H5: full storage, the count against the cap and its effect
+  'why.full.out': '{count} {goodGen} — brak miejsca na nowy towar',
+  'why.full.outBatch': '{count} {goodGen} — następna partia ({n}) się nie zmieści',
+  'why.full.store': '{count} — brak miejsca na odbiór',
+  'why.full.halted': 'Skutek: produkcja stoi, dopóki towar nie wyjedzie.',
+  'why.full.refuses': 'Skutek: spichlerz nie przyjmie nic więcej.',
+  'why.full.waiting': 'Na {goodAcc} czeka:',
+  'why.full.blocked': 'Nie mogą oddać towaru:',
   'why.chain': 'Łańcuch przyczyn',
   'why.cycle': 'Produkcja w toku',
   'why.reserved': 'Do odbioru: {n}',
@@ -636,6 +644,13 @@ export const PENDING_KEYS = [
   'codex.example',
   'wagon.mudVsCobble',
   'wagon.thawVsCobble',
+  'why.full.out',
+  'why.full.outBatch',
+  'why.full.store',
+  'why.full.halted',
+  'why.full.refuses',
+  'why.full.waiting',
+  'why.full.blocked',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -4,10 +4,10 @@ import {
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
-import { t, type MessageKey } from '../i18n/index';
+import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -115,6 +115,56 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint jam-hint">${iconSvg('bridge_jam', 18)}<span>${esc(text)}</span></div>`;
   }
   return '';
+}
+
+/**
+ * H5 (full storage): the plain count against the cap — "8/8 zboża — brak miejsca na nowy towar" on a producer's
+ * yard (OUTPUT_FULL), "60/60 — brak miejsca na odbiór" on a granary (STORAGE_FULL) — and the effect: what stops
+ * and who waits because of it, one tap to each. For the building itself, or for the full building at the root of
+ * its chain (then named). Read-only; promises no action (the cure section below says what can be done).
+ */
+function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
+  // a pending key reads its English fallback: laid out left to right even in an RTL sheet (as the codex)
+  const en = (k: MessageKey): string => (translated(k) ? '' : ' lang="en" dir="ltr"');
+  const root = chain.length > 1 ? chain[chain.length - 1]! : null;
+  const self = b.status.k === 'OUTPUT_FULL' || b.status.k === 'STORAGE_FULL';
+  const subject = self ? b : root && root.kind === 'building' && (root.status.k === 'OUTPUT_FULL' || root.status.k === 'STORAGE_FULL')
+    ? buildingById(world, root.id) : null;
+  if (!subject) return '';
+  const s = subject.status;
+  let line: string;
+  if (s.k === 'OUTPUT_FULL') {
+    const def = BUILDINGS[subject.type];
+    const have = subject.stock[s.good], cap = def.outCap, batch = def.recipe?.outputs[s.good] ?? 1;
+    const key: MessageKey = have >= cap ? 'why.full.out' : 'why.full.outBatch';
+    line = `${iconSvg(s.good, 26, goodName(s.good))}<span${en(key)}>${tHtml(key, { count: fmtRatio(have, cap), goodGen: t(`goodGen.${s.good}` as MessageKey), n: fmtInt(batch) })}</span>`;
+  } else if (s.k === 'STORAGE_FULL') {
+    const cap = subject.capOverride >= 0 ? subject.capOverride : BUILDINGS[subject.type].storeCap ?? 0;
+    const held = GOODS.reduce((a, g) => a + subject.stock[g] + subject.incoming[g], 0);
+    line = `${iconSvg('storage_full', 26)}<span${en('why.full.store')}>${tHtml('why.full.store', { count: fmtRatio(held, cap) })}</span>`;
+  } else return '';
+  const named = subject.id !== b.id
+    ? `<button class="linkish" data-go="building:${subject.id}">${esc(buildingName(world, subject.id))}</button>` : '';
+  let html = `<div class="full-hint">${named ? `<div class="fh-who">${named}</div>` : ''}<div class="fh-count">${line}</div>`;
+  if (subject.id === b.id) {
+    // the effect: buildings whose cause chain runs through this one (a producer refused by a full granary), and
+    // for a full yard the customers short of this very good — it lies here while they wait for a wagon
+    const g = s.k === 'OUTPUT_FULL' ? s.good : null;
+    const hit: Building[] = [];
+    for (const c of world.state.buildings) {
+      if (c.id === b.id || !(isStall(c.status) || c.status.k === 'NO_INPUT')) continue;
+      const short = g !== null && (c.status.k === 'NO_INPUT' || c.status.k === 'NO_WAGON') && c.status.good === g;
+      if (short || explainBuilding(world, c.id, 5, true).some((l, i) => i > 0 && l.kind === 'building' && l.id === b.id)) hit.push(c);
+    }
+    const effectKey: MessageKey = s.k === 'OUTPUT_FULL' ? 'why.full.halted' : 'why.full.refuses';
+    const names = hit.slice(0, 3).map((c) => `<button class="linkish" data-go="building:${c.id}">${esc(buildingName(world, c.id))}</button>`).join('');
+    const lead = g !== null
+      ? t('why.full.waiting', { goodAcc: t(`goodAcc.${g}` as MessageKey), goodGen: t(`goodGen.${g}` as MessageKey) })
+      : t('why.full.blocked');
+    html += `<div class="fh-effect"${en(effectKey)}>${esc(t(effectKey))}</div>${
+      hit.length ? `<div class="fh-wait"><span${en(g !== null ? 'why.full.waiting' : 'why.full.blocked')}>${esc(lead)}</span>${names}</div>` : ''}`;
+  }
+  return html + '</div>';
 }
 
 /** Delegated clicks: [data-go="building:12"], [data-act="buy:3"]. */
@@ -305,7 +355,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // "what does it mean?" for the status at the root of the chain (the one the player has to fix)
       const root = chain.length > 1 ? chain[chain.length - 1]! : null;
       const codex = stalled ? (root ? codexHtml(root.kind, root.status) : codexHtml('building', b.status)) : '';
-      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + codex;
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + codex;
       setHtml(sheet.body, lead + seasonHtml(world, b.id) + iceHtml(world, chain) + (fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '') + undo + stockHtml(world, b, nav.pace));
       return true;
     },

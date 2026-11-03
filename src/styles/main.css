@@ -2237,3 +2237,22 @@ body.is-clear .clear-restore { background: none; clip-path: none; color: var(--i
   content: ''; position: absolute; inset: 4px; z-index: -1; pointer-events: none;
   background: repeating-linear-gradient(-45deg, transparent 0 5px, rgb(74 72 67 / .16) 5px 6.5px), rgb(160 150 130 / .22);
 }
+
+/* H5: full storage — the count against the cap in ink, the effect below with links to who waits */
+.full-hint { position: relative; isolation: isolate; margin-block: 8px; padding-block: 8px 6px; padding-inline: 16px 10px; }
+/* the kit's panel-alert (wine bar on the leading edge, D-75), as on the worst-stall card; mirrored in RTL */
+.full-hint::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-image-source: url("/assets/ui/kit/panel-alert@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel-alert@2x.png") 2x, url("/assets/ui/kit/panel-alert@3x.png") 3x);
+  border-image-slice: 15% 10% fill;
+  border-image-width: 12px;
+}
+:root[dir='rtl'] .full-hint::before { transform: scaleX(-1); }
+.full-hint .fh-who .linkish { min-height: 48px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.full-hint .fh-count { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #6e3520; }
+.full-hint .fh-count svg { flex: none; }
+.full-hint .fh-count span > bdi:first-child { font-size: 18px; }
+.full-hint .fh-effect { margin-top: 2px; font-size: 13px; color: var(--ink-soft); }
+.full-hint .fh-wait { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 13px; color: var(--ink-soft); }
+.full-hint .fh-wait .linkish { min-height: 48px; font-size: 15px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
