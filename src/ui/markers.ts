@@ -1,10 +1,10 @@
 // Markers that live in the scene: stall pins above buildings (and stuck wagons; kit sprites, red =
 // the worst or a critical stall, brass = a lesser one), the slate ETA plaque beside the selected wagon, and the road-draft label near the finger.
 // Positions come from view.anchorOf every frame; DOM nodes are pooled, only transforms change.
-import { TICK_HZ, wagonEta, type World } from '../sim/index';
+import { GOODS, TICK_HZ, wagonEta, type Good, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
-import { buildingName, buildingStatusIcon, buildingStatusText, clock, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, goodName, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
 import { iconSvg } from './icons';
 import { MIN_STALL_TICKS, calmStall } from './stalls';
 
@@ -15,6 +15,11 @@ const STAMP_FADE_MS = 220;
 const PIN_TIME_TICKS = 20 * TICK_HZ;
 
 interface Stamp { el: HTMLElement; id: number; bornAt: number; out: boolean }
+
+/** Contract delivery over the castle (D-60): "+6" with the good's icon, rising a little, then faded. */
+const DELIVERY_HOLD_MS = 1300;
+const DELIVERY_FADE_MS = 220;
+interface Delivery { el: HTMLElement; id: number; bornAt: number; out: boolean; row: number }
 
 interface Bubble { el: HTMLElement; icon: HTMLElement; time: HTMLElement; secs: number; key: string; sig: string; used: boolean; shownAt: number }
 
@@ -35,6 +40,9 @@ export class Markers {
   private stamps: Stamp[] = [];
   /** Per building: the last status seen and what was derived from it (sig strings reused between frames). */
   private pinCache = new Map<number, { status: object; ticks: number; st: string; calm: boolean; crit: boolean; sig0: string; sig1: string }>();
+  private deliveries: Delivery[] = [];
+  /** Contract goods in the castle at the last frame (castle id, tick, per good); null = not seeded. */
+  private castleSeen: { id: number; tick: number; have: Map<Good, number> } | null = null;
 
   constructor() {
     this.etaText = h('span.num');
@@ -145,6 +153,8 @@ export class Markers {
       st.el.style.transform = `translate3d(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`;
     }
 
+    this.updateDeliveries(world, view, hidden, now);
+
     // ETA tag beside the selected wagon
     let etaOn = false;
     if (selectedWagon !== null && !hidden) {
@@ -196,6 +206,57 @@ export class Markers {
     this.onFixed?.(id);
   }
 
+  /**
+   * Goods that reached the castle for the contract since the last frame float up over it as "+N" with
+   * the good's icon (one tag per good, stacked; at most three on screen). A first sight of the castle,
+   * a loaded game or a restart (tick went back) only seeds the counts.
+   */
+  private updateDeliveries(world: World, view: WorldView, hidden: boolean, now: number): void {
+    const st = world.state;
+    const c = st.mission.contract;
+    const castle = c ? st.buildings.find((b) => b.id === c.castle) : undefined;
+    if (!c || !castle) { this.castleSeen = null; return; }
+    const prev = this.castleSeen;
+    const fresh = !prev || prev.id !== castle.id || st.tick < prev.tick;
+    const have = fresh ? new Map<Good, number>() : prev.have;
+    for (const g of GOODS) {
+      if (!(c.need[g] > 0)) continue;
+      const n = castle.stock[g];
+      const before = have.get(g);
+      have.set(g, n);
+      if (fresh || before === undefined || n <= before || hidden || st.mission.result !== 'running') continue;
+      if (!(castle.gate >= 0 && view.cellToScreen ? view.cellToScreen(castle.gate) : view.anchorOf('building', castle.id)).visible) continue;
+      this.deliveryTag(castle.id, g, n - before, now);
+    }
+    this.castleSeen = { id: castle.id, tick: st.tick, have };
+    // at the gate, where the wagon hands the goods over (the castle's pin anchor tops a tall keep,
+    // often under the waybill)
+    const gate = castle.gate >= 0 && view.cellToScreen ? view.cellToScreen(castle.gate) : null;
+    for (const d of [...this.deliveries]) {
+      const age = now - d.bornAt;
+      const a = gate ?? view.anchorOf('building', d.id);
+      if (age > DELIVERY_HOLD_MS + DELIVERY_FADE_MS + 40 || !a.visible || hidden) {
+        d.el.remove();
+        this.deliveries.splice(this.deliveries.indexOf(d), 1);
+        continue;
+      }
+      if (!d.out && age > DELIVERY_HOLD_MS) { d.out = true; d.el.classList.add('is-out'); }
+      // just above the gate, drifting up ~24 px over its life (linear, no bounce)
+      const rise = Math.min(1, age / (DELIVERY_HOLD_MS + DELIVERY_FADE_MS)) * 24;
+      d.el.style.transform = `translate3d(${a.x.toFixed(1)}px, ${(a.y - 30 - d.row * 40 - rise).toFixed(1)}px, 0)`;
+    }
+  }
+
+  private deliveryTag(id: number, g: Good, n: number, now: number): void {
+    while (this.deliveries.length >= 3) this.deliveries.shift()!.el.remove();
+    const row = [0, 1, 2].find((r) => !this.deliveries.some((d) => d.row === r)) ?? 0;
+    const el = h('div.dlv-tag', { 'aria-hidden': 'true' },
+      h('div.dlv-in', { html: `<span class="eta-ic">${iconSvg(g, 18, goodName(g))}</span>${bdi(`+${fmtInt(n)}`)}` }));
+    this.root.append(el);
+    this.deliveries.push({ el, id, bornAt: now, out: false, row });
+    requestAnimationFrame(() => el.classList.add('is-in'));
+  }
+
   /** Road draft label near the finger: main line + sub line, bad = clay. */
   setDraft(x: number, y: number, main: string, sub: string, bad: boolean): void {
     this.draft.classList.add('is-shown');
@@ -218,6 +279,9 @@ export class Markers {
     this.pool = [];
     for (const st of this.stamps) st.el.remove();
     this.stamps = [];
+    for (const d of this.deliveries) d.el.remove();
+    this.deliveries = [];
+    this.castleSeen = null;
     this.shownStalls.clear();
     this.pinCache.clear();
     this.byKey.clear();

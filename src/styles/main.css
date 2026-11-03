@@ -1544,6 +1544,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .ev-fair { display: flex; align-items: center; gap: 8px; min-height: 36px; }
 .ev-txt { flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 1.25; }
 .ev-merchant > .ev-txt { margin-top: 2px; }
+.ev-order > .ev-desc { margin-block: 1px 3px; font-style: italic; color: var(--ink-soft); }
 .ev-fair.is-on .ev-txt { font-weight: 700; color: #6b4c16; }
 .ev-gi { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink);
   background: radial-gradient(circle, #efe0bf 0 60%, var(--brass) 62% 70%, transparent 72%); }
@@ -1780,6 +1781,26 @@ body.is-flex .rail { z-index: 1; }
 }
 .eta-tag .eta-ic { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #e7e9e4; color: var(--slate); }
 .eta-tag.is-shown { opacity: 1; }
+/* contract delivery over the castle (D-60): the slate plaque of the ETA tag with the good and "+N";
+   in 180 ms, held, faded 220 ms; the rise is driven by markers.ts (linear) */
+.dlv-tag { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+.dlv-tag .dlv-in {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -100%) scale(.92);
+  display: flex; align-items: center; gap: 6px;
+  min-height: 32px; padding-block: 2px; padding-inline: 10px 13px;
+  font-size: 17px; font-weight: 700; color: #eef0ee; white-space: nowrap; direction: ltr;
+  border-style: solid; border-width: 0; border-image-repeat: stretch;
+  border-image-source: url("/assets/ui/kit/eta@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/eta@2x.png") 2x, url("/assets/ui/kit/eta@3x.png") 3x);
+  border-image-slice: 25% 16.7% fill; border-image-width: 10px 14px;
+  opacity: 0; transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+.dlv-tag .eta-ic { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #e7e9e4; color: var(--slate); }
+.dlv-tag.is-in .dlv-in { opacity: 1; transform: translate(-50%, -100%); }
+.dlv-tag.is-out .dlv-in { opacity: 0; transition: opacity 220ms var(--ease); }
+/* the waybill line of a good that just rose: one warm flash of the paper behind it */
+.wb-line.is-bump { animation: wb-bump 240ms var(--ease) 1; }
+@keyframes wb-bump { 0% { background: rgb(184 137 58 / .32); } 100% { background: transparent; } }
 
 /* ---- toasts and notices on kit panels */
 .toasts {

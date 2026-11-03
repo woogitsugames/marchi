@@ -779,3 +779,60 @@ storage forgets only entries the state no longer shows (momentary: winter, fleet
 No reward, no effect on play or hashes; 66 pl/en keys pending for the other languages. Open for the owner: move
 the list into the save (envelope field or SimState with a migration — then it travels with Android backup / a
 copied save), see HANDOVER „Decyzje na rano”. (decided, storage location open)
+
+**D-58 — Far trees: a multi-view impostor atlas (8 azimuths), per-tier cell size (render only; P3 of D-41).**
+D-41 baked one view per kind, so every distant tree showed the same face whatever its yaw and the camera
+orbit, and the near→far crossfade swapped a rotated model for an unrotated card. Now `bakeTreeBillboards`
+renders each kind from 8 azimuths at the same 30° elevation (`BB_VIEWS`, atlas columns = kinds, rows = views);
+the camera direction in the tree's own frame (`bbLF`, already in the card shader) picks the two nearest views.
+High/ultra blend them (`TREE_BB_BLEND`: 2 × albedo + 2 × fine-mip albedo + 2 × normal samples, was 2 + 1);
+low picks one of the two per pixel, dithered by the blend weight (same 2 + 1 samples as before). Views are baked
+row by row into a small 4× MSAA target and copied into single-sample mipmapped atlases, so the big atlases
+carry no MSAA buffers. Cell width per tier, re-baked on a tier switch: low 128 px (2 × 7 MB; low caps DPR at
+1.25), high 224 px (2 × 21 MB), ultra 256 px (2 × 28 MB) — before: 2 × 1.7 MB textures + 2 × 5.2 MB MSAA
+renderbuffers at 256 px. Bake: 80 small renders + 16 copies, once at the first frame. Draw calls and triangles
+unchanged (m1 412×915 dpr 2: high near/mid/far/copse 57/48/44/56 calls, 470k/305k/256k/294k tris; low
+57/38/40/51, 258k/244k/239k/238k — identical before/after). Not done: the second near variant is not baked
+(the card always shows variant 0; +1 atlas row set per variant = 2× memory). Shots `docs/shots/night2-trees-*`.
+(decided)
+
+**D-59 — Water edge and bridge detail (render only).** Water shader: on high/ultra (`uDetail`) the waterline laps
+up to 5 cm up the bank and back (slow, out of phase along the river) and a second thin foam line drifts in and
+fades; on every tier a wet strip (0.3 m above the waterline, darker and catching a little sky) is drawn by the
+water mesh itself (its quads already reached 0.35 m up the bank, so no new geometry). Bridges: bank-end pieces
+where a run meets land (`bridgeEndParts`: wood — plank ramp down to the road, sill and crib logs, splayed wing
+logs, heavier end posts; stone — splayed wing walls continuing the parapets with coping and a terminal block, a
+cobbled ramp, a footing), wheel-guard logs on the wooden deck, a string course and dressed spandrel blocks on
+the stone spans (the fieldstone texture alone read as smooth grey at game distance). Piles and piers get a
+foam collar and a short broken wake downstream (+x, as the water shader's current) — one transparent mesh,
+one draw call for all bridges, discarding empty texels. Cost: +1 draw call on every tier when a bridge exists;
+triangles per 4 m segment wood 536→560, stone ≈1100→1312, +348 (wood) / +676 (stone) per bank end; m1 bridge
+view high 54→55 calls, 351.6k→352.4k tris. Shots `docs/shots/night2-bridge-*`. (decided)
+
+**D-60 — Contract progress you can feel: delivery tags at the castle gate, a flash on the waybill line, three
+milestone notices (UI only).** BACKLOG P2 "10-minute session" (visible delivery progress; countdown with hope).
+`Markers` compares the castle's contract goods frame to frame; a rise shows "+N" with the good's icon on the slate
+ETA plaque just above the castle gate (where the wagon hands over; the castle's pin anchor tops the keep, mostly
+under the waybill), one tag per good, at most three stacked, 180 ms in, 1.3 s held while drifting up 24 px
+(linear), 220 ms out; first sight / load / restart only seeds the counts. The waybill line of a good that rose
+flashes once (240 ms). `Hud` shows one notice per milestone while the contract runs: half the goods in the castle
+("Połowa kontraktu w zamku: 36/50"), two minutes and the last minute before the deadline now due (per tranche),
+each with the units still missing — milestones already passed when the HUD first sees the contract stay silent.
+Reads state only; no sim change, hashes untouched. Not done from the backlog entry: the seal-press animation
+before the end letter and a "hurry" music mood (owner taste; app flow), a delivery sound. Keys `contract.half`,
+`contract.twoMin`, `contract.lastMin` (pl/en, PENDING_KEYS). Shots `docs/shots/night2-delivery-*`,
+`night2-half-*`. (decided)
+
+**D-61 — Building detail pass: thatch ridges, roof wear, daub weathering, ladders (render only).** For the
+commonest thatched and framed buildings (farm, mill, bakery, stable, fisher, malthouse share `thatchRoof` /
+`house`): the ridge saddle is pinned with hazel liggers (two rods along each slope under the roll, crossed spars
+between them — the stitched ridge of a real thatch, the one detail that reads at game zoom); a repaired patch or
+two of paler newer straw in the thatch colour; grey-green lichen on split-shingle roofs, heavier toward the eaves
+(woodcutter, sawmill, warehouse); limewashed daub gets rain-splashed mud above the plinth (the kit's base dirt is
+measured from the ground, so walls on a tall plinth — the mill's upper storey — stayed spotless), grey run-off
+streaks under the wall plate and patchy fresher limewash; a ladder to the mill's hoist window and against the
+farm granary, a bench under the farmhouse window. All in vertex colour or small extra geometry in the merged
+building meshes: no new draw calls, no new textures. Triangles (model): farm 8220→9496, mill 5612→6292, bakery
+5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
+scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
+were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)

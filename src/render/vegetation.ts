@@ -105,8 +105,9 @@ export class VegetationView {
     this.apron = placeApron(hf);
   }
 
-  bake(renderer: WebGLRenderer): void {
-    bakeTreeBillboards(renderer);
+  /** Bake (or re-bake at another cell size) the far-card atlases. */
+  bake(renderer: WebGLRenderer, cellPx: number): void {
+    bakeTreeBillboards(renderer, cellPx);
   }
 
   setShadows(on: boolean): void {

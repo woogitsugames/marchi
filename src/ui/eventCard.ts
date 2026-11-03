@@ -24,6 +24,14 @@ const goodAcc = (g: Good): string => t(`goodAcc.${g}` as MessageKey);
 const orderTitle = (o: RoyalOrder): string => t(`events.order.t.${o.templateId}` as MessageKey);
 const orderGoods = (o: RoyalOrder): Good[] => GOODS.filter((g) => (o.need[g] ?? 0) > 0);
 
+/** One of four wordings for a merchant's arrival, fixed per offer (from its id, so a reload says the same). */
+function merchantLine(id: string): MessageKey {
+  let hsh = 0;
+  for (let i = 0; i < id.length; i++) hsh = (hsh * 31 + id.charCodeAt(i)) % 9973;
+  const v = hsh % 4;
+  return (v === 0 ? 'events.merchant.new' : `events.merchant.new.${v}`) as MessageKey;
+}
+
 function kbar(frac: number): string {
   const pct = Math.max(0, Math.min(1, frac)) * 100;
   return `<span class="kbar ev-bar"><i style="width:${pct.toFixed(1)}%"></i></span>`;
@@ -176,9 +184,12 @@ export class EventCard {
     const tail = o.accepted
       ? `<div class="ev-ob"><ul class="ev-goods">${goods}</ul>${later}</div>`
       : `<ul class="ev-goods">${goods}</ul><div class="ev-acts"><button class="btn primary cf ev-btn" data-ev="accept|${esc(o.id)}">${iconSvg('seal', 20)}<span>${esc(t('events.order.accept'))}</span></button>${later}</div>`;
+    // the castle's request in a sentence (docs/content/events.md) while it is an offer to weigh; once
+    // accepted the item is about deliveries and stays short
+    const desc = o.accepted ? '' : `<div class="ev-txt ev-desc" dir="auto">${esc(t(`events.order.d.${o.templateId}` as MessageKey))}</div>`;
     return `<li class="ev-item ev-order${o.accepted ? ' is-on' : ''}">
       <div class="ev-oh"><span class="ev-seal">${iconSvg('seal', 18)}</span><span class="ev-t" dir="auto">${esc(orderTitle(o))}</span></div>
-      ${reward}${tail}</li>`;
+      ${desc}${reward}${tail}</li>`;
   }
 
   /** One toast per new event or fulfilled order; nothing on load, a new game or a language change. */
@@ -204,7 +215,7 @@ export class EventCard {
     const id = fresh[0]!;
     const order = ev.orders.find((o) => o.id === id);
     if (order) this.act.toast(t('events.order.new', { title: orderTitle(order) }), 'seal');
-    else if (ev.merchant?.id === id) this.act.toast(t('events.merchant.new', { good: goodAcc(ev.merchant.good) }), ev.merchant.good);
+    else if (ev.merchant?.id === id) this.act.toast(t(merchantLine(id), { good: goodAcc(ev.merchant.good) }), ev.merchant.good);
     else if (ev.fair) this.act.toast(t('events.fair.upcoming', { good: goodAcc(ev.fair.good) }), ev.fair.good);
   }
 

@@ -1,6 +1,6 @@
 # Wolna dolina — teksty zdarzeń (PL / EN)
 
-**Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień zostają tutaj jako materiał na przyszłe szczegóły karty. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
+**Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień są w i18n jako `events.order.d.<ID>` (PL, EN; noc 2026-11-03) i pokazują się w rozwiniętej, jeszcze nieprzyjętej ofercie. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
 
 ## Zamówienia królewskie — 36 wariantów
 
@@ -69,6 +69,7 @@ Jarmark wypada co trzeci 15-minutowy sezon symulacji; pierwsza zapowiedź jesien
 | events.merchant.bonus | Cena kupca jest wyższa niż zwykła cena na rynku. | The merchant's price is higher than the ordinary market price. |
 | events.merchant.accept | Sprzedaj nadwyżkę | Sell surplus |
 | events.merchant.dismiss | Odłóż ofertę | Put offer aside |
+| events.merchant.new (.1–.3) | Wędrowny kupiec kupi {good} · Kupiec z wozem pod płótnem stanął przy bramie: kupi {good} · Traktem przyjechał kupiec — chętnie kupi {good} · Wędrowny kupiec szuka towaru: kupi {good} | A travelling merchant will buy {good} · A merchant with a canvas-covered cart waits at the gate: he will buy {good} · A merchant came up the road — he will gladly buy {good} · A travelling merchant is looking for wares: he will buy {good} |
 | events.merchant.noStock | Nadwyżka została już przewieziona. Nie musisz sprzedawać. | The surplus has already been hauled away. You do not need to sell. |
 
 ## Wspólne elementy karty HUD

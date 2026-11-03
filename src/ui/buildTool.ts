@@ -9,7 +9,7 @@
 // placed by inverting view.cellAt (locateCell).
 import {
   BUILDINGS, SITE_RULE, canPlace, gateCell, isRockCell, lastUndoable, net, suggestConnection, unlockRank, validatePlace,
-  type BuildingType, type Command, type CommandError, type CommandResult, type World,
+  type BuildingType, type Command, type CommandError, type CommandResult, type RoadSuggestion, type World,
   missionBuildable,
 } from '../sim/index';
 import type { WorldView } from '../render/api';
@@ -164,6 +164,10 @@ export class BuildTool {
   private manualFacing = false;
   private result: CommandResult | null = null;
   private previewKey = '';
+  /** Silver for the access road the hatched preview shows (-1: none / gate on a road). */
+  private linkCost = -1;
+  /** Top edge for floating labels (below the HUD's top cluster), refreshed with revalidate(). */
+  private topEdge = 8;
   /** Building type whose site hint (rock / waterside cells) is on the ground. */
   private siteType: BuildingType | null = null;
   private shelfSig = '';
@@ -376,8 +380,10 @@ export class BuildTool {
     const gate = this.gateOf(world, this.facing);
     const onRoad = this.gateTouchesRoad(world, gate);
     const key = `${cells[0]}|${this.facing}|${this.type}|${r.ok}|${bad}|${onRoad}|${world.state.netVersion}`;
+    this.topEdge = this.labelTop();
     if (key !== this.previewKey) {
       this.previewKey = key;
+      this.linkCost = -1;
       const view = this.host.view();
       if (this.siteType !== this.type) {
         this.siteType = this.type;
@@ -387,13 +393,17 @@ export class BuildTool {
       if (view.setPlacementGhost) {
         view.setPlacementGhost({ type: this.type, x: this.gx, y: this.gy, facing: this.facing, valid: r.ok, badCell: bad });
         const link = onRoad ? null : this.accessRoad(world, gate, cells);
-        view.setRoadPreview(link ? { cells: link, valid: true, badCell: -1, dashed: true } : null);
+        this.linkCost = link ? link.cost : -1;
+        view.setRoadPreview(link ? { cells: link.newCells, valid: true, badCell: -1, dashed: true } : null);
       } else view.setRoadPreview({ cells, valid: r.ok, badCell: bad });
     }
     const coins = world.state.coins;
     const price = BUILDINGS[this.type].price;
     this.tag.classList.toggle('is-bad', !r.ok);
-    if (r.ok) setHtml(this.tagMain, tHtml('build.cost', { n: fmtInt(price), have: fmtInt(coins) }));
+    // the access road the hatched preview shows is part of what this site costs (BACKLOG P3)
+    const road = !onRoad && this.linkCost > 0 ? this.linkCost : 0;
+    if (r.ok && road) setHtml(this.tagMain, tHtml('build.costRoad', { n: fmtInt(price), road: fmtInt(road), have: fmtInt(coins) }));
+    else if (r.ok) setHtml(this.tagMain, tHtml('build.cost', { n: fmtInt(price), have: fmtInt(coins) }));
     else setHtml(this.tagMain, esc(this.errText(r.err)));
     this.tagSub.classList.toggle('is-warn', !onRoad);
     setHtml(this.tagSub, `${iconSvg(onRoad ? 'road_dirt' : 'no_road', 16)}<span>${esc(t(onRoad ? 'build.gateRoad' : 'build.gateNoRoad'))}</span>`);
@@ -409,11 +419,11 @@ export class BuildTool {
    * so the preview is a road the wagons can actually use, else from the nearest road cell.
    * A route through the ghost's own footprint is refused. Only called when the ghost changes.
    */
-  private accessRoad(world: World, gate: number, footprint: number[]): number[] | null {
+  private accessRoad(world: World, gate: number, footprint: number[]): RoadSuggestion | null {
     const foot = new Set(footprint);
-    const via = (from: number): number[] | null => {
+    const via = (from: number): RoadSuggestion | null => {
       const s = suggestConnection(world, from, gate);
-      return s && s.newCells.length && !s.cells.some((c) => foot.has(c)) ? s.newCells : null;
+      return s && s.newCells.length && !s.cells.some((c) => foot.has(c)) ? s : null;
     };
     const stable = world.state.buildings.find((b) => b.type === 'stable');
     const link = stable ? via(stable.gate) : null;
@@ -501,10 +511,13 @@ export class BuildTool {
       this.centreGuess = [c.x, c.y];
       wrap.hidden = false;
       const tw = this.tag.offsetWidth || 220, th = this.tag.offsetHeight || 56;
-      const lift = c.px * (def.h / 2 + 0.6) + 10;
+      // above the ghost's roof (the walls rise ~1.2 cells over the footprint), or below its front
+      // edge when there is no room above: never clamped down onto the ghost (BACKLOG P3)
+      const half = c.px * (def.h / 2 + 0.6);
+      const lift = half + c.px * 1.2 + 10;
       const maxX = window.innerWidth - tw - 8;
       const px = Math.max(8, Math.min(maxX, c.x - tw / 2));
-      const py = Math.max(8, c.y - lift - th);
+      const py = c.y - lift - th >= this.topEdge ? c.y - lift - th : Math.min(window.innerHeight - th - 8, c.y + half + 10);
       wrap.style.transform = `translate3d(${px.toFixed(0)}px, ${py.toFixed(0)}px, 0)`;
     } else wrap.hidden = true;
     if (g) {
@@ -513,6 +526,12 @@ export class BuildTool {
       this.pin.classList.toggle('is-bad', !!this.result && !this.result.ok && 'cell' in this.result.err && this.result.err.cell === gate);
       this.pin.style.transform = `translate3d(${(g.x - 6).toFixed(0)}px, ${(g.y - 28).toFixed(0)}px, 0)`;
     } else this.pin.hidden = true;
+  }
+
+  /** Top of the free scene for floating labels: below the HUD's top cluster (--hud-top). */
+  private labelTop(): number {
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hud-top'));
+    return (Number.isFinite(v) ? v : 0) + 8;
   }
 
   private updateUndo(world: World): void {

@@ -126,6 +126,18 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
    → konsola WebView: `location.search='?debug=1&bench=device'`); wyniki JSON wkleić do tabeli w docs/PERF.md.
 4. **Postacie przy pracy** — drwal/młynarz/piekarz są; czy dodać tartak (dwóch przy pile), rolnika, rybaka? Koszt:
    +3 wywołania rysowania na rodzaj (+cienie). **Rekomendacja: tak, ale po ocenie obecnych na telefonie.**
+5. **Pamięć atlasu drzew (D-58)** — impostor 8-widokowy: low 2×7 MB, high 2×21 MB, ultra 2×28 MB (wcześniej ~2×7 MB
+   razem z buforami MSAA). Na Foldzie sprawdzić w benchmarku/`chrome://inspect` → Memory. **Rekomendacja: zostawić
+   224 px na high**; jeśli WebView zacznie gubić kontekst — 192 px (2×16 MB). Drugi wariant drzew bez własnych widoków
+   (karta zawsze wariant 0) — **rekomendacja: nie** (2× pamięci za drobną różnicę w paśmie przejścia).
+6. **Kontrakt „odliczanie z nadzieją” (D-60), reszta wpisu P2** — animacja odciśnięcia pieczęci (1,2 s) przed listem
+   końcowym, nastrój muzyki „hurry” przy < 2 min, dźwięk dostawy do zamku. To zmiany smaku i przepływu (app.ts
+   showEnd, music.ts). **Rekomendacja: pieczęć tak (200 ms + 1 s trzymania, bez sprężyny); muzyka dopiero po
+   playteście; dźwięk dostawy cichy, ten sam co przyjęcie ładunku.**
+7. **Podpowiedź tempa / auto-powrót do ×1 (BACKLOG P3 „prędkość jako narzędzie”)** — zmienia to, co robi gra bez
+   pytania gracza. **Rekomendacja: tylko podpowiedź raz na misję; auto-×1 nie** (ukryta zmiana prędkości myli).
+8. **Wygląd kalenicy strzechy (D-61)** — lasce na krzyż czytają się z bliska jako wyraźna kratka. Ocenić na telefonie;
+   jeśli zbyt „graficzne”: kolor bliżej strzechy (`#655640`) albo tylko dwa pręty bez krzyży. **Rekomendacja: zostawić.**
 
 ## Stan nocy 2026-11-02/03 (gałąź `claude/w-night`, agent nocny)
 Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian):
@@ -138,3 +150,21 @@ Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, pus
    drzew wielowidokowy, detale wody/mostu.
 6. `52c09ec` kronika doliny w UI (D-57), `5c31a4a` +6 wariantów zamówień (rangi 3–5).
 Nowe klucze i18n (PENDING_KEYS): `wagon.BRIDGE_JAM.*`, `fix.wagon*`, `fix.jam*`, `chron.*` (66), `events.order.t.*` (6).
+
+## Stan nocy 2 — 2026-11-03 (gałąź `claude/w-night2`, agent nocny 2)
+Kolejka nocy 2 (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian, sim nietknięta):
+1. `004e1c2` **D-58** impostor drzew 8 widoków (azymut w układzie drzewa, high miesza, low dithering bez dodatkowych
+   próbek), atlas per jakość (128/224/256 px), wypiekany po wierszu przez mały cel MSAA. Wywołania/trójkąty bez zmian.
+2. `516ced9` **D-59** woda: falujący brzeg i piana (high), mokry pas brzegu (wszystkie); mosty: przyczółki (rampa,
+   kłody / skrzydła murowane), odbojnice, gzyms i ciosy, piana i ślad za palami/filarami (+1 wywołanie rysowania).
+3. `8a3b68b` **D-60** dostawa do zamku „+6” przy bramie, błysk wiersza listu, powiadomienia: połowa / 2 min / ostatnia
+   minuta; `63161ae` Buduj — koszt drogi dojazdowej w etykiecie, etykieta nigdy na duchu; backlog: stare
+   pozycje oznaczone jako zrobione (`702f131`: listy kasztelana, pierścień na moście, kadr po arkuszu, cena wozu).
+4. `eddd186` **D-61** detal budynków: lasce na kalenicy, łaty świeżej słomy, porost na gontach, zacieki/zachlapanie
+   gliny, drabiny, ława (bez nowych wywołań; +0,5–1,3 tys. trójkątów na budynek ze strzechą).
+5. `885cd09` narracja zamówień (36 × PL/EN) w rozwiniętej ofercie; 4 brzmienia przyjazdu kupca.
+Nowe klucze (PENDING_KEYS): `contract.half|twoMin|lastMin`, `build.costRoad`, `events.order.d.*` (36),
+`events.merchant.new.1–3`. Zrzuty `docs/shots/night2-*`. Uwaga do skryptów zrzutów: tekstury high dochodzą pod
+SwiftShaderem po 10–20 s — wcześniejsze zrzuty „bez tekstur” to za krótki czas oczekiwania, nie błąd gry.
+Następne decyzje od **D-62**.
+

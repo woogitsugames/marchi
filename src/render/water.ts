@@ -36,6 +36,7 @@ const WATER_FRAG = /* glsl */ `
 uniform float uTime;
 uniform float uRain;
 uniform float uLight;
+uniform float uDetail;
 uniform vec3 uDeep;
 uniform vec3 uShallow;
 uniform vec3 uSkyH;
@@ -81,12 +82,26 @@ void main() {
   vec3 col = mix(body, sky * 0.5, clamp(fres * 0.6 + 0.04 + streak * 0.06, 0.0, 1.0));
   float spec = pow(max(dot(R, uSunDir), 0.0), 180.0) * (1.0 - uRain * 0.8);
   col += uSunCol * spec * 1.4;
-  // broken scum / foam line along the waterline, lit like the sky
-  float edge = smoothstep(0.02, 0.1, vDepth) * (1.0 - smoothstep(0.12, 0.32, vDepth));
-  float brk = texture2D(tNoise, p / 6.0).r;
-  col = mix(col, uSkyH * 0.62 * uLight, edge * smoothstep(0.45, 0.75, brk) * 0.45);
-  float alpha = smoothstep(0.0, 0.3, vDepth) * mix(0.62, 0.96, d) * (1.0 - 0.3 * near * (1.0 - fres));
-  gl_FragColor = vec4(col, alpha);
+  // high: the waterline laps a few centimetres up the bank and back (slow, out of phase along
+  // the river), so the edge and its foam move; low keeps a still edge
+  float lap = uDetail * 0.05 * (0.5 + 0.5 * sin(uTime * 0.7 + p.x * 0.09 + big.b * 6.0));
+  float dl = vDepth + lap;
+  // broken scum / foam line along the waterline, lit like the sky; on high a second, thinner
+  // line drifts in toward the bank and fades (wavelets breaking on the mud)
+  float edge = smoothstep(0.02, 0.1, dl) * (1.0 - smoothstep(0.12, 0.32, dl));
+  float brk = texture2D(tNoise, p / 6.0 + vec2(uTime * 0.003, 0.0)).r;
+  float foam = edge * smoothstep(0.45, 0.75, brk) * 0.45;
+  float ph = fract(dl * 3.2 + uTime * 0.11);
+  foam += uDetail * smoothstep(0.75, 0.95, ph) * (1.0 - smoothstep(0.05, 0.4, dl)) * step(0.0, dl) * smoothstep(0.4, 0.7, brk) * 0.3;
+  col = mix(col, uSkyH * 0.62 * uLight, min(foam, 0.6));
+  float alpha = smoothstep(0.0, 0.3, dl) * mix(0.62, 0.96, d) * (1.0 - 0.3 * near * (1.0 - fres));
+  // wet edge: the strip of bank just above the waterline is darker and catches a little sky
+  // (the water mesh already covers it: quads reach 0.35 m above the water level)
+  float wet = smoothstep(-0.3, -0.02, dl) * (1.0 - smoothstep(0.0, 0.12, dl)) * (0.75 + 0.25 * brk);
+  vec3 wetCol = vec3(0.09, 0.08, 0.06) * uLight + sky * 0.25 * fres + uSunCol * spec * 0.4;
+  float wA = wet * 0.34 * (1.0 - alpha);
+  float outA = alpha + wA;
+  gl_FragColor = vec4((col * alpha + wetCol * wA) / max(outA, 1e-3), outA);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
   #include <fog_fragment>
@@ -186,6 +201,7 @@ export class WaterView {
           uTime: { value: 0 },
           uRain: { value: 0 },
           uLight: { value: 1 },
+          uDetail: { value: 1 },
           uDeep: { value: new Color('#2c3533') },
           uShallow: { value: new Color('#4d4b3c') },
           uSkyH: { value: new Color('#c9c6bb') },
@@ -261,6 +277,11 @@ export class WaterView {
     this.mistMaterial.uniforms.uTime!.value = time;
     this.mistMaterial.uniforms.uOpacity!.value = mist;
     this.mist.visible = mist > 0.01;
+  }
+
+  /** High/ultra: lapping waterline and drifting foam lines; low: a still edge. */
+  setDetail(high: boolean): void {
+    this.material.uniforms.uDetail!.value = high ? 1 : 0;
   }
 
   dispose(): void {
