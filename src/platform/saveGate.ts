@@ -78,6 +78,11 @@ export interface SaveEnvelope {
   /** terrainHash(terrainFor(mapId, seed)) when the save was written (see D-23). */
   terrainHash: string;
   state: SimState;
+  /**
+   * Valley chronicle ids recorded in this ledger (owner decision 1, day 1; UI data, never part of the state or
+   * its hash). Optional: older envelopes and contract saves have none; read with `envelopeChronicle`.
+   */
+  chronicle?: string[];
 }
 
 /** Format 1 envelope (before the terrain hash). */
@@ -820,10 +825,12 @@ export function parseSave(json: string): LoadVerdict {
  * clone=false hands the live state over (saveGame: IndexedDB's put() takes its own structured clone at once);
  * the default copies it, for callers that keep the envelope.
  */
-export function makeEnvelope(slot: string, state: SimState, savedAt: number, clone = true): SaveEnvelope {
-  return {
+export function makeEnvelope(slot: string, state: SimState, savedAt: number, clone = true, chronicle?: readonly string[]): SaveEnvelope {
+  const env: SaveEnvelope = {
     format: 2, stateVersion: state.version, slot, savedAt, missionId: state.mission.id, tick: state.tick,
     terrainHash: currentTerrainHash(state.mapId, state.seed),
     state: clone ? JSON.parse(JSON.stringify(state)) as SimState : state,
   };
+  if (chronicle) env.chronicle = [...chronicle];
+  return env;
 }

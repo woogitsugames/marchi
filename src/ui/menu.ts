@@ -67,13 +67,29 @@ function saveWhat(save: SaveInfo): string {
  * broken = the save could not be loaded: show why and offer that contract afresh.
  * unfinished = contract saves by mission id: their rows say "in progress, 12:34" (D-36).
  */
+/** Best result of a contract mission as the menu shows it (owner decision 13). */
+export interface BestSeals { seals: number; ticks: number }
+
+/**
+ * Three small wax seals (pressed = earned) and the best contract time at the end of a mission row; nothing
+ * before the first win. The row's accessible name gets the same in words.
+ */
+function bestMark(b: BestSeals | undefined): HTMLElement | null {
+  if (!b || b.seals < 1) return null;
+  const time = iso(ticksClock(b.ticks));
+  const el = h('span.mi-best', { role: 'img', 'aria-label': t('menu.bestAria', { n: b.seals, time }) });
+  setHtml(el, `<span class="mi-seals" aria-hidden="true">${[0, 1, 2].map((i) =>
+    `<span class="mi-seal${i < b.seals ? ' is-on' : ''}">${iconSvg('seal', 16)}</span>`).join('')}</span><span class="mi-time num" aria-hidden="true">${esc(time)}</span>`);
+  return el;
+}
+
 export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: MissionKey | null = null,
-  unfinished: ReadonlyMap<string, SaveInfo> = new Map()): HTMLElement {
+  unfinished: ReadonlyMap<string, SaveInfo> = new Map(), best: Readonly<Record<string, BestSeals>> = {}): HTMLElement {
   const items: HTMLElement[] = [];
-  const item = (label: string, sub: string, fn: () => void, primary = false, cls = ''): void => {
+  const item = (label: string, sub: string, fn: () => void, primary = false, cls = '', extra: HTMLElement | null = null): void => {
     const b = h(`button.menu-item${primary ? '.primary' : ''}${cls}` as 'button.menu-item', null,
       h('span.mi-mark'),
-      h('span.mi-text', null, label, sub ? h('span.mi-sub', null, sub) : null));
+      h('span.mi-text', null, label, sub ? h('span.mi-sub', null, sub) : null, extra));
     b.addEventListener('click', fn);
     items.push(h('li', null, b));
   };
@@ -83,7 +99,7 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
   for (const id of MENU_MISSIONS) {
     const u = unfinished.get(id);
     const sub = u ? `${missionSub(id)} · ${t('save.inProgress', { time: iso(ticksClock(u.tick)) })}` : missionSub(id);
-    item(missionTitle(id), sub, () => act.newGame(id), id === 'm1' && !save);
+    item(missionTitle(id), sub, () => act.newGame(id), id === 'm1' && !save, '', bestMark(best[id]));
   }
   item(missionTitle('sandbox'), missionSub('sandbox'), act.openValley, false, '.is-valley');
   item(t('menu.settings'), '', act.openSettings);

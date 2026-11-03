@@ -940,3 +940,20 @@ stall — the same building with the same cause is never hinted again in that mi
 new world); ×1/×2, a minor or fresh stall, or a finished mission never hint. The speed is never changed for the
 player (an auto-×1 was rejected: a hidden speed change confuses). Test `tests/speed-hint.test.ts`; shots
 `docs/shots/day1-speed-hint-*`. (decided)
+
+**D-68 — Valley chronicle in the save envelope; best seals and time per contract in a profile store (no sim
+change; owner decisions 1 + 13, 2026-11-03).** Replaces D-57's localStorage list. (1) The envelope gets an
+optional `chronicle: string[]` beside `state` (format stays 2: the field is optional, read leniently by
+`envelopeChronicle` — missing, damaged or unknown items give [] / are dropped, never a load error; the save gate
+still caps its size). Valley autosaves write `ChronicleLog.ids()`; a newly recorded entry triggers an autosave
+(momentary entries are not lost). The META list omits it. Migration: on entering a ledger the old
+`marchia.chronicle.<slot>` list is merged once and removed after the first save that carries it; contracts and
+older saves have no field. State and its hash untouched (golden hashes unchanged). (2) IndexedDB v3 adds a
+`profile` store (one record `{ id: 'profile', format: 1, best: { m1: { seals, ticks, at } … } }`), because a
+contract's save is deleted at its end letter. `showEnd` records a won contract (`stars(world)`, `mission.endTick`)
+in one read-write transaction; better = more seals, then less time; a lost contract is not a result.
+`sanitizeProfile` drops damaged entries, an absent store/record reads as empty. The mission menu shows under a won
+mission's subtitle three small wax seals (pressed = earned) and the best time; the row's accessible name says it in
+words (`menu.bestAria`). Tests `tests/save-profile.test.ts` (old v2 database, old envelope, damaged profile,
+localStorage migration); `save-robustness` opens its raw stores at the current version and fakes "newer" as v4.
+Shots `docs/shots/day1-menu-best-*`. (decided)

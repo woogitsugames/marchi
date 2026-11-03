@@ -252,6 +252,13 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   text-wrap: pretty;
 }
 .menu-item .mi-text { text-wrap: balance; min-width: 0; }
+/* best result of a contract (owner decision 13): three small wax seals, pressed = earned, and the best time */
+.menu-item .mi-best { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.menu-item .mi-seals { display: flex; gap: 1px; }
+.menu-item .mi-seal { display: block; width: 16px; height: 16px; color: var(--iron); opacity: .28; }
+.menu-item .mi-seal.is-on { color: var(--clay); opacity: 1; }
+.menu-item .mi-seal svg { display: block; }
+.menu-item .mi-time { font-family: var(--font-body); font-weight: 700; font-size: 12px; color: var(--ink-soft); }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
@@ -666,6 +673,7 @@ body.is-mini .menu-strip .subtitle { font-size: 13px; }
 body.is-mini .menu-strip .rule { margin: 10px 0 2px; }
 body.is-mini .menu-item { font-size: 21px; min-height: 48px; padding: 4px 0; }
 body.is-mini .menu-item .mi-sub { display: none; }
+body.is-mini .menu-item .mi-best { margin-top: 1px; }
 body.is-mini .menu-pin { top: calc(var(--safe-t) + 4px); }
 body.is-mini .scrim { padding: calc(var(--safe-t) + 26px) 10px 10px; align-items: flex-start; }
 

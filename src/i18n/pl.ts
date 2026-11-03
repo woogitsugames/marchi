@@ -600,6 +600,8 @@ export const pl = {
   'fix.granaryHint': 'Towar nie ma dokąd jechać. Połącz drogą spichlerz albo odbiorcę, który go przyjmie.',
   // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): see PENDING_KEYS
   'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',
+  // best seals and time per contract in the mission menu (day 1, owner decision 13): see PENDING_KEYS
+  'menu.bestAria': 'Najlepszy wynik: {n} z 3 pieczęci, czas {time}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -792,6 +794,7 @@ export const PENDING_KEYS = [
   'fix.granaryWhy',
   'fix.granaryHint',
   'hud.speedHint',
+  'menu.bestAria',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
