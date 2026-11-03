@@ -59,7 +59,7 @@ the platform `.gitignore` files; commit the rest of `android/` and `ios/`.
 - Tests: `tests/*.test.ts`, registered via `tests/harness.ts` (`test(name, fn)`), headless,
   fixed seed. The runner prints `SUMMARY passed=N failed=M` as the last line.
 - Decisions go to `docs/DECISIONS.md` as D-NN with reasoning. Assets go to `docs/ASSETS.md`.
-- Small, descriptive commits. Work on the feature branch, never push to `main`. PRs only when asked.
+- Small, descriptive commits. Work on feature branches; the integration base is `claude/eager-cori-08wt8e`. After every green merge into the base (typecheck, test, build, smoke, layout), fast-forward `main` to the base (owner decision 2026-11-03). PRs from other sessions target the base.
 
 ## Forbidden (from the brief)
 

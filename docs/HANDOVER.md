@@ -6,7 +6,7 @@
 ## Stan teraz
 - Repo `woogitsugames/marchi`, baza **`claude/eager-cori-08wt8e`** (nigdy `main`). Wszystko wypchnięte; drzewo czyste.
   Testy **412/412**, typecheck i build zielone, smoke I–XII + dolina bez błędów konsoli. Stan symulacji **v8**.
-- Ostatnie APK: **f20ffe6** (~18:10, codex, hindi, pieczęć, błoto, pełny magazyn). Następne nie wcześniej niż ~21:00.
+- Ostatnie APK: **e29f7f0** (~21:30, diagnoza day5 + samouczek/dolina day6). Kolejne: jedno rano.
   strzałka samouczka, Flex/Book posture, ostrzeżenia transz, beczki na wozie).
 - **Zrobione (sesja `session_01Hk8EbiYMw1x9CXhyu3HM9n`):** WIP `1630083` z `claude/w-day3` dokończony i scalony —
   zwinięte „Co to znaczy?” (Księga przestojów, `src/ui/codex.ts`) w karcie budynku i wozu, dla przyczyny u korzenia
@@ -502,3 +502,26 @@ D-97…D-99 i zrobić zrzuty):
   `docs/shots/`. **Do decyzji właściciela: A czy B** (rekomendacja: A).
 **Zostało:** zatwierdzić zadania 2–4 (każde osobno, z D-97/D-98/D-99), zrzuty `day7-codex-*`/`day7-flip-*` do
 `docs/shots/`, BACKLOG (zamknąć P2 „notatka w poziomie” i P3 „kodeks Kup wóz”, przy P3 Flip dopisać warianty).
+
+## Plan nocy 2026-11-03/04 (właściciel ~22:15)
+- Przerwa do resetu limitu **01:50 Brussels**; budzik `send_later` 01:51 (`trig_01XbYzYTQ84hRVHD1m32jheV`); godzinny cykl
+  `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony do resetu** — włączyć po wznowieniu, prompt: do 2 agentów Opus bez limitu godzin.
+- Deweloper w nocy: **„wszystko po kolei”** — najpierw poprawki z `docs/research/2026-11-03-first-10-minutes-b.md`
+  („Naprawa” zawsze widoczna w arkuszu, zwłaszcza w poziomie; krok 5 w poziomie — zamknąć kartę wozu, notatka omija
+  `.rail-tools`; koniec samouczka wyłącza „Drogę”; przycisk naprawy nie znika przy odświeżaniu arkusza; sprawdzić,
+  czy „oko → Naprawa” kończy misję I), potem reszta day7 (ranga 5 w dolinie, kodeks dla spokojnych przypadków, warianty
+  Flip), potem backlog po kolei: czytelność → grafika/animacje (tartak, rolnik, rybak) → misja-lekcja kupna wozu → wydajność.
+- Researcher w nocy: **balans misji I–XII** (boty na różnych strategiach, osiągalność 1/2/3 pieczęci po dzisiejszych zmianach),
+  potem dokończyć pomiar „pierwszych 10 minut” (`node tools/first10-minutes.mjs 915x412`, potem `412x915`, osobno).
+- W nocy bez APK (jedno rano), decyzje do „Decyzje na rano”.
+- **Decyzje właściciela ~22:30:** Flip — **wariant A** (linia pod zegarem pieczęci, „gotowe za 3:05”) jako domyślny
+  w trybie zegarka, wariant B usunąć; ranga 5 doliny **14 500** — zostaje.
+- **Do zrobienia po wznowieniu (01:51):** `claude/w-day7` ma commit `87fdf14 WIP` (zadania 2–4 gotowe, testy 431/0) —
+  rozdzielić na commity, dopisać D-97..D-99 w DECISIONS, zrzuty `day7-codex-*`/`day7-flip-*` do docs/shots,
+  BACKLOG; włączyć wariant A domyślnie; scalić do bazy.
+- **~22:40: dokończenie day7 + poprawki z first-10-b oddane innej sesji Claude Code** (prompt od właściciela; gałąź
+  `claude/x-day7-finish` z `claude/w-day7`, PR do bazy). Po wznowieniu NIE robić tego samego: deweloper nocny bierze
+  grafikę/animacje (tartak, rolnik, rybak) i misję-lekcję kupna wozu; scalić PR tej sesji, gdy przyjdzie.
+- **~22:50 właściciel: także `main`.** Na zdalnym nie było `main` — utworzona z bazy. Po każdym zielonym scaleniu do bazy:
+  `git push origin claude/eager-cori-08wt8e:main` (fast-forward). PR innych sesji kierować do bazy, scalać lokalnie lub przez
+  GitHub, potem przesunąć `main`. Praca autonomiczna, ciągła, PR-y wolno otwierać.
