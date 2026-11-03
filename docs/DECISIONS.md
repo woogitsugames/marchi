@@ -795,3 +795,16 @@ unchanged (m1 412×915 dpr 2: high near/mid/far/copse 57/48/44/56 calls, 470k/30
 57/38/40/51, 258k/244k/239k/238k — identical before/after). Not done: the second near variant is not baked
 (the card always shows variant 0; +1 atlas row set per variant = 2× memory). Shots `docs/shots/night2-trees-*`.
 (decided)
+
+**D-59 — Water edge and bridge detail (render only).** Water shader: on high/ultra (`uDetail`) the waterline laps
+up to 5 cm up the bank and back (slow, out of phase along the river) and a second thin foam line drifts in and
+fades; on every tier a wet strip (0.3 m above the waterline, darker and catching a little sky) is drawn by the
+water mesh itself (its quads already reached 0.35 m up the bank, so no new geometry). Bridges: bank-end pieces
+where a run meets land (`bridgeEndParts`: wood — plank ramp down to the road, sill and crib logs, splayed wing
+logs, heavier end posts; stone — splayed wing walls continuing the parapets with coping and a terminal block, a
+cobbled ramp, a footing), wheel-guard logs on the wooden deck, a string course and dressed spandrel blocks on
+the stone spans (the fieldstone texture alone read as smooth grey at game distance). Piles and piers get a
+foam collar and a short broken wake downstream (+x, as the water shader's current) — one transparent mesh,
+one draw call for all bridges, discarding empty texels. Cost: +1 draw call on every tier when a bridge exists;
+triangles per 4 m segment wood 536→560, stone ≈1100→1312, +348 (wood) / +676 (stone) per bank end; m1 bridge
+view high 54→55 calls, 351.6k→352.4k tris. Shots `docs/shots/night2-bridge-*`. (decided)
