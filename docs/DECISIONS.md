@@ -1249,3 +1249,14 @@ it slid from its last spot across the waybill, which is what the step 1/4 shots 
 no-free-band fallback picks the full-width slot that hides least (target and waybill weighted) instead of
 "top of the waybill". Steps 2-3 scroll the chain link into a short card's view once (landscape 915x412:
 the link lay below the fold, so no ring was drawn). `docs/shots/day6-tut-step5-412x915.jpg`. (decided)
+
+**D-92 — The worst-stall card waits until the tutorial's re-check note (day 6, research P3; UI only).** During
+notes 4-5 mission I's mill already showed "Najgorszy zastój: Młyn wodny: żaden wóz nie dojedzie" with the alarm
+seal "3" — a third pointer beside the ring and the note, about the very problem the notes are teaching the
+player to fix. Options: hide it until the tutorial reaches the stalls, or have a step point at it. Chosen:
+while a tutorial note 1-5 is up, the HUD gets an empty stall list (card, alarm, cure mark on a tool, speed
+hint, worst-stall pin), so nothing competes with the note; from note 6 ("check the castle again") or when the
+tutorial ends, is skipped or times out, the card appears — and because `firstCritSeen` was not spent, it
+appears with the usual one-time first-stall flash, which is the natural hand-over from the notes to the
+stall card. Rejected: a seventh note pointing at the eye (m1.md caps the tutorial at six notes and 110 s; the
+flash already says "here"). The sim and the ranking are untouched; only what the HUD is handed changes. (decided)
