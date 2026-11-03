@@ -14,7 +14,9 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { cureFor } from './stalls';
+import { cureFor, gapTarget } from './stalls';
+
+export { gapTarget };
 import { buildTypes } from './buildTool';
 import { errorText } from './roadTool';
 import { codexHtml, toggleCodex } from './codex';
@@ -40,19 +42,6 @@ export interface PanelNav {
 }
 
 // ---------------------------------------------------------------- gap finder
-
-/** Building whose missing link to the stable is the root of this chain, or -1. */
-export function gapTarget(world: World, chain: ReasonLink[]): number {
-  const root = chain[chain.length - 1];
-  if (!root) return -1;
-  if (root.kind === 'building') {
-    const s = root.status;
-    if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
-    return -1;
-  }
-  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0 && buildingById(world, root.status.target)) return root.status.target;
-  return -1;
-}
 
 let gapCache: { key: string; s: RoadSuggestion | null } | null = null;
 /** suggestLinkToStable runs a whole-grid Dijkstra: compute once per road network version. */

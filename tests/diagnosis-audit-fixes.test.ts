@@ -2,11 +2,11 @@
 // player-view reads (src/sim/diagnose.ts helpers that step() never calls, src/ui/stalls.ts): the sim's own
 // chains, statuses and hashes stay as they were (tests/determinism-reads.test.ts covers the reads).
 import {
-  TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, granaryRelief, heldWagon, inputGoods, isHeld, outputSurplus, step,
-  suggestLinkToStable, type World,
+  TICK_HZ, applyCommand, buildingById, busyOutOfReach, createWorld, explainBuilding, findPath, granaryRelief, heldWagon, inputGoods, isHeld,
+  outputGoods, outputSurplus, step, suggestLinkToStable, type World,
 } from '../src/sim/index';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
-import { calmWhy, cureFor, rankStalls } from '../src/ui/stalls';
+import { calmWhy, cureFor, gapTarget, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 const minute = 60 * TICK_HZ;
@@ -165,4 +165,31 @@ test('audit fix 3: a full granary chains to the granary without a road (cure: ro
     }
   }
   assert(unlinked > 10 && room > 10, `samples: unlinked ${unlinked}, room ${room}, none ${none}`);
+});
+
+test('audit fix 5: "every wagon busy" with no source in reach of the stable is a missing road (m1 before the bridge)', () => {
+  let out = 0, busy = 0;
+  for (const id of ['m1', 'm4']) {
+    run(id, 10 * minute, (w) => {
+      for (const b of w.state.buildings) {
+        const s = b.status;
+        if (s.k !== 'NO_WAGON' || s.cause !== 'ALL_BUSY') continue;
+        const src = busyOutOfReach(w, b.id);
+        const stable = w.state.buildings.find((q) => q.type === 'stable')!;
+        const sources = w.state.buildings.filter((q) => q.id !== b.id && (q.type === 'warehouse' || outputGoods(q.type).includes(s.good)) && q.stock[s.good] - q.reservedOut[s.good] > 0);
+        const inReach = sources.some((q) => !!findPath(w, stable.gate, q.gate, false));
+        if (inReach || !sources.length) { eq(src, -1, `${id}: a source in reach — buying a wagon is honest`); busy++; continue; }
+        out++;
+        assert(sources.some((q) => q.id === src), 'names an unreachable source');
+        const chain = explainBuilding(w, b.id, 5, true);
+        if (chain.length !== 1) continue; // a held fleet goes first (fix 2)
+        eq(cureFor(w, b.id), 'road', `${id}: the cure is a road`);
+        eq(gapTarget(w, chain), src, 'the gap finder links the source');
+        const fix = suggestLinkToStable(w, src);
+        assert(fix && fix.newCells.length > 0, 'a road from the stable to the source exists');
+      }
+    }, 10);
+  }
+  assert(out > 3, `m1 out-of-reach samples (${out})`);
+  assert(busy > 3, `ordinary ALL_BUSY samples (${busy})`);
 });

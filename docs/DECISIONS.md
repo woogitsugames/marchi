@@ -1196,3 +1196,14 @@ miejsce", the sheet "Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie t
 finder) offers the cheapest link from the stable; otherwise `cureFor` = granary (a granary where the mission
 lets you build one, else the existing hint). ROOM wins over UNLINKED: with room nearby the second link is not
 needed. Keys `fix.storeRoom`, `cause.storeRoom` (PENDING_KEYS). (decided)
+
+**D-88 — "Every wagon busy" with no source in reach of the stable is a missing road (diagnosis audit
+2026-11-03, fix 5; UI only).** In mission I before the bridge the sim says NO_WAGON.ALL_BUSY as soon as both
+wagons are out: while no wagon is free the dispatcher only asks whether the source reaches the customer
+(component labels), not whether a wagon from the stable can reach the source. The card offered "Kup wóz",
+which never helped (the farm is across the river). A read-only `busyOutOfReach()` (src/sim/diagnose.ts) finds
+that case — sources of the good exist, none is in reach of any stable — and the UI treats it like
+NONE_CAN_REACH: `cureFor` = road and the gap finder (`gapTarget`, moved from panels.ts to stalls.ts so tests can
+reach it, re-exported) links the stable to that source (bridge included). Rejected: counting reachability from
+the stable inside the dispatcher (cleaner, but it changes statuses in the state and so every golden hash; not
+before the logistics playtest — BACKLOG). (decided)

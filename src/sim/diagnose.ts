@@ -215,6 +215,27 @@ export function granaryRelief(world: World, id: number): { k: 'ROOM' | 'UNLINKED
   return unlinked >= 0 ? { k: 'UNLINKED', granary: unlinked } : null;
 }
 
+/**
+ * Read-only (audit 2026-11-03, fix 5): NO_WAGON.ALL_BUSY whose input lies only where no wagon from a
+ * stable can drive (mission I before the bridge: the dispatcher checks source -> customer while every wagon
+ * is out, so the sim says "all busy"). Returns the unreachable source (lowest id) — the road to it is the
+ * cure, not a wagon — or -1 (a source is in reach, or there is none).
+ */
+export function busyOutOfReach(world: World, id: number): number {
+  const b = buildingById(world, id);
+  if (!b || b.status.k !== 'NO_WAGON' || b.status.cause !== 'ALL_BUSY') return -1;
+  const g = b.status.good, st = world.state;
+  const stables = st.buildings.filter((q) => q.type === 'stable');
+  if (!stables.length) return -1;
+  let first = -1;
+  for (const s of st.buildings) {
+    if (s.id === id || !(s.type === 'warehouse' || outputGoods(s.type).includes(g)) || s.stock[g] - s.reservedOut[g] <= 0) continue;
+    if (stables.some((q) => reachable(world, q.gate, s.gate))) return -1;
+    if (first < 0) first = s.id;
+  }
+  return first;
+}
+
 function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: number } | null {
   switch (s.k) {
     case 'NO_INPUT': return s.blockedBy >= 0 ? { kind: 'building', id: s.blockedBy } : null;

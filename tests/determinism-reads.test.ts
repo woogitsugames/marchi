@@ -1,8 +1,8 @@
 // Regression (review F-02): read-only helpers called between ticks (the UI asks for wagon ETAs every
 // frame) must not change what the next step() computes. wagonEta -> findPath -> dijkstra used to fill
 // the per-tick bridge-penalty cache (world.queue) with pre-step data, which the step then reused.
-import { createWorld, explainBuilding, granaryRelief, heldWagon, outputSurplus, stateHash, step, wagonEta, type World } from '../src/sim/index';
-import { cureFor, rankStalls } from '../src/ui/stalls';
+import { busyOutOfReach, createWorld, explainBuilding, granaryRelief, heldWagon, outputSurplus, stateHash, step, wagonEta, type World } from '../src/sim/index';
+import { cureFor, gapTarget, rankStalls } from '../src/ui/stalls';
 import { benchWorld } from '../tools/bench';
 import { test } from './harness';
 
@@ -28,9 +28,11 @@ function playerReads(w: World): void {
   for (const b of w.state.buildings) {
     explainBuilding(w, b.id, 5, true);
     cureFor(w, b.id);
+    gapTarget(w, explainBuilding(w, b.id, 5, true));
     outputSurplus(w, b.id);
     heldWagon(w, b.gate);
     granaryRelief(w, b.id);
+    busyOutOfReach(w, b.id);
   }
 }
 

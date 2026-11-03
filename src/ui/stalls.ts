@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, type Building, type World } from '../sim/index';
+import { busyOutOfReach, buildingById, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, type Building, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -69,6 +69,24 @@ export function rankStalls(world: World): StallEntry[] {
   return out;
 }
 
+/**
+ * Building whose missing link to the stable is the root of this chain, or -1 (the sheet's gap finder offers
+ * the cheapest road from the stable to it). NO_WAGON.ALL_BUSY counts when no stable reaches any source of
+ * the good (audit 2026-11-03, fix 5): the target is that source, as for NONE_CAN_REACH it is the consumer.
+ */
+export function gapTarget(world: World, chain: ReasonLink[]): number {
+  const root = chain[chain.length - 1];
+  if (!root) return -1;
+  if (root.kind === 'building') {
+    const s = root.status;
+    if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
+    if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') return busyOutOfReach(world, root.id);
+    return -1;
+  }
+  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0 && buildingById(world, root.status.target)) return root.status.target;
+  return -1;
+}
+
 let cureCache: { key: string; cure: Cure } | null = null;
 /**
  * What the player can buy or build against the root of a building's stall chain: a wagon when the
@@ -89,7 +107,8 @@ export function cureFor(world: World, id: number): Cure {
     if (l.kind === 'building') {
       const s = l.status;
       if (s.k === 'NO_ROAD' || (s.k === 'NO_INPUT' && s.cause === 'UNREACHABLE') || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) cure = 'road';
-      else if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') cure = 'wagon';
+      // every wagon busy, but none could reach a source of the good anyway: the road to it (fix 5)
+      else if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') cure = busyOutOfReach(world, l.id) >= 0 ? 'road' : 'wagon';
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE') cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1) cure = 'granary';
