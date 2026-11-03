@@ -30,6 +30,7 @@ import {
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
 import { SpeedHint } from './speedHint';
+import { pressSeal } from './sealPress';
 import type { BestResult } from '../platform/profile';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -139,6 +140,8 @@ export class App implements PanelNav {
   private firstCritSeen = false;
   /** ×4 while a critical stall grows: one toast per stall (owner decision 7). */
   private readonly speedHint = new SpeedHint();
+  /** The seal-press cue before the end letter, while it runs (cancelled when the world changes). */
+  private cancelSeal: (() => void) | null = null;
   private save: SaveInfo | null = null;
   /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
   private unfinished = new Map<string, SaveInfo>();
@@ -202,6 +205,8 @@ export class App implements PanelNav {
       undoInSheet: (id) => this.sheets.top?.content.key === `building:${id}`,
     });
     this.layers.markers.append(this.build.floating);
+    // contract goods handed over at the castle: a quiet delivery sound (owner decision 6)
+    this.markers.onDelivery = () => { if (audio.ready) void audio.play('contract.delivery'); };
 
     const qp = this.params.get('quality');
     this.qualityParam = isQualityPref(qp) ? qp : null;
@@ -387,6 +392,8 @@ export class App implements PanelNav {
     this.endShown = false;
     this.firstCritSeen = false;
     this.speedHint.reset();
+    this.cancelSeal?.();
+    this.cancelSeal = null;
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
@@ -746,7 +753,14 @@ export class App implements PanelNav {
       again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
     });
-    this.layers.overlay.append(letter);
+    // a won contract: the castle's seal is pressed first (~1.2 s, a tap skips it), then the letter
+    if (m.result === 'won' && m.contract) {
+      const w = this.world;
+      this.cancelSeal = pressSeal(this.layers.overlay, () => {
+        this.cancelSeal = null;
+        if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+      });
+    } else this.layers.overlay.append(letter);
   }
 
   // ------------------------------------------------------------------ commands

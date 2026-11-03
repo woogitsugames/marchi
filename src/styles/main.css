@@ -110,7 +110,7 @@ svg { display: block; fill: currentColor; flex: none; }
 /* each layer paints as one: a z-index inside the HUD (ribbon, rail) never lifts it over the sheets or a letter */
 #markers, #hud, #menu, #sheets, #tutorial, #overlay { isolation: isolate; }
 #ui > * { pointer-events: none; }
-#ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter, #ui .waybill { pointer-events: auto; }
+#ui .hit, #ui button, #ui .sheet, #ui .menu-strip, #ui .scrim, #ui .letter, #ui .waybill, #ui .seal-press { pointer-events: auto; }
 .wb-line { cursor: pointer; }
 
 /* Clear screen (three-finger tap): only the scene stays; a small button brings the UI back. */
@@ -545,6 +545,17 @@ body.is-side .sheet-grip::before { display: none; }
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .letter-wrap { position: relative; filter: var(--shadow); width: min(380px, 100%); transform: rotate(-1.2deg); animation: letter-in var(--t-slow) var(--ease); }
+/* the castle's seal pressed before a won contract's letter (owner decision 6): 200 ms down, no spring */
+.seal-press {
+  position: absolute; inset: 0; display: grid; place-items: center; pointer-events: auto;
+  background: rgb(43 38 32 / .42); animation: fade-in var(--t-fast) var(--ease);
+}
+.seal-press .seal-press-wax, .seal-press .seal-press-ring { grid-area: 1 / 1; width: 96px; height: 96px; display: block; }
+.seal-press-wax { filter: drop-shadow(0 3px 2px rgb(30 20 14 / .55)); animation: seal-down 200ms cubic-bezier(.3, 0, .2, 1) both; }
+/* the wax squeezed out under the matrix: a dark rim that spreads once as the seal lands */
+.seal-press-ring { border-radius: 50%; box-shadow: 0 0 0 0 rgb(110 30 22 / .5); animation: seal-ring 220ms linear 180ms both; }
+@keyframes seal-down { from { transform: scale(1.45) rotate(-8deg); opacity: 0; } 60% { opacity: 1; } to { transform: scale(1) rotate(-3deg); opacity: 1; } }
+@keyframes seal-ring { from { box-shadow: 0 0 0 0 rgb(110 30 22 / .5); } to { box-shadow: 0 0 0 10px rgb(110 30 22 / 0); } }
 @keyframes letter-in { from { transform: translateY(24px) rotate(-1.2deg); opacity: 0; } to { transform: rotate(-1.2deg); opacity: 1; } }
 .letter {
   position: relative;

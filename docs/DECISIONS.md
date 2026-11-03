@@ -957,3 +957,14 @@ mission's subtitle three small wax seals (pressed = earned) and the best time; t
 words (`menu.bestAria`). Tests `tests/save-profile.test.ts` (old v2 database, old envelope, damaged profile,
 localStorage migration); `save-robustness` opens its raw stores at the current version and fakes "newer" as v4.
 Shots `docs/shots/day1-menu-best-*`. (decided)
+
+**D-69 — End of a won contract: the castle's seal is pressed before the letter; a quiet delivery sound (UI +
+audio only; owner decision 6, 2026-11-03; the rest of D-60's backlog entry).** `pressSeal` (src/ui/sealPress.ts)
+dims the map and presses the kit seal (`seal-full`, 96 px — the sprite is 84 px at 3×, larger reads soft): 200 ms
+down from 1.45× with a slight turn (ease-out, no overshoot, no spring), a dark wax rim spreading once (220 ms), held
+to 1.2 s, then the end letter. A tap or any key skips straight to the letter; reduced motion shortens it to 0.5 s;
+a world change cancels it. The wax-seal sound (`contract.won`) already plays on the win. Lost contracts go straight
+to the letter (no seal to press). Delivery sound: each contract good handed over at the castle plays
+`contract.delivery` — the existing CC0 `sfx/unload-sack`, non-positional on the UI bus at 0.26 with a 1.2 s cooldown,
+so it is heard wherever the camera is (the positional unload stays). No new file (`process_audio.py --check` PASS).
+Music "hurry" mood: still after the playtest. Shot `docs/shots/day1-seal-press-412x915.jpg`. (decided)
