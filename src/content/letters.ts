@@ -98,6 +98,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Den första snön kom, men en del av lasten var kvar på vägen. Kontrollera överfarten och vagnarnas hämtning.\n— Wszebor",
     },
+    tr: {
+      opening: "Yol sorumlusuna: İlk kar düşmeden kaleye 30 kalas ve 20 somun ekmek ulaştır. Oduncu ile kereste atölyesi nehrin karşısında, fakat iki kıyı bağlı değil. Bir geçit yap; un ve ekmek taşıyan arabaların yolunu açık tut.\n— Wszebor, Łozinny Bród kale kâhyası",
+      won: {
+        1: "Ekmek ile kalas kaleye ulaştı. Bir mühür; Bir dahaki sefere arabaları daha erken gönder.\n— Wszebor",
+        2: "Ekmek ile kalas kaleye ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Ekmek ile kalas kaleye ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "İlk kar geldi, ama yükün bir kısmı yolda kaldı. Geçidi ve arabaların yük alıp almadığını denetle.\n— Wszebor",
+    },
   },
   m2: {
     pl: {
@@ -180,6 +189,15 @@ export const CONTRACT_LETTERS = {
         3: "Varorna tog sig över bron. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Tidsfristen gick ut medan vagnarna stod i brokön. Ge dem en andra väg.\n— Wszebor",
+    },
+    tr: {
+      opening: "Kale kâtibi Mirogniew 36 kalas ve 30 somun ekmek istiyor. İki kıyıdan gelen arabalar tek ahşap köprüde sıkışıyor. Süre dolmadan ikinci bir köprü veya taş geçit yapıp kuyruğu azalt.\n— Wszebor",
+      won: {
+        1: "Sipariş köprüden geçirildi. Bir mühür; Köprü kuyruğunu azalt.\n— Wszebor",
+        2: "Sipariş köprüden geçirildi. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Sipariş köprüden geçirildi. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Süre bitti, arabalar köprüde bekliyordu. İkinci bir geçit aç.\n— Wszebor",
     },
   },
   m3: {
@@ -264,6 +282,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Regnet fortsatte och leveranserna uteblev. Stenlägg där vagnarna kör långsamt.\n— Wszebor",
     },
+    tr: {
+      opening: "Yağmur toprak yolu bozdu. Kaleye 24 kalas ve 16 somun ekmek gerek, fakat tekerlekler çamura batıyor. Değirmenci Borzym tahıl bekliyor. Arabaların en çok geçtiği bölümleri taşla döşe.\n— Wszebor",
+      won: {
+        1: "Erzak yağmura rağmen kaleye vardı. Bir mühür; Çamurlu yerlere taş döşe.\n— Wszebor",
+        2: "Erzak yağmura rağmen kaleye vardı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Erzak yağmura rağmen kaleye vardı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Yağmur dinmedi ve erzak eksik kaldı. Arabaların yavaşladığı yerleri taşla döşe.\n— Wszebor",
+    },
   },
   m4: {
     pl: {
@@ -346,6 +373,15 @@ export const CONTRACT_LETTERS = {
         3: "Borgen fick sina varor trots isen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Bron stängdes som förutspått. Lagra varor på borgens sida eller bygg en stenbro i förväg.\n— Wszebor",
+    },
+    tr: {
+      opening: "Nehirdeki buz, ilan edilen saatte ahşap köprüyü kapatacak. Önceden erzakı kale kıyısındaki ambara taşı veya taş köprü kur. Karşı kıyıda kalan mal kimseyi doyurmaz.\n— Wszebor",
+      won: {
+        1: "Buz engeline rağmen kale erzak aldı. Bir mühür; Erzakı buz gelmeden kale kıyısında depola.\n— Wszebor",
+        2: "Buz engeline rağmen kale erzak aldı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Buz engeline rağmen kale erzak aldı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Köprünün kapanacağı belliydi. Kale kıyısına önceden erzak taşı veya taş köprü yap.\n— Wszebor",
     },
   },
   m5: {
@@ -430,6 +466,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Minst en delleverans kom för sent. Planera efter varje tidsfrist, inte bara totalsumman.\n— Wszebor",
     },
+    tr: {
+      opening: "Kale panayırı farklı saatlerde üç teslimat istiyor. Kâtip Mirogniew her birini ayrı kaydedecek: ekmek ve kalaslar son arabayla değil, kendi zamanında gelmeli. Stok yap ve seferleri düzenle.\n— Wszebor",
+      won: {
+        1: "Üç teslimat da zamanında ulaştı. Bir mühür; Stoğu üç ayrı teslimata ayır.\n— Wszebor",
+        2: "Üç teslimat da zamanında ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Üç teslimat da zamanında ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "En az bir sevkiyat gecikti. Yalnız toplamı değil, her teslimatın saatini gözet.\n— Wszebor",
+    },
   },
   m6: {
     pl: {
@@ -512,6 +557,15 @@ export const CONTRACT_LETTERS = {
         3: "Varorna kom fram trots det fulla magasinet. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Varorna hopades och tiden tog slut. Se över det fulla magasinet och vägen från kvarn till bageri.\n— Wszebor",
+    },
+    tr: {
+      opening: "Ambar dar, tahıl değirmenci Borzym'in alabileceğinden hızlı geliyor. Depo dolarsa işler durur ve kale siparişi aksar. Erzağa yer aç ya da arabaları başka yoldan gönder.\n— Wszebor",
+      won: {
+        1: "Dolu ambara rağmen sipariş tamamlandı. Bir mühür; Ambarı ve fırına giden yolu boş tut.\n— Wszebor",
+        2: "Dolu ambara rağmen sipariş tamamlandı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Dolu ambara rağmen sipariş tamamlandı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Mallar birikti, süre doldu. Dolu ambarı ve değirmenden fırına giden yolu kontrol et.\n— Wszebor",
     },
   },
   m7: {
@@ -596,6 +650,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Fastan tog slut utan tillräckligt med fisk. Se till att stugan står vid vatten och att vagnarna korsar bron.\n— Wszebor",
     },
+    tr: {
+      opening: "Oruç günleri geldi. Kale mutfağı 54 balık istiyor. Kuzey kıyıda bir balıkçı kulübesi var, fakat avı yetersiz kalabilir. Suyun yanına ikinci kulübeyi yap; karada balık tutulmaz. Balığı ahşap köprüden güney kıyıya taşı.\n— Wszebor",
+      won: {
+        1: "Balık kale mutfağına ulaştı. Bir mühür; Su kenarına ikinci balıkçı kulübesi kur.\n— Wszebor",
+        2: "Balık kale mutfağına ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Balık kale mutfağına ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Oruç bitince balık eksik kaldı. Kulübeyi suya kur ve köprüdeki arabaları hızlandır.\n— Wszebor",
+    },
   },
   m8: {
     pl: {
@@ -678,6 +741,15 @@ export const CONTRACT_LETTERS = {
         3: "Bröd och plankor tog sig fram genom stormen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Stormen satte fast vagnarna i leran. Kör först stenen till magasinet och stenlägg södra vägen.\n— Wszebor",
+    },
+    tr: {
+      opening: "Fırtına yaklaşıyor. Çamur yolları yavaşlatmadan kaleye 24 kalas ve 20 somun ekmek ulaştır. Taş ocağındaki taş yolu döşemez; önce arabalarla ambara taşı, araba başına dört birim. Sonra güney yolunu taşla kapla.\n— Wszebor",
+      won: {
+        1: "Ekmek ve kalas fırtınayı aştı. Bir mühür; Yol döşemeden önce taşı ambara getir.\n— Wszebor",
+        2: "Ekmek ve kalas fırtınayı aştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Ekmek ve kalas fırtınayı aştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Fırtına arabaları çamurda tuttu. Önce taşı ambara getir, sonra güney yolunu döşe.\n— Wszebor",
     },
   },
   m9: {
@@ -762,6 +834,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Bröllopet kom före varorna. Ge sågverket och kolmilan var sin pålitlig träkälla.\n— Wszebor",
     },
+    tr: {
+      opening: "Düğün yaklaşıyor. 36 kalas, 8 odun kömürü ve 26 bira gerekli. Tahıl malt evine, malt bira imalathanesine gitmeli. Kereste atölyesi ile kömürcü tek oduncuyu paylaşıyor; biri odunu alınca diğeri duruyor. Odun kaynağını ve arabaları artır.\n— Wszebor",
+      won: {
+        1: "Düğüne kalas, kömür ve bira yetişti. Bir mühür; İki atölyeye de yeterli odun sağla.\n— Wszebor",
+        2: "Düğüne kalas, kömür ve bira yetişti. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Düğüne kalas, kömür ve bira yetişti. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Düğün, mallar gelmeden başladı. İki atölyeye yetecek ikinci odun kaynağını kur.\n— Wszebor",
+    },
   },
   m10: {
     pl: {
@@ -844,6 +925,15 @@ export const CONTRACT_LETTERS = {
         3: "Verkstäderna fick plankor och träkol. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Kolmilan förbrukade sågverkets trä. Bygg en skogshuggare till; fler vagnar ger inte mer trä.\n— Wszebor",
+    },
+    tr: {
+      opening: "Demirci kömür, marangozlar kalas bekliyor: 48 kalas ve 8 odun kömürü gerekli. Kereste atölyesi ile kömürcü aynı tek oduncuya bağlı; ikisine yetmiyor. İkinci oduncuyu kur; daha çok araba ağaç kesmez.\n— Wszebor",
+      won: {
+        1: "Atölyelere kalas ve kömür ulaştı. Bir mühür; Araba yerine ikinci bir oduncu kur.\n— Wszebor",
+        2: "Atölyelere kalas ve kömür ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Atölyelere kalas ve kömür ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Kömürcü, kereste atölyesinin odununu tüketti. İkinci oduncuyu kur; arabalar odun üretmez.\n— Wszebor",
     },
   },
   m11: {
@@ -928,6 +1018,15 @@ export const CONTRACT_LETTERS = {
       },
       lost: "Vintern kom före sista tunnan. Köp fler vagnar om säden väntar och alla vagnar kör.\n— Wszebor",
     },
+    tr: {
+      opening: "Kış için kaleye 22 birim bira gerek. Tahıl batıda yetişiyor, malt evi doğuda uzakta. Üç araba çiftlik, malt evi, bira imalathanesi ve kaleye yetişmeli. Tahıl beklerken bütün arabalar meşgulse ahırdan yeni araba satın al.\n— Wszebor",
+      won: {
+        1: "Bira kaleye ulaştı. Bir mühür; Uzun yol için daha fazla araba al.\n— Wszebor",
+        2: "Bira kaleye ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Bira kaleye ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Son fıçı gelmeden kış bastırdı. Tahıl bekleyip arabalar doluysa yenilerini satın al.\n— Wszebor",
+    },
   },
   m12: {
     pl: {
@@ -1010,6 +1109,15 @@ export const CONTRACT_LETTERS = {
         3: "Alla tre leveranser fullbordades. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
       lost: "Sista tidsfristen passerade, och det fulla magasinet stoppade bryggeriet. Anslut det stora magasinet tidigare.\n— Wszebor",
+    },
+    tr: {
+      opening: "Büyük üretim için üç teslimatta 40 somun ekmek ve 48 bira lazım: 6:00'ya kadar 32 ekmek; 9:00'a kadar 8 ekmek ve 12 bira; 12:00'ye kadar 36 bira. Kale yalnız o anki teslimatı alır. Küçük ambar tahılla dolu; bira saklamak için yoldan iki kare uzaktaki büyük ambarı bağla.\n— Wszebor",
+      won: {
+        1: "Üç teslimat da tamamlandı. Bir mühür; İmalathane dolmadan büyük ambarı yola bağla.\n— Wszebor",
+        2: "Üç teslimat da tamamlandı. Düzenli seferler için iki mühür.\n— Wszebor",
+        3: "Üç teslimat da tamamlandı. İyi hazırlık için üç mühür.\n— Wszebor",
+      },
+      lost: "Son süre doldu; dolu ambar bira üretimini durdurdu. Büyük ambarı daha erken bağla.\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<'pl' | 'en', ContractLetterSet> & Partial<Record<Lang, ContractLetterSet>>>;
