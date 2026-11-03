@@ -436,3 +436,40 @@ Nowe klucze (PENDING_KEYS): `fix.surplus`, `cause.surplus`, `fix.storeRoom`, `ca
 - **m8** — kamieniołom dalej „pełno — brak wozu” z woskiem (70 %) i „Kup wóz” nie działa (0/14): spichlerz naprawdę prosi o kamień, ale wóz idzie najpierw do piekarni/tartaku. Rekomendacja: odczyt „W spichlerzu jest 12 kamienia — wystarczy na bruk” (UI, bez hasha), zmiana dyspozytora dopiero po playteście.
 - **Dolina** — nadwyżka na rynek bez wosku (spadek 33 → 0 %). Rekomendacja: zostawić do playtestu.
 - **Kodeks** przy nadwyżce dalej radzi „Kup wóz” (zwinięty, linia spokojna wyżej). Rekomendacja: osobne zdanie w kodeksie przy następnej redakcji treści.
+
+## Stan dnia 6 — 2026-11-03 (gałąź `claude/w-day6`, agent dzienny 6)
+Zadania: A — poprawki z badania „pierwsze 10 minut” (`docs/research/2026-11-03-first-10-minutes.md`), B — decyzja właściciela A
+(niepełne ładunki tylko w dolinie), C — decyzja właściciela dla m8. Każdy krok: typecheck, `npm test` (koniec: **429/0**, nowe pliki
+`tutorial-crossing`, `valley-top-up`, `m8-stone-stored`), zrzuty 412×915 / 915×412 / `?lang=ar`, osobny commit. **Złote hasze misji bez
+zmian**; `npm run bot` (m1) identyczny przed i po (wygrana 8,85 min, 2 pieczęcie, 26 srebra).
+1. **Krok 5 samouczka (most) — D-91, 58dc9b7.** Odtworzone prawdziwym dotykiem i myszą w Playwright (`tools/repro-step5.mjs`, zimny
+   start). Werdykt: **stary tekst przy `current = 5` to artefakt skryptu** (krok zmienia się w obsłudze dotknięcia, notatka w następnej
+   klatce; pod SwiftShader klatka trwa ~1 s, skrypt dotknął „Droga” drugi raz i wyłączył narzędzie → samouczek słusznie wrócił do
+   kroku 4). **Nieudane przeciąganie to prawdziwy błąd:** duch był całą trasą tartak–zamek (62 pola, oba końce poza ekranem 412 px,
+   początek pod notatką), a po karcie wozu kamera bywała daleko od rzeki. Teraz duch = tylko brakujące pola + po jednym polu drogi na
+   końcach (17 pól), kamera raz pokazuje całą przeprawę, notatka jej nie zasłania; to samo przeciągnięcie buduje most i przechodzi do
+   kroku 6 (pion: 3 przebiegi; poziom: sonda `?play=m1&tut=1` — most i krok 6). Przy okazji: notatka nie „jedzie” już przez listę
+   przewozowy (bez przejścia `transform`), awaryjne miejsce notatki zasłania najmniej; w kroku 2–3 ogniwo łańcucha pod fałdą krótkiej
+   karty jest przewijane do widoku.
+2. **Karta „Najgorszy zastój” w notatkach 1–5 ukryta (D-92, 2692e51)** — pojawia się od notatki 6 albo po końcu/pominięciu samouczka,
+   z jednorazowym błyskiem pierwszego postoju.
+3. **„Następna misja” + menu (D-93, fab20b4)** — na liście wygranej (misje I–XI) główny przycisk z tytułem następnej misji; przy
+   niedokończonym zapisie tej misji — przez arkusz pytania z menu. „Jeszcze raz” / „Do menu” zostają. Menu: „zacznij tutaj” przy misji I
+   do pierwszej wygranej, „Ustawienia” w stopce ramki (412×915: y 839–887, bez przewijania), podtytuł misji I już nie powtarza tytułu.
+4. **Dolina: dowóz od 4 sztuk (D-94, 753d21b)** — `topUpHold()` tylko w `sandbox`; brak nowego pola stanu → **bez podbicia wersji
+   stanu (zostaje 8)**. Progi rang 3–4: 2500/6000 → **3000/7200** (+10 % lądowało na krawędzi okien: 40,5 / 71,4 min). Bot doliny
+   (decent, 150 min): srebro 17 188 → **19 706**, rangi 10,1/26,6/45,9/77,9/122,8 → **10,4/22,3/42,8/76,3/108,7** min, przepływ 208 → 225;
+   małe floty w 30 min ~8 % mniej (485 → 446, 474 → 438). Testy F1 i „audit fix 1” przestawione na scenariusz, w którym ich sytuacja
+   nadal zachodzi (słodownia bez własnych pól; 7 wozów zamiast 30). Karta warsztatu: „Ma drewna na pracę; dowóz zamówi, gdy zmieści się
+   4 — pełniejszy wóz, mniej kursów.” — status „Produkuje”, bez postoju.
+5. **m8 (D-95, 8093591)** — kamieniołom czekający tylko na rezerwę kamienia spichlerza, gdy spichlerz ma już kamień: postój spokojny,
+   „W spichlerzu jest 12 kamieni — wystarczy na bruk (12 pól). …”, bez „Kup wóz” (188/188 próbek w przebiegu bazowym). Dyspozytor bez zmian.
+   Nadwyżka w dolinie zostaje jak jest (decyzja właściciela).
+Zrzuty: `docs/shots/day6-*.jpg`. Narzędzia: `tools/repro-step5.mjs`, `tools/day6-shots.mjs`. Nowe klucze (PENDING_KEYS): `contract.next`,
+`menu.startHere`, `menu.m1Sub`, `why.topUp`, `cause.stoneStored`, `fix.stoneStored`. Następna decyzja: **D-96**.
+**Do decyzji właściciela:**
+- **Progi rang doliny +20 % zamiast ~+10 %** (powód wyżej). Jeśli ma być bliżej +10 %, 2750/6600 przechodzi testy, ale z zapasem 0,5 / 1,4 min.
+- **Samouczek ruszy kamerą raz** (krok 5), wbrew zasadzie m1.md „nie rusza kamery” — bez tego przeprawa bywała poza ekranem. Zaakceptować albo wskazać inną drogę (strzałka do krawędzi ekranu).
+- **m8: kamieniołom spokojny** (bez wosku), nie tylko bez „Kup wóz” — spójne z D-85; jeśli ma zostać alarmem, to jedna linia w `calmStall`.
+Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pasku narzędzi (BACKLOG); pozostała część pomiaru pierwszych
+10 minut (BACKLOG P2).
