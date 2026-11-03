@@ -217,7 +217,7 @@ export function fisher(b: PartBuilder): Partial<BuildingModel> {
   rod(b, 'wood', v3(cx - 2.55, 0, -0.7), v3(cx - 2.38, 2.6, -0.3), 0.03, 0.03, 4, { color: '#76624a' });
   box(b, 'wood', 0.14, 0.5, 0.03, trs(cx - 2.57, 0.3, -0.72, 0, 0.1, 0.05), { color: '#76624a' });
   b.add('wood', new CylinderGeometry(0.16, 0.24, 0.9, 8, 3, true), { color: '#6a5841', m: trs(jx - 0.2, 1.05, -3.0, Math.PI / 2, 0, 0), noise: 0.2, noiseFreq: 14, ao: 0 });
-  return { gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz) };
+  return { gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.3), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -369,15 +369,15 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   }
   shearLegs(b, -0.4, 0.4);
   sledge(b, 1.25, 1.7, 0.3);
-  // dressed blocks waiting for carts, by the gate
-  blockStack(b, -3.6, 2.5, 0.08, [[3, 0.48], [2, 0.44]]);
+  // dressed blocks waiting for carts by the gate: the yard stock (drawn from the quarry's stone, D-71); one old
+  // stack stays at the right
   blockStack(b, 3.4, 3.3, -0.1, [[2, 0.5]]);
   // tools: a pick and a mallet on a chopping log, a short fence along the drop at the left
   b.add('bark', new CylinderGeometry(0.26, 0.3, 0.5, 9), { color: '#584a3a', m: trs(-5.3, 0.25, 1.6) });
   rod(b, 'wood', v3(-5.3, 0.5, 1.6), v3(-4.7, 0.95, 1.9), 0.025, 0.022, 4, { color: '#7a6448', ao: 0 });
   box(b, 'metal', 0.06, 0.06, 0.55, trs(-4.72, 0.97, 1.9, 0, 1.1, 0.3), { color: '#4a4744', ao: 0, dirt: 0 });
   fenceRun(b, v3(-6.0, 0, 0.3), v3(-6.0, 0, 3.6), 1.0);
-  return { gate: v3(0.6, 0, 4) };
+  return { gate: v3(0.6, 0, 4), yard: { at: v3(-3.4, 0, 2.6), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -467,10 +467,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   // wood: a pile of logs along the left, split billets stacked at the back
   logPile(b, v3(-2.6, 0, 2.3), 0.05, 2.6, 3, 0.14);
   firewoodStack(b, -0.3, -3.65, 3.2, 0.9);
-  // finished charcoal: black sacks and a heap by the gate
-  sack(b, 0.4, 2.2, 0.3, P.charcoal);
-  sack(b, 0.85, 2.5, 1.8, P.charcoal);
-  sack(b, 0.5, 2.85, 0.6, P.charcoal, true);
+  // finished charcoal by the gate: a loose heap, and the sacks are the yard stock (the burner's charcoal, D-71)
   b.add('stone', new SphereGeometry(1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
     color: '#232120',
     m: trs(-0.75, 0, 2.6, 0, 0, 0, 0.6, 0.28, 0.5),
@@ -482,7 +479,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
     ao: 0,
     dirt: 0,
   });
-  return { gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz) };
+  return { gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(1.2, 0, 2.6), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -550,10 +547,8 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'wood', 0.32, 0.4, 0.03, trs(tx + 1.13, 0.22, tz + 0.63, -0.1, 0, -0.18), { color: '#8a7454', ao: 0 });
   const dx = (mx0 + mx1) / 2 + 0.7;
   sack(b, dx - 1.0, 0.85, 0.2);
-  sack(b, dx + 0.95, 0.75, 0.7, P.maltSack);
-  sack(b, dx + 1.35, 1.05, 2.1, P.maltSack);
-  sack(b, dx + 1.1, 1.5, 0.3, P.maltSack, true);
-  return { gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz) };
+  // the pale malt bags by the door are the yard stock (the malthouse's malt, D-71)
+  return { gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz), yard: { at: v3(dx + 1.3, 0, 1.3), yaw: Math.PI / 2 } };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -639,5 +634,5 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   // trestle bench with a tankard-sized cask and a tun
   b.add('wood', new CylinderGeometry(0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
   b.add('plaster', new CylinderGeometry(0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
-  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz) };
+  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.2, 0, 2.7), yaw: Math.PI / 2 } };
 }

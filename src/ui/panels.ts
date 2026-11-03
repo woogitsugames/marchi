@@ -2,7 +2,7 @@
 import {
   BUILDINGS, GOODS, buildingById, cycleTicks, explainBuilding, explainWagon, inputGoods, lastUndoable, outputGoods, seasonAt, seasonNote, seasonal, seasonalSupplier,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
-  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canSurface, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
+  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
@@ -15,6 +15,8 @@ import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { cureFor } from './stalls';
+import { buildTypes } from './buildTool';
+import { errorText } from './roadTool';
 
 export interface PanelNav {
   readonly world: World;
@@ -32,6 +34,8 @@ export interface PanelNav {
   setGhost(cells: number[] | null): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
+  /** Open the build tool with this building type already picked (the sheet closes). */
+  pickBuild(type: BuildingType, near: number): void;
 }
 
 // ---------------------------------------------------------------- gap finder
@@ -74,7 +78,26 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
  * a second crossing, or a stone bridge once cobbles are unlocked (stone spans have no one-lane rule).
  */
 function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
-  if (cureFor(world, b.id) === 'wagon') {
+  const cure = cureFor(world, b.id);
+  if (cure === 'granary') {
+    // full output with nowhere to deliver: a granary where the player may build (owner decision 2,
+    // 2026-11-03), otherwise only the hint — in a fixed-map mission the cure is a road or a freed store
+    if (!buildTypes(world).includes('warehouse')) {
+      return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint granary-hint">${iconSvg('warehouse', 18)}<span>${esc(t('fix.granaryHint'))}</span></div>`;
+    }
+    const gate = canPlace(world, 'warehouse');
+    const short = BUILDINGS.warehouse.price - world.state.coins;
+    const off = !gate.ok || short > 0;
+    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="granary:${b.id}" aria-disabled="${off}">${
+      iconSvg('warehouse', 26)}<span>${esc(t('fix.granary'))}</span>${bdi(`−${fmtInt(BUILDINGS.warehouse.price)}`)}</button>`;
+    const hint = !gate.ok
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      : short > 0
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        : `<div class="s-hint">${esc(t('fix.granaryWhy'))}</div>`;
+    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+  }
+  if (cure === 'wagon') {
     const stable = world.state.buildings.find((q) => q.type === 'stable');
     if (!stable) return '';
     const short = WAGON_PRICE - world.state.coins;
@@ -112,6 +135,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
+    if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
     if (act === 'fix' && !el.classList.contains('is-disabled')) {
       const s = gapSuggestion(nav.world, Number(arg));
       if (s && s.cost <= nav.world.state.coins) nav.buildRoad(s.cells);

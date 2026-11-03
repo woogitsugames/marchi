@@ -19,6 +19,28 @@ import { bdi, fmtInt, rankName, tHtml } from './format';
 import { iconSvg, type IconId } from './icons';
 import { errorText } from './roadTool';
 
+/**
+ * Centre cell of the closest valid site for `type` around building `near` (rings of growing Chebyshev
+ * distance, up to 10 cells), or -1. Read-only: validatePlace is the sim's pure check.
+ */
+export function siteNear(world: World, type: BuildingType, near: number): number {
+  const b = world.state.buildings.find((q) => q.id === near);
+  if (!b) return -1;
+  const W = world.terrain.w, H = world.terrain.h, def = BUILDINGS[type];
+  const ox = b.x + (b.w >> 1) - (def.w >> 1), oy = b.y + (b.h >> 1) - (def.h >> 1);
+  for (let r = 1; r <= 10; r++) {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+      const x = ox + dx, y = oy + dy;
+      if (x < 1 || y < 1 || x + def.w >= W || y + def.h >= H) continue;
+      for (let f = 0; f < 4; f++) {
+        if (validatePlace(world, type, x, y, f).ok) return (y + (def.h >> 1)) * W + x + (def.w >> 1);
+      }
+    }
+  }
+  return -1;
+}
+
 /** How far above the finger the ghost's centre sits while dragging (CSS px ≈ dp). */
 export const GHOST_LIFT = 72;
 
@@ -227,7 +249,11 @@ export class BuildTool {
     this.renderShelf();
   }
 
-  pick(type: BuildingType): void {
+  /**
+   * Pick a building type for placement. `near` (a building id): start the ghost on the closest free
+   * site around that building instead of the scene centre ("Naprawa" -> granary next to a full yard).
+   */
+  pick(type: BuildingType, near = -1): void {
     const world = this.host.world();
     const gate = canPlace(world, type);
     if (!gate.ok) { this.host.toast(errorText(gate.err), 'err', 'build'); return; }
@@ -236,7 +262,12 @@ export class BuildTool {
     const [cx, cy] = this.host.sceneCentre();
     this.centreGuess = [cx, cy];
     this.gateGuess = [cx, cy + 30];
-    const c = this.host.view().cellAt(cx, cy);
+    const site = near >= 0 ? siteNear(world, type, near) : -1;
+    if (site >= 0) {
+      const a = this.host.view().cellToScreen?.(site);
+      if (a?.visible) { this.centreGuess = [a.x, a.y]; this.gateGuess = [a.x, a.y + 30]; }
+    }
+    const c = site >= 0 ? site : this.host.view().cellAt(cx, cy);
     this.moveTo(c >= 0 ? c : Math.floor(world.terrain.h / 2) * world.terrain.w + Math.floor(world.terrain.w / 2));
     this.shelfSig = '';
     this.renderShelf();

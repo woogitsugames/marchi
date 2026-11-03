@@ -4,12 +4,17 @@ import { freshMarket, freshTown } from '../sim/town';
 import { freshValleyEvents } from '../sim/events';
 import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
+import { PROFILE_ID, envelopeChronicle, recordBest, sanitizeProfile, type Profile } from './profile';
 
 const DB_NAME = 'marchia';
-/** 2: a `meta` store beside `saves` (envelope without the state) so listing does not read whole games (D-50). */
-const DB_VERSION = 2;
+/**
+ * 2: a `meta` store beside `saves` (envelope without the state) so listing does not read whole games (D-50).
+ * 3: a `profile` store (best result per contract mission, owner decision 13): one record, key 'profile'.
+ */
+const DB_VERSION = 3;
 const STORE = 'saves';
 const META = 'meta';
+const PROFILE = 'profile';
 
 export type { SaveEnvelope, SaveErrorCode, GateError } from './saveGate';
 export { SaveError } from './saveGate';
@@ -147,7 +152,7 @@ function withTimeout<T>(p: Promise<T>, what: string): Promise<T> {
 export type SaveMeta = Omit<SaveEnvelope, 'state'>;
 
 function metaOf(env: Record<string, unknown>): Record<string, unknown> {
-  const { state: _s, ...rest } = env;
+  const { state: _s, chronicle: _c, ...rest } = env;
   return rest;
 }
 
@@ -177,6 +182,8 @@ function open(): Promise<IDBDatabase> {
           };
         }
       }
+      // v2 -> v3: the profile store starts empty (no best results were kept before day 1)
+      if (!db.objectStoreNames.contains(PROFILE)) db.createObjectStore(PROFILE, { keyPath: 'id' });
     };
     req.onsuccess = () => {
       const db = req.result;
@@ -271,28 +278,71 @@ function putEnvelope(make: () => Record<string, unknown>): Promise<void> {
   }).then(() => undefined);
 }
 
-export async function saveGame(slot: string, state: SimState): Promise<void> {
+/**
+ * `chronicle`: the valley chronicle ids of this ledger (owner decision 1), stored in the envelope beside the
+ * state — not in it, so state hashes do not change. Omitted for contracts.
+ */
+export async function saveGame(slot: string, state: SimState, chronicle?: readonly string[]): Promise<void> {
   // No JSON round trip: with the connection open, put() runs now and takes IndexedDB's structured clone of the
   // live state at once. Only the first save of a page (the database still opening) copies the state first,
   // so a game tick during the open cannot change what is saved.
   const snap = dbReady ? state : structuredClone(state);
-  await putEnvelope(() => makeEnvelope(slot, snap, Date.now(), false) as unknown as Record<string, unknown>);
+  const chron = chronicle ? [...chronicle] : undefined;
+  await putEnvelope(() => makeEnvelope(slot, snap, Date.now(), false, chron) as unknown as Record<string, unknown>);
 }
+
+/** A loaded slot: the migrated state and the envelope's UI data (chronicle [] when the save has none). */
+export interface LoadedSave { state: SimState; chronicle: string[] }
 
 /**
  * Loads a slot through the save gate (D-23): validation -> envelope upgrade -> terrain hash check ->
  * migrate(). Throws SaveError (with `.code`) for a damaged, newer or terrain-changed save.
  */
-export async function loadGame(slot: string): Promise<SimState | null> {
+export async function loadSave(slot: string): Promise<LoadedSave | null> {
   const raw = await tx<unknown>('readonly', (s) => s.get(slot));
   if (raw === undefined) return null;
   const v = prepareLoad(raw);
   if (!v.ok) throw new SaveError(v.errors);
   try {
-    return migrate(v.envelope).state;
+    return { state: migrate(v.envelope).state, chronicle: envelopeChronicle(raw) };
   } catch (e) {
     throw new SaveError([{ code: 'NO_MIGRATION', path: '$.stateVersion', detail: e instanceof Error ? e.message : String(e) }]);
   }
+}
+
+/** loadSave() without the envelope extras. */
+export async function loadGame(slot: string): Promise<SimState | null> {
+  return (await loadSave(slot))?.state ?? null;
+}
+
+// --- Profile (owner decision 13): best seals and time per contract mission ----------------------
+
+/** The stored profile, sanitized; an empty one when there is none or it cannot be read. Never throws. */
+export async function readProfile(): Promise<Profile> {
+  try {
+    return sanitizeProfile(await run<unknown>('readonly', [PROFILE], (t) => t.objectStore(PROFILE).get(PROFILE_ID)));
+  } catch {
+    return sanitizeProfile(null);
+  }
+}
+
+/**
+ * Records a won contract (seals 1..3, contract time in ticks) when it beats the stored best. Read and write
+ * in one transaction, so two quick ends cannot lose one. Resolves with whether it set a new best.
+ */
+export async function recordContractResult(missionId: string, seals: number, ticks: number, at = Date.now()): Promise<boolean> {
+  let improved = false;
+  await run<IDBValidKey | undefined>('readwrite', [PROFILE], (t) => {
+    const store = t.objectStore(PROFILE);
+    const get = store.get(PROFILE_ID);
+    get.onsuccess = () => {
+      const r = recordBest(sanitizeProfile(get.result), missionId, seals, ticks, at);
+      improved = r.improved;
+      if (r.improved) store.put(r.profile);
+    };
+    return null;
+  });
+  return improved;
 }
 
 /** Checks a slot without loading it (e.g. to disable "Continue"): null = loadable or empty. */

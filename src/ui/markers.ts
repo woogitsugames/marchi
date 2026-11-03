@@ -228,6 +228,9 @@ export class Markers {
    * the good's icon (one tag per good, stacked; at most three on screen). A first sight of the castle,
    * a loaded game or a restart (tick went back) only seeds the counts.
    */
+  /** A contract good reached the castle (also off screen): the app plays the delivery sound. */
+  onDelivery: ((g: Good, n: number) => void) | null = null;
+
   private updateDeliveries(world: World, view: WorldView, hidden: boolean, now: number): void {
     const st = world.state;
     const c = st.mission.contract;
@@ -241,7 +244,9 @@ export class Markers {
       const n = castle.stock[g];
       const before = have.get(g);
       have.set(g, n);
-      if (fresh || before === undefined || n <= before || hidden || st.mission.result !== 'running') continue;
+      if (fresh || before === undefined || n <= before || st.mission.result !== 'running') continue;
+      this.onDelivery?.(g, n - before);
+      if (hidden) continue;
       if (!(castle.gate >= 0 && view.cellToScreen ? view.cellToScreen(castle.gate) : view.anchorOf('building', castle.id)).visible) continue;
       this.deliveryTag(castle.id, g, n - before, now);
     }

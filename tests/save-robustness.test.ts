@@ -25,7 +25,7 @@ function freshDb(): void {
 /** Writes records straight into `saves` (no meta), as an old build or a damaged disk would leave them. */
 function rawPut(...recs: unknown[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const rq = indexedDB.open('marchia', 2);
+    const rq = indexedDB.open('marchia');
     rq.onupgradeneeded = () => {
       const d = rq.result;
       if (!d.objectStoreNames.contains('saves')) d.createObjectStore('saves', { keyPath: 'slot' });
@@ -43,7 +43,7 @@ function rawPut(...recs: unknown[]): Promise<void> {
 
 function rawGet(slot: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    const rq = indexedDB.open('marchia', 2);
+    const rq = indexedDB.open('marchia');
     rq.onsuccess = () => {
       const d = rq.result, g = d.transaction('saves').objectStore('saves').get(slot);
       g.onsuccess = () => { d.close(); resolve(g.result); };
@@ -246,30 +246,30 @@ test('robust: a versionchange from another tab closes the cached connection inst
   await saveGame('auto-m1', w.state);
   let blocked = false;
   await new Promise<void>((resolve) => {
-    const q = indexedDB.open('marchia', 3);
+    const q = indexedDB.open('marchia', 4);
     q.onblocked = () => { blocked = true; };
     q.onsuccess = () => { q.result.close(); resolve(); };
   });
   eq(blocked, false, 'upgrade was not blocked by our connection');
 });
 
-test('robust: a database newer than this build (v3) still lists, loads and saves (B6)', async () => {
+test('robust: a database newer than this build (v4) still lists, loads and saves (B6)', async () => {
   freshDb();
   const w = mid('m1', 30);
   await saveGame('auto-m1', w.state);
   resetSaveConnection();
   await new Promise<void>((resolve, reject) => {
-    const q = indexedDB.open('marchia', 3);
+    const q = indexedDB.open('marchia', 4);
     q.onsuccess = () => { q.result.close(); resolve(); };
     q.onerror = () => reject(q.error);
   });
   resetSaveConnection();
-  eq((await listSaves()).map((x) => x.slot).join(','), 'auto-m1', 'listed from the v3 database');
+  eq((await listSaves()).map((x) => x.slot).join(','), 'auto-m1', 'listed from the v4 database');
   const st = await loadGame('auto-m1');
   eq(st?.tick, w.state.tick, 'loaded');
   const w2 = mid('m5', 20);
   await saveGame('auto-m5', w2.state);
-  eq((await listSaves()).length, 2, 'saved into the v3 database');
+  eq((await listSaves()).length, 2, 'saved into the v4 database');
 });
 
 // (6) round-trip determinism ------------------------------------------------------------------------

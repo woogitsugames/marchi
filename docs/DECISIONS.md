@@ -795,6 +795,11 @@ unchanged (m1 412×915 dpr 2: high near/mid/far/copse 57/48/44/56 calls, 470k/30
 57/38/40/51, 258k/244k/239k/238k — identical before/after). Not done: the second near variant is not baked
 (the card always shows variant 0; +1 atlas row set per variant = 2× memory). Shots `docs/shots/night2-trees-*`.
 (decided)
+*Amendment 2026-11-03 (owner decision 5):* high now bakes the low-size atlas (128 px cells, 2 × 7 MB =
+14.0 MB measured by `view.stats().treeAtlasMB`, was 2 × 21.4 MB = 42.8 MB at 224 px); the full 256 px atlas
+(55.9 MB) only on ultra. Reason: the Fold WebView shares GPU memory with the 4× MSAA canvas, and 224 px vs 128 px
+cells are hard to tell apart in the far band (cards cover ≤ ~60 px on screen). Draw calls/triangles unchanged
+(m1 412×915 dpr 2 high near/mid 55/40 calls, 472k/303k tris).
 
 **D-59 — Water edge and bridge detail (render only).** Water shader: on high/ultra (`uDetail`) the waterline laps
 up to 5 cm up the bank and back (slow, out of phase along the river) and a second thin foam line drifts in and
@@ -836,6 +841,11 @@ building meshes: no new draw calls, no new textures. Triangles (model): farm 822
 5290→5906, stable 3888→4720, fisher 5934→6430, malthouse 5848→6320; others unchanged. Note for screenshot
 scripts: the high-tier textures arrive ~10–20 s after load under SwiftShader — earlier "untextured" shots
 were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)
+*Amendment 2026-11-03 (owner decision 8):* the ridge liggers are softened — the crossed spars (both diagonals
+every 0.42 m, `#5e5038`) read as a truss/checker up close. Now one spar per ~0.9 m bay, alternating direction (a
+loose zig-zag), rods and spars thinner (0.02 m) and darker (`#4a3f2c`, close to the shaded straw), sunk 8 mm
+deeper into the thatch. Fewer triangles (bakery 5906→5498, mill/farm/stable similar). Close-up before/after:
+`docs/shots/day1-ridge-before-after.jpg` (model preview view `ridge`).
 
 **D-62 — Measured layout check; pins under the HUD fade; a bottom sheet folds the waybill.** `npm run layout`
 (`tools/layout-check.mjs`) opens menu, settings, HUD, the why-sheet, the wagon sheet, the build tool, the M7
@@ -912,3 +922,79 @@ no world/pre-warm yet → immediate, as before). The terrain hooks read `this.us
 a clone keys and builds its own variant. (2) The far-tree atlas re-bake per tier disposed its bake and copy
 materials, re-linking them every time; they are kept for the session now (5 small programs). Result: 4/3/2/2 →
 **0/0/0/0** in-frame links over four switches; the tier lands a few hundred ms later. (decided)
+
+**D-66 — "Naprawa" for a stranded output: build a granary next to it (UI only; owner decision 2, 2026-11-03).**
+When the root of a building's cause chain is `OUTPUT_FULL.NO_DESTINATION` (no granary and no customer takes the
+good — a full output whose customer still takes it chains on to the customer and gets no cure), `cureFor` returns
+`granary`. In a world whose build list has the warehouse (free valley, mission VI) the "Dlaczego stoi?" sheet shows
+"Postaw spichlerz −30" (disabled with the rank / silver reason when blocked); one tap closes the sheet, opens the
+build tool and picks the granary with its ghost already on the closest valid site around the stalled building
+(`siteNear`: rings up to 10 cells, the sim's pure `validatePlace`), so "Postaw" is one more tap. The rail's Buduj
+button gets the same cure mark as Kup wóz / Droga. Missions without the warehouse on their build list get a hint
+only ("połącz drogą spichlerz albo odbiorcę"). No sim change. Shots `docs/shots/day1-repair-*`. (decided)
+
+**D-67 — Speed hint, never a speed change (UI only; owner decision 7, 2026-11-03).** BACKLOG P3 "speed as a tool":
+while the game runs at ×4 and the worst stall is critical and has grown for 60 s of game time (~15 s real), one
+toast says "Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić." (4.2 s, speed icon). Once per
+stall — the same building with the same cause is never hinted again in that mission (`SpeedHint`, pure, reset on a
+new world); ×1/×2, a minor or fresh stall, or a finished mission never hint. The speed is never changed for the
+player (an auto-×1 was rejected: a hidden speed change confuses). Test `tests/speed-hint.test.ts`; shots
+`docs/shots/day1-speed-hint-*`. (decided)
+
+**D-68 — Valley chronicle in the save envelope; best seals and time per contract in a profile store (no sim
+change; owner decisions 1 + 13, 2026-11-03).** Replaces D-57's localStorage list. (1) The envelope gets an
+optional `chronicle: string[]` beside `state` (format stays 2: the field is optional, read leniently by
+`envelopeChronicle` — missing, damaged or unknown items give [] / are dropped, never a load error; the save gate
+still caps its size). Valley autosaves write `ChronicleLog.ids()`; a newly recorded entry triggers an autosave
+(momentary entries are not lost). The META list omits it. Migration: on entering a ledger the old
+`marchia.chronicle.<slot>` list is merged once and removed after the first save that carries it; contracts and
+older saves have no field. State and its hash untouched (golden hashes unchanged). (2) IndexedDB v3 adds a
+`profile` store (one record `{ id: 'profile', format: 1, best: { m1: { seals, ticks, at } … } }`), because a
+contract's save is deleted at its end letter. `showEnd` records a won contract (`stars(world)`, `mission.endTick`)
+in one read-write transaction; better = more seals, then less time; a lost contract is not a result.
+`sanitizeProfile` drops damaged entries, an absent store/record reads as empty. The mission menu shows under a won
+mission's subtitle three small wax seals (pressed = earned) and the best time; the row's accessible name says it in
+words (`menu.bestAria`). Tests `tests/save-profile.test.ts` (old v2 database, old envelope, damaged profile,
+localStorage migration); `save-robustness` opens its raw stores at the current version and fakes "newer" as v4.
+Shots `docs/shots/day1-menu-*` (menu restyled right after, D-70). (decided)
+
+**D-69 — End of a won contract: the castle's seal is pressed before the letter; a quiet delivery sound (UI +
+audio only; owner decision 6, 2026-11-03; the rest of D-60's backlog entry).** `pressSeal` (src/ui/sealPress.ts)
+dims the map and presses the kit seal (`seal-full`, 96 px — the sprite is 84 px at 3×, larger reads soft): 200 ms
+down from 1.45× with a slight turn (ease-out, no overshoot, no spring), a dark wax rim spreading once (220 ms), held
+to 1.2 s, then the end letter. A tap or any key skips straight to the letter; reduced motion shortens it to 0.5 s;
+a world change cancels it. The wax-seal sound (`contract.won`) already plays on the win. Lost contracts go straight
+to the letter (no seal to press). Delivery sound: each contract good handed over at the castle plays
+`contract.delivery` — the existing CC0 `sfx/unload-sack`, non-positional on the UI bus at 0.26 with a 1.2 s cooldown,
+so it is heard wherever the camera is (the positional unload stays). No new file (`process_audio.py --check` PASS).
+Music "hurry" mood: still after the playtest. Shot `docs/shots/day1-seal-press-412x915.jpg`. (decided)
+
+**D-70 — Main menu on the painted kit (UI only; owner request 2026-11-03 from a phone screenshot).** The start
+screen was the last screen in the old style (fibre parchment strip, deckled clip, iron pin, diamond bullets). Now:
+the lily frame (`frame-sheet-dim`, as the sheets opened from the menu) holds the list, inset from the safe area; the
+title sits on the kit wine ribbon with the subtitle under it (beside it on short landscape screens); each contract
+row has a brass medallion (`badge`) with its numeral — the numeral leaves the title text when the title starts with
+it (the accessible name keeps the full title, subtitle and best result) — and a won contract's medallion is pressed
+wax (`seal-full`); the best seals and time from D-68 sit under the subtitle; Wolna dolina has the farm glyph in its
+medallion; Continue is the wine kit button with what it continues, Settings the parchment kit card at the foot (still
+the last `.menu-item`, which the layout and screenshot tools click). The list scrolls inside the frame with the fade
+at its foot on every screen; rows ≥ 48 px (56 normally); two columns on short landscape and the Fold in Flex mode;
+RTL mirrors through logical properties. Fonts unchanged (Grenze Gotisch titles, Alegreya Sans text); the live
+valley scene stays behind. `npm run layout` over menu/settings/missionsave/valley scenes (75 jobs, all views) and
+`--quick` green. Before/after `docs/shots/day1-menu-412x915.jpg`, `day1-menu-915x412.jpg`. (decided)
+
+**D-71 — Yard piles follow the stock (render only; owner decision 15, 2026-11-03).** Each producer model has a
+`yard` spot (model space point + turn); `BuildingsView` places it like the yard worker and `WagonsView` draws the
+building's first output good there each frame as up to one wagon load (`min(stock, cargoSlots)`: 6, stone 4) of the
+same `cargo-*` instanced units the wagons carry, laid out as on a wagon bed set down on the ground (`yardPileLocal`).
+A full yard (`OUTPUT_FULL`) is therefore visible without a tap; an empty yard shows nothing. The static output piles
+that would now double the stock are gone (woodcutter log pile, the sawmill's plank stack by the gate, the farm's
+grain sack, the mill's flour sacks, the quarry's block stack by the gate, the charcoal sacks, the malt bags); props
+of inputs or tools stay. No new meshes, materials or textures: the piles reuse the 11 cargo instanced meshes (wagon
+cargo is pushed first, piles never overrun the instance buffers), only within the wagon LOD distance and the
+frustum. Draw calls: a pile adds calls only when no visible wagon carries that good (the good's cargo mesh becomes
+visible: +1–4 incl. shadow), bounded by the cargo meshes already in the budget; m1 high 412×915 at ~34 m:
+sawmill 51→52, farm 55→56, mill 55→56, woodcutter 49→53 (wood logs: 2 parts + shadows), triangles +0.1–3k.
+Test `tests/yard-piles.test.ts` (every producer has a spot; a full load stays on its footprint); model preview shows
+full piles. Shot `docs/shots/day1-yard-sawmill-off-on.jpg`. Not done: the warehouse (many goods) and the castle.
+(decided)

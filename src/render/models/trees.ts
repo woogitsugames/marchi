@@ -580,8 +580,8 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  * card is then lit like the full model (same crown normals, same vertex-colour occlusion), so the
  * LOD swap does not change the value of the forest. Call once after the renderer exists; cheap
  * (5 kinds x 8 views x 2 passes of small renders + 16 row copies). `cellPx` is the cell width (the
- * view.ts tier picks it): atlas = 5·cell x 16·cell RGBA8 + mips, two of them — 128 px (low)
- * 2 x 7 MB, 224 px (high) 2 x 21 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
+ * view.ts tier picks it): atlas = 5·cell x 16·cell RGBA8 + mips, two of them — 128 px (low, high)
+ * 2 x 7 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
  * re-bakes (old pair disposed).
  */
 /**
@@ -591,7 +591,18 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
 let bakeMats: { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial }[] | null = null;
 let copyMat: ShaderMaterial | null = null;
 
-export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 224): WebGLRenderTarget {
+/** GPU bytes held by the baked far-tree atlas pair (albedo + normal, RGBA8 with a full mip chain). */
+export function treeAtlasBytes(): number {
+  if (!atlas) return 0;
+  let bytes = 0;
+  for (let w = atlas.width, h = atlas.height; ; w = Math.max(1, w >> 1), h = Math.max(1, h >> 1)) {
+    bytes += w * h * 4;
+    if (w === 1 && h === 1) break;
+  }
+  return bytes * (atlasN ? 2 : 1);
+}
+
+export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGLRenderTarget {
   if (atlas && atlasCell === cellPx) return atlas;
   // re-bake at another resolution (quality tier switch): free the old pair first
   atlas?.dispose();

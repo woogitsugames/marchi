@@ -7,11 +7,12 @@ import {
   TICK_HZ, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
+  type BuildingType,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, ScreenOffset, WorldView } from '../render/api';
 import {
-  LEGACY_SLOT, adoptLegacySaves, contractSlot, contractSlotMission, deleteSave, isGameSlot, isValleySlot, listSaves, loadGame, readSlots,
+  LEGACY_SLOT, adoptLegacySaves, contractSlot, contractSlotMission, deleteSave, isGameSlot, isValleySlot, listSaves, loadSave, readSlots, readProfile, recordContractResult,
   saveGame, slotFor,
 } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
@@ -28,6 +29,9 @@ import {
 } from './menu';
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
+import { SpeedHint } from './speedHint';
+import { pressSeal } from './sealPress';
+import type { BestResult } from '../platform/profile';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
 import { loadPrefs, savePrefs, type Prefs } from './prefs';
@@ -134,9 +138,15 @@ export class App implements PanelNav {
   private diagPanel: DiagPanel | null = null;
   /** The mission's first critical stall has had its one-time cue (markers.flash + hud.flashFirstStall). */
   private firstCritSeen = false;
+  /** ×4 while a critical stall grows: one toast per stall (owner decision 7). */
+  private readonly speedHint = new SpeedHint();
+  /** The seal-press cue before the end letter, while it runs (cancelled when the world changes). */
+  private cancelSeal: (() => void) | null = null;
   private save: SaveInfo | null = null;
   /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
   private unfinished = new Map<string, SaveInfo>();
+  /** Best seals and time per contract mission (profile store, owner decision 13). */
+  private best: Record<string, BestResult> = {};
   /** The slot "Continue" failed to load (shown as damaged in the menu): wiped when that contract starts afresh. */
   private brokenSlot: string | null = null;
   private speedBeforeMenu: Speed = 1;
@@ -195,6 +205,8 @@ export class App implements PanelNav {
       undoInSheet: (id) => this.sheets.top?.content.key === `building:${id}`,
     });
     this.layers.markers.append(this.build.floating);
+    // contract goods handed over at the castle: a quiet delivery sound (owner decision 6)
+    this.markers.onDelivery = () => { if (audio.ready) void audio.play('contract.delivery'); };
 
     const qp = this.params.get('quality');
     this.qualityParam = isQualityPref(qp) ? qp : null;
@@ -292,6 +304,7 @@ export class App implements PanelNav {
     const token = ++this.menuToken;
     let save: SaveInfo | null = null;
     const unfinished = new Map<string, SaveInfo>();
+    let best: Record<string, BestResult> = {};
     try {
       if (adopt) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
       const saves = await listSaves(); // newest first
@@ -303,10 +316,12 @@ export class App implements PanelNav {
         if (m && !unfinished.has(m)) unfinished.set(m, info(x));
       }
     } catch { save = null; }
+    best = (await readProfile()).best;
     if (token !== this.menuToken || this.mode !== 'menu') return;
-    const changed = JSON.stringify([save, [...unfinished]]) !== JSON.stringify([this.save, [...this.unfinished]]);
+    const changed = JSON.stringify([save, [...unfinished], best]) !== JSON.stringify([this.save, [...this.unfinished], this.best]);
     this.save = save;
     this.unfinished = unfinished;
+    this.best = best;
     if (changed) this.renderMenu();
   }
 
@@ -341,7 +356,7 @@ export class App implements PanelNav {
       },
       openValley: () => this.openValley(),
       openSettings: () => this.openSettings(),
-    }, broken ? null : this.save, broken, this.unfinished));
+    }, broken ? null : this.save, broken, this.unfinished, this.best));
   }
 
   /** A mission tapped in the menu: straight in, or first the ask sheet when it has an unfinished save (D-36). */
@@ -376,6 +391,9 @@ export class App implements PanelNav {
     this.lastSaveTick = w.state.tick;
     this.endShown = false;
     this.firstCritSeen = false;
+    this.speedHint.reset();
+    this.cancelSeal?.();
+    this.cancelSeal = null;
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
@@ -461,15 +479,16 @@ export class App implements PanelNav {
   private async continueGame(slot: string | null = null): Promise<void> {
     const from = slot ?? this.save?.slot ?? LEGACY_SLOT;
     try {
-      const st: SimState | null = await loadGame(from);
-      if (!st) throw new Error('save slot is empty');
+      const loaded = await loadSave(from);
+      if (!loaded) throw new Error('save slot is empty');
+      const st: SimState = loaded.state;
       if (this.mode !== 'menu') return; // a second tap already started a game
       this.missionId = isMissionKey(st.mission.id) ? st.mission.id : 'm1';
       // a contract still in the legacy slot moves to its own slot with the next autosave (the stale
       // copy is dropped by adoptLegacySaves); a valley game stays put (its ledgers may all be taken)
       this.slot = from === LEGACY_SLOT && st.mission.id !== 'sandbox' ? slotFor(st.mission.id) : from;
       this.brokenSlot = null;
-      this.enterGame(worldFromState(st));
+      this.enterGame(worldFromState(st), loaded.chronicle);
     } catch (e) {
       // damaged / incompatible save: say so; a contract is offered afresh, a valley ledger in the picker
       console.error('continue failed', e);
@@ -489,7 +508,8 @@ export class App implements PanelNav {
     }
   }
 
-  private enterGame(w: World): void {
+  /** `chronicle`: the valley chronicle ids of a loaded ledger's envelope (none for a new game). */
+  private enterGame(w: World, chronicle: readonly string[] = []): void {
     this.stopTutorial();
     this.mode = 'game';
     this.deadEndShown = false;
@@ -501,7 +521,7 @@ export class App implements PanelNav {
     this.view.setMenuMode(false);
     music.setMood(isRaining(w.state) ? 'rain' : 'play');
     this.setWorld(w);
-    if (w.state.mission.id === 'sandbox' && isValleySlot(this.slot)) this.chronicle.attach(this.slot, w);
+    if (w.state.mission.id === 'sandbox' && isValleySlot(this.slot)) this.chronicle.attach(this.slot, w, chronicle);
     else this.chronicle.detach();
     this.loop.speed = 1;
     this.overlay = false;
@@ -634,6 +654,8 @@ export class App implements PanelNav {
         this.markers.flash(stalls[0].id);
         this.hud?.flashFirstStall(this.world, stalls[0].id);
       }
+      const slow = this.speedHint.check(this.world, this.loop.speed, stalls);
+      if (slow >= 0) this.hud?.toast(t('hud.speedHint', { name: buildingName(this.world, slow) }), 'info', 'speed1', 4200);
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();
@@ -671,7 +693,10 @@ export class App implements PanelNav {
     if (this.mode === 'game' && this.world.state.tick - this.lastSaveTick >= AUTOSAVE_TICKS) void this.autosave();
     if (this.mode === 'game' && !this.deadEndShown && this.world.state.tick % DEAD_END_EVERY === 0) this.checkDeadEnd();
     if (this.mode === 'game' && this.chronicle.active && this.world.state.tick % TICK_HZ === 0) {
-      for (const id of this.chronicle.check(this.world)) this.hud?.toast(t('chron.new', { title: chronicleTitle(id) }), 'info', 'seal', 3200);
+      const fresh = this.chronicle.check(this.world);
+      for (const id of fresh) this.hud?.toast(t('chron.new', { title: chronicleTitle(id) }), 'info', 'seal', 3200);
+      // a new entry is written with the ledger at once (it may be momentary: winter, a fleet size)
+      if (fresh.length) void this.autosave();
     }
   }
 
@@ -698,7 +723,12 @@ export class App implements PanelNav {
   private async autosave(): Promise<void> {
     if (this.mode !== 'game' || this.world.state.mission.result !== 'running') return;
     this.lastSaveTick = this.world.state.tick;
-    try { await saveGame(this.slot, this.world.state); } catch (e) { console.warn('autosave failed', e); }
+    const slot = this.slot;
+    const chron = this.chronicle.active ? this.chronicle.ids() : undefined;
+    try {
+      await saveGame(slot, this.world.state, chron);
+      if (chron) this.chronicle.saved(slot);
+    } catch (e) { console.warn('autosave failed', e); }
   }
 
   private showEnd(): void {
@@ -710,11 +740,27 @@ export class App implements PanelNav {
     this.sheets.closeAll();
     this.setTool('none');
     void deleteSave(this.slot).catch(() => undefined);
-    const letter = buildEndLetter(this.world, stars(this.world), {
+    const seals = stars(this.world);
+    const m = this.world.state.mission;
+    // best seals and time per contract (owner decision 13): kept in the profile, the contract save is gone now
+    if (m.contract && seals > 0) {
+      const id = m.id;
+      void recordContractResult(id, seals, m.endTick).then((better) => {
+        if (better) this.best = { ...this.best, [id]: { seals, ticks: m.endTick, at: Date.now() } };
+      }).catch((e: unknown) => console.warn('best result not kept', e));
+    }
+    const letter = buildEndLetter(this.world, seals, {
       again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
     });
-    this.layers.overlay.append(letter);
+    // a won contract: the castle's seal is pressed first (~1.2 s, a tap skips it), then the letter
+    if (m.result === 'won' && m.contract) {
+      const w = this.world;
+      this.cancelSeal = pressSeal(this.layers.overlay, () => {
+        this.cancelSeal = null;
+        if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+      });
+    } else this.layers.overlay.append(letter);
   }
 
   // ------------------------------------------------------------------ commands
@@ -784,6 +830,14 @@ export class App implements PanelNav {
   }
 
   // ------------------------------------------------------------------ PanelNav
+
+  /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
+  pickBuild(type: BuildingType, near: number): void {
+    if (!buildTypes(this.world).includes(type)) return;
+    this.sheets.closeAll();
+    this.setTool('build');
+    if (this.tool === 'build') this.build.pick(type, near);
+  }
 
   go(kind: 'building' | 'wagon', id: number, focus = true): void {
     const prevTop = this.sheets.top?.content.key ?? null;

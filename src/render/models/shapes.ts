@@ -617,24 +617,24 @@ export function thatchRoof(b: PartBuilder, s: ThatchSpec): void {
       dirt: 0,
       noise: 0.12,
     });
-    // ridge saddle pinned with hazel liggers: two rods along each slope just under the roll,
-    // criss-cross spars between them (reads as the stitched ridge of a real thatch at game zoom)
+    // ridge saddle pinned with hazel liggers: two rods along each slope just under the roll and a
+    // sparse zig-zag of spars between them, weathered nearly to the straw's own shade (D-61 amendment:
+    // the first pass crossed both diagonals every 0.42 m in a pale wood tone and read as a truss up close)
     const zc = (s.z0 + s.z1) / 2;
-    const lig: Opts = { color: '#5e5038', ao: 0, dirt: 0, vary: 0.12, noise: 0.05 };
-    const yAt = (x: number, z: number) => f.under(x, z) + t + 0.02;
-    const L0 = t * 0.95, L1 = t * 0.95 + 0.42;
+    const lig: Opts = { color: '#4a3f2c', ao: 0, dirt: 0, vary: 0.1, noise: 0.05 };
+    const yAt = (x: number, z: number) => f.under(x, z) + t + 0.012;
+    const L0 = t * 0.95, L1 = t * 0.95 + 0.4;
     for (const sz of [-1, 1]) {
       for (const d of [L0, L1]) {
         const z = zc + sz * d;
-        rod(b, 'wood', v3(rx0 + 0.15, yAt(rx0 + 0.15, z), z), v3(rx1 - 0.15, yAt(rx1 - 0.15, z), z), 0.025, 0.025, 4, lig);
+        rod(b, 'wood', v3(rx0 + 0.15, yAt(rx0 + 0.15, z), z), v3(rx1 - 0.15, yAt(rx1 - 0.15, z), z), 0.02, 0.02, 4, lig);
       }
-      const n = Math.max(2, Math.round((len - 0.3) / 0.42));
+      const n = Math.max(2, Math.round((len - 0.3) / 0.9));
       for (let i = 0; i < n; i++) {
         const xa = rx0 + 0.15 + (i / n) * (len - 0.3), xb = rx0 + 0.15 + ((i + 1) / n) * (len - 0.3);
-        // crossed spars: both diagonals of each bay
-        for (const [za, zb] of [[zc + sz * L0, zc + sz * L1], [zc + sz * L1, zc + sz * L0]] as const) {
-          beam(b, 'wood', v3(xa, yAt(xa, za), za), v3(xb, yAt(xb, zb), zb), 0.024, 0.02, lig);
-        }
+        // one spar per bay, alternating direction: a loose zig-zag, never a lattice
+        const [za, zb] = i % 2 === 0 ? [zc + sz * L0, zc + sz * L1] : [zc + sz * L1, zc + sz * L0];
+        beam(b, 'wood', v3(xa, yAt(xa, za), za), v3(xb, yAt(xb, zb), zb), 0.02, 0.014, lig);
       }
     }
   }

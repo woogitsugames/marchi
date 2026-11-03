@@ -36,6 +36,23 @@ export function cargoFor(good: string): CargoGood {
 const Y = WAGON.bedTopY;
 const CRUST = new Color('#b8893a');
 
+const yardCache = new Map<CargoGood, Matrix4>();
+/**
+ * From a yard pile's base (ground point and turn, see BuildingModel.yard) to the cargo slot space: the wagon-bed
+ * arrangement of `cargoSlots` set down on the ground, centred on the base (D-71). Units and order are the
+ * wagon's, so the pile reads as "one load waiting".
+ */
+export function yardPileLocal(good: CargoGood): Matrix4 {
+  let m = yardCache.get(good);
+  if (m) return m;
+  const s = cargoSlots(good);
+  let x = 0, z = 0;
+  for (const t of s) { x += t.elements[12]!; z += t.elements[14]!; }
+  m = new Matrix4().makeTranslation(-x / s.length, -Y, -z / s.length);
+  yardCache.set(good, m);
+  return m;
+}
+
 /** Placement of unit i (0-based) of `good` on the bed, rig space. */
 export function cargoSlots(good: CargoGood): Matrix4[] {
   const out: Matrix4[] = [];

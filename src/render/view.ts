@@ -31,6 +31,7 @@ import { PartBuilder } from './models/kit';
 import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
+import { treeAtlasBytes } from './models/trees';
 import { ShaderPrewarm } from './prewarm';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
@@ -390,6 +391,7 @@ class View implements WorldView {
 
     this.updateMenuWagon();
     // wagons first (with last frame's camera) so a followed wagon's position is current
+    this.wagons.yards = this.buildings?.yards ?? [];
     this.wagons.frame(w, alpha, dt, this.rig.camera, this.time);
 
     // --- camera
@@ -442,8 +444,9 @@ class View implements WorldView {
     this.fx.update(this.time, this.rain, this.rig.target, Math.min(140, 30 + dist * 0.5), env.light);
     this.updateSelectionRing();
 
-    // far-tree atlases per tier (multi-view, D-58): low 128 px cells, high 224, ultra 256
-    const cell = this.quality === 'low' ? 128 : this.quality === 'ultra' ? 256 : 224;
+    // far-tree atlases per tier (multi-view, D-58 amendment 2026-11-03): low and high 128 px cells
+    // (2 x 7 MB), the full 256 px atlas only on ultra (2 x 28 MB)
+    const cell = this.quality === 'ultra' ? 256 : 128;
     if (this.vegetation && this.bakedCell !== cell) {
       this.vegetation.bake(r, cell);
       this.bakedCell = cell;
@@ -720,9 +723,10 @@ class View implements WorldView {
     }
   }
 
-  stats(): { fps: number; drawCalls: number; triangles: number; geometries: number; textures: number } {
+  stats(): { fps: number; drawCalls: number; triangles: number; geometries: number; textures: number; treeAtlasMB: number } {
     const r = this.renderer;
     return {
+      treeAtlasMB: Math.round(treeAtlasBytes() / 1e5) / 10,
       fps: Math.round(this.fps),
       drawCalls: this.lastStats.calls,
       triangles: this.lastStats.triangles,

@@ -81,6 +81,11 @@ export interface BuildingModel {
   smoke?: Vector3;
   /** An animated worker in the yard (render-only): where the feet stand and the facing (model space). */
   worker?: { kind: WorkerKind; at: Vector3; yaw: number };
+  /**
+   * Yard pile of the building's output (render-only, decision 15 / D-71): where the units stand on the ground and
+   * their turn (model space). Drawn per frame from the building's stock with the wagons' cargo instances.
+   */
+  yard?: { at: Vector3; yaw: number };
 }
 
 export const BUILDING_CELLS: Record<BuildingKind, [number, number]> = {
@@ -528,8 +533,7 @@ function woodcutter(b: PartBuilder): Partial<BuildingModel> {
     windows: [{ side: 'front', u: -1.1, y: 1.35 }],
   });
   choppingBlock(b, 1.4, 2.1);
-  // log pile along Z on the right
-  logPile(b, v3(2.85, 0, -1.4), Math.PI / 2, 3.0, 3, 0.16);
+  // the log pile along Z on the right is the yard stock now (drawn from the building's wood, D-71)
   firewoodStack(b, -1.7, 0.95, 1.6, 1.0);
   // sawhorse with a log
   for (const z of [-0.45, 0.45]) {
@@ -537,7 +541,7 @@ function woodcutter(b: PartBuilder): Partial<BuildingModel> {
     rod(b, 'wood', v3(-2.0, 0, 2.6 + z), v3(-2.3, 0.85, 2.6 + z), 0.04, 0.035, 5, { color: C.timberLight });
   }
   logGeom(b, trs(-2.3, 0.92, 2.6, Math.PI / 2, 0.1, 0), 0.13, 2.0);
-  return { gate: v3(0.2, 0, 4), smoke: v3(-0.7, 4.6, -1.3), worker: { kind: 'chop', at: v3(1.4, 0, 3.0), yaw: Math.PI } };
+  return { gate: v3(0.2, 0, 4), smoke: v3(-0.7, 4.6, -1.3), worker: { kind: 'chop', at: v3(1.4, 0, 3.0), yaw: Math.PI }, yard: { at: v3(2.85, 0, -1.2), yaw: 0 } };
 }
 
 function sawmill(b: PartBuilder): Partial<BuildingModel> {
@@ -588,10 +592,11 @@ function sawmill(b: PartBuilder): Partial<BuildingModel> {
   // sawdust heap
   b.add('thatch', new SphereGeometry(1, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a7916c', m: trs(sx + 0.4, 0, sz, 0, 0, 0, 0.9, 0.18, 0.7), ao: 0.1, dirt: 0.1 });
   // plank stacks in the yard and logs waiting
-  plankStack(b, 2.6, 2.3, Math.PI / 2, 3.0, 5);
+  // the plank stack by the gate is the yard stock (drawn from the building's planks, D-71); an old stack
+  // stays at the back and logs wait for the saw
   plankStack(b, 4.7, -1.2, 0, 3.0, 3);
   logPile(b, v3(-3.4, 0, 2.3), 0, 3.6, 2, 0.17);
-  return { gate: v3(-0.6, 0, 4) };
+  return { gate: v3(-0.6, 0, 4), yard: { at: v3(2.6, 0, 2.3), yaw: Math.PI / 2 } };
 }
 
 function farm(b: PartBuilder): Partial<BuildingModel> {
@@ -617,10 +622,9 @@ function farm(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'wood', 1.6, 0.07, 0.34, trs(-2.9, 0.48, -0.25), { color: C.timberLight, dirt: 0.2 });
   for (const sx of [-1, 1]) box(b, 'wood', 0.07, 0.45, 0.3, trs(-2.9 + sx * 0.65, 0.23, -0.25), { color: C.timber });
   ladder(b, v3(5.95, 0, -4.4), v3(5.62, 2.5, -4.4), v3(0, 0, 1));
-  sack(b, 0.2, -0.1, 0.4);
   sack(b, 0.65, 0.0, 1.9);
   sack(b, 0.45, 0.4, 0.2, '#9c8458', true);
-  return { gate: v3(0, 0, 6), smoke: v3(-1.2, 6.0, -3.0) };
+  return { gate: v3(0, 0, 6), smoke: v3(-1.2, 6.0, -3.0), yard: { at: v3(1.3, 0, 1.4), yaw: 0 } };
 }
 
 function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['wheel'] } {
@@ -647,9 +651,7 @@ function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['
   box(b, 'stone', 0.5, 0.5, 0.6, trs(cx + len / 2 + 0.25, 1.3, cz), stoneO());
   // a ladder up to the hoist door of the upper storey on the left gable
   ladder(b, v3(cx - len / 2 - 0.62, 0, cz + 0.4), v3(cx - len / 2 - 0.08, 3.1, cz + 0.4), v3(0, 0, 1));
-  // sacks of flour by the door
-  sack(b, cx + 1.9, cz + dep / 2 + 0.5, 0.3, '#c4bba6');
-  sack(b, cx + 2.3, cz + dep / 2 + 0.9, 1.3, '#c4bba6');
+  // the flour sacks by the door are the yard stock (drawn from the building's flour, D-71)
   // waterwheel (separate part): undershot/breastshot, 3.6 m diameter, 0.8 m wide, axis along X
   const wb = new PartBuilder({ seed: 77, ao: 0, dirt: 0 });
   const R = 1.8, W = 0.8;
@@ -670,7 +672,7 @@ function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['
   }
   rod(wb, 'wood', v3(-1.6, 0, 0), v3(W / 2 + 0.25, 0, 0), 0.13, 0.13, 8, { color: '#4a3d31' });
   const wheel = { parts: wb.build(), pivot: v3(wx, 1.3, cz), axis: 'x' as const };
-  return { gate: v3(cx + 0.8, 0, 4), wheel, worker: { kind: 'sack', at: v3(1.9, 0, 2.1), yaw: -Math.PI / 2 - 0.4 } };
+  return { gate: v3(cx + 0.8, 0, 4), wheel, worker: { kind: 'sack', at: v3(1.9, 0, 2.1), yaw: -Math.PI / 2 - 0.4 }, yard: { at: v3(cx + 2.0, 0, cz + dep / 2 + 1.3), yaw: Math.PI / 2 } };
 }
 
 function bakery(b: PartBuilder): Partial<BuildingModel> {
@@ -713,7 +715,7 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
     b.add('wood', new CylinderGeometry(0.22, 0.18, 0.18, 12, 1, true), { color: '#7a6242', m: trs(x, 0.68, 1.0), ao: 0 });
     for (let i = 0; i < 3; i++) b.add('cloth', new SphereGeometry(1, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), { color: '#a67a3d', m: trs(x + (i - 1) * 0.1, 0.74, 1.0 + (i % 2) * 0.06, 0, i, 0, 0.1, 0.07, 0.1), ao: 0 });
   }
-  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78), worker: { kind: 'peel', at: v3(ox, 0, 1.6), yaw: Math.PI } };
+  return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78), worker: { kind: 'peel', at: v3(ox, 0, 1.6), yaw: Math.PI }, yard: { at: v3(1.3, 0, 2.7), yaw: Math.PI / 2 } };
 }
 
 function warehouse(b: PartBuilder): Partial<BuildingModel> {
@@ -978,6 +980,7 @@ export function buildingModel(kind: BuildingKind): BuildingModel {
     wheel: extra.wheel,
     smoke: extra.smoke,
     worker: extra.worker,
+    yard: extra.yard,
   };
   cache.set(kind, model);
   return model;
