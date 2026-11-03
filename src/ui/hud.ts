@@ -519,7 +519,11 @@ export class Hud {
       return;
     }
     setText(this.wbTitle, missionTitle(st.mission.id));
-    setHtml(this.wbPill, `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+    // orders in tranches (V, VI): the clock runs to the delivery now due, not to the snow — say which
+    const toTranche = dueTick !== c.deadlineTick;
+    setHtml(this.wbPill, toTranche
+      ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toTranche', { time: ticksClock(left), n: cur + 1 })}</span>`
+      : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
     this.wbPill.classList.toggle('late', late);
 
     const fc = pace ? forecastFor(world, pace) : null;

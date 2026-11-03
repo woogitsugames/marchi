@@ -407,6 +407,7 @@ export const en: FullDict = {
   'hud.worstShow': 'Show: {name}',
   'hud.stallsNext': 'Stalls: {n} — show the next one',
   'contract.toSnow': '{time} to snow',
+  'contract.toTranche': '{time} to delivery {n}',
   'tool.wagonShort': '{n} short',
   // session 6 (D-46…): see PENDING_KEYS
   'letter.start': 'To work',

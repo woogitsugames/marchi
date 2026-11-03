@@ -410,6 +410,7 @@ export const pl = {
   'hud.worstShow': 'Pokaż: {name}',
   'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
   'contract.toSnow': '{time} do śniegu',
+  'contract.toTranche': '{time} do dostawy {n}',
   'tool.wagonShort': 'brak {n}',
   // session 6 (D-46…): see PENDING_KEYS
   'letter.start': 'Do dzieła',
@@ -797,6 +798,7 @@ export const PENDING_KEYS = [
   'hud.speedHint',
   'menu.bestAria',
   'why.pace.waitTranche',
+  'contract.toTranche',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
