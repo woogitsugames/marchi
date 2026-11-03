@@ -1812,6 +1812,17 @@ body.is-flex .rail { z-index: 1; }
 .bubble.is-critical .bb-t { background: var(--wine); }
 .bubble .bb-t[hidden] { display: none; }
 @keyframes breathe { 0% { transform: translateY(4px); } 100% { transform: none; } }
+/* first critical stall of the mission (BACKLOG P3 "diagnosis snapshot"): a wine ring leaves the pin's head three
+   times (240 ms each, then still), and the worst-stall card warms for 2 s — no bounce, the camera stays */
+.bubble.is-first .bb::after {
+  content: ''; position: absolute; inset-block-start: 4px; inset-inline-start: 4px; width: 32px; height: 32px; border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--wine), 0 0 0 4.5px rgb(238 228 204 / .7); opacity: 0; pointer-events: none;
+  animation: pin-ring 660ms ease-out 3;
+}
+.bubble .bb { position: relative; }
+@keyframes pin-ring { 0% { opacity: .9; transform: scale(1); } 36% { opacity: 0; transform: scale(1.75); } 100% { opacity: 0; transform: scale(1.75); } }
+.stall-row .stall-card { transition: filter 200ms var(--ease); }
+.stall-row.is-first .stall-card { filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35)) drop-shadow(0 0 2px rgb(226 182 92)) drop-shadow(0 0 6px rgb(200 150 62)); }
 .eta-tag {
   position: absolute; left: 0; top: 0;
   display: flex; align-items: center; gap: 6px;

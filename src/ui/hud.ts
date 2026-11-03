@@ -446,6 +446,19 @@ export class Hud {
     for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road'));
   }
 
+  /**
+   * "Diagnosis snapshot" (BACKLOG P3): the worst-stall card lights up once for ~2 s when the mission's first
+   * critical stall appears, and the screen reader hears its cause. No camera move, no new text: the card already
+   * says what stands and why, and its eye button is the "show me".
+   */
+  flashFirstStall(world: World, id: number): void {
+    this.stallRow.classList.remove('is-first');
+    void this.stallRow.offsetWidth; // restart the transition if it is still running
+    this.stallRow.classList.add('is-first');
+    window.setTimeout(() => this.stallRow.classList.remove('is-first'), 2000);
+    this.announce(`${buildingName(world, id)}: ${stallReason(world, id)}`);
+  }
+
   /** Worst stall card and alarm seal; only rewritten when the worst stall, its cause or the count change. */
   private updateStalls(world: World, stalls: StallEntry[]): void {
     this.stalls = stalls;

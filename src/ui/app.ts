@@ -132,6 +132,8 @@ export class App implements PanelNav {
   private perfAt = 0;
   /** ?diag=1: frame-time percentiles per speed bucket, JSON for docs/PERF.md (BACKLOG P2). */
   private diagPanel: DiagPanel | null = null;
+  /** The mission's first critical stall has had its one-time cue (markers.flash + hud.flashFirstStall). */
+  private firstCritSeen = false;
   private save: SaveInfo | null = null;
   /** Unfinished contract saves by mission id (newest per mission), for the menu rows and the ask sheet (D-36). */
   private unfinished = new Map<string, SaveInfo>();
@@ -373,6 +375,7 @@ export class App implements PanelNav {
     this.view.setWorld(w);
     this.lastSaveTick = w.state.tick;
     this.endShown = false;
+    this.firstCritSeen = false;
     this.selection = null;
     this.followId = null;
     this.view.setSelection(null);
@@ -626,6 +629,11 @@ export class App implements PanelNav {
       const stalls = this.ranking.get(this.world, this.loop.journal.length);
       this.hud?.update(this.world, this.pace, stalls);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
+      if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
+        this.firstCritSeen = true;
+        this.markers.flash(stalls[0].id);
+        this.hud?.flashFirstStall(this.world, stalls[0].id);
+      }
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();

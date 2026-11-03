@@ -41,6 +41,9 @@ export class Markers {
   /** Per building: the last status seen and what was derived from it (sig strings reused between frames). */
   private pinCache = new Map<number, { status: object; ticks: number; st: string; calm: boolean; crit: boolean; sig0: string; sig1: string }>();
   private deliveries: Delivery[] = [];
+  /** "Diagnosis snapshot" (BACKLOG P3): the pin of the mission's first critical stall rings once, briefly. */
+  private flashId = -1;
+  private flashUntil = 0;
   /**
    * Screen rects (markers-root px) of the HUD pieces and the sheet that sit above the map. A pin under one of
    * them would only peek out from behind the panel and steal taps meant for it, so it fades out until the
@@ -82,7 +85,7 @@ export class Markers {
     b.used = true;
     b.el.dataset.k = key;
     this.byKey.set(key, b);
-    b.el.classList.remove('is-shown', 'breathe');
+    b.el.classList.remove('is-shown', 'breathe', 'is-first');
     return b;
   }
 
@@ -116,6 +119,8 @@ export class Markers {
           () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world)}`);
         // how long it has stood, from 20 s on (BACKLOG P2): a pin that keeps counting is the one to read first
         this.setTime(b, bd.stalledTicks >= PIN_TIME_TICKS ? Math.floor(bd.stalledTicks / TICK_HZ) : -1);
+        const ring = bd.id === this.flashId && performance.now() < this.flashUntil;
+        if (ring !== b.el.classList.contains('is-first')) b.el.classList.toggle('is-first', ring);
       }
       for (const w of world.state.wagons) {
         if (!isWagonWait(w.status)) continue;
@@ -286,7 +291,14 @@ export class Markers {
     this.draft.classList.remove('is-shown');
   }
 
+  /** Ring the building's pin for `ms` (three 240 ms rings, CSS .is-first); the camera does not move. */
+  flash(id: number, ms = 2000): void {
+    this.flashId = id;
+    this.flashUntil = performance.now() + ms;
+  }
+
   reset(): void {
+    this.flashId = -1;
     for (const b of this.pool) { b.el.remove(); }
     this.pool = [];
     for (const st of this.stamps) st.el.remove();
