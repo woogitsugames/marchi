@@ -181,14 +181,16 @@ Następne decyzje od **D-62**.
 
 ## Stan nocy 3 — 2026-11-03 (gałąź `claude/w-night3`, agent nocny 3)
 Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze kontraktów bez zmian):
-1. **`npm run layout`** (`tools/layout-check.mjs`, D-62) — pomiar zamiast oceny: 8 ekranów (menu, ustawienia, HUD,
-   Dlaczego stoi?, wóz, Buduj, list M7, list końcowy) × 412×915, 915×412, 904×1000, 360×740, Flip 360×380 ×
-   pl/de/ru/ar/pseudo = 200 zadań, ~8 min (mapa Canvas2D; `--three` na mapie 3D, ~40 s/zadanie). Sprawdza: akcje w
+1. **`npm run layout`** (`tools/layout-check.mjs`, D-62) — pomiar zamiast oceny: 13 ekranów (menu, ustawienia, HUD,
+   Dlaczego stoi?, wóz, Buduj, list M7, list końcowy, zamek M5, Wolna dolina, targ, list otwierający, awans) ×
+   412×915, 915×412, 904×1000, 360×740, Flip 360×380 × pl/de/ru/ar/pseudo = 325 zadań, ~13 min (mapa Canvas2D; `--three` na mapie 3D, ~40 s/zadanie). Sprawdza: akcje w
    widoku, przecięcia HUD × arkusz × pinezki, cele ≥ 48 px, tekst poza ramką/ucięty, tekst/przycisk przykryty innym
    elementem, przewijanie w bok, błędy konsoli. Kontrola pozytywna 5/5 (wstrzyknięty zły CSS musi czerwienić).
    Raport `docs/layout/layout-report.json`. Naprawione dzięki niemu: pinezki pod HUD-em gasną, list zwija się przy
    arkuszu od dołu, kadr kamery liczy menu/żetony/tempo jako przeszkody, pasek Flip ukryty pod arkuszem, przyciski-
-   linki ar ≥ 48 px, **wstęga listu przewozowego malowała się nad nagłówkiem listu końcowego** (warstwy UI izolowane).
+   linki ar ≥ 48 px, **wstęga listu przewozowego malowała się nad nagłówkiem listu końcowego** (warstwy UI izolowane),
+   w poziomie komunikat pory roku zakrywał zwiniętą kartę „Wieści z doliny” (teraz pod nią), na Flipie komunikat na
+   dymku (teraz na dole), na 904×1000 arkusz boczny zaczynał się na żetonach i tempie (teraz pod nimi).
 2. **i18n**: `?lang=pseudo` (angielski z akcentami, +40 %, ⟦ ⟧; test), `hyphens:auto` + `overflow-wrap` na
    nagłówkach arkusza/listu/menu/wstęgi i wierszu stanu. Łączenia list (`Intl.ListFormat`) i liczby (fmt.ts) były już
    zrobione; zostaje `{n} {cells}` → blok plural (BACKLOG).

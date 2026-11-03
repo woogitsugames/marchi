@@ -68,6 +68,11 @@ const SCENES = [
   { name: 'build', q: 'play=m1&speed=0&tool=build' },
   { name: 'waybill-m7', q: 'play=m7&speed=0&ff=120' },
   { name: 'end', q: 'play=m1&bot=1&ff=600' },
+  { name: 'castle', q: 'play=m5&speed=0&ff=60', act: (p) => p.evaluate(() => { const A = window.__marchia.app; A.go('building', A.world.state.mission.contract.castle, true); }) },
+  { name: 'valley', q: 'play=sandbox&speed=0&ff=240&slot=layout' },
+  { name: 'market', q: 'play=sandbox&speed=0&market=1&slot=layout' },
+  { name: 'opening', q: 'play=m1&tut=1&speed=0' },
+  { name: 'rankup', q: 'play=sandbox&speed=0&slot=layout', act: (p) => p.evaluate(() => window.__marchia.rankUp(2)) },
 ];
 
 // ------------------------------------------------------------------ in-page measurement
@@ -107,7 +112,7 @@ function measure() {
   const out = { vw, vh, body: document.body.className, offscreen: [], overlap: [], small: [], overflow: [], hscroll: false };
 
   // a modal letter / scrim covers everything below it on purpose: then only the top layer is checked
-  const scrims = [...document.querySelectorAll('.scrim')].filter(shown);
+  const scrims = [...document.querySelectorAll('.scrim, .rank-letter-wrap')].filter(shown);
   const scope = scrims.length ? scrims[scrims.length - 1] : document.body;
   // world pins (and their timers) follow the camera and are clipped by #markers at the screen edge: only their
   // overlaps with the HUD are checked, below

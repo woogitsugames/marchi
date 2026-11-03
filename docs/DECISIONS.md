@@ -839,7 +839,7 @@ were taken too early. Shots `docs/shots/night2-bldg-*`. (decided)
 
 **D-62 — Measured layout check; pins under the HUD fade; a bottom sheet folds the waybill.** `npm run layout`
 (`tools/layout-check.mjs`) opens menu, settings, HUD, the why-sheet, the wagon sheet, the build tool, the M7
-waybill and the end letter at 412×915, 915×412, 904×1000, 360×740 and the Flip cover 360×380, in pl/de/ru/ar and
+waybill, the end letter, the castle and market sheets, the free valley, the opening and rank-up letters at 412×915, 915×412, 904×1000, 360×740 and the Flip cover 360×380, in pl/de/ru/ar and
 the pseudo-locale, and measures instead of eyeballing: action controls inside the viewport (or in a scroller that
 is), no intersection between the floating HUD pieces, the sheet and the world pins (a component's own badge or
 ribbon hanging over its edge is not a component), targets ≥ 48 px, no text spilling out of its box or clipped,
@@ -858,5 +858,11 @@ treated the empty `.topbar` box as the top obstacle; its pieces (menu, chips, sp
 line of text and every control's middle, hit-tested with all elements hit-testable: the first element that paints
 there must be the element itself) — it found the waybill ribbon (z-index 1 inside the HUD layer) painted over the
 end letter's heading whenever the heading wrapped (de/pl on 360 px); each UI layer (`#markers`, `#hud`, `#menu`,
-`#sheets`, `#tutorial`, `#overlay`) is now `isolation: isolate`, so DOM order alone stacks the layers. (decided; (2) is a behaviour change —
+`#sheets`, `#tutorial`, `#overlay`) is now `isolation: isolate`, so DOM order alone stacks the layers. (7) Five more
+screens (castle sheet M5, free valley, market sheet, opening letter, rank-up letter) found: in landscape the
+season notice sat on the folded valley-news card (same corner) — notices now hang under the card (`--ev-b`,
+measured with the top cluster; a fixed card has no offsetParent, which had hidden it from the measurement); on the
+Flip cover the notice moves to the bottom edge so it never sits on a toast; on tall unfolded screens (904×1000,
+side sheet without landscape) the game sheet started at the top edge over the chips and speed bar — it now starts
+under them like the landscape sheet. (decided; (2) is a behaviour change —
 listed for the owner in HANDOVER, revert = drop `syncSheetFold()`)

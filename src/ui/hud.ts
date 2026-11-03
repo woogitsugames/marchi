@@ -287,13 +287,15 @@ export class Hud {
 
   /**
    * --hud-top: bottom edge of the whole top cluster (bar + contract); --bar-b: bottom of the chips and
-   * speed alone. Notices and the landscape build shelf hang below them. Measured on resize only.
+   * speed alone; --ev-b: bottom of the landscape news card (0 when it is not beside the bar). Notices and the landscape build shelf hang below them. Measured on resize only.
    */
   private measureTop(): void {
-    let y = 0, bar = 0;
+    let y = 0, bar = 0, ev = 0;
     for (const el of this.root.querySelectorAll<HTMLElement>('.hud-top > *, .topbar > *')) {
+      // landscape: the news card hangs beside the contract, not below it; notices go under the card (--ev-b).
+      // (checked first: a position: fixed element has no offsetParent)
+      if (!el.hidden && el.classList.contains('ev-card') && getComputedStyle(el).position === 'fixed') { ev = el.getBoundingClientRect().bottom; continue; }
       if (el.hidden || !el.offsetParent || el.classList.contains('topbar')) continue;
-      if (el.classList.contains('ev-card') && getComputedStyle(el).position === 'fixed') continue; // landscape: beside, not below
       const b = el.getBoundingClientRect().bottom;
       y = Math.max(y, b);
       if (el.matches('.chips, .speed, .menu-btn')) bar = Math.max(bar, b);
@@ -301,6 +303,7 @@ export class Hud {
     const root = document.documentElement.style;
     root.setProperty('--hud-top', `${Math.round(y)}px`);
     root.setProperty('--bar-b', `${Math.round(bar)}px`);
+    root.setProperty('--ev-b', `${Math.round(ev)}px`);
   }
 
   dispose(): void {
@@ -679,6 +682,7 @@ export class Hud {
 
   showNotice(icon: IconId, text: string, ms = 5200): void {
     this.notice?.remove();
+    this.measureTop(); // the news card may have appeared since the last resize: the notice goes under it (--ev-b)
     const el = h('div.notice', { role: 'status', html: `${iconSvg(icon, 26)}<span>${text}</span>` });
     const wrap = h('div.notice-wrap', null, el);
     this.notice = wrap;
