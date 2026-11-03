@@ -502,7 +502,9 @@ body.is-side .sheet-grip::before { display: none; }
 .link.is-self { --frame: #b9b09e; --fill: var(--parchment); }
 .link.is-root { --fill: #e2d3c2; }
 
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: baseline; font-size: 15px; }
+/* rows centre, not baseline: a value led by an icon (cargo, speed) or a 48 px link (destination) has no text
+   baseline of its own, so baseline alignment dropped the label to the icon's bottom edge, ~half a row low */
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; font-size: 15px; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kv dd.eta { color: #7d5d23; font-size: 17px; }
@@ -768,6 +770,26 @@ body.is-flex .perf { top: 8px; bottom: auto; }
 
 /* ---- book posture (vertical hinge): a side sheet stays inside the right-hand segment */
 body.is-book.is-side .sheet { width: min(380px, calc(var(--seg-right-w) - 20px)); }
+/* the coins / time chips and the speed pad stack in the right-hand segment: in one row (≈ 460 px) they ran
+   into the crease of a Fold inner screen (right segment ≈ 440 px) */
+body.is-book.is-split:not(.is-landscape) .hud-top {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu contract . chips" "menu contract . speed" ". events . .";
+}
+/* the rail keeps each half in its own segment: the tools (six in the valley ≈ 490 px) shrink towards 48 px
+   instead of running over the crease, and the worst-stall card stays on the other side of it */
+body.is-book.is-split .rail-tools, body.is-book.is-split .stall-row {
+  max-width: calc(min(var(--book-start), var(--seg-right-w)) - 2 * 8px - 8px);
+}
+body.is-book.is-split .tool { flex: 0 1 76px; width: 76px; }
+/* toasts centred in the start segment, over the tools (the open card docks in the end one), not across the crease;
+   no translate: in RTL the start edge is the right one (the base left: 50% then yields to it, over-constrained) */
+body.is-book.is-split:not(.is-flex) .toasts {
+  --seg: min(var(--book-start), var(--seg-right-w));
+  width: min(380px, calc(var(--seg) - 24px));
+  inset-inline-start: calc((var(--seg) - min(380px, calc(var(--seg) - 24px))) / 2);
+  transform: none;
+}
 
 /* hidden helpers */
 [hidden] { display: none !important; }
@@ -2007,6 +2029,9 @@ body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: ca
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
 /* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
 body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+/* Flex, wide (Fold inner half-opened): the open card starts under the coins / time / speed row, never over it —
+   the bottom segment is short, so it keeps its bottom edge (the rail sits beside it, not under it) */
+body.mode-game.is-flex.is-side .sheet { top: calc(var(--bar-b) + 6px); }
 .sheet-paper > .sp-in { clip-path: none; background: none; padding-bottom: 0; }
 body.is-side .sheet-paper { clip-path: none; padding: 18px 18px 30px; }
 body.is-side .sheet-paper > .sp-in { clip-path: none; }

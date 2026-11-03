@@ -1084,3 +1084,25 @@ footprint (the barrels' unit geometry is off its slot: beer piles sat ~0.5 m off
 0.15 m to keep clear of its rack. The clip test checks every load at the store / castle spots and that the spots
 of one building do not overlap; a new test checks what each spot shows. `docs/shots/day2-castle-store-piles.jpg`
 (m1 castle in game with planks and two baskets of bread delivered; preview of the warehouse). (decided)
+
+**D-80 — The cobble cart loop keeps its rhythm across the seam (audio only; the open half of D-77).** `cart.cobble`
+(`sfx/cart-cobble`) was 3.8 s with the wheel hits every 0.23–0.38 s, but across the seam the last hit (3.52 s) was
+followed by the next real one 0.61 s later — the old crossfade had left only a faint hit (29 % of a normal one) in
+the gap, heard as a stumble on every pass of a cobbled street. Re-cut from the shipped files (source still
+unreachable), the same way as D-77: each of OGG and M4A decoded from its own file, the 3.514 s from 0.20 s taken
+(11 hits; 3.514 = last hit + 0.31 s − first hit, so the hit after the wrap falls on the beat), the last 0.10 s
+crossfaded (raised cosine) with the 0.10 s just before the cut start, so the wrap continues the signal it came from;
+both crossfade halves lie between hits. Peak kept (−6.3 dB), pipeline settings (24 kHz mono, 28 kb/s). Measured
+onsets of the decoded files: seam gap 0.32 s (OGG) / 0.35 s (M4A, its own encode) among 0.23–0.38 s hits.
+`audio_sources.json` says `seconds: 3.51`; provenance hashes and ASSETS.md updated; `process_audio.py --check`
+PASS. (decided)
+
+**D-81 — Beer barrels lie on the wagon bed and in their pile (render only; bug).** Each barrel unit got a random
+"roll" as the yaw of the same Euler that laid it on its side (`trs(…, π/2, r, 0)`, order YXZ: the yaw is applied
+last, about the world vertical), so instead of turning the staves about the barrel's own axis it swung the whole
+barrel in a random direction from its slot: on the wagon the six-barrel load reached x 1.11 m (side boards at
+±0.64) and z −1.86, barrels hung over the side, in the brewery yard pile and in the castle / warehouse piles they
+lay askew in a heap. This is the "barrels' unit geometry is off its slot" of D-79. The roll is now a separate
+rotation about the barrel's axis after laying it down; load bounds x ±0.61, z −1.44..0.25. The brewery yard spot
+moved 0.1 m (x 1.6 → 1.5) so the straight two-by-two pile clears its rack (clip test). Model-preview view
+`beercargo`. `docs/shots/day3-beer-barrels.jpg` (wagon and yard, before / after). (decided)

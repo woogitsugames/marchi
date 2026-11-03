@@ -312,7 +312,9 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
     case 'beer': {
       // barrel on its side along Z: bulging staves, two dark iron hoops each end, a bung
       const prof = [[0.001, 0], [0.25, 0], [0.25, 0.03], [0.29, 0.2], [0.31, 0.415], [0.29, 0.63], [0.25, 0.8], [0.25, 0.83], [0.001, 0.83]].map(([r, y]) => new Vector2(r * 0.97, y * 0.95));
-      const mm = m.clone().multiply(trs(0, 0, -0.39, Math.PI / 2, b.r(0, 3), 0));
+      // lay it along Z, then roll it about its own axis (the staves and bung turn, the barrel stays on its slot);
+      // a yaw in the same Euler turned the whole barrel in a random direction, half out over the side boards
+      const mm = m.clone().multiply(trs(0, 0, -0.39, Math.PI / 2)).multiply(trs(0, 0, 0, 0, b.r(0, 3), 0));
       b.add('wood', new LatheGeometry(prof, 12), {
         color: '#6a5641',
         m: mm,

@@ -10,6 +10,7 @@ import { findPath, suggestConnection, type RoadSuggestion, type World } from '..
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, h } from './dom';
 import type { Tool } from './hud';
+import { HINGE_GUTTER } from './layout';
 
 export type TutorialResult = 'skipped' | 'done';
 
@@ -68,6 +69,15 @@ function visibleBox(el: Element | null): Box | null {
 }
 
 /** An engraved double rule around a box: an uneven outer line and a fine inner one (deterministic jitter). */
+/** Half-opened book posture (vertical hinge): the crease and its gutter, where the note or the arrow would fold. */
+function bookCrease(): Box | null {
+  if (!document.body.classList.contains('is-book')) return null;
+  const cs = getComputedStyle(document.documentElement);
+  const a = parseFloat(cs.getPropertyValue('--book-start')), b = parseFloat(cs.getPropertyValue('--book-end'));
+  if (!(b > a)) return null;
+  return { x: a - HINGE_GUTTER, y: 0, w: b - a + 2 * HINGE_GUTTER, h: window.innerHeight };
+}
+
 function ringSvg(w: number, h: number): string {
   let seed = (Math.round(w) * 73856093) ^ (Math.round(h) * 19349663);
   const rnd = (): number => {
@@ -329,7 +339,9 @@ export class Tutorial {
     }
 
     const tg = this.target();
-    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 6) : null;
+    // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
+    // edge (the waybill counts in landscape) stays clear of them
+    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 9) : null;
     // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
     const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();
@@ -379,8 +391,11 @@ export class Tutorial {
     cand.sort((a, b) => (b.room + (b.d === 'left' || b.d === 'right' ? 40 : 0)) - (a.room + (a.d === 'left' || a.d === 'right' ? 40 : 0)));
     const note = this.notePlaced;
     // never across other controls (coins, speed, neighbouring tools) or the open card
-    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap')]
+    // (the waybill's ribbon and seal row too: in Flex the rows have the most room above, through the title)
+    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
       .map(visibleBox).filter((b): b is Box => !!b && !hits(grow(box, -8), b));
+    const crease = bookCrease();
+    if (crease) blockers.push(crease);
     for (const c of cand) {
       if (c.room < L + 4) continue;
       if (note && hits(grow(note, 4), c.b)) continue;
@@ -397,7 +412,7 @@ export class Tutorial {
     const q = (s: string): Box | null => visibleBox(document.querySelector(s));
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
-    const obstacles = [waybill, sheet, q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target)].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     const measure = (w: number): number => {

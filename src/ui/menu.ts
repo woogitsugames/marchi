@@ -412,7 +412,8 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
     update(sheet: Sheet) {
       setHtml(sheet.icon, iconSvg('pause', 30));
       sheet.kicker.textContent = t('menu.paused');
-      sheet.title.textContent = world.state.mission.contract ? t('menu.contractItem') : t('hud.sandbox');
+      // the contract's own title ("I. Chleb i deski"), not the generic word: the pause names what is paused
+      sheet.title.textContent = world.state.mission.contract ? missionTitle(world.state.mission.id) : t('hud.sandbox');
       const note = slot ? `<p class="slot-note"><span class="slot-no" aria-hidden="true">${slotNumeral(slot)}</span>${esc(t('valley.saving', { n: slotNumeral(slot) }))}</p>` : '';
       const ask = slot
         ? t('valley.confirmFresh', { n: slotNumeral(slot), name: rankName(world.state.town?.rank ?? 0), renown: fmtInt(world.state.town?.renown ?? 0) })
