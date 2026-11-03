@@ -1106,3 +1106,47 @@ lay askew in a heap. This is the "barrels' unit geometry is off its slot" of D-7
 rotation about the barrel's axis after laying it down; load bounds x ±0.61, z −1.44..0.25. The brewery yard spot
 moved 0.1 m (x 1.6 → 1.5) so the straight two-by-two pile clears its rack (clip test). Model-preview view
 `beercargo`. `docs/shots/day3-beer-barrels.jpg` (wagon and yard, before / after). (decided)
+
+**D-82 — A won contract's seal is pressed onto the waybill, not over the middle of the screen (UI only).** The
+first version of the seal moment (owner decision 6) pressed the seal in the middle of a dimmed screen — a generic
+"achievement" stamp that had nothing to do with the document the player had watched all game. Now the seal lands
+on the waybill itself: the map and the rest of the HUD dim around a lit window over the waybill's parchment
+(`box-shadow` spread from a transparent box in the overlay layer, so the HUD layer underneath keeps its own pixels
+and nothing is cloned), the seal comes down 260 ms (scale 1.5 → 1 → 0.96, rotate −12° → −5°, shadow from lifted to
+tight on the paper — monotonic, no overshoot), the squeezed wax rim spreads once, and the impression rests on the
+goods until the letter at 1.2 s. It is placed below the waybill's head (earned seals and the clock stay readable),
+at 64 % of the line (36 % in RTL), size 64–96 px by the body height (landscape 64 px). A folded waybill gets the seal
+on its medallion. The waybill's three seals switch from the forecast to the seals actually earned at the moment of
+winning (they showed three empty seals). Sound: the existing `contract.won` (`sfx/wax-seal`) already fires on the
+tick of the win from the audio bindings — kept there (tests/audio.test.ts) rather than moved into the UI.
+`prefers-reduced-motion`: no cue at all, straight to the letter (it held a collapsed stamp for 0.5 s before). One
+tap or key still skips. Lost contracts unchanged. `docs/shots/day4-seal-*.jpg`. (decided)
+
+**D-83 — Mud on the wagon card: one plain comparison with cobbles, both against the normal (dry dirt) pace
+(BACKLOG H4).** The pace row said "mud — 52% of normal speed; cobbles help": the player learnt the loss but not
+what paving would buy. It now reads "Błoto: 52% prędkości — na bruku 114%" / "Mud: 52% speed — on cobbles 114%"
+(thaw: "Roztopy: …"). Both numbers share one baseline — the wagon's dry, flat pace on the stretch it is on — so the
+cobble figure is honestly above 100 % (cobbles 4.8 vs dirt 3.6, ×0.9 in rain; the thaw does not soften them)
+and carries the same grade and load factor as the mud figure. Rejected: "on cobbles 100 %" (percent of each
+surface's own dry pace) — it hides that cobbles are also faster in dry weather, which is the reason to pave. The
+number comes from a read-only field `Slowdown.paved` in `wagonSlowdown` (src/sim/diagnose.ts; no state, no hash
+change). The row is ink-coloured, the status line stays the driving status and never turns red; a test checks a
+muddy wagon never carries a stall status (`tests/mud-pace.test.ts`). Percentages through `fmtPercent` (Intl);
+`dir="auto"` on the text, so the English fallback reads correctly in RTL until the translation round. New keys
+`wagon.mudVsCobble`, `wagon.thawVsCobble` (PENDING_KEYS); `wagon.slowMud`/`wagon.slowThaw` are now unused
+(left for the dictionary clean-up, like `hud.coins`). `docs/shots/day4-mud-*.jpg`. (decided)
+
+**D-84 — Full storage says its count, its cap and its effect (BACKLOG H5; UI only).** "Pełno zboża — brak wozu
+do odbioru" named the state but not that the yard is at its limit, and "Spichlerz pełny" had no numbers; the
+output chip with 8/8 sat at the bottom of the card. Now, right under the status (or the chain), a panel-alert
+box (the kit's wine-edged panel, mirrored in RTL) reads "8/8 zboża — brak miejsca na nowy towar" (a yard short of
+room for one more batch: "7/8 … — następna partia (2) się nie zmieści") or, for a granary, "12/12 — brak miejsca
+na odbiór" (held + already promised, the same count the sim uses for STORAGE_FULL). Below it the effect, in the
+chain's terms: "Skutek: produkcja stoi, dopóki towar nie wyjedzie." / "Skutek: spichlerz nie przyjmie nic
+więcej.", then the buildings that suffer, one tap each (48 px): those whose cause chain runs through this one
+(a producer refused by a full granary) and, for a full yard, the customers short of this very good meanwhile
+("Na drewno czeka: Tartak" — the wood lies here while the sawmill waits for a wagon). A building whose chain
+ends at a full one shows the same count with that building's name as a link. Nothing is promised: the existing
+cure section (buy a wagon / build a granary only where the mission lets you build one, otherwise the hint) stays
+the only action. Pending keys read the English fallback as `lang="en" dir="ltr"` (new `translated()` in
+i18n/index.ts), as the codex does. Keys `why.full.*` (PENDING_KEYS). `docs/shots/day4-full-*.jpg`. (decided)

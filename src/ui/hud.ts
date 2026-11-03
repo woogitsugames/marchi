@@ -4,7 +4,7 @@
 // through the stalls, and the row of tool cards. Plus toasts, notices and the rank-up letter.
 // The DOM is built once; update() only writes text, widths and classes when a value changes.
 import {
-  GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, sandboxStatus, seasonAt, seasonal,
+  GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
   type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods,
@@ -120,6 +120,7 @@ export class Hud {
   private wbPill: HTMLElement;
   private wbBody: HTMLElement;
   private sealOnly: HTMLElement;
+  private wbPanel: HTMLElement;
   private coins: HTMLElement;
   private dayIcon: HTMLElement;
   private day: HTMLElement;
@@ -199,6 +200,7 @@ export class Hud {
     this.wbPill = h('span.snow-pill.num');
     this.wbBody = h('div.wb-body');
     const panel = h('div.wb-panel', null, h('div.wb-head', null, this.wbSeals, this.wbPill), this.wbBody);
+    this.wbPanel = panel;
     const waybill = h('div.waybill', { role: 'region', 'aria-label': t('contract.title') }, ribbon, panel);
     this.sealOnly = h('button.seal-only', { 'aria-label': t('hud.expand') });
     this.waybillWrap = h('div.waybill-wrap', null, waybill, this.sealOnly);
@@ -377,6 +379,17 @@ export class Hud {
     this.applyFold();
   }
 
+  /**
+   * Where the castle's seal lands when a contract is won (D-82): the waybill's parchment, or its seal
+   * medallion while the waybill is folded; null when no waybill is on screen.
+   */
+  sealTarget(): HTMLElement | null {
+    if (this.waybillWrap.hidden) return null;
+    const el = this.folded() ? this.sealOnly : this.wbPanel;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 ? el : null;
+  }
+
   /** After a layout change (rotation, fold): re-measure the top cluster. */
   relayout(): void {
     requestAnimationFrame(() => this.measureTop());
@@ -533,11 +546,13 @@ export class Hud {
     const fc = pace ? forecastFor(world, pace) : null;
     const ready = !!fc && fc.ready && fc.bottleneck >= 0;
     const missed = tr.filter((x) => x.missed).length;
-    const sealN = tr.length ? 3 - missed : ready ? fc!.seals : 0;
-    const sealsSig = `${sealN}|${ready}|${tr.length}`;
+    // won: the seals actually earned, full strength (the castle's seal is being pressed onto this waybill, D-82)
+    const won = st.mission.result === 'won';
+    const sealN = won ? stars(world) : tr.length ? 3 - missed : ready ? fc!.seals : 0;
+    const sealsSig = `${sealN}|${ready}|${tr.length}|${won}`;
     if (sealsSig !== this.sealsSig) {
       this.sealsSig = sealsSig;
-      setHtml(this.wbSeals, seals(sealN, t('contract.stars', { n: sealN }), !tr.length && !ready));
+      setHtml(this.wbSeals, seals(sealN, t('contract.stars', { n: sealN }), !won && !tr.length && !ready));
     }
     const fcSig = ready ? `${fc!.seals}:${Math.floor((fc!.finishTick - st.tick) / TICK_HZ)}:${fc!.bottleneck}:${Math.round((fc!.goods[fc!.bottleneck]?.perMin ?? 0) * 10)}` : '';
     const sig = `${have.join(',')}|${tr.map((x) => `${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}`).join('')}|${fcSig}|${getLang()}`;

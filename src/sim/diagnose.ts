@@ -1,5 +1,5 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, LOAD_TICKS, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
+import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
 import { buildingById } from './logistics';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, slopeFactor, type World } from './network';
 import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
@@ -204,6 +204,12 @@ export interface Slowdown {
   factor: number;
   /** Grade of the current edge, positive uphill. */
   grade: number;
+  /**
+   * The same edge paved with cobbles, in the same weather and on the same grade, divided by the same dry
+   * baseline as `factor` (read-only comparison for the wagon card: "mud 55 % — on cobbles 120 %", H4).
+   * Only meaningful on a dirt track; equals `factor` elsewhere.
+   */
+  paved: number;
 }
 
 /**
@@ -221,9 +227,12 @@ export function wagonSlowdown(world: World, wagonId: number): Slowdown | null {
   const raining = isRaining(world.state), thaw = thawing(world);
   const g = a !== b ? grade(world.terrain, a, b) : 0;
   const dry = cellSpeed(world, cell, false);
-  const now = cellSpeed(world, cell, raining, thaw) * slopeFactor(g, w.cargoQty > 0);
+  const slope = slopeFactor(g, w.cargoQty > 0);
+  const now = cellSpeed(world, cell, raining, thaw) * slope;
   const muddy = surface === 'dirt' && (raining || thaw);
-  return { surface, raining, mud: muddy, thaw: muddy && thaw && !raining, factor: now / dry, grade: g };
+  // cobbles under the same rain (the thaw does not soften them), same grade, against the same dry dirt baseline
+  const paved = surface === 'dirt' ? SPEED_COBBLE * (raining ? RAIN_COBBLE : 1) * slope / dry : now / dry;
+  return { surface, raining, mud: muddy, thaw: muddy && thaw && !raining, factor: now / dry, grade: g, paved };
 }
 
 /**

@@ -125,6 +125,11 @@ export function formatPlural(s: string, params: Record<string, string | number>)
 }
 
 /** Translate with plural blocks and {param} substitution; falls back to English, then the key. */
+/** The current language has its own text for `key` (not the English per-key fallback of a pending key). */
+export function translated(key: MessageKey): boolean {
+  return dicts[current]?.[key] !== undefined || current === 'en';
+}
+
 export function t(key: MessageKey, params?: Record<string, string | number>): string {
   let s: string = dicts[current]?.[key] ?? en[key] ?? key;
   if (pseudo) {
