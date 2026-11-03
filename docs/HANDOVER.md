@@ -479,3 +479,15 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - Samouczek m1 krok 5: **jedno przesunięcie kamery nad przeprawę — akceptowane** (wyjątek od „nigdy nie rusza kamery”, D-91).
 - m8: kamieniołom czekający na rezerwę kamienia — **spokojna pinezka** z linią „W spichlerzu jest N kamieni” (D-95) — zostaje.
 - Od ~21:00 znów do 2 agentów Opus (deweloper + researcher).
+
+## Plan nocy 2026-11-03/04 (właściciel ~22:15)
+- Przerwa do resetu limitu **01:50 Brussels**; budzik `send_later` 01:51 (`trig_01XbYzYTQ84hRVHD1m32jheV`); godzinny cykl
+  `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony do resetu** — włączyć po wznowieniu, prompt: do 2 agentów Opus bez limitu godzin.
+- Deweloper w nocy: **„wszystko po kolei”** — najpierw poprawki z `docs/research/2026-11-03-first-10-minutes-b.md`
+  („Naprawa” zawsze widoczna w arkuszu, zwłaszcza w poziomie; krok 5 w poziomie — zamknąć kartę wozu, notatka omija
+  `.rail-tools`; koniec samouczka wyłącza „Drogę”; przycisk naprawy nie znika przy odświeżaniu arkusza; sprawdzić,
+  czy „oko → Naprawa” kończy misję I), potem reszta day7 (ranga 5 w dolinie, kodeks dla spokojnych przypadków, warianty
+  Flip), potem backlog po kolei: czytelność → grafika/animacje (tartak, rolnik, rybak) → misja-lekcja kupna wozu → wydajność.
+- Researcher w nocy: **balans misji I–XII** (boty na różnych strategiach, osiągalność 1/2/3 pieczęci po dzisiejszych zmianach),
+  potem dokończyć pomiar „pierwszych 10 minut” (`node tools/first10-minutes.mjs 915x412`, potem `412x915`, osobno).
+- W nocy bez APK (jedno rano), decyzje do „Decyzje na rano”.
