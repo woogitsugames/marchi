@@ -62,9 +62,17 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
   return fixSection(btn, hint, short > 0);
 }
 
-/** The "Naprawa" section: header, the fix button and its hint. */
-function fixSection(btn: string, hint: string, _why: boolean): string {
-  return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix">${btn}${hint}</div>`;
+/**
+ * The "Naprawa" section (D-100): header, the fix button in a dock that sticks to the sheet's bottom edge while
+ * the chain above it scrolls (a short landscape side sheet shows ~140 px of body), then the explaining hint in
+ * the flow. A disabled button keeps its reason ("Brakuje 10 srebra") inside the dock, next to it.
+ * The dock must be a direct box child of the scrolling body: the sheet's parts are `display: contents`.
+ */
+function fixSection(btn: string, hint: string, why: boolean): string {
+  const head = `<div class="section-h">${esc(t('fix.title'))}</div>`;
+  return why
+    ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
+    : `${head}<div class="fix fix-dock">${btn}</div><div class="fix fix-note">${hint}</div>`;
 }
 
 /**
@@ -499,7 +507,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
         `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(WAGON_REFUND) })}</span></button></div>` +
         (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
-      // the road fix sits after the chain (and the ice hint) as before, in its own part
+      // the road fix sits after the chain (and the ice hint) as before, in its own part (D-100)
       const cut = html.indexOf('<div class="sheet-actions">');
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
       setHtml(pLead!, html.slice(0, cut));

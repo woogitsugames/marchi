@@ -1395,3 +1395,25 @@ in watch mode (`Hud.compact`), with no URL flag; variant B, its CSS and the `?se
 is not added when the player folds the waybill on a big screen (the full waybill is one tap away there). Empty
 until the forecast is ready. Keys `contract.sealPace.eta/.late` (PENDING_KEYS). `day7-flip-a-m3-360x380.jpg`
 (m3, 7:00 left, "gotowe za 3:05"). (decided)
+
+**D-100 — "Naprawa" docks to the bottom edge of the "Dlaczego stoi?" sheet (UI only; first-10-minutes-b items 1,
+2, 4).** At 915×412 the side sheet's body shows ~136 px (it sits between the chips and the bottom rail, D-55), so the
+fix (header, 56 px button, hint) lay 120–180 px below the fold (`day7-fix-before-915x412.jpg`); the research run
+tapped beside it and the wagon was never bought. Two options: (a) move `fixHtml`/`cureHtml` above the chain, or (b)
+keep the order and stick the button to the sheet's bottom. **Chosen: (b).** The game is about diagnosing: the card
+reads cause → fix, and with (a) a 136 px body would show only the button and hide the cause under it, teaching
+"tap the red button" instead of "read why". With (b) the chain header and its first link stay on top, the button
+is always on screen, and the rest scrolls beneath it with a 14 px paper fade (no rule line — a hairline over the
+text read as strike-through). Portrait is unchanged where the fix already fits (it simply does not stick).
+Mechanics: the sheet body renders in three `display: contents` parts (lead, fix, rest), so `.fix-dock`
+(`position: sticky; inset-block-end: 0`) is a box child of the scrolling body; the body drops its bottom padding
+when it has a dock (`:has`), otherwise the scrolled text showed through an 8 px strip under the button. Only the
+button (and, when disabled, its "Brakuje N srebra") is in the dock; the explaining hint follows in the flow.
+The same parts make each section re-render only when its own HTML changes (the stall clock ticks in the lead,
+the button node stays), and a sheet waits with its refresh while a pointer is down on it — the button never
+changes under the finger. Measured (`tools/fix-shots.mjs`, `tools/fix-tap.mjs`, built game): fix button inside the
+visible body at 915×412 pl/ar and 412×915; the node survives refreshes at ×1; a real tap builds the bridge
+(180 → 150) and, in m3, buys a wagon (270 → 240, 4 → 5 wagons). Headless (`tests/m1-eye-fix.test.ts`): tapping only
+the worst stall's card and its fix wins mission I with a tap pair every 10 s (10.6 min) or 30 s; every 60 s is
+too slow (lost at 12:00) — so the research run's loss came from the fix that was never applied, not from the
+path. `docs/shots/day7-fix-dock-*.jpg`. (decided)

@@ -978,8 +978,29 @@ bdi { unicode-bidi: isolate; }
 .fix .s-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .fix .fix-why { color: #6e3520; font-weight: 700; }
 .fix .fix-why svg { color: var(--clay); }
-/* the sheet body's parts re-render on their own (panels.ts sheetParts) and add no box of their own */
+/* D-100: the sheet body's parts are layout-free, so the fix dock is a box child of the scrolling body and can stick */
 .sb-part { display: contents; }
+/* the fix button docks to the sheet's bottom edge while the chain above still scrolls: paper under it and a
+   short fade above it, so the text sliding beneath dims out instead of being cut by a line */
+.fix-dock {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  padding-block: 6px 8px;
+  background: rgb(225 201 166);
+}
+.fix-dock::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  block-size: 14px;
+  background: linear-gradient(to bottom, rgb(225 201 166 / 0), rgb(225 201 166));
+  pointer-events: none;
+}
+/* the dock reaches the body's bottom edge: no padding strip for the scrolled text to show through */
+.sheet-body:has(.fix-dock) { padding-block-end: 0; }
+.fix-note { margin-block-start: 4px; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }
