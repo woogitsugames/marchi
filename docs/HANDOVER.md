@@ -149,6 +149,9 @@ Kolejka (agent bierze po kolei, każda pozycja osobnym commitem; koordynator sca
 11. **Listy kasztelana po niemiecku (i w 14 innych językach) są po angielsku** (`src/content/letters.ts`, widać na
    `docs/shots/night3-de-end-360x740.jpg`). To treść do paczki tłumaczeń, nie układ. **Rekomendacja: dołożyć do
    najbliższej paczki GPT razem z kluczami PENDING_KEYS.**
+12. **`npm run layout` w CI?** Pełny przebieg ~14 min (350 zadań), `--quick` ~3,5 min (412×915 + Flip × pl/de/pseudo, 84 zadania).
+   Wymaga Playwright + Chromium w CI (dziś nie ma ich w `package.json`, są globalnie w kontenerze). **Rekomendacja:
+   `--quick` w `ci.yml` na każdy push (z `npx playwright install chromium`), pełny przed wydaniem/APK.**
 
 ## Stan nocy 2026-11-02/03 (gałąź `claude/w-night`, agent nocny)
 Zrobione z kolejki „Plan nocy” (każde: typecheck, testy 376/376, build, push; hasze kontraktów bez zmian):
@@ -204,4 +207,4 @@ Kolejka nocy 3 (każde: typecheck, testy, build, push; sim nietknięta, hasze ko
 4. **Bramki dokumentów**: `tests/docs-numbers` dla misji II–XII (start, termin, progi pieczęci, ilości) — złapał
    `docs/missions/m3.md` (12:00/08:00/10:00 zamiast 11:00/06:15/08:00, poprawione); `tests/i18n-hygiene` — 19
    martwych kluczy usuniętych ze wszystkich słowników, brak literałów w index.html i budowniczych UI.
-Zrzuty `docs/shots/night3-*.jpg` (4). Następne decyzje od **D-63**.
+Zrzuty `docs/shots/night3-*.jpg` (4); `npm run shots` (27 zrzutów) bez błędów konsoli. Następne decyzje od **D-63**.
