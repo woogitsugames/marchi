@@ -626,4 +626,13 @@ export const en: FullDict = {
   // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
   'fix.orderFilled': 'The order for {goodAcc} is filled — the rest stays in the yard, nothing to do.',
   'cause.orderFilled': 'order filled, the rest waits',
+  // day 6 (first ten minutes): end letter onwards, cold-start menu (see PENDING_KEYS)
+  'contract.next': 'Next mission',
+  'menu.startHere': 'Start here',
+  'menu.m1Sub': 'Bridge the river and deliver before the snow',
+  // free valley top-up in fuller loads (D-94; see PENDING_KEYS)
+  'why.topUp': 'Has {goodGen} to work with; it orders more once {n} fit — a fuller wagon, fewer trips.',
+  // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
+  'cause.stoneStored': 'waits for a wagon, but the granary already has paving stone',
+  'fix.stoneStored': '{n, plural, one {The granary holds # stone} other {The granary holds # stone}} — enough to pave ({cells}). The quarry waits for a free wagon; a new wagon would carry workshop inputs first anyway.',
 };

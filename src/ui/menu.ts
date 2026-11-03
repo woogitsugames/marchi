@@ -27,7 +27,8 @@ export function missionTitle(id: string): string {
 
 function missionSub(id: MissionKey): string {
   if (id === 'sandbox') return t('menu.valleySub');
-  if (id === 'm1') return t('menu.contractSub');
+  // its own line: 'menu.contractSub' repeated the title ("Chleb i deski / Chleb i deski dla zamku...")
+  if (id === 'm1') return t('menu.m1Sub');
   return t(`menu.${id}Sub` as MessageKey);
 }
 
@@ -107,7 +108,13 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
     const full = missionTitle(id);
     const label = full.startsWith(numeral + '. ') ? full.slice(numeral.length + 2) : full;
     const b = best[id];
-    row(medal(numeral, !!b && b.seals > 0), label, sub, () => act.newGame(id), u ? '.is-unfinished' : '', bestMark(b));
+    // until mission I is won, its row says where to begin (day 6: a cold start offered 13 equal rows)
+    const start = id === 'm1' && !(b && b.seals > 0);
+    row(medal(numeral, !!b && b.seals > 0), label, sub, () => act.newGame(id), (u ? '.is-unfinished' : '') + (start ? '.is-start' : ''), bestMark(b));
+    if (start) {
+      const text = items[items.length - 1]!.querySelector('.mi-text')!;
+      text.prepend(h('span.mi-start', null, t('menu.startHere')));
+    }
     // the accessible name keeps the numeral ("I. Chleb i deski")
     (items[items.length - 1]!.firstElementChild as HTMLElement).setAttribute('aria-label',
       [full, sub, b && b.seals > 0 ? t('menu.bestAria', { n: b.seals, time: iso(ticksClock(b.ticks)) }) : ''].filter(Boolean).join(', '));
@@ -141,9 +148,10 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
     err,
     cont,
     h('ul.menu-list', null, ...items),
-    h('div.menu-foot-row', null, settings),
   );
-  return h('div.menu-wrap', null, h('div.menu-frame', null, strip));
+  // Settings sits under the scrolling list, inside the frame: always on screen (day 6: at 412x915 it was
+  // the 14th row, below the fold)
+  return h('div.menu-wrap', null, h('div.menu-frame', null, strip, h('div.menu-foot-row', null, settings)));
 }
 
 export interface SettingsActions {
@@ -447,7 +455,14 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
   };
 }
 
-export interface EndActions { again(): void; menu(): void }
+/** next: the following contract, offered on a won letter for missions I-XI (absent = no button). */
+export interface EndActions { again(): void; menu(): void; next?: () => void }
+
+/** The contract after this one in the menu order, null for the last one and the free valley. */
+export function nextMission(id: string): MissionKey | null {
+  const i = (MENU_MISSIONS as readonly string[]).indexOf(id);
+  return i >= 0 && i < MENU_MISSIONS.length - 1 ? MENU_MISSIONS[i + 1]! : null;
+}
 
 /** Who a ledger key ('building:5:NO_ROAD', 'wagon:9:NO_ROUTE', 'span:812:BRIDGE_JAM') is about. */
 function causeSubject(world: World, kind: string, id: number): string {
@@ -557,6 +572,8 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const sealRow = [0, 1, 2].map((i) => `<i class="s kseal${i < seals ? ' on' : ''}"></i>`).join('');
   // the castellan's own words by seals (or the loss), the generic line for missions without letters
   const authored = getContractLetter(st.mission.id, won ? 'won' : 'lost', seals);
+  // a won contract leads on to the next one (day 6: the way to mission II went through the menu)
+  const next = won && act.next ? nextMission(st.mission.id) : null;
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
   letter.innerHTML = `${letterSeal(won)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
@@ -569,12 +586,14 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
       <dt>${esc(t('contract.left'))}</dt><dd>${bdi(fmtInt(st.coins))}</dd>
     </dl>
     ${c ? causesHtml(world) : ''}
+    ${next ? `<div class="actions l-next"><button class="btn primary cf" data-a="next"><span class="ln-t">${esc(t('contract.next'))}</span><span class="ln-s">${esc(missionTitle(next))}</span></button></div>` : ''}
     <div class="actions">
-      <button class="btn primary cf" data-a="again">${esc(t('contract.again'))}</button>
+      <button class="btn${next ? '' : ' primary'} cf" data-a="again">${esc(t('contract.again'))}</button>
       <button class="btn cf" data-a="menu">${esc(t('contract.menu'))}</button>
     </div>`;
   letter.style.clipPath = deckle('bottom', 31, 6, 30);
   letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
   letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);
+  if (next && act.next) letter.querySelector('[data-a="next"]')!.addEventListener('click', act.next);
   return h('div.scrim', null, h('div.letter-wrap', null, letter));
 }

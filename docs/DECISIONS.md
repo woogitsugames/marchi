@@ -1227,3 +1227,104 @@ is still a waxed "no wagon" stall in 70 % of samples and one more wagon clears i
 ask for stone (gap 6 ≥ load 4), but the new wagon takes the bread/planks inputs first (prio 1). An honest
 answer there needs either a dispatcher change (hash) or a new reading ("W spichlerzu jest 12 kamienia —
 wystarczy na bruk", audit 3G); left for the owner (BACKLOG). `docs/shots/day5-*.jpg`. (decided)
+
+**D-91 — Mission I tutorial, step 5: the ghost is the part to draw, on screen, never under the note (day 6,
+first-ten-minutes research P0; UI only, no hash change).** The research run reported the step "stuck": the
+note still showed step 4 while `tutorial.current` read 5, and six drags along the ghost built nothing.
+Reproduced with real Playwright input (`tools/repro-step5.mjs`, cold start, 412x915, mouse and CDP touch).
+Verdict: **the stale text was a scripting artefact, the failed drag was a real bug.** (1) `current` changes
+in the tap handler, the note on the next frame; under SwiftShader a frame takes ~1 s, so the script read 5
+with step-4 text, tapped "Droga" a second time and toggled the tool off, which correctly sends the
+tutorial back to step 4 — on a phone the frame is 16 ms. (2) Real: the ghost was `suggestConnection`'s whole
+sawmill-gate-to-castle-gate route, 62 cells with both ends off a 412 px screen and mostly drawn over
+existing road; the part to draw started under the note or off the left edge, and after step 3 the camera
+is wherever the wagon card glided it (in one run the river was not on screen at all). Fix:
+`crossingSpan()` (src/ui/tutorialCrossing.ts, read-only, tested headless) cuts the ghost to the new cells
+plus one road cell at each end (17 cells in mission I); on entering step 5 the camera glides once so the
+whole crossing, both road ends included, lies in the free part of the map (zooming out only if it does
+not fit) — the tutorial's only camera move; the note treats the ghost as an obstacle. With these, the
+same touch drag from the north road end to the south one builds the bridge and moves to step 6 (portrait,
+three runs). Note placement (research P2): the note no longer slides (`transition: transform` removed —
+it slid from its last spot across the waybill, which is what the step 1/4 shots caught), and the
+no-free-band fallback picks the full-width slot that hides least (target and waybill weighted) instead of
+"top of the waybill". Steps 2-3 scroll the chain link into a short card's view once (landscape 915x412:
+the link lay below the fold, so no ring was drawn). `docs/shots/day6-tut-step5-412x915.jpg`. (decided)
+
+**D-92 — The worst-stall card waits until the tutorial's re-check note (day 6, research P3; UI only).** During
+notes 4-5 mission I's mill already showed "Najgorszy zastój: Młyn wodny: żaden wóz nie dojedzie" with the alarm
+seal "3" — a third pointer beside the ring and the note, about the very problem the notes are teaching the
+player to fix. Options: hide it until the tutorial reaches the stalls, or have a step point at it. Chosen:
+while a tutorial note 1-5 is up, the HUD gets an empty stall list (card, alarm, cure mark on a tool, speed
+hint, worst-stall pin), so nothing competes with the note; from note 6 ("check the castle again") or when the
+tutorial ends, is skipped or times out, the card appears — and because `firstCritSeen` was not spent, it
+appears with the usual one-time first-stall flash, which is the natural hand-over from the notes to the
+stall card. Rejected: a seventh note pointing at the eye (m1.md caps the tutorial at six notes and 110 s; the
+flash already says "here"). The sim and the ranking are untouched; only what the HUD is handed changes. (decided)
+
+**D-93 — A won contract leads on; the cold-start menu says where to begin (day 6, research P4-P5; UI only).**
+(1) The won end letter gets a wine "Następna misja" button with the next contract's title under it (missions
+I-XI; XII and the free valley have none), above "Jeszcze raz" / "Do menu", which stay. It starts the next
+contract with its opening letter; when that contract has an unfinished save, it goes through the menu's
+existing ask sheet instead (D-36: never overwrite a save unasked). A lost letter is unchanged ("Jeszcze raz"
+stays primary). (2) Until mission I is won, its row carries a small wine "zacznij tutaj" kicker and a rule on
+its start edge (logical border, so it mirrors in RTL); nothing is locked or hidden — the brief's "everything
+unlocked" stands. (3) "Ustawienia" moves out of the scrolling list into the frame's foot, so it is on screen
+at 412x915 (y 839-887) and 915x412 without scrolling; it is still the last `.menu-item` for the tools.
+(4) Mission I's subtitle no longer repeats its title: new key `menu.m1Sub` ("Przerzuć most przez rzekę i
+zdąż przed śniegiem"); `menu.contractSub` stays for the other languages until translated. Keys
+`contract.next`, `menu.startHere`, `menu.m1Sub` are in PENDING_KEYS. Not done (research idea): folding
+missions III-XII into one row — the frame scrolls and the kicker gives the direction; left for playtest.
+`docs/shots/day6-menu-*.jpg`, `day6-end-next-412x915.jpg`. (decided)
+
+**D-94 — Free valley: workshops top up in loads of at least four (owner decision A, day 6; research
+2026-11-03-partial-loads.md, rule "sb4").** In the free valley a workshop that still has input for a cycle (or
+some on the way) asks for more of an input only once `min(load, TOP_UP_MIN = 4)` units fit; a starving one asks
+at once as before. Contract missions are untouched — `topUpHold()` (src/sim/logistics.ts, read-only, also used
+by the card) returns 0 outside `sandbox` — so every mission golden hash, the balance ladder and `npm run bot`
+(m1: won 8.85 min, 2 seals, 26 silver, identical) stay as they were. **No state version bump:** the rule reads
+only `stock`, `incoming` and the recipe; no new field, no migration (`STATE_VERSION` stays 8). An old valley
+ledger simply starts sending fuller wagons after loading; ranks are latched in the state, so a ledger already
+past a raised threshold keeps its rank.
+Rank retune: research measured ranks 3 and 4 ~8 and ~11 min early (38.1 / 66.9 against the 40-50 / 70-90
+windows). The suggested ~+10 % (2750 / 6600 renown) lands on the window edges (40.5 / 71.4 min) — one later
+change away from failing — so ranks 3 and 4 go to **3000 / 7200 renown (+20 %)**, which puts them back near the
+old pace with margin. Valley bot, `tools/balance.ts sandbox`:
+
+| plan | before (base) | after (rule + thresholds) |
+|---|---|---|
+| decent, 150 min: silver earned | 17 188 | 19 706 (+14.7 %) |
+| decent: ranks 1/2/3/4/5 (min) | 10.1 / 26.6 / 45.9 / 77.9 / 122.8 | 10.4 / 22.3 / 42.8 / 76.3 / 108.7 |
+| decent: best flow | 208 sr/min | 225 sr/min |
+| only wagons (5 more), 30 min: earned / rank 1 | 485 / 12.5 min | 446 / 12.7 min |
+| 3 wagons + cobble, 30 min: earned / rank 1 | 474 / 12.7 min | 438 / 13.5 min |
+| nothing, 30 min | 204, rank 0 | 204, rank 0 |
+
+(Rule alone, old thresholds: 20 264 earned, ranks 10.4 / 22.3 / 38.1 / 66.9 / 105.4.) The small-fleet openings
+earn ~8 % less in the first 30 minutes (two wagons wait for a fuller load instead of carrying ones); rank 5 at
+108.7 is inside its 105-135 window but near the edge — watch it in the playtest.
+Tests: two valley tests lost the situation they test, not their meaning, and were re-staged honestly —
+`stall-readability › F1` (winter CONTESTED names the slowed farm) now plays the decent plan without the
+malthouse's own two farms, so malthouse and mills really share grain (344 winter samples, 0 outside winter);
+`diagnosis-audit-fixes › fix 1` (a market surplus stays "worth a wagon") plays it with 7 bought wagons instead
+of 30, so a yard still waits for a wagon. New `tests/valley-top-up.test.ts`: no fed workshop in the valley gets
+a top-up below the threshold; mission I still does. Card: the workshop sheet adds one calm line under its
+inputs while a request is held — "Ma drewna na pracę; dowóz zamówi, gdy zmieści się 4 — pełniejszy wóz, mniej
+kursów." (key `why.topUp`, PENDING_KEYS); status stays "Produkuje", no stall, no cure.
+`docs/shots/day6-valley-topup-412x915.jpg`. (decided)
+
+**D-95 — Mission VIII: a quarry waiting for the reserve run says the granary already has paving stone; no "Kup
+wóz" (owner decision, day 6; UI and read-only diagnosis, no hash change).** D-90 left m8's quarry as a waxed
+OUTPUT_FULL.NO_WAGON for ~60 % of the mission with "Kup wóz" as the cure, which helps 0 of 14 times: the granary
+does ask for stone (reserve gap ≥ one load), but the dispatcher serves workshop inputs (prio 1) before the
+stone reserve (prio 2), so a new wagon carries bakery/sawmill inputs first. The owner chose the reading over a
+dispatcher change. A read-only `stoneInStore()` (src/sim/diagnose.ts): a contract mission with road stone, the
+quarry full and waiting for a wagon, the castle needs no more stone, no workshop waits for stone, and the
+granaries (and castle) hold at least one cobbled cell's worth of unreserved stone; it returns that stone. Then
+the stall is calm (minor pin, never wax), the HUD card says "czeka na wóz, a spichlerz ma już kamień na bruk",
+the Why sheet under the count: "W spichlerzu jest 12 kamieni — wystarczy na bruk (12 pól). Kamieniołom poczeka
+na wolny wóz; nowy wóz i tak najpierw wiezie wkład warsztatów." (numbers from the state, plurals by ICU), and
+`cureFor` gives no wagon cure. Not in the free valley (the market buys stone; the valley surplus stays as it is,
+calm with the wagon cure — owner). Keys `cause.stoneStored`, `fix.stoneStored` (PENDING_KEYS). In the m8 baseline
+run every one of the 188 "no wagon" samples of the quarry now reads this way (`tests/m8-stone-stored.test.ts`).
+Rejected: the stone reserve before producer inputs in the dispatcher (hash, mission re-tuning; after the
+playtest, BACKLOG). `docs/shots/day6-m8-stone-412x915*.jpg`. (decided)

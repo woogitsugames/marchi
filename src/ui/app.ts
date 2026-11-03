@@ -25,7 +25,7 @@ import { Markers } from './markers';
 import { StallRanking } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
-  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
+  buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, nextMission, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
 } from './menu';
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
@@ -370,6 +370,44 @@ export class App implements PanelNav {
     }, m, u));
   }
 
+  /**
+   * Tutorial step 5: the whole ghost crossing (both road ends included, where the drag starts and ends) in
+   * the free part of the map. A card opened in step 3 may have glided the camera away; the crossing's
+   * middle cell is not the middle of its box (the path bends), so the glide offsets by the difference.
+   * Zooms out first only when the crossing is larger than the free area.
+   */
+  private frameCells(cells: number[]): void {
+    const to = this.view.cellToScreen?.bind(this.view);
+    if (!to || !cells.length) return;
+    const { rect, offset } = this.visibleScene();
+    const box = (): { l: number; t: number; r: number; b: number; ok: boolean } => {
+      const ps = cells.map(to);
+      const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+      const b = { l: Math.min(...xs), t: Math.min(...ys), r: Math.max(...xs), b: Math.max(...ys) };
+      return { ...b, ok: ps.every((p) => p.visible && wellInside(p.x, p.y, rect, 0.04)) };
+    };
+    let b = box();
+    if (b.ok) return;
+    this.stopFollow();
+    const fw = (rect.r - rect.l) * 0.8, fh = (rect.b - rect.t) * 0.8;
+    const k = Math.max((b.r - b.l) / fw, (b.b - b.t) / fh);
+    if (k > 1) { this.view.camera.zoom(Math.min(2, k), (b.l + b.r) / 2, (b.t + b.b) / 2); b = box(); }
+    const mid = cells[cells.length >> 1]!;
+    const pm = to(mid);
+    this.view.camera.focusCell(mid, { x: offset.x + pm.x - (b.l + b.r) / 2, y: offset.y + pm.y - (b.t + b.b) / 2 });
+  }
+
+  /** "Next mission" on a won end letter: straight in, or through the menu's ask sheet when that contract
+   *  has an unfinished save (D-36: never overwrite a save without asking). */
+  private async startNext(m: MissionKey): Promise<void> {
+    const w = this.world;
+    const saved = await listSaves().then((xs) => xs.some((x) => x.slot === slotFor(m)), () => false);
+    if (this.world !== w || this.mode !== 'game') return; // a second tap already moved on
+    if (!saved) { this.newGame(m); return; }
+    await this.showMenu();
+    this.pickMission(m);
+  }
+
   /** Wipes the mission's own save, then starts it afresh (never another mission's save). */
   private startFresh(m: MissionKey): void {
     const slot = slotFor(m);
@@ -435,6 +473,8 @@ export class App implements PanelNav {
       tool: () => this.tool,
       closeSheets: () => this.sheets.closeAll(),
       setGhost: (cells) => { this.ghosts.tut = cells; },
+      cellScreen: (cell) => this.view.cellToScreen?.(cell) ?? null,
+      showCells: (cells) => this.frameCells(cells),
       finish: (r) => {
         this.prefs.tutorialM1 = r;
         savePrefs(this.prefs);
@@ -646,7 +686,11 @@ export class App implements PanelNav {
       this.diagPanel.frame(key, raw, t1 - t0, performance.now() - t1, now);
     }
     if (this.mode === 'game') {
-      const stalls = this.ranking.get(this.world, this.loop.journal.length);
+      const ranked = this.ranking.get(this.world, this.loop.journal.length);
+      // D-92: while the castellan's notes 1-5 teach the waybill and the crossing, the worst-stall card and
+      // its alarm stay hidden (a third pointer beside the ring and the note); they appear, with the
+      // first-stall flash, from the re-check note on or as soon as the tutorial ends or is skipped
+      const stalls = this.tutorial && this.tutorial.current < 6 ? [] : ranked;
       this.hud?.update(this.world, this.pace, stalls);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
       if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
@@ -749,9 +793,11 @@ export class App implements PanelNav {
         if (better) this.best = { ...this.best, [id]: { seals, ticks: m.endTick, at: Date.now() } };
       }).catch((e: unknown) => console.warn('best result not kept', e));
     }
+    const next = nextMission(this.missionId);
     const letter = buildEndLetter(this.world, seals, {
       again: () => this.newGame(this.missionId, this.slot, false),
       menu: () => void this.showMenu(),
+      next: next ? () => void this.startNext(next) : undefined,
     });
     // a won contract: the castle's seal is pressed onto the waybill first (~1.2 s, a tap skips it), then the
     // letter (D-82). One frame later, so the waybill has unfolded from under the sheets closed above.

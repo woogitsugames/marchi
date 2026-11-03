@@ -1,16 +1,17 @@
 // Mission I tutorial, "the castellan's letter" (docs/tutorial/m1.md): at most six notes on a scrap
 // of parchment, one at a time, each ended by something the player does (never "Next"). Driven
 // from outside the sim: it reads the live World, the top sheet key, the active tool and the
-// subjects the player opens; it never pauses, blocks taps or moves the camera. Only the "Skip"
-// button takes pointer events. Targets are marked with an engraved double rule and a woodcut
+// subjects the player opens; it never pauses or blocks taps, and moves the camera only once, to bring
+// step 5's crossing on screen when it is not. Only the "Skip" button takes pointer events. Targets are marked with an engraved double rule and a woodcut
 // arrow drawn in a separate layer, positioned from getBoundingClientRect every frame (the
 // waybill and the sheets rebuild their DOM several times a second, so nothing is anchored to
 // a node).
-import { findPath, suggestConnection, type RoadSuggestion, type World } from '../sim/index';
+import { findPath, type World } from '../sim/index';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, h } from './dom';
 import type { Tool } from './hud';
 import { HINGE_GUTTER } from './layout';
+import { crossingSpan } from './tutorialCrossing';
 
 export type TutorialResult = 'skipped' | 'done';
 
@@ -22,6 +23,10 @@ export interface TutorialHost {
   closeSheets(): void;
   /** Ghost road on the map (step 5), null clears it. */
   setGhost(cells: number[] | null): void;
+  /** Screen position of a cell (CSS px), null when the view cannot project. */
+  cellScreen(cell: number): { x: number; y: number; visible: boolean } | null;
+  /** Glide the camera so these cells are in the free part of the map, unless they already are. */
+  showCells(cells: number[]): void;
   /** Persist the outcome; the host drops the tutorial afterwards. */
   finish(r: TutorialResult): void;
 }
@@ -134,11 +139,15 @@ export class Tutorial {
   private closeAt = -1;
   private codaUntil = -1;
   private conn = { ver: -1, n: -1, ok: false };
-  private ghost: { ver: number; s: RoadSuggestion | null } = { ver: -1, s: null };
+  private ghost: { ver: number; cells: number[] | null } = { ver: -1, cells: null };
   private textSig = '';
   private ringSig = '';
   private arrowSig = '';
   private placeAt = 0;
+  /** Step 5's crossing has been brought on screen (once per entry). */
+  private framed = false;
+  /** Steps 2-3: the chain link has been scrolled into its card's view (once per entry). */
+  private scrolled = false;
   private notePlaced: Box | null = null;
 
   constructor(private host: TutorialHost) {
@@ -217,7 +226,10 @@ export class Tutorial {
     }
     if (this.step === 5 && tool !== 'road' && tool !== 'cobble') this.go(4);
 
-    this.host.setGhost(this.step === 5 ? this.crossing()?.cells ?? null : null);
+    const ghost = this.step === 5 ? this.crossing() : null;
+    this.host.setGhost(ghost);
+    // the one camera move of the tutorial: the card of step 3 may have glided the map away from the river
+    if (ghost && !this.framed) { this.framed = true; this.host.showCells(ghost); }
     this.render();
   }
 
@@ -228,6 +240,8 @@ export class Tutorial {
     this.stepAt = this.active;
     this.ringSig = this.arrowSig = '';
     this.placeAt = 0;
+    this.framed = false;
+    this.scrolled = false;
   }
 
   /** Steps 2/3 done (or no longer applicable): the road hint, or straight to the re-check when a crossing exists. */
@@ -259,14 +273,21 @@ export class Tutorial {
     return this.conn.ok;
   }
 
-  /** A valid crossing for step 5's ghost line: an example route, not the only accepted one. */
-  private crossing(): RoadSuggestion | null {
+  /** Step 5's ghost line: only the part to draw (new cells, one road cell at each end), an example
+   *  crossing, not the only accepted one. The full sawmill-castle route ran off a phone screen. */
+  private crossing(): number[] | null {
     const st = this.host.world.state;
-    if (this.ghost.ver !== st.netVersion) {
-      const e = this.ends();
-      this.ghost = { ver: st.netVersion, s: e ? suggestConnection(this.host.world, e.saw, e.castle) : null };
-    }
-    return this.ghost.s;
+    if (this.ghost.ver !== st.netVersion) this.ghost = { ver: st.netVersion, cells: crossingSpan(this.host.world) };
+    return this.ghost.cells;
+  }
+
+  /** Screen box of the ghost crossing (step 5): the note must not lie on the line to drag. */
+  private ghostBox(): Box | null {
+    if (this.step !== 5) return null;
+    const cells = this.crossing();
+    if (!cells) return null;
+    const pts = cells.map((c) => this.host.cellScreen(c)).filter((p): p is { x: number; y: number; visible: boolean } => !!p && p.visible);
+    return union(pts.map((p) => ({ x: p.x - 18, y: p.y - 18, w: 36, h: 36 })));
   }
 
   // ---------------------------------------------------------------- targets
@@ -339,6 +360,12 @@ export class Tutorial {
     }
 
     const tg = this.target();
+    // a chain link below the fold of a short card (landscape, 412 px): bring it into view once per step,
+    // else no ring is drawn and the note asks for something the player cannot see
+    if (!this.scrolled && (this.step === 2 || this.step === 3) && tg.probe instanceof HTMLElement && tg.probe.closest('#sheets') && this.covered(tg.probe)) {
+      this.scrolled = true;
+      tg.probe.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
     // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
     // edge (the waybill counts in landscape) stays clear of them
     const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 9) : null;
@@ -412,8 +439,9 @@ export class Tutorial {
     const q = (s: string): Box | null => visibleBox(document.querySelector(s));
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
+    const ghost = this.ghostBox();
     const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
-      this.arrowBoxGuess(target)].filter((b): b is Box => !!b);
+      this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     const measure = (w: number): number => {
       this.noteWrap.style.width = `${w}px`;
@@ -439,11 +467,24 @@ export class Tutorial {
     let placed = tryBand(y0);
     if (!placed && waybill) placed = tryBand(waybill.y + waybill.h + 10);
     if (!placed && target) placed = tryBand(target.y + target.h + ARROW_LEN + 14);
+    if (!placed && ghost) placed = tryBand(ghost.y + ghost.h + 10) ?? tryBand(ghost.y - measure(NOTE_MAX_W) - 10);
     if (!placed) {
+      // no free band: the full-width slot that hides least, the target and the waybill (the player's
+      // own list, the target of steps 1 and 6) weighing most; never the old "top of the waybill" default
       const floor = Math.min(sheet ? sheet.y : vh, q('.rail')?.y ?? vh);
       const w = Math.min(NOTE_MAX_W, vw - 20);
       const hh = measure(w);
-      placed = { x: 10, y: Math.max(y0, floor - hh - 12), w, h: hh };
+      const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('.rail-tools'), 2], [q('.stall-row:not([hidden])'), 1]];
+      const cost = (y: number): number => weigh.reduce((sum, [b, k]) => {
+        if (!b) return sum;
+        const ix = Math.min(b.x + b.w, 10 + w) - Math.max(b.x, 10), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
+        return sum + (ix > 0 && iy > 0 ? ix * iy * k : 0);
+      }, 0);
+      const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8]
+        .map((y) => Math.max(8, Math.min(vh - hh - 8, y)));
+      let by = ys[0]!;
+      for (const y of ys) if (cost(y) < cost(by)) by = y;
+      placed = { x: 10, y: by, w, h: hh };
     }
     this.notePlaced = placed;
     this.noteWrap.style.width = `${placed.w}px`;

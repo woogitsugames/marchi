@@ -629,6 +629,15 @@ export const pl = {
   // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
   'fix.orderFilled': 'Zamówienie na {goodAcc} wypełnione — reszta zostaje na placu, nic nie trzeba robić.',
   'cause.orderFilled': 'zamówienie wypełnione, reszta czeka',
+  // day 6 (first ten minutes): end letter onwards, cold-start menu (see PENDING_KEYS)
+  'contract.next': 'Następna misja',
+  'menu.startHere': 'Zacznij tutaj',
+  'menu.m1Sub': 'Przerzuć most przez rzekę i zdąż przed śniegiem',
+  // free valley top-up in fuller loads (D-94; see PENDING_KEYS)
+  'why.topUp': 'Ma {goodGen} na pracę; dowóz zamówi, gdy zmieści się {n} — pełniejszy wóz, mniej kursów.',
+  // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
+  'cause.stoneStored': 'czeka na wóz, a spichlerz ma już kamień na bruk',
+  'fix.stoneStored': '{n, plural, one {W spichlerzu jest # kamień} few {W spichlerzu są # kamienie} many {W spichlerzu jest # kamieni} other {W spichlerzu jest # kamienia}} — wystarczy na bruk ({cells}). Kamieniołom poczeka na wolny wóz; nowy wóz i tak najpierw wiezie wkład warsztatów.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -666,6 +675,12 @@ export const PENDING_KEYS = [
   'cause.storeRoom',
   'fix.orderFilled',
   'cause.orderFilled',
+  'contract.next',
+  'menu.startHere',
+  'menu.m1Sub',
+  'why.topUp',
+  'cause.stoneStored',
+  'fix.stoneStored',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

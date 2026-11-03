@@ -68,7 +68,11 @@ test('audit fix 1: a hungry consumer or an unfinished order keeps the wagon cure
 
 test('audit fix 1: in the free valley a full yard the market buys stays worth a wagon, as a minor pin', () => {
   let market = 0;
-  runSandbox(DECENT, 20, {
+  // D-94: with fuller top-ups the decent plan's fleet always has a free wagon; a leaner one (7 bought wagons
+  // instead of 30) still leaves a market good waiting in the yard, which is the case under test
+  let bought = 0;
+  const lean = DECENT.filter((s) => s.name !== 'buy wagon' || bought++ < 7);
+  runSandbox(lean, 20, {
     checkEvery: 1000,
     onTick: (w) => {
       if (w.state.tick % 20) return;
