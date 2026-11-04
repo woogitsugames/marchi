@@ -3,7 +3,9 @@
 // Reads Chromium's accessibility tree over CDP (Accessibility.getFullAXTree) and the computed styles:
 //   live      the HUD has polite live regions (toasts, the screen-reader line) and the notice is a status
 //   pins      every stall pin is a button whose accessible name is "<building>: <cause>"
-//   dialog    an open sheet is a modal dialog named by its title, focus moves into it and returns on close
+//   dialog    an open sheet is a named NON-modal dialog (D-118: the map and HUD work beside it), focus moves into it
+//             and returns on close
+//   letter    the opening letter is a named modal dialog with focus on its action, the rest of the UI is inert (D-118)
 //   motion    with prefers-reduced-motion: reduce every running CSS animation / transition lasts ≤ 1 ms
 // Exit 1 on any failure. Usage: npm run a11y   (A11Y_URL=http://127.0.0.1:5173/ to use a running server)
 import { createRequire } from 'node:module';
@@ -62,7 +64,7 @@ try {
     ok(axPins.length === pins.length, `pins: all ${pins.length} reach the accessibility tree as buttons (${axPins.length})`);
     await ctx.close();
   }
-  // --- a sheet is a named modal dialog; focus in and back
+  // --- a sheet is a named non-modal dialog (D-118); focus in and back
   {
     const { ctx, page } = await open('play=m1&ff=90&speed=0');
     await page.waitForTimeout(800);
@@ -72,7 +74,7 @@ try {
     await page.waitForSelector('.sheet[role="dialog"]', { timeout: 10000 }).catch(() => null);
     const ax = await axNodes(page);
     const dlg = ax.find((n) => n.role === 'dialog');
-    ok(!!dlg && dlg.modal === true && dlg.name.trim().length > 0, `dialog: modal dialog named "${dlg?.name ?? ''}"`);
+    ok(!!dlg && dlg.modal !== true && dlg.name.trim().length > 0, `dialog: non-modal dialog named "${dlg?.name ?? ''}"`);
     const inside = await page.evaluate(() => !!document.activeElement?.closest('.sheet'));
     ok(inside, 'dialog: focus moved into the sheet');
     await page.keyboard.press('Escape');
@@ -86,6 +88,21 @@ try {
       back = await page.evaluate(() => document.activeElement?.classList.contains('stall-eye') ?? false);
     }
     ok(back, 'dialog: focus returned to the eye button that opened it');
+    await ctx.close();
+  }
+  // --- a letter is a real modal: named, focus on its action, everything under it inert, released on close
+  {
+    const { ctx, page } = await open('play=m1&tut=1');
+    await page.waitForSelector('.letter[role="dialog"]', { timeout: 30000 }).catch(() => null);
+    await page.waitForTimeout(400);
+    const ax = await axNodes(page);
+    const dlg = ax.find((n) => n.role === 'dialog');
+    ok(!!dlg && dlg.modal === true && dlg.name.trim().length > 0, `letter: modal dialog named "${dlg?.name ?? ''}"`);
+    ok(await page.evaluate(() => !!document.activeElement?.closest('.letter')), 'letter: focus on the letter');
+    ok(await page.evaluate(() => !!document.querySelector('#hud')?.closest('[inert]')), 'letter: the HUD under it is inert');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+    ok(await page.evaluate(() => document.querySelectorAll('[inert]').length === 0), 'letter: nothing inert once it is closed');
     await ctx.close();
   }
   // --- reduced motion: everything that moves finishes at once

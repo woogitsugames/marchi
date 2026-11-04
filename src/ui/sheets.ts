@@ -152,8 +152,10 @@ export class Sheets {
     const body = h('div.sheet-body');
     const grip = h('div.sheet-grip');
     const inner = h('div.sp-in', null, grip, head, body);
-    // a modal dialog for assistive tech, named by its title; focus moves in on open and back on close
-    const el = h('section.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': title.id, tabindex: '-1' }, h('div.sheet-paper', null, inner));
+    // a NON-modal dialog (a11y audit 2026-11-04, F3a; D-118): the map, the pins and the HUD keep working beside a
+    // game sheet, so it must not claim aria-modal (screen readers would hide what keyboard focus still reaches).
+    // Named by its title; focus moves in on open and back on close; Tab walks on into the page, no trap.
+    const el = h('section.sheet', { role: 'dialog', 'aria-labelledby': title.id, tabindex: '-1' }, h('div.sheet-paper', null, inner));
     const sheet: Sheet = { el, icon, kicker, title, body, content, deferred: [] };
     close.addEventListener('click', () => {
       if (this.top === sheet) this.closeTop();
