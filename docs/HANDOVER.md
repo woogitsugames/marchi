@@ -17,9 +17,13 @@
 - Godzinny cykl tej sesji `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony** — nowa sesja tworzy własny (prompt niżej).
 
 ## Niedokończone (dokończ najpierw)
-1. **Deweloper a11y (gałąź `claude/w-day8d`, wypchnięta)** — 7 poprawek z `docs/research/2026-11-04-a11y-audit.md`
-   (lista w BACKLOG P1 a11y). Mógł zostawić WIP: przejrzyj `git log claude/eager-cori-08wt8e..origin/claude/w-day8d`,
-   dokończ, scal.
+1. **Deweloper a11y (gałąź `claude/w-day8d`, wypchnięta, NIE scalona)** — poprawki 1–4 gotowe (D-118 listy jako modale
+   z `inert`, arkusze bez `aria-modal`; D-119 skróty nie łapią Spacji z kontrolek + przełącznik „Skróty klawiszowe”;
+   D-120 dok „Naprawa” przy dużym tekście). Ostatni commit `dc13601` = **WIP 5–7** (pinezki z nazwą i kształtem
+   pieczęci, reduced motion `src/render/motion.ts`; CSS czeka w `tools/wip-day8d/fix5-7.py`). Zrób: zastosuj skrypty,
+   zrzuty pinezek dzień/noc/zima, rozbij WIP, D-121..D-123, pełny audyt po, `npm test` (ostatni 457/0 sprzed fix 4),
+   usuń `tools/wip-day8d/`, scal. Pytania do właściciela: skróty domyślnie wł. z myszą / wył. na dotyku (D-119)?
+   przy 200 % tekstu arkusz w poziomie zasłania żetony i tempo (D-120) — OK? czerwona pinezka jako zębata pieczęć — OK?
 2. **Render #4 (cienie wozów mid / dalekich ładunków)** — `docs/research/2026-11-04-render4-shadows.md` (częściowy),
    łatka `...-render4-shadows.patch`, narzędzia `tools/render4-*.{mjs,py}`. Brakuje par zrzutów low/ultra, 80/110 m,
    poziom. Właściciel chce **zobaczyć zrzuty przed decyzją** (rekomendacja: B — tylko low+high, dalekie ładunki
