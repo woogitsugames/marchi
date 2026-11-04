@@ -45,6 +45,8 @@ export type Player = {
   eyeAlways?: boolean;
   /** Labels true right now (checked every minute); RunOut.marks keeps the first minute of each. */
   watch?: (w: World) => string[];
+  /** Read-only probe after every step() (tools/valley-bottleneck.ts: the UI-side bottleneck sampler). */
+  afterStep?: (w: World) => void;
 };
 
 function capFleet(plan: readonly BotStep[], max: number, start = 2): BotStep[] {
@@ -293,6 +295,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
     const os0 = st.valleyEvents!.orderSilver;
     const season = seasonAt(st.tick);
     step(w);
+    p.afterStep?.(w);
     if (p.orderRenownX !== undefined && st.valleyEvents!.orderSilver !== os0) {
       // counterfactual: the order paid 2 x silver renown; take back the difference and undo a rank it bought
       st.town.renown += Math.round((p.orderRenownX - 2) * (st.valleyEvents!.orderSilver - os0));
