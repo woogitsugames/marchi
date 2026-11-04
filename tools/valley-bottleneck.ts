@@ -1,7 +1,8 @@
 // "Wąskie gardło" card for the free valley (spec docs/specs/2026-11-04-valley-trade-post.md §3): measures the
 // proposed UI rule headless, read-only, on the valley-3h bots. No src/ change: the rule is implemented here
 // exactly as the spec describes `sampleBottleneck` / `bottleneckCard` (src/ui/bottleneck.ts, to be written).
-//   npx tsx tools/valley-bottleneck.ts [player ...] [--seeds 1301,1302,1303] [--min 180]
+//   npx tsx tools/valley-bottleneck.ts [player ...] [--seeds 1301,1302,1303] [--min 180] [--late]
+//   (--late: with the prototype patch applied, also the trade-post players of tools/valley-late.ts)
 // Players: decent, decent+farm, decent+2farms (east road + 1 / 2 farms once the DECENT plan is done),
 //          passive, small (6 wagons).
 // Per 30-min band: share of 10 s samples where the HUD would show the card (the worst-stall slot is empty or
@@ -151,6 +152,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const seeds = (opt('--seeds') ?? '1301,1302,1303').split(',').map(Number);
   const names = args.filter((a, i) => !a.startsWith('--') && !(i > 0 && args[i - 1]!.startsWith('--')));
   const list = names.length ? names : ['decent', 'decent+farm', 'decent+2farms'];
+  // --late: also load the prototype players of tools/valley-late.ts (needs docs/research/2026-11-04-valley-late-proto.patch)
+  if (args.includes('--late')) await import('./valley-late');
   console.log(`window ${WINDOW} s, show >= ${SHOW_AVG_X100 / 100}, hide < ${HIDE_AVG_X100 / 100}, consumers >= ${MIN_CONSUMERS}; seeds ${seeds.join(',')}, ${minutes} min`);
   console.log('| player | band | card shown | real card wins | named good | cure | mean waiting (shown) | fleet card (calm slot, 0 idle 3 min) | silver | R5 |');
   console.log('|---|---|---:|---:|---|---|---:|---:|---:|---:|');
@@ -159,7 +162,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const s of seeds) {
       const pr = probe();
       const key = `__bn_${n}`;
-      PLAYERS[key] = { ...BASE[n]!, afterStep: pr.p };
+      PLAYERS[key] = { ...(BASE[n] ?? PLAYERS[n]!), afterStep: pr.p };
       const r = runValley(key, s, minutes);
       delete PLAYERS[key];
       runs.push({ bands: pr.bands, earned: r.earned, r5: r.rankMin[5] ?? -1 });
