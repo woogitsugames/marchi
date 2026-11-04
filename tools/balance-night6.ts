@@ -19,7 +19,7 @@ import { cureFor, gapTarget, paveSpanFor, rankStalls, sampleInputWaits, sharedOn
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { buildSite } from '../src/ui/site';
-import { forecastFor, paceCard } from '../src/ui/paceCard';
+import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { newPaceLog, samplePace, type PaceLog } from '../src/sim/index';
 import { writeFileSync } from 'node:fs';
 
@@ -64,6 +64,10 @@ type Player = (w: World) => void;
 const paceLogs = new WeakMap<World, PaceLog>();
 /** PACE=0: measure without the pace card (day 8c), as before. */
 const PACE_CARD = process.env.PACE !== '0';
+/** FLEET=0: measure without the pace card's fleet kind (day 9a, D-127). */
+const FLEET_CARD = process.env.FLEET !== '0';
+/** EYE_PHASE=s: the eye players look s seconds later in each period (robustness of a rule against timing). */
+const EYE_PHASE = Number(process.env.EYE_PHASE ?? 0);
 
 function run(id: string, strat: string, player: Player, actions: Record<string, number> = {}, seen?: Record<string, number>): Row {
   const w = createWorld(id);
@@ -75,6 +79,7 @@ function run(id: string, strat: string, player: Player, actions: Record<string, 
     step(w);
     sampleInputWaits(w); // as the app does every tick (the shared-supply card waits 30 s, D-110)
     samplePace(log, w);
+    sampleFleet(w); // as the app does every tick (the fleet card reads the last minute, D-127)
   }
   const c = w.state.mission.contract!;
   const end = w.state.mission.result === 'won' ? w.state.mission.endTick : c.deadlineTick + 1;
@@ -196,7 +201,8 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
   // the pace card (day 8c) takes the slot when no real stall needs it: an empty card or a calm one
   if (PACE_CARD && (!ranked.length || ranked[0]!.minor)) {
     const log = paceLogs.get(w);
-    const pc = log ? paceCard(w, forecastFor(w, log)) : null;
+    let pc = log ? paceCard(w, forecastFor(w, log)) : null;
+    if (pc?.k === 'fleet' && !FLEET_CARD) pc = null;
     if (pc) {
       const act = tapPace(w, pc);
       const key = `pace:${pc.k} -> ${act || 'nothing'}`;
@@ -217,9 +223,12 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
 /** The pace card's sheet button (day 8c). */
 function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string {
   if (pc.k === 'producer') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'producer:' + pc.type : 'producer?fail';
+  // fleet (day 9a): the producer's sheet offers "Kup wóz"
+  if (pc.k === 'fleet') return applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }).ok ? 'wagon:fleet' : 'wagon?fail';
   // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
   if (!pc.risk) return '';
-  return applyCommand(w, { t: 'road', surface: 2, cells: pc.cells }).ok ? 'cobbleMud' : 'cobbleMud?fail';
+  const r = applyCommand(w, { t: 'road', surface: 2, cells: pc.cells });
+  return r.ok ? 'cobbleMud' : 'cobbleMud?fail:' + ((r as { err?: { k?: string } }).err?.k ?? '');
 }
 
 function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boolean, seen: Record<string, number>): string {
@@ -289,7 +298,7 @@ function eyePlayer(reactSec: number, hints: boolean, actions: Record<string, num
   return (w) => {
     if (letterP) letterP(w);
     const t = w.state.tick;
-    if (t > 0 && t % (reactSec * TICK_HZ) === 0) {
+    if (t > 0 && t % (reactSec * TICK_HZ) === (EYE_PHASE % reactSec) * TICK_HZ) {
       const a = eyeTap(w, hints, seen, scan);
       if (a) { actions[a] = (actions[a] ?? 0) + 1; timeline.push(`${t / TICK_HZ}s ${a}`); }
     }
