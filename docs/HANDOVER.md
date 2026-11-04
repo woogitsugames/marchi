@@ -618,3 +618,59 @@ bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygran
   dopiero po np. 30 s czekania?
 - Próg 2★ M2 → 10:00 (raport P4) i P1/P3/P6 — zmieniają hasze, nie ruszane.
 
+
+## Stan nocy 6b — 2026-11-04 (gałąź `claude/w-night6b`, deweloper nocny)
+Testy **447/0** (nowe: `next-letter-surplus`, `site-hint` ×2), typecheck i build zielone, złote hasze misji I–XIII
+bez zmian (zmiany tylko w pomocnikach UI, danych czytanych przez UI i w obrazie), `npm run bot` (m1) bez zmian:
+wygrana 8,85 min, 2★, 26 srebra. Następna decyzja **D-108**. Nic nie wypchnięte.
+1. **Misja VI: karta przestaje podsuwać wóz i spichlerz (D-106, 2b7f577).** Przyczyna: między listami zamek nie
+   bierze jeszcze desek (`contractTarget`), a `outputSurplus` porównywał z całym zamówieniem — pełny plac tartaku
+   (`OUTPUT_FULL.NO_WAGON`) wyglądał na „brak wozu”. Wóz kupiony o 3:00 (sama droga 8,31 → 8,50) zostawiał potem
+   oba spichlerze pełne, stąd „Postaw spichlerz” o 5:30 (→ 8,94, 1★). Teraz liczy się list, który obowiązuje: karta
+   mówi „Nadwyżka: nikt teraz nie potrzebuje desek … Nowy wóz tego nie przyspieszy”. Ogólne (misje z listami: V, VI,
+   XII), bez wyjątków misji. Rozsądny gracz oko 10/30/60 s (`tools/balance-night6.ts`, teraz z XIII), przed → po:
+
+   | misja | przed | po |
+   |---|---|---|
+   | I | 1/1/1★ (10,06/9,91/11,38) | bez zmian |
+   | II | 2/1/1★ (9,24/9,82/10,81) | bez zmian |
+   | III | 1/1/2★ (8,15/9,30/7,66) | bez zmian |
+   | IV | 1/2/2★ (10,56/7,58/7,96) | bez zmian |
+   | V | 3/2/2★ (8,28/8,39/9,20) | 3/2/2★ (8,22/8,59/8,76) — 30 s o 12 s wolniej, ale bez spóźnionego listu |
+   | **VI** | **1/1/1★ (8,94)** | **3/3/3★ (8,31)** |
+   | VII | 1/1/1★ (10,90) | bez zmian |
+   | VIII | 3/3/3★ | bez zmian |
+   | IX | 3/3/2★ (8,12/8,99/10,08) | bez zmian (patrz pkt 2) |
+   | X | 1/2/2★ (10,58/9,87/10,21) | bez zmian (patrz pkt 2) |
+   | XI | 2/2/1★ | bez zmian |
+   | XII | 3/3/3★ (8,46/8,80/8,52) | 3/3/3★ (8,80/8,55/8,52), o 120 srebra mniej wydane przy 10 s |
+   | XIII | 3/3/2★ (4,38/5,49/6,42) | bez zmian |
+2. **Misja X: duch budowy na autorskim miejscu (D-107, e4489a1).** `MissionDef.siteHints` (VII rybak, IX/X drwal) —
+   dane misji czytane tylko przez UI, nie wchodzą do stanu. `buildSite` (`src/ui/site.ts`, czyste) daje autorskie
+   miejsce, gdy wolne, inaczej dawne szukanie pierścieniami. Duch bierze bramę z podpowiedzi, a gdy miejsce jest poza
+   ekranem, kamera do niego dojeżdża (z karty tartaku w X ducha w ogóle nie było widać). Narzędzie bilansu stawia
+   teraz „producenta” tam, gdzie startuje duch (wcześniej spirala od bramy — liczby X 1/2/2★ z nocy 6 nie były
+   duchem). Duch bez → z podpowiedzią: **X 3/3/1★ (8,41/8,59/11,12) → 3/3/3★ (9,04/8,59/9,11)**, IX 3/3/1★
+   (8,06/9,10/11,16) → 3/3/2★ (8,71/8,99/9,24); reszta bez zmian. Przy 10 s X i IX są wolniejsze (≈ 40 s), pieczęcie
+   te same.
+3. **Karta zamku w kroku 2 samouczka (9a7e432).** Podczas samouczka „Zamówienie zamku” i „Tempo dostaw” siedzą w
+   jednej zwiniętej fałdzie 48 px („ZAMÓWIENIE ZAMKU · TEMPO DOSTAW”, istniejące klucze, bez nowych tłumaczeń);
+   karta w kroku 2: 29 słów (było ~45). Stan rozwinięcia na sesję, tylko UI.
+4. **Obrys „Droga” w kroku 4 (1680708).** Obrys przycięty do ekranu — wychodził 1 px w lewo, w pionie też poza dół.
+5. **Rolnik chodzi wzdłuż bruzdy (6f4a757).** Po każdym uderzeniu (2,6 s) krok 0,45 m w tył, w ostatnich 14 %
+   cyklu; rząd = wolne pola uprawne wzdłuż bruzdy, najwyżej dwa w każdą stronę; na końcu zawraca. Zegar kroku biegnie
+   tylko przy `WORKING`. Te same siatki instancjonowane — zero nowych wywołań rysowania.
+
+Zrzuty (`docs/shots/night6b-*.jpg`, 412×915 i 915×412, obejrzane): `m6-surplus`, `m10-ghost`, `tut-s2`, `tut-s4`,
+`farm-walk-{a,b}`. Narzędzia: `tools/night6b-shots.mjs <przypadek>`, `tools/night6b-tut-shots.mjs`. Podgląd na
+porcie 5211 (5194 był zajęty przez obcy proces z nocy 6 — nieruszany); Vite nie zwracał 403 przy tych skryptach.
+`npm run layout` nie uruchamiany w tej nocy.
+### Decyzje na rano (noc 6b)
+- **D-106 tekst:** dla desek na następny list karta mówi ogólne „nikt teraz nie potrzebuje desek”. Czy dodać osobne
+  zdanie „zamek weźmie je z następnym listem” (nowy klucz i18n w 17 językach)?
+- **D-107 kamera:** „Postaw jeszcze: …” zamyka kartę i przesuwa kamerę do ducha, gdy ten jest poza ekranem. Zostawić?
+  (Przy reakcji 10 s IX/X wygrywają ≈ 40 s później niż ze starym miejscem obok pierwszego drwala — te same pieczęcie.)
+- **Fałda karty zamku** zostaje zwinięta przez cały samouczek (także w kroku 6). Rozwijać ją po kroku 3?
+- **Rolnik** chodzi po rzędzie przy płocie podwórza (najbliższe pole) — akceptacja wyglądu na `night6b-farm-walk-*`.
+- **Pionowy zrzut `m10-ghost`:** półka budowy wygląda na przygaszoną w chwili zrzutu (trwa przejazd kamery) —
+  sprawdzić na telefonie.
