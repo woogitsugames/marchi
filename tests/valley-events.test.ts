@@ -154,7 +154,7 @@ test('events: max two orders, six-minute offer cadence, no repeated draws', () =
     assert(events.orders.length <= MAX_ROYAL_ORDERS, 'never exceeds two');
     eq(new Set(events.orders.map((o) => o.templateId)).size, events.orders.length, 'distinct stories');
     for (const order of events.orders) {
-      eq(order.rewardRenown, order.rewardSilver * 2, 'double renown');
+      eq(order.rewardRenown, Math.floor(order.rewardSilver / 2), 'half renown');
       assert(!('deadlineTick' in order), 'no deadline');
     }
   }

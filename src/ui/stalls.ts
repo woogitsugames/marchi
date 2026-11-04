@@ -3,6 +3,24 @@
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { TICK_HZ, busyOutOfReach, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
+import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
+
+/**
+ * Free valley (research 2026-11-04, valley-3h proposal 2): a full granary that holds at least one wagon load
+ * of a good the castle market buys is not short of room but of wagons — the market loop serves the dearest
+ * goods first (75 % of the fleet), so cheap wood waits there forever. Another granary fills up as well;
+ * a wagon empties it. Pure read.
+ */
+export function clogNeedsWagon(world: World, granaryId: number): boolean {
+  if (!marketOpen(world)) return false;
+  const g = world.state.buildings.find((q) => q.id === granaryId);
+  if (!g || g.type !== 'warehouse') return false;
+  for (const good of GOODS) {
+    if (good === 'stone' || MARKET.base[good] <= 0) continue; // granary stone is building material
+    if (g.stock[good] - g.reservedOut[good] >= capacityOf(good)) return true;
+  }
+  return false;
+}
 
 /** 2 s: no pin or card for a short hiccup. */
 export const MIN_STALL_TICKS = 20;
@@ -268,9 +286,10 @@ export function cureFor(world: World, id: number): Cure {
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE' && stoneInStore(world, l.id) === 0) cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
       // (not when the order of this good is complete: nothing needs it any more, fix 6)
-      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) cure = 'granary';
-      // a full granary with no other granary to link or fill: another granary (fix 3)
-      else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) cure = 'granary';
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) cure = s.blockedBy >= 0 && clogNeedsWagon(world, s.blockedBy) ? 'wagon' : 'granary';
+      // a full granary with no other granary to link or fill: another granary (fix 3); in the free valley a
+      // granary full of goods the market buys needs wagons, not room (valley-3h proposal 2)
+      else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) cure = clogNeedsWagon(world, l.id) ? 'wagon' : 'granary';
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
     else if (l.status.k === 'BRIDGE_CLOSED' || l.status.k === 'BRIDGE_JAM') break;
   }

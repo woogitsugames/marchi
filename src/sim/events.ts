@@ -242,7 +242,9 @@ function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngStat
   const rewardSilver = Math.ceil(value * 1.5) + 8 + state.town.rank * 5;
   const order: RoyalOrder = {
     id: 'order-' + events.sequence, templateId: template.id, accepted: false, need, delivered,
-    rewardSilver, rewardRenown: rewardSilver * 2,
+    // renown is half the silver (owner decision 2026-11-04, research valley-3h): orders still pay, but they
+    // no longer shortcut the rank pacing (all orders taken: rank 5 at ~117 min instead of ~96)
+    rewardSilver, rewardRenown: Math.floor(rewardSilver / 2),
   };
   return {
     ...events, orders: [...events.orders, order], sequence: events.sequence + 1,

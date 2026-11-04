@@ -104,7 +104,8 @@ const tradeWatch = (w: World): string[] => {
   for (let x = 30; x < 46; x++) if (st.roads[45 * W + x]) road = true;
   for (let y = 30; y < 42; y++) for (let x = 30; x < 46; x++) if (w.terrain.water[y * W + x] && st.roads[y * W + x] === 2) bridge = true;
   if (road) out.push('road');
-  if (st.market.post) out.push('first post sale');
+  // `post` exists only with the prototype patch (docs/research/2026-11-04-valley-late-proto.patch)
+  if ((st.market as { post?: unknown }).post) out.push('first post sale');
   if (bridge) out.push('stone bridge');
   return out;
 };
