@@ -104,7 +104,7 @@ farm cut off: no road.*
 The castle orders **30 planks and 20 bread**. The valley is split by a river: forest and
 sawmill north, fields and mill south, castle on a rise on the south bank. Start: 2 wagons,
 180 coins, roads on both banks but no crossing. Wagon costs 30. Deadline: 12 sim-minutes
-(the first snow); stars for < 7 and < 9 minutes. Sandbox: same valley, no contract, more coins.
+(the first snow); 3 seals by 9:15, 2 seals by 10:45 (D-108). Sandbox: same valley, no contract, more coins.
 
 ## Player tools (stage 1)
 

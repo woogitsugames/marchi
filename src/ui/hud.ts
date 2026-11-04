@@ -16,7 +16,7 @@ import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fm
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, heldSpanFor, sharedOneProducer, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, heldSpanFor, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
@@ -496,7 +496,7 @@ export class Hud {
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
     this.cure = b ? cureFor(world, b.id) : null;
-    const shared = b ? sharedOneProducer(world, b) : null;
+    const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
     const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${getLang()}` : '';
     if (sig === this.stallSig) return;

@@ -15,7 +15,7 @@ import {
   MISSIONS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, missionBuildable,
   net, sharedInput, stars, stateHash, step, suggestLinkToStable, thinDelivery, type BuildingType, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, gapTarget, heldSpanFor, rankStalls, sharedOneProducer } from '../src/ui/stalls';
+import { cureFor, gapTarget, heldSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { buildSite } from '../src/ui/site';
@@ -64,6 +64,7 @@ function run(id: string, strat: string, player: Player, actions: Record<string, 
   while (w.state.mission.result === 'running' && guard-- > 0) {
     player(w);
     step(w);
+    sampleInputWaits(w); // as the app does every tick (the shared-supply card waits 30 s, D-110)
   }
   const c = w.state.mission.contract!;
   const end = w.state.mission.result === 'won' ? w.state.mission.endTick : c.deadlineTick + 1;
@@ -238,8 +239,8 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
         const src = sh && sh.producers === 1 && sh.producer >= 0 ? buildingById(w, sh.producer) : th ? buildingById(w, th.source) : null;
         const can = missionBuildable(w.state.mission.id);
         if (src && can !== 'ranked' && can.includes(src.type)) {
-          const [x, y] = cellXY(w, src.gate);
-          act = placeNear(w, src.type, x, y) >= 0 ? 'producer:' + src.type : 'producer?fail';
+          // the build tool's ghost starts at the authored site (D-107), as for the card's button
+          act = placeAtGhost(w, src.type, src.id) >= 0 ? 'producer:' + src.type : 'producer?fail';
         }
       }
     }

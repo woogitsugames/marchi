@@ -13,10 +13,11 @@ export const S2_MISSIONS: Record<'m4' | 'm5' | 'm6', MissionDef> = {
   m4: {
     ...M4_MISSION,
     mapId: 'valley-m4',
-    // Measured with tools/balance.ts m4: no action 11.7 min (1 seal), stone bridge late 8.1 (2),
-    // stone bridge before the ice 6.4 (3).
+    // D-109: 140 silver (was 180) so five bought wagons cannot replace the lesson; the stone bridge
+    // (87) plus one wagon still fit. Measured with tools/balance.ts m4 (see docs/missions/m4.md).
+    coins: 140,
     contract: { wood: 0, planks: 48, grain: 0, flour: 0, bread: 20 },
-    deadlineMin: 12.5, star3Min: 7, star2Min: 9.5,
+    deadlineMin: 12.5, star3Min: 7.5, star2Min: 10,
     ice: [{ start: M4_ICE.start, end: M4_ICE.end }],
   },
   m5: {

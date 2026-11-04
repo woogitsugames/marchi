@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { TICK_HZ, busyOutOfReach, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
+import { TICK_HZ, busyOutOfReach, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -84,6 +84,53 @@ export function sharedOneProducer(world: World, b: Building): SharedOne | null {
 }
 
 /**
+ * The shared-supply card waits until the consumer has waited this long for its input (owner 2026-11-04, D-110):
+ * from the first second it gave the lesson away before the player had seen the workshops stand.
+ */
+export const SHARED_CARD_WAIT_TICKS = 30 * TICK_HZ;
+
+/** Since which tick each building has waited for an input without a break; UI-owned, never in the state. */
+interface WaitLog { tick: number; since: Map<number, number> }
+const waitLogs = new WeakMap<World, WaitLog>();
+
+/** Waiting for an input good: no stock and none (yet) on the way, no wagon, or a delivery on the way. */
+function waitsForInput(b: Building): boolean {
+  const s = b.status;
+  if (s.k !== 'WAITING_DELIVERY' && s.k !== 'NO_WAGON' && s.k !== 'WAITING_UPSTREAM' && !(s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE')) return false;
+  return inputGoods(b.type).includes(s.good);
+}
+
+/**
+ * Call once per sim tick (the app's onTick; headless tools right after step()): remembers since when each
+ * building has waited for its input. Only in missions that may build a producer (the shared-supply card exists
+ * nowhere else). Read-only on the state.
+ */
+export function sampleInputWaits(world: World): void {
+  const st = world.state;
+  const can = missionBuildable(st.mission.id);
+  if (can === 'ranked' || can.length === 0) return;
+  let log = waitLogs.get(world);
+  if (!log || st.tick < log.tick) { log = { tick: st.tick, since: new Map() }; waitLogs.set(world, log); }
+  log.tick = st.tick;
+  for (const b of st.buildings) {
+    if (!waitsForInput(b)) log.since.delete(b.id);
+    else if (!log.since.has(b.id)) log.since.set(b.id, st.tick);
+  }
+}
+
+/** Ticks this building has waited for its input without a break (0 when the world was never sampled). */
+export function inputWaitTicks(world: World, b: Building): number {
+  const since = waitLogs.get(world)?.since.get(b.id);
+  return since === undefined || !waitsForInput(b) ? 0 : world.state.tick - since;
+}
+
+/** The shared-supply card for this building: one producer for two workshops, after 30 s of waiting (D-110). */
+export function sharedOneCard(world: World, b: Building): SharedOne | null {
+  const sh = sharedOneProducer(world, b);
+  return sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
+}
+
+/**
  * A wagon of this building's job (pickup here, or delivery here) has stood at a wooden span for 20 s or more —
  * a one-lane jam or ice (research 2026-11-04, P4; missions II, IV). The buildings behind it only "wait for a
  * delivery", which is no stall, so the jam never reached the card. Cure: pave that span in stone (no one-lane
@@ -138,7 +185,8 @@ export function paveCheck(world: World, h: HeldSpan): ReturnType<typeof validate
 
 /**
  * A shared single producer outranks the long waits: its lesson state (CONTESTED) is too short-lived to reach the
- * card by duration (research P5), so it counts as critical from the first look, ahead of a 45 s stall.
+ * card by duration (research P5), so once the workshop has waited 30 s (D-110) it counts as critical, ahead of a
+ * 45 s stall.
  */
 const SHARED_LEAD_TICKS = 45 * TICK_HZ;
 
@@ -146,7 +194,7 @@ const SHARED_LEAD_TICKS = 45 * TICK_HZ;
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];
   for (const b of world.state.buildings) {
-    if (sharedOneProducer(world, b)) {
+    if (sharedOneCard(world, b)) {
       out.push({ id: b.id, ticks: b.stalledTicks, crit: true, minor: false, score: (b.stalledTicks + SHARED_LEAD_TICKS) * W_CRIT });
       continue;
     }
@@ -197,9 +245,9 @@ let cureCache: { key: string; cure: Cure } | null = null;
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}`;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}`;
   if (cureCache?.key === key) return cureCache.cure;
-  if (sharedOneProducer(world, b)) {
+  if (sharedOneCard(world, b)) {
     cureCache = { key, cure: 'producer' };
     return 'producer';
   }

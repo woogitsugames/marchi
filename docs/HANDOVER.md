@@ -684,3 +684,31 @@ porcie 5211 (5194 był zajęty przez obcy proces z nocy 6 — nieruszany); Vite 
 - **Karta „jeden producent dla dwóch warsztatów” (IX/X):** pokazywać **po ~30 s czekania**, nie od razu.
 - **Tartak:** piła na placu — **zostaje**.
 - Otwarte z nocy 6b (do zadania w dzień): D-106 brzmienie „zamek weźmie je z następnym listem”, D-107 lot kamery do ducha, karta zamku zwinięta przez cały samouczek, rząd rolnika przy płocie.
+
+## Stan dnia 8 — 2026-11-04 (gałąź `claude/w-day8`, deweloper dzienny)
+Wykonane decyzje właściciela z rana (M1, M4, karta IX/X) i nowa tabela rozsądnego gracza I–XIII. Testy **448/0**
+(nowy przypadek w `shared-card`), typecheck i build zielone. `npm run bot` (m1): wygrana 8,85 min, **3★** (było 2★),
+26 srebra. Następna decyzja **D-111**. Nic nie wypchnięte; M8 nietknięta (przeprojektowuje ją inna sesja).
+1. **M1: progi 3★ 9:15, 2★ 10:45 (D-108, 8b0a83f).** `src/sim/missions.ts` i `missions/m1.json`; DESIGN.md cytuje progi,
+   `docs-numbers` je sprawdza. Hasze: tylko M1 — `V4_GOLDEN` ×3 (sprawdzone pełną tabelą, nie tylko pierwszą/ostatnią
+   strategią) i `valley-events-live` m1 ×2. Rozsądny gracz oko 10/30/60 s: 1/1/1★ → **2/2/1★** (10,06/9,91/11,38).
+2. **M4: 140 srebra, progi 7:30 / 10:00 (D-109, a1f29f9).** Nadpisanie w `src/sim/missions-s2.ts` (propozycja
+   `proposals/m4.ts` zostaje przy 180). Hasze: tylko M4 — `V4_GOLDEN` ×4, `valley-events-live` m4 ×2. Same wozy 6,52 (3★)
+   → **10,16 (1★)**; sama lekcja 7,01 (2★) → **3★ +30 s**; list + oko+ 30 s 3★ +21 s; rozsądny gracz bez zmian 1/2/2★.
+   **Strata:** skan+ 30 s 3★ → 1★ (kupuje 3 wozy, brak srebra na most) — wpis w BACKLOG. `tools/balance.ts m4` 1/2/3★ jak było.
+3. **Karta „jeden producent dla dwóch warsztatów” po 30 s (D-110, d7095a3).** Sim nie liczy czekania (`stalledTicks`
+   zeruje się przy `WAITING_DELIVERY`), więc UI próbkuje je co tick (`sampleInputWaits` w `onTick`, jak tempo dostaw;
+   `WeakMap` na świat, poza stanem). Karta, linia karty i lekarstwo `producer` dopiero po 30 s nieprzerwanego czekania;
+   arkusz budynku zachowuje podpowiedź tekstową od początku. Narzędzie bilansu próbkuje tak samo, a gracz „oko+”
+   stawia producenta w miejscu ducha (D-107). IX 3/3/2★ (8,50/8,63/9,24), X 3/3/3★ (9,05/9,13/9,11) — bez straty pieczęci;
+   X przy 30 s o 32 s wolniej (zapas +10 s). Bez zrzutów (zmiana tylko czasu pojawienia się istniejącej karty).
+4. **Tabela „Po decyzjach 11-04”** dopisana do `docs/research/2026-11-04-mission-balance.md` (2998d65, 3a21b2a).
+   Rozsądny gracz oko 10/30/60 s: I 2/2/1, II 2/1/1, III 1/1/2, IV 1/2/2, V 3/2/2, VI 3/3/3, VII 1/1/1, VIII 3/3/3 (stara
+   wersja), IX 3/3/2, X 3/3/3, XI 2/2/1, XII 3/3/3, XIII 3/3/2. Zmiana względem nocy 6b tylko w I.
+### Decyzje do podjęcia (dzień 8)
+- **M4 skan:** przy 140 srebrze gracz klikający kolejne pinezki kupuje wozy i nie stać go na most (1★). Zostawić
+  (lekcja: najpierw most), czy karta „Kup wóz” ma w misjach z lodem ustępować ostrzeżeniu o przęśle przed 3:00?
+- **M1 oko 60 s** zostaje 1★ (most w 1:00, wozy od 3:00) — akceptowalne w samouczku?
+- **VII:** rozsądny gracz 1★ przy każdym tempie (rybak tylko z listu) — kolejna paczka UI (karta „brak ryb / rybak
+  daleko od wody”)?
+- Po scaleniu przeprojektowanej M8: zmierzyć wiersz VIII (`npx tsx tools/balance-night6.ts m8`).

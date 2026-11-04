@@ -6,8 +6,9 @@ import { assert, test } from './harness';
 
 const read = (p: string) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'utf8');
 
-test('DESIGN.md quotes the sim numbers (speeds, costs, cycle times, mission I start)', () => {
+test('DESIGN.md quotes the sim numbers (speeds, costs, cycle times, mission I start and seals)', () => {
   const d = read('../docs/DESIGN.md');
+  const mmss = (min: number) => `${Math.floor(min)}:${String(Math.round((min % 1) * 60)).padStart(2, '0')}`;
   const want = [
     `| Dirt track (grunt) | ${COST_DIRT} | ${SPEED_DIRT.toFixed(1)} m/s`, `${SPEED_WOOD_BRIDGE.toFixed(1)} m/s`, `${COST_WOOD_BRIDGE} / cell`,
     `| Cobbles (bruk) | ${COST_COBBLE} | ${SPEED_COBBLE.toFixed(1)} m/s`, `${SPEED_STONE_BRIDGE.toFixed(1)} m/s`, `${COST_STONE_BRIDGE} / cell`,
@@ -17,6 +18,7 @@ test('DESIGN.md quotes the sim numbers (speeds, costs, cycle times, mission I st
     `| Mill (młyn) | 2×2 | 1 grain → 1 flour | ${BUILDINGS.mill.recipe!.ticks / TICK_HZ} s`,
     `| Bakery (piekarnia) | 2×2 | 1 flour → 2 bread | ${BUILDINGS.bakery.recipe!.ticks / TICK_HZ} s`,
     `${MISSIONS.m1!.coins} coins`, `Wagon costs ${WAGON_PRICE}`, `Deadline: ${MISSIONS.m1!.deadlineMin} sim-minutes`,
+    `3 seals by ${mmss(MISSIONS.m1!.star3Min)}, 2 seals by ${mmss(MISSIONS.m1!.star2Min)}`,
   ];
   const missing = want.filter((w) => !d.includes(w));
   assert(missing.length === 0, `DESIGN.md out of date with the code:\n${missing.join('\n')}`);
