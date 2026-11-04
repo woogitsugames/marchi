@@ -24,7 +24,7 @@ const col = (w: World, x: number, y1: number, y2: number): number[] => lineCells
 const row = (w: World, y: number, x1: number, x2: number): number[] => lineCells(w.terrain.w, y * w.terrain.w + x1, y * w.terrain.w + x2);
 const stableOf = (w: World): number => w.state.buildings.find((b) => b.type === 'stable')!.id;
 
-/** The intended fix of each mission (docs/missions/mN.md), as commands. m11's lesson is wagons only. */
+/** The intended fix of each mission (docs/missions/mN.md), as commands. m11's and m13's lessons are wagons only. */
 export const LESSON: Record<string, (w: World) => Command[]> = {
   m1: (w) => [{ t: 'road', surface: 1, cells: col(w, 41, 24, 44) }],
   m2: (w) => [{ t: 'road', surface: 2, cells: col(w, 51, 30, 42) }],
@@ -38,6 +38,7 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m10: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }],
   m11: () => [],
   m12: (w) => [{ t: 'road', surface: 1, cells: col(w, M12_GRANARY_LINK.x, M12_GRANARY_LINK.y1, M12_GRANARY_LINK.y2) }],
+  m13: () => [],
 };
 
 export interface Row {

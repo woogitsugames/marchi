@@ -1,7 +1,7 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
 import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
-import { storeCapOf } from './contract';
+import { contractTarget, storeCapOf } from './contract';
 import { marketOpen } from './town';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, reachable, slopeFactor, type World } from './network';
 import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
@@ -171,7 +171,7 @@ export function heldWagon(world: World, cell: number): number {
 /**
  * Read-only (audit 2026-11-03, fix 1): a full output waiting for a free wagon (OUTPUT_FULL.NO_WAGON) that
  * nobody needs right now — no consumer waits for this good (NO_INPUT / NO_WAGON / WAITING_UPSTREAM on it),
- * the contract castle has its whole order of it, and no granary asks for road stone (the dispatcher's own
+ * the contract castle holds what the letter now due asks of it (D-106), and no granary asks for road stone (the dispatcher's own
  * full-load rule). The dispatcher hauls such a surplus last, so one more wagon rarely moves it.
  * 'MARKET': the free valley's market still buys it (worth a wagon, but not an alarm); 'SPARE': it simply
  * waits in the yard. null: someone needs it, or the status is another one.
@@ -181,7 +181,9 @@ export function outputSurplus(world: World, id: number): 'SPARE' | 'MARKET' | nu
   if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON') return null;
   const g = b.status.good, st = world.state;
   const k = st.mission.contract;
-  if (k && k.need[g] > (buildingById(world, k.castle)?.stock[g] ?? 0)) return null;
+  // with tranches only the letter now due counts (D-106): the castle does not take the next letter's goods
+  // early, so a wagon would only park them in a granary — the dispatcher hauls that last
+  if (k && contractTarget(k, g) > (buildingById(world, k.castle)?.stock[g] ?? 0)) return null;
   if (g === 'stone' && (st.mission.roadStone || marketOpen(world))) {
     for (const q of st.buildings) {
       if (q.type !== 'warehouse') continue;
