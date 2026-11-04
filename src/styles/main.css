@@ -1441,7 +1441,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 .shared-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
 .shared-hint svg { flex: none; }
 .shared-hint small { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
-.shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
+.shared-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; font-weight: 700; color: inherit; }
 
 /* ================================================================ HUD v3 (D-43): concept "D" on the painted UI kit
    Sprites: public/assets/ui/kit/<name>@2x|@3x.png, slicing in docs/ui-kit.md. 9-slice through border-image with
@@ -2199,7 +2199,7 @@ body.is-clear .clear-restore {
 /* mission X: a thin load names the shortage at its source (D-47), same voice as the shared-input note */
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
 .thin-hint svg { flex: none; }
-.thin-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 40px; font-weight: 700; color: inherit; }
+.thin-hint .linkish { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; min-height: 48px; font-weight: 700; color: inherit; }
 
 /* ---- buttons on the kit (D-53): one look in every sheet, letter, menu and note.
    Secondary = the parchment card with its brass edge (the tool cards' sprites: normal / pressed / active /

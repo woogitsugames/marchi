@@ -369,12 +369,14 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
     const self = l.kind === selfKind && l.id === selfId;
     const root = i === last && chain.length > 1 && isStallLink(l);
     const tag = root ? `<span class="root-tag">${esc(t('why.root'))}</span>` : '';
-    const attrs = self ? 'disabled' : `data-go="${l.kind}:${l.id}"`;
+    // the sheet's own subject is a plain row, not a dead button (a11y: no 26 px "target" in the short chain, D-111)
+    const el = self ? 'div' : 'button';
+    const attrs = self ? '' : `data-go="${l.kind}:${l.id}"`;
     const pos = i === 0 ? 'c-first' : i === last ? 'c-last' : 'c-mid';
-    return `<li class="${pos}" data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
+    return `<li class="${pos}" data-because="${because}"><${el} class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
       <span class="l-icon">${linkIcon(world, l, 32)}</span>
       <span class="l-text"><span class="l-who">${esc(linkSubject(world, l))}${tag}</span><span class="l-why">${esc(linkText(world, l))}</span></span>
-      ${self ? `<span class="l-since">${since}</span>` : `<span class="l-go fwd">${iconSvg('back', 18)}</span>`}</button></li>`;
+      ${self ? `<span class="l-since">${since}</span>` : `<span class="l-go fwd">${iconSvg('back', 18)}</span>`}</${el}></li>`;
   });
   if (mid > 0) {
     items.splice(1, 0, `<li class="c-more"><button class="c-more-btn" data-act="chain:${key}" aria-expanded="${open}"><span class="c-n" dir="auto"${translated('why.more') ? '' : ' lang="en"'}>${
