@@ -1636,3 +1636,10 @@ HUD and moves focus to "Pokaż przyciski", now on its stat plate (the old rule's
 kit plate: bare ink over the map); `h` again or that button brings the HUD back. Escape keeps closing sheets and
 tools regardless of the setting. Letters (D-118) switch all game keys off.
 (decided)
+
+**D-120 — Large system text: side sheets take the full height; focus stays above the docked fix (day 8d; a11y F1/F2).**
+`layout.ts` `watchTextScale` (16 px probe, ResizeObserver) sets `body.is-bigtext` at ≥ 150 % (Android font size →
+WebView textZoom). Landscape side sheet: full height beside the top bar and over the rail, no kicker/icon; portrait
+bottom sheet may grow to the chips row. `.sheet-body` gets `scroll-padding-block-end: var(--dock-h)` (measured in
+`sheets.ts`) plus a focusin fallback, so a focused control never sits under "Naprawa".
+(decided)

@@ -781,3 +781,9 @@ gdy obok renderował Chromium — sam przechodzi (18 s); to nie regresja.
   jako stałą lekcję czytelności, czy pokazywać kartę tylko przy zagrożonych pieczęciach?
 - **IV oko 30/60 s** zostaje 2★ (most dopiero z karty przęsła w 4:00) — wystarczy?
 - Tłumaczenia nowych kluczy (pl/en, reszta angielski fallback).
+
+## Stan dnia 8d (a11y, gałąź `claude/w-day8d`, przerwane limitem)
+
+- **Zrobione (osobne commity):** (1) listy jako prawdziwe modale z `inert`, nazwą i fokusem — D-118; (2) arkusze gry bez `aria-modal` (`npm run a11y` sprawdza oba, A11Y failed=0); (3) skróty nie kradną Spacji/Enter/liter z kontrolek + przełącznik „Skróty klawiszowe”, `h` → „Pokaż przyciski” z fokusem i płytką — D-119; (4) `scroll-padding` pod dok „Naprawa” i `is-bigtext` (arkusz na pełną wysokość w poziomie przy 200 %) — D-120.
+- **WIP (commit „WIP: resume from here”):** (6) pinezki: nazwa z wagą i czasem (`markers.ts`, klucze `pin.*` w PENDING_KEYS), kształt `pin-alarm@2x/3x.png` (rozeta lakowa, `tools/make-pin-alarm.py`) — brak jeszcze CSS; (7) reduced motion kamery/menu i pulsu szkicu (`render/motion.ts`, `cameraRig.ts`, `terrain.ts` `uMotion`) — gotowe w kodzie, nietestowane. Łatki CSS czekają w `tools/wip-day8d/fix5.py` (dwutonowa obwódka, D-123), `fix6.py` (pinezki, D-121), `fix7.py` (kontrast menu/„brak N”/ETA/slate, D-122): uruchomić `python3` każdą, sprawdzić, zrobić zrzuty, rozdzielić na commity i usunąć katalog.
+- **Do zrobienia:** wpisy D-121..D-123 w DECISIONS, pomiary audytu po (pełny `tools/a11y-audit.mjs`; przed: list końcowy outsideDlg=16/obscured=16, czerwona pinezka w dzień 1.66–1.8:1), wiersz BACKLOG P1 a11y odhaczyć, zrzuty day/night/winter pinezek; maszyna była bardzo obciążona (scena audytu ≈ 5 min).

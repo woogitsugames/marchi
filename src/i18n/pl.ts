@@ -430,6 +430,9 @@ export const pl = {
   'hud.worst': 'Najgorszy zastój',
   'hud.worstShow': 'Pokaż: {name}',
   'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
+  'pin.worst': 'Najgorszy zastój — {name}',
+  'pin.critical': 'Krytyczny zastój — {name}',
+  'pin.stood': '{name}, stoi {time}',
   'contract.toSnow': '{time} do śniegu',
   'contract.toTranche': '{time} do dostawy {n}',
   'tool.wagonShort': 'brak {n}',
@@ -733,6 +736,9 @@ export const PENDING_KEYS = [
   'fix.iceAheadWhy',
   'menu.shortcuts',
   'menu.shortcutsHint',
+  'pin.worst',
+  'pin.critical',
+  'pin.stood',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

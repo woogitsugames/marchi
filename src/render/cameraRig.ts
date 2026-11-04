@@ -1,5 +1,6 @@
 // Orbit camera around a ground target: narrow-FOV 3/4 view, exponential damping (no springs,
 // no overshoot), pitch rises as you zoom out (map-like overview), clamped to the valley.
+import { reducedMotion } from './motion';
 import { MathUtils, PerspectiveCamera, Vector3 } from 'three';
 import type { CameraControl, ScreenOffset } from './api';
 import { CELL, type Heightfield } from './heightfield';
@@ -157,6 +158,8 @@ export class CameraRig implements CameraControl {
     const d = this.screenShift(px, pz, screenOffset, this.goalDist, this.goalYaw, _g);
     this.goal.set(px - d.x, 0, pz - d.z);
     this.clampGoal();
+    // reduced motion: the view cuts to the subject instead of gliding (D-122)
+    if (reducedMotion()) { this.glide = null; this.target.x = this.goal.x; this.target.z = this.goal.z; return; }
     this.glide = { fx: this.target.x, fz: this.target.z, t: 0 };
   }
 
@@ -210,8 +213,8 @@ export class CameraRig implements CameraControl {
 
   /** Advance damping and place the camera. followPos: current position of the followed wagon. */
   update(dt: number, followPos: Vector3 | null): void {
-    if (this.menu) {
-      // slow sway around the framing yaw (not a full orbit, so the bridge stays framed)
+    if (this.menu && !reducedMotion()) {
+      // slow sway around the framing yaw (not a full orbit, so the bridge stays framed); still with reduced motion
       if (this.menuT === 0) this.menuYaw = this.goalYaw;
       this.menuT += dt;
       this.goalYaw = this.menuYaw + Math.sin(this.menuT * 0.045) * 0.16;
