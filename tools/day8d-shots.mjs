@@ -30,7 +30,7 @@ const ALL = {
   end: { q: 'play=m1&bot=1&ff=600', wait: 2500, sel: '.letter[role="dialog"]' },
   // 3: settings with the shortcuts toggle; "h" hides the HUD and focuses "Pokaż przyciski"
   settings: { q: '', act: async (p) => { await p.evaluate(() => document.querySelector('.menu-settings')?.click()); await p.waitForTimeout(800); await p.evaluate(() => { const b = document.querySelector('.sheet-body'); if (b) b.scrollTop = b.scrollHeight; }); await p.waitForTimeout(300); } },
-  clear: { q: 'play=m1&ff=90&speed=0', act: async (p) => { await p.evaluate(() => { window.__marchia.app.prefs.shortcuts = true; document.activeElement?.blur(); }); await p.keyboard.press('h'); await p.waitForTimeout(600); } },
+  clear: { q: 'play=m1&ff=90&speed=0', act: async (p) => { await p.evaluate(() => { window.__marchia.app.prefs.shortcuts = true; document.activeElement?.blur(); }); await p.keyboard.press('h'); await p.waitForTimeout(1500); } },
   // 4: focus on the chain root above the docked "Naprawa"; 200 % text in the Why sheet
   'why-focus': { q: 'play=m1&ff=90&speed=0&open=bakery', act: focus('.sheet .link.is-root') },
   'why-text200': { q: 'play=m1&ff=90&speed=0&open=bakery', act: scale2 },

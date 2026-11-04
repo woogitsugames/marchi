@@ -138,6 +138,8 @@ export const en: FullDict = {
   'menu.leftHanded': 'Left-handed layout',
   'menu.on': 'Yes',
   'menu.off': 'No',
+  'menu.shortcuts': 'Keyboard shortcuts',
+  'menu.shortcutsHint': 'Space: pause · 1 2 4: speed · R C X B: tools · H: hide the buttons. Inactive while a button has keyboard focus or in a text field.',
   'quality.high': 'High',
   'quality.low': 'Low',
   'sheet.close': 'Close',

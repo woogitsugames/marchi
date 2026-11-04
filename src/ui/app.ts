@@ -35,7 +35,7 @@ import { modalOpen, showModal } from './modal';
 import type { BestResult } from '../platform/profile';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
-import { loadPrefs, savePrefs, type Prefs } from './prefs';
+import { loadPrefs, savePrefs, shortcutsOn, type Prefs } from './prefs';
 import { CHRONICLE } from '../sim/proposals/chronicle';
 import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './chronicle';
 import { RoadDraft, errorText } from './roadTool';
@@ -63,7 +63,7 @@ function armAudioUnlock(): void {
 
 /** Clear-screen mode: only the scene stays, plus one small button to bring the UI back. */
 let restoreBtn: HTMLButtonElement | null = null;
-function setClear(on: boolean): void {
+function setClear(on: boolean, focusRestore = false): void {
   document.body.classList.toggle('is-clear', on);
   if (!restoreBtn) {
     restoreBtn = document.createElement('button');
@@ -74,6 +74,31 @@ function setClear(on: boolean): void {
   }
   restoreBtn.textContent = t('hud.showUi');
   restoreBtn.setAttribute('aria-label', t('hud.showUi'));
+  // hidden from the keyboard ("h"): focus must not stay on a HUD button that just vanished — the visible way
+  // back is "Pokaż przyciski", focused (a11y audit F5)
+  if (on && focusRestore) {
+    restoreBtn.focus();
+    requestAnimationFrame(() => { if (document.body.classList.contains('is-clear')) restoreBtn?.focus(); });
+  }
+}
+
+/**
+ * Single-key shortcuts act only when the key is not meant for a control (a11y audit F5, D-119): never while
+ * typing in a field, never on a control that has KEYBOARD focus (Tab, switch access, a screen reader, our own
+ * focus moves): Space / Enter must press it, letters must not fire behind it. A button that took focus from a
+ * mouse or finger keeps the shortcuts (desktop players click Pauza, then press Space).
+ */
+let lastPointerDown = -1e9;
+let pointerFocused: Element | null = null;
+window.addEventListener('pointerdown', () => { lastPointerDown = performance.now(); }, { capture: true });
+window.addEventListener('focusin', (e) => {
+  pointerFocused = performance.now() - lastPointerDown < 600 && e.target instanceof Element ? e.target : null;
+}, { capture: true });
+function shortcutTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element) || target === document.body) return true;
+  if (target.closest('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, select, [contenteditable=""], [contenteditable="true"]')) return false;
+  const control = target.closest('button, a[href], input, [role="button"], [role="slider"], [role="link"], summary');
+  return !control || control === pointerFocused;
 }
 
 /** Player volumes (0..1 sliders) -> engine channels; effects scale sfx, ambience and UI clicks together. */
@@ -1089,18 +1114,30 @@ export class App implements PanelNav {
       else if (this.tool !== 'none') this.setTool('none');
       else if (this.mode === 'game' && !this.endShown) this.openGameMenu();
       e.preventDefault();
-    } else if (this.mode === 'game' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const k = e.key.toLowerCase();
-      if (k === ' ') { const s: Speed = this.loop.speed === 0 ? 1 : 0; this.loop.speed = s; this.hud?.setSpeed(s); }
-      else if (k === '1' || k === '2' || k === '4') { const s = Number(k) as Speed; this.loop.speed = s; this.hud?.setSpeed(s); }
-      else if (k === 'r') this.setTool(this.tool === 'road' ? 'none' : 'road');
-      else if (k === 'c') this.setTool(this.tool === 'cobble' ? 'none' : 'cobble');
-      else if (k === 'x') this.setTool(this.tool === 'demolish' ? 'none' : 'demolish');
-      else if (k === 'b') this.setTool(this.tool === 'build' ? 'none' : 'build');
-      else if (k === 'enter' && this.tool === 'build') this.build.confirm();
-      else if (k === 'g' && this.tool === 'build') this.build.rotate();
-      else if (k === 'h') document.body.classList.toggle('is-clear');
+      return;
     }
+    if (this.mode !== 'game' || e.ctrlKey || e.metaKey || e.altKey || (e.repeat && e.key === ' ')) return;
+    const k = e.key.toLowerCase();
+    // the clear screen always comes back with the same key that hid it (focus sits on "Pokaż przyciski" then)
+    if (k === 'h' && document.body.classList.contains('is-clear') && shortcutsOn(this.prefs)) {
+      setClear(false);
+      e.preventDefault();
+      return;
+    }
+    if (!shortcutsOn(this.prefs) || !shortcutTarget(e.target)) return;
+    let used = true;
+    if (k === ' ') { const s: Speed = this.loop.speed === 0 ? 1 : 0; this.loop.speed = s; this.hud?.setSpeed(s); }
+    else if (k === '1' || k === '2' || k === '4') { const s = Number(k) as Speed; this.loop.speed = s; this.hud?.setSpeed(s); }
+    else if (k === 'r') this.setTool(this.tool === 'road' ? 'none' : 'road');
+    else if (k === 'c') this.setTool(this.tool === 'cobble' ? 'none' : 'cobble');
+    else if (k === 'x') this.setTool(this.tool === 'demolish' ? 'none' : 'demolish');
+    else if (k === 'b') this.setTool(this.tool === 'build' ? 'none' : 'build');
+    else if (k === 'enter' && this.tool === 'build') this.build.confirm();
+    else if (k === 'g' && this.tool === 'build') this.build.rotate();
+    else if (k === 'h') setClear(true, true);
+    else used = false;
+    // Space on a mouse-focused button would click it again on keyup: the shortcut took the key
+    if (used) e.preventDefault();
   }
 
   private openSettings(): void {
@@ -1116,6 +1153,8 @@ export class App implements PanelNav {
         this.applyRenderSize();
       },
       leftHanded: () => this.prefs.leftHanded,
+      shortcuts: () => shortcutsOn(this.prefs),
+      setShortcuts: (v) => { this.prefs.shortcuts = v; savePrefs(this.prefs); },
       setLeftHanded: (v) => {
         this.prefs.leftHanded = v;
         savePrefs(this.prefs);

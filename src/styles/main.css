@@ -2166,6 +2166,16 @@ body.is-mini .sheet-grip { height: 6px; }
 
 /* "Pokaż przyciski" (clear screen) on a stat plate */
 body.is-clear .clear-restore { background: none; clip-path: none; color: var(--ink); font-weight: 700; padding-inline: 16px; opacity: 1; }
+/* the plate itself: the older oak rule's `border` shorthand above reset the kit's border-image, so the only way
+   back from a clear screen was bare ink over the map (day 8d, a11y F5) */
+body.is-clear .clear-restore {
+  border-style: solid; border-width: 0;
+  border-image-source: url("/assets/ui/kit/stat@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/stat@2x.png") 2x, url("/assets/ui/kit/stat@3x.png") 3x);
+  border-image-slice: 25% 10% fill;
+  border-image-width: 10px 12px;
+  border-image-repeat: stretch;
+}
 
 /* mission X: a thin load names the shortage at its source (D-47), same voice as the shared-input note */
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }

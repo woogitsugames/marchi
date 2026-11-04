@@ -1622,3 +1622,17 @@ hold is released and focus returns to where it was. The end letter is named by i
 `aria-modal`: the map and HUD work beside them on purpose, so Tab walks on into the page (no trap) and comes back
 by the usual order; focus still moves in on open and back to the opener on close. `npm run a11y` checks both.
 (decided)
+
+**D-119 — Keyboard shortcuts never take a key from a control; a setting turns them off (day 8d; a11y audit F5).**
+Space paused the game even with keyboard focus on a tool card (the card could not be pressed with Space), and the
+single letters (R C X B G H) fired everywhere, `h` hiding the whole HUD with no way back for a keyboard. Now
+(`app.ts` `onKey`, `shortcutTarget`): no shortcut while typing in a field or while a control has **keyboard**
+focus (Tab, switch access, a screen reader or our own focus moves) — Space/Enter press the control, letters do
+nothing. A control focused by a mouse or finger keeps the shortcuts (click "×1", then Space pauses; the key is
+consumed so it does not click the button a second time). Settings → "Skróty klawiszowe" (Tak/Nie, `prefs.shortcuts`);
+until the player chooses, on where the main pointer is fine (`(hover: hover) and (pointer: fine)`, desktop), off on
+touch devices (rare keyboards, Voice Access / on-screen keyboards would fire letters by accident). `h` hides the
+HUD and moves focus to "Pokaż przyciski", now on its stat plate (the old rule's `border` shorthand had wiped the
+kit plate: bare ink over the map); `h` again or that button brings the HUD back. Escape keeps closing sheets and
+tools regardless of the setting. Letters (D-118) switch all game keys off.
+(decided)
