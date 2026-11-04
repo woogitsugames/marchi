@@ -318,3 +318,41 @@ robi osobna sesja, więc wiersz VIII trzeba będzie zmierzyć ponownie po scalen
 - **Wciąż do zrobienia (bez zmian od nocy 6b):** VII (rozsądny gracz 1★ — karta nie prowadzi do rybaka nad wodą), III
   (1/1/2★ — błoto nie jest przestojem), II przy 30/60 s (1★; próg 2★ 10:00 czeka na playtest), XI przy 60 s (1★).
   XIII przy 30 s ma 3★ z zapasem 1 s.
+
+## Po dniu 8c (gałąź `claude/w-day8c`)
+
+Stan po D-115 (karta tempa: producent za wolny na następną pieczęć — VII), D-116 (błoto na dostawie kontraktu —
+spokojna linia na karcie tempa, bruk przy zagrożonych pieczęciach — III) i D-117 (przed krą „Kup wóz” ustępuje
+kamiennemu przęsłu, gdy wóz zjadłby srebro na most — IV). Wszystko to odczyt UI, hasze bez zmian. Narzędzie
+`npx tsx tools/balance-night6.ts` próbkuje teraz co tick także dziennik tempa (jak `App.onTick`); gracz „oko” przy
+pustej albo spokojnej karcie bierze kartę tempa i jej „Naprawę” (`PACE=0` mierzy bez karty tempa). Kolumny
+pasywny / same wozy / sama lekcja / optimum bez zmian względem „Po decyzjach 11-04”.
+
+| Misja | oko 10/30/60 s (dzień 8) | oko 10/30/60 s (dzień 8c) | skan+ 30 s | list + oko+ 30 s |
+|---|---|---|---|---|
+| I | 2/2/1 | 2/2/1 (10,06/9,91/11,38) | 11,01 (1) | 11,15 (1) |
+| II | 2/1/1 | 2/1/1 (9,24/9,82/10,81) | 9,63 (2) | 9,60 (2) |
+| III | 1/1/2 | **2/3/2** (6,32/5,97/6,46) | 7,98 (2) → **5,97 (3)** | 5,49 (3) |
+| IV | 1/2/2 | **3**/2/2 (6,33/7,58/7,96) | 11,77 (1) → **7,00 (3)** | 7,15 (3) |
+| V | 3/2/2 | 3/2/2 (8,22/8,59/8,76) | 8,50 (3) | 8,59 (2) |
+| VI | 3/3/3 | 3/3/3 (8,31 ×3) | 8,31 (3) | 8,31 (3) |
+| VII | 1/1/1 | **3/3/3** (6,96/6,91/7,21) | 10,90 (1) → **6,91 (3)** | 6,91 (3) |
+| VIII* | 3/3/3 | 3/3/3 (9,28/9,40/9,40) | 8,77 (3) | 8,79 (3) |
+| IX | 3/3/2 | 3/3/2 (8,50/8,63/9,24) | 8,63 (3) | 8,63 (3) |
+| X | 3/3/3 | 3/3/3 (9,05/9,13/9,11) | 9,13 (3) | 9,13 (3) |
+| XI | 2/2/1 | 2/2/1 (9,87/10,12/10,94) | 10,12 (2) | — |
+| XII | 3/3/3 | 3/3/3 (8,80/8,55/8,52) | 8,55 (3) | 8,55 (3) |
+| XIII | 3/3/2 | 3/3/2 (4,38/5,49/6,42) | 5,49 (3) | — |
+
+\* VIII: stara wersja misji. Pojawia się w niej linia błota (deszcz od 1:40), ale bruk wymaga kamienia z kamieniołomu,
+więc przycisk pokazuje brak kamienia; oko+ 10 s 9,07 → 9,28 (nadal 3★).
+
+- **Żadna misja nie traci pieczęci.** Zmieniają się tylko III, IV i VII (oraz czas oko+ 10 s w VIII).
+- **VII:** karta tempa w 1:10–2:00 („Chata rybaka ×1: 5,3/min, na 3 pieczęcie trzeba ≈8,8/min — postaw więcej”),
+  przycisk stawia rybaka w miejscu autorskim (D-107). 3★ przy każdym tempie — lekcja „gdzie” jest podana przez ducha;
+  do decyzji, czy to nie za łatwo (np. duch tylko przy brzegu, bez miejsca autorskiego).
+- **III:** linia błota widoczna od 0:20; przycisk bruku (49 pól, 147 srebra) od ok. 2:50, gdy prognoza jest gotowa
+  i daje < 3★. Gracz co 10 s kupuje wcześniej trzy wozy, więc kończy 4 s za 3★.
+- **IV:** reguła działa tylko na kartę z lekarstwem „wóz”; gracze co 30/60 s nie trafiają na nią przy srebrze ≤ 101
+  przed krą, więc zostają przy 2★ (most dopiero na karcie przęsła w 4:00).
+- Wciąż do zrobienia: II przy 30/60 s (1★), XI przy 60 s (1★), I przy 60 s (1★).
