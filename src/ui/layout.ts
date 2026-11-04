@@ -171,6 +171,27 @@ export function applyLayoutClasses(l: LayoutInfo): void {
   root.setProperty('--scene-h', `${l.sceneH}px`);
 }
 
+/**
+ * Text scale of the page (a11y audit F2, D-120): Android's font size reaches the Capacitor WebView as textZoom,
+ * which multiplies every computed font size; a browser's text zoom does the same. A hidden 16 px probe with
+ * line-height 1 inside the UI root reports its real line box; `onChange` gets the ratio (1 = 100 %, 2 = 200 %)
+ * on start and whenever it changes (ResizeObserver: no polling).
+ */
+export function watchTextScale(host: HTMLElement, onChange: (scale: number) => void): void {
+  const probe = document.createElement('span');
+  probe.className = 'text-probe';
+  probe.setAttribute('aria-hidden', 'true');
+  probe.textContent = 'M';
+  host.append(probe);
+  let last = 0;
+  const check = (): void => {
+    const s = Math.round((probe.getBoundingClientRect().height / 16) * 20) / 20;
+    if (s > 0 && s !== last) { last = s; onChange(s); }
+  };
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(check).observe(probe);
+  check();
+}
+
 /** Cheap fingerprint of the fold state, polled twice a second: some WebViews (and DevTools
  *  emulation) change viewport segments or posture without firing 'resize'. */
 export function foldSignature(): string {

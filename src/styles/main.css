@@ -1010,6 +1010,8 @@ bdi { unicode-bidi: isolate; }
 }
 /* the dock reaches the body's bottom edge: no padding strip for the scrolled text to show through */
 .sheet-body:has(.fix-dock) { padding-block-end: 0; }
+/* focus and scrollIntoView stop above the dock (its height + fade, measured by sheets.ts; a11y F1, D-120) */
+.sheet-body { scroll-padding-block-end: var(--dock-h, 0px); }
 .fix-note { margin-block-start: 4px; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
@@ -2361,3 +2363,21 @@ body.is-short .chain .c-first .is-self .l-since { display: block; font-size: 13p
 body.is-short .chain .link:not(.is-self) { min-height: 48px; padding-block: 4px; }
 body.is-short .fix-dock { padding-block: 4px; }
 body.is-short .fix-dock .fix-btn { min-height: 48px; }
+
+/* ---- large system text (D-120, a11y audit F2): Android font size 150 %+ reaches the WebView as textZoom.
+   .text-probe (layout.ts watchTextScale) measures it and sets body.is-bigtext. A side sheet then takes the full
+   height beside the top bar and over the rail, so the cause chain's root and "Naprawa" stay on screen; the
+   kicker and the icon give their room to the title, which may break anywhere rather than overflow the frame. */
+.text-probe { position: absolute; inset-block-start: 0; inset-inline-start: 0; visibility: hidden; pointer-events: none; font-size: 16px; line-height: 1; white-space: nowrap; }
+body.is-bigtext .sheet-head h3 { overflow-wrap: anywhere; line-height: 1; }
+body.is-side.is-bigtext .sheet-head .kicker, body.is-side.is-bigtext .sheet-head .sh-icon { display: none; }
+body.mode-game.is-side.is-landscape.is-bigtext .sheet {
+  top: calc(var(--safe-t) + 6px);
+  max-height: calc(100% - var(--safe-t) - var(--safe-b) - 12px);
+  width: min(560px, 60vw);
+}
+/* portrait: the bottom sheet may grow up to the chips and speed row (over the contract panel) */
+body.mode-game.is-bigtext:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: calc(100% - var(--bar-b) - 8px); }
+body.is-side.is-landscape.is-bigtext .sheet-paper { padding: 14px 14px 22px; }
+body.is-side.is-landscape.is-bigtext .sheet-grip { height: 4px; }
+body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }

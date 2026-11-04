@@ -20,7 +20,7 @@ import { botPlan, menuWorld } from '../game/menuScene';
 import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
-import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
+import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { StallRanking, sampleInputWaits } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
@@ -206,6 +206,11 @@ export class App implements PanelNav {
     const layer = (id: string): HTMLElement => h('div', { id });
     this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), tutorial: layer('tutorial'), menu: layer('menu'), overlay: layer('overlay') };
     o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.tutorial, this.layers.overlay);
+    // large system text (Android font size 150 %+ -> WebView textZoom): side sheets take the full height (D-120)
+    watchTextScale(o.ui, (scale) => {
+      document.body.classList.toggle('is-bigtext', scale >= 1.5);
+      requestAnimationFrame(() => { this.measureRail(); this.hud?.relayout(); });
+    });
     this.layers.markers.append(this.markers.root);
     this.markers.onBubble = (kind, id) => this.go(kind, id, false);
     this.markers.onFixed = (id) => {
