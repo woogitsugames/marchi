@@ -712,3 +712,30 @@ Wykonane decyzje właściciela z rana (M1, M4, karta IX/X) i nowa tabela rozsąd
 - **VII:** rozsądny gracz 1★ przy każdym tempie (rybak tylko z listu) — kolejna paczka UI (karta „brak ryb / rybak
   daleko od wody”)?
 - Po scaleniu przeprojektowanej M8: zmierzyć wiersz VIII (`npx tsx tools/balance-night6.ts m8`).
+
+## Stan dnia 8b — 2026-11-04 (gałąź `claude/w-day8b`, deweloper dzienny)
+Dokończona przerwana praca (WIP „landscape chain shortening” zastąpiony czystym commitem) i cztery poprawki renderu
+z raportu render-scale. Testy **450/0** (nowe: `heightfield-bounds`, przypadek w `wagon-spacing`), typecheck i build
+zielone, hasze bez zmian (sim nietknięty). Następna decyzja **D-112**. Nic nie wypchnięte; M8 nietknięta.
+1. **Krótki łańcuch w poziomie (D-111, 886368b).** Arkusz boczny ≤ 500 px wysokości (`body.is-short`, 915×412, połowa
+   HUD w trybie Flex): łańcuch „Dlaczego stoi?” pokazuje budynek w jednej linii (z zegarem przestoju) i od razu korzeń;
+   ogniwa pośrednie zwinięte w jedno „+N ogniw(a) pośrednich” (48 px), rozwijane w miejscu (stan trzymany do zamknięcia
+   arkusza). Pion i Fold-książka bez zmian. Samouczek celuje w pierwsze *widoczne* ogniwo. Pomiar
+   `tools/chain-shots.mjs`: przy 915×412 korzeń 184–232 px nad „Naprawą” (góra 234) w VI/IX/XIII; po rozwinięciu body
+   się przewija. `?lang=ar` — lustrzane, „+N” po angielsku (klucz `why.more` tylko pl/en). Zrzuty
+   `docs/shots/day8b-chain-*.jpg`.
+2. **Render #1 — zakresy uploadu buforów instancji (20cb8e9):** upload do GPU 689 → **40 KB/klatkę** (−94 %).
+3. **Render #3 — stałe wysokości komórek i mapy wielokrotnego użytku w `afterTick` (5540df8):** alloc 93 → **42** /
+   72 → **23 KB/tick** (near/far, 200 wozów).
+4. **Render #2 — teren tylko dla widocznych i poruszonych wozów (9f88a7c):** alloc `wagons.frame` 156 → **48** /
+   157 → **58 KB/klatkę**. Culling bez marginesu „na oko”: analityczne granice wysokości mapy (`Heightfield.bounds()`),
+   śledzony wóz zawsze dokładnie.
+5. **Render #6 — pinezki piszą transform tylko przy zmianie (d776134):** alloc `markers.update` 36 → **27 KB**.
+   Obraz: `tools/jam-diff.mjs` **0 różnych pikseli** (scena domyślna i 60 wozów stress). Liczby i szczegóły:
+   sekcja „Po poprawkach” w `docs/research/2026-11-04-render-scale.md`.
+### Nie zrobione / do decyzji (dzień 8b)
+- **Render #4 (cienie wozów mid / dalekich ładunków) i #5 (osobne materiały instancji)** — nie wdrożone: #4 zmienia
+  obraz (brak cienia kół/konia 45–110 m), #5 wymaga pilnowania kopii materiałów; oba ze zrzutami low/high/ultra.
+  Wdrożyć #4 (decyzja wizualna właściciela)?
+- **`why.more` w 17 pozostałych językach** — dziś angielski fallback (PENDING_KEYS), jak inne nowe klucze.
+- Na telefonie sprawdzić, czy „+N” na łączniku jest dość czytelne jako przycisk (dziś podkreślony tekst + szewron).
