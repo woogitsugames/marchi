@@ -161,6 +161,9 @@ export interface SettingsActions {
   autoQuality(): QualityChoice;
   leftHanded(): boolean;
   setLeftHanded(v: boolean): void;
+  /** Single-key shortcuts on (D-119). */
+  shortcuts(): boolean;
+  setShortcuts(v: boolean): void;
   musicVolume(): number;
   effectsVolume(): number;
   /** commit = slider released: persist */
@@ -174,8 +177,8 @@ export function settingsSheet(act: SettingsActions): SheetContent {
       setHtml(sheet.icon, iconSvg('menu', 30));
       sheet.kicker.textContent = '';
       sheet.title.textContent = t('menu.settings');
-      const seg = (name: string, opts: [string, string][], cur: string): string =>
-        `<div class="seg" role="group">${opts.map(([v, l]) =>
+      const seg = (name: string, opts: [string, string][], cur: string, label: string): string =>
+        `<div class="seg" role="group" aria-label="${esc(label)}">${opts.map(([v, l]) =>
           `<button class="btn cf${v === cur ? ' is-on' : ''}" data-set="${name}:${v}" aria-pressed="${v === cur}">${esc(l)}</button>`).join('')}</div>`;
       // 17 languages: a 2-3 column grid of native names, each in its own language (lang/dir for fonts & screen readers)
       const langGrid = (cur: string): string =>
@@ -185,14 +188,17 @@ export function settingsSheet(act: SettingsActions): SheetContent {
         <div class="setting"><span class="s-label">${esc(t('menu.language'))}</span>
           ${langGrid(getLang())}</div>
         <div class="setting"><span class="s-label">${esc(t('menu.quality'))}</span>
-          ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality())}
+          ${seg('quality', [['auto', t('quality.auto')], ['low', t('quality.low')], ['high', t('quality.high')], ['ultra', t('quality.ultra')]], act.quality(), t('menu.quality'))}
           <div class="s-hint">${esc(act.quality() === 'auto' ? t('menu.qualityDetected', { q: t(`quality.${act.autoQuality()}` as MessageKey) }) : t('menu.qualityHint'))}</div></div>
         <div class="setting"><label class="s-label" for="vol-music">${esc(t('menu.music'))}</label>
           <input class="vol" id="vol-music" type="range" min="0" max="100" step="5" data-vol="music"></div>
         <div class="setting"><label class="s-label" for="vol-fx">${esc(t('menu.effects'))}</label>
           <input class="vol" id="vol-fx" type="range" min="0" max="100" step="5" data-vol="effects"></div>
         <div class="setting"><span class="s-label">${esc(t('menu.leftHanded'))}</span>
-          ${seg('left', [['0', t('menu.off')], ['1', t('menu.on')]], act.leftHanded() ? '1' : '0')}</div>
+          ${seg('left', [['0', t('menu.off')], ['1', t('menu.on')]], act.leftHanded() ? '1' : '0', t('menu.leftHanded'))}</div>
+        <div class="setting"><span class="s-label">${esc(t('menu.shortcuts'))}</span>
+          ${seg('keys', [['0', t('menu.off')], ['1', t('menu.on')]], act.shortcuts() ? '1' : '0', t('menu.shortcuts'))}
+          <div class="s-hint">${esc(t('menu.shortcutsHint'))}</div></div>
         <div class="setting"><div class="s-hint">${esc(t('hud.clearHint'))}</div></div>`;
       if (setHtml(sheet.body, html)) {
         // slider values are set here, not in the HTML, so the 4 Hz refresh never rebuilds a slider mid-drag
@@ -209,6 +215,7 @@ export function settingsSheet(act: SettingsActions): SheetContent {
           if (k === 'lang') void setLang(v as Lang);
           if (k === 'quality') act.setQuality(v as QualityPref);
           if (k === 'left') act.setLeftHanded(v === '1');
+          if (k === 'keys') act.setShortcuts(v === '1');
           (sheet.body as HTMLElement & { __html?: string }).__html = undefined;
           this.update(sheet);
         }));
@@ -574,10 +581,10 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const authored = getContractLetter(st.mission.id, won ? 'won' : 'lost', seals);
   // a won contract leads on to the next one (day 6: the way to mission II went through the menu)
   const next = won && act.next ? nextMission(st.mission.id) : null;
-  const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
+  const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'end-title' });
   letter.innerHTML = `${letterSeal(won)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
-    <h2>${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
+    <h2 id="end-title" dir="auto">${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
     ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">

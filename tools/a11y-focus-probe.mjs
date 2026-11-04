@@ -3,14 +3,19 @@
 //   loss    focus a control inside an open Why sheet while the game runs (x1): is it still focused after 4 s,
 //           or did a sheet refresh (setHtml -> innerHTML) drop it to <body>?
 //   space   Space on a focused HUD button: does the global shortcut also toggle pause (app.ts onKey)?
-//   trap    Tab from the last control of an aria-modal sheet: does focus leave the dialog?
-// Usage: node tools/a11y-focus-probe.mjs   (server: npx vite --port 5199 --strictPort; URL0 to override)
+//   trap    Tab from the last control of a sheet: does focus leave the dialog? (game sheets are non-modal since
+//           day 8d: leaving is fine, but the sheet must not claim aria-modal)
+//   letter  opening and end letter (day 8d): dialog name, initial focus, 8 Tabs stay inside, the rest is inert,
+//           focus back after the opening letter closes
+// Usage: node tools/a11y-focus-probe.mjs   (server: npx vite --port 5199 --strictPort; URL0 to override;
+//        PROBES=letter,space to run some of loss,space,trap,letter)
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const URL0 = process.env.URL0 ?? 'http://127.0.0.1:5199/';
 const [w, h] = (process.argv[2] ?? '412x915').split('x').map(Number);
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const run = (name) => !process.env.PROBES || process.env.PROBES.split(',').includes(name);
 const desc = () => { const a = document.activeElement; return a ? `${a.tagName.toLowerCase()}.${[...a.classList].slice(0, 3).join('.')} "${(a.getAttribute('aria-label') ?? a.textContent ?? '').trim().slice(0, 40)}"` : 'none'; };
 async function open(q) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true });
@@ -22,7 +27,7 @@ async function open(q) {
 }
 try {
   // loss: per focus target in the Why sheet, game running at x1
-  for (const sel of ['.sheet .link.is-root', '.sheet .codex-tog', '.sheet .fix-btn', '.sheet .close']) {
+  if (run('loss')) for (const sel of ['.sheet .link.is-root', '.sheet .codex-tog', '.sheet .fix-btn', '.sheet .close']) {
     const { ctx, page } = await open('play=m1&ff=90&speed=1&open=bakery');
     await page.waitForSelector('.sheet', { timeout: 30000 }).catch(() => null);
     const ok = await page.evaluate((s) => { const el = document.querySelector(s); el?.focus(); return !!el && document.activeElement === el; }, sel);
@@ -33,27 +38,58 @@ try {
     console.log(`loss ${sel}: focused=${ok} before=${before} after4s=${after} kept=${kept}`);
     await ctx.close();
   }
-  // space on a focused button
-  {
+  // space on a focused button (day 8d, D-119: shortcuts forced on, as on a desktop; phones default off)
+  if (run('space')) {
     const { ctx, page } = await open('play=m1&ff=30&speed=1');
+    await page.evaluate(() => { window.__marchia.app.prefs.shortcuts = true; });
     const r = await page.evaluate(async () => {
-      const b = document.querySelector('.rail .tool');
-      b.focus();
+      // the first tool card that can take focus ("Buduj" may be disabled on a phone)
+      const b = [...document.querySelectorAll('.rail .tool')].find((x) => { x.focus(); return document.activeElement === x; });
+      if (!b) return { b: 'none focusable', speedBefore: window.__marchia.app.loop.speed };
+      window.__probeTool = b;
       const speedBefore = window.__marchia.app.loop.speed;
       return { b: b.getAttribute('aria-label') ?? b.textContent.trim(), speedBefore };
     });
     await page.keyboard.press('Space');
     await page.waitForTimeout(300);
-    const after = await page.evaluate(() => ({ speed: window.__marchia.app.loop.speed, tool: window.__marchia.app.tool, pressed: document.querySelector('.rail .tool')?.getAttribute('aria-pressed') }));
-    console.log(`space on "${r.b}": speed ${r.speedBefore} -> ${after.speed}, tool=${after.tool}, aria-pressed=${after.pressed}`);
+    const after = await page.evaluate(() => ({ speed: window.__marchia.app.loop.speed, tool: window.__marchia.app.tool, pressed: window.__probeTool?.getAttribute('aria-pressed'), focus: document.activeElement?.getAttribute('aria-label') }));
+    console.log(`space on "${r.b}": speed ${r.speedBefore} -> ${after.speed}, tool=${after.tool}, aria-pressed=${after.pressed}, focus=${after.focus}`);
     // character shortcut while focus is on a button: "h" hides the whole HUD
     await page.keyboard.press('h');
     await page.waitForTimeout(200);
-    console.log(`key h: body.is-clear=${await page.evaluate(() => document.body.classList.contains('is-clear'))}`);
+    console.log(`key h on a focused button: body.is-clear=${await page.evaluate(() => document.body.classList.contains('is-clear'))}`);
+    // on the map (focus on body): Space pauses, h hides the HUD and focuses the way back, h again restores
+    await page.evaluate(() => { window.__marchia.app.setTool('none'); document.activeElement?.blur(); });
+    const s0 = await page.evaluate(() => window.__marchia.app.loop.speed);
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(200);
+    const s1 = await page.evaluate(() => window.__marchia.app.loop.speed);
+    await page.keyboard.press('h');
+    await page.waitForTimeout(300);
+    const hid = await page.evaluate(() => ({ clear: document.body.classList.contains('is-clear'), focus: document.activeElement?.className ?? '' }));
+    await page.keyboard.press('h');
+    await page.waitForTimeout(200);
+    const back = await page.evaluate(() => document.body.classList.contains('is-clear'));
+    console.log(`on the map: Space speed ${s0} -> ${s1}; h -> is-clear=${hid.clear} focus=${hid.focus}; h again -> is-clear=${back}`);
+    // mouse-clicked button: Space is the shortcut, not a second click
+    if (back) await page.keyboard.press('h');
+    await page.click('.speed button:nth-child(2)').catch(() => null);
+    const m0 = await page.evaluate(() => ({ speed: window.__marchia.app.loop.speed, focus: document.activeElement?.className ?? '' }));
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(200);
+    const m1 = await page.evaluate(() => window.__marchia.app.loop.speed);
+    console.log(`after a click on ${m0.focus}: speed ${m0.speed}, Space -> ${m1}`);
+    // shortcuts off (setting): Space on the map does nothing
+    await page.evaluate(() => { window.__marchia.app.prefs.shortcuts = false; document.activeElement?.blur(); });
+    const o0 = await page.evaluate(() => window.__marchia.app.loop.speed);
+    await page.keyboard.press('Space');
+    await page.keyboard.press('r');
+    await page.waitForTimeout(200);
+    console.log(`shortcuts off: Space speed ${o0} -> ${await page.evaluate(() => window.__marchia.app.loop.speed)}, r -> tool=${await page.evaluate(() => window.__marchia.app.tool)}`);
     await ctx.close();
   }
   // trap: Tab out of the sheet
-  {
+  if (run('trap')) {
     const { ctx, page } = await open('play=m1&ff=90&speed=0&open=bakery');
     await page.waitForSelector('.sheet', { timeout: 30000 }).catch(() => null);
     const n = await page.evaluate(() => document.querySelectorAll('.sheet button:not([disabled])').length);
@@ -63,6 +99,30 @@ try {
     await page.keyboard.press('Tab');
     const out2 = await page.evaluate(desc);
     console.log(`trap: ${n} buttons in sheet; Tab after the last -> inSheet=${out.inSheet} (${out.at}), aria-modal=${out.modal}; next Tab -> ${out2}`);
+    await ctx.close();
+  }
+  // letters: real modals
+  if (run('letter')) for (const [label, q, wait] of [['opening', 'play=m1&tut=1', 1500], ['end', 'play=m1&bot=1&ff=600', 2500]]) {
+    const { ctx, page } = await open(q);
+    await page.waitForTimeout(wait);
+    await page.waitForSelector('.letter[role="dialog"]', { timeout: 30000 }).catch(() => null);
+    await page.waitForTimeout(300);
+    const cdp = await ctx.newCDPSession(page);
+    const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+    const dlg = nodes.find((n) => n.role?.value === 'dialog' && !n.ignored);
+    const first = await page.evaluate(desc);
+    let inside = 0;
+    for (let k = 0; k < 8; k++) {
+      await page.keyboard.press('Tab');
+      if (await page.evaluate(() => !!document.activeElement?.closest('.letter'))) inside++;
+    }
+    const inert = await page.evaluate(() => [...document.querySelectorAll('[inert]')].map((e) => e.id || e.className).join(','));
+    console.log(`letter ${label}: name="${dlg?.name?.value ?? ''}" modal=${(dlg?.properties ?? []).find((p) => p.name === 'modal')?.value?.value ?? false} focus=${first} tabsInside=${inside}/8 inert=[${inert}]`);
+    if (label === 'opening') {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+      console.log(`letter opening closed: inert left=${await page.evaluate(() => document.querySelectorAll('[inert]').length)} focus=${await page.evaluate(desc)}`);
+    }
     await ctx.close();
   }
 } finally {

@@ -1611,6 +1611,77 @@ never meet a wagon cure while short of silver before the ice). No other mission 
 unchanged. Test `tests/ice-ahead.test.ts`.
 (decided)
 
+**D-118 — Letters are real modals, game sheets are non-modal dialogs (day 8d; a11y audit 2026-11-04 F3/F4).**
+Every dialog claimed `aria-modal="true"`, yet Tab walked out of it into the HUD and the pins: screen readers hid
+controls that keyboard and switch focus still reached. Now two kinds, honestly labelled. **Letters** (opening,
+dead end, end of contract; `src/ui/modal.ts` `showModal`) block the game: on insertion every other `#ui` layer, the
+scene canvas and body-level controls get `inert`, focus goes to the letter's first action ("Do dzieła", "Jeszcze
+raz", on a won contract "Następna misja"), game shortcuts are off; when the letter leaves or starts its exit the
+hold is released and focus returns to where it was. The end letter is named by its heading (`end-title`).
+**Game sheets** (Dlaczego stoi?, wagon, castle, settings…) are `role="dialog"` named by their title **without**
+`aria-modal`: the map and HUD work beside them on purpose, so Tab walks on into the page (no trap) and comes back
+by the usual order; focus still moves in on open and back to the opener on close. `npm run a11y` checks both.
+(decided)
+
+**D-119 — Keyboard shortcuts never take a key from a control; a setting turns them off (day 8d; a11y audit F5).**
+Space paused the game even with keyboard focus on a tool card (the card could not be pressed with Space), and the
+single letters (R C X B G H) fired everywhere, `h` hiding the whole HUD with no way back for a keyboard. Now
+(`app.ts` `onKey`, `shortcutTarget`): no shortcut while typing in a field or while a control has **keyboard**
+focus (Tab, switch access, a screen reader or our own focus moves) — Space/Enter press the control, letters do
+nothing. A control focused by a mouse or finger keeps the shortcuts (click "×1", then Space pauses; the key is
+consumed so it does not click the button a second time). Settings → "Skróty klawiszowe" (Tak/Nie, `prefs.shortcuts`);
+until the player chooses, on when the device has a mouse or trackpad (`(any-pointer: fine)`, also a tablet with a
+paired mouse), off on touch-only devices (rare keyboards, Voice Access / on-screen keyboards would fire letters by
+accident). `h` hides the
+HUD and moves focus to "Pokaż przyciski", now on its stat plate (the old rule's `border` shorthand had wiped the
+kit plate: bare ink over the map); `h` again or that button brings the HUD back. Escape keeps closing sheets and
+tools regardless of the setting. Letters (D-118) switch all game keys off.
+(decided — owner 2026-11-04: default on with a fine pointer, off on touch-only)
+
+**D-120 — Large system text: side sheets take the full height; focus stays above the docked fix (day 8d; a11y F1/F2).**
+`layout.ts` `watchTextScale` (16 px probe, ResizeObserver) sets `body.is-bigtext` at ≥ 150 % (Android font size →
+WebView textZoom). Landscape side sheet: full height beside the top bar and over the rail, no kicker/icon; portrait
+bottom sheet may grow to the chips row. `.sheet-body` gets `scroll-padding-block-end: var(--dock-h)` (measured in
+`sheets.ts`) plus a focusin fallback, so a focused control never sits under "Naprawa".
+At 200 % in landscape the side sheet covers the seal tokens and the pace card while it is open; accepted.
+(decided — owner 2026-11-04)
+
+**D-121 — Stall pins: severity and time in the name, a parchment halo, a scalloped seal for critical (day 8d; a11y F7).**
+The red pin sank into the daytime grass (1.5–2.1:1) and differed from the brass one only by colour. Now: the pin's
+accessible name leads with its weight and ends with the time stood — "Najgorszy zastój — Piekarnia: brak mąki, stoi
+1:30" (`pin.worst` / `pin.critical` / `pin.stood`); the time in the name moves in 10 s steps so a screen reader is
+not told a new name every second (the visible tally still counts each second). Every pin gets a 1 px parchment
+`drop-shadow` halo before the kit's shadow. The critical / worst pin uses `pin-alarm@2x/3x.png`
+(`tools/make-pin-alarm.py`): the red pin's disc at 86 % on a 14-lobe wax rim, the shape of the HUD's alarm seal —
+scalloped = critical, smooth = lesser, readable without colour.
+(decided — owner 2026-11-04: the scalloped wax-seal critical pin is accepted)
+
+**D-122 — Contrast: menu subtitles, "brak N", ETA/income, slate (day 8d; a11y F11, F12, F13, F21).**
+Menu mission subtitles and the menu's small lines go from `--ink-soft` to `--ink` (14 px): the translucent menu
+paper over the live scene left them at 3.4–3.6:1. The "brak N" reason on the hatched "Kup wóz" tool sits on a
+parchment plaque (`--kparch`, 2 px spread) in darker wine `#5c1418`, so the hatching never crosses the letters
+(was 1.3:1 at worst). ETA and income `#7d5d23` → `#6b4f1d` (≈5.3:1 on parchment); the "Zacznij tutaj" kicker
+`#561418`; `--slate` `#3d4852` → `#36404a`; the snow pill itself is the kit's `eta` sprite, so its text goes `#eef0ee` →
+`#fbfbf8` (4.45 → ≈4.9:1). No hue changes, only darker steps of the same inks.
+(decided)
+
+**D-123 — Two-tone focus ring (day 8d; a11y F8).**
+The ochre ring was 2.31:1 on parchment. `:focus-visible` (buttons, `[tabindex]`, links, selects, textareas, the
+volume slider) now draws a 2 px ink outline (`--focus-ink #1d1813`, 11:1 on parchment) between two pale bands
+(`--focus-pale #f6e9c8`, `box-shadow` 2 px inside the offset and 6 px outside), so one of the two tones keeps
+≥ 3:1 against the map, the oak plates and the wine wax alike. While focused, the ring replaces a control's own
+`box-shadow`; sheets themselves (`section.sheet:focus`) draw no ring. `button:focus { outline: none }` stays:
+mouse and touch focus show nothing.
+(decided)
+
+**D-124 — Reduced motion reaches the renderer (day 8d; a11y F14).**
+CSS and the seal press already honoured `prefers-reduced-motion`; the camera and the terrain shader did not.
+`src/render/motion.ts` holds one shared `MediaQueryList` (`reducedMotion()`, read per frame). With it set:
+`CameraRig.focusCell` cuts to the subject (no 220 ms glide), the main menu's slow camera sway stops, and the
+bad-draft / blocked-ghost overlay in `terrain.ts` holds a steady 0.85 alpha instead of the ~1 Hz pulse (`uMotion`
+uniform). Wagons, water and weather keep moving: they are the game state, not decoration. A settings toggle
+"Ogranicz ruch" waits until a device shows whether Android WebView maps "Remove animations" to the media query.
+
 **D-125 — Owner decisions on day 8c (2026-11-04 ~18:00): VII's fisher ghost on the nearest bank, III's mud line only at risk.**
 M7: mission VII loses its authored fisher site (`siteHints` removed; `M7_FISHER_SITE` stays as bot/balance data), so
 the pace card's "Postaw jeszcze: Chata rybaka" opens the build tool with the ghost on the nearest valid bank by the

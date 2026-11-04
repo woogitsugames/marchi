@@ -87,7 +87,14 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 button:focus { outline: none; }
-button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+/* two-tone focus ring (D-123, a11y audit F8): an ink line between two pale bands. Ink on parchment reads 11:1, the
+   pale bands stand off the map, the oak and the wine wax; the pair keeps 3:1 against anything behind it */
+:root { --focus-ink: #1d1813; --focus-pale: #f6e9c8; }
+button:focus-visible, [tabindex]:focus-visible, a[href]:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--focus-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 6px var(--focus-pale);
+}
 
 svg { display: block; fill: currentColor; flex: none; }
 
@@ -234,7 +241,8 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   letter-spacing: .14em;
   font-size: 15px;
   font-weight: 600;
-  color: var(--ink-soft);
+  /* ink, not ink-soft: the dim menu paper over the live scene left 3.4:1 (a11y F11, D-122) */
+  color: var(--ink);
 }
 .menu-continue { width: 100%; justify-content: flex-start; text-align: start; padding: 6px 16px; margin: 4px 0 6px; }
 .menu-continue .mc-text { display: flex; flex-direction: column; min-width: 0; }
@@ -280,9 +288,9 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   display: block;
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.25;
-  color: var(--ink-soft);
+  color: var(--ink);
   margin-top: 2px;
   /* a subtitle that must wrap keeps whole phrases together (no lone last word under a dash) */
   text-wrap: pretty;
@@ -300,7 +308,7 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .menu-item.is-start { border-inline-start: 3px solid var(--wine); padding-inline-start: 8px; }
 .menu-item .mi-start {
   display: block; font-family: var(--font-body); font-weight: 700; font-size: 12px; line-height: 1.2;
-  font-variant: small-caps; text-transform: lowercase; letter-spacing: .1em; color: var(--wine); margin-bottom: 1px;
+  font-variant: small-caps; text-transform: lowercase; letter-spacing: .1em; color: #561418; margin-bottom: 1px;
 }
 /* Settings: the parchment kit card (the .btn rules give the sprite), a gear-less menu glyph, body font */
 .menu-item.menu-settings { width: auto; min-height: 48px; padding: 0 18px 0 12px; gap: 8px; font-family: var(--font-body); font-size: 17px; font-weight: 600; }
@@ -450,7 +458,7 @@ body.is-side .sheet-grip::before { display: none; }
 }
 .good-chip b { font-size: 17px; }
 .good-chip .cap { color: var(--ink-soft); }
-.good-chip .inc { font-size: 13px; color: #7d5d23; display: block; line-height: 1; }
+.good-chip .inc { font-size: 13px; color: #6b4f1d; display: block; line-height: 1; }
 .good-chip.is-empty { --frame: var(--clay); }
 .good-chip.is-empty b { color: #6e3520; }
 .good-chip .arrow { color: var(--ink-soft); margin: 0 -2px; }
@@ -513,7 +521,7 @@ body.is-side .sheet-grip::before { display: none; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; font-size: 15px; }
 .kv dt { color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: .04em; font-variant: small-caps; text-transform: lowercase; }
 .kv dd { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.kv dd.eta { color: #7d5d23; font-size: 17px; }
+.kv dd.eta { color: #6b4f1d; font-size: 17px; }
 /* mud / slope pace (H4): icon beside the one-line comparison, ink colour — a pace, never a stall */
 .kv dd.pace-note { flex-wrap: nowrap; align-items: center; font-weight: 600; }
 .kv dd.pace-note > span { min-width: 0; }
@@ -549,7 +557,7 @@ body.is-side .sheet-grip::before { display: none; }
   --v: 50%;
 }
 .vol:focus { outline: none; }
-.vol:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+.vol:focus-visible { outline: 2px solid var(--focus-ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 6px var(--focus-pale); }
 .vol::-webkit-slider-runnable-track {
   height: 8px;
   background: linear-gradient(90deg, var(--ochre) 0 var(--v), var(--oak) var(--v));
@@ -667,7 +675,7 @@ body.is-side .sheet-grip::before { display: none; }
 .letter .l-next .ln-t { font-family: var(--font-head); font-size: 21px; line-height: 1.05; }
 .letter .l-next .ln-s { font-size: 13px; font-weight: 500; line-height: 1.2; opacity: .9; }
 /* sheets take focus on open for assistive tech (a11y, brief 06 task 4); the container itself draws no ring */
-section.sheet:focus { outline: none; }
+section.sheet:focus { outline: none; box-shadow: none; }
 
 @media (max-height: 500px) {
   .scrim { align-items: flex-start; padding-top: calc(var(--safe-t) + 34px); }
@@ -1010,6 +1018,8 @@ bdi { unicode-bidi: isolate; }
 }
 /* the dock reaches the body's bottom edge: no padding strip for the scrolled text to show through */
 .sheet-body:has(.fix-dock) { padding-block-end: 0; }
+/* focus and scrollIntoView stop above the dock (its height + fade, measured by sheets.ts; a11y F1, D-120) */
+.sheet-body { scroll-padding-block-end: var(--dock-h, 0px); }
 .fix-note { margin-block-start: 4px; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
@@ -1277,7 +1287,7 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .ms-req .pl-v { font-size: 17px; }
 .ms-req .pl-bar { height: 5px; }
 .ms-unlocks { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; color: var(--ink-soft); }
-.ms-income { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 17px; font-weight: 700; color: #7d5d23; }
+.ms-income { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 17px; font-weight: 700; color: #6b4f1d; }
 .ms-prices { list-style: none; margin: 0; padding: 0; }
 .ms-good {
   display: grid;
@@ -1441,7 +1451,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
 :root {
   --wine: #6f1d22;
   --wine-ink: #5a171b;
-  --slate: #3d4852;
+  --slate: #36404a;
   --brass: #a07a3a;
   --brass-dk: #6b5128;
   --kparch: #ead6ad;
@@ -1555,7 +1565,8 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
 .kseal, .so-seal { background: image-set(url("/assets/ui/kit/seal-empty@2x.png") 2x, url("/assets/ui/kit/seal-empty@3x.png") 3x) center / contain no-repeat; }
 .kseal.on, .so-fill { background: image-set(url("/assets/ui/kit/seal-full@2x.png") 2x, url("/assets/ui/kit/seal-full@3x.png") 3x) center / contain no-repeat; }
 .bubble .bb { background: image-set(url("/assets/ui/kit/pin-brass@2x.png") 2x, url("/assets/ui/kit/pin-brass@3x.png") 3x) center / contain no-repeat; }
-.bubble.is-critical .bb { background-image: image-set(url("/assets/ui/kit/pin-red@2x.png") 2x, url("/assets/ui/kit/pin-red@3x.png") 3x); }
+/* critical / worst: the scalloped wax-seal pin (D-121), a shape of its own, not only a colour */
+.bubble.is-critical .bb { background-image: image-set(url("/assets/ui/kit/pin-alarm@2x.png") 2x, url("/assets/ui/kit/pin-alarm@3x.png") 3x); }
 
 /* ---- top cluster: bar (menu, chips, speed) and the contract / valley panel, one grid */
 #hud { position: absolute; inset: 0; }
@@ -1646,7 +1657,8 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .snow-pill {
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 32px; padding-block: 2px; padding-inline: 12px 14px;
-  color: #eef0ee; font-size: 15px; white-space: nowrap;
+  /* near-white, not #eef0ee: on the kit's slate pill that read 4.45:1 (a11y F21, D-122) */
+  color: #fbfbf8; font-size: 15px; white-space: nowrap;
 }
 .snow-pill svg { color: #dfe8ef; }
 .snow-pill bdi { font-size: 18px; font-weight: 700; }
@@ -1884,6 +1896,9 @@ body.left-handed .stall-row { flex-direction: row-reverse; }
 .tool.is-on { color: var(--wine-ink); }
 .tool.is-disabled .ti, .tool.is-disabled .tl { opacity: .6; }
 .tool.is-disabled[data-tool='wagon'] .tl { opacity: 1; color: #6e1a1e; }
+/* "brak 4" is the only visible reason on the hatched card: a parchment plaque under it so the hatching never runs
+   through the letters (a11y F12: 1.3:1 at worst; D-122) */
+.tool.is-disabled[data-tool='wagon'] .tl { background: var(--kparch); box-shadow: 0 0 0 2px var(--kparch); border-radius: 2px; padding-inline: 3px; color: #5c1418; }
 .tool .cost {
   position: absolute; top: -11px; inset-inline-end: -6px;
   min-width: 30px; height: 30px; display: grid; place-items: center;
@@ -1988,10 +2003,14 @@ body.is-flex .rail { z-index: 1; }
 /* under a HUD panel or the sheet (D-62): fades out instead of peeking from behind it and taking its taps */
 .bubble.is-shown.is-under { opacity: 0; }
 #ui .bubble.is-under { pointer-events: none; }
-.bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
+/* a 1 px parchment halo first (a11y F7: the pins sank into the grass by day), then the kit's soft shadow */
+.bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 0 1px rgb(234 214 173 / .95)) drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
 .bubble .bb-in { width: 32px; height: 32px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); --icon-halo: var(--kparch); }
 /* red pin: the kit's red tip plus a wine ring round the cause, so worst / critical reads at a glance */
 .bubble.is-critical .bb-in { color: var(--wine); box-shadow: inset 0 0 0 2.5px var(--wine), 0 0 0 1px rgb(111 29 34 / .35); }
+/* the alarm pin's disc is 86 % of the round one, set lower inside the wax rim (tools/make-pin-alarm.py) */
+.bubble.is-critical .bb-in { width: 28px; height: 28px; margin-top: 9px; }
+.bubble.is-critical.is-first .bb::after { inset-block-start: 9px; inset-inline-start: 6px; width: 28px; height: 28px; }
 .bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
 .bubble.is-minor .bb-in svg { opacity: .8; }
 .bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }
@@ -2166,6 +2185,16 @@ body.is-mini .sheet-grip { height: 6px; }
 
 /* "Pokaż przyciski" (clear screen) on a stat plate */
 body.is-clear .clear-restore { background: none; clip-path: none; color: var(--ink); font-weight: 700; padding-inline: 16px; opacity: 1; }
+/* the plate itself: the older oak rule's `border` shorthand above reset the kit's border-image, so the only way
+   back from a clear screen was bare ink over the map (day 8d, a11y F5) */
+body.is-clear .clear-restore {
+  border-style: solid; border-width: 0;
+  border-image-source: url("/assets/ui/kit/stat@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/stat@2x.png") 2x, url("/assets/ui/kit/stat@3x.png") 3x);
+  border-image-slice: 25% 10% fill;
+  border-image-width: 10px 12px;
+  border-image-repeat: stretch;
+}
 
 /* mission X: a thin load names the shortage at its source (D-47), same voice as the shared-input note */
 .thin-hint { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #6e3520; }
@@ -2351,3 +2380,21 @@ body.is-short .chain .c-first .is-self .l-since { display: block; font-size: 13p
 body.is-short .chain .link:not(.is-self) { min-height: 48px; padding-block: 4px; }
 body.is-short .fix-dock { padding-block: 4px; }
 body.is-short .fix-dock .fix-btn { min-height: 48px; }
+
+/* ---- large system text (D-120, a11y audit F2): Android font size 150 %+ reaches the WebView as textZoom.
+   .text-probe (layout.ts watchTextScale) measures it and sets body.is-bigtext. A side sheet then takes the full
+   height beside the top bar and over the rail, so the cause chain's root and "Naprawa" stay on screen; the
+   kicker and the icon give their room to the title, which may break anywhere rather than overflow the frame. */
+.text-probe { position: absolute; inset-block-start: 0; inset-inline-start: 0; visibility: hidden; pointer-events: none; font-size: 16px; line-height: 1; white-space: nowrap; }
+body.is-bigtext .sheet-head h3 { overflow-wrap: anywhere; line-height: 1; }
+body.is-side.is-bigtext .sheet-head .kicker, body.is-side.is-bigtext .sheet-head .sh-icon { display: none; }
+body.mode-game.is-side.is-landscape.is-bigtext .sheet {
+  top: calc(var(--safe-t) + 6px);
+  max-height: calc(100% - var(--safe-t) - var(--safe-b) - 12px);
+  width: min(560px, 60vw);
+}
+/* portrait: the bottom sheet may grow up to the chips and speed row (over the contract panel) */
+body.mode-game.is-bigtext:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: calc(100% - var(--bar-b) - 8px); }
+body.is-side.is-landscape.is-bigtext .sheet-paper { padding: 14px 14px 22px; }
+body.is-side.is-landscape.is-bigtext .sheet-grip { height: 4px; }
+body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }

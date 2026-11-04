@@ -869,3 +869,10 @@ gdy obok renderował Chromium — sam przechodzi (18 s); to nie regresja.
   jako stałą lekcję czytelności, czy pokazywać kartę tylko przy zagrożonych pieczęciach?
 - **IV oko 30/60 s** zostaje 2★ (most dopiero z karty przęsła w 4:00) — wystarczy?
 - Tłumaczenia nowych kluczy (pl/en, reszta angielski fallback).
+
+## Stan dnia 8d — 2026-11-04 (a11y, gałąź `claude/w-day8d`)
+
+- **Zrobione:** (1) listy jako modale z `inert`, nazwą i fokusem; (2) arkusze gry bez `aria-modal` — D-118; (3) skróty nie kradną Spacji/Enter/liter z kontrolek, przełącznik „Skróty klawiszowe”, domyślnie włączone przy myszy (`any-pointer: fine`), wyłączone na samym dotyku — D-119; (4) `scroll-padding` pod dok „Naprawa”, `is-bigtext` przy 200 % — D-120; (5) pinezki: nazwa z wagą i czasem („Najgorszy zastój — …, stoi 1:30”), jasna obwódka, krytyczna jako rozeta lakowa `pin-alarm` — D-121; (6) kontrast menu/„brak N”/ETA/śnieg — D-122; (7) dwutonowa obwódka fokusu — D-123; (8) reduced motion w rendererze (kamera, menu, puls szkicu) — D-124.
+- Decyzje właściciela 11-04: skróty jak wyżej, arkusz przy 200 % w poziomie zasłania pieczęci/tempo — akceptowane, rozeta — akceptowana.
+- Zrzuty: `docs/shots/day8d/pins-*` (dzień, noc, zima wymuszona przez `view.winter`). `npm run a11y` A11Y failed=0.
+- Otwarte: przycisk „Sprzedaj za N” wyszarzony (alpha .6) liczy się w audycie jako 2:1 (wyłączona kontrolka, WCAG zwalnia); przełącznik „Ogranicz ruch” — dopiero po sprawdzeniu WebView na urządzeniu.

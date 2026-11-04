@@ -20,7 +20,7 @@ import { botPlan, menuWorld } from '../game/menuScene';
 import { h, isRtl } from './dom';
 import { Hud, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
-import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, type LayoutInfo } from './layout';
+import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { StallRanking, sampleInputWaits } from './stalls';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
@@ -31,10 +31,11 @@ import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
 import { SpeedHint } from './speedHint';
 import { pressSeal } from './sealPress';
+import { modalOpen, showModal } from './modal';
 import type { BestResult } from '../platform/profile';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
-import { loadPrefs, savePrefs, type Prefs } from './prefs';
+import { loadPrefs, savePrefs, shortcutsOn, type Prefs } from './prefs';
 import { CHRONICLE } from '../sim/proposals/chronicle';
 import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './chronicle';
 import { RoadDraft, errorText } from './roadTool';
@@ -49,6 +50,8 @@ const audio = new AudioEngine();
 const music = new MusicPlayer();
 bindAudioEngine(audio);
 let audioUnlockArmed = false;
+/** The end letter's first action: the next contract when there is one, else "Again" (a11y audit F4). */
+const END_FOCUS = '[data-a="next"], [data-a="again"]';
 /** Web Audio may only start from a trusted gesture: unlock on the first touch/click/key. */
 function armAudioUnlock(): void {
   if (audioUnlockArmed) return;
@@ -60,7 +63,7 @@ function armAudioUnlock(): void {
 
 /** Clear-screen mode: only the scene stays, plus one small button to bring the UI back. */
 let restoreBtn: HTMLButtonElement | null = null;
-function setClear(on: boolean): void {
+function setClear(on: boolean, focusRestore = false): void {
   document.body.classList.toggle('is-clear', on);
   if (!restoreBtn) {
     restoreBtn = document.createElement('button');
@@ -71,6 +74,31 @@ function setClear(on: boolean): void {
   }
   restoreBtn.textContent = t('hud.showUi');
   restoreBtn.setAttribute('aria-label', t('hud.showUi'));
+  // hidden from the keyboard ("h"): focus must not stay on a HUD button that just vanished — the visible way
+  // back is "Pokaż przyciski", focused (a11y audit F5)
+  if (on && focusRestore) {
+    restoreBtn.focus();
+    requestAnimationFrame(() => { if (document.body.classList.contains('is-clear')) restoreBtn?.focus(); });
+  }
+}
+
+/**
+ * Single-key shortcuts act only when the key is not meant for a control (a11y audit F5, D-119): never while
+ * typing in a field, never on a control that has KEYBOARD focus (Tab, switch access, a screen reader, our own
+ * focus moves): Space / Enter must press it, letters must not fire behind it. A button that took focus from a
+ * mouse or finger keeps the shortcuts (desktop players click Pauza, then press Space).
+ */
+let lastPointerDown = -1e9;
+let pointerFocused: Element | null = null;
+window.addEventListener('pointerdown', () => { lastPointerDown = performance.now(); }, { capture: true });
+window.addEventListener('focusin', (e) => {
+  pointerFocused = performance.now() - lastPointerDown < 600 && e.target instanceof Element ? e.target : null;
+}, { capture: true });
+function shortcutTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element) || target === document.body) return true;
+  if (target.closest('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, select, [contenteditable=""], [contenteditable="true"]')) return false;
+  const control = target.closest('button, a[href], input, [role="button"], [role="slider"], [role="link"], summary');
+  return !control || control === pointerFocused;
 }
 
 /** Player volumes (0..1 sliders) -> engine channels; effects scale sfx, ambience and UI clicks together. */
@@ -178,6 +206,11 @@ export class App implements PanelNav {
     const layer = (id: string): HTMLElement => h('div', { id });
     this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), tutorial: layer('tutorial'), menu: layer('menu'), overlay: layer('overlay') };
     o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.tutorial, this.layers.overlay);
+    // large system text (Android font size 150 %+ -> WebView textZoom): side sheets take the full height (D-120)
+    watchTextScale(o.ui, (scale) => {
+      document.body.classList.toggle('is-bigtext', scale >= 1.5);
+      requestAnimationFrame(() => { this.measureRail(); this.hud?.relayout(); });
+    });
     this.layers.markers.append(this.markers.root);
     this.markers.onBubble = (kind, id) => this.go(kind, id, false);
     this.markers.onFixed = (id) => {
@@ -459,7 +492,7 @@ export class App implements PanelNav {
     if (opening) {
       this.loop.speed = 0;
       this.hud?.setSpeed(0);
-      this.layers.overlay.append(opening);
+      showModal(this.layers.overlay, opening, '[data-a="start"]');
     } else if (tutorial) this.startTutorial();
   }
 
@@ -767,7 +800,7 @@ export class App implements PanelNav {
         this.hud?.setSpeed(this.loop.speed);
       },
     });
-    this.layers.overlay.append(letter);
+    showModal(this.layers.overlay, letter, '[data-a="again"]');
   }
 
   private async autosave(): Promise<void> {
@@ -813,11 +846,11 @@ export class App implements PanelNav {
       const raf = requestAnimationFrame(() => {
         cancelPress = pressSeal(this.layers.overlay, () => {
           this.cancelSeal = null;
-          if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+          if (this.world === w && this.mode === 'game') showModal(this.layers.overlay, letter, END_FOCUS);
         }, this.hud?.sealTarget() ?? null);
       });
       this.cancelSeal = () => { cancelAnimationFrame(raf); cancelPress?.(); };
-    } else this.layers.overlay.append(letter);
+    } else showModal(this.layers.overlay, letter, END_FOCUS);
   }
 
   // ------------------------------------------------------------------ commands
@@ -1078,24 +1111,38 @@ export class App implements PanelNav {
   }
 
   private onKey(e: KeyboardEvent): void {
+    // a letter holds the screen (src/ui/modal.ts): it handles its own keys, the game under it stays still
+    if (modalOpen()) return;
     if (e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack') {
       if (this.sheets.count) this.sheets.closeTop();
       else if (this.tool === 'build' && this.build.placing) this.build.back();
       else if (this.tool !== 'none') this.setTool('none');
       else if (this.mode === 'game' && !this.endShown) this.openGameMenu();
       e.preventDefault();
-    } else if (this.mode === 'game' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const k = e.key.toLowerCase();
-      if (k === ' ') { const s: Speed = this.loop.speed === 0 ? 1 : 0; this.loop.speed = s; this.hud?.setSpeed(s); }
-      else if (k === '1' || k === '2' || k === '4') { const s = Number(k) as Speed; this.loop.speed = s; this.hud?.setSpeed(s); }
-      else if (k === 'r') this.setTool(this.tool === 'road' ? 'none' : 'road');
-      else if (k === 'c') this.setTool(this.tool === 'cobble' ? 'none' : 'cobble');
-      else if (k === 'x') this.setTool(this.tool === 'demolish' ? 'none' : 'demolish');
-      else if (k === 'b') this.setTool(this.tool === 'build' ? 'none' : 'build');
-      else if (k === 'enter' && this.tool === 'build') this.build.confirm();
-      else if (k === 'g' && this.tool === 'build') this.build.rotate();
-      else if (k === 'h') document.body.classList.toggle('is-clear');
+      return;
     }
+    if (this.mode !== 'game' || e.ctrlKey || e.metaKey || e.altKey || (e.repeat && e.key === ' ')) return;
+    const k = e.key.toLowerCase();
+    // the clear screen always comes back with the same key that hid it (focus sits on "Pokaż przyciski" then)
+    if (k === 'h' && document.body.classList.contains('is-clear') && shortcutsOn(this.prefs)) {
+      setClear(false);
+      e.preventDefault();
+      return;
+    }
+    if (!shortcutsOn(this.prefs) || !shortcutTarget(e.target)) return;
+    let used = true;
+    if (k === ' ') { const s: Speed = this.loop.speed === 0 ? 1 : 0; this.loop.speed = s; this.hud?.setSpeed(s); }
+    else if (k === '1' || k === '2' || k === '4') { const s = Number(k) as Speed; this.loop.speed = s; this.hud?.setSpeed(s); }
+    else if (k === 'r') this.setTool(this.tool === 'road' ? 'none' : 'road');
+    else if (k === 'c') this.setTool(this.tool === 'cobble' ? 'none' : 'cobble');
+    else if (k === 'x') this.setTool(this.tool === 'demolish' ? 'none' : 'demolish');
+    else if (k === 'b') this.setTool(this.tool === 'build' ? 'none' : 'build');
+    else if (k === 'enter' && this.tool === 'build') this.build.confirm();
+    else if (k === 'g' && this.tool === 'build') this.build.rotate();
+    else if (k === 'h') setClear(true, true);
+    else used = false;
+    // Space on a mouse-focused button would click it again on keyup: the shortcut took the key
+    if (used) e.preventDefault();
   }
 
   private openSettings(): void {
@@ -1111,6 +1158,8 @@ export class App implements PanelNav {
         this.applyRenderSize();
       },
       leftHanded: () => this.prefs.leftHanded,
+      shortcuts: () => shortcutsOn(this.prefs),
+      setShortcuts: (v) => { this.prefs.shortcuts = v; savePrefs(this.prefs); },
       setLeftHanded: (v) => {
         this.prefs.leftHanded = v;
         savePrefs(this.prefs);

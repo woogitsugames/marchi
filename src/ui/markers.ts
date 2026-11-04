@@ -6,6 +6,7 @@ import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
 import { bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, goodName, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
 import { iconSvg } from './icons';
+import { t } from '../i18n/index';
 import { MIN_STALL_TICKS, calmStall } from './stalls';
 
 /** "Stall fixed" wax stamp: pressed in (120 ms), held, then faded (220 ms). No bounce. */
@@ -27,7 +28,15 @@ interface Rect { l: number; t: number; r: number; b: number }
  * the same under the same occluders is not touched again (no style write, no style recalc; research 2026-11-04
  * "Poprawki" #6: the usual case is a still camera while the player reads a cause).
  */
-interface Bubble { el: HTMLElement; icon: HTMLElement; time: HTMLElement; secs: number; key: string; sig: string; used: boolean; shownAt: number; px: number; py: number; occ: readonly Rect[] | null }
+/**
+ * name: "<subject>: <cause>"; sev: how bad it reads (the worst-stall card's subject, a critical one, or lesser);
+ * aria: the accessible name last written (name + severity + time stood, D-121), compared before every write.
+ */
+interface Bubble { el: HTMLElement; icon: HTMLElement; time: HTMLElement; secs: number; key: string; sig: string; used: boolean; shownAt: number; px: number; py: number; occ: readonly Rect[] | null; name: string; sev: PinSeverity; aria: string }
+type PinSeverity = 'worst' | 'critical' | '';
+/** The pin's accessible name follows its running time in 10 s steps: a screen reader on a focused pin is not
+ *  told a new name every second (the visible tally keeps counting each second). */
+const LABEL_STEP_SEC = 10;
 
 function sameRects(a: readonly Rect[], b: readonly Rect[]): boolean {
   if (a.length !== b.length) return false;
@@ -94,7 +103,7 @@ export class Markers {
         const [kind, id] = k.split(':');
         this.onBubble?.(kind as 'building' | 'wagon', Number(id));
       });
-      b = { el, icon, time, secs: -1, key: '', sig: '', used: true, shownAt: 0, px: NaN, py: NaN, occ: null };
+      b = { el, icon, time, secs: -1, key: '', sig: '', used: true, shownAt: 0, px: NaN, py: NaN, occ: null, name: '', sev: '', aria: '' };
       this.pool.push(b);
       this.root.append(el);
     }
@@ -134,7 +143,7 @@ export class Markers {
         shown.add(bd.id);
         b.el.classList.toggle('is-minor', (bd.status.k === 'WAITING_PICKUP' || calm) && !isWorst);
         this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 24, bd.type), crit || isWorst, false,
-          () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world)}`);
+          () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world)}`, isWorst ? 'worst' : crit ? 'critical' : '');
         // how long it has stood, from 20 s on (BACKLOG P2): a pin that keeps counting is the one to read first
         this.setTime(b, bd.stalledTicks >= PIN_TIME_TICKS ? Math.floor(bd.stalledTicks / TICK_HZ) : -1);
         const ring = bd.id === this.flashId && performance.now() < this.flashUntil;
@@ -147,7 +156,7 @@ export class Markers {
         const crit = w.status.k === 'NO_ROUTE';
         const wb = this.take('wagon:' + w.id);
         this.place(wb, a.x, a.y, w.status.k + crit, () => wagonStatusIcon(w.status, 24), crit, true,
-          () => `${wagonName(world, w.id)}: ${wagonStatusText(world, w.status)}`);
+          () => `${wagonName(world, w.id)}: ${wagonStatusText(world, w.status)}`, crit ? 'critical' : '');
         this.setTime(wb, -1);
       }
     }
@@ -201,13 +210,16 @@ export class Markers {
     this.eta.classList.toggle('is-shown', etaOn);
   }
 
-  private place(b: Bubble, x: number, y: number, sig: string, icon: () => string, crit: boolean, wagon: boolean, label: () => string): void {
+  private place(b: Bubble, x: number, y: number, sig: string, icon: () => string, crit: boolean, wagon: boolean, label: () => string, sev: PinSeverity): void {
     if (b.sig !== sig) {
       const first = b.sig === '';
       b.sig = sig;
       b.icon.innerHTML = icon();
-      // the bubble's accessible name is the cause, e.g. "Piekarnia: brak dostępnych zapasów mąki"
-      b.el.setAttribute('aria-label', label());
+      // the bubble's accessible name is the cause, e.g. "Piekarnia: brak dostępnych zapasów mąki", led by its
+      // severity and followed by the time stood (a11y audit F7, D-121): the red pin is not told by colour alone
+      b.name = label();
+      b.sev = sev;
+      this.label(b);
       b.el.classList.toggle('is-critical', crit);
       b.el.classList.toggle('is-wagon', wagon);
       if (first) {
@@ -231,9 +243,20 @@ export class Markers {
   /** Seconds stalled under the pin (-1: none); the text changes once a second at most. */
   private setTime(b: Bubble, secs: number): void {
     if (secs === b.secs) return;
+    const step = Math.floor(secs / LABEL_STEP_SEC) !== Math.floor(b.secs / LABEL_STEP_SEC) || (secs < 0) !== (b.secs < 0);
     b.secs = secs;
     b.time.hidden = secs < 0;
     if (secs >= 0) setText(b.time, clock(secs));
+    if (step) this.label(b);
+  }
+
+  /** "Najgorszy zastój — Piekarnia: brak mąki, stoi 1:30"; written only when it changes. */
+  private label(b: Bubble): void {
+    const head = b.sev === 'worst' ? t('pin.worst', { name: b.name }) : b.sev === 'critical' ? t('pin.critical', { name: b.name }) : b.name;
+    const aria = b.secs >= 0 ? t('pin.stood', { name: head, time: clock(Math.floor(b.secs / LABEL_STEP_SEC) * LABEL_STEP_SEC) }) : head;
+    if (aria === b.aria) return;
+    b.aria = aria;
+    b.el.setAttribute('aria-label', aria);
   }
 
   private stamp(id: number, now: number): void {

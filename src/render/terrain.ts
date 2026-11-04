@@ -67,6 +67,8 @@ export class TerrainView {
       uWinter: { value: 0 },
       uTraffic: { value: 0 },
       uTime: { value: 0 },
+      // 1 = the bad-draft overlay pulses, 0 = steady (prefers-reduced-motion, D-124)
+      uMotion: { value: 1 },
       uSelRect: { value: overlay.selRect },
       uSelRectOn: overlay.selRectOn,
       uSelRing: { value: overlay.selRing },
@@ -297,6 +299,7 @@ uniform float uWet;
 uniform float uWinter;
 uniform float uTraffic;
 uniform float uTime;
+uniform float uMotion;
 uniform vec4 uSelRect;
 uniform float uSelRectOn;
 uniform vec4 uSelRing;
@@ -591,7 +594,7 @@ const FRAG_MAIN = /* glsl */ `
   if (pb > 0.0) { ovCol = mix(ovCol, uClay, pb); ovA = max(ovA, pb * 0.6); }
   float bad = smoothstep(0.3, 0.6, ov.a);
   if (bad > 0.0) {
-    float pulse = 0.65 + 0.35 * sin(uTime * 6.0);
+    float pulse = 0.65 + 0.35 * uMotion * sin(uTime * 6.0) + 0.2 * (1.0 - uMotion);
     ovCol = mix(ovCol, uClay * 0.8, bad); ovA = max(ovA, bad * pulse);
   }
   if (uSelRectOn > 0.5) {
@@ -630,7 +633,7 @@ const FRAG_MAIN = /* glsl */ `
       vec2 bq = abs(bp) - vec2(uGhostBad.z);
       float inside = 1.0 - smoothstep(-0.05, 0.05, max(bq.x, bq.y));
       float xmark = 1.0 - smoothstep(0.12, 0.26, min(abs(bp.x - bp.y), abs(bp.x + bp.y)) * 0.7071);
-      float pulse = 0.55 + 0.25 * sin(uTime * 6.0);
+      float pulse = 0.55 + 0.25 * uMotion * sin(uTime * 6.0) + 0.2 * (1.0 - uMotion);
       ovCol = mix(ovCol, uClay * mix(1.0, 0.55, xmark), inside);
       ovA = max(ovA, inside * max(pulse, xmark * 0.95));
     }

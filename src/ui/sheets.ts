@@ -31,6 +31,17 @@ export interface Sheet {
 
 let sheetSeq = 0;
 
+/** Height of the sheet's docked fix ("Naprawa", D-100) plus its fade, as --dock-h on the body: the body's
+ *  scroll-padding keeps focused and scrolled-to content above it. Only written when it changes. */
+function syncDock(sheet: Sheet): void {
+  const dock = sheet.body.querySelector<HTMLElement>('.fix-dock');
+  const hgt = dock ? `${dock.offsetHeight + 14}px` : '';
+  if (sheet.body.style.getPropertyValue('--dock-h') !== hgt) {
+    if (hgt) sheet.body.style.setProperty('--dock-h', hgt);
+    else sheet.body.style.removeProperty('--dock-h');
+  }
+}
+
 export class Sheets {
   private stack: Sheet[] = [];
   private suppressPop = 0;
@@ -67,6 +78,7 @@ export class Sheets {
     if (top && top.content.key === content.key) {
       top.content = content;
       content.update(top);
+      syncDock(top);
       return top;
     }
     if (top) {
@@ -79,6 +91,7 @@ export class Sheets {
       top.body.innerHTML = '';
       (top.body as HTMLElement & { __html?: string }).__html = undefined;
       content.update(top);
+      syncDock(top);
       return top;
     }
     const sheet = this.build(content);
@@ -86,6 +99,7 @@ export class Sheets {
     this.stack.push(sheet);
     this.host.append(sheet.el);
     content.update(sheet);
+    syncDock(sheet);
     sheet.el.classList.add('is-entering');
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
@@ -126,7 +140,9 @@ export class Sheets {
 
   update(): void {
     for (const s of [...this.stack]) {
-      if (!s.content.update(s)) {
+      const alive = s.content.update(s);
+      syncDock(s);
+      if (!alive) {
         const i = this.stack.indexOf(s);
         if (i === this.stack.length - 1) this.closeTop();
       }
@@ -152,13 +168,27 @@ export class Sheets {
     const body = h('div.sheet-body');
     const grip = h('div.sheet-grip');
     const inner = h('div.sp-in', null, grip, head, body);
-    // a modal dialog for assistive tech, named by its title; focus moves in on open and back on close
-    const el = h('section.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': title.id, tabindex: '-1' }, h('div.sheet-paper', null, inner));
+    // a NON-modal dialog (a11y audit 2026-11-04, F3a; D-118): the map, the pins and the HUD keep working beside a
+    // game sheet, so it must not claim aria-modal (screen readers would hide what keyboard focus still reaches).
+    // Named by its title; focus moves in on open and back on close; Tab walks on into the page, no trap.
+    const el = h('section.sheet', { role: 'dialog', 'aria-labelledby': title.id, tabindex: '-1' }, h('div.sheet-paper', null, inner));
     const sheet: Sheet = { el, icon, kicker, title, body, content, deferred: [] };
     close.addEventListener('click', () => {
       if (this.top === sheet) this.closeTop();
     });
     this.swipeToClose(sheet, grip, head, body);
+    // a focused control never hides under the docked "Naprawa" (D-100; a11y audit F1, WCAG 2.4.11): the body's
+    // scroll-padding (--dock-h, syncDock) steers focus scrolling, and this catches what the browser left under it
+    body.addEventListener('focusin', (e) => {
+      const el = e.target as HTMLElement;
+      const dock = body.querySelector<HTMLElement>('.fix-dock');
+      if (!dock || dock.contains(el)) return;
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect(), d = dock.getBoundingClientRect(), b = body.getBoundingClientRect();
+        const fade = 14; // the dock's fade above it
+        if (r.bottom > d.top - fade) body.scrollTop += Math.min(r.bottom - (d.top - fade), Math.max(0, r.top - b.top));
+      });
+    });
     return sheet;
   }
 

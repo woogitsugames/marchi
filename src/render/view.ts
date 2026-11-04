@@ -1,6 +1,7 @@
 // The world view: owns the three.js renderer and scene, and wires terrain, roads, water,
 // vegetation, buildings, bridges, wagons, sky/lighting, effects, overlays, picking and the
 // camera rig together behind the WorldView contract (src/render/api.ts). Read-only on sim state.
+import { reducedMotion } from './motion';
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
@@ -414,6 +415,7 @@ class View implements WorldView {
     tu.uWinter!.value = this.winter;
     (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
+    tu.uMotion!.value = reducedMotion() ? 0 : 1;
     tu.uTraffic!.value = this.overlayMode === 'traffic' ? 1 : 0;
     // morning mist thins out at close zoom so the river stays dark and clear up close
     const mistZoom = this.menu ? 1 : 0.85 * (0.3 + 0.7 * Math.min(1, Math.max(0, (dist - 30) / 90)));
