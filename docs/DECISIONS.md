@@ -1661,7 +1661,8 @@ Menu mission subtitles and the menu's small lines go from `--ink-soft` to `--ink
 paper over the live scene left them at 3.4–3.6:1. The "brak N" reason on the hatched "Kup wóz" tool sits on a
 parchment plaque (`--kparch`, 2 px spread) in darker wine `#5c1418`, so the hatching never crosses the letters
 (was 1.3:1 at worst). ETA and income `#7d5d23` → `#6b4f1d` (≈5.3:1 on parchment); the "Zacznij tutaj" kicker
-`#561418`; `--slate` `#3d4852` → `#36404a`. No hue changes, only darker steps of the same inks.
+`#561418`; `--slate` `#3d4852` → `#36404a`; the snow pill itself is the kit's `eta` sprite, so its text goes `#eef0ee` →
+`#fbfbf8` (4.45 → ≈4.9:1). No hue changes, only darker steps of the same inks.
 (decided)
 
 **D-123 — Two-tone focus ring (day 8d; a11y F8).**

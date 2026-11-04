@@ -1657,7 +1657,8 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .snow-pill {
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 32px; padding-block: 2px; padding-inline: 12px 14px;
-  color: #eef0ee; font-size: 15px; white-space: nowrap;
+  /* near-white, not #eef0ee: on the kit's slate pill that read 4.45:1 (a11y F21, D-122) */
+  color: #fbfbf8; font-size: 15px; white-space: nowrap;
 }
 .snow-pill svg { color: #dfe8ef; }
 .snow-pill bdi { font-size: 18px; font-weight: 700; }
