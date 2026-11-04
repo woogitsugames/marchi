@@ -1,10 +1,10 @@
-// Authored contract letters for missions I-XII (VII-IX: docs/content/letters-7-9.md, X-XII:
-// docs/content/letters-10-12.md); all
+// Authored contract letters for missions I-XIII (VII-IX: docs/content/letters-7-9.md, X-XII:
+// docs/content/letters-10-12.md; XIII: docs/missions/m13.md, night 6); all
 // player-facing copy is localized.
 // The letter counts are intentionally separate from simulation and UI logic.
 import { getLang, type Lang } from '../i18n/index';
 
-export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12';
+export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12' | 'm13';
 export type LetterPhase = 'opening' | 'won' | 'lost';
 export type SealCount = 1 | 2 | 3;
 
@@ -1874,6 +1874,161 @@ export const CONTRACT_LETTERS = {
         3: "तीनों आपूर्तियाँ पूरी हो गईं। उत्तम तैयारी के लिए तीन मुहरें।\n— Wszebor",
       },
       lost: "अंतिम समय बीत गया। भरे भंडार ने भट्टी रोक दी। बड़े भंडार को पहले ही सड़क से जोड़ो।\n— Wszebor",
+    },
+  },
+  m13: {
+    pl: {
+      opening: "Zamek prosi o 24 deski i 16 bochenków przed 10:00. Spichlerz jest pełen drewna i zboża, tartak, młyn i piekarnia czekają przy trakcie — ale na całą marchię jest jeden wóz. Gdy warsztaty stoją, a „Dlaczego stoi?” mówi, że wszystkie wozy są zajęte, kup wozy w stajni.\n— Wszebor",
+      won: {
+        1: "Deski i chleb dotarły, choć warsztaty długo czekały na jeden wóz. Jedna pieczęć; kup wozy, gdy tylko wszystkie są zajęte.\n— Wszebor",
+        2: "Zamówienie dotarło przed terminem. Dwie pieczęcie; przy trzech warsztatach jeden dodatkowy wóz to wciąż za mało.\n— Wszebor",
+        3: "Wozy kursowały bez przestoju, a warsztaty pracowały ze spichlerza. Trzy pieczęcie za szybkie odczytanie przyczyny.\n— Wszebor",
+      },
+      lost: "Termin minął, a zapas wciąż leżał w spichlerzu. Jeden wóz nie obsłuży trzech warsztatów — kup wozy w stajni.\n— Wszebor",
+    },
+    en: {
+      opening: "The castle asks for 24 planks and 16 loaves before 10:00. The granary is full of wood and grain, the sawmill, mill and bakery wait by the road — but the whole march has one wagon. When the workshops stand and \"Why is it stalled?\" says every wagon is busy, buy wagons at the stable.\n— Wszebor",
+      won: {
+        1: "Planks and bread arrived, though the workshops waited long for the one wagon. One seal; buy wagons as soon as all are busy.\n— Wszebor",
+        2: "The order arrived before the deadline. Two seals; for three workshops one extra wagon is still too few.\n— Wszebor",
+        3: "The wagons never stopped and the workshops worked from the granary. Three seals for reading the cause quickly.\n— Wszebor",
+      },
+      lost: "The deadline passed with the stock still in the granary. One wagon cannot serve three workshops — buy wagons at the stable.\n— Wszebor",
+    },
+    de: {
+      opening: "Die Burg verlangt 24 Bretter und 16 Brote bis 10:00. Der Speicher ist voll Holz und Getreide, Sägewerk, Mühle und Bäckerei warten am Weg — doch die ganze Mark hat nur einen Wagen. Stehen die Werkstätten und sagt „Warum?“, dass alle Wagen unterwegs sind, kauft Wagen im Stall.\n— Wszebor",
+      won: {
+        1: "Bretter und Brot kamen an, doch die Werkstätten warteten lange auf den einen Wagen. Ein Siegel; kauft Wagen, sobald alle unterwegs sind.\n— Wszebor",
+        2: "Die Lieferung kam vor der Frist. Zwei Siegel; für drei Werkstätten ist ein zusätzlicher Wagen zu wenig.\n— Wszebor",
+        3: "Die Wagen standen nie still, die Werkstätten arbeiteten aus dem Speicher. Drei Siegel für den schnellen Blick.\n— Wszebor",
+      },
+      lost: "Die Frist verstrich, der Vorrat lag noch im Speicher. Ein Wagen bedient keine drei Werkstätten — kauft Wagen im Stall.\n— Wszebor",
+    },
+    fr: {
+      opening: "Le château demande 24 planches et 16 pains avant 10:00. Le grenier est plein de bois et de grain ; scierie, moulin et boulangerie attendent au bord de la route — mais toute la marche n'a qu'un chariot. Quand les ateliers s'arrêtent et que « Pourquoi ? » dit que tous les chariots sont pris, achetez-en à l'écurie.\n— Wszebor",
+      won: {
+        1: "Planches et pains sont arrivés, mais les ateliers ont longtemps attendu l'unique chariot. Un sceau ; achetez des chariots dès qu'ils sont tous pris.\n— Wszebor",
+        2: "La commande est arrivée avant l'échéance. Deux sceaux ; pour trois ateliers, un chariot de plus ne suffit pas.\n— Wszebor",
+        3: "Les chariots n'ont jamais chômé et les ateliers ont puisé dans le grenier. Trois sceaux pour avoir vu la cause si vite.\n— Wszebor",
+      },
+      lost: "L'échéance est passée, le stock dort encore au grenier. Un chariot ne sert pas trois ateliers : achetez-en à l'écurie.\n— Wszebor",
+    },
+    es: {
+      opening: "El castillo pide 24 tablones y 16 hogazas antes de las 10:00. El granero está lleno de madera y grano; aserradero, molino y panadería esperan junto al camino, pero toda la marca tiene un solo carro. Si los talleres se paran y «¿Por qué?» dice que todos los carros están ocupados, compra carros en el establo.\n— Wszebor",
+      won: {
+        1: "Llegaron tablones y pan, aunque los talleres esperaron mucho al único carro. Un sello; compra carros en cuanto todos estén ocupados.\n— Wszebor",
+        2: "El pedido llegó antes del plazo. Dos sellos; para tres talleres un carro más aún es poco.\n— Wszebor",
+        3: "Los carros no pararon y los talleres trabajaron desde el granero. Tres sellos por leer tan pronto la causa.\n— Wszebor",
+      },
+      lost: "Venció el plazo con las existencias aún en el granero. Un carro no basta para tres talleres: compra carros en el establo.\n— Wszebor",
+    },
+    it: {
+      opening: "Il castello chiede 24 assi e 16 pagnotte entro le 10:00. Il granaio è pieno di legna e grano; segheria, mulino e forno aspettano lungo la strada, ma l'intera marca ha un solo carro. Se le botteghe si fermano e «Perché?» dice che tutti i carri sono occupati, compra carri alla stalla.\n— Wszebor",
+      won: {
+        1: "Assi e pane sono arrivati, ma le botteghe hanno atteso a lungo l'unico carro. Un sigillo; compra carri appena sono tutti occupati.\n— Wszebor",
+        2: "L'ordine è arrivato prima della scadenza. Due sigilli; per tre botteghe un carro in più è ancora poco.\n— Wszebor",
+        3: "I carri non si sono mai fermati e le botteghe hanno attinto al granaio. Tre sigilli per aver letto subito la causa.\n— Wszebor",
+      },
+      lost: "La scadenza è passata con la scorta ancora nel granaio. Un carro non serve tre botteghe: compra carri alla stalla.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O castelo pede 24 tábuas e 16 pães até 10:00. O celeiro está cheio de madeira e grãos; serraria, moinho e padaria esperam junto à estrada, mas a marca inteira tem uma só carroça. Se as oficinas pararem e \"Por quê?\" disser que todas as carroças estão ocupadas, compre carroças no estábulo.\n— Wszebor",
+      won: {
+        1: "Tábuas e pão chegaram, mas as oficinas esperaram muito pela única carroça. Um selo; compre carroças assim que todas estiverem ocupadas.\n— Wszebor",
+        2: "O pedido chegou antes do prazo. Dois selos; para três oficinas, uma carroça a mais ainda é pouco.\n— Wszebor",
+        3: "As carroças nunca pararam e as oficinas trabalharam com o celeiro. Três selos por ler a causa tão rápido.\n— Wszebor",
+      },
+      lost: "O prazo acabou com o estoque ainda no celeiro. Uma carroça não atende três oficinas: compre carroças no estábulo.\n— Wszebor",
+    },
+    nl: {
+      opening: "Het kasteel vraagt 24 planken en 16 broden vóór 10:00. De schuur zit vol hout en graan; zagerij, molen en bakkerij wachten langs de weg, maar de hele mark heeft één wagen. Staan de werkplaatsen stil en zegt \"Waarom?\" dat alle wagens bezet zijn, koop dan wagens bij de stal.\n— Wszebor",
+      won: {
+        1: "Planken en brood kwamen aan, al wachtten de werkplaatsen lang op die ene wagen. Eén zegel; koop wagens zodra ze allemaal bezet zijn.\n— Wszebor",
+        2: "De bestelling kwam vóór de termijn. Twee zegels; voor drie werkplaatsen is één extra wagen nog te weinig.\n— Wszebor",
+        3: "De wagens stonden nooit stil en de werkplaatsen werkten uit de schuur. Drie zegels voor het snel lezen van de oorzaak.\n— Wszebor",
+      },
+      lost: "De termijn verstreek terwijl de voorraad nog in de schuur lag. Eén wagen bedient geen drie werkplaatsen: koop wagens bij de stal.\n— Wszebor",
+    },
+    sv: {
+      opening: "Borgen begär 24 plankor och 16 bröd före 10:00. Magasinet är fullt av ved och säd; sågverk, kvarn och bageri väntar vid vägen, men hela marken har en enda vagn. När verkstäderna står och \"Varför?\" säger att alla vagnar är upptagna, köp vagnar i stallet.\n— Wszebor",
+      won: {
+        1: "Plankor och bröd kom fram, men verkstäderna väntade länge på den enda vagnen. Ett sigill; köp vagnar så snart alla är upptagna.\n— Wszebor",
+        2: "Beställningen kom före fristen. Två sigill; för tre verkstäder räcker inte en vagn till.\n— Wszebor",
+        3: "Vagnarna stod aldrig still och verkstäderna arbetade ur magasinet. Tre sigill för att du såg orsaken så snabbt.\n— Wszebor",
+      },
+      lost: "Fristen gick ut medan förrådet låg kvar i magasinet. En vagn räcker inte för tre verkstäder – köp vagnar i stallet.\n— Wszebor",
+    },
+    tr: {
+      opening: "Kale 10:00'dan önce 24 kalas ve 16 somun istiyor. Ambar odun ve tahılla dolu; hızar, değirmen ve fırın yol kenarında bekliyor, ama bütün uç beyliğinde tek bir araba var. Atölyeler durur ve \"Neden?\" bütün arabaların meşgul olduğunu söylerse ahırdan araba satın al.\n— Wszebor",
+      won: {
+        1: "Kalaslar ve ekmek geldi, ama atölyeler tek arabayı uzun süre bekledi. Bir mühür; hepsi meşgul olunca hemen araba al.\n— Wszebor",
+        2: "Sipariş süreden önce geldi. İki mühür; üç atölye için bir araba daha hâlâ az.\n— Wszebor",
+        3: "Arabalar hiç durmadı, atölyeler ambardan çalıştı. Nedeni çabuk okuduğun için üç mühür.\n— Wszebor",
+      },
+      lost: "Süre doldu, stok hâlâ ambarda. Tek araba üç atölyeye yetmez; ahırdan araba satın al.\n— Wszebor",
+    },
+    ru: {
+      opening: "Замок просит 24 доски и 16 караваев до 10:00. Амбар полон дров и зерна, лесопилка, мельница и пекарня ждут у дороги — но на всю марку одна телега. Если мастерские стоят, а «Почему?» говорит, что все телеги заняты, купи телеги в конюшне.\n— Wszebor",
+      won: {
+        1: "Доски и хлеб доставлены, но мастерские долго ждали единственную телегу. Одна печать; покупай телеги, как только все заняты.\n— Wszebor",
+        2: "Заказ прибыл до срока. Две печати; для трёх мастерских одной лишней телеги мало.\n— Wszebor",
+        3: "Телеги не простаивали, мастерские работали из амбара. Три печати за то, что быстро увидел причину.\n— Wszebor",
+      },
+      lost: "Срок прошёл, а запас так и лежит в амбаре. Одна телега не обслужит три мастерские — купи телеги в конюшне.\n— Wszebor",
+    },
+    uk: {
+      opening: "Замок просить 24 дошки й 16 хлібин до 10:00. Комора повна дров і зерна, тартак, млин і пекарня чекають біля шляху — але на всю марку один віз. Коли майстерні стоять, а «Чому?» каже, що всі вози зайняті, купи вози в стайні.\n— Wszebor",
+      won: {
+        1: "Дошки й хліб прибули, та майстерні довго чекали на єдиний віз. Одна печатка; купуй вози, щойно всі зайняті.\n— Wszebor",
+        2: "Замовлення прибуло до строку. Дві печатки; для трьох майстерень одного зайвого воза замало.\n— Wszebor",
+        3: "Вози не стояли, майстерні працювали з комори. Три печатки за те, що швидко побачив причину.\n— Wszebor",
+      },
+      lost: "Строк минув, а запас досі в коморі. Один віз не обслужить три майстерні — купи вози в стайні.\n— Wszebor",
+    },
+    ja: {
+      opening: "城は10:00までに板24枚とパン16個を求めている。倉には木材と穀物が満ち、製材所・粉ひき所・パン屋は街道沿いで待っている。だが辺境全体に荷車は一台きりだ。工房が止まり「なぜ？」が荷車はすべて出払っていると告げたら、厩舎で荷車を買え。\n— Wszebor",
+      won: {
+        1: "板とパンは届いたが、工房は一台の荷車を長く待った。印章一つ。荷車がすべて出払ったらすぐ買え。\n— Wszebor",
+        2: "注文は期限前に届いた。印章二つ。三つの工房には荷車一台の追加ではまだ足りない。\n— Wszebor",
+        3: "荷車は止まらず、工房は倉から働き続けた。原因を素早く読んだ褒美に印章三つ。\n— Wszebor",
+      },
+      lost: "期限が過ぎ、蓄えは倉に残ったままだ。荷車一台で三つの工房はまかなえない。厩舎で荷車を買え。\n— Wszebor",
+    },
+    ko: {
+      opening: "성은 10:00까지 판자 24개와 빵 16개를 원한다. 곡간에는 나무와 곡식이 가득하고 제재소, 방앗간, 빵집은 길가에서 기다린다. 그러나 변경 전체에 수레는 한 대뿐이다. 작업장이 멈추고 \"왜?\"가 모든 수레가 바쁘다고 하면 마구간에서 수레를 사라.\n— Wszebor",
+      won: {
+        1: "판자와 빵이 도착했지만 작업장들은 한 대뿐인 수레를 오래 기다렸다. 인장 하나. 수레가 모두 바쁘면 바로 사라.\n— Wszebor",
+        2: "주문이 기한 전에 도착했다. 인장 둘. 작업장 셋에는 수레 한 대 추가로는 아직 부족하다.\n— Wszebor",
+        3: "수레는 쉬지 않았고 작업장은 곡간에서 일했다. 원인을 빨리 읽은 공으로 인장 셋.\n— Wszebor",
+      },
+      lost: "기한이 지났는데 비축은 아직 곡간에 있다. 수레 한 대로는 작업장 셋을 감당할 수 없다. 마구간에서 수레를 사라.\n— Wszebor",
+    },
+    "zh-Hans": {
+      opening: "城堡要求在10:00前送来24块木板和16个面包。粮仓里堆满木材和谷物，锯木坊、磨坊和面包坊都在路边等候——但整个边区只有一辆马车。工坊停工、“为什么？”显示所有马车都在忙时，就去马厩买马车。\n— Wszebor",
+      won: {
+        1: "木板和面包送到了，但工坊久等那唯一的马车。一枚印章；马车全忙时就该立刻添置。\n— Wszebor",
+        2: "订单在期限前送达。两枚印章；三个工坊只多一辆马车仍嫌不够。\n— Wszebor",
+        3: "马车从未停歇，工坊靠粮仓不断开工。迅速看清原因，授予三枚印章。\n— Wszebor",
+      },
+      lost: "期限已过，存货仍躺在粮仓里。一辆马车顾不上三个工坊——去马厩买马车。\n— Wszebor",
+    },
+    ar: {
+      opening: "تطلب القلعة 24 لوحًا و16 رغيفًا قبل 10:00. المخزن ممتلئ بالخشب والحبوب، والمنشرة والمطحنة والمخبز تنتظر عند الطريق، لكن للمقاطعة كلها عربة واحدة. إذا توقفت الورش وقال «لماذا؟» إن كل العربات مشغولة، فاشترِ عربات من الإسطبل.\n— Wszebor",
+      won: {
+        1: "وصلت الألواح والخبز، لكن الورش انتظرت العربة الوحيدة طويلًا. ختم واحد؛ اشترِ عربات حين تنشغل كلها.\n— Wszebor",
+        2: "وصل الطلب قبل الموعد. ختمان؛ عربة إضافية واحدة لا تكفي ثلاث ورش.\n— Wszebor",
+        3: "لم تتوقف العربات، وعملت الورش من المخزن. ثلاثة أختام لقراءة السبب بسرعة.\n— Wszebor",
+      },
+      lost: "مضى الموعد والمخزون ما زال في المخزن. عربة واحدة لا تخدم ثلاث ورش؛ اشترِ عربات من الإسطبل.\n— Wszebor",
+    },
+    hi: {
+      opening: "किला 10:00 से पहले 24 तख़्ते और 16 रोटियाँ माँगता है। भंडार लकड़ी और अनाज से भरा है; आरा-मिल, चक्की और बेकरी सड़क किनारे इंतज़ार में हैं — पर पूरे सीमांत में एक ही गाड़ी है। कारख़ाने रुकें और \"क्यों?\" बताए कि सारी गाड़ियाँ व्यस्त हैं, तो अस्तबल से गाड़ियाँ खरीदो।\n— Wszebor",
+      won: {
+        1: "तख़्ते और रोटी पहुँच गए, पर कारख़ाने एक गाड़ी की लंबी राह देखते रहे। एक मुहर; सब व्यस्त हों तो तुरंत गाड़ियाँ खरीदो।\n— Wszebor",
+        2: "माल समय से पहले पहुँचा। दो मुहरें; तीन कारख़ानों के लिए एक और गाड़ी अब भी कम है।\n— Wszebor",
+        3: "गाड़ियाँ कभी नहीं रुकीं, कारख़ाने भंडार से चलते रहे। कारण जल्दी पढ़ने के लिए तीन मुहरें।\n— Wszebor",
+      },
+      lost: "समय बीत गया और माल अब भी भंडार में है। एक गाड़ी तीन कारख़ाने नहीं चला सकती — अस्तबल से गाड़ियाँ खरीदो।\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<Lang, ContractLetterSet>>;

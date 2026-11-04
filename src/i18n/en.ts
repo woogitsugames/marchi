@@ -369,6 +369,9 @@ export const en: FullDict = {
   'menu.m11Sub': 'A distant malthouse ties up wagons',
   'menu.m12': 'XII. The great brewing',
   'menu.m12Sub': 'Store the beer for the next letter',
+  // mission XIII (night 6, D-102): see PENDING_KEYS
+  'menu.m13': 'XIII. The first floor of the chain',
+  'menu.m13Sub': 'One wagon for the whole march',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Spring',
   'season.summer': 'Summer',

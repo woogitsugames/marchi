@@ -56,10 +56,10 @@ const langsExpr = initializer(source('src/i18n/index.ts'), 'LANGS');
 assert(ts.isArrayLiteralExpression(langsExpr), 'LANGS must be a literal tuple');
 const langs = langsExpr.elements.map((x) => string(x, 'LANGS member'));
 const letters = object(initializer(source('src/content/letters.ts'), 'CONTRACT_LETTERS'), 'CONTRACT_LETTERS');
-const missions = Array.from({ length: 12 }, (_, i) => 'm' + (i + 1));
+const missions = Array.from({ length: 13 }, (_, i) => 'm' + (i + 1));
 
 test('all missions have five signed letters in every supported language, within 400/200 characters', () => {
-  assert(letters.properties.length === 12, 'unexpected number of contract missions');
+  assert(letters.properties.length === 13, 'unexpected number of contract missions');
   assert(langs.length === 17, 'unexpected number of supported languages');
   for (const mission of missions) {
     const byLang = object(prop(letters, mission), mission);
@@ -77,6 +77,9 @@ test('all missions have five signed letters in every supported language, within 
       if (mission === 'm1') {
         assert(lang === 'pl' ? opening.includes('Łozinnego Brodu') : opening.includes('Łozinny Bród'), `place name changed: ${label}`);
         for (const n of ['30', '20']) assert(opening.includes(n), `missing ${n}: ${label}`);
+      }
+      if (mission === 'm13') {
+        for (const n of ['24', '16', '10:00']) assert(opening.includes(n), `missing ${n}: ${label}`);
       }
       if (mission === 'm12') {
         for (const n of ['40', '48', '32', '6:00', '8', '12', '9:00', '36', '12:00']) {

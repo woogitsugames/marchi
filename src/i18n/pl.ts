@@ -371,6 +371,9 @@ export const pl = {
   'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
   'menu.m12': 'XII. Wielkie warzenie',
   'menu.m12Sub': 'Zapas piwa na kolejną dostawę',
+  // mission XIII (night 6, D-102): see PENDING_KEYS
+  'menu.m13': 'XIII. Pierwsze piętro łańcucha',
+  'menu.m13Sub': 'Jeden wóz na całą marchię',
   // free valley seasons (D-33): localized
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
@@ -686,6 +689,8 @@ export const PENDING_KEYS = [
   'fix.stoneStored',
   'contract.sealPace.eta',
   'contract.sealPace.late',
+  'menu.m13',
+  'menu.m13Sub',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
