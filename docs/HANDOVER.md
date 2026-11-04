@@ -674,3 +674,13 @@ porcie 5211 (5194 był zajęty przez obcy proces z nocy 6 — nieruszany); Vite 
 - **Rolnik** chodzi po rzędzie przy płocie podwórza (najbliższe pole) — akceptacja wyglądu na `night6b-farm-walk-*`.
 - **Pionowy zrzut `m10-ghost`:** półka budowy wygląda na przygaszoną w chwili zrzutu (trwa przejazd kamery) —
   sprawdzić na telefonie.
+
+## Decyzje właściciela 2026-11-04 rano (~08:10)
+- **M1:** progi 3★/2★ → **9:15 / 10:45** (P1) — tak, zmienić (hasze M1).
+- **M4:** srebro 180 → **140**, progi **7:30 / 10:00** (P3) — tak (hasze M4).
+- **M2:** próg 2★ — **po playteście** (karta „zatrzymane przęsło” już jest).
+- **M8:** **przeprojektować**, osobna paczka (kryterium: same wozy ≤2★, bruk + 1 wóz 3★ z zapasem ≥20 s).
+- **XIII:** zostaje **na końcu** do playtestu.
+- **Karta „jeden producent dla dwóch warsztatów” (IX/X):** pokazywać **po ~30 s czekania**, nie od razu.
+- **Tartak:** piła na placu — **zostaje**.
+- Otwarte z nocy 6b (do zadania w dzień): D-106 brzmienie „zamek weźmie je z następnym listem”, D-107 lot kamery do ducha, karta zamku zwinięta przez cały samouczek, rząd rolnika przy płocie.
