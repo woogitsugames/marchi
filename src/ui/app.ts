@@ -31,6 +31,7 @@ import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
 import { SpeedHint } from './speedHint';
 import { pressSeal } from './sealPress';
+import { modalOpen, showModal } from './modal';
 import type { BestResult } from '../platform/profile';
 import { marketSheet } from './marketSheet';
 import { buildingSheet, wagonSheet, type PanelNav } from './panels';
@@ -49,6 +50,8 @@ const audio = new AudioEngine();
 const music = new MusicPlayer();
 bindAudioEngine(audio);
 let audioUnlockArmed = false;
+/** The end letter's first action: the next contract when there is one, else "Again" (a11y audit F4). */
+const END_FOCUS = '[data-a="next"], [data-a="again"]';
 /** Web Audio may only start from a trusted gesture: unlock on the first touch/click/key. */
 function armAudioUnlock(): void {
   if (audioUnlockArmed) return;
@@ -459,7 +462,7 @@ export class App implements PanelNav {
     if (opening) {
       this.loop.speed = 0;
       this.hud?.setSpeed(0);
-      this.layers.overlay.append(opening);
+      showModal(this.layers.overlay, opening, '[data-a="start"]');
     } else if (tutorial) this.startTutorial();
   }
 
@@ -767,7 +770,7 @@ export class App implements PanelNav {
         this.hud?.setSpeed(this.loop.speed);
       },
     });
-    this.layers.overlay.append(letter);
+    showModal(this.layers.overlay, letter, '[data-a="again"]');
   }
 
   private async autosave(): Promise<void> {
@@ -813,11 +816,11 @@ export class App implements PanelNav {
       const raf = requestAnimationFrame(() => {
         cancelPress = pressSeal(this.layers.overlay, () => {
           this.cancelSeal = null;
-          if (this.world === w && this.mode === 'game') this.layers.overlay.append(letter);
+          if (this.world === w && this.mode === 'game') showModal(this.layers.overlay, letter, END_FOCUS);
         }, this.hud?.sealTarget() ?? null);
       });
       this.cancelSeal = () => { cancelAnimationFrame(raf); cancelPress?.(); };
-    } else this.layers.overlay.append(letter);
+    } else showModal(this.layers.overlay, letter, END_FOCUS);
   }
 
   // ------------------------------------------------------------------ commands
@@ -1078,6 +1081,8 @@ export class App implements PanelNav {
   }
 
   private onKey(e: KeyboardEvent): void {
+    // a letter holds the screen (src/ui/modal.ts): it handles its own keys, the game under it stays still
+    if (modalOpen()) return;
     if (e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack') {
       if (this.sheets.count) this.sheets.closeTop();
       else if (this.tool === 'build' && this.build.placing) this.build.back();

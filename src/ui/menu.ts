@@ -574,10 +574,10 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const authored = getContractLetter(st.mission.id, won ? 'won' : 'lost', seals);
   // a won contract leads on to the next one (day 6: the way to mission II went through the menu)
   const next = won && act.next ? nextMission(st.mission.id) : null;
-  const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true' });
+  const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'end-title' });
   letter.innerHTML = `${letterSeal(won)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
-    <h2>${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
+    <h2 id="end-title" dir="auto">${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
     ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">

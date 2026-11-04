@@ -1610,3 +1610,15 @@ held-span card takes over as before. Measured IV (eye 10/30/60 s / scan+ 30 s): 
 never meet a wagon cure while short of silver before the ice). No other mission has authored ice. UI only, hashes
 unchanged. Test `tests/ice-ahead.test.ts`.
 (decided)
+
+**D-118 — Letters are real modals, game sheets are non-modal dialogs (day 8d; a11y audit 2026-11-04 F3/F4).**
+Every dialog claimed `aria-modal="true"`, yet Tab walked out of it into the HUD and the pins: screen readers hid
+controls that keyboard and switch focus still reached. Now two kinds, honestly labelled. **Letters** (opening,
+dead end, end of contract; `src/ui/modal.ts` `showModal`) block the game: on insertion every other `#ui` layer, the
+scene canvas and body-level controls get `inert`, focus goes to the letter's first action ("Do dzieła", "Jeszcze
+raz", on a won contract "Następna misja"), game shortcuts are off; when the letter leaves or starts its exit the
+hold is released and focus returns to where it was. The end letter is named by its heading (`end-title`).
+**Game sheets** (Dlaczego stoi?, wagon, castle, settings…) are `role="dialog"` named by their title **without**
+`aria-modal`: the map and HUD work beside them on purpose, so Tab walks on into the page (no trap) and comes back
+by the usual order; focus still moves in on open and back to the opener on close. `npm run a11y` checks both.
+(decided)
