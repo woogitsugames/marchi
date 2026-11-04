@@ -61,6 +61,13 @@ function grow(b: Box, d: number): Box {
 function hits(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
+/** A box clipped to the viewport (the ring's outer rule stays fully visible next to a screen edge). */
+function onScreen(b: Box): Box {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const x0 = Math.max(0, b.x), y0 = Math.max(0, b.y);
+  const x1 = Math.min(vw, b.x + b.w), y1 = Math.min(vh, b.y + b.h);
+  return x1 - x0 > 24 && y1 - y0 > 24 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : b;
+}
 function union(bs: Box[]): Box | null {
   if (!bs.length) return null;
   const x0 = Math.min(...bs.map((b) => b.x)), y0 = Math.min(...bs.map((b) => b.y));
@@ -372,7 +379,8 @@ export class Tutorial {
     }
     // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
     // edge (the waybill counts in landscape) stays clear of them
-    const box = tg.box && !this.covered(tg.probe) ? grow(tg.box, 9) : null;
+    // kept on screen: the rail's first tool sits ~8 px from the edge, and the ring around it was cut (ringOff)
+    const box = tg.box && !this.covered(tg.probe) ? onScreen(grow(tg.box, 9)) : null;
     // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
     const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();
