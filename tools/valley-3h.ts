@@ -21,7 +21,7 @@
 // seconds (ledger.stallSeconds deltas), plan steps done, orders and merchant income.
 import { writeFileSync } from 'node:fs';
 import {
-  applyCommand, checkInvariants, createWorld, MARKET, RANKS, sandboxStatus, seasonAt, step, TICK_HZ,
+  applyCommand, checkInvariants, createWorld, inputGoods, MARKET, RANKS, sandboxStatus, seasonAt, step, TICK_HZ,
   type BuildingStatus, type Command, type World,
 } from '../src/sim/index';
 import { cureFor, heldSpanFor, rankStalls } from '../src/ui/stalls';
@@ -31,7 +31,7 @@ const BAND_MIN = 30;
 const buyCmd = (w: World): Command => ({ t: 'buyWagon', stable: w.state.buildings.find((b) => b.type === 'stable')!.id });
 const SAMPLE_TICKS = 10 * TICK_HZ;
 
-type Player = {
+export type Player = {
   plan: readonly BotStep[]; orders?: boolean; merchant?: boolean; eye?: boolean;
   /** Extra commands, tried once per second (sec = sim second, planDone = the plan is exhausted). */
   extra?: (w: World, sec: number, planDone: boolean) => Command[];
@@ -139,6 +139,8 @@ export interface Band {
   roots: Record<string, number>;
   /** Wagon-sample shares: idle / moving-loaded etc. */
   wagonStates: Record<string, number>;
+  /** Consumer samples waiting for an input good (WAITING_DELIVERY / _UPSTREAM / NO_INPUT / NO_WAGON on it), by good. */
+  inputWaits: Record<string, number>;
   /** Building samples (producers only) WORKING vs not. */
   bWorking: number; bAll: number;
   ordersDone: number; ordersOffered: number;
@@ -163,7 +165,7 @@ function newBand(from: number): Band {
   return {
     from, to: from + BAND_MIN, earned: 0, perMin: 0, renownGain: 0, orderRenown: 0, merchantSilver: 0,
     coinsEnd: 0, wagonsEnd: 0, buildingsEnd: 0, rankEnd: 0, steps: [], eyeBuys: 0, samples: 0,
-    pin: 0, crit: 0, critCure: 0, real: 0, realCure: 0, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
+    pin: 0, crit: 0, critCure: 0, real: 0, realCure: 0, inputWaits: {}, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
     ordersDone: 0, ordersOffered: 0, minCoinsSpendable: Infinity,
   };
 }
@@ -277,6 +279,8 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
         if (!PRODUCERS.has(b.type)) continue;
         band.bAll++;
         if (b.status.k === 'WORKING') band.bWorking++;
+        const bs = b.status as { k: string; good?: string };
+        if ((bs.k === 'WAITING_DELIVERY' || bs.k === 'WAITING_UPSTREAM' || bs.k === 'NO_INPUT' || bs.k === 'NO_WAGON') && bs.good && inputGoods(b.type).includes(bs.good as never)) inc(band.inputWaits, bs.good);
         if (b.stalledTicks > 0) {
           const m = b.stalledTicks / TICK_HZ / 60;
           const prev = longest.get(b.id);

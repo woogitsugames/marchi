@@ -22,7 +22,7 @@ import * as sim from '../src/sim/index';
 import { applyCommand, lineCells, TICK_HZ, validateRoad, type Command, type World } from '../src/sim/index';
 import { MISSIONS } from '../src/sim/missions';
 import { DECENT } from './bot-sandbox';
-import { PLAYERS, runValley, summary, type RunOut } from './valley-3h';
+import { PLAYERS, runValley, summary, type Player, type RunOut } from './valley-3h';
 
 type Late = {
   upgradeRecoverTicks: number; bigOrderRank: number; bigOrderQtyX: number; orderRenownHalf: boolean;
@@ -137,6 +137,39 @@ Object.assign(PLAYERS, {
   'trade125': { plan: DECENT, extra: tradeRoad(false), setup: flags({ postRank: 4, postPct: 125 }, POST), watch: tradeWatch },
   'trade125+eye': { plan: DECENT, extra: tradeRoad(false), setup: flags({ postRank: 4, postPct: 125 }, POST), eye: true, eyeAlways: true, watch: tradeWatch },
 });
+/** The builder: once the plan is done, the east road and N more farms (grain: 4 farms feed 2 mills + 2 malthouses). */
+function farms(n: number): (w: World, sec: number, done: boolean) => Command[] {
+  const mem = new WeakMap<World, number>();
+  return (w, _sec, done) => {
+    if (!done) return [];
+    const k = mem.get(w) ?? 0, W = w.terrain.w;
+    const steps: Command[] = [
+      { t: 'road', surface: 1, cells: lineCells(W, 24 * W + 72, 24 * W + 82) },
+      { t: 'place', type: 'farm', x: 75, y: 25, facing: 2 },
+      { t: 'place', type: 'farm', x: 79, y: 25, facing: 2 },
+    ].slice(0, n + 1) as Command[];
+    if (k >= steps.length) return [];
+    const r = applyCommand(w, steps[k]!);
+    if (r.ok) mem.set(w, k + 1);
+    else if (r.err.k !== 'NO_COINS') { console.log('farms step failed', JSON.stringify(r.err)); mem.set(w, k + 1); }
+    return [];
+  };
+}
+const both = (a: Player['extra'], b: Player['extra']): Player['extra'] => (w, sec, done) => [...(a?.(w, sec, done) ?? []), ...(b?.(w, sec, done) ?? [])];
+/** Counterfactual R5 renown threshold (in memory; game 14 500) around another player's setup. */
+function r5(base: string, renown: number): Player {
+  const p = PLAYERS[base]!;
+  return { ...p, setup: () => { const undo = p.setup?.(); const keep = sim.RANKS[5]!.renown; (sim.RANKS[5] as { renown: number }).renown = renown; return () => { (sim.RANKS[5] as { renown: number }).renown = keep; undo?.(); }; } };
+}
+Object.assign(PLAYERS, {
+  'trade125-r5x16k': r5('trade125', 16000),
+  'trade125-r5x17k': r5('trade125', 17000),
+  'upgrade-r5x15.5k': r5('upgrade', 15500),
+  'decent+farm': { plan: DECENT, extra: farms(1) },
+  'decent+2farms': { plan: DECENT, extra: farms(2) },
+  'trade+2farms': { ...PLAYERS.trade!, extra: both(PLAYERS.trade!.extra, farms(2)) },
+  'upgrade+2farms': { ...PLAYERS.upgrade!, extra: both(PLAYERS.upgrade!.extra, farms(2)) },
+});
 for (const n of Object.keys(PLAYERS)) {
   const p = PLAYERS[n]!;
   if (n.includes('+fleet') || p.plan.length === 0) continue;
@@ -180,7 +213,10 @@ function bandsTable(name: string, runs: RunOut[]): string[] {
     const steps = avg(bs.map((b) => b.steps.length));
     const ws = bs.reduce((acc, b) => { for (const [k, v] of Object.entries(b.wagonStates)) acc[k] = (acc[k] ?? 0) + v; return acc; }, {} as Record<string, number>);
     const wt = Object.values(ws).reduce((a, c) => a + c, 0);
-    out.push(`| ${name} | ${bs[0]!.from}–${bs[0]!.to} | ${f1(avg(bs.map((b) => b.perMin)))} | ${f1(steps)} | ${pct(sum('crit'), s)} | ${pct(sum('real'), s)} | ${pct(sum('realCure'), s)} | ${pct(ws.idle ?? 0, wt)} | ${pct(ws.held ?? 0, wt)} | ${topS} | ${cureS} |`);
+    const iw: Record<string, number> = {};
+    for (const b of bs) for (const [k, v] of Object.entries(b.inputWaits)) iw[k] = (iw[k] ?? 0) + v;
+    const iwS = Object.entries(iw).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${k} ${(v / s).toFixed(2)}`).join(', ') || '—';
+    out.push(`| ${name} | ${bs[0]!.from}–${bs[0]!.to} | ${f1(avg(bs.map((b) => b.perMin)))} | ${f1(steps)} | ${pct(sum('crit'), s)} | ${pct(sum('real'), s)} | ${pct(sum('realCure'), s)} | ${pct(ws.idle ?? 0, wt)} | ${pct(ws.held ?? 0, wt)} | ${topS} | ${cureS} | ${iwS} |`);
   }
   return out;
 }
@@ -210,8 +246,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('| player | R1 (8–12) | R2 (20–30) | R3 (40–50) | R4 (70–90) | R5 (105–135) | silver | coins | wagons | eye acts |');
   console.log('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
   for (const n of list) console.log(table(n, all[n]!).join('\n'));
-  console.log('\n| player | band | sr/min | steps | crit | real | real+cure | wagons idle | held | worst card (share) | cure offered |');
-  console.log('|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|');
+  console.log('\n| player | band | sr/min | steps | crit | real | real+cure | wagons idle | held | worst card (share) | cure offered | input waits (consumers) |');
+  console.log('|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|---|');
   for (const n of list) console.log(bandsTable(n, all[n]!).join('\n'));
   if (json) writeFileSync(json, JSON.stringify(all));
 }
