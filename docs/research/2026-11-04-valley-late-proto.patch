@@ -101,7 +101,7 @@ index b68cf1e..f69cfbb 100644
        st.ledger.silverEarned += r.reward.silver;
        st.town.renown += r.reward.renown;
 diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
-index 510e282..02f08b0 100644
+index 510e282..11623c6 100644
 --- a/src/sim/logistics.ts
 +++ b/src/sim/logistics.ts
 @@ -2,8 +2,8 @@
@@ -138,6 +138,15 @@ index 510e282..02f08b0 100644
          if (slots <= 0 || free.length === 0) break;
          const cap = capacityOf(g);
          if (MARKET.inflightPerGood - m.incoming[g] < cap) continue;
+@@ -380,7 +382,7 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
+   if (b.type === 'castle') {
+     const m = world.state.mission;
+     // free valley: the castle is the market; it only needs a road
+-    if (marketOpen(world)) return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
++    if (marketOpen(world)) return gateConnected(world, b) || !isMarket(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
+     if (!m.contract || m.contract.castle !== b.id) return { k: 'IDLE' };
+     if (m.result === 'won') return { k: 'CONTRACT_DONE' };
+     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
 diff --git a/src/sim/town.ts b/src/sim/town.ts
 index e8f1681..eb97a6c 100644
 --- a/src/sim/town.ts

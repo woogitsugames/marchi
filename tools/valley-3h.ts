@@ -43,6 +43,8 @@ type Player = {
   setup?: () => () => void;
   /** The eye looks from the first minute (not only after the plan) and also paves a held bridge span (cure 'pave'). */
   eyeAlways?: boolean;
+  /** Labels true right now (checked every minute); RunOut.marks keeps the first minute of each. */
+  watch?: (w: World) => string[];
 };
 
 function capFleet(plan: readonly BotStep[], max: number, start = 2): BotStep[] {
@@ -154,6 +156,7 @@ export interface RunOut {
   longestStall: { id: number; type: string; key: string; minutes: number; atMin: number }[];
   wagonHeldMax: { key: string; seconds: number }[];
   violations: string[];
+  marks: Record<string, number>;
 }
 
 function newBand(from: number): Band {
@@ -187,6 +190,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
   const seenOrders = new Set<string>();
   const longest = new Map<number, { minutes: number; key: string; atMin: number; type: string }>();
   const wagonHeld: Record<string, number> = {};
+  const marks: Record<string, number> = {};
 
   const closeBand = (): void => {
     const ev = st.valleyEvents!;
@@ -299,6 +303,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
       const v = checkInvariants(w);
       if (v.length && violations.length < 20) violations.push(`tick ${st.tick}: ${v.join('; ')}`);
       const ss = sandboxStatus(w);
+      if (p.watch) for (const m of p.watch(w)) if (marks[m] === undefined) marks[m] = st.tick / TICK_HZ / 60;
       perMinute.push({ min: st.tick / TICK_HZ / 60, coins: st.coins, earned: st.ledger.silverEarned, renown: st.town.renown, rank: st.town.rank, wagons: st.wagons.length, flow: ss.flowNow, season: seasonAt(st.tick - 1) });
     }
     if (st.tick % (BAND_MIN * 60 * TICK_HZ) === 0) { closeBand(); band = newBand(st.tick / TICK_HZ / 60); }
@@ -316,7 +321,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
     planDoneMin, stepsDone: k, stepsTotal: plan.length, perMinute, bands, seasonPerMin,
     longestStall: [...longest.entries()].map(([id, v]) => ({ id, ...v })).sort((a, b) => b.minutes - a.minutes).slice(0, 5),
     wagonHeldMax: Object.entries(wagonHeld).map(([key, seconds]) => ({ key, seconds })),
-    violations,
+    violations, marks,
   };
 }
 
