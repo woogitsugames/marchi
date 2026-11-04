@@ -1,0 +1,39 @@
+diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
+index 510e282..fc43112 100644
+--- a/src/sim/logistics.ts
++++ b/src/sim/logistics.ts
+@@ -66,6 +66,7 @@ function remainingContract(world: World, b: Building, g: Good): number {
+   return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
+ }
+ 
++const DRAIN_SPACE = Number(process.env.DRAIN_SPACE ?? 6);
+ function warehouseSpace(b: Building): number {
+   return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
+ }
+@@ -202,6 +203,26 @@ export function dispatch(world: World): void {
+     const owed = (g: Good): number => (orderOutstanding(st, g) > 0 ? 1 : 0);
+     const goods = GOODS.filter((g) => MARKET.base[g] > 0)
+       .sort((a, c) => owed(c) - owed(a) || unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
++    // PROTO (research 2026-11-04-valley-3h): a granary that cannot take one more load sends its biggest
++    // sellable pile to the market before the price order (wood never won a slot and clogged it for good)
++    for (const m of markets) {
++      for (const wh of st.buildings) {
++        if (slots <= 0 || free.length === 0) break;
++        if (wh.type !== 'warehouse' || warehouseSpace(wh) >= DRAIN_SPACE) continue;
++        let g: Good | null = null;
++        for (const x of GOODS) {
++          if (x === 'stone' || MARKET.base[x] <= 0) continue;
++          const a = wh.stock[x] - wh.reservedOut[x];
++          if (a >= capacityOf(x) && (g === null || a > wh.stock[g] - wh.reservedOut[g])) g = x;
++        }
++        if (g === null || MARKET.inflightPerGood - m.incoming[g] < capacityOf(g)) continue;
++        const wagon = pickWagon(wh);
++        if (!wagon || dc.to(wh.gate).dist[wagonNode(wagon)] === Infinity || dc.from(wh.gate).dist[m.gate] === Infinity) continue;
++        assignJob(world, wagon, wh, m, g, capacityOf(g));
++        free.splice(free.indexOf(wagon), 1);
++        slots--;
++      }
++    }
+     for (const m of markets) {
+       for (const g of goods) {
+         if (slots <= 0 || free.length === 0) break;
