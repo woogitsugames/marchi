@@ -1670,3 +1670,12 @@ volume slider) now draws a 2 px ink outline (`--focus-ink #1d1813`, 11:1 on parc
 `box-shadow`; sheets themselves (`section.sheet:focus`) draw no ring. `button:focus { outline: none }` stays:
 mouse and touch focus show nothing.
 (decided)
+
+**D-124 — Reduced motion reaches the renderer (day 8d; a11y F14).**
+CSS and the seal press already honoured `prefers-reduced-motion`; the camera and the terrain shader did not.
+`src/render/motion.ts` holds one shared `MediaQueryList` (`reducedMotion()`, read per frame). With it set:
+`CameraRig.focusCell` cuts to the subject (no 220 ms glide), the main menu's slow camera sway stops, and the
+bad-draft / blocked-ghost overlay in `terrain.ts` holds a steady 0.85 alpha instead of the ~1 Hz pulse (`uMotion`
+uniform). Wagons, water and weather keep moving: they are the game state, not decoration. A settings toggle
+"Ogranicz ruch" waits until a device shows whether Android WebView maps "Remove animations" to the media query.
+(decided)

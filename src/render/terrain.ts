@@ -67,7 +67,7 @@ export class TerrainView {
       uWinter: { value: 0 },
       uTraffic: { value: 0 },
       uTime: { value: 0 },
-      // 1 = the bad-draft overlay pulses, 0 = steady (prefers-reduced-motion, D-122)
+      // 1 = the bad-draft overlay pulses, 0 = steady (prefers-reduced-motion, D-124)
       uMotion: { value: 1 },
       uSelRect: { value: overlay.selRect },
       uSelRectOn: overlay.selRectOn,

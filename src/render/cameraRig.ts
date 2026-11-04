@@ -158,7 +158,7 @@ export class CameraRig implements CameraControl {
     const d = this.screenShift(px, pz, screenOffset, this.goalDist, this.goalYaw, _g);
     this.goal.set(px - d.x, 0, pz - d.z);
     this.clampGoal();
-    // reduced motion: the view cuts to the subject instead of gliding (D-122)
+    // reduced motion: the view cuts to the subject instead of gliding (D-124)
     if (reducedMotion()) { this.glide = null; this.target.x = this.goal.x; this.target.z = this.goal.z; return; }
     this.glide = { fx: this.target.x, fz: this.target.z, t: 0 };
   }
