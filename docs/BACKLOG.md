@@ -9,6 +9,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [ ] P2 — (noc 6, D-103) Misja VI: rozsądny gracz (oko 10/30/60 s) nadal 1★ (8,94) — wyszukiwarka luk podaje już autorską drogę (sama lekcja 8,31, 3★), ale potem karta podsuwa „Kup wóz” (3:00) i „Postaw spichlerz” (5:30), które kosztują 38 s. Do zbadania razem z chaosem wozów (research §6.1).
+- [ ] P2 — (noc 6, D-104) Misja X: przy „Postaw jeszcze: Chata drwala” duch budowy staje przy pierwszym drwalu, gorzej niż autorskie (12,34) — podpowiedź miejsca jako dana misji (bez wyjątków w sim).
+- [ ] P4 — (research 2026-11-04) Do decyzji właściciela: P1 progi M1 9:15/10:45, P3 M4 srebro 140 + progi 7:30/10:00, próg 2★ M2 10:00 (z kartą D-105 oko 30 s byłoby 2★), P6 przeprojektowanie M8 — wszystkie zmieniają złote hasze.
 - [ ] P4 — (noc 6, D-102) Misja XIII: tytuł/podtytuł menu (`menu.m13`, `menu.m13Sub`) w 15 językach poza pl/en (PENDING_KEYS) i przegląd listów XIII przez native speakerów (napisane w nocy przez agenta); po playteście ocenić, czy przenieść XIII wcześniej (np. po I) — wtedy przenumerować tytuły.
 - [ ] P3 — (noc 6, D-101) Pracownicy: sprawdzić na telefonie czytelność sztuki pracy pilarzy z kamery gry (pilarz na kłodzie zasłania czasem list przewozowy w pionie); rolnik nie chodzi wzdłuż bruzdy (stoi w jednym miejscu).
 - [ ] P3 — (D-95) m8: rezerwa kamienia spichlerza przed wejściami producentów w dyspozytorze (opcja b z D-90) — zmienia hasze i strojenie misji; dopiero po playteście, jeśli odczyt „W spichlerzu jest N kamieni” okaże się za mało.

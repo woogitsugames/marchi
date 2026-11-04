@@ -589,6 +589,22 @@ bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygran
    24/24, chleb 0/16), 1 wóz @0:20 = 7,61 (2★), 3 wozy @0:20 = 5,06 (3★), 1 wóz @1:30 = 8,77 (1★). Listy w 17 językach, tytuł
    i podtytuł menu pl/en (+PENDING_KEYS), strona `docs/missions/m13.md`, zrzuty `docs/shots/night6-m13-{play,why,menu}-*.jpg`
    (`tools/m13-shots.mjs`). Dopisana na końcu jako XIII.
+3. **Kolejka koordynatora (raport `docs/research/2026-11-04-mission-balance.md`; baza scalona 8bc6946), bez zmian haszy:**
+   - **P2 wyszukiwarka luk (D-103, 5a57f97)** — wersja „solidna”: szukanie od bramy odciętego budynku do sieci stajni,
+     ranking: srebro → mniej ukośnych pól → czas dojazdu od budynku, który ma tam dojeżdżać (producent z `OUTPUT_FULL` dla
+     spichlerza). V, VI, XII dostają autorską prostą drogę (37,38)–(37,39). Rozsądny gracz (oko 10/30/60 s): V 3/2/2★,
+     XII 3/3/3★ (było 3/2/3), I 1/1/1★ (było 1/1/porażka). **VI zostaje 1★ (8,94)** — droga jest już lekcją (sama 8,31 = 3★),
+     ale karta potem każe kupić wóz i postawić spichlerz (−38 s); szybka łatka z raportu dawała 3★ tylko przez inny węzeł
+     (36,40) — chaos dyspozytora, nie wyszukiwarka.
+   - **P5 karta „jeden producent dla dwóch warsztatów” (D-104, dc67ed5)** — „Węglarnia: Chata drwala to jedyny dostawca dla
+     2 warsztatów”, w arkuszu „Postaw jeszcze: Chata drwala −20”. IX: 3/3/2★ (było 1/porażka/1), X: 1/2/2★ (było 1/P/P).
+   - **P4 karta „zatrzymane przęsło” (D-105, dc67ed5)** — wóz ≥ 20 s przed drewnianym przęsłem (zator, kra): „Tartak: Wóz 2
+     stoi przed mostem zamkniętym przez krę”, w arkuszu „Wyłóż most kamieniem −72”. II: 2/1/1★ (było 1/1/1), IV 30/60 s
+     2/2★ (było 1/1). Próg 2★ M2 10:00 — nie ruszany (czeka na właściciela).
+   P4 i P5 w jednym commicie (wspólny kod rankingu i arkusza). Testy **444/0**, złote hasze bez zmian. Zrzuty
+   `docs/shots/night6-card-{p5-m9-shared,p4-m4-heldspan,p2-m6-link}-{412x915,915x412}.jpg`. `npm run layout -- --quick`
+   w tym worktree: 84 zadania „failed” wyłącznie przez 403 z serwera Vite (symlink `node_modules` poza `fs.allow`),
+   zero innych uwag — do powtórzenia w głównym checkoutcie.
 ### Decyzje na rano (noc 6) — deweloper
 - **Kolejność misji XIII:** dopisana jako XIII (przeniesienie po I wymaga przenumerowania tytułów w 17 językach i marginesów
   zapisów). Zostawić na końcu czy przenieść po I (lekcja jest prostsza niż II–XII)?
@@ -596,3 +612,9 @@ bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygran
   (nic = porażka). Zostawić obie?
 - **Listy XIII w 15 językach** napisał agent — do przeglądu przez native speakerów przed wydaniem.
 - **Tartak:** piła przeniesiona z szopy na podwórze (widoczność) — akceptacja wyglądu na zrzutach `night6-workers-sawmill-*`.
+- **M6 (VI)** po D-103 nadal 1★ dla rozsądnego gracza — winne są późniejsze porady karty („Kup wóz”, „Postaw spichlerz”),
+  nie droga. Czy karta ma przestać proponować spichlerz w VI, gdy duży spichlerz już jest podłączony? (osobna zmiana UI)
+- **Karta „jeden dostawca”** pojawia się w IX/X od pierwszej sekundy (krytyczna) — podaje lekcję od razu. Zostawić, czy
+  dopiero po np. 30 s czekania?
+- Próg 2★ M2 → 10:00 (raport P4) i P1/P3/P6 — zmieniają hasze, nie ruszane.
+
