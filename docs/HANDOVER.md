@@ -10,6 +10,8 @@
   (ostatnio zweryfikowany layoutem); baza nowsza: day8c (karty VII/III/IV), audyt a11y, render #4 (częściowy).
   **layout --quick na bazie po day8c:** 3 błędy to wyłącznie `page.goto: Timeout` przy obciążeniu (settings/why);
   powtórz przy spokojnej maszynie (`npm run layout -- --quick`, ew. `--only 'settings|why'`), potem `git push origin <sha>:main`.
+- Uwaga: osobny przebieg layoutu `--only 'settings|why'` przy pracującym agencie też dał 3/12 timeoutów — przy
+  spokojnej maszynie sprawdź, czy to nie regresja wczytywania (day8c: karta tempa liczy prognozę), zanim przesuniesz main.
 - Ostatnie APK: **e36726c** (~17:00). Następne: gdy istotnie lepsze, w dzień co ~3 h (7–23 Brussels), w nocy nic.
 - Stan symulacji **v8**. Następna wolna decyzja: **D-118** (inna sesja mogła wziąć D-111/112 — sprawdź DECISIONS.md).
 - Godzinny cykl tej sesji `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony** — nowa sesja tworzy własny (prompt niżej).
