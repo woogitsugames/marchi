@@ -26,7 +26,7 @@ import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts, yard
 import { markInstances, Parts } from './instancedParts';
 import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
-import { type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
+import { drawLagScratch, type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
 
 /** Lateral offset from the road centreline (keep right). */
 const LANE = 1.05;
@@ -163,6 +163,11 @@ export class WagonsView {
   /** Stable waiting places per stable id, valid for parkVer (netVersion). */
   private parkSlots = new Map<number, ParkSlot[]>();
   private parkVer = -1;
+  /** Reused by afterTick every tick (research 2026-11-04 "Poprawki" #3). */
+  private readonly lagScratch = drawLagScratch();
+  private readonly parking = new Map<number, ParkSlot>();
+  /** Ground height per cell centre, filled lazily by surf(). */
+  private surfH = new Float64Array(0);
   private cells = [0, 0, 0, 0];
   private byIdx: (Snap | null)[] = [];
   /** A tick ran since opposing traffic was last marked. */
@@ -214,11 +219,20 @@ export class WagonsView {
     return out.set((x + 0.5) * CELL, 0, (y + 0.5) * CELL);
   }
 
+  /**
+   * Ground height at a cell's centre. Terrain and heightfield never change for a map, so each cell is sampled once
+   * (lazily, NaN = not yet; Float64 keeps the exact value) instead of twice per moving wagon per tick (research
+   * 2026-11-04 "Poprawki" #3).
+   */
   private surf(world: World, c: number): number {
     const t = world.terrain;
     if (t.water[c]) return t.cellH[c]!;
+    let cache = this.surfH;
+    if (cache.length !== t.w * t.h) cache = this.surfH = new Float64Array(t.w * t.h).fill(NaN);
+    const v = cache[c]!;
+    if (v === v) return v;
     const w = t.w, x = c % w, y = (c - x) / w;
-    return this.hf.height((x + 0.5) * CELL, (y + 0.5) * CELL);
+    return (cache[c] = this.hf.height((x + 0.5) * CELL, (y + 0.5) * CELL));
   }
 
   /** Snapshot current sim positions; previous ones become the interpolation start. */
@@ -226,9 +240,9 @@ export class WagonsView {
     void nowMs;
     const t = world.terrain;
     const A = _v;
-    const wantLag = wagonDrawLag(world);
+    const wantLag = wagonDrawLag(world, this.lagScratch);
     if (this.parkVer !== world.state.netVersion) { this.parkVer = world.state.netVersion; this.parkSlots.clear(); }
-    const parking = stableParking(world, this.parkSlots);
+    const parking = stableParking(world, this.parkSlots, this.parking);
     for (const w of world.state.wagons) {
       let s = this.snaps.get(w.id);
       if (!s) {

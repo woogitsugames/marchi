@@ -13,22 +13,40 @@ export const DRAW_GAP = 5;
  */
 export const MAX_DRAW_LAG = 8;
 
+/** Reusable maps for wagonDrawLag (the result is `lag`, overwritten on every call). */
+export interface DrawLagScratch {
+  lag: Map<number, number>;
+  byEdge: Map<number, Wagon[]>;
+  pool: Wagon[][];
+}
+
+export function drawLagScratch(): DrawLagScratch {
+  return { lag: new Map(), byEdge: new Map(), pool: [] };
+}
+
 /**
  * Wanted drawn lag (metres behind the sim position) per moving wagon. On every directed edge, from
  * the front wagon back, each follower is drawn at least DRAW_GAP behind the one ahead; wagons just
  * past the next node, on the edge this one takes next, count as ahead too. Ties: the lower id leads.
  * Wagons standing at a node are not moved (the view queues them separately). Reads sim state only.
  */
-export function wagonDrawLag(world: World): Map<number, number> {
+export function wagonDrawLag(world: World, out?: DrawLagScratch): Map<number, number> {
   const n = world.terrain.w * world.terrain.h;
-  const byEdge = new Map<number, Wagon[]>();
+  // the view calls this after every tick: with `out` the maps and the per-edge lists are reused (research
+  // 2026-11-04 "Poprawki" #3); same insertion order as fresh maps, so the result is identical
+  const byEdge = out?.byEdge ?? new Map<number, Wagon[]>();
+  const pool = out?.pool ?? [];
+  for (const l of byEdge.values()) { l.length = 0; pool.push(l); }
+  byEdge.clear();
   for (const w of world.state.wagons) {
     if (w.next < 0) continue;
     const k = w.at * n + w.next;
     const l = byEdge.get(k);
-    if (l) l.push(w); else byEdge.set(k, [w]);
+    if (l) l.push(w);
+    else { const f = pool.pop() ?? []; f.push(w); byEdge.set(k, f); }
   }
-  const lag = new Map<number, number>();
+  const lag = out?.lag ?? new Map<number, number>();
+  lag.clear();
   for (const list of byEdge.values()) {
     list.sort((a, b) => b.edgeT - a.edgeT || a.id - b.id);
     const len = edgeLength(world.terrain, list[0]!.at, list[0]!.next);
@@ -134,12 +152,16 @@ export function parkingBlocked(world: World): Uint8Array {
  * sim keeps them all on the gate node; the view fans them out into the stable's slots, in wagon id order
  * (deterministic: same state, same places). Wagons beyond the free slots get none (the view tucks them
  * into the stable). `slots` caches stableSlots per stable id; pass the same map while netVersion is unchanged.
+ * `out` (optional) is cleared and filled instead of a new map (the view passes one per tick).
  */
-export function stableParking(world: World, slots?: Map<number, ParkSlot[]>): Map<number, ParkSlot> {
+export function stableParking(world: World, slots?: Map<number, ParkSlot[]>, out?: Map<number, ParkSlot>): Map<number, ParkSlot> {
+  const res = out ?? new Map<number, ParkSlot>();
+  res.clear();
+  let any = false;
+  for (const b of world.state.buildings) if (b.type === 'stable') { any = true; break; }
+  if (!any) return res;
   const gates = new Map<number, number>();
   for (const b of world.state.buildings) if (b.type === 'stable') gates.set(b.gate, b.id);
-  const res = new Map<number, ParkSlot>();
-  if (!gates.size) return res;
   const gateSet = new Set(gates.keys());
   const byGate = new Map<number, Wagon[]>();
   for (const w of world.state.wagons) {

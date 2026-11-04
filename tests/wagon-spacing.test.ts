@@ -1,7 +1,7 @@
 // Drawn spacing between wagons (D-35) and the waiting row beside the stable (D-43): render-only, never
 // touches the sim.
 import { step, stateHash, type World } from '../src/sim/index';
-import { DRAW_GAP, MAX_DRAW_LAG, PARK_PITCH, isParked, parkingBlocked, stableParking, stableSlots, wagonDrawLag } from '../src/render/wagonSpacing';
+import { DRAW_GAP, drawLagScratch, MAX_DRAW_LAG, PARK_PITCH, isParked, parkingBlocked, stableParking, stableSlots, wagonDrawLag } from '../src/render/wagonSpacing';
 import { applyCommand, createWorld } from '../src/sim/index';
 import { bridgeA, stableId } from '../tools/bot';
 import { benchWorld } from '../tools/bench';
@@ -133,4 +133,20 @@ test('the stable waiting row is read-only: the simulation hash does not change',
   }
   assert(seen >= 10, `waiting row used (${seen})`);
   eq(stateHash(b), stateHash(a), 'same hash');
+});
+
+test('reused maps (the view calls these every tick) give the same lag and waiting places as fresh ones', () => {
+  const w = benchWorld(80);
+  const scratch = drawLagScratch();
+  const slotsA = new Map(), slotsB = new Map(), park = new Map();
+  let checked = 0;
+  for (let i = 0; i < 1500; i++) {
+    step(w);
+    const fresh = wagonDrawLag(w), reused = wagonDrawLag(w, scratch);
+    eq(JSON.stringify([...reused]), JSON.stringify([...fresh]), `lag at tick ${i}`);
+    const pf = stableParking(w, slotsA), pr = stableParking(w, slotsB, park);
+    eq(JSON.stringify([...pr]), JSON.stringify([...pf]), `parking at tick ${i}`);
+    checked += fresh.size;
+  }
+  assert(checked > 0, 'some wagons were lagged');
 });
