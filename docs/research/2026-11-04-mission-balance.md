@@ -272,3 +272,49 @@ npx tsx tools/balance-night6-probe.ts                                        # M
 npx tsx tools/balance-night6-tune.ts ["m4 coins 140" …]                      # §7, łatki tylko w pamięci
 npx tsx tools/mission-hashes.ts > a.txt   # na dwóch checkoutach, potem diff  # §1
 ```
+
+## Po decyzjach 11-04 (dzień 8, gałąź `claude/w-day8`)
+
+Stan po D-108 (M1: 3★ 9:15, 2★ 10:45), D-109 (M4: 140 srebra, 3★ 7:30, 2★ 10:00) i D-110 (karta „jeden producent
+dla dwóch warsztatów” dopiero po 30 s czekania), plus wszystko z nocy 6 i 6b (D-103 … D-107). Narzędzie
+`npx tsx tools/balance-night6.ts` (I–XIII, ok. 45 s), które teraz co tick próbkuje czekanie (jak gra) i przy podpowiedzi
+tekstowej stawia producenta tam, gdzie startuje duch (D-107). **M8 w tej gałęzi to stara wersja** — przeprojektowanie
+robi osobna sesja, więc wiersz VIII trzeba będzie zmierzyć ponownie po scaleniu.
+
+| Misja | 3★/2★/termin | pasywny | same wozy (najl. k) | sama lekcja @0:00 | optimum | oko 10/30/60 s | oko+ 10/30/60 s | skan+ 30 s | list + oko+ 30 s |
+|---|---|---|---|---|---|---|---|---|---|
+| I | **9,25/10,75**/12 | P | P | P | 8,85 (**3**) +24 | 10,06 (**2**) / 9,91 (**2**) / 11,38 (1) | jak oko | 11,01 (1) | 11,15 (1) |
+| II | 8,75/9,75/12 | 10,81 (1) | 8,79 (2) k=3 | 9,70 (2) | 8,24 (3) +30 | 9,24 (2) / 9,82 (1) / 10,81 (1) | 8,88 (2) / 9,82 (1) / 10,81 (1) | 9,63 (2) | 9,60 (2) |
+| III | 6,25/8/11 | 8,57 (1) | 6,74 (2) k=7 | 6,73 (2) | 5,34 (3) +54 | 8,15 (1) / 9,30 (1) / 7,66 (2) | jak oko | 7,98 (2) | 5,49 (3) |
+| IV | **7,5/10**/12,5 | 11,65 (1) | **10,16 (1) k=2** | 7,01 (**3**) +30 | 5,99 (3) +91 | 10,56 (1) / 7,58 (2) / 7,96 (2) | jak oko | **11,77 (1)** | 7,15 (3) +21 |
+| V | 8,5/9,3/11 | 9,61 (1) | 7,94 (3) k=6 | 9,41 (1), list spóźn. | 6,84 (3) +100 | 8,22 (3) / 8,59 (2) / 8,76 (2) | jak oko | 8,50 (3) +0 | 8,59 (2) |
+| VI | 8,45/8,85/11 | 8,92 (1) | 8,68 (2) k=4 | 8,31 (3) +8 | 7,88 (3) +34 | 8,31 (3) ×3 | jak oko | 8,31 (3) | 8,31 (3) |
+| VII | 7,5/9,5/12 | 10,90 (1) | 10,90 (1) | 6,27 (3) +74 | 5,91 (3) +96 | 10,90 (1) ×3 | jak oko | 10,90 (1) | 6,91 (3) |
+| VIII* | 9,7/10,3/13 | 10,50 (1) | 9,42 (3) k=6 | 10,29 (2) | 9,14 (3) +34 | 9,28 (3) / 9,40 (3) / 9,40 (3) | 9,07 (3) / 9,40 (3) / 9,40 (3) | 8,77 (3) | 8,79 (3) |
+| IX | 9,2/10,8/13 | 11,22 (1) | 9,30 (2) k=5 | 9,96 (2) | 7,35 (3) +111 | 8,50 (3) / 8,63 (3) / 9,24 (2) | 8,71 (3) / 8,63 (3) / 9,24 (2) | 8,63 (3) | 8,63 (3) |
+| X | 9,3/10,3/12 | P | 10,44 (1) k=1 | 9,94 (2) | 6,23 (3) +184 | 9,05 (3) / 9,13 (3) / 9,11 (3) | 9,04 (3) / 9,13 (3) / 9,11 (3) | 9,13 (3) | 9,13 (3) |
+| XI | 9,4/10,3/12 | 10,94 (1) | 8,88 (3) k=5 (= lekcja) | — | = same wozy | 9,87 (2) / 10,12 (2) / 10,94 (1) | jak oko | 10,12 (2) | — |
+| XII | 9/10,1/12 | 10,36 (1) | 10,10 (2) k=6 | 8,52 (3) +29 | 7,33 (3) +100 | 8,80 (3) / 8,55 (3) / 8,52 (3) | jak oko | 8,55 (3) | 8,55 (3) |
+| XIII | 5,5/8/10 | P | 4,29 (3) k=5 (= lekcja) | — | = same wozy | 4,38 (3) / 5,49 (3) +1 / 6,42 (2) | jak oko | 5,49 (3) | — |
+
+\* VIII: stara wersja misji (przed przeprojektowaniem).
+
+### Rozsądny gracz (oko 10/30/60 s): noc 6b → dzień 8
+
+| | I | II | III | IV | V | VI | VII | VIII | IX | X | XI | XII | XIII |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| noc 6b | 1/1/1 | 2/1/1 | 1/1/2 | 1/2/2 | 3/2/2 | 3/3/3 | 1/1/1 | 3/3/3 | 3/3/2 | 3/3/3 | 2/2/1 | 3/3/3 | 3/3/2 |
+| dzień 8 | **2/2/1** | 2/1/1 | 1/1/2 | 1/2/2 | 3/2/2 | 3/3/3 | 1/1/1 | 3/3/3 | 3/3/2 | 3/3/3 | 2/2/1 | 3/3/3 | 3/3/2 |
+
+- **I:** 3★ w zasięgu planu z mostem i czterema wozami (`npm run bot`: 8,85 min, 3★), rozsądny gracz 1★ → 2★ przy 10 i 30 s.
+  Gracz co 60 s zostaje przy 1★ (most w 1:00, wozy dopiero od 3:00).
+- **IV:** same wozy nie dają już 3★ (najlepiej 2 wozy, 1★, 10 s do 2★), sama lekcja daje 3★ z zapasem 30 s, gracz z listem
+  3★ z zapasem 21 s. Rozsądny gracz bez zmian (1/2/2★). **Strata: skan+ 30 s 3★ → 1★** — kupuje trzy wozy z kolejnych pinezek
+  i nie ma już srebra na kamienny most (karta przęsła pokazuje „brak srebra”). Do rozważenia: przy 140 srebrze karta
+  „Kup wóz” w IV mogłaby ustępować karcie przęsła, gdy wóz stoi przed krą.
+- **IX/X:** karta po 30 s nie odbiera pieczęci. IX szybciej przy 10 i 30 s (8,71 → 8,50, 8,99 → 8,63: przy 10 s gracz
+  najpierw kupuje wozy, a drwala stawia w 0:40). X przy 30 s wolniej o 32 s (8,59 → 9,13; zapas do 3★ +43 → +10 s),
+  bo pierwsze spojrzenie w 0:30 przypada na 29,9 s czekania tartaku, więc drwal staje w 1:00.
+- **Wciąż do zrobienia (bez zmian od nocy 6b):** VII (rozsądny gracz 1★ — karta nie prowadzi do rybaka nad wodą), III
+  (1/1/2★ — błoto nie jest przestojem), II przy 30/60 s (1★; próg 2★ 10:00 czeka na playtest), XI przy 60 s (1★).
+  XIII przy 30 s ma 3★ z zapasem 1 s.
