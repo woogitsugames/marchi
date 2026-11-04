@@ -15,7 +15,7 @@ import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
-import { paceCard, type PaceCard, type PaceMud } from './paceCard';
+import { paceCard, type PaceCard, type PaceFleet, type PaceMud } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -85,6 +85,7 @@ function fixSection(btn: string, hint: string, why: boolean): string {
  */
 function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'mud') return mudCureHtml(world, pc);
+  if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -113,6 +114,22 @@ function mudCureHtml(world: World, pc: PaceMud): string {
     : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
       ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
   return fixSection(btn, hint, !ok.ok);
+}
+
+/**
+ * The fleet kind of the pace card (D-127): this yard waits for a wagon while the whole fleet is on the road and the
+ * forecast misses a seal. "Kup wóz" here, with the reason; the card only appears when the silver is there.
+ */
+function fleetCureHtml(world: World, pc: PaceFleet): string {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return '';
+  const short = WAGON_PRICE - world.state.coins;
+  const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
+    iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
+  const hint = short > 0
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
+  return fixSection(btn, hint, short > 0);
 }
 
 /**

@@ -23,6 +23,7 @@ import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { StallRanking, sampleInputWaits } from './stalls';
+import { sampleFleet } from './paceCard';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
   buildDeadEndLetter, buildEndLetter, buildMainMenu, buildOpeningLetter, gameMenuSheet, isMissionKey, missionSaveSheet, nextMission, settingsSheet, valleySheet, type MissionKey, type SaveInfo,
@@ -764,6 +765,7 @@ export class App implements PanelNav {
     this.view.afterTick();
     samplePace(this.pace, this.world);
     sampleInputWaits(this.world);
+    sampleFleet(this.world); // the pace card's fleet kind reads the last minute (D-127)
     if (this.prevAudio && audio.ready) {
       const l = this.view.audioListener?.() ?? { x: 0, z: 0, yaw: 0 };
       const tr = this.world.terrain;

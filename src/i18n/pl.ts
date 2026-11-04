@@ -669,6 +669,8 @@ export const pl = {
   'fix.mudWhy': 'Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o {pct} szybsza, a prognoza nie daje trzech pieczęci.',
   'cause.iceAhead': 'za {time} kra zamknie most — kamienny kosztuje {n} srebra, a wóz zostawi za mało',
   'fix.iceAheadWhy': 'Za {time} kra zamknie drewniany most. Kamienny most ({n} srebra) kra omija; po kolejnym wozie zabraknie na niego srebra.',
+  'cause.paceFleet': 'pełno {goodGen} od {time}, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
+  'fix.paceFleetWhy': 'Przez ostatnią minutę żaden wóz nie stał wolny, a prognoza daje {seals}. Nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -732,6 +734,8 @@ export const PENDING_KEYS = [
   'fix.mudWhy',
   'cause.iceAhead',
   'fix.iceAheadWhy',
+  'cause.paceFleet',
+  'fix.paceFleetWhy',
   'menu.shortcuts',
   'menu.shortcutsHint',
   'pin.worst',
