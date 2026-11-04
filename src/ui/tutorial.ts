@@ -304,7 +304,9 @@ export class Tutorial {
   // ---------------------------------------------------------------- targets
 
   private chainLink(): HTMLElement | null {
-    return document.querySelector<HTMLElement>('#sheets .sheet:last-child .chain button[data-go]:not([disabled])');
+    // a short landscape sheet folds the middle links behind "+N" (D-111): the first link drawn is the root
+    return [...document.querySelectorAll<HTMLElement>('#sheets .sheet:last-child .chain button[data-go]:not([disabled])')]
+      .find((b) => b.getClientRects().length > 0) ?? null;
   }
 
   private waybillTarget(): { box: Box | null; probe: Element | null } {

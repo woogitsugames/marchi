@@ -2309,3 +2309,38 @@ body.is-clear .clear-restore { background: none; clip-path: none; color: var(--i
 .full-hint .fh-effect { margin-top: 2px; font-size: 13px; color: var(--ink-soft); }
 .full-hint .fh-wait { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 13px; color: var(--ink-soft); }
 .full-hint .fh-wait .linkish { min-height: 48px; font-size: 15px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+/* ---- D-111: the cause chain on a short landscape side sheet. The fix dock (D-100) covers about half of the
+   ~136 px body, so the chain shows its subject on one line (with the stall clock; the "Łańcuch przyczyn" header
+   goes, the kicker already asks "Dlaczego stoi?") and directly the root; the links between fold behind one "+N"
+   on the connector that unfolds them in place. `is-short` (layout.ts): a side sheet
+   with at most 500 px of height (landscape phones, the HUD half in Flex mode); portrait and Fold book keep the full chain. */
+.chain .c-more, .chain .l-since { display: none; }
+.c-more-btn {
+  display: flex; align-items: center; gap: 6px; min-height: 48px;
+  padding-inline: 8px 4px; color: #6e3520; font-size: 13px; font-weight: 700; white-space: nowrap;
+}
+.c-more-btn .c-n { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.c-more-btn:active { color: var(--clay); }
+body.is-short .sheet-grip { height: 4px; }
+body.is-short .sheet-head { padding-block-end: 4px; }
+body.is-short .section-h.chain-h { display: none; }
+body.is-short .chain li + li { margin-top: 14px; }
+body.is-short .chain li + li::before { top: -14px; height: 14px; line-height: 14px; }
+body.is-short .chain:not(.is-open) .c-mid { display: none; }
+/* "+N" sits on the connector between the subject and the root: a 48 px target over the gaps beside it */
+body.is-short .chain:not(.is-open) .c-more { display: block; height: 0; margin: 0; z-index: 1; }
+body.is-short .chain:not(.is-open) .c-more + li { margin-top: 16px; }
+body.is-short .chain:not(.is-open) .c-more + li::before { top: -16px; height: 16px; line-height: 16px; }
+body.is-short .chain .c-more-btn { position: absolute; top: -16px; inset-inline-end: 0; }
+/* the subject on one line: the sheet's title right above names it; its icon, status and stall clock (as on its map pin) stay */
+body.is-short .chain .c-first .link.is-self { min-height: 0; padding-block: 1px; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; }
+body.is-short .chain .c-first .is-self .l-icon { width: 24px; height: 24px; }
+body.is-short .chain .c-first .is-self .l-icon svg { width: 22px; height: 22px; }
+body.is-short .chain .c-first .is-self .l-text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.is-short .chain .c-first .is-self .l-who { display: none; }
+body.is-short .chain .c-first .is-self .l-why { display: inline; font-size: 14px; }
+body.is-short .chain .c-first .is-self .l-since { display: block; font-size: 13px; font-weight: 700; color: #6e3520; white-space: nowrap; }
+body.is-short .chain .link:not(.is-self) { min-height: 48px; padding-block: 4px; }
+body.is-short .fix-dock { padding-block: 4px; }
+body.is-short .fix-dock .fix-btn { min-height: 48px; }

@@ -1550,3 +1550,16 @@ eye 10/30/60 s, before → after: **IX 3/3/2★ (8,71/8,99/9,24) → 3/3/2★ (8
 look at 0:30 no longer shows the card (the sawmill has waited 29,9 s by then), the producer goes up at 1:00.
 Hashes unchanged (UI only). Test `tests/shared-card.test.ts` (never before 30 s; no card without a wait log).
 (decided)
+
+**D-111 — Short landscape cause chain: subject, then directly the root; middle links behind "+N" (day 8b; owner 2026-11-04).**
+On a side sheet with at most 500 px of height (landscape phones 915×412, the HUD half in Flex mode; class
+`is-short` from `layout.ts`) the fix dock (D-100) covered the root of the "Dlaczego stoi?" chain: the body is
+~146 px and the dock takes its lower half. Now the chain shows its subject on one line (icon, status, stall clock —
+the "Łańcuch przyczyn" header goes, the kicker already asks the question) and directly the root; the links between
+fold behind one "+N ogniw(a) pośrednich" button (48 px target, on the connector) that unfolds them in place. The
+open state lives in a UI-only `Set` keyed by subject and survives the sheet's refreshes until it closes. Both forms
+are in the markup and CSS picks one, so portrait and Fold book keep the full chain unchanged. The tutorial's
+chain-link target is the first *visible* link (the root when folded). Measured (`tools/chain-shots.mjs`): at
+915×412 the root sits at 184–232 px above the dock top 234 in VI/IX/XIII (before: below it); unfolded, the body
+scrolls. `why.more` is pl/en; other languages fall back to English (PENDING_KEYS). UI only, hashes unchanged.
+(decided)
