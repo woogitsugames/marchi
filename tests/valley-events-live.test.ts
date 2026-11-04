@@ -29,6 +29,9 @@ const CONTRACT_GOLDEN: Record<string, string> = {
   'm11|buy2': '42100d3a3771b2f2,27b49a2782f956f9,a7784da05689f41f',
   'm12|buy0': '3940ac24f4ff8fe4,137dfb930ff7bdde,f1ee1180bc2be3e0',
   'm12|buy2': 'd5dc1154eafb18f9,2bdeeb6b83f583a7,8de799c191afc20d',
+  // mission XIII (night 6, D-102): recorded when it was added; the older entries did not change
+  'm13|buy0': '87e09ed110e446b4,bf3ce0da782b609f,0bed2d07e81cd3e6',
+  'm13|buy2': 'df8437e030684067,b5c569eb125532e6,38be8500152843f4',
   'm2|buy0': 'b3acb2f7ad67ff52,b015a53f06f78528,79c49585665d1105',
   'm2|buy2': 'd3f03ac9ead58690,ae2d30621d81cecc,5988b53ec95b7d97',
   'm3|buy0': '19ee2ab5f4a5a6b1,037568dac6697773,2e74a70e8f3ee796',
