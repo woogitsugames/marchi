@@ -1533,3 +1533,20 @@ scan+ 30 s 6,83 (3★) → 11,77 (1★) — it buys three wagons first and then 
 strategies (`tools/balance.ts m4`): nothing 11,65 (1), 3 wagons 10,49 (1), stone bridge late 8,07 (2), before the
 ice 6,43 (3), all `expect`s hold. Hashes: `V4_GOLDEN` m4 ×4 and `valley-events-live` m4 ×2 change, nothing else.
 (decided)
+
+**D-110 — The "one producer for two workshops" card waits 30 s (day 8; owner 2026-11-04 morning; amends D-104).**
+From the first second the card handed IX/X's lesson over before the player had seen a workshop stand. Now the card
+(ranking, card line, cure `producer`) appears only once the workshop has waited for its input **30 s without a
+break** (`SHARED_CARD_WAIT_TICKS`). The sim keeps no such clock (`stalledTicks` resets on `WAITING_DELIVERY`, which
+is most of the wait), so the UI samples it: `sampleInputWaits(world)` runs every tick from the app's `onTick` (like
+the pace log) and remembers since when each building has waited for an input (`NO_INPUT` other than `UNREACHABLE`,
+`NO_WAGON`, `WAITING_DELIVERY`, `WAITING_UPSTREAM` of an input good); a `WeakMap` per world, never in the state, only
+in missions that may build a producer. A world never sampled (a freshly loaded save) shows the card 30 s later —
+harmless. The building's sheet keeps its text hint (`why.sharedOne`) from the start: tapping a building is the
+player's own question. Balance tool samples after every `step()`, and its "text hint" player now places the producer
+where the ghost starts (D-107), as the card's button does (it still used the old gate spiral). Reasonable player
+eye 10/30/60 s, before → after: **IX 3/3/2★ (8,71/8,99/9,24) → 3/3/2★ (8,50/8,63/9,24)**; **X 3/3/3★
+(9,04/8,59/9,11) → 3/3/3★ (9,05/9,13/9,11)** — X at 30 s is 32 s slower (margin to 3★ +43 → +10 s): the first
+look at 0:30 no longer shows the card (the sawmill has waited 29,9 s by then), the producer goes up at 1:00.
+Hashes unchanged (UI only). Test `tests/shared-card.test.ts` (never before 30 s; no card without a wait log).
+(decided)
