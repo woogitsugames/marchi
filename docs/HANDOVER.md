@@ -562,3 +562,12 @@ Następna decyzja: **D-101**. Nowe klucze PENDING_KEYS: `contract.sealPace.eta`,
 przyczynę podaje też karta „Najgorszy zastój”) — zostawić, czy w poziomie dodatkowo skracać łańcuch do korzenia?
 Do sprawdzenia na telefonie: dok „Naprawy” przy prawdziwym przewijaniu palcem (Android WebView, `:has`), linia „gotowe za”
 na okładce Flip.
+
+## Decyzje na rano (noc 6, 2026-11-04) — z `docs/research/2026-11-04-mission-balance.md`
+Misje I–XII nietknięte przez zmiany z 11-03 (45 strategii, te same hasze). Zmiany balansu do decyzji (zmieniają złote hasze):
+1. **M1: 3★ nieosiągalne** (najlepszy plan 8,85 min przy progu 7:00). Propozycja P1: progi 3★/2★ → **9:15 / 10:45**. Rekomendacja: tak.
+2. **M4: same wozy dają 3★** (5 wozów, 6,52 min). P3: srebro 180 → **140**, progi 7:30 / 10:00 → lekcja (lód/most) konieczna. Rekomendacja: tak.
+3. **M2: lekcja zatoru na moście niewidoczna** — P4: karta „zatrzymane przęsło” z przyciskiem bruku (bez zmian haszy, robi deweloper) + próg 2★ → 10:00 (zmienia hasze). Rekomendacja: karta tak, próg po playteście.
+4. **M8 za łatwa** (same wozy 3★ przy każdym srebrze ≥120, bruk skraca o 13 s) — P6: przeprojektować (kryterium: same wozy ≤2★, lekcja + 1 wóz 3★ z zapasem ≥20 s). Rekomendacja: tak, osobna paczka.
+5. Liczba wozów działa chaotycznie (M4: 4 wozy 1★, 5 → 3★, 6 → 1★; M9: wozy z karty → porażka) — do zbadania przy P6.
+Bez decyzji (robi deweloper, bez zmian haszy): P2 wyszukiwarka luk (węzeł po stronie dostawcy, bez ukośnych skrótów; M5/M6 rozsądny gracz → 3★), P5 karta „jeden producent dla dwóch odbiorców” (M9/M10), karta z P4.
