@@ -13,8 +13,8 @@ const ALL = {
   'm7-card': { q: 'play=m7&ff=90&speed=0' },
   'm7-sheet': { q: 'play=m7&ff=90&speed=0', eye: true },
   'm7-ghost': { q: 'play=m7&ff=90&speed=0', eye: true, fix: true },
-  'm3-card': { q: 'play=m3&ff=200&speed=0' },
-  'm3-sheet': { q: 'play=m3&ff=200&speed=0', eye: true },
+  'm3-card': { q: 'play=m3&ff=40&speed=0' },
+  'm3-sheet': { q: 'play=m3&ff=170&speed=0', eye: true },
   'm4-card': { q: 'play=m4&ff=40&speed=0&bot=0', pre: 'wagon' },
   'm4-sheet': { q: 'play=m4&ff=40&speed=0', pre: 'wagon', eye: true },
 };

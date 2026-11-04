@@ -3,7 +3,8 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  GOODS, PACE_WINDOW_TICKS, TICK_HZ, buildingById, canPlace, contractForecast, missionBuildable, trancheForecast,
+  GOODS, PACE_WINDOW_TICKS, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, thawing, trancheForecast,
   type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
 
@@ -39,15 +40,29 @@ export interface PaceProducer {
   rate: number; cap: number; need: number; seals: number;
 }
 
-export type PaceCard = PaceProducer;
+/**
+ * 'mud' — rain (or a thaw) turns the dirt road of a contract good's delivery to mud: not a stall, the wagons only
+ * drive slower. `cells` is the longest stretch of muddy dirt on the slowest such delivery (producer -> castle, in
+ * drive order), `pct` how much quicker that trip would be on cobbles under the same weather, `cost` the cobble
+ * price. `risk`: the forecast misses three seals, so the card's sheet offers the cobble cure.
+ */
+export interface PaceMud {
+  k: 'mud'; good: Good; producer: number; type: BuildingType; cells: number[]; pct: number; cost: number;
+  risk: boolean; seals: number;
+}
 
+export type PaceCard = PaceProducer | PaceMud;
+
+/** A stretch shorter than this, or a gain below this, is not worth a card. */
+const MUD_MIN_CELLS = 6;
+const MUD_MIN_PCT = 15;
 
 /**
  * The pace card for this forecast, or null. Generic: no mission names, only the forecast, the mission's
  * buildable list and the rank gate.
  */
 export function paceCard(world: World, f: ContractForecast | null): PaceCard | null {
-  return producerCard(world, f);
+  return producerCard(world, f) ?? mudCard(world, f);
 }
 
 function producerCard(world: World, f: ContractForecast | null): PaceProducer | null {
@@ -74,3 +89,66 @@ function producerCard(world: World, f: ContractForecast | null): PaceProducer | 
   return null;
 }
 
+let mudCache: { world: World; key: string; m: Omit<PaceMud, 'risk' | 'seals'> | null } | null = null;
+
+function mudCard(world: World, f: ContractForecast | null): PaceMud | null {
+  const st = world.state;
+  const c = st.mission.contract;
+  if (!c || st.mission.result !== 'running') return null;
+  const rain = isRaining(st), thaw = thawing(world);
+  if ((!rain && !thaw) || !canSurface(world, 2).ok) return null;
+  const castle = buildingById(world, c.castle);
+  if (!castle) return null;
+  // goods the castle still lacks (the whole order, or the tranche now due)
+  const lacks = GOODS.filter((g) => c.need[g] > 0 && castle.stock[g] < c.need[g]);
+  const key = `${st.netVersion}|${st.buildings.length}|${rain}|${thaw}|${lacks.join(',')}`;
+  if (mudCache?.key !== key || mudCache.world !== world) mudCache = { world, key, m: muddiest(world, castle.gate, lacks, rain, thaw) };
+  const m = mudCache.m;
+  if (!m) return null;
+  // at risk: the forecast misses three seals (or a tranche's own deadline); unknown before the first minute
+  const risk = !!f && f.ready && (f.seals < 3 || (c.tranches.length > 0 && f.finishTick > dueTick(world)));
+  return { ...m, risk, seals: f && f.ready ? f.seals : -1 };
+}
+
+function dueTick(world: World): number {
+  const c = world.state.mission.contract!;
+  const x = c.tranches.find((t) => t.doneTick < 0);
+  return x && !x.missed ? x.deadlineTick : c.deadlineTick;
+}
+
+/** The delivery (producer of a lacking good -> castle) that loses the most time to mud, and its longest muddy stretch. */
+function muddiest(world: World, castleGate: number, lacks: Good[], rain: boolean, thaw: boolean): Omit<PaceMud, 'risk' | 'seals'> | null {
+  const st = world.state, t = world.terrain;
+  const paved = SPEED_COBBLE * (rain ? RAIN_COBBLE : 1);
+  let best: Omit<PaceMud, 'risk' | 'seals'> | null = null, bestLoss = 0;
+  for (const p of st.buildings) {
+    const good = lacks.find((g) => outputGoods(p.type).includes(g));
+    if (!good) continue;
+    const path = findPath(world, p.gate, castleGate, true);
+    if (!path || path.length === 0) continue;
+    // drive time now and with every muddy cell of the longest stretch on cobbles (slope left out: a ratio)
+    const mud = (c: number): boolean => st.roads[c] === 1 && t.water[c] !== 1;
+    let run: number[] = [], longest: number[] = [];
+    for (const c of path) {
+      if (mud(c)) { run.push(c); if (run.length > longest.length) longest = run; } else run = [];
+    }
+    if (longest.length < MUD_MIN_CELLS) continue;
+    const inRun = new Set(longest);
+    let now = 0, after = 0, a = p.gate;
+    for (const b of path) {
+      const len = edgeLength(t, a, b);
+      const va = cellSpeed(world, a, rain, thaw), vb = cellSpeed(world, b, rain, thaw);
+      now += len * 0.5 / va + len * 0.5 / vb;
+      after += len * 0.5 / (inRun.has(a) ? paved : va) + len * 0.5 / (inRun.has(b) ? paved : vb);
+      a = b;
+    }
+    const loss = now - after;
+    const pct = Math.round(loss / now * 100);
+    if (pct < MUD_MIN_PCT || loss <= bestLoss) continue;
+    let cost = 0;
+    for (const c of longest) cost += roadCellCost(world, c, 2);
+    bestLoss = loss;
+    best = { k: 'mud', good, producer: p.id, type: p.type, cells: longest, pct, cost };
+  }
+  return best;
+}

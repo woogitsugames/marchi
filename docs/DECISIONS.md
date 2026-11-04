@@ -1581,3 +1581,17 @@ rank gate; the tutorial's first notes hide it with the stall card. Reasonable pl
 good may be built and is too slow). UI only, hashes unchanged. Test `tests/pace-card.test.ts`.
 (decided — owner may find 3★ too easy: the ghost places the fisher on the authored site, so "where" is given away
 as in D-107)
+
+**D-116 — Mud on a contract delivery: a calm line on the pace card, the cobble cure only when seals are at risk (day 8c; mission III).**
+Mud slows wagons but is no stall, so III's card never showed the cobble lesson (reasonable player 1/1/2★). The pace
+card (D-115) gets a second kind, `mud`: while it rains (or thaws) on a running contract and cobbles are allowed, it
+takes the delivery of a good the castle still lacks (producer -> castle, loaded path) that loses the most time to mud
+and its longest contiguous stretch of land dirt (≥ 6 cells, ≥ 15 % quicker on cobbles under the same rain; time from
+edge length and cell speed, slope left out because only the ratio counts). The card's calm slot says "Tartak: błoto
+spowalnia dostawy — bruk na 49 polach przyspieszy je o 53 %"; the producer's sheet marks the stretch on the map (the
+gap finder's ghost) and offers "Wybrukuj odcinek: 49 pól −147" **only when the forecast misses three seals** (or a
+tranche's deadline); otherwise a calm line says the order makes it anyway. Never red, never in the stall ranking; a
+real (non-calm) stall keeps the slot. Reasonable player III eye 10/30/60 s **1/1/2★ (8,15/9,30/7,66) → 2/3/2★
+(6,32/5,97/6,46)**. VIII (old version, rain from 1:40) shows the mud line too; its cobbles need quarry stone, so the
+button reports the missing stone and VIII keeps 3/3/3★ (eye+ 10 s 9,07 → 9,28). UI only, hashes unchanged.
+(decided)

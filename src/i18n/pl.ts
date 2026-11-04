@@ -659,6 +659,10 @@ export const pl = {
   'hud.pace': 'Tempo zamówienia',
   'cause.paceProducer': '×{n}: {rate}/min, na {seals} trzeba ≈{need}/min — postaw więcej',
   'fix.paceProducerWhy': 'Bez przerwy: najwyżej {cap}/min. Na {seals} trzeba ≈{need}/min — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
+  'cause.paceMud': 'błoto spowalnia dostawy — bruk na {n} polach przyspieszy je o {pct}',
+  'fix.mud': 'Wybrukuj odcinek: {n, plural, one {# pole} few {# pola} many {# pól} other {# pola}}',
+  'fix.mudWhy': 'Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o {pct} szybsza, a prognoza nie daje trzech pieczęci.',
+  'fix.mudCalm': 'Błoto spowalnia dostawy, ale zamówienie zdąży na trzy pieczęcie. Bruk na zaznaczonym odcinku przyspieszyłby je o {pct}.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -717,6 +721,10 @@ export const PENDING_KEYS = [
   'hud.pace',
   'cause.paceProducer',
   'fix.paceProducerWhy',
+  'cause.paceMud',
+  'fix.mud',
+  'fix.mudWhy',
+  'fix.mudCalm',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

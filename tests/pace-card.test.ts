@@ -49,3 +49,27 @@ for (const id of ['m2', 'm4', 'm11']) {
   });
 }
 
+test('pace card: III — mud on the delivery is a calm line; the cobble cure comes once the forecast misses 3 seals', () => {
+  const w = createWorld('m3');
+  const log = newPaceLog();
+  let calm = false, risk: ReturnType<typeof paceCard> = null;
+  while (w.state.tick < 5 * 60 * TICK_HZ && !risk) {
+    step(w);
+    samplePace(log, w);
+    if (w.state.tick % TICK_HZ) continue;
+    const pc = paceCard(w, forecastFor(w, log));
+    if (!pc) continue;
+    if (pc.k !== 'mud') throw new Error('III builds nothing: only the mud card, got ' + pc.k);
+    if (!pc.risk) calm = true;
+    else risk = pc;
+  }
+  assert(calm, 'the mud line shows (calm) before the forecast is in');
+  if (!risk || risk.k !== 'mud') throw new Error('expected the at-risk mud card');
+  assert(risk.cells.length >= 6 && risk.pct >= 15, `a real stretch and gain (${risk.cells.length} cells, ${risk.pct} %)`);
+  for (const c of risk.cells) eq(w.state.roads[c], 1, 'the stretch is dirt');
+  const hash = stateHash(w);
+  paceCard(w, forecastFor(w, log));
+  eq(stateHash(w), hash, 'read-only');
+  assert(applyCommand(w, { t: 'road', surface: 2, cells: risk.cells }).ok, 'cobbling the stretch applies');
+  for (const c of risk.cells) eq(w.state.roads[c], 2, 'cobbled');
+});

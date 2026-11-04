@@ -12,7 +12,7 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
@@ -508,8 +508,10 @@ export class Hud {
     this.pace = pc;
     this.alarm.hidden = stalls.length === 0;
     if (pc) {
-      this.cure = 'producer';
-      const sig = `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`;
+      this.cure = pc.k === 'producer' ? 'producer' : pc.risk ? 'pave' : null;
+      const sig = pc.k === 'producer'
+        ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
+        : `pace|${pc.k}|${pc.producer}|${pc.pct}|${pc.cells.length}|${pc.risk}|${stalls.length}|${getLang()}`;
       if (sig === this.stallSig) return;
       this.stallSig = sig;
       this.wagonSig = '';
@@ -520,8 +522,10 @@ export class Hud {
       setText(this.stallKick, t('hud.pace'));
       const name = buildingName(world, pc.producer);
       // a slow order is not a stall: the card says what holds it back and what helps (day 8c)
-      const text = t('cause.paceProducer', { n: fmtInt(pc.n), rate: fmtDec(pc.rate, 1), need: fmtDec(pc.need, 1), seals: t('why.pace.seals', { n: pc.seals }) });
-      setHtml(this.stallText, `<b>${esc(name)}</b> <span dir="auto">${esc(text)}</span>`);
+      const text = pc.k === 'producer'
+        ? t('cause.paceProducer', { n: fmtInt(pc.n), rate: fmtDec(pc.rate, 1), need: fmtDec(pc.need, 1), seals: t('why.pace.seals', { n: pc.seals }) })
+        : t('cause.paceMud', { n: fmtInt(pc.cells.length), pct: fmtPercent(pc.pct / 100) });
+      setHtml(this.stallText, `<b>${esc(name)}${pc.k === 'mud' ? ':' : ''}</b> <span dir="auto">${esc(text)}</span>`);
       this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
       // calm pins stay on the alarm seal beside the pace card
       const first = stalls[0] ? buildingById(world, stalls[0].id) : null;

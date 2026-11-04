@@ -656,4 +656,8 @@ export const en: FullDict = {
   'hud.pace': 'Order pace',
   'cause.paceProducer': '×{n}: {rate}/min, {seals} need ≈{need}/min — build more',
   'fix.paceProducerWhy': 'Flat out: at most {cap}/min. {seals} need ≈{need}/min — a wagon or a road will not help, only one more such building.',
+  'cause.paceMud': 'mud slows the deliveries — cobbles on {n} cells make them {pct} faster',
+  'fix.mud': 'Pave the stretch: {n, plural, one {# cell} other {# cells}}',
+  'fix.mudWhy': 'Mud is not a stall: the wagons drive slower. On cobbles this delivery is {pct} faster, and the forecast misses three seals.',
+  'fix.mudCalm': 'Mud slows the deliveries, but the order makes three seals. Cobbles on the marked stretch would make them {pct} faster.',
 };

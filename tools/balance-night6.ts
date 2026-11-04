@@ -217,7 +217,9 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
 /** The pace card's sheet button (day 8c). */
 function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string {
   if (pc.k === 'producer') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'producer:' + pc.type : 'producer?fail';
-  return '';
+  // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
+  if (!pc.risk) return '';
+  return applyCommand(w, { t: 'road', surface: 2, cells: pc.cells }).ok ? 'cobbleMud' : 'cobbleMud?fail';
 }
 
 function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boolean, seen: Record<string, number>): string {
