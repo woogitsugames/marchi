@@ -16,6 +16,7 @@ import {
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
+import { markInstances } from './instancedParts';
 import { hash3, rng, vnoise } from './models/kit';
 import { modelMaterial } from './models/materials';
 import { treeParts } from './models/trees';
@@ -217,12 +218,12 @@ export class GroundCover {
     }
     this.tufts.count = nT;
     this.tufts.visible = nT > 0;
-    this.tufts.instanceMatrix.needsUpdate = true;
-    if (this.tufts.instanceColor) this.tufts.instanceColor.needsUpdate = true;
+    markInstances(this.tufts.instanceMatrix, nT);
+    if (this.tufts.instanceColor) markInstances(this.tufts.instanceColor, nT);
     for (const m of this.shrubs) {
       m.count = nS;
       m.visible = nS > 0;
-      m.instanceMatrix.needsUpdate = true;
+      markInstances(m.instanceMatrix, nS);
     }
   }
 

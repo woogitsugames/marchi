@@ -23,7 +23,7 @@ import type { YardPile } from './buildingsView';
 import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
 import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts, yardPileLocal } from './models/cargo';
-import { Parts } from './instancedParts';
+import { markInstances, Parts } from './instancedParts';
 import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
 import { type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
@@ -518,7 +518,7 @@ export class WagonsView {
     for (const p of this.cargo.values()) p.end();
     for (let k = 0; k < 2; k++) {
       const r = k === 0 ? this.near : this.mid;
-      if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) a.needsUpdate = true;
+      for (const attrs of r.poseAttrs) for (const a of attrs) markInstances(a, r.horse.count);
     }
   }
 
