@@ -1653,3 +1653,11 @@ not told a new name every second (the visible tally still counts each second). E
 (`tools/make-pin-alarm.py`): the red pin's disc at 86 % on a 14-lobe wax rim, the shape of the HUD's alarm seal —
 scalloped = critical, smooth = lesser, readable without colour.
 (decided; owner may veto the seal shape)
+
+**D-122 — Contrast: menu subtitles, "brak N", ETA/income, slate (day 8d; a11y F11, F12, F13, F21).**
+Menu mission subtitles and the menu's small lines go from `--ink-soft` to `--ink` (14 px): the translucent menu
+paper over the live scene left them at 3.4–3.6:1. The "brak N" reason on the hatched "Kup wóz" tool sits on a
+parchment plaque (`--kparch`, 2 px spread) in darker wine `#5c1418`, so the hatching never crosses the letters
+(was 1.3:1 at worst). ETA and income `#7d5d23` → `#6b4f1d` (≈5.3:1 on parchment); the "Zacznij tutaj" kicker
+`#561418`; `--slate` `#3d4852` → `#36404a`. No hue changes, only darker steps of the same inks.
+(decided)
