@@ -1,3 +1,69 @@
+# Handover — MARCHIA (stan 2026-11-04 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
+
+> Sesja `session_01Hk8EbiYMw1x9CXhyu3HM9n` kończy (limit tygodniowy). Starsze sekcje niżej = historia (czytaj od
+> „Stan dnia 8”/„Decyzje właściciela 2026-11-04” po kontekst). Prompt startowy: `marchi.md` w katalogu głównym.
+
+## Stan teraz
+- Repo `woogitsugames/marchi`. Baza integracyjna **`claude/eager-cori-08wt8e`**; **`main` przesuwany fast-forward
+  na bazę po każdym zielonym scaleniu** (typecheck, test, build, smoke, layout --quick) — decyzja właściciela 11-03.
+- Baza: testy **457/0**, typecheck/build zielone, smoke I–XIII + dolina bez błędów konsoli. `main` = `e36726c`
+  (ostatnio zweryfikowany layoutem); baza nowsza: day8c (karty VII/III/IV), audyt a11y, render #4 (częściowy).
+  **layout --quick na bazie po day8c:** 3 błędy to wyłącznie `page.goto: Timeout` przy obciążeniu (settings/why);
+  powtórz przy spokojnej maszynie (`npm run layout -- --quick`, ew. `--only 'settings|why'`), potem `git push origin <sha>:main`.
+- Ostatnie APK: **e36726c** (~17:00). Następne: gdy istotnie lepsze, w dzień co ~3 h (7–23 Brussels), w nocy nic.
+- Stan symulacji **v8**. Następna wolna decyzja: **D-118** (inna sesja mogła wziąć D-111/112 — sprawdź DECISIONS.md).
+- Godzinny cykl tej sesji `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony** — nowa sesja tworzy własny (prompt niżej).
+
+## Niedokończone (dokończ najpierw)
+1. **Deweloper a11y (gałąź `claude/w-day8d`, wypchnięta)** — 7 poprawek z `docs/research/2026-11-04-a11y-audit.md`
+   (lista w BACKLOG P1 a11y). Mógł zostawić WIP: przejrzyj `git log claude/eager-cori-08wt8e..origin/claude/w-day8d`,
+   dokończ, scal.
+2. **Render #4 (cienie wozów mid / dalekich ładunków)** — `docs/research/2026-11-04-render4-shadows.md` (częściowy),
+   łatka `...-render4-shadows.patch`, narzędzia `tools/render4-*.{mjs,py}`. Brakuje par zrzutów low/ultra, 80/110 m,
+   poziom. Właściciel chce **zobaczyć zrzuty przed decyzją** (rekomendacja: B — tylko low+high, dalekie ładunki
+   wszędzie bez cienia). Zrób zrzuty, pokaż (SendUserFile), zapytaj klikalnie.
+3. **Decyzje właściciela do wdrożenia (11-04 ~18:00):** M7 — duch rybaka startuje przy **najbliższym brzegu**, nie na
+   autorskim miejscu (karta tempa zostaje); M3 — linia „błoto… bruk przyspieszy o N %” **tylko gdy pieczęć zagrożona**;
+   M4 — 2★ dla wolnej reakcji OK (bez zmian).
+4. **Inne sesje Claude (PR do bazy):** `claude/x-trade-post` (późna gra doliny wg `docs/specs/2026-11-04-valley-trade-post.md`,
+   zapis v9) i `claude/x-m8-redesign` (przeprojektowanie misji VIII) — prompty dano właścicielowi; sprawdź, czy są
+   gałęzie/PR, przejrzyj, scal, raport przyjęto/poprawiono/odrzucono. Nie dubluj tej pracy.
+5. GPT: brak nowych `gpt/*` (65/hindi scalone 11-03).
+
+## Zasady pracy (właściciel)
+- Rozmowa po polsku; kod/komentarze/commity po angielsku; `CLAUDE.md` najpierw.
+- **Do 2 agentów Opus naraz** (deweloper w worktree `/workspace/marchi-saves`, researcher w `/workspace/marchi-research`;
+  ręczne worktree: `git worktree add -B <gałąź> /workspace/marchi-<x> claude/eager-cori-08wt8e` +
+  `ln -s /workspace/marchi/node_modules …/node_modules`); koordynator też koduje. Ciągle zlecaj pracę.
+- Agenci commitują często (kontener bywa restartowany), nie pushują; koordynator scala, sprawdza, pushuje bazę i `main`.
+- **CI ma limit minut** — nie dodawać kroków, nie zmieniać workflowów; sprawdzać lokalnie.
+- Smoke: `vite preview --port 5193` uruchom jako proces w tle z długim timeoutem; skrypt smoke = Playwright: menu +
+  `?play=m1…m13|sandbox&quality=low&dynres=0&speed=4`, 0 błędów konsoli (odtwórz, jeśli nie ma `/tmp/claude-0/smoke.cjs`).
+- APK: `npm run setup:android` raz w kontenerze, `npm run apk -- --skip-web` (Maven 429 → ponów), SendUserFile.
+- Decyzje: w dzień klikalnie (AskUserQuestion) z rekomendacją; w nocy do „Decyzje na rano”.
+- Prace dla innych sesji Claude Code (inne konto): napisz właścicielowi prompt startowy (gałąź `claude/x-…`, PR do bazy).
+- Nie zamykać PR-ów bez prośby. Commity kończyć `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: <link>`.
+- **Aktualizuj ten plik na bieżąco i pushuj** (właściciel czyta go z GitHuba).
+- Przy ostrzeżeniu o limicie: zatrzymaj agentów (WIP commit), budzik `send_later` minutę po resecie.
+
+## Prompt cyklu (create_trigger, „42 * * * *”)
+Godzinny cykl MARCHIA (praca ciągła, autonomiczna; do 2 agentów Opus naraz: deweloper w /workspace/marchi-saves i
+researcher w /workspace/marchi-research; koordynator też rozwija). Repo /workspace/marchi, baza
+claude/eager-cori-08wt8e; po każdym zielonym scaleniu (typecheck, test, build, smoke, layout --quick) push bazy i
+fast-forward main. 1) Deweloper skończył/przerwany — scal, sprawdź, push, main; od razu kolejna paczka (HANDOVER
+„Niedokończone”, potem backlog: błędy > czytelność < 30 s > wydajność > grafika > treść). 2) Researcher skończył —
+scal raport, wnioski do backlogu/decyzji, nowy wąski temat. 3) gpt/* i claude/x-* — przejrzyj, scal, raport.
+4) APK w dzień co ~3 h, w nocy nic, jedno rano. 5) Decyzje: dzień klikalnie, noc do HANDOVER. HANDOVER aktualny na GitHubie.
+
+## Kolejka po „Niedokończonych” (backlog, kolejność)
+- Tłumaczenia kluczy PENDING_KEYS z dni 5–8 (paczka GPT/innej sesji; listy w BACKLOG P4).
+- Powtórzyć pomiar pierwszych 10 minut (`tools/first10-minutes.mjs`, osobno 915x412 i 412x915).
+- Render #5 (osobne materiały InstancedMesh) ze zrzutami low/high/ultra.
+- Playtest wg `docs/playtest/PROTOCOL.md` (właściciel) — potem progi M2 2★, H1–H5.
+- Misja XIII: tytuły w 15 językach, przegląd listów przez native speakerów.
+
+---
+
 # Handover — MARCHIA (stan 2026-11-03, ~15:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
 > Sesja `session_01QWRid6hScCk3PSEu7RfFHs` kończy pracę (limit tygodniowy). Poniżej: stan, zasady, otwarte sprawy.
