@@ -1,0 +1,112 @@
+diff --git a/src/render/instancedParts.ts b/src/render/instancedParts.ts
+index 6856894..8944856 100644
+--- a/src/render/instancedParts.ts
++++ b/src/render/instancedParts.ts
+@@ -2,14 +2,15 @@
+ // begin(), push(matrix) per instance, end(). Shared by the wagons and the yard workers.
+ import { type BufferGeometry, type Group, InstancedMesh, type Material, type Matrix4 } from 'three';
+ import type { ModelPart } from './models/kit';
+-import { modelMaterial } from './models/materials';
++import { instancedMaterial, modelMaterial } from './models/materials';
++const PROTO = globalThis as unknown as { __protoA?: boolean; __protoB?: boolean };
+ 
+ export class Parts {
+   readonly meshes: InstancedMesh[];
+   count = 0;
+   constructor(parts: ModelPart[], readonly cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
+     this.meshes = parts.map((p) => {
+-      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
++      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : ((PROTO.__protoB ? instancedMaterial(p.material) : modelMaterial(p.material)) as Material), cap);
+       m.count = 0;
+       m.frustumCulled = false;
+       m.castShadow = true;
+@@ -29,7 +30,10 @@ export class Parts {
+     for (const m of this.meshes) {
+       m.count = this.count;
+       m.visible = this.count > 0;
+-      if (this.count) m.instanceMatrix.needsUpdate = true;
++      if (this.count) {
++        if (PROTO.__protoA) { m.instanceMatrix.clearUpdateRanges(); m.instanceMatrix.addUpdateRange(0, this.count * 16); }
++        m.instanceMatrix.needsUpdate = true;
++      }
+     }
+   }
+   setShadow(on: boolean): void { for (const m of this.meshes) m.castShadow = on; }
+diff --git a/src/render/models/materials.ts b/src/render/models/materials.ts
+index 1d106b0..7f3eb9f 100644
+--- a/src/render/models/materials.ts
++++ b/src/render/models/materials.ts
+@@ -411,6 +411,22 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
+  */
+ export function applyTextures(key: MatKey, set: TextureSet): void {
+   assignMaps(modelMaterial(key), key, set);
++  const im = instancedCache.get(key);
++  if (im) assignMaps(im, key, set);
++}
++
++const instancedCache = new Map<MatKey, MeshStandardMaterial>();
++/** PROTOTYPE (research 2026-11-04): a separate copy of a kind's material for InstancedMesh users. */
++export function instancedMaterial(key: MatKey): MeshStandardMaterial {
++  let c = instancedCache.get(key);
++  if (c) return c;
++  const m = modelMaterial(key);
++  c = m.clone();
++  c.onBeforeCompile = m.onBeforeCompile;
++  c.customProgramCacheKey = m.customProgramCacheKey;
++  c.name = m.name + '-inst';
++  instancedCache.set(key, c);
++  return c;
+ }
+ 
+ /**
+diff --git a/src/render/wagonsView.ts b/src/render/wagonsView.ts
+index 106e3b4..22d2c25 100644
+--- a/src/render/wagonsView.ts
++++ b/src/render/wagonsView.ts
+@@ -457,11 +457,16 @@ export class WagonsView {
+       if (s.bridge) {
+         y = s.py + (s.cy - s.py) * a;
+         pitch = s.pitch;
++      } else if ((globalThis as unknown as { __protoD?: boolean }).__protoD && s.drawn && x === (s as unknown as { gx: number }).gx && z === (s as unknown as { gz: number }).gz && fx === (s as unknown as { gfx: number }).gfx) {
++        // PROTOTYPE: the rig has not moved since the last ground sample (standing / queued): reuse it
++        y = (s as unknown as { gy: number }).gy; pitch = (s as unknown as { gp: number }).gp;
+       } else {
+         const hF = hf.height(x + fx * 1.6, z + fz * 1.6);
+         const hB = hf.height(x - fx * 1.6, z - fz * 1.6);
+         y = Math.max(hf.height(x, z), (hF + hB) * 0.5);
+         pitch = Math.atan2(hF - hB, 3.2);
++        const g = s as unknown as { gx: number; gz: number; gfx: number; gy: number; gp: number };
++        g.gx = x; g.gz = z; g.gfx = fx; g.gy = y; g.gp = pitch;
+       }
+       // distance actually drawn this frame, along the heading (lane drift does not count)
+       let ds = s.drawn ? (x - s.fx) * fx + (z - s.fz) * fz : 0;
+@@ -518,7 +523,10 @@ export class WagonsView {
+     for (const p of this.cargo.values()) p.end();
+     for (let k = 0; k < 2; k++) {
+       const r = k === 0 ? this.near : this.mid;
+-      if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) a.needsUpdate = true;
++      if (r.horse.count) for (const attrs of r.poseAttrs) for (const a of attrs) {
++        if ((globalThis as unknown as { __protoA?: boolean }).__protoA) { a.clearUpdateRanges(); a.addUpdateRange(0, r.horse.count * 4); }
++        a.needsUpdate = true;
++      }
+     }
+   }
+ 
+diff --git a/src/ui/markers.ts b/src/ui/markers.ts
+index 71f7798..d7bf8da 100644
+--- a/src/ui/markers.ts
++++ b/src/ui/markers.ts
+@@ -197,6 +197,13 @@ export class Markers {
+         requestAnimationFrame(() => b.el.classList.add('is-shown', 'breathe'));
+       }
+     }
++    if ((globalThis as unknown as { __protoC?: boolean }).__protoC) {
++      // PROTOTYPE: skip the style write and the occluder test while the pin stays put (static camera)
++      const kx = Math.round(x * 10), ky = Math.round(y * 10);
++      const q = b as unknown as { kx: number; ky: number; occ: unknown };
++      if (q.kx === kx && q.ky === ky && q.occ === this.occluders) return;
++      q.kx = kx; q.ky = ky; q.occ = this.occluders;
++    }
+     b.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+     // the pin box: 48 x 56 above its anchor (main.css .bubble margin)
+     let under = false;
