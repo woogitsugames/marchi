@@ -312,8 +312,8 @@ robi osobna sesja, więc wiersz VIII trzeba będzie zmierzyć ponownie po scalen
   3★ z zapasem 21 s. Rozsądny gracz bez zmian (1/2/2★). **Strata: skan+ 30 s 3★ → 1★** — kupuje trzy wozy z kolejnych pinezek
   i nie ma już srebra na kamienny most (karta przęsła pokazuje „brak srebra”). Do rozważenia: przy 140 srebrze karta
   „Kup wóz” w IV mogłaby ustępować karcie przęsła, gdy wóz stoi przed krą.
-- **IX/X:** karta po 30 s nie odbiera pieczęci. IX szybciej przy 10 i 30 s (8,71 → 8,50, 8,99 → 8,63: przy 10 s gracz
-  najpierw kupuje wozy, a drwala stawia w 0:40). X przy 30 s wolniej o 32 s (8,59 → 9,13; zapas do 3★ +43 → +10 s),
+- **IX/X:** karta po 30 s nie odbiera pieczęci. IX szybciej przy 10 i 30 s (8,71 → 8,50, 8,99 → 8,63: drwal staje w 0:40 / 1:00,
+  a wozy z karty przychodzą później i jest ich mniej — chaos dyspozytora, nie zasługa opóźnienia). X przy 30 s wolniej o 32 s (8,59 → 9,13; zapas do 3★ +43 → +10 s),
   bo pierwsze spojrzenie w 0:30 przypada na 29,9 s czekania tartaku, więc drwal staje w 1:00.
 - **Wciąż do zrobienia (bez zmian od nocy 6b):** VII (rozsądny gracz 1★ — karta nie prowadzi do rybaka nad wodą), III
   (1/1/2★ — błoto nie jest przestojem), II przy 30/60 s (1★; próg 2★ 10:00 czeka na playtest), XI przy 60 s (1★).
