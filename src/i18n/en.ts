@@ -667,5 +667,6 @@ export const en: FullDict = {
   'cause.iceAhead': 'ice closes the bridge in {time} — stone costs {n} silver, a wagon would leave too little',
   'fix.iceAheadWhy': 'Ice closes the wooden bridge in {time}. A stone bridge ({n} silver) stays open; after another wagon the silver will not cover it.',
   'cause.paceFleet': 'full of {goodGen} for {time}, {n, plural, one {the only wagon is on the road} other {all # wagons on the road}} — buy a wagon',
+  'fix.paceFleetEta': '{wagon} reaches the load in {time}; a second wagon collects it sooner.',
   'fix.paceFleetWhy': 'No wagon stood free in the last minute, and the forecast gives {seals}. A new wagon collects the load sooner and pays off before the seal.',
 };

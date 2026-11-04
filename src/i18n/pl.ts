@@ -670,6 +670,7 @@ export const pl = {
   'cause.iceAhead': 'za {time} kra zamknie most — kamienny kosztuje {n} srebra, a wóz zostawi za mało',
   'fix.iceAheadWhy': 'Za {time} kra zamknie drewniany most. Kamienny most ({n} srebra) kra omija; po kolejnym wozie zabraknie na niego srebra.',
   'cause.paceFleet': 'pełno {goodGen} od {time}, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
+  'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
   'fix.paceFleetWhy': 'Przez ostatnią minutę żaden wóz nie stał wolny, a prognoza daje {seals}. Nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
 } as const;
 
@@ -736,6 +737,7 @@ export const PENDING_KEYS = [
   'fix.iceAheadWhy',
   'cause.paceFleet',
   'fix.paceFleetWhy',
+  'fix.paceFleetEta',
   'menu.shortcuts',
   'menu.shortcutsHint',
   'pin.worst',

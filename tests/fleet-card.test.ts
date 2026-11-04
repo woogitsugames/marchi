@@ -2,7 +2,7 @@
 // road the whole last minute and the forecast misses a seal is lost production worth a wagon. Its own status
 // (WAITING_PICKUP) is calm, so the stall card never said so (mission XI: "(no card)" or a calm farm at every look).
 import { TICK_HZ, WAGON_PRICE, applyCommand, createWorld, newPaceLog, samplePace, stateHash, step, type PaceLog, type World } from '../src/sim/index';
-import { FLEET_ROOM_TICKS, FLEET_WAIT_TICKS, fleetBusyShare, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
+import { FLEET_ROOM_TICKS, FLEET_WAIT_TICKS, fleetBusyShare, fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { assert, eq, test } from './harness';
 
 /** Run until `until` (or the first card the predicate accepts), sampling as the app does every tick. */
@@ -97,4 +97,18 @@ test('fleet card: a mud stretch the player cannot pay for yields to the wagon he
   const poor = paceCard(w, f);
   w.state.coins = coins;
   eq(poor?.k, 'fleet', 'with 40 silver the cobbles are out of reach, a wagon is not');
+});
+
+test('fleet cue: the sheet of any qualifying yard offers the wagon, a calm one does not (D-128)', () => {
+  const w = createWorld('m11');
+  const log = newPaceLog();
+  const pc = runTo(w, log, 7 * 60 * TICK_HZ, (p) => p?.k === 'fleet');
+  if (!pc || pc.k !== 'fleet') throw new Error('expected the fleet card');
+  const f = forecastFor(w, log);
+  for (const b of w.state.buildings) {
+    const cue = fleetCueFor(w, f, b);
+    if (b.id === pc.producer) eq(cue?.producer, b.id, 'the named yard qualifies');
+    else if (cue) eq(b.status.k, 'WAITING_PICKUP', 'only a pickup wait qualifies');
+  }
+  eq(w.state.wagons.find((q) => q.id === pc.wagon)?.job?.from, pc.producer, 'the cue names the wagon on its way to the yard');
 });

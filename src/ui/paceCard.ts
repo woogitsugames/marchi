@@ -5,7 +5,7 @@
 import {
   BUILDINGS, GOODS, MAX_WAGONS, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
   edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, thawing, trancheForecast, validateRoad,
-  type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
+  type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
 
@@ -60,6 +60,8 @@ export interface PaceMud {
  */
 export interface PaceFleet {
   k: 'fleet'; good: Good; producer: number; type: BuildingType; wagons: number; waitTicks: number; seals: number;
+  /** The wagon on its way to the yard (the sheet says when it arrives). */
+  wagon: number;
 }
 
 export type PaceCard = PaceProducer | PaceMud | PaceFleet;
@@ -139,7 +141,8 @@ function bottleneckChain(world: World, f: ContractForecast): Set<Good> {
   return out;
 }
 
-function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
+/** The fleet-wide part of the fleet card's rule; the goods of the bottleneck chain when it holds, else null. */
+function fleetGate(world: World, f: ContractForecast | null): Set<Good> | null {
   const st = world.state;
   if (!st.mission.contract || st.mission.result !== 'running' || !f || !f.ready || f.bottleneck < 0) return null;
   // a better seal is still in reach, with time for a new wagon to pay off before it
@@ -149,19 +152,37 @@ function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
   if (iceBeforeWagon(world)) return null;
   // a wagon idles at a stable right now, or the fleet was not on the road the whole last minute
   if (st.wagons.some((w) => w.status.k === 'IDLE' && !w.job) || fleetBusyShare(world) < FLEET_BUSY_SHARE) return null;
-  const goods = bottleneckChain(world, f);
+  return bottleneckChain(world, f);
+}
+
+/** This building's yard qualifies: a long pickup wait on the chain, its wagon not held. */
+function fleetWait(world: World, b: Building, goods: Set<Good>, seals: number): PaceFleet | null {
+  const s = b.status, st = world.state;
+  if (s.k !== 'WAITING_PICKUP' || b.stalledTicks < FLEET_WAIT_TICKS || !goods.has(s.good)) return null;
+  // the wagon on its way is held at a bridge or cut off: another wagon would wait there too
+  const w = st.wagons.find((q) => q.id === s.wagon);
+  if (!w || isHeld(w.status)) return null;
+  return { k: 'fleet', good: s.good, producer: b.id, type: b.type, wagons: st.wagons.length, waitTicks: b.stalledTicks, seals, wagon: w.id };
+}
+
+function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
+  const goods = fleetGate(world, f);
+  if (!goods) return null;
   let best: PaceFleet | null = null;
-  for (const b of st.buildings) {
-    const s = b.status;
-    if (s.k !== 'WAITING_PICKUP' || b.stalledTicks < FLEET_WAIT_TICKS || !goods.has(s.good)) continue;
-    // the wagon on its way is held at a bridge or cut off: another wagon would wait there too
-    const w = st.wagons.find((q) => q.id === s.wagon);
-    if (!w || isHeld(w.status)) continue;
-    if (!best || b.stalledTicks > best.waitTicks || (b.stalledTicks === best.waitTicks && b.id < best.producer)) {
-      best = { k: 'fleet', good: s.good, producer: b.id, type: b.type, wagons: st.wagons.length, waitTicks: b.stalledTicks, seals: f.seals };
-    }
+  for (const b of world.state.buildings) {
+    const c = fleetWait(world, b, goods, f!.seals);
+    if (c && (!best || c.waitTicks > best.waitTicks || (c.waitTicks === best.waitTicks && c.producer < best.producer))) best = c;
   }
   return best;
+}
+
+/**
+ * The fleet cure on this building's own sheet (D-128, first-10-minutes-c N2): the same rule as the card, for any
+ * yard that qualifies — not only the one the card names. Null otherwise (the wait stays calm, no cure).
+ */
+export function fleetCueFor(world: World, f: ContractForecast | null, b: Building): PaceFleet | null {
+  const goods = fleetGate(world, f);
+  return goods ? fleetWait(world, b, goods, f!.seals) : null;
 }
 
 function producerCard(world: World, f: ContractForecast | null): PaceProducer | null {
