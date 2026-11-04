@@ -1630,19 +1630,21 @@ single letters (R C X B G H) fired everywhere, `h` hiding the whole HUD with no 
 focus (Tab, switch access, a screen reader or our own focus moves) — Space/Enter press the control, letters do
 nothing. A control focused by a mouse or finger keeps the shortcuts (click "×1", then Space pauses; the key is
 consumed so it does not click the button a second time). Settings → "Skróty klawiszowe" (Tak/Nie, `prefs.shortcuts`);
-until the player chooses, on where the main pointer is fine (`(hover: hover) and (pointer: fine)`, desktop), off on
-touch devices (rare keyboards, Voice Access / on-screen keyboards would fire letters by accident). `h` hides the
+until the player chooses, on when the device has a mouse or trackpad (`(any-pointer: fine)`, also a tablet with a
+paired mouse), off on touch-only devices (rare keyboards, Voice Access / on-screen keyboards would fire letters by
+accident). `h` hides the
 HUD and moves focus to "Pokaż przyciski", now on its stat plate (the old rule's `border` shorthand had wiped the
 kit plate: bare ink over the map); `h` again or that button brings the HUD back. Escape keeps closing sheets and
 tools regardless of the setting. Letters (D-118) switch all game keys off.
-(decided)
+(decided — owner 2026-11-04: default on with a fine pointer, off on touch-only)
 
 **D-120 — Large system text: side sheets take the full height; focus stays above the docked fix (day 8d; a11y F1/F2).**
 `layout.ts` `watchTextScale` (16 px probe, ResizeObserver) sets `body.is-bigtext` at ≥ 150 % (Android font size →
 WebView textZoom). Landscape side sheet: full height beside the top bar and over the rail, no kicker/icon; portrait
 bottom sheet may grow to the chips row. `.sheet-body` gets `scroll-padding-block-end: var(--dock-h)` (measured in
 `sheets.ts`) plus a focusin fallback, so a focused control never sits under "Naprawa".
-(decided)
+At 200 % in landscape the side sheet covers the seal tokens and the pace card while it is open; accepted.
+(decided — owner 2026-11-04)
 
 **D-121 — Stall pins: severity and time in the name, a parchment halo, a scalloped seal for critical (day 8d; a11y F7).**
 The red pin sank into the daytime grass (1.5–2.1:1) and differed from the brass one only by colour. Now: the pin's
@@ -1652,7 +1654,7 @@ not told a new name every second (the visible tally still counts each second). E
 `drop-shadow` halo before the kit's shadow. The critical / worst pin uses `pin-alarm@2x/3x.png`
 (`tools/make-pin-alarm.py`): the red pin's disc at 86 % on a 14-lobe wax rim, the shape of the HUD's alarm seal —
 scalloped = critical, smooth = lesser, readable without colour.
-(decided; owner may veto the seal shape)
+(decided — owner 2026-11-04: the scalloped wax-seal critical pin is accepted)
 
 **D-122 — Contrast: menu subtitles, "brak N", ETA/income, slate (day 8d; a11y F11, F12, F13, F21).**
 Menu mission subtitles and the menu's small lines go from `--ink-soft` to `--ink` (14 px): the translucent menu

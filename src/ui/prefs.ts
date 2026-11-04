@@ -11,8 +11,8 @@ export interface Prefs {
   effectsVolume: number;
   /** Mission I tutorial: offered on a new m1 game until finished or skipped (docs/tutorial/m1.md). */
   tutorialM1: 'new' | 'skipped' | 'done';
-  /** Single-key shortcuts (Space, 1 2 4, R C X B G H; a11y audit F5, D-119). null = not chosen yet: on where the
-   *  main pointer is a mouse (desktop), off on touch devices (a keyboard there is rare; Voice Access or an
+  /** Single-key shortcuts (Space, 1 2 4, R C X B G H; a11y audit F5, D-119). null = not chosen yet: on when the
+   *  device has any fine pointer (a mouse or trackpad, also one paired with a tablet), off on touch-only devices (a keyboard there is rare; Voice Access or an
    *  on-screen keyboard could fire them by accident). */
   shortcuts: boolean | null;
 }
@@ -37,10 +37,10 @@ export function loadPrefs(): Prefs {
   return { ...DEFAULTS };
 }
 
-/** Whether the single-key shortcuts are on (the player's choice, else on for a fine main pointer). */
+/** Whether the single-key shortcuts are on (the player's choice, else on when any pointer is fine). */
 export function shortcutsOn(p: Prefs): boolean {
   if (p.shortcuts !== null) return p.shortcuts;
-  try { return matchMedia('(hover: hover) and (pointer: fine)').matches; } catch { return true; }
+  try { return matchMedia('(any-pointer: fine)').matches; } catch { return true; }
 }
 
 export function savePrefs(p: Prefs): void {
