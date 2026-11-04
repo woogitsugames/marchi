@@ -1,0 +1,240 @@
+diff --git a/src/sim/defs.ts b/src/sim/defs.ts
+index a7acad8..39ec194 100644
+--- a/src/sim/defs.ts
++++ b/src/sim/defs.ts
+@@ -206,6 +206,27 @@ export const MARKET: MarketDef = {
+   wagonSharePct: 75,
+ };
+ 
++/**
++ * PROTOTYPE (research 2026-11-04 valley late game, NOT for merge): late-game design toggles, all off by
++ * default so every mission and the free valley run bit-identically. tools/valley-late.ts flips them.
++ */
++export const LATE = {
++  /** A "Rozbudowa targu": recovery ticks once market.level >= 1 (bought + 48 stone delivered). */
++  upgradeRecoverTicks: 7 * TICK_HZ,
++  /** B: from this rank royal orders ask for bigOrderQtyX x the goods; renown = silver / 2 for every order. */
++  bigOrderRank: 99,
++  bigOrderQtyX: 3,
++  orderRenownHalf: false,
++  /** C: seasonal demand: these goods pay seasonPct % in their season (derived from the tick, no state). */
++  seasonalDemand: false,
++  seasonPct: 150,
++  /** E: recovery ticks per rank (index = rank), null = off (no state). */
++  rankRecover: null as number[] | null,
++  /** D: a second castle-type market (the trade post) buys from this rank on, at postPct % with its own saturation. */
++  postRank: 99,
++  postPct: 150,
++};
++
+ /** Flow window: FLOW_BUCKETS buckets of FLOW_BUCKET_TICKS (18 x 10 s = 3 minutes). */
+ export const FLOW_BUCKETS = 18;
+ export const FLOW_BUCKET_TICKS = 10 * TICK_HZ;
+diff --git a/src/sim/events.ts b/src/sim/events.ts
+index b68cf1e..f69cfbb 100644
+--- a/src/sim/events.ts
++++ b/src/sim/events.ts
+@@ -12,8 +12,8 @@
+  * The dynamic fair REPLACES the old fixed autumn beer +25% (seasons.ts): fairPercent() below is the
+  * only fair price hook.
+  */
+-import { GOODS, MARKET } from './defs';
+-import { SEASON_TICKS, type Season } from './seasons';
++import { GOODS, LATE, MARKET } from './defs';
++import { SEASON_TICKS, seasonAt, type Season } from './seasons';
+ import { reachable, type World } from './network';
+ import type { RngState } from './rng';
+ import type { Building, BuildingType, Good, SimState } from './types';
+@@ -234,7 +234,8 @@ function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngStat
+   let value = 0;
+   for (const good of template.goods) {
+     const baseQty = 6 + 2 * state.town.rank + draw(rng, 5);
+-    const quantity = Math.max(4, Math.floor(baseQty * (BASE_SILVER[good] <= 1 ? 1.5 : BASE_SILVER[good] >= 6 ? 0.75 : 1)));
++    const big = state.town.rank >= LATE.bigOrderRank ? LATE.bigOrderQtyX : 1;
++    const quantity = big * Math.max(4, Math.floor(baseQty * (BASE_SILVER[good] <= 1 ? 1.5 : BASE_SILVER[good] >= 6 ? 0.75 : 1)));
+     need[good] = quantity;
+     delivered[good] = 0;
+     value += quantity * BASE_SILVER[good];
+@@ -242,7 +243,7 @@ function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngStat
+   const rewardSilver = Math.ceil(value * 1.5) + 8 + state.town.rank * 5;
+   const order: RoyalOrder = {
+     id: 'order-' + events.sequence, templateId: template.id, accepted: false, need, delivered,
+-    rewardSilver, rewardRenown: rewardSilver * 2,
++    rewardSilver, rewardRenown: LATE.orderRenownHalf ? Math.floor(rewardSilver / 2) : rewardSilver * 2,
+   };
+   return {
+     ...events, orders: [...events.orders, order], sequence: events.sequence + 1,
+@@ -422,9 +423,20 @@ export function stepValleyEvents(world: World): void {
+ /** Fair price percentage for a good right now (125 during its fair, else 100). The only fair hook. */
+ export function fairPercent(world: World, good: Good): number {
+   const ev = world.state.valleyEvents;
+-  if (!ev || !ev.fair || ev.fair.good !== good) return 100;
+-  return fairStage(ev.fair, world.state.tick) === 'active' ? ev.fair.pricePercent : 100;
+-}
++  let pct = 100;
++  if (ev && ev.fair && ev.fair.good === good && fairStage(ev.fair, world.state.tick) === 'active') pct = ev.fair.pricePercent;
++  // PROTOTYPE (LATE C): the season's wanted goods pay more (derived from the tick only)
++  if (LATE.seasonalDemand && ev && SEASON_DEMAND[seasonAt(world.state.tick)].includes(good)) pct = Math.floor((pct * LATE.seasonPct) / 100);
++  return pct;
++}
++
++/** PROTOTYPE (LATE C): what the castle wants most each season. */
++export const SEASON_DEMAND: Record<Season, readonly Good[]> = {
++  spring: ['planks', 'stone'],
++  summer: ['beer', 'fish'],
++  autumn: ['bread', 'malt'],
++  winter: ['charcoal', 'wood'],
++};
+ 
+ /** Units of g still owed to accepted royal orders (dispatcher priority, HUD). */
+ export function orderOutstanding(st: Pick<SimState, 'valleyEvents'>, g: Good): number {
+@@ -456,7 +468,10 @@ export function handInOrders(world: World, castle: Building, g: Good): number {
+     st.ledger.consumed[g] += r.accepted;
+     st.ledger.sold[g] += r.accepted;
+     taken += r.accepted;
+-    if (r.reward) {
++    if (r.reward && (order.templateId as string) === 'market_works') {
++      // PROTOTYPE (LATE A): the market upgrade is built once its stone is in
++      st.market.level = (st.market.level ?? 0) + 1;
++    } else if (r.reward) {
+       st.coins += r.reward.silver;
+       st.ledger.silverEarned += r.reward.silver;
+       st.town.renown += r.reward.renown;
+diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
+index 510e282..11623c6 100644
+--- a/src/sim/logistics.ts
++++ b/src/sim/logistics.ts
+@@ -2,8 +2,8 @@
+ // Also computes each building's status (the "why is it stalled?" data).
+ import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+ import { contractTarget, storeCapOf } from './contract';
+-import { marketOpen, unitCents } from './town';
+-import { fairPercent, orderOutstanding } from './events';
++import { isMarket, marketCents, marketOpen } from './town';
++import { orderOutstanding } from './events';
+ import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
+ import type { Building, BuildingStatus, Good, Wagon } from './types';
+ 
+@@ -196,14 +196,16 @@ export function dispatch(world: World): void {
+   // granary push. At most MARKET.wagonSharePct of the fleet hauls to the market at once.
+   if (marketOpen(world)) {
+     let slots = Math.max(1, Math.floor((st.wagons.length * MARKET.wagonSharePct) / 100));
+-    const markets = st.buildings.filter((b) => b.type === 'castle');
++    const markets = st.buildings.filter((b) => isMarket(world, b));
+     for (const w of st.wagons) if (w.job && markets.some((m) => m.id === w.job!.to)) slots--;
+     // goods still owed to accepted royal orders go first (D-54; no order = the old price order)
+-    const owed = (g: Good): number => (orderOutstanding(st, g) > 0 ? 1 : 0);
+-    const goods = GOODS.filter((g) => MARKET.base[g] > 0)
+-      .sort((a, c) => owed(c) - owed(a) || unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
+-    for (const m of markets) {
+-      for (const g of goods) {
++    // PROTOTYPE (LATE D): every (market, good) pair by its own price; one market = the old order
++    const owed = (m: Building, g: Good): number => (m === markets[0] && orderOutstanding(st, g) > 0 ? 1 : 0);
++    const pairs: { m: Building; g: Good; c: number; o: number }[] = [];
++    for (const m of markets) for (const g of GOODS) if (MARKET.base[g] > 0) pairs.push({ m, g, c: marketCents(world, m, g), o: owed(m, g) });
++    pairs.sort((a, c) => c.o - a.o || c.c - a.c || GOODS.indexOf(a.g) - GOODS.indexOf(c.g) || a.m.id - c.m.id);
++    for (const { m, g } of pairs) {
++      {
+         if (slots <= 0 || free.length === 0) break;
+         const cap = capacityOf(g);
+         if (MARKET.inflightPerGood - m.incoming[g] < cap) continue;
+@@ -380,7 +382,7 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
+   if (b.type === 'castle') {
+     const m = world.state.mission;
+     // free valley: the castle is the market; it only needs a road
+-    if (marketOpen(world)) return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
++    if (marketOpen(world)) return gateConnected(world, b) || !isMarket(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
+     if (!m.contract || m.contract.castle !== b.id) return { k: 'IDLE' };
+     if (m.result === 'won') return { k: 'CONTRACT_DONE' };
+     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
+diff --git a/src/sim/town.ts b/src/sim/town.ts
+index e8f1681..eb97a6c 100644
+--- a/src/sim/town.ts
++++ b/src/sim/town.ts
+@@ -2,7 +2,7 @@
+ // Pure integer math: prices are whole percentages of a base price, payouts are counted in
+ // hundredths of a silver coin and paid in whole coins (the remainder stays in market.cents).
+ import {
+-  BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, GOODS, MARKET, RANKS, TICK_HZ, UNDO_TICKS, emptyGoods, sumGoods,
++  BUILDINGS, FLOW_BUCKETS, FLOW_BUCKET_TICKS, GOODS, LATE, MARKET, RANKS, TICK_HZ, UNDO_TICKS, emptyGoods, sumGoods,
+ } from './defs';
+ import type { World } from './network';
+ import { fairPercent } from './events';
+@@ -28,7 +28,29 @@ export function marketOpen(world: World): boolean {
+ 
+ /** Is this building a market that buys deliveries right now? */
+ export function isMarket(world: World, b: Building): boolean {
+-  return b.type === 'castle' && marketOpen(world);
++  return b.type === 'castle' && marketOpen(world) && (!isPost(world, b) || world.state.town.rank >= LATE.postRank);
++}
++
++/** PROTOTYPE (LATE D): the trade post is any castle but the first one. */
++export function isPost(world: World, b: Building): boolean {
++  if (b.type !== 'castle') return false;
++  for (const q of world.state.buildings) if (q.type === 'castle') return q.id !== b.id;
++  return false;
++}
++
++/** PROTOTYPE (LATE A/E): ticks per recovered saturation unit right now. */
++export function recoverTicksNow(st: Pick<SimState, 'market' | 'town'>): number {
++  let r = MARKET.recoverTicks;
++  if (LATE.rankRecover) r = LATE.rankRecover[st.town.rank] ?? r;
++  if ((st.market.level ?? 0) >= 1) r = Math.min(r, LATE.upgradeRecoverTicks);
++  return r;
++}
++
++/** PROTOTYPE: price of the next unit of g at market building m, in hundredths (post: own saturation, postPct). */
++export function marketCents(world: World, m: Building, g: Good): number {
++  const st = world.state;
++  if (!isPost(world, m)) return unitCents(st, g, fairPercent(world, g));
++  return Math.floor((centsAt(g, st.market.post?.[g] ?? 0, fairPercent(world, g)) * LATE.postPct) / 100);
+ }
+ 
+ /** Price as a whole percentage of the base price for a saturation level (100 down to MARKET.floorPct). */
+@@ -71,8 +93,16 @@ export function sellAt(world: World, b: Building, g: Good): number {
+   const qty = b.stock[g];
+   if (qty <= 0) return 0;
+   const m = st.market;
+-  m.cents += quoteCents(st, g, qty, fairPercent(world, g));
+-  m.saturation[g] = Math.min(MARKET.cap, m.saturation[g] + qty);
++  if (isPost(world, b)) {
++    const sat = m.post ?? (m.post = emptyGoods());
++    for (let i = 0; i < qty; i++) {
++      m.cents += Math.floor((centsAt(g, sat[g], fairPercent(world, g)) * LATE.postPct) / 100);
++      sat[g] = Math.min(MARKET.cap, sat[g] + 1);
++    }
++  } else {
++    m.cents += quoteCents(st, g, qty, fairPercent(world, g));
++    m.saturation[g] = Math.min(MARKET.cap, m.saturation[g] + qty);
++  }
+   b.stock[g] = 0;
+   st.ledger.consumed[g] += qty;
+   st.ledger.sold[g] += qty;
+@@ -102,9 +132,11 @@ export function stepTown(world: World): void {
+   if (!marketOpen(world)) return;
+   const st = world.state;
+   const next = st.tick + 1;
+-  if (next % MARKET.recoverTicks === 0) {
++  if (next % recoverTicksNow(st) === 0) {
+     for (const g of GOODS) if (st.market.saturation[g] > 0) st.market.saturation[g]--;
+   }
++  const post = st.market.post;
++  if (post && next % MARKET.recoverTicks === 0) for (const g of GOODS) if (post[g] > 0) post[g]--;
+   if (next % FLOW_BUCKET_TICKS === 0) {
+     // the bucket that just closed completes a window: latch the best rate, then open the next bucket
+     st.town.bestFlow = Math.max(st.town.bestFlow, flowPerMinute(st));
+diff --git a/src/sim/types.ts b/src/sim/types.ts
+index 710c338..d38b82a 100644
+--- a/src/sim/types.ts
++++ b/src/sim/types.ts
+@@ -199,6 +199,10 @@ export interface MarketState {
+   saturation: GoodMap;
+   /** Fraction of a silver coin earned but not paid out yet, in hundredths (0..99). */
+   cents: number;
++  /** PROTOTYPE (LATE A): market upgrade level (absent = 0). */
++  level?: number;
++  /** PROTOTYPE (LATE D): the trade post's own saturation (absent until its first sale). */
++  post?: GoodMap;
+ }
+ 
+ /** Town renown and rank (free valley). Ranks latch: they never go down. */

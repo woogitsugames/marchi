@@ -21,17 +21,17 @@
 // seconds (ledger.stallSeconds deltas), plan steps done, orders and merchant income.
 import { writeFileSync } from 'node:fs';
 import {
-  applyCommand, checkInvariants, createWorld, MARKET, RANKS, sandboxStatus, seasonAt, step, TICK_HZ,
+  applyCommand, checkInvariants, createWorld, inputGoods, MARKET, RANKS, sandboxStatus, seasonAt, step, TICK_HZ,
   type BuildingStatus, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, rankStalls } from '../src/ui/stalls';
+import { cureFor, heldSpanFor, rankStalls } from '../src/ui/stalls';
 import { DECENT, type BotStep } from './bot-sandbox';
 
 const BAND_MIN = 30;
 const buyCmd = (w: World): Command => ({ t: 'buyWagon', stable: w.state.buildings.find((b) => b.type === 'stable')!.id });
 const SAMPLE_TICKS = 10 * TICK_HZ;
 
-type Player = {
+export type Player = {
   plan: readonly BotStep[]; orders?: boolean; merchant?: boolean; eye?: boolean;
   /** Extra commands, tried once per second (sec = sim second, planDone = the plan is exhausted). */
   extra?: (w: World, sec: number, planDone: boolean) => Command[];
@@ -39,6 +39,12 @@ type Player = {
   orderRenownX?: number;
   /** Counterfactual (in memory only): from this minute on the market recovers one saturation unit every N s. */
   recover?: { fromMin: number; seconds: number };
+  /** Late-game research (tools/valley-late.ts): runs before createWorld, returns the undo (prototype flags, map). */
+  setup?: () => () => void;
+  /** The eye looks from the first minute (not only after the plan) and also paves a held bridge span (cure 'pave'). */
+  eyeAlways?: boolean;
+  /** Labels true right now (checked every minute); RunOut.marks keeps the first minute of each. */
+  watch?: (w: World) => string[];
 };
 
 function capFleet(plan: readonly BotStep[], max: number, start = 2): BotStep[] {
@@ -125,12 +131,16 @@ export interface Band {
   samples: number;
   /** Samples with any pin / a critical worst card / a critical card whose cure is a button. */
   pin: number; crit: number; critCure: number;
+  /** Samples whose worst card is not minor (critical or normal) / and offers a cure button. */
+  real: number; realCure: number;
   /** Worst card status (key) and cure counts. */
   top: Record<string, number>; cures: Record<string, number>;
   /** Root-cause stall seconds by status key (deltas of ledger.stallSeconds). */
   roots: Record<string, number>;
   /** Wagon-sample shares: idle / moving-loaded etc. */
   wagonStates: Record<string, number>;
+  /** Consumer samples waiting for an input good (WAITING_DELIVERY / _UPSTREAM / NO_INPUT / NO_WAGON on it), by good. */
+  inputWaits: Record<string, number>;
   /** Building samples (producers only) WORKING vs not. */
   bWorking: number; bAll: number;
   ordersDone: number; ordersOffered: number;
@@ -148,13 +158,14 @@ export interface RunOut {
   longestStall: { id: number; type: string; key: string; minutes: number; atMin: number }[];
   wagonHeldMax: { key: string; seconds: number }[];
   violations: string[];
+  marks: Record<string, number>;
 }
 
 function newBand(from: number): Band {
   return {
     from, to: from + BAND_MIN, earned: 0, perMin: 0, renownGain: 0, orderRenown: 0, merchantSilver: 0,
     coinsEnd: 0, wagonsEnd: 0, buildingsEnd: 0, rankEnd: 0, steps: [], eyeBuys: 0, samples: 0,
-    pin: 0, crit: 0, critCure: 0, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
+    pin: 0, crit: 0, critCure: 0, real: 0, realCure: 0, inputWaits: {}, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
     ordersDone: 0, ordersOffered: 0, minCoinsSpendable: Infinity,
   };
 }
@@ -163,6 +174,8 @@ const PRODUCERS = new Set(['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'f
 
 export function runValley(name: string, seed: number, minutes: number): RunOut {
   const p = PLAYERS[name]!;
+  // prototype flags and map stay set for the whole run (restored in the finally below)
+  const undoRun = p.setup?.();
   const w: World = createWorld('sandbox', seed);
   const st = w.state;
   const stable = st.buildings.find((b) => b.type === 'stable')!.id;
@@ -179,6 +192,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
   const seenOrders = new Set<string>();
   const longest = new Map<number, { minutes: number; key: string; atMin: number; type: string }>();
   const wagonHeld: Record<string, number> = {};
+  const marks: Record<string, number> = {};
 
   const closeBand = (): void => {
     const ev = st.valleyEvents!;
@@ -244,9 +258,15 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
         inc(band.top, `${b.type}:${statusKey(b.status)}${top.crit ? '!' : top.minor ? '~' : ''}`);
         inc(band.cures, cure ?? 'none');
         if (top.crit) { band.crit++; if (cure) band.critCure++; }
-        if (p.eye && st.tick % (30 * TICK_HZ) === 0 && planDoneMin >= 0 && top.crit && cure === 'wagon' && st.coins >= 30) {
+        if (!top.minor) { band.real++; if (cure) band.realCure++; }
+        if (p.eye && st.tick % (30 * TICK_HZ) === 0 && (planDoneMin >= 0 || p.eyeAlways) && top.crit && cure === 'wagon' && st.coins >= 30) {
           const r = applyCommand(w, { t: 'buyWagon', stable } as Command);
           if (r.ok) { band.eyeBuys++; band.steps.push(`${(st.tick / TICK_HZ / 60).toFixed(1)} eye: wagon (${b.type} ${statusKey(b.status)})`); }
+        }
+        if (p.eye && p.eyeAlways && st.tick % (30 * TICK_HZ) === 0 && top.crit && cure === 'pave') {
+          const held = heldSpanFor(w, b);
+          const r = held ? applyCommand(w, { t: 'road', surface: 2, cells: held.cells } as Command) : null;
+          if (r?.ok) { band.eyeBuys++; band.steps.push(`${(st.tick / TICK_HZ / 60).toFixed(1)} eye: pave span (${b.type} ${statusKey(b.status)})`); }
         }
       }
       for (const wg of st.wagons) {
@@ -259,6 +279,8 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
         if (!PRODUCERS.has(b.type)) continue;
         band.bAll++;
         if (b.status.k === 'WORKING') band.bWorking++;
+        const bs = b.status as { k: string; good?: string };
+        if ((bs.k === 'WAITING_DELIVERY' || bs.k === 'WAITING_UPSTREAM' || bs.k === 'NO_INPUT' || bs.k === 'NO_WAGON') && bs.good && inputGoods(b.type).includes(bs.good as never)) inc(band.inputWaits, bs.good);
         if (b.stalledTicks > 0) {
           const m = b.stalledTicks / TICK_HZ / 60;
           const prev = longest.get(b.id);
@@ -285,11 +307,12 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
       const v = checkInvariants(w);
       if (v.length && violations.length < 20) violations.push(`tick ${st.tick}: ${v.join('; ')}`);
       const ss = sandboxStatus(w);
+      if (p.watch) for (const m of p.watch(w)) if (marks[m] === undefined) marks[m] = st.tick / TICK_HZ / 60;
       perMinute.push({ min: st.tick / TICK_HZ / 60, coins: st.coins, earned: st.ledger.silverEarned, renown: st.town.renown, rank: st.town.rank, wagons: st.wagons.length, flow: ss.flowNow, season: seasonAt(st.tick - 1) });
     }
     if (st.tick % (BAND_MIN * 60 * TICK_HZ) === 0) { closeBand(); band = newBand(st.tick / TICK_HZ / 60); }
   }
-  } finally { MARKET.recoverTicks = recover0; }
+  } finally { MARKET.recoverTicks = recover0; undoRun?.(); }
   const ev = st.valleyEvents!;
   const seasonPerMin: Record<string, number> = {};
   for (const s of Object.keys(seasonSilver)) seasonPerMin[s] = seasonSilver[s]! / (seasonTicks[s]! / TICK_HZ / 60);
@@ -302,7 +325,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
     planDoneMin, stepsDone: k, stepsTotal: plan.length, perMinute, bands, seasonPerMin,
     longestStall: [...longest.entries()].map(([id, v]) => ({ id, ...v })).sort((a, b) => b.minutes - a.minutes).slice(0, 5),
     wagonHeldMax: Object.entries(wagonHeld).map(([key, seconds]) => ({ key, seconds })),
-    violations,
+    violations, marks,
   };
 }
 
