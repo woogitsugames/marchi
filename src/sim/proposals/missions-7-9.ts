@@ -28,7 +28,8 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     id: 'm7', mapId: 'valley-m7', seed: M7_VALLEY.seed,
     coins: 180, wagons: 4,
     buildable: ['fisher'],
-    siteHints: [{ type: 'fisher', ...M7_FISHER_SITE }],
+    // no authored fisher site (owner 2026-11-04, M7): the ghost starts on the nearest free bank by the existing
+    // hut, so the pace card says "what" but the player still picks "where"
     buildings: [
       // One existing hut is able to fulfil the letter, but only very slowly.
       { type: 'fisher', x: 22, y: 30, facing: 2, stock: { fish: 6 } },

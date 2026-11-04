@@ -107,7 +107,9 @@ function mudCard(world: World, f: ContractForecast | null): PaceMud | null {
   if (!m) return null;
   // at risk: the forecast misses three seals (or a tranche's own deadline); unknown before the first minute
   const risk = !!f && f.ready && (f.seals < 3 || (c.tranches.length > 0 && f.finishTick > dueTick(world)));
-  return { ...m, risk, seals: f && f.ready ? f.seals : -1 };
+  // only when a seal is at risk (owner 2026-11-04, M3): a calm mud line on an order that makes it anyway was noise
+  if (!risk) return null;
+  return { ...m, risk, seals: f!.seals };
 }
 
 function dueTick(world: World): number {

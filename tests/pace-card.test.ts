@@ -5,7 +5,7 @@ import { forecastFor, paceCard } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
 import { assert, eq, test } from './harness';
 
-test('pace card: VII names the lone fisher and the ghost starts on the water (authored site)', () => {
+test('pace card: VII names the lone fisher and the ghost starts on the nearest free bank (no authored site)', () => {
   const w = createWorld('m7');
   const log = newPaceLog();
   let pc: ReturnType<typeof paceCard> = null;
@@ -24,7 +24,7 @@ test('pace card: VII names the lone fisher and the ghost starts on the water (au
   paceCard(w, forecastFor(w, log));
   eq(stateHash(w), hash, 'read-only');
   const s = buildSite(w, 'fisher', pc!.producer);
-  assert(!!s && s.hint, 'the ghost starts on the mission\'s authored site');
+  assert(!!s && !s.hint, 'the ghost starts on the nearest valid bank, not an authored site (owner M7)');
   const before = w.state.buildings.length;
   assert(applyCommand(w, { t: 'place', type: 'fisher', x: s!.x, y: s!.y, facing: s!.facing }).ok, 'placing at the ghost applies');
   const link = suggestLinkToStable(w, w.state.buildings[before]!.id);
@@ -49,21 +49,21 @@ for (const id of ['m2', 'm4', 'm11']) {
   });
 }
 
-test('pace card: III — mud on the delivery is a calm line; the cobble cure comes once the forecast misses 3 seals', () => {
+test('pace card: III — mud on the delivery shows only once the forecast misses 3 seals (owner M3)', () => {
   const w = createWorld('m3');
   const log = newPaceLog();
-  let calm = false, risk: ReturnType<typeof paceCard> = null;
+  let risk: ReturnType<typeof paceCard> = null;
   while (w.state.tick < 5 * 60 * TICK_HZ && !risk) {
     step(w);
     samplePace(log, w);
     if (w.state.tick % TICK_HZ) continue;
-    const pc = paceCard(w, forecastFor(w, log));
+    const f = forecastFor(w, log);
+    const pc = paceCard(w, f);
     if (!pc) continue;
     if (pc.k !== 'mud') throw new Error('III builds nothing: only the mud card, got ' + pc.k);
-    if (!pc.risk) calm = true;
-    else risk = pc;
+    assert(pc.risk && !!f && f.ready, 'never a calm mud line: only with a ready forecast that misses a seal');
+    risk = pc;
   }
-  assert(calm, 'the mud line shows (calm) before the forecast is in');
   if (!risk || risk.k !== 'mud') throw new Error('expected the at-risk mud card');
   assert(risk.cells.length >= 6 && risk.pct >= 15, `a real stretch and gain (${risk.cells.length} cells, ${risk.pct} %)`);
   for (const c of risk.cells) eq(w.state.roads[c], 1, 'the stretch is dirt');

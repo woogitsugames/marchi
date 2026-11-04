@@ -100,14 +100,11 @@ function paceCureHtml(world: World, pc: PaceCard): string {
 }
 
 /**
- * Mud on this producer's delivery to the castle (day 8c): not a stall, the wagons drive slower. The line always
- * says how much a cobbled stretch would help; the cobble button only when the forecast misses three seals.
+ * Mud on this producer's delivery to the castle (day 8c): not a stall, the wagons drive slower. Shown only when the
+ * forecast misses three seals (owner 2026-11-04): the cobble button and how much the stretch would help.
  */
 function mudCureHtml(world: World, pc: PaceMud): string {
   const pct = fmtPercent(pc.pct / 100);
-  if (!pc.risk) {
-    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint mud-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('fix.mudCalm', { pct }))}</span></div>`;
-  }
   const ok = validateRoad(world, pc.cells, 2);
   const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="mud:${pc.producer}" aria-disabled="${!ok.ok}">${
     iconSvg('road_cobble', 26)}<span>${esc(t('fix.mud', { n: fmtInt(pc.cells.length) }))}</span>${bdi(`−${fmtInt(pc.cost)}`)}</button>`;

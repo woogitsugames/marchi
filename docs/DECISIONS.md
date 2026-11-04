@@ -1610,3 +1610,14 @@ held-span card takes over as before. Measured IV (eye 10/30/60 s / scan+ 30 s): 
 never meet a wagon cure while short of silver before the ice). No other mission has authored ice. UI only, hashes
 unchanged. Test `tests/ice-ahead.test.ts`.
 (decided)
+
+**D-124 — Owner decisions on day 8c (2026-11-04 ~18:00): VII's fisher ghost on the nearest bank, III's mud line only at risk.**
+M7: mission VII loses its authored fisher site (`siteHints` removed; `M7_FISHER_SITE` stays as bot/balance data), so
+the pace card's "Postaw jeszcze: Chata rybaka" opens the build tool with the ghost on the nearest valid bank by the
+existing hut (`buildSite` ring search) — the card says *what*, the player still picks *where*. Reasonable player VII
+eye 10/30/60 s **3/3/3★ (6,96/6,91/7,21) → 2/2/2★ (8,07/8,04/8,04)**: the nearest bank fishes slower water, so 3★
+now needs the player to look for a better spot (the owner's intent; the authored site is still the 3★ answer).
+M3: the mud kind of the pace card (D-116) appears only when the forecast misses three seals (or a tranche's
+deadline); the calm "zamówienie zdąży" line and its key `fix.mudCalm` are gone. III eye 10/30/60 s unchanged
+(2/3/2★). M4: 2★ for the slow reaction stays. UI/mission data only, hashes unchanged. Tests `pace-card`, `site-hint`.
+(decided)

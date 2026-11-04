@@ -18,8 +18,8 @@ test('site hint: X second woodcutter ghost starts on the authored site, falls ba
   assert(validatePlace(w, 'woodcutter', s2.x, s2.y, s2.facing).ok, 'fallback site is valid');
 });
 
-test('site hint: only where authored (VII fisher, IX/X woodcutter); none for other types or missions', () => {
-  assert(missionSiteHint('m7', 'fisher') !== null && missionSiteHint('m9', 'woodcutter') !== null && missionSiteHint('m10', 'woodcutter') !== null, 'authored');
+test('site hint: only where authored (IX/X woodcutter; the VII fisher removed by the owner); none for other types or missions', () => {
+  assert(missionSiteHint('m7', 'fisher') === null && missionSiteHint('m9', 'woodcutter') !== null && missionSiteHint('m10', 'woodcutter') !== null, 'authored');
   eq(missionSiteHint('m10', 'warehouse'), null, 'other type');
   eq(missionSiteHint('m6', 'warehouse'), null, 'other mission');
 });
