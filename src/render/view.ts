@@ -699,7 +699,8 @@ class View implements WorldView {
     if (this.cover) this.cover.radius = high ? 38 : 0;
     // Far rig (LOD1, beyond lodDist) casts no shadow on any tier: at 75-120+ m a wagon's shadow is a few
     // texels, while the pass costs 3 extra draws and ~200 shadow triangles per far wagon (D-64).
-    this.wagons?.setShadows(true, false);
+    // Mid rig (horse, wheels, driver at 0.4-1.0 × lodDist) casts only on ultra; far cargo never (D-126, render #4).
+    this.wagons?.setShadows(true, false, this.quality === 'ultra');
     if (this.wagons) this.wagons.lodDist = high ? 120 : 75;
     if (this.terrain) {
       this.terrain.uniforms.uDetail!.value = high ? 1 : 0.7;

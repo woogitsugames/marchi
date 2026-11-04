@@ -145,6 +145,8 @@ export class WagonsView {
   private mid: AnimRig;
   private lod1: Parts;
   private cargo = new Map<CargoGood, Parts>();
+  /** Cargo of wagons beyond lodDist (LOD1): same meshes as `cargo`, never casts a shadow (D-126). */
+  private cargoFar = new Map<CargoGood, Parts>();
   private slots = new Map<CargoGood, Matrix4[]>();
   private horseMat: HorseMaterials;
   private decorGait: DecorGait[] = [];
@@ -207,14 +209,22 @@ export class WagonsView {
     this.framed = [this.body, this.lod1, ...this.animParts()];
     for (const g of CARGO_GOODS) {
       this.cargo.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
+      this.cargoFar.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-far-${g}`));
       this.slots.set(g, cargoSlots(g));
     }
   }
 
-  setShadows(near: boolean, far: boolean): void {
-    for (const p of [this.body, ...this.animParts()]) p.setShadow(near);
+  /**
+   * near: near rig, wagon bodies and near cargo cast; far: LOD1 rig casts; midRig: the mid rig's horse, wheels and
+   * driver cast too (D-126: ultra only; low/high drop them, -14…-27 % shadow triangles). Far cargo never casts.
+   */
+  setShadows(near: boolean, far: boolean, midRig: boolean): void {
+    const n = this.near, m = this.mid;
+    for (const p of [this.body, n.wheelF, n.wheelR, n.horse, n.driver]) p.setShadow(near);
+    for (const p of [m.wheelF, m.wheelR, m.horse, m.driver]) p.setShadow(near && midRig);
     this.lod1.setShadow(far);
     for (const p of this.cargo.values()) p.setShadow(near);
+    for (const p of this.cargoFar.values()) p.setShadow(false);
   }
 
   private centre(world: World, c: number, out: Vector3): Vector3 {
@@ -425,6 +435,7 @@ export class WagonsView {
 
     for (let i = 0; i < this.framed.length; i++) this.framed[i]!.begin();
     for (const p of this.cargo.values()) p.begin();
+    for (const p of this.cargoFar.values()) p.begin();
     this.stack.clear();
     // stable order: moving first doesn't matter; queue index by id order
     this.order.length = 0;
@@ -527,14 +538,15 @@ export class WagonsView {
       _M.makeRotationY(s.heading).multiply(_R.makeRotationX(-pitch)).setPosition(x, y, z);
       const ddx = x - camPos.x, ddy = y - camPos.y, ddz = z - camPos.z;
       const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
-      if (d2 < lod2) {
+      const close = d2 < lod2;
+      if (close) {
         this.pushRig(d2 < near2 ? this.near : this.mid, s.roll, s.gph, s.gb, s.mv, time, w.id);
       } else {
         this.lod1.push(_M);
       }
       if (w.cargoGood && w.cargoQty > 0) {
         const g = cargoFor(w.cargoGood);
-        const parts = this.cargo.get(g)!;
+        const parts = (close ? this.cargo : this.cargoFar).get(g)!;
         const slots = this.slots.get(g)!;
         const n = Math.min(slots.length, Math.round(w.cargoQty));
         for (let i = 0; i < n; i++) {
@@ -564,6 +576,7 @@ export class WagonsView {
     this.pushYards(world, camPos, lod2);
     for (let i = 0; i < this.framed.length; i++) this.framed[i]!.end();
     for (const p of this.cargo.values()) p.end();
+    for (const p of this.cargoFar.values()) p.end();
     for (let k = 0; k < 2; k++) {
       const r = k === 0 ? this.near : this.mid;
       for (const attrs of r.poseAttrs) for (const a of attrs) markInstances(a, r.horse.count);

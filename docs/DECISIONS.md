@@ -1621,3 +1621,12 @@ M3: the mud kind of the pace card (D-116) appears only when the forecast misses 
 deadline); the calm "zamówienie zdąży" line and its key `fix.mudCalm` are gone. III eye 10/30/60 s unchanged
 (2/3/2★). M4: 2★ for the slow reaction stays. UI/mission data only, hashes unchanged. Tests `pace-card`, `site-hint`.
 (decided)
+
+**D-126 — Render #4: the mid wagon rig casts no shadow on low and high; far cargo never casts (owner 2026-11-04, option B).**
+Research `docs/research/2026-11-04-render4-shadows.md` (shots `docs/research/shots-render4/`). The mid rig (horse,
+wheels, driver of wagons at 0.4–1.0 × `lodDist`: high 48–120 m, low 30–75 m) keeps its shadow only on **ultra**;
+the wagon body and its cargo still cast, so a wagon never "floats". Cargo on far (LOD1) wagons moves to its own
+`cargo-far-*` meshes that never cast (invisible in every shot). Shadow pass: high −14/−24/−26 % triangles at
+50/80/110 m, low −27 % at 50 m and −7…−10 % farther; main pass unchanged. Visible on a phone only at 50 m on low
+(lighter horses on the road); the LOD1 shadow proxy variant was not chosen. Render only, hashes unchanged.
+(decided)
