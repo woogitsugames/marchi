@@ -652,4 +652,14 @@ export const en: FullDict = {
   'contract.sealPace.late': '{time} late',
   // short landscape cause chain: the middle links folded behind one row (D-111)
   'why.more': '{n, plural, one {+# link between} other {+# links between}}',
+  // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
+  'hud.pace': 'Order pace',
+  'cause.paceProducer': '×{n}: {rate}/min, {seals} need ≈{need}/min — build more',
+  'fix.paceProducerWhy': 'Flat out: at most {cap}/min. {seals} need ≈{need}/min — a wagon or a road will not help, only one more such building.',
+  'cause.paceMud': 'mud slows the deliveries — cobbles on {n} cells make them {pct} faster',
+  'fix.mud': 'Pave the stretch: {n, plural, one {# cell} other {# cells}}',
+  'fix.mudWhy': 'Mud is not a stall: the wagons drive slower. On cobbles this delivery is {pct} faster, and the forecast misses three seals.',
+  'fix.mudCalm': 'Mud slows the deliveries, but the order makes three seals. Cobbles on the marked stretch would make them {pct} faster.',
+  'cause.iceAhead': 'ice closes the bridge in {time} — stone costs {n} silver, a wagon would leave too little',
+  'fix.iceAheadWhy': 'Ice closes the wooden bridge in {time}. A stone bridge ({n} silver) stays open; after another wagon the silver will not cover it.',
 };

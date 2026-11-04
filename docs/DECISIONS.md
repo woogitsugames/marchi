@@ -1563,3 +1563,50 @@ chain-link target is the first *visible* link (the root when folded). Measured (
 915×412 the root sits at 184–232 px above the dock top 234 in VI/IX/XIII (before: below it); unfolded, the body
 scrolls. `why.more` is pl/en; other languages fall back to English (PENDING_KEYS). UI only, hashes unchanged.
 (decided)
+
+**D-115 — The pace card: a producer too slow for the next seal takes the card slot (day 8c; mission VII).**
+A slow order is no stall, so no building carries a `StallReason` for it, and in VII the worst-stall card was empty
+(50 of 65 looks at 10 s) or calm while the lone fisher made the order miss two seals; the lesson ("a second fisher on
+the water") lived only in the letter, and the reasonable player had 1★ at every reaction time. New UI read
+`paceCard(world, forecast)` (`src/ui/paceCard.ts`): when the contract forecast (F10, `forecastFor`, moved here from
+`pace.ts` so headless tools can use it) is ready and has an aim, the bottleneck good's producers working **flat out**
+(`capPerMin`) still miss the next seal, **one more** producer would reach it (3★, else 2★), and the mission may build
+that type → the card slot shows "Tempo zamówienia · Chata rybaka ×1: 5,3/min, na 3 pieczęcie trzeba ≈8,8/min —
+postaw więcej". It takes the slot only when no real stall needs it (no stall, or the worst one is calm), on the plain
+parchment panel (no wine bar, ink kicker): calm, never red; the alarm seal keeps cycling the calm pins. The eye opens
+the producer's sheet, whose "Naprawa" is "Postaw jeszcze: Chata rybaka" (the existing `producer:` act: build tool with
+the ghost on the mission's authored site, D-107). Generic: no mission names, only the forecast, `buildable` and the
+rank gate; the tutorial's first notes hide it with the stall card. Reasonable player VII eye 10/30/60 s **1/1/1★
+(10,90) → 3/3/3★ (6,96/6,91/7,21)**; no other mission changes (it only fires where a producer of the bottleneck
+good may be built and is too slow). UI only, hashes unchanged. Test `tests/pace-card.test.ts`.
+(decided — owner may find 3★ too easy: the ghost places the fisher on the authored site, so "where" is given away
+as in D-107)
+
+**D-116 — Mud on a contract delivery: a calm line on the pace card, the cobble cure only when seals are at risk (day 8c; mission III).**
+Mud slows wagons but is no stall, so III's card never showed the cobble lesson (reasonable player 1/1/2★). The pace
+card (D-115) gets a second kind, `mud`: while it rains (or thaws) on a running contract and cobbles are allowed, it
+takes the delivery of a good the castle still lacks (producer -> castle, loaded path) that loses the most time to mud
+and its longest contiguous stretch of land dirt (≥ 6 cells, ≥ 15 % quicker on cobbles under the same rain; time from
+edge length and cell speed, slope left out because only the ratio counts). The card's calm slot says "Tartak: błoto
+spowalnia dostawy — bruk na 49 polach przyspieszy je o 53 %"; the producer's sheet marks the stretch on the map (the
+gap finder's ghost) and offers "Wybrukuj odcinek: 49 pól −147" **only when the forecast misses three seals** (or a
+tranche's deadline); otherwise a calm line says the order makes it anyway. Never red, never in the stall ranking; a
+real (non-calm) stall keeps the slot. Reasonable player III eye 10/30/60 s **1/1/2★ (8,15/9,30/7,66) → 2/3/2★
+(6,32/5,97/6,46)**. VIII (old version, rain from 1:40) shows the mud line too; its cobbles need quarry stone, so the
+button reports the missing stone and VIII keeps 3/3/3★ (eye+ 10 s 9,07 → 9,28). UI only, hashes unchanged.
+(decided)
+
+**D-117 — Before the ice, "Kup wóz" yields to the stone span when a wagon would cost the bridge (day 8c; D-109 follow-up, mission IV).**
+At 140 silver the "scan" player bought a wagon from each pin and had no silver left for the stone bridge when the ice
+came (1★). Generic rule in `cureFor`: when a running contract has an authored ice window still ahead
+(`state.ice`, start > now), cobbles are allowed and the span most producer -> castle trips cross (`iceAheadSpan`,
+wooden span cells from the network) costs `price`, a `wagon` cure becomes `pave` if the player can afford the
+bridge now but **one more wagon would leave less than its price** (`coins ≥ price > coins − 30`). The card then
+reads "Zamek: za 2:00 kra zamknie most — kamienny kosztuje 72 srebra, a wóz zostawi za mało", the sheet's "Naprawa"
+is "Wyłóż most kamieniem" (the held-span button of research P4, now `paveSpanFor`: a held wagon first, else the ice
+ahead) with "Za 2:00 kra zamknie drewniany most…". With more silver the wagon cure stays; after the ice starts the
+held-span card takes over as before. Measured IV (eye 10/30/60 s / scan+ 30 s): **1/2/2★ / 1★ → 3/2/2★ / 3★**
+(eye 10 s 10,56 → 6,33; scan 11,77 → 7,00: two wagons, then the bridge at 1:00–2:00). Eye 30/60 s unchanged (they
+never meet a wagon cure while short of silver before the ice). No other mission has authored ice. UI only, hashes
+unchanged. Test `tests/ice-ahead.test.ts`.
+(decided)

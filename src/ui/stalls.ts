@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { TICK_HZ, busyOutOfReach, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
 
@@ -197,8 +197,70 @@ function spanCells(world: World, span: number): number[] {
 }
 
 /** Can the player pave this span now (silver, stone, rank)? The command's own check; read-only. */
-export function paveCheck(world: World, h: HeldSpan): ReturnType<typeof validateRoad> {
+export function paveCheck(world: World, h: { cells: number[] }): ReturnType<typeof validateRoad> {
   return validateRoad(world, h.cells, 2);
+}
+
+/**
+ * Ice ahead (day 8c, D-109 follow-up): the mission's authored ice will close the wooden span the deliveries cross
+ * at `startTick`, and a stone bridge there costs `price`. Pure read; one span (the one most producer -> castle
+ * trips cross), cached per network version.
+ */
+export interface IceAhead { span: number; cells: number[]; price: number; startTick: number }
+let iceCache: { world: World; key: string; v: IceAhead | null } | null = null;
+export function iceAheadSpan(world: World): IceAhead | null {
+  const st = world.state;
+  const c = st.mission.contract;
+  if (!c || st.mission.result !== 'running' || !canSurface(world, 2).ok) return null;
+  let start = -1;
+  for (const w of st.ice) if (w.start > st.tick && (start < 0 || w.start < start)) start = w.start;
+  if (start < 0) return null;
+  const key = `${st.netVersion}|${st.buildings.length}|${start}`;
+  if (iceCache?.key === key && iceCache.world === world) return iceCache.v;
+  const castle = buildingById(world, c.castle);
+  const sp = net(world).span;
+  const uses = new Map<number, number>();
+  if (castle) {
+    for (const b of st.buildings) {
+      if (b.id === castle.id || !BUILDINGS[b.type].recipe) continue;
+      const path = findPath(world, b.gate, castle.gate, true);
+      if (!path) continue;
+      const crossed = new Set<number>();
+      for (const q of path) if (sp[q]! >= 0) crossed.add(sp[q]!);
+      for (const k of crossed) uses.set(k, (uses.get(k) ?? 0) + 1);
+    }
+  }
+  let span = -1, most = 0;
+  for (const [k, n] of uses) if (n > most || (n === most && k < span)) { span = k; most = n; }
+  let v: IceAhead | null = null;
+  if (span >= 0) {
+    const cells = spanCells(world, span);
+    let price = 0;
+    for (const q of cells) price += roadCellCost(world, q, 2);
+    if (cells.length) v = { span, cells, price, startTick: start };
+  }
+  iceCache = { world, key, v };
+  return v;
+}
+
+/**
+ * "Kup wóz" yields to the span (day 8c): before the ice, when one more wagon would leave too little silver for the
+ * stone bridge that the player can still afford now. Generic: any contract with authored ice on a crossed span.
+ */
+export function iceBeforeWagon(world: World): IceAhead | null {
+  const ice = iceAheadSpan(world);
+  if (!ice) return null;
+  const coins = world.state.coins;
+  return coins >= ice.price && coins - WAGON_PRICE < ice.price ? ice : null;
+}
+
+/** The span a 'pave' cure lays in stone: a wagon held there now, or the ice ahead when it outranks a wagon. */
+export function paveSpanFor(world: World, b: Building): { cells: number[]; held: HeldSpan | null; ice: IceAhead | null } | null {
+  const held = heldSpanFor(world, b);
+  if (held) return { cells: held.cells, held, ice: null };
+  if (cureFor(world, b.id) !== 'pave') return null;
+  const ice = iceBeforeWagon(world);
+  return ice ? { cells: ice.cells, held: null, ice } : null;
 }
 
 /**
@@ -263,7 +325,7 @@ let cureCache: { key: string; cure: Cure } | null = null;
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}`;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}`;
   if (cureCache?.key === key) return cureCache.cure;
   if (sharedOneCard(world, b)) {
     cureCache = { key, cure: 'producer' };
@@ -293,6 +355,8 @@ export function cureFor(world: World, id: number): Cure {
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
     else if (l.status.k === 'BRIDGE_CLOSED' || l.status.k === 'BRIDGE_JAM') break;
   }
+  // before the ice, one more wagon would leave too little silver for the stone bridge: the span first (day 8c)
+  if (cure === 'wagon' && iceBeforeWagon(world)) cure = 'pave';
   cureCache = { key, cure };
   return cure;
 }

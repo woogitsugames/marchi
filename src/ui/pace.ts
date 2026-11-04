@@ -1,34 +1,14 @@
 // Contract pace on the waybill and the castle card (F10), and the shared-input line on a consumer's
 // card (F3). Both read the sim (contractForecast, sharedInput); nothing here writes state.
 import {
-  GOODS, PACE_WINDOW_TICKS, TICK_HZ, buildingById, contractForecast, sharedInput, thinDelivery, trancheForecast, type ContractForecast, type PaceLog, type World,
+  TICK_HZ, buildingById, sharedInput, thinDelivery, type ContractForecast, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
 import { capFirst, fmtDec, fmtInt, goodName, tHtml, ticksClock } from './format';
 import { iconSvg } from './icons';
 
-let cache: { key: string; f: ContractForecast | null } | null = null;
-
-/**
- * The forecast is a few path searches; recompute only when a new pace sample lands, the network
- * changes or a delivery is made or promised (the waybill and the card ask every frame).
- */
-export function forecastFor(world: World, log: PaceLog): ContractForecast | null {
-  const st = world.state;
-  const c = st.mission.contract;
-  if (!c || st.mission.result !== 'running') return null;
-  // an order with tranches is read tranche by tranche (BACKLOG P3, D-78): the forecast covers what the castle
-  // must hold once the tranche now due is complete
-  const cur = c.tranches.findIndex((x) => x.doneTick < 0);
-  if (c.tranches.length > 0 && cur < 0) return null;
-  const castle = buildingById(world, c.castle);
-  let sum = 0;
-  if (castle) for (const g of GOODS) if (c.need[g] > 0) sum += castle.stock[g] * 1000 + castle.incoming[g];
-  const key = `${st.mapId}|${log.ticks[log.ticks.length - 1] ?? -1}|${st.netVersion}|${sum}|${st.buildings.length}|${cur}|${cur >= 0 && st.tick - (cur > 0 ? c.tranches[cur - 1]!.doneTick : 0) < PACE_WINDOW_TICKS}`;
-  if (cache?.key !== key) cache = { key, f: cur >= 0 ? trancheForecast(world, log) : contractForecast(world, log) };
-  return cache.f;
-}
+export { forecastFor } from './paceCard';
 
 /** The deadline the forecast is read against: the tranche now due (until it is missed), else the contract's. */
 export function paceDueTick(world: World): number {

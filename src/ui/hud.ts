@@ -12,11 +12,12 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, heldSpanFor, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { paceCard, type PaceCard } from './paceCard';
 import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
@@ -133,7 +134,10 @@ export class Hud {
   private wagonCost: HTMLElement;
   private stallRow: HTMLElement;
   private stallText: HTMLElement;
+  private stallKick: HTMLElement;
   private stallEye: HTMLButtonElement;
+  /** The pace card in the card slot (day 8c): no real stall, the forecast names the cure. */
+  private pace: PaceCard | null = null;
   private alarm: HTMLButtonElement;
   private alarmIcon: HTMLElement;
   private alarmBadge: HTMLElement;
@@ -246,8 +250,13 @@ export class Hud {
     // ---- bottom: worst stall card + alarm seal
     this.stallText = h('span.sc-text');
     this.stallEye = h('button.stall-eye', { html: iconSvg('eye', 28) });
-    this.stallEye.addEventListener('click', () => { const w = this.stalls[0]; if (w) { this.lastShown = w.id; this.act.showStall(w.id); } });
-    const card = h('div.stall-card', { role: 'status' }, h('span.sc-txt', null, h('span.sc-kick', null, t('hud.worst')), this.stallText), this.stallEye);
+    this.stallEye.addEventListener('click', () => {
+      if (this.pace) { this.act.showStall(this.pace.producer); return; }
+      const w = this.stalls[0];
+      if (w) { this.lastShown = w.id; this.act.showStall(w.id); }
+    });
+    this.stallKick = h('span.sc-kick', null, t('hud.worst'));
+    const card = h('div.stall-card', { role: 'status' }, h('span.sc-txt', null, this.stallKick, this.stallText), this.stallEye);
     this.alarmIcon = h('span.al-ic');
     this.alarmBadge = h('span.al-badge.num');
     this.alarm = h('button.alarm-seal', null, this.alarmIcon, this.alarmBadge);
@@ -415,9 +424,10 @@ export class Hud {
 
   /**
    * Cheap; call every frame — only touches the DOM when values change. `pace`: the delivery log the
-   * app samples every tick (contract pace forecast, F10). `stalls`: rankStalls() of this frame.
+   * app samples every tick (contract pace forecast, F10). `stalls`: rankStalls() of this frame. `cards`: false
+   * hides the pace card too (the tutorial's first notes hide the stall card).
    */
-  update(world: World, pace: PaceLog | null = null, stalls: StallEntry[] = []): void {
+  update(world: World, pace: PaceLog | null = null, stalls: StallEntry[] = [], cards = true): void {
     const st = world.state;
     setText(this.coins, fmtInt(st.coins));
     const raining = isRaining(st);
@@ -448,7 +458,9 @@ export class Hud {
       cobble.classList.toggle('is-disabled', !gate.ok);
       cobble.setAttribute('aria-disabled', String(!gate.ok));
     }
-    this.updateStalls(world, stalls);
+    // the pace card (day 8c) takes the slot only when no real stall needs it (none, or the worst one is calm)
+    const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace)) : null;
+    this.updateStalls(world, stalls, pc);
     this.updateWagon(st.coins);
 
     if (seasonal(world)) this.updateSeasons(world);
@@ -491,14 +503,48 @@ export class Hud {
   }
 
   /** Worst stall card and alarm seal; only rewritten when the worst stall, its cause or the count change. */
-  private updateStalls(world: World, stalls: StallEntry[]): void {
+  private updateStalls(world: World, stalls: StallEntry[], pc: PaceCard | null = null): void {
     this.stalls = stalls;
+    this.pace = pc;
+    this.alarm.hidden = stalls.length === 0;
+    if (pc) {
+      this.cure = pc.k === 'producer' ? 'producer' : pc.risk ? 'pave' : null;
+      const sig = pc.k === 'producer'
+        ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
+        : `pace|${pc.k}|${pc.producer}|${pc.pct}|${pc.cells.length}|${pc.risk}|${stalls.length}|${getLang()}`;
+      if (sig === this.stallSig) return;
+      this.stallSig = sig;
+      this.wagonSig = '';
+      this.stallRow.hidden = false;
+      this.root.classList.add('has-stall');
+      this.stallRow.classList.remove('is-crit');
+      this.stallRow.classList.add('is-pace');
+      setText(this.stallKick, t('hud.pace'));
+      const name = buildingName(world, pc.producer);
+      // a slow order is not a stall: the card says what holds it back and what helps (day 8c)
+      const text = pc.k === 'producer'
+        ? t('cause.paceProducer', { n: fmtInt(pc.n), rate: fmtDec(pc.rate, 1), need: fmtDec(pc.need, 1), seals: t('why.pace.seals', { n: pc.seals }) })
+        : t('cause.paceMud', { n: fmtInt(pc.cells.length), pct: fmtPercent(pc.pct / 100) });
+      setHtml(this.stallText, `<b>${esc(name)}${pc.k === 'mud' ? ':' : ''}</b> <span dir="auto">${esc(text)}</span>`);
+      this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
+      // calm pins stay on the alarm seal beside the pace card
+      const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
+      if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+      setText(this.alarmBadge, fmtInt(stalls.length));
+      this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+      return;
+    }
+    this.stallRow.classList.remove('is-pace');
+    setText(this.stallKick, t('hud.worst'));
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
     this.cure = b ? cureFor(world, b.id) : null;
     const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${getLang()}` : '';
+    // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
+    const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
+    const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -512,7 +558,9 @@ export class Hud {
       ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
       : held
         ? t(held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
-        : stallReason(world, b.id);
+        : ice
+          ? t('cause.iceAhead', { time: ticksClock(ice.startTick - world.state.tick), n: fmtInt(ice.price) })
+          : stallReason(world, b.id);
     setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));

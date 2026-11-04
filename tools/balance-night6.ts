@@ -15,10 +15,12 @@ import {
   MISSIONS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, missionBuildable,
   net, sharedInput, stars, stateHash, step, suggestLinkToStable, thinDelivery, type BuildingType, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, gapTarget, heldSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
+import { cureFor, gapTarget, paveSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { buildSite } from '../src/ui/site';
+import { forecastFor, paceCard } from '../src/ui/paceCard';
+import { newPaceLog, samplePace, type PaceLog } from '../src/sim/index';
 import { writeFileSync } from 'node:fs';
 
 // NOHINT=1: measure the build ghost without the missions' authored sites (before D-107)
@@ -58,13 +60,21 @@ export interface Row {
 
 type Player = (w: World) => void;
 
+/** The app's contract pace log per world (sampled every tick, as App.onTick does): the pace card reads it. */
+const paceLogs = new WeakMap<World, PaceLog>();
+/** PACE=0: measure without the pace card (day 8c), as before. */
+const PACE_CARD = process.env.PACE !== '0';
+
 function run(id: string, strat: string, player: Player, actions: Record<string, number> = {}, seen?: Record<string, number>): Row {
   const w = createWorld(id);
+  const log = newPaceLog();
+  paceLogs.set(w, log);
   let guard = 30 * 60 * TICK_HZ;
   while (w.state.mission.result === 'running' && guard-- > 0) {
     player(w);
     step(w);
     sampleInputWaits(w); // as the app does every tick (the shared-supply card waits 30 s, D-110)
+    samplePace(log, w);
   }
   const c = w.state.mission.contract!;
   const end = w.state.mission.result === 'won' ? w.state.mission.endTick : c.deadlineTick + 1;
@@ -183,6 +193,18 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
       return kb - ka;
     });
   }
+  // the pace card (day 8c) takes the slot when no real stall needs it: an empty card or a calm one
+  if (PACE_CARD && (!ranked.length || ranked[0]!.minor)) {
+    const log = paceLogs.get(w);
+    const pc = log ? paceCard(w, forecastFor(w, log)) : null;
+    if (pc) {
+      const act = tapPace(w, pc);
+      const key = `pace:${pc.k} -> ${act || 'nothing'}`;
+      seen[key] = (seen[key] ?? 0) + 1;
+      if (act && !act.includes('?')) return act;
+      if (!scan) return '';
+    }
+  }
   if (!ranked.length) { seen['(no card)'] = (seen['(no card)'] ?? 0) + 1; return ''; }
   // scan: the alarm seal cycles through every pin; tap the first whose sheet offers something
   for (const e of scan ? ranked : ranked.slice(0, 1)) {
@@ -190,6 +212,14 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
     if (a) return a;
   }
   return '';
+}
+
+/** The pace card's sheet button (day 8c). */
+function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string {
+  if (pc.k === 'producer') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'producer:' + pc.type : 'producer?fail';
+  // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
+  if (!pc.risk) return '';
+  return applyCommand(w, { t: 'road', surface: 2, cells: pc.cells }).ok ? 'cobbleMud' : 'cobbleMud?fail';
 }
 
 function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boolean, seen: Record<string, number>): string {
@@ -208,8 +238,9 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
     if (cure === 'wagon') act = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }).ok ? 'wagon' : 'wagon?nocoins';
     else if (cure === 'pave') {
       // the held-span card (night 6, P4 in the game): pave the span in stone
-      const h = heldSpanFor(w, b)!;
-      act = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }).ok ? 'stoneBridge' : 'stoneBridge?fail';
+      // (or, day 8c, the span the ice will close when one more wagon would cost the stone bridge)
+      const h = paveSpanFor(w, b)!;
+      act = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }).ok ? (h.held ? 'stoneBridge' : 'stoneBridge:iceAhead') : 'stoneBridge?fail';
     }
     else if (cure === 'producer') {
       // the shared-supply card (night 6, P5 in the game): build another producer of that type by the first one

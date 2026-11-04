@@ -2,19 +2,20 @@
 import {
   BUILDINGS, GOODS, buildingById, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
-  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
+  STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, heldSpanFor, paveCheck, sharedOneProducer } from './stalls';
+import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
+import { paceCard, type PaceCard, type PaceMud } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -79,6 +80,45 @@ function fixSection(btn: string, hint: string, why: boolean): string {
 }
 
 /**
+ * The pace card's fix on its producer's sheet (day 8c): the producers work flat out and still miss the next seal,
+ * so one more of them (the build tool opens with that type, the ghost on the mission's authored site, D-107).
+ */
+function paceCureHtml(world: World, pc: PaceCard): string {
+  if (pc.k === 'mud') return mudCureHtml(world, pc);
+  const gate = canPlace(world, pc.type);
+  const price = BUILDINGS[pc.type].price;
+  const short = price - world.state.coins;
+  const off = !gate.ok || short > 0;
+  const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${pc.producer}" aria-disabled="${off}">${
+    iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${pc.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+  const hint = !gate.ok
+    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+    : short > 0
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      : `<div class="s-hint">${esc(t('fix.paceProducerWhy', { n: fmtInt(pc.n), cap: fmtDec(pc.cap, 1), seals: t('why.pace.seals', { n: pc.seals }), need: fmtDec(pc.need, 1) }))}</div>`;
+  return fixSection(btn, hint, off);
+}
+
+/**
+ * Mud on this producer's delivery to the castle (day 8c): not a stall, the wagons drive slower. The line always
+ * says how much a cobbled stretch would help; the cobble button only when the forecast misses three seals.
+ */
+function mudCureHtml(world: World, pc: PaceMud): string {
+  const pct = fmtPercent(pc.pct / 100);
+  if (!pc.risk) {
+    return `<div class="section-h">${esc(t('fix.title'))}</div><div class="s-hint mud-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('fix.mudCalm', { pct }))}</span></div>`;
+  }
+  const ok = validateRoad(world, pc.cells, 2);
+  const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="mud:${pc.producer}" aria-disabled="${!ok.ok}">${
+    iconSvg('road_cobble', 26)}<span>${esc(t('fix.mud', { n: fmtInt(pc.cells.length) }))}</span>${bdi(`−${fmtInt(pc.cost)}`)}</button>`;
+  const hint = ok.ok
+    ? `<div class="s-hint">${esc(t('fix.mudWhy', { pct }))}</div>`
+    : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+      ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
+  return fixSection(btn, hint, !ok.ok);
+}
+
+/**
  * One remedy under the chain when its root is not a missing road (that one has the road fix above):
  * every wagon busy -> buy a wagon here (no trip back to the rail); a one-lane wooden bridge jams ->
  * a second crossing, or a stone bridge once cobbles are unlocked (stone spans have no one-lane rule).
@@ -122,8 +162,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     return fixSection(btn, hint, off);
   }
   if (cure === 'pave') {
-    // a wagon of this building's job stands at a wooden span (research P4): pave the span in stone
-    const h = heldSpanFor(world, b);
+    // a wagon of this building's job stands at a wooden span (research P4), or the ice ahead outranks a wagon
+    // (day 8c): pave the span in stone
+    const h = paveSpanFor(world, b);
     if (!h) return '';
     const ok = paveCheck(world, h);
     let price = 0;
@@ -131,7 +172,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="pave:${b.id}" aria-disabled="${!ok.ok}">${
       iconSvg('road_cobble', 26)}<span>${esc(t('fix.pave'))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
     const hint = ok.ok
-      ? `<div class="s-hint">${esc(t('fix.paveWhy', { wagon: wagonName(world, h.wagon) }))}</div>`
+      ? `<div class="s-hint">${esc(h.held
+        ? t('fix.paveWhy', { wagon: wagonName(world, h.held.wagon) })
+        : t('fix.iceAheadWhy', { time: ticksClock(h.ice!.startTick - world.state.tick), n: fmtInt(price) }))}</div>`
       : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
@@ -291,8 +334,13 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
     if (act === 'pave' && !el.classList.contains('is-disabled')) {
       const b = buildingById(nav.world, Number(arg));
-      const h = b ? heldSpanFor(nav.world, b) : null;
+      const h = b ? paveSpanFor(nav.world, b) : null;
       if (h) nav.buildRoad(h.cells, 2);
+    }
+    if (act === 'mud' && !el.classList.contains('is-disabled')) {
+      // the pace card's mud stretch (day 8c), recomputed now: the same cells the sheet showed
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      if (pc && pc.k === 'mud' && pc.producer === Number(arg)) nav.buildRoad(pc.cells, 2);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
       const p = buildingById(nav.world, Number(arg));
@@ -533,7 +581,12 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled || carded ? cureHtml(world, b, chain) : '');
+      // the pace card's producer (day 8c): its fix, unless this building has a stall with a cure of its own
+      const pc = !fix && !(stalled && cureFor(world, b.id)) ? paceCard(world, forecastFor(world, nav.pace)) : null;
+      const pcHere = pc && pc.producer === b.id ? pc : null;
+      // the muddy stretch shows on the map like the gap finder's road
+      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells);
+      setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },

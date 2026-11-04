@@ -655,6 +655,16 @@ export const pl = {
   'contract.sealPace.late': 'spóźni się {time}',
   // short landscape cause chain: the middle links folded behind one row (D-111; see PENDING_KEYS)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
+  // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
+  'hud.pace': 'Tempo zamówienia',
+  'cause.paceProducer': '×{n}: {rate}/min, na {seals} trzeba ≈{need}/min — postaw więcej',
+  'fix.paceProducerWhy': 'Bez przerwy: najwyżej {cap}/min. Na {seals} trzeba ≈{need}/min — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
+  'cause.paceMud': 'błoto spowalnia dostawy — bruk na {n} polach przyspieszy je o {pct}',
+  'fix.mud': 'Wybrukuj odcinek: {n, plural, one {# pole} few {# pola} many {# pól} other {# pola}}',
+  'fix.mudWhy': 'Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o {pct} szybsza, a prognoza nie daje trzech pieczęci.',
+  'fix.mudCalm': 'Błoto spowalnia dostawy, ale zamówienie zdąży na trzy pieczęcie. Bruk na zaznaczonym odcinku przyspieszyłby je o {pct}.',
+  'cause.iceAhead': 'za {time} kra zamknie most — kamienny kosztuje {n} srebra, a wóz zostawi za mało',
+  'fix.iceAheadWhy': 'Za {time} kra zamknie drewniany most. Kamienny most ({n} srebra) kra omija; po kolejnym wozie zabraknie na niego srebra.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -710,6 +720,15 @@ export const PENDING_KEYS = [
   'fix.pave',
   'fix.paveWhy',
   'why.more',
+  'hud.pace',
+  'cause.paceProducer',
+  'fix.paceProducerWhy',
+  'cause.paceMud',
+  'fix.mud',
+  'fix.mudWhy',
+  'fix.mudCalm',
+  'cause.iceAhead',
+  'fix.iceAheadWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

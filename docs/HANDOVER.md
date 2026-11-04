@@ -744,3 +744,40 @@ zielone, hasze bez zmian (sim nietknięty). Następna decyzja **D-112**. Nic nie
   Wdrożyć #4 (decyzja wizualna właściciela)?
 - **`why.more` w 17 pozostałych językach** — dziś angielski fallback (PENDING_KEYS), jak inne nowe klucze.
 - Na telefonie sprawdzić, czy „+N” na łączniku jest dość czytelne jako przycisk (dziś podkreślony tekst + szewron).
+## Stan dnia 8c — 2026-11-04 (gałąź `claude/w-day8c`, deweloper dzienny)
+Trzy paczki UI z listy „dzień 8” (VII, III, IV) i nowa tabela rozsądnego gracza. Testy **457/0** (nowe:
+`pace-card` ×5, `ice-ahead` ×2), typecheck i build zielone, hasze bez zmian (sim nietknięty; jedyna zmiana w `src/sim`
+to eksport `cellSpeed` z `index.ts`). Następna wolna decyzja **D-118** (D-112/113 mogła zająć sesja punktu handlowego).
+Nic nie wypchnięte; dolina/punkt handlowy i M8 nietknięte.
+1. **Karta tempa — producent za wolny (D-115, 5a5c0d4).** Nowy moduł `src/ui/paceCard.ts` (tam też przeniesione
+   `forecastFor`, żeby narzędzia bez DOM mogły go użyć; `pace.ts` re-eksportuje). Gdy prognoza kontraktu ma cel, a
+   producenci towaru-wąskiego gardła nawet bez przerwy nie zdążą na następną pieczęć (a jeden więcej zdąży) i misja
+   pozwala go budować, miejsce karty „Najgorszy zastój” — tylko gdy nie ma prawdziwego przestoju (brak albo spokojny) —
+   zajmuje karta „Tempo zamówienia” na zwykłym pergaminie (bez wiśniowego paska): „Chata rybaka ×1: 5,3/min, na
+   3 pieczęcie trzeba ≈8,8/min — postaw więcej”. Oko → arkusz rybaka → „Postaw jeszcze: Chata rybaka” (duch w miejscu
+   autorskim, D-107). Samouczek (notatki 1–5) chowa ją razem z kartą przestoju. **VII: 1/1/1★ → 3/3/3★.**
+2. **Błoto — spokojna linia, bruk przy zagrożeniu (D-116, c62b44b).** Ten sam slot, rodzaj `mud`: w deszczu (albo
+   roztopach) dostawa brakującego towaru do zamku, która najwięcej traci na błocie, i jej najdłuższy odcinek gruntu
+   (≥ 6 pól, ≥ 15 % zysku): „Tartak: błoto spowalnia dostawy — bruk na 49 polach przyspieszy je o 53 %”. Arkusz
+   tartaku pokazuje odcinek duchem na mapie; przycisk „Wybrukuj odcinek: 49 pól −147” tylko gdy prognoza < 3★, inaczej
+   uspokajające zdanie. **III: 1/1/2★ → 2/3/2★.** W VIII (stara) linia też się pojawia, przycisk mówi o braku kamienia;
+   pieczęcie bez zmian.
+3. **Kra przed wozem (D-117, ac4995f).** W `cureFor`: przy autorskiej krze przed nami (`state.ice`) lekarstwo „wóz”
+   zmienia się w „pave” przęsła, przez które jeżdżą dostawy, gdy most stać teraz, a po kolejnym wozie już nie.
+   Karta „Zamek: za 2:00 kra zamknie most — kamienny kosztuje 72 srebra, a wóz zostawi za mało”, przycisk „Wyłóż most
+   kamieniem” (`paveSpanFor`: najpierw wóz stojący na przęśle, potem kra przed nami). **IV: oko 10 s 1★ → 3★, skan
+   1★ → 3★, oko 30/60 s bez zmian 2/2★.**
+4. **Tabela „Po dniu 8c”** w `docs/research/2026-11-04-mission-balance.md`. Rozsądny gracz oko 10/30/60 s: I 2/2/1,
+   II 2/1/1, III **2/3/2**, IV **3/2/2**, V 3/2/2, VI 3/3/3, VII **3/3/3**, VIII 3/3/3 (stara), IX 3/3/2, X 3/3/3,
+   XI 2/2/1, XII 3/3/3, XIII 3/3/2. Żadna misja nie traci pieczęci. `PACE=0 npx tsx tools/balance-night6.ts` mierzy bez
+   karty tempa.
+Zrzuty `docs/shots/day8c-*.jpg` (VII karta/arkusz/duch, III karta/arkusz w pionie i poziomie + `-ar`, IV karta/arkusz),
+narzędzie `tools/day8c-shots.mjs` (podgląd `npx vite preview --port 5211`). `seasons-fuzz` raz przekroczył limit 25 s,
+gdy obok renderował Chromium — sam przechodzi (18 s); to nie regresja.
+### Decyzje do podjęcia (dzień 8c)
+- **VII za łatwa?** Z kartą tempa i duchem w miejscu autorskim każdy gracz ma 3★. Zostawić (lekcja „rybak nad wodą”
+  widoczna na mapie), czy duch ma startować tylko przy najbliższym brzegu, bez miejsca autorskiego?
+- **Linia błota także bez zagrożenia** (III, VIII przez większość deszczu zajmuje miejsce spokojnych kart) — zostawić
+  jako stałą lekcję czytelności, czy pokazywać kartę tylko przy zagrożonych pieczęciach?
+- **IV oko 30/60 s** zostaje 2★ (most dopiero z karty przęsła w 4:00) — wystarczy?
+- Tłumaczenia nowych kluczy (pl/en, reszta angielski fallback).
