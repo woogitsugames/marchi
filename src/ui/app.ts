@@ -203,6 +203,7 @@ export class App implements PanelNav {
       close: () => this.setTool('none'),
       sceneCentre: () => this.sceneCentre(),
       undoInSheet: (id) => this.sheets.top?.content.key === `building:${id}`,
+      showCells: (cells) => this.frameCells(cells),
     });
     this.layers.markers.append(this.build.floating);
     // contract goods handed over at the castle: a quiet delivery sound (owner decision 6)

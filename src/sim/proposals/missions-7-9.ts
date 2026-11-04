@@ -28,6 +28,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     id: 'm7', mapId: 'valley-m7', seed: M7_VALLEY.seed,
     coins: 180, wagons: 4,
     buildable: ['fisher'],
+    siteHints: [{ type: 'fisher', ...M7_FISHER_SITE }],
     buildings: [
       // One existing hut is able to fulfil the letter, but only very slowly.
       { type: 'fisher', x: 22, y: 30, facing: 2, stock: { fish: 6 } },
@@ -81,6 +82,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
     id: 'm9', mapId: 'valley-m9', seed: M9_VALLEY.seed,
     coins: 220, wagons: 5,
     buildable: ['woodcutter'],
+    siteHints: [{ type: 'woodcutter', ...M9_WOODCUTTER_SITE }],
     buildings: [
       { type: 'woodcutter', x: 14, y: 28, facing: 0, stock: { wood: 4 } },
       { type: 'charcoalBurner', x: 26, y: 37, facing: 0 },

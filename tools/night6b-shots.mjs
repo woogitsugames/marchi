@@ -1,6 +1,7 @@
 // Night 6b screenshots. Built game: npm run build; npx vite preview --port 5194 --strictPort.
 //   node tools/night6b-shots.mjs <case> [baseUrl] [WxH ...] -> docs/shots/night6b-<case>-<w>x<h>.jpg
-// Cases: m6-surplus (VI after the link, the sawmill's next-letter planks: calm, no "Kup wóz").
+// Cases: m6-surplus (VI after the link, the sawmill's next-letter planks: calm, no "Kup wóz"),
+//        m10-ghost (X, "Postaw jeszcze: Chata drwala": the ghost on the authored site).
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -14,6 +15,18 @@ const CASES = {
       a.loop.enqueue({ t: 'road', surface: 1, cells: [38 * W + 37, 39 * W + 37] }); a.loop.flushCommands();
       while (a.world.state.tick < 160 * 10) a.loop.tickOnce();
       a.go('building', a.world.state.buildings.find((b) => b.type === 'sawmill').id, true); })()`,
+  },
+  // X: the shared-producer card's "Naprawa" opens the build tool; the ghost starts on the authored site (D-107)
+  'm10-ghost': {
+    q: 'play=m10&ff=30&speed=0&open=sawmill',
+    after: async (page) => {
+      await page.waitForTimeout(2500);
+      const fix = page.locator('#sheets .sheet:last-child .fix-btn').first();
+      console.log('fix button:', (await fix.textContent())?.replace(/\s+/g, ' ').trim());
+      await fix.click();
+      await page.waitForTimeout(1500);
+      console.log('ghost:', JSON.stringify(await page.evaluate(() => { const b = window.__marchia.app.build; return { x: b.gx, y: b.gy, f: b.facing }; })));
+    },
   },
 };
 const c = CASES[which];

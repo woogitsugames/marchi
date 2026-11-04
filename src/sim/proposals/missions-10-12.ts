@@ -16,6 +16,8 @@ export const PROPOSED_MISSIONS_10_12: Record<Mission101112Id, MissionDef> = {
   m10: {
     id: 'm10', mapId: 'valley-m3', seed: M3_VALLEY.seed,
     coins: 210, wagons: 4, buildable: ['woodcutter'],
+    // the second woodcutter's authored site (D-107): the build ghost a "Naprawa" opens starts there
+    siteHints: [{ type: 'woodcutter', ...M10_SECOND_WOODCUTTER }],
     buildings: [
       { type: 'woodcutter', x: 14, y: 28, facing: 0, stock: { wood: 4 } },
       { type: 'charcoalBurner', x: 26, y: 37, facing: 0 },

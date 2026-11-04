@@ -18,28 +18,7 @@ import { esc, h, setHtml } from './dom';
 import { bdi, fmtInt, rankName, tHtml } from './format';
 import { iconSvg, type IconId } from './icons';
 import { errorText } from './roadTool';
-
-/**
- * Centre cell of the closest valid site for `type` around building `near` (rings of growing Chebyshev
- * distance, up to 10 cells), or -1. Read-only: validatePlace is the sim's pure check.
- */
-export function siteNear(world: World, type: BuildingType, near: number): number {
-  const b = world.state.buildings.find((q) => q.id === near);
-  if (!b) return -1;
-  const W = world.terrain.w, H = world.terrain.h, def = BUILDINGS[type];
-  const ox = b.x + (b.w >> 1) - (def.w >> 1), oy = b.y + (b.h >> 1) - (def.h >> 1);
-  for (let r = 1; r <= 10; r++) {
-    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
-      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-      const x = ox + dx, y = oy + dy;
-      if (x < 1 || y < 1 || x + def.w >= W || y + def.h >= H) continue;
-      for (let f = 0; f < 4; f++) {
-        if (validatePlace(world, type, x, y, f).ok) return (y + (def.h >> 1)) * W + x + (def.w >> 1);
-      }
-    }
-  }
-  return -1;
-}
+import { buildSite, siteCentre } from './site';
 
 /** How far above the finger the ghost's centre sits while dragging (CSS px ≈ dp). */
 export const GHOST_LIFT = 72;
@@ -66,6 +45,8 @@ export interface BuildHost {
   sceneCentre(): [number, number];
   /** The open sheet already offers this building's undo (its card): no second undo button. */
   undoInSheet(building: number): boolean;
+  /** Glide the camera so these cells are in the free part of the map, unless they already are (D-107). */
+  showCells?(cells: number[]): void;
 }
 
 interface Located { x: number; y: number; px: number }
@@ -262,13 +243,22 @@ export class BuildTool {
     const [cx, cy] = this.host.sceneCentre();
     this.centreGuess = [cx, cy];
     this.gateGuess = [cx, cy + 30];
-    const site = near >= 0 ? siteNear(world, type, near) : -1;
+    const at = near >= 0 ? buildSite(world, type, near) : null;
+    const site = at ? siteCentre(world, type, at) : -1;
+    if (at) {
+      // a "Naprawa" ghost off screen (X's authored site is far from the sheet's sawmill): bring it into view
+      const def = BUILDINGS[type], W = world.terrain.w, foot: number[] = [];
+      for (let y = at.y; y < at.y + def.h; y++) for (let x = at.x; x < at.x + def.w; x++) foot.push(y * W + x);
+      this.host.showCells?.(foot);
+    }
     if (site >= 0) {
       const a = this.host.view().cellToScreen?.(site);
       if (a?.visible) { this.centreGuess = [a.x, a.y]; this.gateGuess = [a.x, a.y + 30]; }
     }
     const c = site >= 0 ? site : this.host.view().cellAt(cx, cy);
     this.moveTo(c >= 0 ? c : Math.floor(world.terrain.h / 2) * world.terrain.w + Math.floor(world.terrain.w / 2));
+    // the mission's authored site (D-107) comes with its gate side
+    if (at?.hint && this.gx === at.x && this.gy === at.y) { this.facing = at.facing; this.revalidate(); }
     this.shelfSig = '';
     this.renderShelf();
   }

@@ -1496,3 +1496,16 @@ with XIII): **VI 1/1/1★ (8,94) → 3/3/3★ (8,31)**; V 3/2/2★ unchanged (8,
 slower but no missed tranche any more), XII 3/3/3★ unchanged (8,46/8,80/8,52 → 8,80/8,55/8,52, 120 silver less
 spent at 10 s); every other mission identical. Test `tests/next-letter-surplus.test.ts`; shots
 `docs/shots/night6b-m6-surplus-*.jpg`. (decided)
+
+**D-107 — Authored build sites as mission data; the "Naprawa" ghost starts there (night 6b; BACKLOG P2 from D-104).**
+`MissionDef.siteHints` (`{ type, x, y, facing }[]`, `missionSiteHint`) — read only by the UI, never copied into the
+state (hashes unchanged): VII fisher, IX and X woodcutter (the existing `M7_FISHER_SITE`, `M9_WOODCUTTER_SITE`,
+`M10_SECOND_WOODCUTTER`). `buildSite` (new `src/ui/site.ts`, pure, also used by the balance tool) returns the hint
+when `validatePlace` accepts it, else the old ring search around the building (`siteNear`, moved here); the build
+tool takes the hint's gate side, and when the site is off screen the camera glides to it (`showCells` →
+`frameCells`, the tutorial's framing) — in X the sawmill sheet's camera did not show the woodcutter's side at all.
+No sim special case. Balance tool now places the "producer" cure where the ghost starts (before: a spiral from the
+producer's gate, which was not what the game offers). Reasonable player eye 10/30/60 s, ghost without → with hint:
+**X 3/3/1★ (8,41/8,59/11,12) → 3/3/3★ (9,04/8,59/9,11)**; IX 3/3/1★ (8,06/9,10/11,16) → 3/3/2★ (8,71/8,99/9,24);
+others identical. (The night-6 figure X 1/2/2★ was the gate spiral, not the ghost.) Test `tests/site-hint.test.ts`;
+shots `docs/shots/night6b-m10-ghost-*.jpg`. (decided)
