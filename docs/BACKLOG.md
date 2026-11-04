@@ -61,7 +61,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Przy wydaniu: zaznaczyć treści AI (muzyka Suno) w ankietach Google Play / App Store (D-16). Plan Suno płatny — potwierdzone przez właściciela 2026-11-01.
 - [ ] P2 — (nieodtwarzalny 2026-11-02, docs/research/2026-11-02-water-shader.md) Błąd shadera wody `'z' : vector field selection out of range` — 8 scen (low/high/ultra/auto, m1/m2/m7/dolina) bez błędów; przy ponownym zgłoszeniu z urządzenia dodać `renderer.debug.onShaderError` z logiem programu. Uwaga: `quality=medium` nie istnieje (cichy powrót do auto).
 - [x] P1 — (dzień 8b) Poprawki renderu z raportu `docs/research/2026-11-04-render-scale.md` #1, #3, #2, #6 wdrożone (upload −94 %, alloc `wagons.frame` −63–70 %, `afterTick` −55–69 %; obraz bit w bit, `jam-diff` 0 px) — sekcja „Po poprawkach” w raporcie.
-- [ ] P1 — (render-scale #4) Cienie wozów mid i dalekich ładunków (−15–18 % trójkątów cienia przy 60 m) — zmienia obraz: zrzuty low/high/ultra i decyzja właściciela.
+- [ ] P1 — (render-scale #4) Cienie wozów mid i dalekich ładunków (−15–18 % trójkątów cienia przy 60 m) — **właściciel 11-04: najpierw zrzuty** przed/po low/high/ultra (kamera 45–110 m), potem decyzja.
 - [ ] P1 — (render-scale #5) Osobne materiały dla InstancedMesh (`getParameters` −40–65 %) — ryzyko rozjazdu kopii materiałów; zrzuty low/high/ultra.
 - [ ] P2 — (dzień 8b) `why.more` („+N ogniw pośrednich”) tylko pl/en; pozostałe języki pokazują angielski (PENDING_KEYS).
 - [ ] P1 — Pomiar FPS i pamięci przy 50/100/200 wozach w buildzie (docs/PERF.md, sekcja render) — na prawdziwym urządzeniu przez właściciela + headless.
