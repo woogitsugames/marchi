@@ -961,6 +961,16 @@ bdi { unicode-bidi: isolate; }
 .codex-chev { flex: none; width: 9px; height: 9px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor;
   transform: rotate(45deg); margin-block-start: -4px; transition: transform var(--t-fast) var(--ease); }
 .codex.is-open .codex-chev { transform: rotate(225deg); margin-block-start: 4px; }
+/* castle card during the tutorial (research P6): order + pace behind the same ruled 48 px fold */
+.sfold { margin-top: 6px; border-top: 1px solid rgb(74 72 67 / .3); }
+.sfold-tog {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px;
+  padding-inline: 2px 4px; text-align: start; color: var(--ink-soft); font-size: 13px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.sfold-q { flex: 1; }
+.sfold.is-open .codex-chev { transform: rotate(225deg); margin-block-start: 4px; }
+[dir='rtl'] .sfold.is-open .codex-chev { transform: rotate(-225deg); }
 /* RTL: the inline-end border is on the left, so the turn is mirrored to keep pointing down / up */
 [dir='rtl'] .codex-chev { transform: rotate(-45deg); }
 [dir='rtl'] .codex.is-open .codex-chev { transform: rotate(-225deg); }

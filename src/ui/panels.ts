@@ -25,6 +25,8 @@ export interface PanelNav {
   readonly world: World;
   /** Contract pace samples for the castle card's forecast. */
   readonly pace: PaceLog;
+  /** Mission I's tutorial runs: the castle card folds its order and pace (research P6, ~45 words at once). */
+  tutorialRunning?(): boolean;
   /** Jump the camera to a subject and open its sheet. */
   go(kind: 'building' | 'wagon', id: number): void;
   buyWagon(stable: number): void;
@@ -280,6 +282,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     }
     const [act, arg] = (el.dataset.act ?? '').split(':');
     if (act === 'codex') { toggleCodex(el); return; }
+    if (act === 'sfold') { toggleCastleFold(el); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
@@ -321,7 +324,31 @@ function chip(g: Good, have: number, cap: number | null, extra: string, empty = 
     <span><bdi class="num"><b>${fmtInt(have)}</b>${cap !== null ? `<span class="cap">/${fmtInt(cap)}</span>` : ''}</bdi>${extra}</span></div>`;
 }
 
-function stockHtml(world: World, b: Building, pace: PaceLog): string {
+/** Folds of the castle card opened by the player during the tutorial (per session, never in the sim). */
+let castleFoldOpen = false;
+
+/**
+ * The castle's order and pace folded behind one 48 px row while the tutorial runs (research P6): step 2 only asks
+ * for the cause chain, so the card shows the status and the chain; the numbers are one tap away.
+ */
+function castleFold(inner: string): string {
+  if (!inner) return '';
+  return `<div class="sfold${castleFoldOpen ? ' is-open' : ''}">
+    <button class="sfold-tog cf" data-act="sfold" aria-expanded="${castleFoldOpen}"><span class="sfold-q" dir="auto">${
+      esc(t('why.order'))} · ${esc(t('why.pace.title'))}</span><span class="codex-chev" aria-hidden="true"></span></button>
+    <div class="sfold-body"${castleFoldOpen ? '' : ' hidden'}>${inner}</div></div>`;
+}
+
+function toggleCastleFold(btn: HTMLElement): void {
+  castleFoldOpen = !castleFoldOpen;
+  const root = btn.closest('.sfold');
+  root?.classList.toggle('is-open', castleFoldOpen);
+  btn.setAttribute('aria-expanded', String(castleFoldOpen));
+  const body = root?.querySelector<HTMLElement>('.sfold-body');
+  if (body) body.hidden = !castleFoldOpen;
+}
+
+function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): string {
   const def = BUILDINGS[b.type];
   const parts: string[] = [];
   const inc = (g: Good): string => (b.incoming[g] > 0 ? `<span class="inc">${tHtml('why.inbound', { n: fmtInt(b.incoming[g]) })}</span>` : '');
@@ -367,11 +394,13 @@ function stockHtml(world: World, b: Building, pace: PaceLog): string {
     const c = world.state.mission.contract;
     if (c) {
       const gs = GOODS.filter((g) => c.need[g] > 0);
-      parts.push(`<div class="section-h">${esc(t('why.order'))}</div><div class="goods">${gs.map((g) =>
+      const own: string[] = [];
+      own.push(`<div class="section-h">${esc(t('why.order'))}</div><div class="goods">${gs.map((g) =>
         chip(g, Math.min(b.stock[g], c.need[g]), c.need[g], inc(g))).join('')}</div>`);
       // a slow supply is not a stall: the pace and the forecast say what the statuses cannot (F10);
       // while the castle only waits for wagons this section leads the card instead (buildingSheet)
-      if (c.castle === b.id && (isStall(b.status) || b.status.k === 'NO_INPUT')) parts.push(castlePaceHtml(world, forecastFor(world, pace)));
+      if (c.castle === b.id && (isStall(b.status) || b.status.k === 'NO_INPUT')) own.push(castlePaceHtml(world, forecastFor(world, pace)));
+      parts.push(fold ? castleFold(own.join('')) : own.join(''));
     }
   } else if (b.type === 'stable') {
     const n = world.state.wagons.filter((w) => w.home === b.id).length;
@@ -462,7 +491,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const upSeason = upstreamSeasonHtml(world, b.id);
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
-      const pace = b.type === 'castle' && !stalled && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
+      const fold = b.type === 'castle' && !!nav.tutorialRunning?.();
+      const pace = b.type === 'castle' && !stalled && !fold && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
       // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
@@ -476,7 +506,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
       setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled || carded ? cureHtml(world, b, chain) : '');
-      setHtml(pRest!, undo + stockHtml(world, b, nav.pace));
+      setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },
     onClose() { nav.setGhost(null); },

@@ -203,6 +203,7 @@ export class App implements PanelNav {
       close: () => this.setTool('none'),
       sceneCentre: () => this.sceneCentre(),
       undoInSheet: (id) => this.sheets.top?.content.key === `building:${id}`,
+      showCells: (cells) => this.frameCells(cells),
     });
     this.layers.markers.append(this.build.floating);
     // contract goods handed over at the castle: a quiet delivery sound (owner decision 6)
@@ -884,6 +885,11 @@ export class App implements PanelNav {
   }
 
   // ------------------------------------------------------------------ PanelNav
+
+  /** PanelNav: mission I's tutorial is on screen (the castle card folds its order and pace). */
+  tutorialRunning(): boolean {
+    return this.tutorial !== null;
+  }
 
   /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
   pickBuild(type: BuildingType, near: number): void {

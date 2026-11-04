@@ -17,7 +17,7 @@ import { CELL, type Heightfield } from './heightfield';
 import { buildingModel, castleUpgradeParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
-import { WORKER_HIP_Y, WORKER_SHOULDER_Y, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
+import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
 import { Parts } from './instancedParts';
 
 export interface BuildingInfo {
@@ -47,6 +47,11 @@ interface Worker {
   phase: number;
   /** Out on a field (re-placed when roads change), not in the building's own yard. */
   field?: boolean;
+  /**
+   * The farmer's furrow (night 6b): he steps back along it after each stroke, between `lo` and `hi` metres from
+   * the field cell's centre (x0, z0) along the axis (ax, az), and turns at the ends. `t`: seconds hoed so far.
+   */
+  walk?: { x0: number; z0: number; ax: number; az: number; lo: number; hi: number; t: number };
 }
 
 /** A building whose worker goes out to the fields (the farm), kept to re-place him when the roads change. */
@@ -296,6 +301,7 @@ export class BuildingsView {
         }
       }
       let base: Matrix4;
+      let walk: Worker['walk'];
       if (best >= 0) {
         taken.add(best);
         const cx = best % W, cy = (best - cx) / W;
@@ -308,18 +314,31 @@ export class BuildingsView {
         const yaw = (rx >= rz ? Math.PI / 2 : 0) + (b.id % 2 ? Math.PI : 0);
         const px = (cx + 0.5) * CELL + ((b.id * 0.37) % 1 - 0.5) * 1.2, pz = (cy + 0.5) * CELL;
         base = new Matrix4().makeRotationY(yaw).setPosition(px, this.hf.height(px, pz), pz);
+        // the row he works: free field cells along the furrow, at most two on each side of his cell
+        const ax = rx >= rz ? 1 : 0, az = 1 - ax;
+        const free = (k: number): boolean => {
+          const x = cx + ax * k, y = cy + az * k;
+          if (x < 0 || y < 0 || x >= W || y >= H) return false;
+          const i = y * W + x;
+          return !!t.field[i] && !roads[i] && !blocked[i] && !t.water[i] && !taken.has(i);
+        };
+        let fwd = 0, back = 0;
+        while (fwd < 2 && free(fwd + 1)) fwd++;
+        while (back < 2 && free(-back - 1)) back++;
+        const lo = -(back + 0.35) * CELL, hi = (fwd + 0.35) * CELL;
+        if (hi - lo > 2 * HOE_STEP) walk = { x0: px, z0: pz, ax, az, lo, hi, t: 0 };
       } else {
         const at = f.spot.at.clone().applyMatrix4(f.m);
         base = new Matrix4().makeRotationY(f.angle + f.spot.yaw).setPosition(at.x, Math.max(f.baseY, this.hf.height(at.x, at.z)), at.z);
       }
-      this.workers.push({ buildingId: b.id, kind: f.spot.kind, base, phase: (b.id * 0.618) % 1 * 7, field: true });
+      this.workers.push({ buildingId: b.id, kind: f.spot.kind, base, phase: (b.id * 0.618) % 1 * 7, field: true, ...(walk ? { walk } : {}) });
     }
   }
 
   update(world: World, dt: number): void {
     this.time += dt;
     if (world.state.netVersion !== this.fieldNet && this.fieldWorkers.length) this.placeFieldWorkers(world);
-    this.updateWorkers(world);
+    this.updateWorkers(world, dt);
     if (!this.wheels.length) return;
     for (const w of this.wheels) {
       const b = world.state.buildings.find((x) => x.id === w.buildingId);
@@ -335,21 +354,34 @@ export class BuildingsView {
   }
 
   /** Yard workers: chop / carry / bake while the building is WORKING, stand at rest otherwise. */
-  private updateWorkers(world: World): void {
+  private updateWorkers(world: World, dt: number): void {
     for (const p of this.workerParts.values()) { p.legs.begin(); p.torso.begin(); p.arms.begin(); p.tool?.begin(); }
     const bs = world.state.buildings;
     for (const w of this.workers) {
       let working = false;
       for (let i = 0; i < bs.length; i++) if (bs[i]!.id === w.buildingId) { working = bs[i]!.status.k === 'WORKING'; break; }
-      workerPose(w.kind, this.time + w.phase, working, _pose);
+      let base = w.base;
+      const wk = w.walk;
+      if (wk) {
+        // the stroke and the step share one clock that only runs while he hoes: he stops where he stands
+        if (working) wk.t += dt;
+        workerPose(w.kind, working ? wk.t + w.phase : this.time + w.phase, working, _pose);
+        const span = wk.hi - wk.lo, u = hoeWalk(wk.t + w.phase) % (2 * span);
+        const back = u >= span;
+        const s = wk.lo + (back ? 2 * span - u : u);
+        const x = wk.x0 + wk.ax * s, z = wk.z0 + wk.az * s;
+        // facing the tilled earth he draws toward his feet, so he steps backwards; turned round at the row's end
+        _wb.makeRotationY(Math.atan2(wk.ax, wk.az) + (back ? 0 : Math.PI)).setPosition(x, this.hf.height(x, z), z);
+        base = _wb;
+      } else workerPose(w.kind, this.time + w.phase, working, _pose);
       const p = this.workerParts.get(w.kind)!;
       if (p.legs.count >= WORKER_CAP) continue;
-      p.legs.push(w.base);
-      _wt.copy(w.base).multiply(_t.makeTranslation(0, WORKER_HIP_Y, 0)).multiply(ROT.makeRotationX(_pose.bend));
+      p.legs.push(base);
+      _wt.copy(base).multiply(_t.makeTranslation(0, WORKER_HIP_Y, 0)).multiply(ROT.makeRotationX(_pose.bend));
       p.torso.push(_wt);
       _wa.copy(_wt).multiply(_t.makeTranslation(0, WORKER_SHOULDER_Y, 0)).multiply(ROT.makeRotationX(_pose.arm));
       p.arms.push(_wa);
-      if (p.tool) p.tool.push(_wa.copy(w.base).multiply(_t.makeTranslation(0, _pose.lift, 0)));
+      if (p.tool) p.tool.push(_wa.copy(base).multiply(_t.makeTranslation(0, _pose.lift, 0)));
     }
     for (const p of this.workerParts.values()) { p.legs.end(); p.torso.end(); p.arms.end(); p.tool?.end(); }
   }
@@ -374,4 +406,5 @@ const ROT = new Matrix4();
 const _t = new Matrix4();
 const _wt = new Matrix4();
 const _wa = new Matrix4();
+const _wb = new Matrix4();
 const _pose: WorkerPose = { bend: 0, arm: 0, lift: 0 };

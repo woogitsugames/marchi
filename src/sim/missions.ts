@@ -86,6 +86,9 @@ interface Placement {
   cap?: number;
 }
 
+/** An authored build site (top-left cell and gate facing, as the `place` command takes them). */
+export interface SiteHint { type: BuildingType; x: number; y: number; facing: number }
+
 /** A contract tranche as authored: goods due by `dueMin` mission minutes. */
 export interface TrancheDef { need: Partial<GoodMap>; dueMin: number }
 
@@ -116,6 +119,11 @@ export interface MissionDef {
   /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
   buildable?: BuildingType[];
   /**
+   * Authored good sites for buildable types (D-107): where the lesson's building belongs. Read only by the UI
+   * (the build ghost a "Naprawa" opens starts here when the site is free); never copied into the state.
+   */
+  siteHints?: SiteHint[];
+  /**
    * Cobbles and stone bridges take stone from the granaries, which keep a stone reserve (mission VIII,
    * D-32). Copied into `state.mission.roadStone`; the free valley does this through rank gating.
    */
@@ -133,6 +141,11 @@ export function missionSeasons(missionId: string): boolean {
 export function missionBuildable(missionId: string): BuildingType[] | 'ranked' {
   if (missionId === 'sandbox') return 'ranked';
   return MISSIONS[missionId]?.buildable ?? [];
+}
+
+/** The mission's authored site for this building type (D-107), or null. UI read helper; no sim effect. */
+export function missionSiteHint(missionId: string, type: BuildingType): SiteHint | null {
+  return MISSIONS[missionId]?.siteHints?.find((h) => h.type === type) ?? null;
 }
 
 /**

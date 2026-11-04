@@ -1481,3 +1481,31 @@ stone surfaces are allowed (`canSurface(2)`). Measured eye 10/30/60 s: II 2/1/1�
 2★ threshold 10:00 the research proposes would make 30 s a 2★, **waits for the owner**), IV 30/60 s 2/2★ (7,58/7,96;
 was 1/1). Both cards: `tests/shared-card.test.ts`, `tests/held-span-card.test.ts`; shots
 `docs/shots/night6-card-*.jpg` (`tools/night6-cards-shots.mjs`). (decided)
+
+**D-106 — A later letter's goods are a surplus on the card, not "Kup wóz" (night 6b; BACKLOG P2 from D-103; UI
+read helper only).** Why VI stayed 1★ after the authored link: between the two letters the castle does not take
+planks yet (`contractTarget`: with tranches only the letter now due counts), so the sawmill's full yard
+(`OUTPUT_FULL.NO_WAGON`) waits only for a wagon that would park the planks in a granary — which the dispatcher does
+last. `outputSurplus` compared against the *whole* order, so the card said "Kup wóz" at 3:00 (link alone 8,31 → link
++ wagon 8,50 min); the eleventh wagon then left both granaries full and the card said "Postaw spichlerz" at 5:30
+(→ 8,94, 1★). `outputSurplus` now compares against `contractTarget` (the letter now due): the yard is a calm
+surplus ("Nadwyżka: nikt teraz nie potrzebuje desek … Nowy wóz tego nie przyspieszy"), no cure, and the granary hint
+never comes because its cause was the wagon. Generic (every mission with tranches: V, VI, XII), no mission case,
+hashes unchanged (diagnose helpers are UI-only). Reasonable player (eye 10/30/60 s, `tools/balance-night6.ts`, now
+with XIII): **VI 1/1/1★ (8,94) → 3/3/3★ (8,31)**; V 3/2/2★ unchanged (8,28/8,39/9,20 → 8,22/8,59/8,76 — 30 s 12 s
+slower but no missed tranche any more), XII 3/3/3★ unchanged (8,46/8,80/8,52 → 8,80/8,55/8,52, 120 silver less
+spent at 10 s); every other mission identical. Test `tests/next-letter-surplus.test.ts`; shots
+`docs/shots/night6b-m6-surplus-*.jpg`. (decided)
+
+**D-107 — Authored build sites as mission data; the "Naprawa" ghost starts there (night 6b; BACKLOG P2 from D-104).**
+`MissionDef.siteHints` (`{ type, x, y, facing }[]`, `missionSiteHint`) — read only by the UI, never copied into the
+state (hashes unchanged): VII fisher, IX and X woodcutter (the existing `M7_FISHER_SITE`, `M9_WOODCUTTER_SITE`,
+`M10_SECOND_WOODCUTTER`). `buildSite` (new `src/ui/site.ts`, pure, also used by the balance tool) returns the hint
+when `validatePlace` accepts it, else the old ring search around the building (`siteNear`, moved here); the build
+tool takes the hint's gate side, and when the site is off screen the camera glides to it (`showCells` →
+`frameCells`, the tutorial's framing) — in X the sawmill sheet's camera did not show the woodcutter's side at all.
+No sim special case. Balance tool now places the "producer" cure where the ghost starts (before: a spiral from the
+producer's gate, which was not what the game offers). Reasonable player eye 10/30/60 s, ghost without → with hint:
+**X 3/3/1★ (8,41/8,59/11,12) → 3/3/3★ (9,04/8,59/9,11)**; IX 3/3/1★ (8,06/9,10/11,16) → 3/3/2★ (8,71/8,99/9,24);
+others identical. (The night-6 figure X 1/2/2★ was the gate spiral, not the ghost.) Test `tests/site-hint.test.ts`;
+shots `docs/shots/night6b-m10-ghost-*.jpg`. (decided)

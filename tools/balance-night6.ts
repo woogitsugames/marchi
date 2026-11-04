@@ -18,13 +18,17 @@ import {
 import { cureFor, gapTarget, heldSpanFor, rankStalls, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
+import { buildSite } from '../src/ui/site';
 import { writeFileSync } from 'node:fs';
+
+// NOHINT=1: measure the build ghost without the missions' authored sites (before D-107)
+if (process.env.NOHINT) for (const m of Object.values(MISSIONS)) delete m.siteHints;
 
 const col = (w: World, x: number, y1: number, y2: number): number[] => lineCells(w.terrain.w, y1 * w.terrain.w + x, y2 * w.terrain.w + x);
 const row = (w: World, y: number, x1: number, x2: number): number[] => lineCells(w.terrain.w, y * w.terrain.w + x1, y * w.terrain.w + x2);
 const stableOf = (w: World): number => w.state.buildings.find((b) => b.type === 'stable')!.id;
 
-/** The intended fix of each mission (docs/missions/mN.md), as commands. m11's lesson is wagons only. */
+/** The intended fix of each mission (docs/missions/mN.md), as commands. m11's and m13's lessons are wagons only. */
 export const LESSON: Record<string, (w: World) => Command[]> = {
   m1: (w) => [{ t: 'road', surface: 1, cells: col(w, 41, 24, 44) }],
   m2: (w) => [{ t: 'road', surface: 2, cells: col(w, 51, 30, 42) }],
@@ -38,6 +42,7 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m10: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }],
   m11: () => [],
   m12: (w) => [{ t: 'road', surface: 1, cells: col(w, M12_GRANARY_LINK.x, M12_GRANARY_LINK.y1, M12_GRANARY_LINK.y2) }],
+  m13: () => [],
 };
 
 export interface Row {
@@ -119,6 +124,23 @@ function placeNear(w: World, type: BuildingType, x: number, y: number): number {
 
 const cellXY = (w: World, c: number): [number, number] => [c % w.terrain.w, Math.floor(c / w.terrain.w)];
 
+/** Where the game's build ghost starts after "Naprawa" (src/ui/site.ts, D-107): place there and link it like placeNear. */
+function placeAtGhost(w: World, type: BuildingType, near: number): number {
+  const s = buildSite(w, type, near);
+  if (s) {
+    const before = w.state.buildings.length;
+    if (applyCommand(w, { t: 'place', type, x: s.x, y: s.y, facing: s.facing }).ok) {
+      const b = w.state.buildings[before]!;
+      const link = suggestLinkToStable(w, b.id);
+      if (!link || !link.cells.length || applyCommand(w, { t: 'road', surface: 1, cells: link.cells }).ok) return b.id;
+      applyCommand(w, { t: 'demolish', cell: b.gate });
+    }
+  }
+  const src = buildingById(w, near)!;
+  const [x, y] = cellXY(w, src.gate);
+  return placeNear(w, type, x, y);
+}
+
 /** One look at the worst stall card and one tap on what the sheet offers. Returns the action taken or ''. */
 /** UI candidates measured by tools/balance-night6-tune.ts (not in the game): a held-bridge card, CONTESTED as critical. */
 export const UI_CANDIDATE = { jamCard: false, contestedFirst: false, sharedCard: false };
@@ -191,8 +213,7 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
     else if (cure === 'producer') {
       // the shared-supply card (night 6, P5 in the game): build another producer of that type by the first one
       const src = buildingById(w, sharedOneProducer(w, b)!.producer)!;
-      const [x, y] = cellXY(w, src.gate);
-      act = placeNear(w, src.type, x, y) >= 0 ? 'producer:' + src.type : 'producer?fail';
+      act = placeAtGhost(w, src.type, src.id) >= 0 ? 'producer:' + src.type : 'producer?fail';
     }
     else if (cure === 'granary') {
       const can = missionBuildable(w.state.mission.id);
