@@ -571,3 +571,28 @@ Misje I–XII nietknięte przez zmiany z 11-03 (45 strategii, te same hasze). Zm
 4. **M8 za łatwa** (same wozy 3★ przy każdym srebrze ≥120, bruk skraca o 13 s) — P6: przeprojektować (kryterium: same wozy ≤2★, lekcja + 1 wóz 3★ z zapasem ≥20 s). Rekomendacja: tak, osobna paczka.
 5. Liczba wozów działa chaotycznie (M4: 4 wozy 1★, 5 → 3★, 6 → 1★; M9: wozy z karty → porażka) — do zbadania przy P6.
 Bez decyzji (robi deweloper, bez zmian haszy): P2 wyszukiwarka luk (węzeł po stronie dostawcy, bez ukośnych skrótów; M5/M6 rozsądny gracz → 3★), P5 karta „jeden producent dla dwóch odbiorców” (M9/M10), karta z P4.
+
+## Stan nocy 6 — 2026-11-04 (gałąź `claude/w-night6`, deweloper nocny)
+Testy **437/0** (nowe: `tests/workers.test.ts`, `tests/missions-13.test.ts`), typecheck i build zielone, złote hasze misji I–XII
+bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygrana 8,85 min, 2★, 26 srebra.
+1. **Ludzie przy pracy: tartak, rolnik, rybak (D-101, c70ea83).** Dwóch pilarzy przy pile na wysokich kozłach — górny stoi na
+   kłodzie, dolny pod nią, piła to czwarta, osobno instancjonowana część, którą poza unosi (`lift`), więc obaj mają jeden ruch.
+   Kozły przeniesione spod dachu szopy na otwarte podwórze (kamera nie widziała starej piły pod gontem). Rolnik z motyką na
+   najbliższym wolnym polu uprawnym (≤ 6 pól od gospodarstwa, bez drogi/budynku/wody; przestawiany, gdy zmieni się sieć dróg),
+   twarzą wzdłuż bruzd. Rybak z podrywką na pomoście. Ruch tylko przy `WORKING`. Koszt: ≤ 1,25 tys. trójkątów na postać,
+   m1 +10 wywołań rysowania (41 → 51), JS klatki w szumie SwiftShadera (`tools/frame-cost.mjs` m1 low, 2 przebiegi: render
+   12,4/13,4 → 18,7/12,6 ms). Zrzuty `docs/shots/night6-workers-{sawmill,farm,fisher}-{412x915,915x412}.jpg` i
+   `night6-workers-rigs.jpg` (podgląd `tools/model-preview.html?view=workers`); narzędzie `tools/night6-workers-shots.mjs`.
+2. **Misja XIII „Pierwsze piętro łańcucha” (D-102, f5f8aef, 466da36).** Spichlerz ma całe drewno i zboże, tartak/młyn/piekarnia
+   przy jednym trakcie, **1 wóz** i 150 srebra; 24 deski + 16 chleba do 10:00, 3★ ≤ 5:30, 2★ ≤ 8:00. Karta: „Piekarnia: wszystkie
+   wozy zajęte”, arkusz „Brak wolnego wozu do przewozu mąki” + „Kup wóz −30”. Bot `npx tsx tools/bot-m13.ts`: nic = porażka (deski
+   24/24, chleb 0/16), 1 wóz @0:20 = 7,61 (2★), 3 wozy @0:20 = 5,06 (3★), 1 wóz @1:30 = 8,77 (1★). Listy w 17 językach, tytuł
+   i podtytuł menu pl/en (+PENDING_KEYS), strona `docs/missions/m13.md`, zrzuty `docs/shots/night6-m13-{play,why,menu}-*.jpg`
+   (`tools/m13-shots.mjs`). Dopisana na końcu jako XIII.
+### Decyzje na rano (noc 6) — deweloper
+- **Kolejność misji XIII:** dopisana jako XIII (przeniesienie po I wymaga przenumerowania tytułów w 17 językach i marginesów
+  zapisów). Zostawić na końcu czy przenieść po I (lekcja jest prostsza niż II–XII)?
+- **XIII a XI** uczą tego samego lekarstwa (kup wóz); różnica: XI długa trasa (nic = 1★), XIII jeden wóz na trzy warsztaty
+  (nic = porażka). Zostawić obie?
+- **Listy XIII w 15 językach** napisał agent — do przeglądu przez native speakerów przed wydaniem.
+- **Tartak:** piła przeniesiona z szopy na podwórze (widoczność) — akceptacja wyglądu na zrzutach `night6-workers-sawmill-*`.
