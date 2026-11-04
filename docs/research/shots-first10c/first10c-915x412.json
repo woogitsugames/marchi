@@ -1,0 +1,1644 @@
+[
+ {
+  "size": "915x412",
+  "totalWallS": 1766.436,
+  "taps": 24,
+  "tutorial": {
+   "wallS": 320.676,
+   "simS": 40.1,
+   "stepsSeen": [
+    1,
+    2,
+    4,
+    5,
+    6
+   ]
+  },
+  "steps": [
+   {
+    "name": "00 zimny start -> menu",
+    "t0": 1793829180598,
+    "tick0": 0,
+    "mission": null,
+    "taps": 0,
+    "audits": [
+     {
+      "words": 101,
+      "letters": 609,
+      "texts": [
+       "Marchia",
+       "Szlaki Królestwa",
+       "Zacznij tutaj",
+       "Chleb i deski",
+       "Przerzuć most przez rzekę i zdąż przed śniegiem",
+       "Korek na moście",
+       "Jeden wąski most, ruch w obie strony",
+       "Deszczowa jesień",
+       "Ulewa zamienia trakty w błoto",
+       "Zima na przeprawie",
+       "Kra zamyka drewniany most o świcie",
+       "Jarmark",
+       "Trzy dostawy, trzy terminy",
+       "Ciasny spichlerz",
+       "Pełny spichlerz zatrzymuje pracę",
+       "Bruk przed burzą",
+       "Najpierw przywieź kamień na bruk",
+       "Piwo na wesele",
+       "Tartak i węglarz walczą o drewno",
+       "Węgiel dla kowala",
+       "Jeden drwal na dwa warsztaty",
+       "Słód na zimę",
+       "Daleka słodownia zajmuje wozy",
+       "Wielkie warzenie",
+       "Zapas piwa na kolejną dostawę",
+       "Pierwsze piętro łańcucha",
+       "Jeden wóz na całą marchię",
+       "Ustawienia"
+      ],
+      "small": [],
+      "covered": [
+       "button.menu-item \"V. Jarmark, Trzy dostawy, trzy terminy\" under div.menu-foot-row \"Ustawienia\"",
+       "button.menu-item \"XIII. Pierwsze piętro łańcucha, Jeden wó\" under div.menu-foot-row \"Ustawienia\""
+      ],
+      "offscreen": [
+       "partly button.menu-item \"VI. Ciasny spichlerz, Pełny spichlerz za\" @32,381,275,52",
+       "button.menu-item \"VII. Ryby na post, Rybak nad wodą, zamek\" @32,434,275,52",
+       "partly button.menu-item.is-valley \"Wolna dolinaRozbuduj miasteczko, bez ter\" @329,411,275,52"
+      ],
+      "clipped": [
+       "viewport span.mi-sub \"Pełny spichlerz zatrzymuje pracę\" @80,411,164,16"
+      ],
+      "overlaps": [
+       "span.mi-title \"Jarmark\" x span.mi-title \"Ustawienia\"",
+       "span.mi-sub \"Trzy dostawy, trzy terminy\" x span.mi-title \"Ustawienia\""
+      ],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "menu",
+      "atMs": 6904
+     }
+    ],
+    "shots": [
+     "land-01-menu.jpg"
+    ],
+    "notes": [
+     "load to ready ms 5470",
+     "menu rows: [\"IZacznij tutajChleb i deskiPrzerzuć most przez rze y86-168\",\"IIKorek na mościeJeden wąski most, ruch w obie str y169-221\",\"IIIDeszczowa jesieńUlewa zamienia trakty w błoto y222-274\",\"IVZima na przeprawieKra zamyka drewniany most o św y275-327\",\"VJarmarkTrzy dostawy, trzy terminy y328-380\",\"VICiasny spichlerzPełny spichlerz zatrzymuje pracę y381-433\",\"VIIRyby na postRybak nad wodą, zamek za mostem y434-486\",\"VIIIBruk przed burząNajpierw przywieź kamień na br y86-138\",\"IXPiwo na weseleTartak i węglarz walczą o drewno y139-191\",\"XWęgiel dla kowalaJeden drwal na dwa warsztaty y192-244\",\"XISłód na zimęDaleka słodownia zajmuje wozy y245-297\",\"XIIWielkie warzenieZapas piwa na kolejną dostawę y298-350\",\"XIIIPierwsze piętro łańcuchaJeden wóz na całą marc y351-403\",\"Wolna dolinaRozbuduj miasteczko, bez terminów y411-463\",\"Ustawienia y332-384\"]"
+    ],
+    "wallMs": 24123,
+    "simS": null
+   },
+   {
+    "name": "01 menu -> list kasztelana (misja I)",
+    "t0": 1793829204753,
+    "tick0": 735,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 57,
+      "letters": 364,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo z zamku",
+       "I. Chleb i deski",
+       "Do zarządcy traktów: przed pierwszym śniegiem dostarcz do grodu 30 desek i 20 bochenków. Drwal i tartak pracują za rzeką, lecz brzegi nie są połączone. Wytycz przeprawę, a potem dopilnuj dowozu mąki i chleba.",
+       "— Wszebor, kasztelan Łozinnego Brodu",
+       "Do dzieła"
+      ],
+      "small": [],
+      "covered": [
+       "button.menu-btn \"Menu\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.seg.is-on \"Pauza\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.seg \"Tempo ×1\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.seg \"Tempo ×2\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.seg \"Tempo ×4\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.ribbon \"Zwiń list przewozowy\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "div.wb-line \"0/30\" under h2 \"I. Chleb i deski\"",
+       "div.wb-line \"0/20\" under h2 \"I. Chleb i deski\"",
+       "button.tool \"Droga\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.tool \"Bruk\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.tool \"Rozbiórka\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\"",
+       "button.tool \"Kup wóz\" under div.scrim.letter-scrim \"Pismo z zamku I. Chleb i deski Do zarząd\""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.l-kicker \"Pismo z zamku\" x h2 \"I. Chleb i deski\""
+      ],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [
+       "button.btn.primary \"Do dzieła\""
+      ],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "opening letter",
+      "atMs": 8009
+     }
+    ],
+    "shots": [
+     "land-02-letter.jpg"
+    ],
+    "notes": [
+     "tap misja I @170,127 hits span.mi-title"
+    ],
+    "wallMs": 34530,
+    "simS": -73.5
+   },
+   {
+    "name": "02 list -> gra, samouczek krok 1",
+    "t0": 1793829239285,
+    "tick0": 0,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 30,
+      "letters": 212,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Kasztelan zamawia 30 desek i 20 bochenków. Dotknij pozycji na liście przewozowym, by sprawdzić stan zamku."
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Kasztelan zamawia 30 desek i 20 bochenków. Dotknij pozycji na liście przewozowym, by sprawdzić stan zamku.",
+       "note": [
+        344,
+        147,
+        340,
+        129
+       ],
+       "ring": [
+        84,
+        78,
+        244,
+        66
+       ],
+       "arrow": [
+        334,
+        99,
+        64,
+        24
+       ],
+       "ringOff": false,
+       "noteCovers": [],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "hud start + note 1",
+      "atMs": 17747
+     }
+    ],
+    "shots": [
+     "land-03-tut1.jpg"
+    ],
+    "notes": [
+     "tap Do dzieła @265,288 hits button.btn.primary",
+     "tap ring:step1 @148,111 hits bdi.count.num"
+    ],
+    "wallMs": 69798,
+    "simS": 7.2
+   },
+   {
+    "name": "03 samouczek krok 2",
+    "t0": 1793829309085,
+    "tick0": 72,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 51,
+      "letters": 352,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Zamek",
+       "Brak dostępnych zapasów desek",
+       "+1 ogniwo pośrednie",
+       "Wóz 1",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Zamówienie zamku · Tempo dostaw",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Brak dostawy to skutek. Dotknij kolejnego ogniwa w łańcuchu przyczyn — sprawdzisz, gdzie zatrzymał się szlak."
+      ],
+      "small": [
+       "button.link.cf \"ZamekBrak dostępnych zapasów desek 0:08\" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Brak dostawy to skutek. Dotknij kolejnego ogniwa w łańcuchu przyczyn — sprawdzisz, gdzie zatrzymał się szlak.",
+       "note": [
+        10,
+        147,
+        340,
+        129
+       ],
+       "ring": [
+        542,
+        175,
+        346,
+        66
+       ],
+       "arrow": null,
+       "ringOff": false,
+       "noteCovers": [],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": true,
+      "stallText": "",
+      "label": "note 2",
+      "atMs": 6757
+     }
+    ],
+    "shots": [
+     "land-04-tut2.jpg"
+    ],
+    "notes": [
+     "tap ring:step2 @715,208 hits span.l-why"
+    ],
+    "wallMs": 51191,
+    "simS": 6.9
+   },
+   {
+    "name": "03 samouczek krok 4",
+    "t0": 1793829360278,
+    "tick0": 141,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 47,
+      "letters": 301,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Wóz",
+       "Wóz 1",
+       "Jedzie po ładunek",
+       "Ładunek",
+       "pusty",
+       "Cel",
+       "Chata drwala",
+       "Dojazd",
+       "Dostawa za",
+       "drewno",
+       "Tartak",
+       "Śledź wóz",
+       "Sprzedaj za",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Tartak i zamek dzieli rzeka. Wybierz narzędzie „Droga” i połącz brzegi przeprawą."
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [
+       "partly button.btn.cf \"Śledź wóz\" @551,375,160,48",
+       "partly button.btn.cf \"Sprzedaj za 15\" @719,375,160,48"
+      ],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Tartak i zamek dzieli rzeka. Wybierz narzędzie „Droga” i połącz brzegi przeprawą.",
+       "note": [
+        10,
+        147,
+        340,
+        110
+       ],
+       "ring": [
+        0,
+        323,
+        93,
+        89
+       ],
+       "arrow": null,
+       "ringOff": false,
+       "noteCovers": [
+        "span.num \"0:34\""
+       ],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": true,
+      "stallText": "",
+      "label": "note 4",
+      "atMs": 5431
+     }
+    ],
+    "shots": [
+     "land-05-tut4.jpg"
+    ],
+    "notes": [
+     "tap ring:step4 @47,368 hits svg"
+    ],
+    "wallMs": 52675,
+    "simS": 6.4
+   },
+   {
+    "name": "03 samouczek krok 5",
+    "t0": 1793829412955,
+    "tick0": 205,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 28,
+      "letters": 191,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Przeciągnij drogę przez rzekę, od północnej drogi do południowej. Most powstanie sam."
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Przeciągnij drogę przez rzekę, od północnej drogi do południowej. Most powstanie sam.",
+       "note": [
+        10,
+        147,
+        340,
+        110
+       ],
+       "ring": null,
+       "arrow": null,
+       "ringOff": null,
+       "noteCovers": [],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "note 5",
+      "atMs": 7568
+     },
+     {
+      "words": 34,
+      "letters": 231,
+      "texts": [
+       "30 srebra",
+       "most drewniany: 3 pola i 16 pól",
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Przeciągnij drogę przez rzekę, od północnej drogi do południowej. Most powstanie sam."
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Przeciągnij drogę przez rzekę, od północnej drogi do południowej. Most powstanie sam.",
+       "note": [
+        10,
+        147,
+        340,
+        110
+       ],
+       "ring": null,
+       "arrow": null,
+       "ringOff": null,
+       "noteCovers": [],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "drag held",
+      "atMs": 108938
+     }
+    ],
+    "shots": [
+     "land-06-tut5.jpg",
+     "land-07-drag.jpg"
+    ],
+    "notes": [
+     "ghost 17 cells, drag span 17, on screen 17, under: {\"map\":17}",
+     "drag (touch) 17 pts"
+    ],
+    "wallMs": 151715,
+    "simS": 17.5
+   },
+   {
+    "name": "03 samouczek krok 6",
+    "t0": 1793829564675,
+    "tick0": 380,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 30,
+      "letters": 195,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo od kasztelana",
+       "Pomiń",
+       "Szlak połączony. Otwórz znów kartę zamku z listu i sprawdź przyczynę — może się zmieniać."
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": {
+       "text": "Szlak połączony. Otwórz znów kartę zamku z listu i sprawdź przyczynę — może się zmieniać.",
+       "note": [
+        344,
+        147,
+        340,
+        110
+       ],
+       "ring": [
+        84,
+        78,
+        244,
+        66
+       ],
+       "arrow": [
+        334,
+        99,
+        64,
+        24
+       ],
+       "ringOff": false,
+       "noteCovers": [],
+       "ringUnderNote": false
+      },
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "note 6",
+      "atMs": 4705
+     }
+    ],
+    "shots": [
+     "land-08-tut6.jpg"
+    ],
+    "notes": [
+     "tap ring:step6 @148,111 hits bdi.count.num"
+    ],
+    "wallMs": 56249,
+    "simS": 7.6
+   },
+   {
+    "name": "04 koniec samouczka -> pierwszy przestój",
+    "t0": 1793829620926,
+    "tick0": 456,
+    "mission": "m1",
+    "taps": 0,
+    "audits": [
+     {
+      "words": 43,
+      "letters": 302,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Zamek",
+       "Tempo dostaw",
+       "Prognoza tempa — po pierwszej minucie dostaw.",
+       "Czeka na deski — dostawca sam czeka na drewno",
+       "+1 ogniwo pośrednie",
+       "Wóz 1",
+       "Jedzie po ładunek",
+       "Zamówienie zamku"
+      ],
+      "small": [
+       "button.link.cf \"ZamekCzeka na deski — dostawca sam czeka\" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+      "label": "tutorial over",
+      "atMs": 6269
+     },
+     {
+      "words": 43,
+      "letters": 302,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Zamek",
+       "Tempo dostaw",
+       "Prognoza tempa — po pierwszej minucie dostaw.",
+       "Czeka na deski — dostawca sam czeka na drewno",
+       "+1 ogniwo pośrednie",
+       "Wóz 1",
+       "Jedzie po ładunek",
+       "Zamówienie zamku"
+      ],
+      "small": [
+       "button.link.cf \"ZamekCzeka na deski — dostawca sam czeka\" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+      "label": "first stall card",
+      "atMs": 12872
+     }
+    ],
+    "shots": [
+     "land-09-stall.jpg"
+    ],
+    "notes": [
+     "speed after tutorial 1, stall card shown: true"
+    ],
+    "wallMs": 42642,
+    "simS": 5.8
+   },
+   {
+    "name": "05 karta przestoju -> arkusz „Dlaczego”",
+    "t0": 1793829663571,
+    "tick0": 514,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 35,
+      "letters": 246,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 2",
+       "Wóz 2",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 2 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+      "label": "why sheet",
+      "atMs": 5982
+     }
+    ],
+    "shots": [
+     "land-10-why1.jpg"
+    ],
+    "notes": [
+     "stall card: Gospodarstwo: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Dlaczego stoi? | Gospodarstwo | Pełno zboża — odbiór: wóz 2 | Wóz 2 | Jedzie po ładunek | Co to znaczy? | Produkuje | Do odbioru:",
+     "tap ×4 @878,32 hits span"
+    ],
+    "wallMs": 72636,
+    "simS": 24.3
+   },
+   {
+    "name": "06 kolejny przestój #2",
+    "t0": 1793829736212,
+    "tick0": 757,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 35,
+      "letters": 246,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 2",
+       "Wóz 2",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 2 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+      "label": "why sheet",
+      "atMs": 14293
+     }
+    ],
+    "shots": [
+     "land-11-why2.jpg"
+    ],
+    "notes": [
+     "stall card: Gospodarstwo: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Dlaczego stoi? | Gospodarstwo | Pełno zboża — odbiór: wóz 2 | Wóz 2 | Jedzie po ładunek | Co to znaczy? | Produkuje | Do odbioru:"
+    ],
+    "wallMs": 87485,
+    "simS": 48.7
+   },
+   {
+    "name": "06 kolejny przestój #3",
+    "t0": 1793829823699,
+    "tick0": 1244,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 48,
+      "letters": 315,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Zamek:",
+       "wszystkie wozy zajęte",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Zamek",
+       "Brak wolnego wozu do przewozu desek",
+       "Przestój:",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz",
+       "Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.",
+       "Zamówienie zamku"
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.section-h \"Naprawa\" x span \"Kup wóz\"",
+       "div.section-h \"Naprawa\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójZamek: wszystkie wozy zajęte1",
+      "label": "why sheet",
+      "atMs": 7955
+     },
+     {
+      "words": 31,
+      "letters": 214,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Zamek",
+       "Tempo dostaw",
+       "Prognoza tempa — po pierwszej minucie dostaw.",
+       "Deski w drodze — wóz 1",
+       "Wóz 1",
+       "Załadunek",
+       "Zamówienie zamku",
+       "w drodze"
+      ],
+      "small": [
+       "button.link.cf \"ZamekDeski w drodze — wóz 1\" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": true,
+      "stallText": "",
+      "label": "after fix",
+      "atMs": 36994
+     }
+    ],
+    "shots": [
+     "land-12-why3.jpg",
+     "land-13-fixed.jpg"
+    ],
+    "notes": [
+     "stall card: Zamek: wszystkie wozy zajęte",
+     "tap oko @795,368 hits path",
+     "fix: button.btn.primary \"Kup wóz−30\"",
+     "tap naprawa @715,262 hits button.btn.primary",
+     "silver 150 -> 120"
+    ],
+    "wallMs": 91025,
+    "simS": 71.4
+   },
+   {
+    "name": "06 kolejny przestój #4",
+    "t0": 1793829914727,
+    "tick0": 1958,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 48,
+      "letters": 322,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "pełny magazyn, brak wozu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Piekarnia",
+       "Brak wolnego wozu do przewozu mąki",
+       "Przestój:",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz",
+       "Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.",
+       "Potrzebuje"
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.section-h \"Naprawa\" x span \"Kup wóz\"",
+       "div.section-h \"Naprawa\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu5",
+      "label": "why sheet",
+      "atMs": 6109
+     },
+     {
+      "words": 48,
+      "letters": 321,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "pełny magazyn, brak wozu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Piekarnia",
+       "Brak wolnego wozu do przewozu mąki",
+       "Przestój:",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz",
+       "Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.",
+       "Potrzebuje"
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.section-h \"Naprawa\" x span \"Kup wóz\"",
+       "div.section-h \"Naprawa\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu5",
+      "label": "after fix",
+      "atMs": 13170
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Piekarnia: wszystkie wozy zajęte",
+     "tap oko @795,368 hits path",
+     "fix: button.btn.primary \"Kup wóz−30\"",
+     "tap naprawa @715,262 hits button.btn.primary",
+     "silver 120 -> 90"
+    ],
+    "wallMs": 49420,
+    "simS": 35.3
+   },
+   {
+    "name": "06 kolejny przestój #5",
+    "t0": 1793829964150,
+    "tick0": 2311,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 53,
+      "letters": 349,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "pełny magazyn, brak wozu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — brak wozu do odbioru",
+       "Przestój:",
+       "zboża",
+       "— brak miejsca na nowy towar",
+       "Skutek: produkcja stoi, dopóki towar nie wyjedzie.",
+       "Na zboże czeka:",
+       "Młyn wodny",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz"
+      ],
+      "small": [],
+      "covered": [
+       "button.linkish \"Młyn wodny\" under button.btn.primary \"Kup wóz−30\""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "span \"Na zboże czeka:\" x span \"Kup wóz\"",
+       "button.linkish \"Młyn wodny\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu5",
+      "label": "why sheet",
+      "atMs": 10982
+     },
+     {
+      "words": 53,
+      "letters": 349,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "pełny magazyn, brak wozu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — brak wozu do odbioru",
+       "Przestój:",
+       "zboża",
+       "— brak miejsca na nowy towar",
+       "Skutek: produkcja stoi, dopóki towar nie wyjedzie.",
+       "Na zboże czeka:",
+       "Młyn wodny",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz"
+      ],
+      "small": [],
+      "covered": [
+       "button.linkish \"Młyn wodny\" under button.btn.primary \"Kup wóz−30\""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "span \"Na zboże czeka:\" x span \"Kup wóz\"",
+       "button.linkish \"Młyn wodny\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu4",
+      "label": "after fix",
+      "atMs": 21582
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Gospodarstwo: pełny magazyn, brak wozu",
+     "tap oko @795,368 hits path",
+     "fix: button.btn.primary \"Kup wóz−30\"",
+     "tap naprawa @715,262 hits button.btn.primary",
+     "silver 90 -> 60"
+    ],
+    "wallMs": 58165,
+    "simS": 34.2
+   },
+   {
+    "name": "06 kolejny przestój #6",
+    "t0": 1793830022321,
+    "tick0": 2653,
+    "mission": "m1",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 53,
+      "letters": 349,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "pełny magazyn, brak wozu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — brak wozu do odbioru",
+       "Przestój:",
+       "zboża",
+       "— brak miejsca na nowy towar",
+       "Skutek: produkcja stoi, dopóki towar nie wyjedzie.",
+       "Na zboże czeka:",
+       "Młyn wodny",
+       "Co to znaczy?",
+       "Naprawa",
+       "Kup wóz"
+      ],
+      "small": [],
+      "covered": [
+       "button.linkish \"Młyn wodny\" under button.btn.primary \"Kup wóz−30\""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "span \"Na zboże czeka:\" x span \"Kup wóz\"",
+       "button.linkish \"Młyn wodny\" x bdi.num \"−30\""
+      ],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [
+       "button.btn.primary \"Kup wóz−30\""
+      ],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu4",
+      "label": "why sheet",
+      "atMs": 13747
+     },
+     {
+      "words": 45,
+      "letters": 319,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Piekarnia:",
+       "wszystkie wozy zajęte",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Na ×4 przestój rośnie szybko: Piekarnia. Zwolnij, żeby zdążyć go naprawić.",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 6",
+       "Wóz 6",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 6 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [
+       "button.tool.is-cure \"Kup wóz\""
+      ],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójPiekarnia: wszystkie wozy zajęte3",
+      "label": "after fix",
+      "atMs": 21758
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Gospodarstwo: pełny magazyn, brak wozu",
+     "tap oko @795,368 hits path",
+     "fix: button.btn.primary \"Kup wóz−30\"",
+     "tap naprawa @715,262 hits button.btn.primary",
+     "silver 60 -> 30"
+    ],
+    "wallMs": 58547,
+    "simS": 30.1
+   },
+   {
+    "name": "06 kolejny przestój #7",
+    "t0": 1793830080872,
+    "tick0": 2954,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 35,
+      "letters": 245,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 6",
+       "Wóz 6",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 6 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+      "label": "why sheet",
+      "atMs": 16407
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Gospodarstwo: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Dlaczego stoi? | Gospodarstwo | Pełno zboża — odbiór: wóz 6 | Wóz 6 | Jedzie po ładunek | Co to znaczy? | Produkuje | Do odbioru:"
+    ],
+    "wallMs": 52958,
+    "simS": 24.4
+   },
+   {
+    "name": "06 kolejny przestój #8",
+    "t0": 1793830133832,
+    "tick0": 3198,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 35,
+      "letters": 246,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 6",
+       "Wóz 6",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 6 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór2",
+      "label": "why sheet",
+      "atMs": 12850
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Gospodarstwo: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Dlaczego stoi? | Gospodarstwo | Pełno zboża — odbiór: wóz 6 | Wóz 6 | Jedzie po ładunek | Co to znaczy? | Produkuje | Do odbioru:"
+    ],
+    "wallMs": 50373,
+    "simS": 25.3
+   },
+   {
+    "name": "06 kolejny przestój #9",
+    "t0": 1793830184207,
+    "tick0": 3451,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 35,
+      "letters": 246,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Gospodarstwo:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Dlaczego stoi?",
+       "Gospodarstwo",
+       "Pełno zboża — odbiór: wóz 6",
+       "Wóz 6",
+       "Jedzie po ładunek",
+       "Co to znaczy?",
+       "Produkuje",
+       "Do odbioru:"
+      ],
+      "small": [
+       "button.link.cf \"GospodarstwoPełno zboża — odbiór: wóz 6 \" 328x26"
+      ],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójGospodarstwo: czekanie na odbiór2",
+      "label": "why sheet",
+      "atMs": 16594
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Gospodarstwo: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Dlaczego stoi? | Gospodarstwo | Pełno zboża — odbiór: wóz 6 | Wóz 6 | Jedzie po ładunek | Co to znaczy? | Produkuje | Do odbioru:"
+    ],
+    "wallMs": 51973,
+    "simS": 25.2
+   },
+   {
+    "name": "06 kolejny przestój #10",
+    "t0": 1793830236187,
+    "tick0": 3703,
+    "mission": "m1",
+    "taps": 1,
+    "audits": [
+     {
+      "words": 25,
+      "letters": 179,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Przy tym tempie: spóźnienie",
+       "Piekarnia",
+       "/min",
+       "Najgorszy zastój",
+       "Chata drwala:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch"
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [
+       "cut by span \"Piekarnia ×1 · 1/min\": bdi.num \"Piekarnia\"",
+       "span \"Piekarnia ×1 · 1/min\" scroll 100x16 > 1x1",
+       "cut by span \"Piekarnia ×1 · 1/min\": bdi.num \"1\""
+      ],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": true,
+      "sheet": true,
+      "stallText": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+      "label": "why sheet",
+      "atMs": 14056
+     }
+    ],
+    "shots": [],
+    "notes": [
+     "stall card: Chata drwala: czekanie na odbiór",
+     "tap oko @795,368 hits path",
+     "no enabled fix button: Najgorszy zastój | Chata drwala: | czekanie na odbiór | Droga | Bruk | Rozbiórka | Kup wóz | Ruch"
+    ],
+    "wallMs": 50905,
+    "simS": 24.9
+   },
+   {
+    "name": "07 czekanie na koniec zlecenia (×4)",
+    "t0": 1793830287096,
+    "tick0": 3952,
+    "mission": "m1",
+    "taps": 0,
+    "audits": [
+     {
+      "words": 74,
+      "letters": 521,
+      "texts": [
+       "I. Chleb i deski",
+       "do śniegu",
+       "Najgorszy zastój",
+       "Chata drwala:",
+       "czekanie na odbiór",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo z zamku",
+       "Kontrakt wykonany",
+       "Dostawy dotarły przed śniegiem. Cieśle mają deski, kuchnia chleb. Następnym razem puść wozy w drogę wcześniej.",
+       "— Wszebor",
+       "1 z 3 pieczęci",
+       "Czas",
+       "Dostarczono",
+       "deski",
+       "chleb",
+       "Srebro",
+       "Gdzie stracono czas",
+       "Chata drwala",
+       "czekanie na odbiór",
+       "Gospodarstwo",
+       "czekanie na odbiór",
+       "Piekarnia",
+       "wszystkie wozy zajęte",
+       "Następna misja",
+       "II. Korek na moście",
+       "Jeszcze raz",
+       "Do menu"
+      ],
+      "small": [],
+      "covered": [
+       "button.bubble.hit \"Chata drwala: Pełno drewna — odbiór: wóz\" under div.seals \"1 z 3 pieczęci\"",
+       "button.bubble.hit \"Tartak: Pełno desek — brak wozu do odbio\" under div.letter \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.menu-btn \"Menu\" under div.scrim \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.seg.is-on \"Pauza\" under div.letter \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.seg \"Tempo ×1\" under div.letter \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.seg \"Tempo ×2\" under div.scrim \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.seg \"Tempo ×4\" under div.scrim \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.ribbon \"Zwiń list przewozowy\" under div.scrim \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "div.wb-line.done \"30/30\" under h2 \"Kontrakt wykonany\"",
+       "div.wb-line.done \"20/20\" under h2 \"Kontrakt wykonany\"",
+       "button.stall-eye \"Pokaż: Chata drwala\" under div.letter \"Pismo z zamku Kontrakt wykonany Dostawy \"",
+       "button.alarm-seal \"Pokaż kolejny zastój (2)\" under div.scrim \"Pismo z zamku Kontrakt wykonany Dostawy \""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.l-kicker \"Pismo z zamku\" x h2 \"Kontrakt wykonany\""
+      ],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [
+       "button.btn.primary \"Następna misjaII. Korek na moście\""
+      ],
+      "stallShown": true,
+      "sheet": false,
+      "stallText": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+      "label": "end letter",
+      "atMs": 521283
+     }
+    ],
+    "shots": [
+     "land-14-end.jpg"
+    ],
+    "notes": [
+     "result {\"tick\":6837,\"result\":\"won\",\"mission\":\"m1\",\"speed\":0,\"coins\":30}"
+    ],
+    "wallMs": 546779,
+    "simS": 288.5
+   },
+   {
+    "name": "08 list końcowy -> misja II",
+    "t0": 1793830833878,
+    "tick0": 6837,
+    "mission": "m2",
+    "taps": 2,
+    "audits": [
+     {
+      "words": 53,
+      "letters": 347,
+      "texts": [
+       "II. Korek na moście",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch",
+       "Pismo z zamku",
+       "II. Korek na moście",
+       "Pisarz grodzki Mirogniew wpisał 36 desek i 30 bochenków dla grodu. Wozy z obu brzegów tłoczą się na jedynym drewnianym moście. Nim termin minie, odciąż przeprawę: drugi most lub kamienna przeprawa skrócą kolejkę.",
+       "— Wszebor",
+       "Do dzieła"
+      ],
+      "small": [],
+      "covered": [
+       "button.menu-btn \"Menu\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.seg.is-on \"Pauza\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.seg \"Tempo ×1\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.seg \"Tempo ×2\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.seg \"Tempo ×4\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.ribbon \"Zwiń list przewozowy\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "div.wb-line \"0/36\" under h2 \"II. Korek na moście\"",
+       "div.wb-line \"0/30\" under h2 \"II. Korek na moście\"",
+       "button.tool \"Droga\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.tool \"Bruk\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.tool \"Rozbiórka\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\"",
+       "button.tool \"Kup wóz\" under div.scrim.letter-scrim \"Pismo z zamku II. Korek na moście Pisarz\""
+      ],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [
+       "div.l-kicker \"Pismo z zamku\" x h2 \"II. Korek na moście\""
+      ],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [
+       "button.btn.primary \"Do dzieła\""
+      ],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "m2 opening",
+      "atMs": 10520
+     },
+     {
+      "words": 12,
+      "letters": 85,
+      "texts": [
+       "II. Korek na moście",
+       "do śniegu",
+       "Droga",
+       "Bruk",
+       "Rozbiórka",
+       "Kup wóz",
+       "Ruch"
+      ],
+      "small": [],
+      "covered": [],
+      "offscreen": [],
+      "clipped": [],
+      "overlaps": [],
+      "tut": null,
+      "cure": [],
+      "fix": [],
+      "primary": [],
+      "stallShown": false,
+      "sheet": false,
+      "stallText": "",
+      "label": "m2 hud",
+      "atMs": 51634
+     }
+    ],
+    "shots": [
+     "land-15-m2-letter.jpg",
+     "land-16-m2-hud.jpg"
+    ],
+    "notes": [
+     "end letter buttons: next|Następna misjaII. Korek na moście|y244-307 / again|Jeszcze raz|y312-363 / menu|Do menu|y308-359",
+     "tap Następna misja @607,276 hits span.ln-t",
+     "tap Do dzieła (II) @265,288 hits button.btn.primary"
+    ],
+    "wallMs": 84574,
+    "simS": -677.8
+   }
+  ],
+  "gaps": [],
+  "errors": []
+ }
+]
