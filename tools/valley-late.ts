@@ -1,3 +1,4 @@
+// @ts-nocheck — research tool: reads fields that exist only with docs/research/2026-11-04-valley-late-proto.patch
 // Free valley late game (research 2026-11-04, docs/research/2026-11-04-valley-late-game.md): what gives the
 // player a bottleneck to diagnose after ~76 min? Measures 5 prototype designs with the valley-3h bots.
 // NEEDS the prototype patch (it adds the LATE toggles to src/sim; all off by default):
