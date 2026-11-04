@@ -1557,7 +1557,8 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
 .kseal, .so-seal { background: image-set(url("/assets/ui/kit/seal-empty@2x.png") 2x, url("/assets/ui/kit/seal-empty@3x.png") 3x) center / contain no-repeat; }
 .kseal.on, .so-fill { background: image-set(url("/assets/ui/kit/seal-full@2x.png") 2x, url("/assets/ui/kit/seal-full@3x.png") 3x) center / contain no-repeat; }
 .bubble .bb { background: image-set(url("/assets/ui/kit/pin-brass@2x.png") 2x, url("/assets/ui/kit/pin-brass@3x.png") 3x) center / contain no-repeat; }
-.bubble.is-critical .bb { background-image: image-set(url("/assets/ui/kit/pin-red@2x.png") 2x, url("/assets/ui/kit/pin-red@3x.png") 3x); }
+/* critical / worst: the scalloped wax-seal pin (D-121), a shape of its own, not only a colour */
+.bubble.is-critical .bb { background-image: image-set(url("/assets/ui/kit/pin-alarm@2x.png") 2x, url("/assets/ui/kit/pin-alarm@3x.png") 3x); }
 
 /* ---- top cluster: bar (menu, chips, speed) and the contract / valley panel, one grid */
 #hud { position: absolute; inset: 0; }
@@ -1990,10 +1991,14 @@ body.is-flex .rail { z-index: 1; }
 /* under a HUD panel or the sheet (D-62): fades out instead of peeking from behind it and taking its taps */
 .bubble.is-shown.is-under { opacity: 0; }
 #ui .bubble.is-under { pointer-events: none; }
-.bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
+/* a 1 px parchment halo first (a11y F7: the pins sank into the grass by day), then the kit's soft shadow */
+.bubble .bb { width: 40px; height: 48px; filter: drop-shadow(0 0 1px rgb(234 214 173 / .95)) drop-shadow(0 2px 1px rgb(20 14 8 / .45)); }
 .bubble .bb-in { width: 32px; height: 32px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); --icon-halo: var(--kparch); }
 /* red pin: the kit's red tip plus a wine ring round the cause, so worst / critical reads at a glance */
 .bubble.is-critical .bb-in { color: var(--wine); box-shadow: inset 0 0 0 2.5px var(--wine), 0 0 0 1px rgb(111 29 34 / .35); }
+/* the alarm pin's disc is 86 % of the round one, set lower inside the wax rim (tools/make-pin-alarm.py) */
+.bubble.is-critical .bb-in { width: 28px; height: 28px; margin-top: 9px; }
+.bubble.is-critical.is-first .bb::after { inset-block-start: 9px; inset-inline-start: 6px; width: 28px; height: 28px; }
 .bubble.is-wagon .bb, .bubble.is-minor .bb { transform: scale(.8); transform-origin: 50% 100%; }
 .bubble.is-minor .bb-in svg { opacity: .8; }
 .bubble.breathe .bb { animation: breathe 240ms var(--ease) 1; }

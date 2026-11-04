@@ -1643,3 +1643,13 @@ WebView textZoom). Landscape side sheet: full height beside the top bar and over
 bottom sheet may grow to the chips row. `.sheet-body` gets `scroll-padding-block-end: var(--dock-h)` (measured in
 `sheets.ts`) plus a focusin fallback, so a focused control never sits under "Naprawa".
 (decided)
+
+**D-121 — Stall pins: severity and time in the name, a parchment halo, a scalloped seal for critical (day 8d; a11y F7).**
+The red pin sank into the daytime grass (1.5–2.1:1) and differed from the brass one only by colour. Now: the pin's
+accessible name leads with its weight and ends with the time stood — "Najgorszy zastój — Piekarnia: brak mąki, stoi
+1:30" (`pin.worst` / `pin.critical` / `pin.stood`); the time in the name moves in 10 s steps so a screen reader is
+not told a new name every second (the visible tally still counts each second). Every pin gets a 1 px parchment
+`drop-shadow` halo before the kit's shadow. The critical / worst pin uses `pin-alarm@2x/3x.png`
+(`tools/make-pin-alarm.py`): the red pin's disc at 86 % on a 14-lobe wax rim, the shape of the HUD's alarm seal —
+scalloped = critical, smooth = lesser, readable without colour.
+(decided; owner may veto the seal shape)
