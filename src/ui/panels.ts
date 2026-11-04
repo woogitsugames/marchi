@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, heldSpanFor, paveCheck, sharedOneProducer } from './stalls';
+import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
 import { paceCard, type PaceCard, type PaceMud } from './paceCard';
 
 export { gapTarget };
@@ -162,8 +162,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     return fixSection(btn, hint, off);
   }
   if (cure === 'pave') {
-    // a wagon of this building's job stands at a wooden span (research P4): pave the span in stone
-    const h = heldSpanFor(world, b);
+    // a wagon of this building's job stands at a wooden span (research P4), or the ice ahead outranks a wagon
+    // (day 8c): pave the span in stone
+    const h = paveSpanFor(world, b);
     if (!h) return '';
     const ok = paveCheck(world, h);
     let price = 0;
@@ -171,7 +172,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="pave:${b.id}" aria-disabled="${!ok.ok}">${
       iconSvg('road_cobble', 26)}<span>${esc(t('fix.pave'))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
     const hint = ok.ok
-      ? `<div class="s-hint">${esc(t('fix.paveWhy', { wagon: wagonName(world, h.wagon) }))}</div>`
+      ? `<div class="s-hint">${esc(h.held
+        ? t('fix.paveWhy', { wagon: wagonName(world, h.held.wagon) })
+        : t('fix.iceAheadWhy', { time: ticksClock(h.ice!.startTick - world.state.tick), n: fmtInt(price) }))}</div>`
       : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
@@ -331,7 +334,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
     if (act === 'pave' && !el.classList.contains('is-disabled')) {
       const b = buildingById(nav.world, Number(arg));
-      const h = b ? heldSpanFor(nav.world, b) : null;
+      const h = b ? paveSpanFor(nav.world, b) : null;
       if (h) nav.buildRoad(h.cells, 2);
     }
     if (act === 'mud' && !el.classList.contains('is-disabled')) {

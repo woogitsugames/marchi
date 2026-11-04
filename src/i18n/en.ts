@@ -660,4 +660,6 @@ export const en: FullDict = {
   'fix.mud': 'Pave the stretch: {n, plural, one {# cell} other {# cells}}',
   'fix.mudWhy': 'Mud is not a stall: the wagons drive slower. On cobbles this delivery is {pct} faster, and the forecast misses three seals.',
   'fix.mudCalm': 'Mud slows the deliveries, but the order makes three seals. Cobbles on the marked stretch would make them {pct} faster.',
+  'cause.iceAhead': 'ice closes the bridge in {time} — stone costs {n} silver, a wagon would leave too little',
+  'fix.iceAheadWhy': 'Ice closes the wooden bridge in {time}. A stone bridge ({n} silver) stays open; after another wagon the silver will not cover it.',
 };

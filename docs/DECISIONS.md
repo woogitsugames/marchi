@@ -1595,3 +1595,18 @@ real (non-calm) stall keeps the slot. Reasonable player III eye 10/30/60 s **1/1
 (6,32/5,97/6,46)**. VIII (old version, rain from 1:40) shows the mud line too; its cobbles need quarry stone, so the
 button reports the missing stone and VIII keeps 3/3/3★ (eye+ 10 s 9,07 → 9,28). UI only, hashes unchanged.
 (decided)
+
+**D-117 — Before the ice, "Kup wóz" yields to the stone span when a wagon would cost the bridge (day 8c; D-109 follow-up, mission IV).**
+At 140 silver the "scan" player bought a wagon from each pin and had no silver left for the stone bridge when the ice
+came (1★). Generic rule in `cureFor`: when a running contract has an authored ice window still ahead
+(`state.ice`, start > now), cobbles are allowed and the span most producer -> castle trips cross (`iceAheadSpan`,
+wooden span cells from the network) costs `price`, a `wagon` cure becomes `pave` if the player can afford the
+bridge now but **one more wagon would leave less than its price** (`coins ≥ price > coins − 30`). The card then
+reads "Zamek: za 2:00 kra zamknie most — kamienny kosztuje 72 srebra, a wóz zostawi za mało", the sheet's "Naprawa"
+is "Wyłóż most kamieniem" (the held-span button of research P4, now `paveSpanFor`: a held wagon first, else the ice
+ahead) with "Za 2:00 kra zamknie drewniany most…". With more silver the wagon cure stays; after the ice starts the
+held-span card takes over as before. Measured IV (eye 10/30/60 s / scan+ 30 s): **1/2/2★ / 1★ → 3/2/2★ / 3★**
+(eye 10 s 10,56 → 6,33; scan 11,77 → 7,00: two wagons, then the bridge at 1:00–2:00). Eye 30/60 s unchanged (they
+never meet a wagon cure while short of silver before the ice). No other mission has authored ice. UI only, hashes
+unchanged. Test `tests/ice-ahead.test.ts`.
+(decided)

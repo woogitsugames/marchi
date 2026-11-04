@@ -663,6 +663,8 @@ export const pl = {
   'fix.mud': 'Wybrukuj odcinek: {n, plural, one {# pole} few {# pola} many {# pól} other {# pola}}',
   'fix.mudWhy': 'Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o {pct} szybsza, a prognoza nie daje trzech pieczęci.',
   'fix.mudCalm': 'Błoto spowalnia dostawy, ale zamówienie zdąży na trzy pieczęcie. Bruk na zaznaczonym odcinku przyspieszyłby je o {pct}.',
+  'cause.iceAhead': 'za {time} kra zamknie most — kamienny kosztuje {n} srebra, a wóz zostawi za mało',
+  'fix.iceAheadWhy': 'Za {time} kra zamknie drewniany most. Kamienny most ({n} srebra) kra omija; po kolejnym wozie zabraknie na niego srebra.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -725,6 +727,8 @@ export const PENDING_KEYS = [
   'fix.mud',
   'fix.mudWhy',
   'fix.mudCalm',
+  'cause.iceAhead',
+  'fix.iceAheadWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

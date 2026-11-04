@@ -16,7 +16,7 @@ import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fm
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, heldSpanFor, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { paceCard, type PaceCard } from './paceCard';
 import { EventCard } from './eventCard';
 
@@ -541,7 +541,10 @@ export class Hud {
     this.cure = b ? cureFor(world, b.id) : null;
     const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${getLang()}` : '';
+    // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
+    const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
+    const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -555,7 +558,9 @@ export class Hud {
       ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
       : held
         ? t(held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
-        : stallReason(world, b.id);
+        : ice
+          ? t('cause.iceAhead', { time: ticksClock(ice.startTick - world.state.tick), n: fmtInt(ice.price) })
+          : stallReason(world, b.id);
     setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));

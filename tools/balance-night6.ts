@@ -15,7 +15,7 @@ import {
   MISSIONS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, missionBuildable,
   net, sharedInput, stars, stateHash, step, suggestLinkToStable, thinDelivery, type BuildingType, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, gapTarget, heldSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
+import { cureFor, gapTarget, paveSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { buildSite } from '../src/ui/site';
@@ -238,8 +238,9 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
     if (cure === 'wagon') act = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }).ok ? 'wagon' : 'wagon?nocoins';
     else if (cure === 'pave') {
       // the held-span card (night 6, P4 in the game): pave the span in stone
-      const h = heldSpanFor(w, b)!;
-      act = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }).ok ? 'stoneBridge' : 'stoneBridge?fail';
+      // (or, day 8c, the span the ice will close when one more wagon would cost the stone bridge)
+      const h = paveSpanFor(w, b)!;
+      act = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }).ok ? (h.held ? 'stoneBridge' : 'stoneBridge:iceAhead') : 'stoneBridge?fail';
     }
     else if (cure === 'producer') {
       // the shared-supply card (night 6, P5 in the game): build another producer of that type by the first one

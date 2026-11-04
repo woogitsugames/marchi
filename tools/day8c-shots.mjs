@@ -15,8 +15,9 @@ const ALL = {
   'm7-ghost': { q: 'play=m7&ff=90&speed=0', eye: true, fix: true },
   'm3-card': { q: 'play=m3&ff=40&speed=0' },
   'm3-sheet': { q: 'play=m3&ff=170&speed=0', eye: true },
-  'm4-card': { q: 'play=m4&ff=40&speed=0&bot=0', pre: 'wagon' },
-  'm4-sheet': { q: 'play=m4&ff=40&speed=0', pre: 'wagon', eye: true },
+  // IV: two wagons bought (140 -> 80 silver); a third would leave less than the 72 of the stone span
+  'm4-card': { q: 'play=m4&ff=60&speed=0', pre: 'wagon' },
+  'm4-sheet': { q: 'play=m4&ff=60&speed=0', pre: 'wagon', eye: true },
 };
 const pick = args.filter((a) => ALL[a]);
 const cases = pick.length ? pick : Object.keys(ALL);
@@ -33,7 +34,7 @@ for (const [w, h] of sizes.length ? sizes : [[412, 915], [915, 412]]) for (const
   await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 180000 });
   if (c.pre === 'wagon') {
     // buy one wagon first (the "scan" player's first tap), so the next one would cost the stone bridge
-    await page.evaluate(() => { const a = window.__marchia.app; a.hud ? a.buyWagon?.() : null; });
+    await page.evaluate(() => { const a = window.__marchia.app; a.buyWagonFromRail(); a.buyWagonFromRail(); a.loop.flushCommands(); });
   }
   await page.waitForTimeout(1500);
   if (c.eye) { await page.evaluate(() => document.querySelector('.stall-eye')?.click()); await page.waitForTimeout(1500); }
