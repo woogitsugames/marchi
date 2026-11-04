@@ -1417,3 +1417,32 @@ visible body at 915×412 pl/ar and 412×915; the node survives refreshes at ×1;
 the worst stall's card and its fix wins mission I with a tap pair every 10 s (10.6 min) or 30 s; every 60 s is
 too slow (lost at 12:00) — so the research run's loss came from the fix that was never applied, not from the
 path. `docs/shots/day7-fix-dock-*.jpg`. (decided)
+
+**D-101 — Workers at the sawmill, farm and fisher (night 6; render only).**
+Same three-piece rig and instancing as the night-2 woodcutter/miller/baker, animated only while the building is
+`WORKING`, calm otherwise. Sawmill: two sawyers at a pit saw — the top sawyer on the log, the pit man under it; the
+saw is a fourth instanced rig piece (`WorkerRig.tool`) lifted by the pose's new `lift`, so both men share one
+stroke (same building, same phase). The high trestles moved from under the shed roof into the open yard (the
+camera never saw the old frame saw under the shingles); the shed keeps a log on blocks and a sawdust heap.
+Farmer: hoeing, placed on the nearest free tilled field cell within 6 cells of the farm (no road, no building,
+no water), facing along the furrows, re-placed when `netVersion` changes; the yard spot is the fallback for a map
+without fields. Fisherman: a lift net on a 3.3 m pole near the end of the landing stage, kept on the footprint
+(the stage reaches past it). `BuildingModel.worker` became `workers[]` (+ `fieldWorker`); the feet take `at.y`.
+Cost: ≤ 1.25k triangles per figure (test), +10 draw calls in m1 (41 → 51, both sawyers + saw + farmer),
+frame JS in noise (SwiftShader, `tools/frame-cost.mjs` m1 low, two runs each: render 12.4/13.4 ms → 18.7/12.6 ms,
+frame 18.4/19.2 → 28.1/18.9 ms). Shots: `docs/shots/night6-workers-*.jpg` (`tools/night6-workers-shots.mjs`,
+`tools/model-preview.html?view=workers`). (decided, owner to look)
+
+**D-102 — Mission XIII "Pierwsze piętro łańcucha": one wagon for the whole map (night 6; data only).**
+BACKLOG P4: the raw goods are already in the granary (14 wood, 10 grain; the order needs 12 and 8), the sawmill,
+mill and bakery wait on one road in the dry `valley-m3`, and the march starts with **one wagon** and 150 silver.
+Contract 24 planks + 16 bread, deadline 10:00, 3 seals ≤ 5:30, 2 seals ≤ 8:00. The stalls read
+`NO_WAGON.ALL_BUSY` (bakery, sawmill, mill) for 556 of 600 s without a fix; the bakery's sheet offers "Kup wóz −30".
+Measured (`tools/bot-m13.ts`): nothing loses (planks 24/24, bread 0/16); one wagon at 0:20 7.61 min (2 seals); three
+at 0:20 5.06 (3); one at 1:30 8.77 (1); two at 0:20 5.79 (2); three at 1:00 / 2:00 4.94 / 5.93; 4–5 wagons 4.47.
+**Placement: appended as XIII**, not inserted as II: the Roman numeral is part of every title in 17 languages and of
+save margins (D-73), so renumbering would rewrite all of them; `MENU_MISSIONS` order is the only list to change if the
+owner wants it earlier (then titles need renumbering). Letters authored in all 17 languages (the letters module never
+falls back to English); menu title/subtitle in pl/en, others pending. Golden hashes recorded for m13; all others
+unchanged. Overlap with XI (also "buy wagons"): XI is a long route where 3 wagons almost suffice (nothing = 1 seal),
+XIII is short routes where one wagon cannot serve three workshops (nothing = loss). (decided, owner to confirm order)
