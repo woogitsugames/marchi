@@ -28,6 +28,8 @@ interface Log {
   wait: Record<Good, number[]>; // waiting consumers per sample
   noWagon: Record<Good, number[]>; // of those, NO_WAGON
   sumW: Record<Good, number>; sumN: Record<Good, number>;
+  starved: Record<Good, number[]>; // producers of the good that themselves wait for their input
+  sumS: Record<Good, number>;
   idleZero: number[]; // 1 when no wagon stood idle in that second
   sumIdleZero: number;
   shown: Good | null;
@@ -42,22 +44,24 @@ function waitsForInput(b: Building): Good | null {
 function newLog(): Log {
   const z = (): Record<Good, number[]> => Object.fromEntries(GOODS.map((g) => [g, new Array(WINDOW).fill(0)])) as Record<Good, number[]>;
   const s = (): Record<Good, number> => Object.fromEntries(GOODS.map((g) => [g, 0])) as Record<Good, number>;
-  return { n: 0, wait: z(), noWagon: z(), sumW: s(), sumN: s(), idleZero: new Array(WINDOW).fill(0), sumIdleZero: 0, shown: null };
+  return { n: 0, wait: z(), noWagon: z(), sumW: s(), sumN: s(), starved: z(), sumS: s(), idleZero: new Array(WINDOW).fill(0), sumIdleZero: 0, shown: null };
 }
 
 function sample(w: World, log: Log): void {
   const i = log.n % WINDOW;
   const cw = Object.fromEntries(GOODS.map((g) => [g, 0])) as Record<Good, number>;
-  const cn = { ...cw };
+  const cn = { ...cw }, cs = { ...cw };
   for (const b of w.state.buildings) {
     const g = waitsForInput(b);
     if (!g) continue;
     cw[g]++;
     if (b.status.k === 'NO_WAGON') cn[g]++;
+    for (const o of outputGoods(b.type)) cs[o]++;
   }
   for (const g of GOODS) {
     log.sumW[g] += cw[g] - log.wait[g][i]!; log.wait[g][i] = cw[g];
     log.sumN[g] += cn[g] - log.noWagon[g][i]!; log.noWagon[g][i] = cn[g];
+    log.sumS[g] += cs[g] - log.starved[g][i]!; log.starved[g][i] = cs[g];
   }
   const iz = w.state.wagons.some((x) => x.status.k === 'IDLE') ? 0 : 1;
   log.sumIdleZero += iz - log.idleZero[i]!; log.idleZero[i] = iz;
@@ -83,6 +87,9 @@ function card(w: World, log: Log): Card | null {
     if (consumers < MIN_CONSUMERS) continue;
     const p = producerOf(g);
     if (!p || !canPlace(w, p).ok) continue;
+    // upstream: when half of the good's producers themselves wait for their input, the root is further up
+    const producers = w.state.buildings.filter((b) => outputGoods(b.type).includes(g)).length;
+    if (producers > 0 && log.sumS[g] * 2 >= producers * WINDOW) continue;
     const cure = log.sumN[g] * 2 >= log.sumW[g] ? 'wagon' : 'producer';
     if (!best || avgX100 > best.avgX100) best = { good: g, avgX100, consumers, cure };
   }
@@ -183,5 +190,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { card, newLog, sample, type Card, type Log };
-// silence unused (kept for readers comparing with the spec)
-void outputGoods;
