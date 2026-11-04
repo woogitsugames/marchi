@@ -371,6 +371,9 @@ export const pl = {
   'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
   'menu.m12': 'XII. Wielkie warzenie',
   'menu.m12Sub': 'Zapas piwa na kolejną dostawę',
+  // mission XIII (night 6, D-102): see PENDING_KEYS
+  'menu.m13': 'XIII. Pierwsze piętro łańcucha',
+  'menu.m13Sub': 'Jeden wóz na całą marchię',
   // free valley seasons (D-33): localized
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
@@ -615,6 +618,15 @@ export const pl = {
   // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): localized
   'fix.granary': 'Postaw spichlerz',
   'fix.granaryWhy': 'Towar nie ma dokąd jechać: spichlerz przy drodze przyjmie go i zwolni plac.',
+  // one producer for two workshops (research 2026-11-04, P5): see PENDING_KEYS
+  'cause.sharedOne': '{who} to jedyny dostawca dla {n, plural, one {# warsztatu} few {# warsztatów} many {# warsztatów} other {# warsztatu}}',
+  'fix.producer': 'Postaw jeszcze: {name}',
+  'fix.producerWhy': '{who}: jedyny dostawca dla {n, plural, one {# warsztatu} few {# warsztatów} many {# warsztatów} other {# warsztatu}}. Drugi taki budynek obok podwoi dostawy; nowy wóz tu nie pomoże.',
+  // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): see PENDING_KEYS
+  'cause.heldJam': '{wagon} stoi przed wąskim mostem',
+  'cause.heldIce': '{wagon} stoi przed mostem zamkniętym przez krę',
+  'fix.pave': 'Wyłóż most kamieniem',
+  'fix.paveWhy': '{wagon} czeka na drewnianym przęśle. Kamienny most mieści wozy w obie strony i kra go nie zamyka.',
   'fix.granaryHint': 'Towar nie ma dokąd jechać. Połącz drogą spichlerz albo odbiorcę, który go przyjmie.',
   // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): localized
   'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',
@@ -686,6 +698,15 @@ export const PENDING_KEYS = [
   'fix.stoneStored',
   'contract.sealPace.eta',
   'contract.sealPace.late',
+  'menu.m13',
+  'menu.m13Sub',
+  'cause.sharedOne',
+  'fix.producer',
+  'fix.producerWhy',
+  'cause.heldJam',
+  'cause.heldIce',
+  'fix.pave',
+  'fix.paveWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

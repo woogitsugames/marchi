@@ -1417,3 +1417,67 @@ visible body at 915×412 pl/ar and 412×915; the node survives refreshes at ×1;
 the worst stall's card and its fix wins mission I with a tap pair every 10 s (10.6 min) or 30 s; every 60 s is
 too slow (lost at 12:00) — so the research run's loss came from the fix that was never applied, not from the
 path. `docs/shots/day7-fix-dock-*.jpg`. (decided)
+
+**D-101 — Workers at the sawmill, farm and fisher (night 6; render only).**
+Same three-piece rig and instancing as the night-2 woodcutter/miller/baker, animated only while the building is
+`WORKING`, calm otherwise. Sawmill: two sawyers at a pit saw — the top sawyer on the log, the pit man under it; the
+saw is a fourth instanced rig piece (`WorkerRig.tool`) lifted by the pose's new `lift`, so both men share one
+stroke (same building, same phase). The high trestles moved from under the shed roof into the open yard (the
+camera never saw the old frame saw under the shingles); the shed keeps a log on blocks and a sawdust heap.
+Farmer: hoeing, placed on the nearest free tilled field cell within 6 cells of the farm (no road, no building,
+no water), facing along the furrows, re-placed when `netVersion` changes; the yard spot is the fallback for a map
+without fields. Fisherman: a lift net on a 3.3 m pole near the end of the landing stage, kept on the footprint
+(the stage reaches past it). `BuildingModel.worker` became `workers[]` (+ `fieldWorker`); the feet take `at.y`.
+Cost: ≤ 1.25k triangles per figure (test), +10 draw calls in m1 (41 → 51, both sawyers + saw + farmer),
+frame JS in noise (SwiftShader, `tools/frame-cost.mjs` m1 low, two runs each: render 12.4/13.4 ms → 18.7/12.6 ms,
+frame 18.4/19.2 → 28.1/18.9 ms). Shots: `docs/shots/night6-workers-*.jpg` (`tools/night6-workers-shots.mjs`,
+`tools/model-preview.html?view=workers`). (decided, owner to look)
+
+**D-102 — Mission XIII "Pierwsze piętro łańcucha": one wagon for the whole map (night 6; data only).**
+BACKLOG P4: the raw goods are already in the granary (14 wood, 10 grain; the order needs 12 and 8), the sawmill,
+mill and bakery wait on one road in the dry `valley-m3`, and the march starts with **one wagon** and 150 silver.
+Contract 24 planks + 16 bread, deadline 10:00, 3 seals ≤ 5:30, 2 seals ≤ 8:00. The stalls read
+`NO_WAGON.ALL_BUSY` (bakery, sawmill, mill) for 556 of 600 s without a fix; the bakery's sheet offers "Kup wóz −30".
+Measured (`tools/bot-m13.ts`): nothing loses (planks 24/24, bread 0/16); one wagon at 0:20 7.61 min (2 seals); three
+at 0:20 5.06 (3); one at 1:30 8.77 (1); two at 0:20 5.79 (2); three at 1:00 / 2:00 4.94 / 5.93; 4–5 wagons 4.47.
+**Placement: appended as XIII**, not inserted as II: the Roman numeral is part of every title in 17 languages and of
+save margins (D-73), so renumbering would rewrite all of them; `MENU_MISSIONS` order is the only list to change if the
+owner wants it earlier (then titles need renumbering). Letters authored in all 17 languages (the letters module never
+falls back to English); menu title/subtitle in pl/en, others pending. Golden hashes recorded for m13; all others
+unchanged. Overlap with XI (also "buy wagons"): XI is a long route where 3 wagons almost suffice (nothing = 1 seal),
+XIII is short routes where one wagon cannot serve three workshops (nothing = loss). (decided, owner to confirm order)
+
+**D-103 — Gap finder links from the supplier's side, straight before diagonal (night 6; research 2026-11-04 P2;
+read-only, no hash changes).** `suggestLinkToStable` searches from the cut-off building's gate out to the stable's
+road network (cells a loaded wagon from the stable reaches) and ranks the links lexicographically: silver, then the
+number of diagonal new steps, then drive time on the existing roads from the building that has to reach the target
+(`linkAnchor`: the OUTPUT_FULL producer with the longest stall for a granary, an input supplier for a workshop, a
+customer — another workshop or the contract castle — otherwise; the stable when none). The "robust variant" the
+research asked for; its quick patch (`EXISTING_ROAD = 0` + diagonal penalty in `suggestConnection`) was not used.
+`suggestConnection` (tutorial ghost, dead-end check) is unchanged. Result: missions V, VI, XII offer the authored
+straight link (37,38)–(37,39) instead of the diagonal toward the stable (test `tests/gap-finder.test.ts`). Measured
+(`tools/balance-night6.ts`, eye 10/30/60 s): V 3/2/2★ (8,28/8,39 late tranche/9,20; was 3/2/2), XII 3/3/3★ (8,46/8,80/
+8,52; was 3/2/3), I 1/1/1★ (10,06/9,91/11,38; was 1/1/lost). **VI stays 1★ (8,94)**: the link is now exactly the
+lesson (lesson alone 8,31, 3★), but the reasonable player then taps "Kup wóz" at 3:00 and "Postaw spichlerz" at 5:30
+and those cost 38 s; the research's quick patch landed one cell further west, (36,40), and the same taps then gave
+8,37 — dispatcher chaos (research §6.1), not the link. Left for the owner (see HANDOVER). (decided)
+
+**D-104 — The worst-stall card names a single producer shared by two workshops (night 6; research P5; UI only).**
+`sharedOneProducer` (stalls.ts): `sharedInput` with one producer and ≥ 2 consumers, in a contract mission whose
+`buildable` list has that producer type (IX, X; never the ranked free valley). Such a building is critical on the
+card from the first look (score as if stalled 45 s more), even while it only waits for a delivery — its lesson state
+`CONTESTED` lasts too briefly to win the card by duration. Card: "Węglarnia: Chata drwala to jedyny dostawca dla 2
+warsztatów"; cure `producer` (Buduj highlighted); sheet: "Postaw jeszcze: Chata drwala −20" opens the build tool
+with the ghost by the first producer (`siteNear`). Measured eye 10/30/60 s: IX 3/3/2★ (8,12/8,99/10,08; was
+1/lost/1), X 1/2/2★ (10,58/9,87/10,21; was 1/lost/lost). Open: in X the build tool's site is worse than the authored
+(12,34) — the research suggests highlighting the authored site (mission data hint). (decided)
+
+**D-105 — A wagon held at a wooden span reaches the card, with "pave the bridge in stone" (night 6; research P4; UI
+only).** `heldSpanFor`: a wagon `BRIDGE_JAM`/`BRIDGE_CLOSED` for ≥ 20 s whose job picks up at or delivers to the
+building puts that building on the card, critical ("Tartak: Wóz 2 stoi przed mostem zamkniętym przez krę" / "…przed
+wąskim mostem"); cure `pave` (Bruk highlighted); sheet: "Wyłóż most kamieniem −N" lays a stone bridge over that span
+(cells in drive order; `validateRoad` decides silver, stone and rank — disabled with the reason otherwise). Only when
+stone surfaces are allowed (`canSurface(2)`). Measured eye 10/30/60 s: II 2/1/1★ (9,24/9,82/10,81; was 1/1/1 — the
+2★ threshold 10:00 the research proposes would make 30 s a 2★, **waits for the owner**), IV 30/60 s 2/2★ (7,58/7,96;
+was 1/1). Both cards: `tests/shared-card.test.ts`, `tests/held-span-card.test.ts`; shots
+`docs/shots/night6-card-*.jpg` (`tools/night6-cards-shots.mjs`). (decided)

@@ -19,7 +19,7 @@ export interface BestResult {
 export interface Profile {
   id: typeof PROFILE_ID;
   format: typeof PROFILE_FORMAT;
-  /** Best won result per contract mission id ('m1'..'m12'). */
+  /** Best won result per contract mission id ('m1'..'m13'). */
   best: Record<string, BestResult>;
 }
 

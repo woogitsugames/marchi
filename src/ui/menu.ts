@@ -13,7 +13,7 @@ import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
 /** Missions offered in the main menu, in order (the hidden test bench 'lab' never appears). */
-export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'] as const;
+export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13'] as const;
 export type MissionKey = (typeof MENU_MISSIONS)[number] | 'sandbox';
 
 export function isMissionKey(x: string | null | undefined): x is MissionKey {
@@ -49,7 +49,7 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 /** Margin numeral of a contract's save entry: the mission's own number. */
 // Contract numbers stay Roman in every language (D-73): they are part of each title in all 17 translations and
 // of the save-slot margin, so the medallion repeats the glyph the title starts with rather than a locale digit.
-const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII'];
 
 /** "Księga II" for a valley slot. */
 export function slotLabel(slot: ValleySlot): string {

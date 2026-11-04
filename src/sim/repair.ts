@@ -2,8 +2,9 @@
 // "Why is it stalled?" panel can offer a concrete fix ("build a bridge here: 34 silver").
 // Read-only: it never mutates the state. Uses the same rules as validateRoad (no building
 // footprints, no cutting building corners, grade <= MAX_GRADE between consecutive cells).
-import { COST_DIRT, COST_WOOD_BRIDGE, MAX_GRADE } from './defs';
-import { DX, DY, grade, net, type World } from './network';
+import { COST_DIRT, COST_WOOD_BRIDGE, MAX_GRADE, inputGoods, outputGoods } from './defs';
+import { DX, DY, dijkstra, grade, net, type World } from './network';
+import type { Building } from './types';
 
 export interface RoadSuggestion {
   /** Full contiguous cell path from `from` to `to`, existing road cells included (pass to a road command). */
@@ -92,12 +93,138 @@ export function suggestConnection(world: World, from: number, to: number): RoadS
   return { cells, cost, newCells, bridgeCells };
 }
 
-/** Convenience: fix for a building whose gate cannot be reached from its wagons' stable. */
-export function suggestLinkToStable(world: World, buildingId: number): RoadSuggestion | null {
+/** Min-heap of (node, key), ties broken by the lower node index (deterministic order). */
+class Heap {
+  private hn: number[] = [];
+  private hk: number[] = [];
+  get size(): number { return this.hn.length; }
+  push(node: number, key: number): void {
+    const hn = this.hn, hk = this.hk;
+    let i = hn.length; hn.push(node); hk.push(key);
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (hk[p]! < key || (hk[p] === key && hn[p]! < node)) break;
+      hn[i] = hn[p]!; hk[i] = hk[p]!; i = p;
+    }
+    hn[i] = node; hk[i] = key;
+  }
+  pop(): number {
+    const hn = this.hn, hk = this.hk;
+    const top = hn[0]!;
+    const ln = hn.pop()!, lk = hk.pop()!;
+    if (hn.length > 0) {
+      let i = 0;
+      for (;;) {
+        let ch = 2 * i + 1;
+        if (ch >= hn.length) break;
+        if (ch + 1 < hn.length && (hk[ch + 1]! < hk[ch]! || (hk[ch + 1] === hk[ch] && hn[ch + 1]! < hn[ch]!))) ch++;
+        if (lk < hk[ch]! || (lk === hk[ch] && ln <= hn[ch]!)) break;
+        hn[i] = hn[ch]!; hk[i] = hk[ch]!; i = ch;
+      }
+      hn[i] = ln; hk[i] = lk;
+    }
+    return top;
+  }
+}
+
+/** Tie-breaker inside one silver price: a diagonal step onto a new cell costs this much more than a straight one. */
+const DIAGONAL_NEW = 0.001;
+
+/**
+ * The building that has to reach `b` once it is linked — the side the new road should leave the network on
+ * (research 2026-11-04, P2): for a granary the producer whose full yard waits for it (OUTPUT_FULL, longest stall);
+ * for a workshop a supplier of its input; otherwise a customer of its output (another workshop, or the castle when
+ * the contract orders it). Only buildings the stable's wagons reach count; none -> the stable itself.
+ */
+function linkAnchor(world: World, b: Building, onNet: (cell: number) => boolean): Building | null {
   const st = world.state;
+  const others = st.buildings.filter((q) => q.id !== b.id && q.type !== 'stable' && onNet(q.gate));
+  const best = (list: Building[]): Building | null => {
+    let out: Building | null = null;
+    for (const q of list) if (!out || q.stalledTicks > out.stalledTicks || (q.stalledTicks === out.stalledTicks && q.id < out.id)) out = q;
+    return out;
+  };
+  if (b.type === 'warehouse') {
+    const full = others.filter((q) => q.status.k === 'OUTPUT_FULL');
+    if (full.length) return best(full);
+    return best(others.filter((q) => outputGoods(q.type).length > 0));
+  }
+  const ins = inputGoods(b.type);
+  if (ins.length) {
+    const sup = others.filter((q) => outputGoods(q.type).some((g) => ins.includes(g)) || (q.type === 'warehouse' && ins.some((g) => q.stock[g] > 0)));
+    if (sup.length) return best(sup);
+  }
+  const outs = outputGoods(b.type);
+  const need = st.mission.contract?.need;
+  const cus = others.filter((q) => inputGoods(q.type).some((g) => outs.includes(g)) ||
+    (q.type === 'castle' && !!need && outs.some((g) => need[g] > 0)));
+  return best(cus);
+}
+
+/**
+ * Fix for a building whose gate cannot be reached from its wagons' stable: the cheapest new road (in silver)
+ * from the stable's road network to its gate. Among equally cheap links it leaves the network where the building
+ * that has to reach the target arrives first (`linkAnchor`, drive time on the existing roads), and within one
+ * link prefers straight steps to diagonal shortcuts — the old stable-side choice sent the granary link of
+ * missions V/VI diagonally toward the stable, away from the sawmill that fills it (research 2026-11-04, P2).
+ * Read-only; three whole-grid Dijkstras, so call it on demand (panels cache it per network version).
+ */
+export function suggestLinkToStable(world: World, buildingId: number): RoadSuggestion | null {
+  const st = world.state, t = world.terrain, c = net(world);
   const b = st.buildings.find((x) => x.id === buildingId);
   const stable = st.buildings.find((x) => x.type === 'stable');
-  if (!b || !stable || b.id === stable.id) return null;
-  const s = suggestConnection(world, stable.gate, b.gate);
-  return s && s.newCells.length > 0 ? s : null;
+  if (!b || !stable || b.id === stable.id || !st.roads[stable.gate]) return null;
+  const W = t.w, H = t.h, n = W * H;
+  // the stable's network (loaded wagons: a link that only an empty wagon could use would not deliver)
+  const fromStable = dijkstra(world, stable.gate, false, true).dist;
+  const onNet = (i: number): boolean => fromStable[i]! < Infinity;
+  if (onNet(b.gate)) return null;
+  const anchor = linkAnchor(world, b, onNet);
+  const fromAnchor = anchor ? dijkstra(world, anchor.gate, false, true).dist : fromStable;
+  // grid Dijkstra from the target's gate outward; network cells are terminals (not expanded)
+  const dist = new Float64Array(n).fill(Infinity);
+  const prev = new Int32Array(n).fill(-1);
+  const done = new Uint8Array(n);
+  const heap = new Heap();
+  dist[b.gate] = 0;
+  heap.push(b.gate, 0);
+  let bestEnd = -1, bestSilver = Infinity, bestDiag = Infinity, bestDrive = Infinity;
+  while (heap.size > 0) {
+    const u = heap.pop();
+    if (done[u]) continue;
+    done[u] = 1;
+    // every price above the cheapest link found is settled after it: stop there
+    if (Math.floor(dist[u]! + 1e-9) > bestSilver) break;
+    if (onNet(u)) {
+      // lexicographic: silver, then diagonal new steps (the fraction of the key), then drive time from the anchor
+      const silver = Math.floor(dist[u]! + 1e-9), diag = Math.round((dist[u]! - silver) / DIAGONAL_NEW), drive = fromAnchor[u]!;
+      if (silver < bestSilver || (silver === bestSilver && (diag < bestDiag || (diag === bestDiag && drive < bestDrive)))) {
+        bestEnd = u; bestSilver = silver; bestDiag = diag; bestDrive = drive;
+      }
+      continue;
+    }
+    const ux = u % W, uy = (u - ux) / W;
+    for (let d = 0; d < 8; d++) {
+      const vx = ux + DX[d]!, vy = uy + DY[d]!;
+      if (vx < 0 || vy < 0 || vx >= W || vy >= H) continue;
+      const v = vy * W + vx;
+      if (done[v] || c.occupied[v] !== -1) continue;
+      if (d >= 4 && (c.occupied[uy * W + vx] !== -1 || c.occupied[vy * W + ux] !== -1)) continue;
+      if (Math.abs(grade(t, u, v)) > MAX_GRADE + 1e-9) continue;
+      const step = st.roads[v] ? 0 : (t.water[v] ? COST_WOOD_BRIDGE : COST_DIRT) + (d >= 4 ? DIAGONAL_NEW : 0);
+      const nd = dist[u]! + step;
+      if (nd < dist[v]!) { dist[v] = nd; prev[v] = u; heap.push(v, nd); }
+    }
+  }
+  if (bestEnd < 0) return null;
+  // network end first, the target's gate last (a contiguous path for the road command)
+  const cells: number[] = [];
+  for (let x = bestEnd; x !== -1; x = prev[x]!) cells.push(x);
+  const newCells = cells.filter((i) => !st.roads[i]);
+  if (!newCells.length) return null;
+  let cost = 0, bridgeCells = 0;
+  for (const i of newCells) {
+    if (t.water[i]) { cost += COST_WOOD_BRIDGE; bridgeCells++; } else cost += COST_DIRT;
+  }
+  return { cells, cost, newCells, bridgeCells };
 }

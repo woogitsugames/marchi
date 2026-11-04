@@ -4,7 +4,7 @@
  * shoulder cape and liripipe, a brimmed felt hat or a linen coif. Built from smooth
  * lathe/cylinder pieces, ~600–800 triangles at the default segment count.
  */
-import { type BufferGeometry, CylinderGeometry, Matrix4, SphereGeometry, Vector3 } from 'three';
+import { type BufferGeometry, ConeGeometry, CylinderGeometry, Matrix4, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type ModelPart, PartBuilder, trs, v3 } from './kit';
 import { box, lathe, rod, type Opts } from './shapes';
@@ -190,7 +190,9 @@ export function workerParts(variant = 0, pose: HumanPose = 'stand'): ModelPart[]
 }
 
 /** Animated yard workers (render-only): rig parts that the buildings view poses every frame. */
-export type WorkerKind = 'chop' | 'sack' | 'peel';
+export type WorkerKind = 'chop' | 'sack' | 'peel' | 'sawTop' | 'sawPit' | 'hoe' | 'net';
+/** All kinds, in the order their rig seeds were assigned (append only: a new kind must not reseed the old ones). */
+export const WORKER_KINDS: WorkerKind[] = ['chop', 'sack', 'peel', 'sawTop', 'sawPit', 'hoe', 'net'];
 
 export interface WorkerRig {
   /** Legs and shoes, origin between the feet, facing +Z. */
@@ -199,6 +201,11 @@ export interface WorkerRig {
   torso: ModelPart[];
   /** Both arms and the tool in the hands; origin at the shoulder axis (SHOULDER_Y above the hip). */
   arms: ModelPart[];
+  /**
+   * A tool that moves on its own, not with the arms (the pit saw): origin between the feet, lifted by the
+   * pose's `lift` each frame. Absent for tools carried in the hands.
+   */
+  tool?: ModelPart[];
 }
 
 export const WORKER_HIP_Y = 0.9;
@@ -212,7 +219,7 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
   const hit = rigCache.get(key);
   if (hit) return hit;
   const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
-  const seed = 60 + variant * 3 + (kind === 'chop' ? 0 : kind === 'sack' ? 1 : 2);
+  const seed = 60 + variant * 3 + WORKER_KINDS.indexOf(kind);
   const lb = new PartBuilder({ seed, ao: 0.2 });
   addHuman(lb, new Matrix4(), style, 'work', 7, undefined, 'legs');
   const tb = new PartBuilder({ seed: seed + 100, ao: 0.2 });
@@ -230,11 +237,36 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     // baker's peel: a long ash pole with a flat blade to slide loaves in and out of the oven
     rod(ab, 'wood', v3(0, -0.21, 0.3), v3(0, -0.14, 1.85), 0.017, 0.017, 5, handle);
     box(ab, 'wood', 0.3, 0.018, 0.34, trs(0, -0.14, 2.0), { color: '#8a7354', ao: 0, dirt: 0.15 });
-  } else {
+  } else if (kind === 'sack') {
     // a flour sack held against the body
     ab.add('cloth', new SphereGeometry(1, 9, 6), { color: '#c4bba6', m: trs(0, -0.36, 0.42, 0, 0, 0, 0.22, 0.3, 0.17), vary: 0.04, noise: 0.1, ao: 0, dirt: 0.15, jitter: 0.02, jitterFreq: 4 });
+  } else if (kind === 'hoe') {
+    // field hoe: a 1.2 m haft, the iron blade set across it at the far end, edge down
+    rod(ab, 'wood', v3(0, -0.21, 0.3), v3(0, -0.3, 1.32), 0.017, 0.015, 5, handle);
+    box(ab, 'metal', 0.2, 0.15, 0.014, trs(0, -0.38, 1.33, 0.35, 0, 0), { color: '#5d5d58', ao: 0, dirt: 0.25 });
+  } else if (kind === 'net') {
+    // lift net: a 3.3 m pole, a willow hoop at its end and the net bag hanging from it
+    const tip = v3(0, -1.0, 3.25);
+    rod(ab, 'wood', v3(0, -0.2, 0.28), tip, 0.022, 0.016, 5, handle);
+    ab.add('wood', new TorusGeometry(0.42, 0.018, 4, 14), { color: '#6f5a3e', m: trs(tip.x, tip.y - 0.03, tip.z + 0.4, Math.PI / 2), ao: 0, dirt: 0.2 });
+    ab.add('cloth', new ConeGeometry(0.4, 0.55, 10, 2, true), { color: '#8a8270', m: trs(tip.x, tip.y - 0.31, tip.z + 0.4, Math.PI), vary: 0.05, noise: 0.25, ao: 0, dirt: 0.1, jitter: 0.03, jitterFreq: 6 });
+  } else if (kind === 'sawPit') {
+    // the pit man: no tool of his own, his hands meet the saw's lower box handle (drawn with the top sawyer)
   }
-  const rig = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()), arms: oneMesh(ab.build()) };
+  let tool: ModelPart[] | undefined;
+  if (kind === 'sawTop') {
+    // pit saw, in the top sawyer's frame (feet on the log): the blade runs down through the log in the
+    // plane he faces along, the tiller across its top in his hands, the box handle at the bottom for the pit man
+    const kb = new PartBuilder({ seed: seed + 300, ao: 0 });
+    const z = 0.45;
+    box(kb, 'metal', 0.012, 1.75, 0.15, trs(0, 0.33, z), { color: '#6a6862', ao: 0, dirt: 0.05 });
+    box(kb, 'metal', 0.016, 1.75, 0.02, trs(0, 0.33, z - 0.075), { color: '#4c4a45', ao: 0, dirt: 0 }); // toothed edge, darker
+    rod(kb, 'wood', v3(-0.27, 1.2, z), v3(0.27, 1.2, z), 0.022, 0.022, 5, handle);
+    rod(kb, 'wood', v3(-0.18, -0.55, z), v3(0.18, -0.55, z), 0.02, 0.02, 5, handle);
+    for (const s of [-1, 1]) rod(kb, 'wood', v3(0.02 * s, -0.55, z), v3(0.02 * s, -0.4, z), 0.018, 0.018, 4, handle);
+    tool = oneMesh(kb.build());
+  }
+  const rig: WorkerRig = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()), arms: oneMesh(ab.build()), tool };
   rigCache.set(key, rig);
   return rig;
 }
@@ -267,13 +299,55 @@ function smooth01(t: number): number {
  * Pose of a worker at time `t` (s): hip bend `bend` and arm swing `arm` (radians about the
  * side axis; > 0 = forward / down). `working` false = the rest pose with a slow breath.
  */
-export function workerPose(kind: WorkerKind, t: number, working: boolean, out: { bend: number; arm: number }): void {
+export interface WorkerPose {
+  bend: number;
+  arm: number;
+  /** Vertical travel of the rig's free tool (m), the pit saw's stroke; 0 otherwise. */
+  lift: number;
+}
+
+/** Rest pose arm angle per kind: tools held so their ends stay clear of the ground. */
+const REST_ARM: Record<WorkerKind, number> = { chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15 };
+
+export function workerPose(kind: WorkerKind, t: number, working: boolean, out: WorkerPose): void {
+  out.lift = 0;
   if (!working) {
     out.bend = 0.03 + 0.015 * Math.sin(t * 1.3);
-    out.arm = kind === 'peel' ? -0.05 : 0.35;
+    out.arm = REST_ARM[kind];
     return;
   }
   const D = Math.PI / 180;
+  if (kind === 'sawTop' || kind === 'sawPit') {
+    // 1.5 s per stroke pair: the cut on the way down (the pit man pulls), a lighter return; both men share
+    // the saw, so the stroke `s` (+1 top, −1 bottom) is the same phase for both (same building, same t)
+    const p = (t / 1.5) % 1;
+    const s = 1 - 2 * smooth01(p / 0.55) + 2 * smooth01((p - 0.55) / 0.45);
+    out.lift = 0.17 * s;
+    if (kind === 'sawTop') {
+      out.bend = 8 * D + 9 * D * (1 - s) * 0.5;
+      out.arm = -0.37 * s - out.bend * 0.6;
+    } else {
+      out.bend = -3 * D + 7 * D * (1 - s) * 0.5;
+      out.arm = -80 * D - 20 * D * s - out.bend;
+    }
+    return;
+  }
+  if (kind === 'hoe') {
+    // 2.6 s: lift the hoe to the shoulder, chop it into the soil, draw the earth back toward the feet
+    const p = (t / 2.6) % 1;
+    const up = smooth01(p / 0.35), strike = smooth01((p - 0.42) / 0.1), pull = smooth01((p - 0.6) / 0.3);
+    out.bend = 14 * D + 14 * D * strike - 4 * D * up * (1 - strike) + 6 * D * pull * (1 - pull) * 4 - 10 * D * pull;
+    out.arm = 40 * D - 85 * D * up + 80 * D * strike + 15 * D * pull;
+    return;
+  }
+  if (kind === 'net') {
+    // 6 s: the net lowered into the water, a long wait with the pole twitching, hauled up to see the catch, held
+    const p = (t / 6) % 1;
+    const k = smooth01(p / 0.12) - smooth01((p - 0.62) / 0.12);
+    out.bend = 6 * D + 8 * D * k;
+    out.arm = -20 * D + 34 * D * k + 0.012 * Math.sin(t * 2.1) * k;
+    return;
+  }
   if (kind === 'chop') {
     // 1.7 s: raise the axe over the head, a quick stroke into the block, a short pause, pull it free
     const p = (t / 1.7) % 1;

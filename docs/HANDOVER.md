@@ -571,3 +571,50 @@ Misje I–XII nietknięte przez zmiany z 11-03 (45 strategii, te same hasze). Zm
 4. **M8 za łatwa** (same wozy 3★ przy każdym srebrze ≥120, bruk skraca o 13 s) — P6: przeprojektować (kryterium: same wozy ≤2★, lekcja + 1 wóz 3★ z zapasem ≥20 s). Rekomendacja: tak, osobna paczka.
 5. Liczba wozów działa chaotycznie (M4: 4 wozy 1★, 5 → 3★, 6 → 1★; M9: wozy z karty → porażka) — do zbadania przy P6.
 Bez decyzji (robi deweloper, bez zmian haszy): P2 wyszukiwarka luk (węzeł po stronie dostawcy, bez ukośnych skrótów; M5/M6 rozsądny gracz → 3★), P5 karta „jeden producent dla dwóch odbiorców” (M9/M10), karta z P4.
+
+## Stan nocy 6 — 2026-11-04 (gałąź `claude/w-night6`, deweloper nocny)
+Testy na koniec nocy **444/0** (nowe: `workers`, `missions-13`, `gap-finder`, `shared-card`, `held-span-card`), następna decyzja **D-106**;, typecheck i build zielone, złote hasze misji I–XII
+bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygrana 8,85 min, 2★, 26 srebra.
+1. **Ludzie przy pracy: tartak, rolnik, rybak (D-101, c70ea83).** Dwóch pilarzy przy pile na wysokich kozłach — górny stoi na
+   kłodzie, dolny pod nią, piła to czwarta, osobno instancjonowana część, którą poza unosi (`lift`), więc obaj mają jeden ruch.
+   Kozły przeniesione spod dachu szopy na otwarte podwórze (kamera nie widziała starej piły pod gontem). Rolnik z motyką na
+   najbliższym wolnym polu uprawnym (≤ 6 pól od gospodarstwa, bez drogi/budynku/wody; przestawiany, gdy zmieni się sieć dróg),
+   twarzą wzdłuż bruzd. Rybak z podrywką na pomoście. Ruch tylko przy `WORKING`. Koszt: ≤ 1,25 tys. trójkątów na postać,
+   m1 +10 wywołań rysowania (41 → 51), JS klatki w szumie SwiftShadera (`tools/frame-cost.mjs` m1 low, 2 przebiegi: render
+   12,4/13,4 → 18,7/12,6 ms). Zrzuty `docs/shots/night6-workers-{sawmill,farm,fisher}-{412x915,915x412}.jpg` i
+   `night6-workers-rigs.jpg` (podgląd `tools/model-preview.html?view=workers`); narzędzie `tools/night6-workers-shots.mjs`.
+2. **Misja XIII „Pierwsze piętro łańcucha” (D-102, f5f8aef, 466da36).** Spichlerz ma całe drewno i zboże, tartak/młyn/piekarnia
+   przy jednym trakcie, **1 wóz** i 150 srebra; 24 deski + 16 chleba do 10:00, 3★ ≤ 5:30, 2★ ≤ 8:00. Karta: „Piekarnia: wszystkie
+   wozy zajęte”, arkusz „Brak wolnego wozu do przewozu mąki” + „Kup wóz −30”. Bot `npx tsx tools/bot-m13.ts`: nic = porażka (deski
+   24/24, chleb 0/16), 1 wóz @0:20 = 7,61 (2★), 3 wozy @0:20 = 5,06 (3★), 1 wóz @1:30 = 8,77 (1★). Listy w 17 językach, tytuł
+   i podtytuł menu pl/en (+PENDING_KEYS), strona `docs/missions/m13.md`, zrzuty `docs/shots/night6-m13-{play,why,menu}-*.jpg`
+   (`tools/m13-shots.mjs`). Dopisana na końcu jako XIII.
+3. **Kolejka koordynatora (raport `docs/research/2026-11-04-mission-balance.md`; baza scalona 8bc6946), bez zmian haszy:**
+   - **P2 wyszukiwarka luk (D-103, 5a57f97)** — wersja „solidna”: szukanie od bramy odciętego budynku do sieci stajni,
+     ranking: srebro → mniej ukośnych pól → czas dojazdu od budynku, który ma tam dojeżdżać (producent z `OUTPUT_FULL` dla
+     spichlerza). V, VI, XII dostają autorską prostą drogę (37,38)–(37,39). Rozsądny gracz (oko 10/30/60 s): V 3/2/2★,
+     XII 3/3/3★ (było 3/2/3), I 1/1/1★ (było 1/1/porażka). **VI zostaje 1★ (8,94)** — droga jest już lekcją (sama 8,31 = 3★),
+     ale karta potem każe kupić wóz i postawić spichlerz (−38 s); szybka łatka z raportu dawała 3★ tylko przez inny węzeł
+     (36,40) — chaos dyspozytora, nie wyszukiwarka.
+   - **P5 karta „jeden producent dla dwóch warsztatów” (D-104, dc67ed5)** — „Węglarnia: Chata drwala to jedyny dostawca dla
+     2 warsztatów”, w arkuszu „Postaw jeszcze: Chata drwala −20”. IX: 3/3/2★ (było 1/porażka/1), X: 1/2/2★ (było 1/P/P).
+   - **P4 karta „zatrzymane przęsło” (D-105, dc67ed5)** — wóz ≥ 20 s przed drewnianym przęsłem (zator, kra): „Tartak: Wóz 2
+     stoi przed mostem zamkniętym przez krę”, w arkuszu „Wyłóż most kamieniem −72”. II: 2/1/1★ (było 1/1/1), IV 30/60 s
+     2/2★ (było 1/1). Próg 2★ M2 10:00 — nie ruszany (czeka na właściciela).
+   P4 i P5 w jednym commicie (wspólny kod rankingu i arkusza). Testy **444/0**, złote hasze bez zmian. Zrzuty
+   `docs/shots/night6-card-{p5-m9-shared,p4-m4-heldspan,p2-m6-link}-{412x915,915x412}.jpg`. `npm run layout -- --quick`
+   w tym worktree: 84 zadania „failed” wyłącznie przez 403 z serwera Vite (symlink `node_modules` poza `fs.allow`),
+   zero innych uwag — do powtórzenia w głównym checkoutcie.
+### Decyzje na rano (noc 6) — deweloper
+- **Kolejność misji XIII:** dopisana jako XIII (przeniesienie po I wymaga przenumerowania tytułów w 17 językach i marginesów
+  zapisów). Zostawić na końcu czy przenieść po I (lekcja jest prostsza niż II–XII)?
+- **XIII a XI** uczą tego samego lekarstwa (kup wóz); różnica: XI długa trasa (nic = 1★), XIII jeden wóz na trzy warsztaty
+  (nic = porażka). Zostawić obie?
+- **Listy XIII w 15 językach** napisał agent — do przeglądu przez native speakerów przed wydaniem.
+- **Tartak:** piła przeniesiona z szopy na podwórze (widoczność) — akceptacja wyglądu na zrzutach `night6-workers-sawmill-*`.
+- **M6 (VI)** po D-103 nadal 1★ dla rozsądnego gracza — winne są późniejsze porady karty („Kup wóz”, „Postaw spichlerz”),
+  nie droga. Czy karta ma przestać proponować spichlerz w VI, gdy duży spichlerz już jest podłączony? (osobna zmiana UI)
+- **Karta „jeden dostawca”** pojawia się w IX/X od pierwszej sekundy (krytyczna) — podaje lekcję od razu. Zostawić, czy
+  dopiero po np. 30 s czekania?
+- Próg 2★ M2 → 10:00 (raport P4) i P1/P3/P6 — zmieniają hasze, nie ruszane.
+

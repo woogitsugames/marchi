@@ -369,6 +369,9 @@ export const en: FullDict = {
   'menu.m11Sub': 'A distant malthouse ties up wagons',
   'menu.m12': 'XII. The great brewing',
   'menu.m12Sub': 'Store the beer for the next letter',
+  // mission XIII (night 6, D-102): see PENDING_KEYS
+  'menu.m13': 'XIII. The first floor of the chain',
+  'menu.m13Sub': 'One wagon for the whole march',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Spring',
   'season.summer': 'Summer',
@@ -612,6 +615,15 @@ export const en: FullDict = {
   // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): see PENDING_KEYS
   'fix.granary': 'Build a granary',
   'fix.granaryWhy': 'The goods have nowhere to go: a granary by the road takes them and clears the yard.',
+  // one producer for two workshops (research 2026-11-04, P5): see PENDING_KEYS
+  'cause.sharedOne': '{who} is the only supplier of {n, plural, one {# workshop} other {# workshops}}',
+  'fix.producer': 'Build another: {name}',
+  'fix.producerWhy': '{who} alone supplies {n, plural, one {# workshop} other {# workshops}} — a second one beside it doubles the deliveries; a new wagon will not help here.',
+  // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): see PENDING_KEYS
+  'cause.heldJam': '{wagon} is held at a narrow bridge',
+  'cause.heldIce': '{wagon} is held at a bridge closed by ice',
+  'fix.pave': 'Pave the bridge in stone',
+  'fix.paveWhy': '{wagon} waits at a wooden span. A stone bridge takes wagons both ways and ice does not close it.',
   'fix.granaryHint': 'The goods have nowhere to go. Link a granary or a buyer that takes them by road.',
   // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): see PENDING_KEYS
   'hud.speedHint': 'At ×4 the stall grows fast: {name}. Slow down to fix it in time.',

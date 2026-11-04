@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
+  BUILDINGS, GOODS, buildingById, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget } from './stalls';
+import { codexCalm, cureFor, gapTarget, heldSpanFor, paveCheck, sharedOneProducer } from './stalls';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -32,7 +32,8 @@ export interface PanelNav {
   toggleFollow(wagon: number): void;
   following(): number | null;
   /** Enqueue a dirt road (wooden bridge over water) along these cells. */
-  buildRoad(cells: number[]): void;
+  /** Lay road (1, dirt) or cobbles / a stone bridge (2) over these cells. */
+  buildRoad(cells: number[], surface?: 1 | 2): void;
   /** Ghost road on the map for the gap finder (null clears it). */
   setGhost(cells: number[] | null): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
@@ -99,6 +100,39 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.granaryWhy'))}</div>`;
     return fixSection(btn, hint, off);
+  }
+  if (cure === 'producer') {
+    // one producer feeds two workshops (research P5): build a second one next to it (the build tool opens
+    // with that type picked, the ghost by the first producer)
+    const sh = sharedOneProducer(world, b);
+    if (!sh) return '';
+    const gate = canPlace(world, sh.type);
+    const price = BUILDINGS[sh.type].price;
+    const short = price - world.state.coins;
+    const off = !gate.ok || short > 0;
+    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${sh.producer}" aria-disabled="${off}">${
+      iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${sh.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+    const hint = !gate.ok
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      : short > 0
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
+    return fixSection(btn, hint, off);
+  }
+  if (cure === 'pave') {
+    // a wagon of this building's job stands at a wooden span (research P4): pave the span in stone
+    const h = heldSpanFor(world, b);
+    if (!h) return '';
+    const ok = paveCheck(world, h);
+    let price = 0;
+    for (const c of h.cells) price += roadCellCost(world, c, 2);
+    const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="pave:${b.id}" aria-disabled="${!ok.ok}">${
+      iconSvg('road_cobble', 26)}<span>${esc(t('fix.pave'))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+    const hint = ok.ok
+      ? `<div class="s-hint">${esc(t('fix.paveWhy', { wagon: wagonName(world, h.wagon) }))}</div>`
+      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+        ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
+    return fixSection(btn, hint, !ok.ok);
   }
   if (cure === 'wagon') {
     const stable = world.state.buildings.find((q) => q.type === 'stable');
@@ -251,6 +285,15 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
     if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
+    if (act === 'pave' && !el.classList.contains('is-disabled')) {
+      const b = buildingById(nav.world, Number(arg));
+      const h = b ? heldSpanFor(nav.world, b) : null;
+      if (h) nav.buildRoad(h.cells, 2);
+    }
+    if (act === 'producer' && !el.classList.contains('is-disabled')) {
+      const p = buildingById(nav.world, Number(arg));
+      if (p) nav.pickBuild(p.type, p.id);
+    }
     if (act === 'fix' && !el.classList.contains('is-disabled')) {
       const s = gapSuggestion(nav.world, Number(arg));
       if (s && s.cost <= nav.world.state.coins) nav.buildRoad(s.cells);
@@ -429,7 +472,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
       setHtml(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled ? cureHtml(world, b, chain) : '');
+      // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
+      // gets that card's fix too
+      const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
+      setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace));
       return true;
     },

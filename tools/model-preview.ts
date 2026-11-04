@@ -6,6 +6,7 @@
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
+  BoxGeometry,
   BufferAttribute,
   Color,
   DirectionalLight,
@@ -68,7 +69,7 @@ import { horsePose, POSE_SIZE } from '../src/render/gait';
 import { BUILDING_KINDS, buildingModel, CHAIN_KINDS, PROP_KINDS, propParts } from '../src/render/models/buildings';
 import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS } from '../src/render/models/trees';
 import { bridgeParts } from '../src/render/models/bridges';
-import { workerParts } from '../src/render/models/people';
+import { WORKER_HIP_Y, WORKER_KINDS, WORKER_SHOULDER_Y, type WorkerPose, workerParts, workerPose, workerRig } from '../src/render/models/people';
 
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'overview';
@@ -360,6 +361,29 @@ const treeObjs = new Map<string, Object3D[]>();
   stats.push(`bridge wood ${triangles(bridgeParts('wood'))} / stone ${triangles(bridgeParts('stone'))} tris per 4 m cell`);
 }
 
+// ---------------------------------------------------------------- animated yard workers (night 6), at z≈-46:
+// one column per rig kind, rows: rest pose, then two moments of the work cycle. The top sawyer stands on a block
+// at his log height so the saw hangs where it does in the sawmill yard.
+{
+  const pose: WorkerPose = { bend: 0, arm: 0, lift: 0 };
+  const CYCLE: Record<string, number> = { chop: 1.7, sack: 3.6, peel: 3.2, sawTop: 1.5, sawPit: 1.5, hoe: 2.6, net: 6 };
+  WORKER_KINDS.forEach((kind, k) => {
+    const rig = workerRig(kind, k % 4);
+    [-1, 0.3, 0.6].forEach((frac, r) => {
+      const x = -12 + k * 3.2, z = -46 + r * 4.5, y = kind === 'sawTop' ? 2.28 : 0;
+      workerPose(kind, frac < 0 ? 0 : frac * CYCLE[kind]!, frac >= 0, pose);
+      const base = trs(x, y, z, 0, kind === 'net' ? Math.PI * 0.75 : 0.5);
+      addParts(rig.legs, base);
+      const tm = base.clone().multiply(new Matrix4().makeTranslation(0, WORKER_HIP_Y, 0)).multiply(new Matrix4().makeRotationX(pose.bend));
+      addParts(rig.torso, tm);
+      addParts(rig.arms, tm.clone().multiply(new Matrix4().makeTranslation(0, WORKER_SHOULDER_Y, 0)).multiply(new Matrix4().makeRotationX(pose.arm)));
+      if (rig.tool) addParts(rig.tool, base.clone().multiply(new Matrix4().makeTranslation(0, pose.lift, 0)));
+      if (y > 0) addParts([{ material: 'wood', geometry: new BoxGeometry(0.5, y, 0.5).translate(0, -y / 2, 0) } as ModelPart], base);
+    });
+    stats.push(`worker ${kind}: ${triangles(rig.legs) + triangles(rig.torso) + triangles(rig.arms) + (rig.tool ? triangles(rig.tool) : 0)} tris`);
+  });
+}
+
 // ---------------------------------------------------------------- camera views
 const camera = new PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.5, 900);
 const views: Record<string, [Vector3, Vector3]> = {
@@ -385,6 +409,7 @@ const views: Record<string, [Vector3, Vector3]> = {
   horse: [new Vector3(-10.6, 1.25, 6.2), new Vector3(-10.6, 0.95, 0)],
   wagon34: [new Vector3(-6.2, 3.4, 7.2), new Vector3(-13.6, 0.9, 0)],
   people: [new Vector3(60.2, 1.55, 64.6), new Vector3(60.4, 0.95, 60)],
+  workers: [new Vector3(-2.4, 10, -19), new Vector3(-2.4, 1.1, -41.5)],
   driver: [new Vector3(67.5, 2.6, 63.2), new Vector3(64.6, 1.4, 59.6)],
 };
 TREE_KINDS.forEach((kind, k) => {

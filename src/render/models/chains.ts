@@ -217,7 +217,11 @@ export function fisher(b: PartBuilder): Partial<BuildingModel> {
   rod(b, 'wood', v3(cx - 2.55, 0, -0.7), v3(cx - 2.38, 2.6, -0.3), 0.03, 0.03, 4, { color: '#76624a' });
   box(b, 'wood', 0.14, 0.5, 0.03, trs(cx - 2.57, 0.3, -0.72, 0, 0.1, 0.05), { color: '#76624a' });
   b.add('wood', new CylinderGeometry(0.16, 0.24, 0.9, 8, 3, true), { color: '#6a5841', m: trs(jx - 0.2, 1.05, -3.0, Math.PI / 2, 0, 0), noise: 0.2, noiseFreq: 14, ao: 0 });
-  return { gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.0), yaw: Math.PI / 2 } };
+  return {
+    gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.0), yaw: Math.PI / 2 },
+    // the fisherman near the end of the landing stage (kept on the footprint) with his lift net over the water (night 6)
+    workers: [{ kind: 'net', at: v3(jx, 0.825, -3.85), yaw: Math.PI }],
+  };
 }
 
 // -------------------------------------------------------------------------------------------
