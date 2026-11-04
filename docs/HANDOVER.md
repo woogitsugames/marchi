@@ -1,3 +1,19 @@
+# Handover — MARCHIA (stan 2026-11-04 ~22:00 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+
+## Stan teraz (ta sesja)
+- Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`
+  (`claude/w-day8d`), researcher `/home/user/marchi-research` (`claude/research-day8e`). Gałąź koordynatora:
+  `claude/focused-carson-c3s2ff` (scalana do bazy).
+- Cykl godzinny tej sesji: `trig_01PAgKEUo171oE4A99BXL74i` („42 * * * *”).
+- **APK zablokowane w tym środowisku:** polityka sieci odrzuca `dl.google.com` (403) — `npm run setup:android` nie
+  pobierze SDK. Właściciel: dodać `dl.google.com` (i `maven.google.com`) w Allowed domains środowiska albo szerszy
+  dostęp do sieci.
+- Smoke jest teraz w repo: `node tools/smoke.cjs` (menu + m1–m13 + sandbox na `vite preview --port 5193`).
+- Zrobione: **D-124** — decyzje M7 (duch rybaka VII przy najbliższym brzegu; rozsądny gracz 3/3/3★ → 2/2/2★) i
+  M3 (linia błota tylko przy zagrożonej pieczęci; III bez zmian). M4 bez zmian.
+- W toku: deweloper a11y fix 5–7 (D-121..D-123), researcher zrzuty render #4.
+- Inne sesje: brak gałęzi `claude/x-trade-post` / `claude/x-m8-redesign` i brak otwartych PR (22:00).
+
 # Handover — MARCHIA (stan 2026-11-04 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
 > Sesja `session_01Hk8EbiYMw1x9CXhyu3HM9n` kończy (limit tygodniowy). Starsze sekcje niżej = historia (czytaj od
