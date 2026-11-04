@@ -635,4 +635,7 @@ export const en: FullDict = {
   // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
   'cause.stoneStored': 'waits for a wagon, but the granary already has paving stone',
   'fix.stoneStored': '{n, plural, one {The granary holds # stone} other {The granary holds # stone}} — enough to pave ({cells}). The quarry waits for a free wagon; a new wagon would carry workshop inputs first anyway.',
+  // watch-mode seal forecast line (D-99)
+  'contract.sealPace.eta': 'done in {time}',
+  'contract.sealPace.late': '{time} late',
 };

@@ -978,6 +978,29 @@ bdi { unicode-bidi: isolate; }
 .fix .s-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .fix .fix-why { color: #6e3520; font-weight: 700; }
 .fix .fix-why svg { color: var(--clay); }
+/* D-100: the sheet body's parts are layout-free, so the fix dock is a box child of the scrolling body and can stick */
+.sb-part { display: contents; }
+/* the fix button docks to the sheet's bottom edge while the chain above still scrolls: paper under it and a
+   short fade above it, so the text sliding beneath dims out instead of being cut by a line */
+.fix-dock {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  padding-block: 6px 8px;
+  background: rgb(225 201 166);
+}
+.fix-dock::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 100%;
+  block-size: 14px;
+  background: linear-gradient(to bottom, rgb(225 201 166 / 0), rgb(225 201 166));
+  pointer-events: none;
+}
+/* the dock reaches the body's bottom edge: no padding strip for the scrolled text to show through */
+.sheet-body:has(.fix-dock) { padding-block-end: 0; }
+.fix-note { margin-block-start: 4px; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }
@@ -1415,7 +1438,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   --kparch-dim: #d7c29a;
 }
 
-.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .eta-tag,
+.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .seal-pace, .eta-tag,
 .kbar > i, button.seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
   border-style: solid;
   border-width: 0;
@@ -1451,7 +1474,7 @@ button.seg.is-on::before {
   border-image-slice: 23.5% 19.2% fill;
   border-image-width: 8px 23px;
 }
-.snow-pill, .seal-time, .eta-tag {
+.snow-pill, .seal-time, .seal-pace, .eta-tag {
   border-image-source: url("/assets/ui/kit/eta@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/eta@2x.png") 2x, url("/assets/ui/kit/eta@3x.png") 3x);
   border-image-slice: 25% 16.7% fill;
@@ -1782,6 +1805,10 @@ body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 .so-fill { position: absolute; inset: 0; }
 .seal-time { margin-top: -6px; padding-block: 2px; padding-inline: 10px; font-size: 14px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
 .seal-only.late .seal-time { color: #ffc2a8; }
+/* D-99: pace forecast under the folded seal in watch mode (Flip cover) */
+.seal-pace { margin-top: 2px; padding-block: 1px; padding-inline: 8px; font-size: 12px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
+.seal-pace.warn { color: #ffe0a0; }
+.seal-pace.late { color: #ffc2a8; }
 
 /* ---- bottom rail: worst stall card + alarm seal, the tool cards */
 .rail {

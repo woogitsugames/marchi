@@ -217,8 +217,12 @@ export class Tutorial {
       if (!subj || top !== keyOf(subj) || (!this.chainLink() && since > LINK_WAIT_MS)) this.afterChain(false);
     }
     if (this.step === 4) {
-      if (tool === 'road') this.go(5);
-      else if (this.closeAt >= 0 && performance.now() >= this.closeAt) {
+      if (tool === 'road') {
+        this.go(5);
+        // the crossing needs the map: a card still open from step 3 (docked beside the map in landscape) closes,
+        // so the note gets a free band clear of the rail (first-10-minutes-b, item 2)
+        if (top) this.host.closeSheets();
+      } else if (this.closeAt >= 0 && performance.now() >= this.closeAt) {
         this.closeAt = -1;
         // only if the card actually hides the Track button (portrait); docked side sheets stay
         if (this.covered(document.querySelector('.rail [data-tool="road"]'))) this.host.closeSheets();
@@ -443,9 +447,16 @@ export class Tutorial {
     const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
+    // one layout read per width per placement: the free-slot scan below asks for the same widths often
+    const heights = new Map<number, number>();
     const measure = (w: number): number => {
-      this.noteWrap.style.width = `${w}px`;
-      return this.noteWrap.offsetHeight || 120;
+      const k = Math.round(w);
+      const known = heights.get(k);
+      if (known !== undefined) return known;
+      this.noteWrap.style.width = `${k}px`;
+      const h = this.noteWrap.offsetHeight || 120;
+      heights.set(k, h);
+      return h;
     };
     const tryBand = (y: number): Box | null => {
       const hh = measure(NOTE_MAX_W);
@@ -468,23 +479,31 @@ export class Tutorial {
     if (!placed && waybill) placed = tryBand(waybill.y + waybill.h + 10);
     if (!placed && target) placed = tryBand(target.y + target.h + ARROW_LEN + 14);
     if (!placed && ghost) placed = tryBand(ghost.y + ghost.h + 10) ?? tryBand(ghost.y - measure(NOTE_MAX_W) - 10);
+    // any free slot lower down (landscape 915x412, step 5: the bands above all cross the waybill, the clock
+    // or the crossing, and the old fallback laid the note on the tool rail the step needs — day 7)
+    for (let y = y0 + 12; !placed && y + measure(NOTE_MAX_W) <= vh - 8; y += 12) placed = tryBand(y);
     if (!placed) {
       // no free band: the full-width slot that hides least, the target and the waybill (the player's
       // own list, the target of steps 1 and 6) weighing most; never the old "top of the waybill" default
       const floor = Math.min(sheet ? sheet.y : vh, q('.rail')?.y ?? vh);
       const w = Math.min(NOTE_MAX_W, vw - 20);
       const hh = measure(w);
-      const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('.rail-tools'), 2], [q('.stall-row:not([hidden])'), 1]];
-      const cost = (y: number): number => weigh.reduce((sum, [b, k]) => {
+      // the rail weighs as much as the crossing in step 5: the step needs "Droga" in reach
+      // the open card's head (title and close button) weighs as much: covering it leaves a card nobody can shut
+      const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('#sheets .sheet:last-child .sheet-head'), 6],
+        [q('.rail-tools'), this.step === 5 ? 6 : 2], [q('.stall-row:not([hidden])'), 1]];
+      const cost = (x: number, y: number): number => weigh.reduce((sum, [b, k]) => {
         if (!b) return sum;
-        const ix = Math.min(b.x + b.w, 10 + w) - Math.max(b.x, 10), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
+        const ix = Math.min(b.x + b.w, x + w) - Math.max(b.x, x), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
         return sum + (ix > 0 && iy > 0 ? ix * iy * k : 0);
       }, 0);
       const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8]
         .map((y) => Math.max(8, Math.min(vh - hh - 8, y)));
-      let by = ys[0]!;
-      for (const y of ys) if (cost(y) < cost(by)) by = y;
-      placed = { x: 10, y: by, w, h: hh };
+      // both sides: in landscape the right half is often clearer than the rail's corner
+      const xs = [10, Math.max(10, vw - w - 10)];
+      let best = { x: xs[0]!, y: ys[0]!, c: Infinity };
+      for (const x of xs) for (const y of ys) { const c = cost(x, y); if (c < best.c) best = { x, y, c }; }
+      placed = { x: best.x, y: best.y, w, h: hh };
     }
     this.notePlaced = placed;
     this.noteWrap.style.width = `${placed.w}px`;

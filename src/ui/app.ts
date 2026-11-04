@@ -479,6 +479,9 @@ export class App implements PanelNav {
         this.prefs.tutorialM1 = r;
         savePrefs(this.prefs);
         if (this.tutorial === tut) this.tutorial = null;
+        // done or skipped: put the road tool away, so the next tap on the map opens a card instead of drawing a
+        // road (first-10-minutes-b, item 3)
+        if (this.tool === 'road' || this.tool === 'cobble') this.setTool('none');
       },
     });
     this.tutorial = tut;

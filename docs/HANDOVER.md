@@ -480,6 +480,29 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - m8: kamieniołom czekający na rezerwę kamienia — **spokojna pinezka** z linią „W spichlerzu jest N kamieni” (D-95) — zostaje.
 - Od ~21:00 znów do 2 agentów Opus (deweloper + researcher).
 
+## Stan dnia 7 — 2026-11-03 (gałąź `claude/w-day7`, agent dzienny 7; przerwane z powodu limitu użycia)
+**Zrobione i zatwierdzone:** zadanie 1 — notatka samouczka w kroku 5 w poziomie nie leży już na „Droga” ani na
+przycisku zamknięcia karty (D-96, 4ce0565). Sprawdzone przez `tools/repro-step5.mjs` (prawdziwe dotknięcia, zbudowana gra):
+915×412 pl z kartą i bez, `?lang=ar`, 412×915; most nadal się buduje. Zrzuty `docs/shots/day7-tut-step5-*.jpg`.
+Fold book/flex nie sprawdzone (narzędzie nie emuluje zawiasu, maszyna przeciążona). Typecheck OK, `npm test` **431/0**,
+złote hasze bez zmian.
+**Gotowe w drzewie roboczym, NIEZATWIERDZONE** (typecheck i 431/0 przeszły na tym drzewie; przed commitem dopisać
+D-97…D-99 i zrobić zrzuty):
+- Zadanie 2 — ranga 5 doliny 13 000 → **14 500** (`src/sim/defs.ts`; tabela rang w `docs/playtest/PROTOCOL.md` też
+  poprawiona na 3000/7200/14 500). Bot DECENT: R5 108,7 → **119,7 min** (środek okna 105–135); próg 14 000 → 116,0,
+  15 000 → 123,1. Ławka 180 min: „mixed” 106,5–108,7 → 117,7–119,7; z `--events` 87,5–90,0 → 95,3–96,9 (nadal poniżej okna,
+  jak dotąd). Srebro, rangi 1–4 i pozostałe plany bez zmian. Rangi 3/4 zostają 3000/7200.
+- Zadanie 3 — spokojny wariant kodeksu `OUTPUT_FULL.NO_WAGON` („Pełno — nic pilnego”, bez „Kup wóz”):
+  `STALL_CODEX_CALM` w `src/content/stallCodex.ts`, sekcja „Wersje spokojne” w `docs/content/stall-codex.md`,
+  `codexCalm()` w `src/ui/stalls.ts`, `codexHtml(…, calm)` w `codex.ts`/`panels.ts`, 2 nowe testy w `tests/stall-codex.test.ts`.
+  m4: 898 spokojnych / 15 zwykłych próbek, m8: 340 / 139. Zrzut 412×915 obejrzany (`tools/day7-shots.mjs WHAT=codex`).
+- Zadanie 4 — dwa podglądy prognozy na pieczęci w trybie zegarka, tylko z flagą `?sealpace=a|b` (`sealPaceHtml` w
+  `src/ui/pace.ts`, `hud.ts`, CSS `.seal-pace*`, klucze `contract.sealPace.eta/.late` w PENDING_KEYS). A: „gotowe za 3:05”
+  pod zegarem; B: trzy małe pieczęcie bez słów. Zrzuty 360×380 zrobione (`tools/day7-shots.mjs WHAT=flip`), jeszcze nie w
+  `docs/shots/`. **Do decyzji właściciela: A czy B** (rekomendacja: A).
+**Zostało:** zatwierdzić zadania 2–4 (każde osobno, z D-97/D-98/D-99), zrzuty `day7-codex-*`/`day7-flip-*` do
+`docs/shots/`, BACKLOG (zamknąć P2 „notatka w poziomie” i P3 „kodeks Kup wóz”, przy P3 Flip dopisać warianty).
+
 ## Plan nocy 2026-11-03/04 (właściciel ~22:15)
 - Przerwa do resetu limitu **01:50 Brussels**; budzik `send_later` 01:51 (`trig_01XbYzYTQ84hRVHD1m32jheV`); godzinny cykl
   `trig_01TCkYqpaE2pikhXkeMNAEq9` **wyłączony do resetu** — włączyć po wznowieniu, prompt: do 2 agentów Opus bez limitu godzin.
@@ -502,3 +525,40 @@ Do sprawdzenia na telefonie: notatka samouczka w poziomie w kroku 5 leży na pas
 - **~22:50 właściciel: także `main`.** Na zdalnym nie było `main` — utworzona z bazy. Po każdym zielonym scaleniu do bazy:
   `git push origin claude/eager-cori-08wt8e:main` (fast-forward). PR innych sesji kierować do bazy, scalać lokalnie lub przez
   GitHub, potem przesunąć `main`. Praca autonomiczna, ciągła, PR-y wolno otwierać.
+
+## Stan day7-finish (inna sesja) — 2026-11-03 (gałąź `claude/x-day7-finish` z `claude/w-day7`, PR do bazy)
+Sesja `session_01SPCeEK6Xe5W8fsR6UsUZeP`. Baza `claude/eager-cori-08wt8e` scalona do gałęzi (notatki właściciela ~22:30,
+`docs/research/2026-11-03-first-10-minutes-b.md`; konflikt w HANDOVER — obie strony zachowane). `src/sim` zmienia tylko
+próg rangi 5 doliny. Testy **432/0** (nowy `tests/m1-eye-fix.test.ts`), typecheck i build zielone, złote hasze bez zmian,
+`npm run bot` (m1) identyczny: wygrana 8,85 min, 2 pieczęcie, 26 srebra. Smoke m1–m12 + dolina (`quality=low&dynres=0&speed=4`)
+bez błędów konsoli; `npm run layout -- --quick` **84/84**.
+**Zadanie A (day7, WIP 87fdf14 rozbity):**
+- 8d22927 — ranga 5 doliny **14 500** (D-97): bot DECENT 108,7 → 119,7 min; przegląd 14 000 / 15 000 / 16 000 = 116,0 / 123,1 /
+  129,1 min (rangi 1–4 i srebro bez zmian). Tabela w `docs/playtest/PROTOCOL.md`.
+- 6bc9d09 — spokojny wpis kodeksu `OUTPUT_FULL.NO_WAGON` „Pełno — nic pilnego”, bez „Kup wóz” (D-98). Zrzuty `day7-codex-*`.
+- b912dbe — tryb zegarka (Flip): „gotowe za 3:05” / „spóźni się 1:20” pod zegarem pieczęci **domyślnie**, bez flagi; wariant B
+  i `?sealpace` usunięte (D-99). Zrzut `day7-flip-a-m3-360x380.jpg`. Linia tylko w trybie zegarka (`Hud.compact`), nie przy
+  ręcznym zwinięciu listu na dużym ekranie.
+- d65e529 — BACKLOG (zamknięte: notatka kroku 5 w poziomie, ranga 5, kodeks „Kup wóz”, Flip).
+**Zadanie B (first-10-minutes-b; bez zmian w sim):**
+1. **„Naprawa” przyklejona do dołu arkusza** (D-100, 66a2077) — wybrane zamiast przeniesienia nad łańcuch: przy ~136 px treści
+   w 915×412 przeniesienie zasłoniłoby przyczynę; teraz nagłówek łańcucha i pierwsze ogniwo na górze, przycisk zawsze w widoku,
+   reszta przewija się pod nim (miękkie wygaszenie, bez linii). Zmierzone `tools/fix-shots.mjs`: przycisk w widoku 915×412 pl/ar
+   i 412×915. Zrzuty `day7-fix-before-915x412.jpg` i `day7-fix-dock-*.jpg`.
+2. **Przycisk nie znika pod palcem** (05cbd71) — arkusz budynku i wozu w trzech częściach (`display: contents`), każda
+   przerysowywana tylko przy zmianie własnego HTML; przy wciśniętym palcu odświeżenie czeka. `tools/fix-tap.mjs`: węzeł
+   przycisku przeżywa odświeżanie przy ×1; dotknięcie buduje most (180 → 150), w m3 kupuje wóz (270 → 240, 4 → 5 wozów).
+3. **Koniec samouczka i „Pomiń” wyłączają „Drogę”** (e6a93fd; `host.finish` w `src/ui/app.ts`). `repro-step5.mjs END=1/SKIP=1`:
+   `tool: none` w 915×412 i 412×915.
+4. **Krok 5: karta z kroku 3 zamyka się** (6522fd0; `tutorial.ts`). W poziomie notatka pod listem, pasek narzędzi wolny,
+   most się buduje (pl i ar). Zrzuty `day7-tut-step5-915x412-nocard.jpg`, `…-ar-nocard.jpg`.
+5. **„Oko → Naprawa” kończy misję I** — tak: `tests/m1-eye-fix.test.ts` (dotyk karty najgorszego zastoju + przycisk z arkusza)
+   wygrywa przy reakcji co 10 s (10,6 min) i 30 s (9,7 min); co 60 s przegrywa (12:00). Przyczyna porażki w badaniu: przycisk
+   pod fałdą i przerysowanie (dotknięcie nie trafiło, srebro zostało 150) — naprawione w 1–2. Pełnego pomiaru 10 minut w
+   przeglądarce nie powtarzałem (SwiftShader, ~1 min na krok) — BACKLOG P2.
+Nowe narzędzia: `tools/fix-shots.mjs`, `tools/fix-tap.mjs`, `tools/day7-shots.mjs`; `repro-step5.mjs` + `SKIP`/`END`.
+Następna decyzja: **D-101**. Nowe klucze PENDING_KEYS: `contract.sealPace.eta`, `contract.sealPace.late`.
+**Do decyzji właściciela:** w poziomie przyklejona „Naprawa” zasłania korzeń łańcucha (widać nagłówek i pierwsze ogniwo;
+przyczynę podaje też karta „Najgorszy zastój”) — zostawić, czy w poziomie dodatkowo skracać łańcuch do korzenia?
+Do sprawdzenia na telefonie: dok „Naprawy” przy prawdziwym przewijaniu palcem (Android WebView, `:has`), linia „gotowe za”
+na okładce Flip.

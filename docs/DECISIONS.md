@@ -1328,3 +1328,92 @@ calm with the wagon cure — owner). Keys `cause.stoneStored`, `fix.stoneStored`
 run every one of the 188 "no wagon" samples of the quarry now reads this way (`tests/m8-stone-stored.test.ts`).
 Rejected: the stone reserve before producer inputs in the dispatcher (hash, mission re-tuning; after the
 playtest, BACKLOG). `docs/shots/day6-m8-stone-412x915*.jpg`. (decided)
+
+**D-96 — Tutorial note placement: free-slot scan before the fallback; the fallback looks at both sides and
+spares the rail and the open card's head (day 7; BACKLOG P2 from D-91).** At 915x412 in step 5 every band
+`placeNote` tried (the waybill's row, under the waybill, under the target, around the crossing) crossed the
+waybill, the clock chips, the docked card or the ghost crossing, so the note fell back to "x = 10, the slot that
+hides least", which weighed the tool rail at 2 against 6 for the ghost — and lay on "Droga", the tool step 5
+needs. Now: (1) after the fixed bands, `tryBand` is tried every 12 px down the screen, so any free slot wins
+(landscape with no card open: under the waybill, `day7-tut-step5-915x412.jpg`); (2) the fallback tries both the
+left and the right edge, the rail weighs 6 in step 5, and the open card's head (title and close button) weighs
+6, so the note never sits on the X of a card. Measured with `tools/repro-step5.mjs` (real input, built game):
+915x412 with the wagon card docked on the right — note bottom right, clear of rail and crossing, over the
+card's lower edge only (`-sheet.jpg`); `?lang=ar` (card on the left, rail mirrored) — note right of the
+crossing, clear of rail, card and waybill (`-ar.jpg`; before the card-head weight it lay on the card's close
+button); 412x915 — unchanged, between the waybill and the crossing. The drag across the river still builds the
+bridge and moves on (915x412 run: coins 180 -> 150, bridge on the map). Heights are measured once per width per
+placement (a cache), so the scan costs no extra layouts in steady state. Fold book/flex not run: the repro tool
+has no hinge emulation and the machine was saturated (SwiftShader ~1.5 min per step); `tools/fold-audit.mjs`
+remains the check for those. `tools/repro-step5.mjs` gains `LANG_Q` and `ONLY5`. (decided)
+
+**D-97 — Free valley rank 5: 13 000 → 14 500 renown (day 7; sim constant only, missions untouched).** After D-94
+(top-up in loads of four, ranks 3/4 at 3000/7200) the decent-player bot (`tools/bot-sandbox.ts`, plan `DECENT`,
+150 min) reached rank 5 at **108.7 min**, at the very start of the target window 105–135 min, while ranks 1–4 had
+moved to the middle of theirs. Rank 5 unlocks nothing (castle look only), so it is the long goal and should sit
+mid-window. Threshold sweep, same plan, everything else equal (ranks 1–4 10.4 / 22.3 / 42.8 / 76.3 min and 19 706
+silver earned in every run, no invariant violations):
+
+| rank 5 renown | rank 5 reached |
+|---|---|
+| 13 000 (old) | 108.7 min |
+| 14 000 | 116.0 min |
+| **14 500** | **119.7 min** |
+| 15 000 | 123.1 min |
+| 16 000 | 129.1 min |
+
+14 500 lands nearest the middle (120). 16 000 leaves only ~6 min to the top edge (a slower player misses the
+window); 14 000 stays in the lower third. Bench 180 min: "mixed" 106.5–108.7 → 117.7–119.7 min; with
+`--events` 87.5–90.0 → 95.3–96.9 min (still under the window, as before — events add silver; not tuned here).
+`docs/playtest/PROTOCOL.md` rank table updated to 3000 / 7200 / 14 500. Only `RANKS[5].renown` in
+`src/sim/defs.ts` changes: no state field, state version stays 8, mission golden hashes unchanged (no mission
+reads the valley ranks). Owner confirmed 14 500 (~22:30). (decided)
+
+**D-98 — Calm codex variant for a full yard that needs nothing ("Pełno — nic pilnego"; day 7; UI/content only).**
+The "Co to znaczy?" fold under a calm stall (D-85 surplus, a filled order, D-95 stone already in the granary) read
+the ordinary `status.OUTPUT_FULL.NO_WAGON` entry, whose first cure is "Kup wóz w połączonej stajni" — right under
+the calm line that says "Nowy wóz tego nie przyspieszy". Two texts on one card contradicted each other, and the
+codex is what a new player trusts. Now `STALL_CODEX_CALM` (`src/content/stallCodex.ts`, mirrored in
+`docs/content/stall-codex.md` under "Wersje spokojne") holds a calm variant of that key: "Pełno — nic pilnego",
+"to nie awaria", fixes "Nie kupuj wozu z tego powodu…", "Zajmij się postojem z czerwoną pieczęcią…", "Gdy towar
+znów będzie potrzebny, wóz przyjedzie sam." The fold takes it exactly when `calmWhy()` is non-null for the
+chain's last building (`codexCalm()` in `src/ui/stalls.ts`), so the fold and the calm line can never disagree.
+Only keys whose normal entry advises a cure a calm stall does not need get a variant (one today). Measured over
+whole missions: m4 898 calm / 15 ordinary samples, m8 340 / 139 — the ordinary entry (with "Kup wóz") still shows
+where a wagon would help (`day7-codex-wagon-m8-sawmill-412x915.jpg`). Tests: calm variants only for real keys,
+never "Kup wóz"/"Buy a wagon"; the fold follows the calm line on m4/m8/m9. Rejected: deleting the wagon cure from
+the normal entry (it is right for a real stall). `docs/shots/day7-codex-calm-m4-*.jpg`. (decided)
+
+**D-99 — Watch mode (Flip cover): the folded seal shows "gotowe za M:SS" under its clock (day 7; UI only;
+BACKLOG P3 from D-43).** On the Flip cover (`is-mini`) the waybill folds to its seal, which showed only the time
+left; the pace forecast was one tap away in the castle card. Two previews were built behind `?sealpace=a|b`:
+A — one short line under the seal's clock ("gotowe za 3:05", "spóźni się 1:20" when the forecast misses the due
+time, amber in the last minute); B — three small seals pressed by the forecast, no words. Owner chose **A** (~22:30):
+words read on a 360 px cover without decoding three 16 px seals that sit next to the bigger seal of the order, and
+it says the same as the waybill's "Przy tym tempie: gotowe za …" line. A is now the default whenever the HUD is
+in watch mode (`Hud.compact`), with no URL flag; variant B, its CSS and the `?sealpace` flag are removed. The line
+is not added when the player folds the waybill on a big screen (the full waybill is one tap away there). Empty
+until the forecast is ready. Keys `contract.sealPace.eta/.late` (PENDING_KEYS). `day7-flip-a-m3-360x380.jpg`
+(m3, 7:00 left, "gotowe za 3:05"). (decided)
+
+**D-100 — "Naprawa" docks to the bottom edge of the "Dlaczego stoi?" sheet (UI only; first-10-minutes-b items 1,
+2, 4).** At 915×412 the side sheet's body shows ~136 px (it sits between the chips and the bottom rail, D-55), so the
+fix (header, 56 px button, hint) lay 120–180 px below the fold (`day7-fix-before-915x412.jpg`); the research run
+tapped beside it and the wagon was never bought. Two options: (a) move `fixHtml`/`cureHtml` above the chain, or (b)
+keep the order and stick the button to the sheet's bottom. **Chosen: (b).** The game is about diagnosing: the card
+reads cause → fix, and with (a) a 136 px body would show only the button and hide the cause under it, teaching
+"tap the red button" instead of "read why". With (b) the chain header and its first link stay on top, the button
+is always on screen, and the rest scrolls beneath it with a 14 px paper fade (no rule line — a hairline over the
+text read as strike-through). Portrait is unchanged where the fix already fits (it simply does not stick).
+Mechanics: the sheet body renders in three `display: contents` parts (lead, fix, rest), so `.fix-dock`
+(`position: sticky; inset-block-end: 0`) is a box child of the scrolling body; the body drops its bottom padding
+when it has a dock (`:has`), otherwise the scrolled text showed through an 8 px strip under the button. Only the
+button (and, when disabled, its "Brakuje N srebra") is in the dock; the explaining hint follows in the flow.
+The same parts make each section re-render only when its own HTML changes (the stall clock ticks in the lead,
+the button node stays), and a sheet waits with its refresh while a pointer is down on it — the button never
+changes under the finger. Measured (`tools/fix-shots.mjs`, `tools/fix-tap.mjs`, built game): fix button inside the
+visible body at 915×412 pl/ar and 412×915; the node survives refreshes at ×1; a real tap builds the bridge
+(180 → 150) and, in m3, buys a wagon (270 → 240, 4 → 5 wagons). Headless (`tests/m1-eye-fix.test.ts`): tapping only
+the worst stall's card and its fix wins mission I with a tap pair every 10 s (10.6 min) or 30 s; every 60 s is
+too slow (lost at 12:00) — so the research run's loss came from the fix that was never applied, not from the
+path. `docs/shots/day7-fix-dock-*.jpg`. (decided)

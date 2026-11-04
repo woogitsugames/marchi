@@ -3,10 +3,10 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as ts from 'typescript';
-import { STALL_CODEX } from '../src/content/stallCodex';
+import { STALL_CODEX, STALL_CODEX_CALM } from '../src/content/stallCodex';
 import { TICK_HZ, createWorld, explainBuilding, explainWagon, step } from '../src/sim/index';
 import { codexLink, isStallLink, isWagonWait } from '../src/ui/stallKinds';
-import { rankStalls } from '../src/ui/stalls';
+import { calmWhy, codexCalm, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 function read(path: string): string {
@@ -68,7 +68,7 @@ test('stall codex has exactly all BuildingStatus causes and WagonStatus variants
 });
 
 test('each PL/EN codex entry is complete and every mobile field is at most 220 characters', () => {
-  for (const [key, entry] of Object.entries(STALL_CODEX)) {
+  for (const [key, entry] of [...Object.entries(STALL_CODEX), ...Object.entries(STALL_CODEX_CALM)]) {
     assert(entry && Object.keys(entry).sort().join(',') === 'en,pl', 'PL/EN missing: ' + key);
     for (const lang of ['pl', 'en'] as const) {
       const e = entry[lang];
@@ -97,8 +97,16 @@ Stan \`wagon.NO_ROUTE\` obejmuje również powrót do stajni (\`target = -1\`).
 Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze, nie awarie.
 
 `;
+  const calmHeader = `# Wersje spokojne / Calm variants
+
+Gdy postój jest spokojny (nadwyżka, której nikt teraz nie potrzebuje, wypełnione zamówienie, kamień już w spichlerzu),
+fałda „Co to znaczy?” pokazuje ten wariant zamiast zwykłego wpisu (D-98).
+
+`;
   const expected = header + Object.entries(STALL_CODEX).map(([key, entry]) =>
-    `## \`${key}\`\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('');
+    `## \`${key}\`\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('') +
+    calmHeader + Object.entries(STALL_CODEX_CALM).map(([key, entry]) =>
+    `## \`${key}\` — spokojny / calm\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('');
   eq(read('../docs/content/stall-codex.md').replace(/\r\n/g, '\n'), expected,
     'Markdown content must stay in sync with src/content/stallCodex.ts');
 });
@@ -132,4 +140,31 @@ test('audit fix 4: the codex fold explains the last stall of the chain, never a 
   }
   assert(past > 20, `chains ending at a non-stall now explained by their last stall (${past})`);
   assert(wagons > 0, `waiting wagons sampled (${wagons})`);
+});
+
+test('D-98: calm variants exist only for real codex keys and never advise buying a wagon', () => {
+  for (const [key, entry] of Object.entries(STALL_CODEX_CALM)) {
+    assert(Object.hasOwn(STALL_CODEX, key), 'calm variant of a known key: ' + key);
+    for (const f of entry.pl.fixes) assert(!/^Kup wóz/.test(f!), 'PL calm fix does not say "Kup wóz": ' + f);
+    for (const f of entry.en.fixes) assert(!/^Buy a wagon/.test(f!), 'EN calm fix does not say "Buy a wagon": ' + f);
+  }
+});
+
+test('D-98: a calm OUTPUT_FULL.NO_WAGON (filled order, surplus, stone stored) reads the calm codex; a stall worth a wagon does not', () => {
+  let calm = 0, normal = 0;
+  for (const id of ['m4', 'm8', 'm9']) {
+    const w = createWorld(id);
+    while (w.state.mission.result === 'running') {
+      step(w);
+      if (w.state.tick % 20) continue;
+      for (const b of w.state.buildings) {
+        if (b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON') continue;
+        const c = codexCalm(w, { kind: 'building', id: b.id, status: b.status });
+        eq(c, calmWhy(w, b) !== null, 'the fold follows the calm line');
+        if (c) calm++; else normal++;
+      }
+    }
+  }
+  assert(calm > 20, `calm samples (${calm})`);
+  assert(normal > 0, `samples still worth a wagon (${normal})`);
 });
