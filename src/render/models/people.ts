@@ -309,6 +309,19 @@ export interface WorkerPose {
 /** Rest pose arm angle per kind: tools held so their ends stay clear of the ground. */
 const REST_ARM: Record<WorkerKind, number> = { chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15 };
 
+/** The hoe stroke (s) and the step the farmer takes back along the furrow after each stroke (m). */
+export const HOE_CYCLE = 2.6;
+export const HOE_STEP = 0.45;
+
+/**
+ * Distance (m) the farmer has walked along the furrow after `t` s of hoeing: still while the hoe goes up, bites
+ * and draws the earth, one short step back at the end of each stroke (the last 14 %, ~0.36 s) — slow, never a glide.
+ */
+export function hoeWalk(t: number): number {
+  const n = Math.floor(t / HOE_CYCLE), p = t / HOE_CYCLE - n;
+  return HOE_STEP * (n + smooth01((p - 0.86) / 0.14));
+}
+
 export function workerPose(kind: WorkerKind, t: number, working: boolean, out: WorkerPose): void {
   out.lift = 0;
   if (!working) {
@@ -334,7 +347,7 @@ export function workerPose(kind: WorkerKind, t: number, working: boolean, out: W
   }
   if (kind === 'hoe') {
     // 2.6 s: lift the hoe to the shoulder, chop it into the soil, draw the earth back toward the feet
-    const p = (t / 2.6) % 1;
+    const p = (t / HOE_CYCLE) % 1;
     const up = smooth01(p / 0.35), strike = smooth01((p - 0.42) / 0.1), pull = smooth01((p - 0.6) / 0.3);
     out.bend = 14 * D + 14 * D * strike - 4 * D * up * (1 - strike) + 6 * D * pull * (1 - pull) * 4 - 10 * D * pull;
     out.arm = 40 * D - 85 * D * up + 80 * D * strike + 15 * D * pull;
