@@ -9,7 +9,7 @@
   pobierze SDK. Właściciel: dodać `dl.google.com` (i `maven.google.com`) w Allowed domains środowiska albo szerszy
   dostęp do sieci.
 - Smoke jest teraz w repo: `node tools/smoke.cjs` (menu + m1–m13 + sandbox na `vite preview --port 5193`).
-- Zrobione: **D-124** — decyzje M7 (duch rybaka VII przy najbliższym brzegu; rozsądny gracz 3/3/3★ → 2/2/2★) i
+- Zrobione: **D-125** — decyzje M7 (duch rybaka VII przy najbliższym brzegu; rozsądny gracz 3/3/3★ → 2/2/2★) i
   M3 (linia błota tylko przy zagrożonej pieczęci; III bez zmian). M4 bez zmian.
 - W toku: deweloper a11y fix 5–7 (D-121..D-123), researcher zrzuty render #4.
 - Inne sesje: brak gałęzi `claude/x-trade-post` / `claude/x-m8-redesign` i brak otwartych PR (22:00).

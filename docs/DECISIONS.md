@@ -1611,7 +1611,7 @@ never meet a wagon cure while short of silver before the ice). No other mission 
 unchanged. Test `tests/ice-ahead.test.ts`.
 (decided)
 
-**D-124 — Owner decisions on day 8c (2026-11-04 ~18:00): VII's fisher ghost on the nearest bank, III's mud line only at risk.**
+**D-125 — Owner decisions on day 8c (2026-11-04 ~18:00): VII's fisher ghost on the nearest bank, III's mud line only at risk.**
 M7: mission VII loses its authored fisher site (`siteHints` removed; `M7_FISHER_SITE` stays as bot/balance data), so
 the pace card's "Postaw jeszcze: Chata rybaka" opens the build tool with the ghost on the nearest valid bank by the
 existing hut (`buildSite` ring search) — the card says *what*, the player still picks *where*. Reasonable player VII
