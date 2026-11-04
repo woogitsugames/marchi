@@ -399,9 +399,9 @@ function v4View(st: unknown): string {
  *  D-44 (1) a bridge-held wagon root is charged per span in every world: m2 nothing / buy 2 / 2nd wooden
  *  bridge and m4 nothing / buy 3 change (stall ledger only, state with the ledger stripped identical). */
 const V4_GOLDEN: Record<string, string> = {
-  'm1|nothing (no crossing)': '7c315e7a86c45ca5',
-  'm1|wooden bridge x=41 @0:10': 'c22a705d468f86e0',
-  'm1|bridge + 2 wagons @0:10': '89fa376a29801a9f',
+  'm1|nothing (no crossing)': '8d93fdbf6cb41686',
+  'm1|wooden bridge x=41 @0:10': 'f8a384c669d73b40',
+  'm1|bridge + 2 wagons @0:10': 'bd62ca11c4911697',
   'm2|nothing': '4b902f1db0533e35',
   'm2|buy 2 wagons': 'c33b5d92f4dbd83f',
   'm2|buy 2 + stone bridge @45s': 'a439d677a03daddc',

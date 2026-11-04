@@ -21,8 +21,8 @@ import { assert, eq, test } from './harness';
 const CONTRACT_GOLDEN: Record<string, string> = {
   'lab|buy0': 'f1d465eefe140104,70bb6c651df3077d,3288c1723c2c39b0',
   'lab|buy2': '71c556000a799973,de8b1fc0396c26c3,93cdc1e7c1a4a625',
-  'm1|buy0': '64244b5b1893bdbd,3eb0bd8a44b76681,7aa3fa177dd66b60',
-  'm1|buy2': '3cebad739d99e847,704ffdd08c0748b7,8653b3886e4b29f7',
+  'm1|buy0': 'f4c615ac8d207e28,e3e502cd6742c843,f9383920b41b750f',
+  'm1|buy2': '0054e26891882946,f9bfc3eb2b75078d,fc67b6b3ebd67043',
   'm10|buy0': '02d241c44b2bcc79,4af90ada046d346e,ddf332951ee78196',
   'm10|buy2': '0eeb5cd9a58cfc9b,b3657227eabf727e,f6bd74fd2d859b30',
   'm11|buy0': '2efa46c20498c847,e6b574e9833b9f71,a0af05f383cbb207',

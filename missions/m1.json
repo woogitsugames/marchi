@@ -148,8 +148,8 @@
       "bread": 20
     },
     "deadlineMin": 12,
-    "star3Min": 7,
-    "star2Min": 9
+    "star3Min": 9.25,
+    "star2Min": 10.75
   },
   "valley": {
     "w": 96,

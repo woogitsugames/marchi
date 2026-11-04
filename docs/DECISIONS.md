@@ -1509,3 +1509,14 @@ producer's gate, which was not what the game offers). Reasonable player eye 10/3
 **X 3/3/1★ (8,41/8,59/11,12) → 3/3/3★ (9,04/8,59/9,11)**; IX 3/3/1★ (8,06/9,10/11,16) → 3/3/2★ (8,71/8,99/9,24);
 others identical. (The night-6 figure X 1/2/2★ was the gate spiral, not the ghost.) Test `tests/site-hint.test.ts`;
 shots `docs/shots/night6b-m10-ghost-*.jpg`. (decided)
+
+**D-108 — Mission I seal thresholds 3★ 9:15, 2★ 10:45 (day 8; research P1; owner 2026-11-04 morning).** The
+tutorial's 3★ was out of reach: the best plan found (bridge + 4 wagons, all the silver = `npm run bot`) wins at
+8,85 min against a 7:00 threshold; more silver (240) or 3 start wagons still gives 8,27–8,72. Moving the thresholds
+is cheaper and keeps the river lesson intact: `star3Min 7 → 9.25`, `star2Min 9 → 10.75` (`src/sim/missions.ts`,
+`missions/m1.json`; deadline 12:00 unchanged). Measured (`tools/balance-night6.ts m1`): bot/optimum 8,85 → **3★
+(+24 s)**; reasonable player eye 10/30/60 s 1/1/1★ → **2/2/1★** (10,06 / 9,91 / 11,38; −49/−40/−128 s to 3★);
+scan+ 30 s 11,01 (1★), letter + eye+ 30 s 11,15 (1★); passive, wagons only and bridge only still lose. Seal
+thresholds live in the state (`mission.contract.star*Tick`), so every M1 golden hash changes and nothing else:
+`V4_GOLDEN` m1 ×3, `valley-events-live` m1 ×2 (buy0/buy2). DESIGN.md quotes the new thresholds and
+`docs-numbers` now checks them. (decided)

@@ -189,8 +189,8 @@ export const MISSIONS: Record<string, MissionDef> = {
     ],
     contract: { wood: 0, planks: 30, grain: 0, flour: 0, bread: 20 },
     deadlineMin: 12,
-    star3Min: 7,
-    star2Min: 9,
+    star3Min: 9.25,
+    star2Min: 10.75,
   },
   // Free valley (docs/design/sandbox.md §4.1): a settlement whose woodcutter and sawmill already
   // reach the castle market, so silver flows from the first minute. No contract, no deadline, no loss.
