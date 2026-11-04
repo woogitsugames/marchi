@@ -1661,3 +1661,12 @@ parchment plaque (`--kparch`, 2 px spread) in darker wine `#5c1418`, so the hatc
 (was 1.3:1 at worst). ETA and income `#7d5d23` → `#6b4f1d` (≈5.3:1 on parchment); the "Zacznij tutaj" kicker
 `#561418`; `--slate` `#3d4852` → `#36404a`. No hue changes, only darker steps of the same inks.
 (decided)
+
+**D-123 — Two-tone focus ring (day 8d; a11y F8).**
+The ochre ring was 2.31:1 on parchment. `:focus-visible` (buttons, `[tabindex]`, links, selects, textareas, the
+volume slider) now draws a 2 px ink outline (`--focus-ink #1d1813`, 11:1 on parchment) between two pale bands
+(`--focus-pale #f6e9c8`, `box-shadow` 2 px inside the offset and 6 px outside), so one of the two tones keeps
+≥ 3:1 against the map, the oak plates and the wine wax alike. While focused, the ring replaces a control's own
+`box-shadow`; sheets themselves (`section.sheet:focus`) draw no ring. `button:focus { outline: none }` stays:
+mouse and touch focus show nothing.
+(decided)

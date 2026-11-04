@@ -87,7 +87,14 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 button:focus { outline: none; }
-button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+/* two-tone focus ring (D-123, a11y audit F8): an ink line between two pale bands. Ink on parchment reads 11:1, the
+   pale bands stand off the map, the oak and the wine wax; the pair keeps 3:1 against anything behind it */
+:root { --focus-ink: #1d1813; --focus-pale: #f6e9c8; }
+button:focus-visible, [tabindex]:focus-visible, a[href]:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--focus-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 6px var(--focus-pale);
+}
 
 svg { display: block; fill: currentColor; flex: none; }
 
@@ -550,7 +557,7 @@ body.is-side .sheet-grip::before { display: none; }
   --v: 50%;
 }
 .vol:focus { outline: none; }
-.vol:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+.vol:focus-visible { outline: 2px solid var(--focus-ink); outline-offset: 2px; box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 6px var(--focus-pale); }
 .vol::-webkit-slider-runnable-track {
   height: 8px;
   background: linear-gradient(90deg, var(--ochre) 0 var(--v), var(--oak) var(--v));
@@ -668,7 +675,7 @@ body.is-side .sheet-grip::before { display: none; }
 .letter .l-next .ln-t { font-family: var(--font-head); font-size: 21px; line-height: 1.05; }
 .letter .l-next .ln-s { font-size: 13px; font-weight: 500; line-height: 1.2; opacity: .9; }
 /* sheets take focus on open for assistive tech (a11y, brief 06 task 4); the container itself draws no ring */
-section.sheet:focus { outline: none; }
+section.sheet:focus { outline: none; box-shadow: none; }
 
 @media (max-height: 500px) {
   .scrim { align-items: flex-start; padding-top: calc(var(--safe-t) + 34px); }
