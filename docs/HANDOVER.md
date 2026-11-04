@@ -712,3 +712,9 @@ Wykonane decyzje właściciela z rana (M1, M4, karta IX/X) i nowa tabela rozsąd
 - **VII:** rozsądny gracz 1★ przy każdym tempie (rybak tylko z listu) — kolejna paczka UI (karta „brak ryb / rybak
   daleko od wody”)?
 - Po scaleniu przeprojektowanej M8: zmierzyć wiersz VIII (`npx tsx tools/balance-night6.ts m8`).
+
+## Decyzje właściciela 2026-11-04 ~13:30 (dolina)
+- Renoma za zamówienia królewskie **2× → 0,5× srebra** (research valley-3h, propozycja 1) — tak.
+- Zapchany spichlerz w dolinie: podpowiedź **„Kup wóz”** zamiast „Postaw spichlerz” (`docs/research/2026-11-04-valley-late-cure-proto.patch`) — tak.
+- Późna gra doliny: **(a) karta „Wąskie gardło” + punkt handlowy za rzeką od rangi 4** (125 %, drewniany most zamarza zimą,
+  ranga 5 → 17 000; zapis v9 z migracją, nowy budynek, ~12 kluczy) — spec `docs/research/2026-11-04-valley-late-game.md`.
