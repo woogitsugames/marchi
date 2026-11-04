@@ -1520,3 +1520,16 @@ scan+ 30 s 11,01 (1★), letter + eye+ 30 s 11,15 (1★); passive, wagons only a
 thresholds live in the state (`mission.contract.star*Tick`), so every M1 golden hash changes and nothing else:
 `V4_GOLDEN` m1 ×3, `valley-events-live` m1 ×2 (buy0/buy2). DESIGN.md quotes the new thresholds and
 `docs-numbers` now checks them. (decided)
+
+**D-109 — Mission IV: 140 silver, seals 3★ 7:30, 2★ 10:00 (day 8; research P3; owner 2026-11-04 morning).** Five
+bought wagons beat the lesson (6,52 min, 3★, k = 5 — and 4 or 6 wagons gave 1★: a knife edge). With 140 silver
+(was 180, `coins` override in `src/sim/missions-s2.ts`; `proposals/m4.ts` keeps the proposal's 180) at most four
+wagons can be bought, and the stone bridge (87) plus one wagon still fit. Thresholds 7:00/9:30 → 7:30/10:00 so the
+lesson alone is a clear 3★. Measured (`tools/balance-night6.ts m4`, before → after): wagons only best 6,52 (3★,
+k=5) → **10,16 (1★, k=2; −10 s to 2★)**; lesson only @0:00 7,01 (2★, −0 s) → **3★ (+30 s)**; optimum 5,98 → 5,99
+(lesson @20 s + 1 wagon, +91 s); letter + eye+ 30 s 6,59 → 7,15 (**3★, +21 s**); passive 11,65 (1★) unchanged;
+reasonable player eye 10/30/60 s **1/2/2★ unchanged** (10,56 / 7,58 / 7,96; −184/−5/−27 s to 3★). One loss:
+scan+ 30 s 6,83 (3★) → 11,77 (1★) — it buys three wagons first and then cannot afford the bridge. Authored
+strategies (`tools/balance.ts m4`): nothing 11,65 (1), 3 wagons 10,49 (1), stone bridge late 8,07 (2), before the
+ice 6,43 (3), all `expect`s hold. Hashes: `V4_GOLDEN` m4 ×4 and `valley-events-live` m4 ×2 change, nothing else.
+(decided)
