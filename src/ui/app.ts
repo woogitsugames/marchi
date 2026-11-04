@@ -886,6 +886,11 @@ export class App implements PanelNav {
 
   // ------------------------------------------------------------------ PanelNav
 
+  /** PanelNav: mission I's tutorial is on screen (the castle card folds its order and pace). */
+  tutorialRunning(): boolean {
+    return this.tutorial !== null;
+  }
+
   /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
   pickBuild(type: BuildingType, near: number): void {
     if (!buildTypes(this.world).includes(type)) return;
