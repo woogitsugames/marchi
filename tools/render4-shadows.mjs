@@ -2,6 +2,7 @@
 // the mid wagon rig / far cargo shadows, on ONE page at ONE tick (the sim is paused; the shadow modes are switched
 // at runtime with WagonsView.setShadowTiers from docs/research/2026-11-04-render4-shadows.patch).
 // Usage: node tools/render4-shadows.mjs <baseUrl> <quality> <portrait|landscape> <dists=50,80,110> <outDir> [wagons=200] [shots=1]
+// env DPR (default 2), MEASURE=0 skips the GL counts (shots only; SwiftShader at DPR 2 takes ~1 min per frame).
 // Serve a build WITH the patch applied (?debug=1 exposes window.__marchia.app). Without the patch (setShadowTiers
 // missing) it only measures the shipped state ("unpatched").
 // Prints one JSON line: per distance and mode, GL draws/triangles in the main and offscreen (shadow) passes,
@@ -20,7 +21,7 @@ const viewport = orient === 'portrait' ? { width: 412, height: 915 } : { width: 
 
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const t0 = performance.now();
-const page = await (await browser.newContext({ viewport, deviceScaleFactor: 2, isMobile: true, hasTouch: true })).newPage();
+const page = await (await browser.newContext({ viewport, deviceScaleFactor: Number(process.env.DPR ?? 2), isMobile: true, hasTouch: true })).newPage();
 const errs = [];
 page.on('pageerror', (e) => errs.push(String(e)));
 await page.addInitScript(() => {
@@ -47,6 +48,7 @@ await page.evaluate(() => window.__marchia.app.view.texturesReady).catch(() => {
 await page.evaluate(({ n, cmds }) => {
   const app = window.__marchia.app, st = app.world.state;
   st.coins = 1e9; st.town.rank = 5;
+  st.rain = []; // dry weather: no rain streaks, full sun shadows (set before any tick: same state on every page)
   for (const c of cmds) { if (c.t === 'road' && c.surface === 2) c.surface = 1; app.loop.enqueue(c); }
   app.loop.flushCommands();
   for (const b of st.buildings) if (b.type === 'warehouse') for (const g of ['wood', 'grain', 'flour']) { b.stock[g] += 48; st.ledger.produced[g] += 48; }
@@ -69,6 +71,8 @@ await page.evaluate(({ n, cmds }) => {
   }
   for (let i = 0; i < 120; i++) app.loop.tickOnce();
   app.loop.speed = 0;
+  // the game UI is the same in both shots and covers the road: hide it (sheets, HUD, pins)
+  for (const el of Object.values(app.layers ?? {})) if (el && el.style) el.style.visibility = 'hidden';
 }, { n: wagons, cmds: benchCmds });
 // the busiest spot (render-scale "near"): the cell with most moving wagons within 6 cells
 const target = await page.evaluate(() => {
@@ -94,14 +98,23 @@ const measure = () => page.evaluate(() => new Promise((res) => {
       near: vis(v.near.horse), mid: vis(v.mid.horse), far: vis(v.lod1), framesSkipped: s - f0 });
   }); });
 }));
-const MODES = patched ? [['before', 'rig', true], ['after', 'none', false], ['proxy', 'proxy', false]] : [['unpatched']];
+const measuring = process.env.MEASURE !== '0';
+const MODES = patched ? [['before', 'rig', true], ['after', 'none', false], ...(measuring ? [['proxy', 'proxy', false]] : [])] : [['unpatched']];
+// freeze render time (water, wind, rain, idle horses) once the camera has settled: only the shadow mode differs
+const freeze = (on) => page.evaluate((on) => {
+  const v = window.__marchia.app.view;
+  if (!v.__frame0) v.__frame0 = v.frame.bind(v);
+  v.frame = on ? (a) => v.__frame0(a, 0) : v.__frame0;
+}, on);
 const out = { quality, orient, wagons, target, patched, runs: [] };
 for (const d of dists) {
   await page.evaluate(({ x, z, d }) => { const app = window.__marchia.app; app.view.rig.set(x, z, d, 0.6); app.view.rig.follow?.(null); }, { ...target, d });
+  await freeze(false);
   await page.waitForTimeout(2500);
+  await freeze(true);
   for (const [label, mid, farCargo] of MODES) {
     if (mid) await page.evaluate(({ mid, farCargo }) => window.__marchia.app.view.wagons.setShadowTiers(mid, farCargo), { mid, farCargo });
-    const r = await measure();
+    const r = measuring ? await measure() : {};
     if (shots && (label === 'before' || label === 'after')) {
       await page.waitForTimeout(400);
       await page.screenshot({ path: `${outDir}/${quality}-${orient}-${d}-${label}.png`, timeout: 600000 });
