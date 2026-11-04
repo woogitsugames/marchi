@@ -185,3 +185,46 @@ node tools/render-scale-table.mjs <dir> [<dir-po>]
 ```
 
 Jeden przebieg (2 kamery) trwa 3–5 min na spokojnej maszynie, do 17 min przy obciążonym kontenerze.
+
+## Po poprawkach (dzień 8b, gałąź `claude/w-day8b`)
+
+Wdrożone #1 → #3 → #2 → #6 (kolejność z rankingu). #4 i #5 nie wdrożone (zmieniają obraz / ryzyko kopii materiałów —
+w BACKLOG). Pomiar: te same polecenia co wyżej (`render-scale.mjs … 200 high near,far 6 0 1` i `… 100 high far 5 100 1`),
+build przed = `886368b` (port 5212), po = HEAD gałęzi (port 5215), ten sam kontener (load 9–13 — ms dalej w szumie,
+pewne są liczniki KB). „micro” = 60 wywołań na tej samej scenie, alloc w KB na wywołanie.
+
+| metryka | 200 wozów near (60 m) | 200 wozów far (320 m) | 100 pinezek far |
+|---|---|---|---|
+| #1 upload do GPU, KB/klatkę | 689 → **40** (−94 %) | 659 → **40** (−94 %) | 659 → **38** (−94 %) |
+| #3 alloc `view.afterTick`, KB/tick | 93 → **42** (−55 %) | 72 → **23** (−69 %) | 48 → **23** (−51 %) |
+| #3 alloc całego ticku (`loop.tickOnce`), KB | 122 → **67** (−45 %) | 100 → **49** (−51 %) | 91 → **67** (−27 %) |
+| #2 alloc `wagons.frame`, KB/klatkę | 156 → **48** (−70 %) | 157 → **58** (−63 %) | 73 → **28** (−62 %) |
+| #6 alloc `markers.update` (71 pinezek), KB | — | — | 36 → **27** (−25 %; `place` 9,8 → 1,4) |
+| micro ms `wagons.frame` / `afterTick` / `markers` | 0,54 → 0,50 / 0,20 → 0,08 / — | 0,46 → 0,36 / 0,14 → 0,06 / — | 0,22 → 0,18 / 0,08 → 0,06 / 0,12 → 0,06 |
+| draw calls main/cień, trójkąty main | 80/67, 638k → 80/67, 635k | 58/44, 506k → 58/44, 499k | 60/44, 1088k → 60/44, 1087k |
+
+Trójkąty różnią się o 0,5–1,5 % tylko dlatego, że w oknie pomiaru jedzie inna liczba wozów (125 → 124, 76 → 71) —
+draw calls bez zmian. Liczba wywołań uploadu ta sama (33/25), mniejsze tylko zakresy.
+
+**Obraz.** `tools/jam-diff.mjs` (dev serwery przed/po, ten sam deterministyczny przebieg): domyślna scena 30 wozów,
+4 w ruchu — **0 różnych pikseli**; `wagons=60&stress=1&cam=40,40,140,-0.6` (29 w ruchu, część poza kadrem) — **0
+pikseli**, max różnica kanału 0. Zrzuty gry 412×915 i 915×412 (misja VI) obejrzane — bez różnic widocznych okiem
+(gra w czasie rzeczywistym, więc piksel w piksel porównuje tylko jam-diff).
+
+Szczegóły wdrożenia (różnice względem prototypów):
+- **#1** `markInstances(attr, n)` w `instancedParts.ts`: `clearUpdateRanges` + `addUpdateRange(0, n·itemSize)`, przy
+  n = 0 nic. Użyte w `Parts.end`, pozach koni (`WagonsView.frame`), `groundCover` (kępy + kolory, krzewy) i
+  `vegetation` (bliskie, dalekie, plamy).
+- **#3** `surf()` — `Float64Array` (nie Float32: dokładnie ta sama wartość co `hf.height`), NaN = jeszcze nie liczone.
+  `wagonDrawLag(world, scratch)` i `stableParking(world, slots, out)` piszą do map trzymanych w widoku (listy krawędzi
+  z puli); test `wagon-spacing` porównuje wynik z mapami świeżymi przez 1500 ticków.
+- **#2** Prototyp D (ten sam (x, z, kierunek) → ta sama próbka; porównanie dokładne, więc wynik bit w bit) plus
+  culling bez marginesu „na oko”: `Heightfield.bounds()` daje analityczne granice wysokości całej mapy (wagi
+  Catmull-Roma, profil brzegu, detal; test na wszystkich misjach), a wóz jest pomijany tylko, gdy pudełko jego sfery
+  testowej dla **każdego** y z tych granic leży poza frustum — wtedy dokładny test też by go odrzucił. Wóz poza
+  kadrem dostaje y przycięte do granic (jego pinezka / punkt dotyku rzutuje się poza ekran tak samo); śledzony wóz
+  (`exactId`, kamera czyta jego y) zawsze liczony dokładnie. `vnoise` z całkowitym haszem — nie ruszany (nie było
+  potrzeby po cullingu: `hash3` w `wagons.frame` 58 → 5–9 KB).
+- **#6** Pinezka bez zmiany kotwicy (porównanie dokładne float) i przy tych samych przeszkodach nie jest dotykana;
+  `occluders` trzyma starą tablicę, gdy prostokąty są te same (aplikacja podaje nową co 250 ms). Przycinania puli nie
+  robiłem (pula 110 przy 71 widocznych — zysk 7 węzłów DOM/pin, osobno).

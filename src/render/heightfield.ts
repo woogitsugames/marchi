@@ -74,6 +74,23 @@ export class Heightfield {
     return this.c[iz * this.cw + ix]!;
   }
 
+  private hb: { min: number; max: number } | null = null;
+  /**
+   * Conservative bounds of `height` over the whole map (metres). Catmull-Rom weights sum to 1 with |w| summing to at
+   * most 1.25 per axis, so `raw` stays within 1.5625 x the half-range of the corners around their mid; `base`
+   * blends it with the bank profile (WL - 1.43 .. WL + 0.56) and `detail` adds at most +-0.22; 1 m of slack on top.
+   * Used to cull wagons before sampling the ground (research 2026-11-04 "Poprawki" #2).
+   */
+  bounds(): { min: number; max: number } {
+    if (this.hb) return this.hb;
+    let lo = Infinity, hi = -Infinity;
+    for (const v of this.c) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    const mid = (lo + hi) / 2, half = ((hi - lo) / 2) * 1.5625;
+    const WL = this.waterLevel;
+    this.hb = { min: Math.min(mid - half, WL - 1.5) - 1.25, max: Math.max(mid + half, WL + 0.6) + 1.25 };
+    return this.hb;
+  }
+
   /** Smooth base surface (no noise). x, z in metres. */
   base(x: number, z: number): number {
     const raw = this.raw(x, z);

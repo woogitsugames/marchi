@@ -650,4 +650,6 @@ export const en: FullDict = {
   // watch-mode seal forecast line (D-99)
   'contract.sealPace.eta': 'done in {time}',
   'contract.sealPace.late': '{time} late',
+  // short landscape cause chain: the middle links folded behind one row (D-111)
+  'why.more': '{n, plural, one {+# link between} other {+# links between}}',
 };

@@ -653,6 +653,8 @@ export const pl = {
   // watch-mode seal forecast line (D-99; see PENDING_KEYS)
   'contract.sealPace.eta': 'gotowe za {time}',
   'contract.sealPace.late': 'spóźni się {time}',
+  // short landscape cause chain: the middle links folded behind one row (D-111; see PENDING_KEYS)
+  'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -707,6 +709,7 @@ export const PENDING_KEYS = [
   'cause.heldIce',
   'fix.pave',
   'fix.paveWhy',
+  'why.more',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -283,6 +283,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     const [act, arg] = (el.dataset.act ?? '').split(':');
     if (act === 'codex') { toggleCodex(el); return; }
     if (act === 'sfold') { toggleCastleFold(el); return; }
+    if (act === 'chain') { openChain(el, (el.dataset.act ?? '').slice(6)); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
@@ -304,19 +305,46 @@ function wire(sheet: Sheet, nav: PanelNav): void {
   });
 }
 
-function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wagon', selfId: number): string {
+/** Chains whose middle links the player unfolded on a short landscape sheet (per session, never in the sim). */
+const chainOpen = new Set<string>();
+
+/**
+ * The cause chain. On a short landscape side sheet (D-111) the fix dock covers most of the ~136 px body, so the
+ * chain shows the subject and directly the root; the links between fold behind one "+N" row that unfolds in
+ * place. Both forms are in the markup and CSS picks one (portrait never folds); the unfolded state survives the
+ * sheet's refreshes until it closes.
+ */
+function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wagon', selfId: number, since = ''): string {
   const because = esc(t('why.because'));
   const last = chain.length - 1;
-  return `<ol class="chain">${chain.map((l, i) => {
+  const key = `${selfKind}:${selfId}`;
+  const mid = Math.max(0, chain.length - 2);
+  const open = mid > 0 && chainOpen.has(key);
+  const items = chain.map((l, i) => {
     const self = l.kind === selfKind && l.id === selfId;
     const root = i === last && chain.length > 1 && isStallLink(l);
     const tag = root ? `<span class="root-tag">${esc(t('why.root'))}</span>` : '';
     const attrs = self ? 'disabled' : `data-go="${l.kind}:${l.id}"`;
-    return `<li data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
+    const pos = i === 0 ? 'c-first' : i === last ? 'c-last' : 'c-mid';
+    return `<li class="${pos}" data-because="${because}"><button class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
       <span class="l-icon">${linkIcon(world, l, 32)}</span>
-      <span><span class="l-who">${esc(linkSubject(world, l))}${tag}</span><span class="l-why">${esc(linkText(world, l))}</span></span>
-      <span class="l-go fwd">${self ? '' : iconSvg('back', 18)}</span></button></li>`;
-  }).join('')}</ol>`;
+      <span class="l-text"><span class="l-who">${esc(linkSubject(world, l))}${tag}</span><span class="l-why">${esc(linkText(world, l))}</span></span>
+      ${self ? `<span class="l-since">${since}</span>` : `<span class="l-go fwd">${iconSvg('back', 18)}</span>`}</button></li>`;
+  });
+  if (mid > 0) {
+    items.splice(1, 0, `<li class="c-more"><button class="c-more-btn" data-act="chain:${key}" aria-expanded="${open}"><span class="c-n" dir="auto"${translated('why.more') ? '' : ' lang="en"'}>${
+      esc(t('why.more', { n: mid }))}</span><span class="codex-chev" aria-hidden="true"></span></button></li>`);
+  }
+  return `<ol class="chain${mid > 0 ? ' has-mid' : ''}${open ? ' is-open' : ''}">${items.join('')}</ol>`;
+}
+
+/** Unfold the middle links in place (the sheet's next refresh renders the same open state). */
+function openChain(btn: HTMLElement, key: string): void {
+  chainOpen.add(key);
+  const ol = btn.closest('.chain');
+  ol?.classList.add('is-open');
+  btn.setAttribute('aria-expanded', 'true');
+  ol?.querySelector<HTMLButtonElement>('.c-mid button[data-go]')?.focus({ preventScroll: true });
 }
 
 function chip(g: Good, have: number, cap: number | null, extra: string, empty = false): string {
@@ -472,7 +500,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;
       if (chain.length > 1) {
-        top = `<div class="section-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id)}`;
+        top = `<div class="section-h chain-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id, b.stalledTicks > 0 ? `<bdi class="num">${esc(ticksClock(b.stalledTicks))}</bdi>` : '')}`;
       } else {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world))}</span>${since}</div>`;
@@ -509,7 +537,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },
-    onClose() { nav.setGhost(null); },
+    onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); },
   };
 }
 
@@ -591,7 +619,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       setHtml(pRest!, html.slice(cut));
       return true;
     },
-    onClose() { nav.setGhost(null); },
+    onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); },
   };
 }
 

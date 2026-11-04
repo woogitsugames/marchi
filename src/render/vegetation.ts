@@ -19,6 +19,7 @@ import {
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
+import { markInstances } from './instancedParts';
 import { rng, vnoise } from './models/kit';
 import { modelMaterial, treeUniforms } from './models/materials';
 import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeLodFactor, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './models/trees';
@@ -208,19 +209,19 @@ export class VegetationView {
     if (this.blobs) {
       this.blobs.count = nb;
       this.blobs.visible = nb > 0;
-      if (nb) this.blobs.instanceMatrix.needsUpdate = true;
+      markInstances(this.blobs.instanceMatrix, nb);
     }
     this.near.forEach((list, slot) => {
       for (const m of list) {
         m.count = counts[slot]!;
-        m.instanceMatrix.needsUpdate = true;
+        markInstances(m.instanceMatrix, m.count);
         m.visible = m.count > 0;
         m.computeBoundingSphere();
       }
     });
     this.far.forEach((f, i) => {
       f.count = fcounts[i]!;
-      f.instanceMatrix.needsUpdate = true;
+      markInstances(f.instanceMatrix, f.count);
       f.visible = f.count > 0;
       f.computeBoundingSphere();
     });

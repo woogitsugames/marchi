@@ -21,7 +21,22 @@ const DELIVERY_HOLD_MS = 1300;
 const DELIVERY_FADE_MS = 220;
 interface Delivery { el: HTMLElement; id: number; bornAt: number; out: boolean; row: number }
 
-interface Bubble { el: HTMLElement; icon: HTMLElement; time: HTMLElement; secs: number; key: string; sig: string; used: boolean; shownAt: number }
+interface Rect { l: number; t: number; r: number; b: number }
+/**
+ * px / py / occ: the anchor last written and the occluder list it was tested against. A pin whose anchor is exactly
+ * the same under the same occluders is not touched again (no style write, no style recalc; research 2026-11-04
+ * "Poprawki" #6: the usual case is a still camera while the player reads a cause).
+ */
+interface Bubble { el: HTMLElement; icon: HTMLElement; time: HTMLElement; secs: number; key: string; sig: string; used: boolean; shownAt: number; px: number; py: number; occ: readonly Rect[] | null }
+
+function sameRects(a: readonly Rect[], b: readonly Rect[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const p = a[i]!, q = b[i]!;
+    if (p.l !== q.l || p.t !== q.t || p.r !== q.r || p.b !== q.b) return false;
+  }
+  return true;
+}
 
 export class Markers {
   readonly root: HTMLElement;
@@ -49,7 +64,10 @@ export class Markers {
    * them would only peek out from behind the panel and steal taps meant for it, so it fades out until the
    * camera moves it back into the open map (D-62). Refreshed by the app a few times a second.
    */
-  occluders: readonly { l: number; t: number; r: number; b: number }[] = [];
+  get occluders(): readonly Rect[] { return this.occ; }
+  /** Keeps the old list when the rects are the same, so unmoved pins can tell nothing changed. */
+  set occluders(v: readonly Rect[]) { if (!sameRects(v, this.occ)) this.occ = v; }
+  private occ: readonly Rect[] = [];
   /** Contract goods in the castle at the last frame (castle id, tick, per good); null = not seeded. */
   private castleSeen: { id: number; tick: number; have: Map<Good, number> } | null = null;
 
@@ -76,7 +94,7 @@ export class Markers {
         const [kind, id] = k.split(':');
         this.onBubble?.(kind as 'building' | 'wagon', Number(id));
       });
-      b = { el, icon, time, secs: -1, key: '', sig: '', used: true, shownAt: 0 };
+      b = { el, icon, time, secs: -1, key: '', sig: '', used: true, shownAt: 0, px: NaN, py: NaN, occ: null };
       this.pool.push(b);
       this.root.append(el);
     }
@@ -197,10 +215,14 @@ export class Markers {
         requestAnimationFrame(() => b.el.classList.add('is-shown', 'breathe'));
       }
     }
+    if (x === b.px && y === b.py && b.occ === this.occ) return;
+    b.px = x;
+    b.py = y;
+    b.occ = this.occ;
     b.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     // the pin box: 48 x 56 above its anchor (main.css .bubble margin)
     let under = false;
-    for (const o of this.occluders) {
+    for (const o of this.occ) {
       if (x + 24 > o.l && x - 24 < o.r && y > o.t && y - 56 < o.b) { under = true; break; }
     }
     if (under !== b.el.classList.contains('is-under')) b.el.classList.toggle('is-under', under);
