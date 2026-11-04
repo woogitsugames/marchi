@@ -14,10 +14,10 @@ import {
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { castleLevel, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { buildingModel, castleUpgradeParts, type BuildingKind } from './models/buildings';
+import { buildingModel, castleUpgradeParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
-import { WORKER_HIP_Y, WORKER_SHOULDER_Y, type WorkerKind, workerPose, workerRig } from './models/people';
+import { WORKER_HIP_Y, WORKER_SHOULDER_Y, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
 import { Parts } from './instancedParts';
 
 export interface BuildingInfo {
@@ -45,9 +45,19 @@ interface Worker {
   base: Matrix4;
   /** Phase offset (s) so neighbouring yards do not swing in step. */
   phase: number;
+  /** Out on a field (re-placed when roads change), not in the building's own yard. */
+  field?: boolean;
 }
 
-interface WorkerParts { legs: Parts; torso: Parts; arms: Parts }
+/** A building whose worker goes out to the fields (the farm), kept to re-place him when the roads change. */
+interface FieldWorker { building: Building; spot: WorkerSpot; m: Matrix4; angle: number; baseY: number }
+
+interface WorkerParts { legs: Parts; torso: Parts; arms: Parts; tool: Parts | null }
+
+/** Rig variant (clothing) per worker kind: neighbours in one yard dress differently. */
+const RIG_VARIANT: Record<WorkerKind, number> = { chop: 2, sack: 3, peel: 0, sawTop: 1, sawPit: 0, hoe: 1, net: 2 };
+/** How far from a farm (cells, Chebyshev, from its footprint edge) the farmer walks out to a field. */
+const FIELD_REACH = 6;
 
 /** Where a building's output pile stands (render-only, D-71): ground point and turn in world space. */
 /** A yard spot: `slot` −1 = the producer's output (D-71), 0.. = the n-th store / contract pile (D-79). */
@@ -130,6 +140,8 @@ export class BuildingsView {
   private meshes: Mesh[] = [];
   private wheels: Wheel[] = [];
   private workers: Worker[] = [];
+  private fieldWorkers: FieldWorker[] = [];
+  private fieldNet = -1;
   /** Output piles by the yards, drawn each frame from the stock with the wagons' cargo instances (D-71). */
   readonly yards: YardPile[] = [];
   private workerParts = new Map<WorkerKind, WorkerParts>();
@@ -145,11 +157,12 @@ export class BuildingsView {
   private partsFor(kind: WorkerKind): WorkerParts {
     let p = this.workerParts.get(kind);
     if (!p) {
-      const rig = workerRig(kind, kind === 'chop' ? 2 : kind === 'sack' ? 3 : 0);
+      const rig = workerRig(kind, RIG_VARIANT[kind]);
       p = {
         legs: new Parts(rig.legs, WORKER_CAP, this.workerGroup, `worker-${kind}-legs`),
         torso: new Parts(rig.torso, WORKER_CAP, this.workerGroup, `worker-${kind}-torso`),
         arms: new Parts(rig.arms, WORKER_CAP, this.workerGroup, `worker-${kind}-arms`),
+        tool: rig.tool ? new Parts(rig.tool, WORKER_CAP, this.workerGroup, `worker-${kind}-tool`) : null,
       };
       this.workerParts.set(kind, p);
     }
@@ -191,11 +204,16 @@ export class BuildingsView {
         });
         add(pb.build(), new Matrix4().makeTranslation(cx, baseY, cz).multiply(_m.makeRotationY(angle)).multiply(new Matrix4().makeTranslation(pcx * sx, 0, pcz * sz)));
       }
-      if (model.worker) {
-        const at = model.worker.at.clone().applyMatrix4(m);
-        const base = new Matrix4().makeRotationY(angle + model.worker.yaw).setPosition(at.x, Math.max(baseY, this.hf.height(at.x, at.z)), at.z); // on the yard, like the props
-        this.partsFor(model.worker.kind);
-        this.workers.push({ buildingId: b.id, kind: model.worker.kind, base, phase: (b.id * 0.618) % 1 * 7 });
+      for (const spot of model.workers ?? []) {
+        const at = spot.at.clone().applyMatrix4(m);
+        // on the yard, like the props; `at.y` lifts the feet onto a log or a landing stage
+        const base = new Matrix4().makeRotationY(angle + spot.yaw).setPosition(at.x, Math.max(baseY, this.hf.height(at.x, at.z)) + spot.at.y, at.z);
+        this.partsFor(spot.kind);
+        this.workers.push({ buildingId: b.id, kind: spot.kind, base, phase: (b.id * 0.618) % 1 * 7 });
+      }
+      if (model.fieldWorker) {
+        this.partsFor(model.fieldWorker.kind);
+        this.fieldWorkers.push({ building: b, spot: model.fieldWorker, m: m.clone(), angle, baseY });
       }
       if (model.yard) {
         const at = model.yard.at.clone().applyMatrix4(m);
@@ -236,6 +254,7 @@ export class BuildingsView {
         type: b.type,
       });
     }
+    this.placeFieldWorkers(world);
     for (const [mat, list] of byMat) {
       const g = mergeGeometries(list, false);
       for (const l of list) l.dispose();
@@ -251,8 +270,55 @@ export class BuildingsView {
     return true;
   }
 
+  /**
+   * Farmers stand out on the nearest tilled field cell within FIELD_REACH of their farm that is free of roads
+   * and buildings (deterministic: scan order, ties by distance then index), facing along the furrows; with no
+   * such field they work in the yard spot. Re-placed when the road network changes (a road over the field).
+   */
+  private placeFieldWorkers(world: World): void {
+    this.fieldNet = world.state.netVersion;
+    this.workers = this.workers.filter((w) => !w.field);
+    if (!this.fieldWorkers.length) return;
+    const t = world.terrain, W = t.w, H = t.h, roads = world.state.roads;
+    const blocked = new Uint8Array(W * H);
+    for (const q of world.state.buildings) for (let y = q.y; y < q.y + q.h; y++) for (let x = q.x; x < q.x + q.w; x++) blocked[y * W + x] = 1;
+    const taken = new Set<number>();
+    for (const f of this.fieldWorkers) {
+      const b = f.building;
+      let best = -1, bestD = Infinity;
+      for (let y = Math.max(0, b.y - FIELD_REACH); y < Math.min(H, b.y + b.h + FIELD_REACH); y++) {
+        for (let x = Math.max(0, b.x - FIELD_REACH); x < Math.min(W, b.x + b.w + FIELD_REACH); x++) {
+          const i = y * W + x;
+          if (!t.field[i] || roads[i] || blocked[i] || t.water[i] || taken.has(i)) continue;
+          const dx = x + 0.5 - (b.x + b.w / 2), dy = y + 0.5 - (b.y + b.h / 2);
+          const d = dx * dx + dy * dy;
+          if (d < bestD) { bestD = d; best = i; }
+        }
+      }
+      let base: Matrix4;
+      if (best >= 0) {
+        taken.add(best);
+        const cx = best % W, cy = (best - cx) / W;
+        // furrows run along the longer run of field cells (as the terrain shader draws them)
+        let rx = 0, rz = 0;
+        for (let k = cx + 1; k < W && t.field[cy * W + k]; k++) rx++;
+        for (let k = cx - 1; k >= 0 && t.field[cy * W + k]; k--) rx++;
+        for (let k = cy + 1; k < H && t.field[k * W + cx]; k++) rz++;
+        for (let k = cy - 1; k >= 0 && t.field[k * W + cx]; k--) rz++;
+        const yaw = (rx >= rz ? Math.PI / 2 : 0) + (b.id % 2 ? Math.PI : 0);
+        const px = (cx + 0.5) * CELL + ((b.id * 0.37) % 1 - 0.5) * 1.2, pz = (cy + 0.5) * CELL;
+        base = new Matrix4().makeRotationY(yaw).setPosition(px, this.hf.height(px, pz), pz);
+      } else {
+        const at = f.spot.at.clone().applyMatrix4(f.m);
+        base = new Matrix4().makeRotationY(f.angle + f.spot.yaw).setPosition(at.x, Math.max(f.baseY, this.hf.height(at.x, at.z)), at.z);
+      }
+      this.workers.push({ buildingId: b.id, kind: f.spot.kind, base, phase: (b.id * 0.618) % 1 * 7, field: true });
+    }
+  }
+
   update(world: World, dt: number): void {
     this.time += dt;
+    if (world.state.netVersion !== this.fieldNet && this.fieldWorkers.length) this.placeFieldWorkers(world);
     this.updateWorkers(world);
     if (!this.wheels.length) return;
     for (const w of this.wheels) {
@@ -270,7 +336,7 @@ export class BuildingsView {
 
   /** Yard workers: chop / carry / bake while the building is WORKING, stand at rest otherwise. */
   private updateWorkers(world: World): void {
-    for (const p of this.workerParts.values()) { p.legs.begin(); p.torso.begin(); p.arms.begin(); }
+    for (const p of this.workerParts.values()) { p.legs.begin(); p.torso.begin(); p.arms.begin(); p.tool?.begin(); }
     const bs = world.state.buildings;
     for (const w of this.workers) {
       let working = false;
@@ -283,8 +349,9 @@ export class BuildingsView {
       p.torso.push(_wt);
       _wa.copy(_wt).multiply(_t.makeTranslation(0, WORKER_SHOULDER_Y, 0)).multiply(ROT.makeRotationX(_pose.arm));
       p.arms.push(_wa);
+      if (p.tool) p.tool.push(_wa.copy(w.base).multiply(_t.makeTranslation(0, _pose.lift, 0)));
     }
-    for (const p of this.workerParts.values()) { p.legs.end(); p.torso.end(); p.arms.end(); }
+    for (const p of this.workerParts.values()) { p.legs.end(); p.torso.end(); p.arms.end(); p.tool?.end(); }
   }
 
   private clear(): void {
@@ -293,6 +360,7 @@ export class BuildingsView {
     this.meshes = [];
     this.wheels = [];
     this.workers = [];
+    this.fieldWorkers = [];
     this.yards.length = 0;
     this.info.clear();
   }
@@ -306,4 +374,4 @@ const ROT = new Matrix4();
 const _t = new Matrix4();
 const _wt = new Matrix4();
 const _wa = new Matrix4();
-const _pose = { bend: 0, arm: 0 };
+const _pose: WorkerPose = { bend: 0, arm: 0, lift: 0 };
