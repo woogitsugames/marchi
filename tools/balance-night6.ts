@@ -15,7 +15,7 @@ import {
   MISSIONS, TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, lineCells, missionBuildable,
   net, sharedInput, stars, stateHash, step, suggestLinkToStable, thinDelivery, type BuildingType, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, gapTarget, rankStalls } from '../src/ui/stalls';
+import { cureFor, gapTarget, heldSpanFor, rankStalls, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { writeFileSync } from 'node:fs';
@@ -183,6 +183,17 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
   } else {
     const cure = cureFor(w, b.id);
     if (cure === 'wagon') act = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }).ok ? 'wagon' : 'wagon?nocoins';
+    else if (cure === 'pave') {
+      // the held-span card (night 6, P4 in the game): pave the span in stone
+      const h = heldSpanFor(w, b)!;
+      act = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }).ok ? 'stoneBridge' : 'stoneBridge?fail';
+    }
+    else if (cure === 'producer') {
+      // the shared-supply card (night 6, P5 in the game): build another producer of that type by the first one
+      const src = buildingById(w, sharedOneProducer(w, b)!.producer)!;
+      const [x, y] = cellXY(w, src.gate);
+      act = placeNear(w, src.type, x, y) >= 0 ? 'producer:' + src.type : 'producer?fail';
+    }
     else if (cure === 'granary') {
       const can = missionBuildable(w.state.mission.id);
       if (can !== 'ranked' && can.includes('warehouse')) {

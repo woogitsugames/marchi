@@ -504,8 +504,8 @@ export class App implements PanelNav {
     if (b) this.enqueue({ t: 'demolish', cell: b.y * this.world.terrain.w + b.x });
   }
 
-  buildRoad(cells: number[]): void {
-    this.enqueue({ t: 'road', cells, surface: 1 });
+  buildRoad(cells: number[], surface: 1 | 2 = 1): void {
+    this.enqueue({ t: 'road', cells, surface });
   }
 
   private applyGhost(): void {

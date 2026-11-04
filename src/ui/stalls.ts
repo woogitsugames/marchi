@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { busyOutOfReach, buildingById, contractFilled, explainBuilding, granaryRelief, outputCustomer, outputSurplus, seasonalSupplier, stoneInStore, type Building, type ReasonLink, type World } from '../sim/index';
+import { TICK_HZ, busyOutOfReach, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 
 /** 2 s: no pin or card for a short hiccup. */
@@ -11,7 +11,7 @@ export const MIN_STALL_TICKS = 20;
 const W_CRIT = 3, W_NORMAL = 1, W_MINOR = 0.25;
 
 /** The tool that fixes the root of a stall chain (the HUD highlights that tool card). */
-export type Cure = 'wagon' | 'road' | 'granary' | null;
+export type Cure = 'wagon' | 'road' | 'granary' | 'producer' | 'pave' | null;
 
 export interface StallEntry {
   id: number;
@@ -67,10 +67,94 @@ export function codexCalm(world: World, l: ReasonLink): boolean {
   return !!b && calmWhy(world, b) !== null;
 }
 
+/**
+ * One producer feeds two (or more) workshops of this input, and the mission lets the player build another one
+ * (research 2026-11-04, P5; missions IX, X): the cure is a second producer, not a wagon. sharedInput holds only
+ * while the building waits for that input (NO_INPUT, NO_WAGON, WAITING_DELIVERY / _UPSTREAM). Pure read.
+ */
+export interface SharedOne { producer: number; type: BuildingType; consumers: number }
+export function sharedOneProducer(world: World, b: Building): SharedOne | null {
+  const sh = sharedInput(world, b.id);
+  if (!sh || sh.producers !== 1 || sh.consumers < 2 || sh.producer < 0) return null;
+  const p = buildingById(world, sh.producer);
+  if (!p) return null;
+  const can = missionBuildable(world.state.mission.id);
+  if (can === 'ranked' || !can.includes(p.type)) return null;
+  return { producer: p.id, type: p.type, consumers: sh.consumers };
+}
+
+/**
+ * A wagon of this building's job (pickup here, or delivery here) has stood at a wooden span for 20 s or more —
+ * a one-lane jam or ice (research 2026-11-04, P4; missions II, IV). The buildings behind it only "wait for a
+ * delivery", which is no stall, so the jam never reached the card. Cure: pave that span in stone (no one-lane
+ * rule, ice does not close it), when the surface is allowed here. `cells` is the span in drive order.
+ */
+export interface HeldSpan { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED'; span: number; heldTicks: number; cells: number[] }
+export const HELD_SPAN_TICKS = 20 * TICK_HZ;
+export function heldSpanFor(world: World, b: Building): HeldSpan | null {
+  const st = world.state;
+  let best: HeldSpan | null = null;
+  for (const w of st.wagons) {
+    const s = w.status;
+    if (s.k !== 'BRIDGE_JAM' && s.k !== 'BRIDGE_CLOSED') continue;
+    const held = st.tick - s.since;
+    if (held < HELD_SPAN_TICKS || !w.job) continue;
+    if ((w.job.phase === 'pickup' ? w.job.from : w.job.to) !== b.id) continue;
+    if (!best || held > best.heldTicks || (held === best.heldTicks && w.id < best.wagon)) {
+      best = { wagon: w.id, kind: s.k, span: s.span, heldTicks: held, cells: [] };
+    }
+  }
+  if (!best || !canSurface(world, 2).ok) return null;
+  best.cells = spanCells(world, best.span);
+  return best.cells.length ? best : null;
+}
+
+/** The cells of a span, ordered end to end (a contiguous list for the road command). */
+function spanCells(world: World, span: number): number[] {
+  const sp = net(world).span, W = world.terrain.w;
+  const set: number[] = [];
+  for (let i = 0; i < sp.length; i++) if (sp[i] === span) set.push(i);
+  if (set.length < 2) return set;
+  const near = (a: number, c: number): boolean => a !== c && Math.abs((a % W) - (c % W)) <= 1 && Math.abs(Math.floor(a / W) - Math.floor(c / W)) <= 1;
+  // start at an end (a cell with one neighbour in the span), then walk
+  const start = set.find((a) => set.filter((c) => near(a, c)).length <= 1) ?? set[0]!;
+  const out = [start];
+  const left = new Set(set.filter((c) => c !== start));
+  while (left.size) {
+    const cur = out[out.length - 1]!;
+    let nx = -1;
+    for (const c of left) if (near(cur, c) && (nx < 0 || c < nx)) nx = c;
+    if (nx < 0) break;
+    out.push(nx);
+    left.delete(nx);
+  }
+  return out.length === set.length ? out : [];
+}
+
+/** Can the player pave this span now (silver, stone, rank)? The command's own check; read-only. */
+export function paveCheck(world: World, h: HeldSpan): ReturnType<typeof validateRoad> {
+  return validateRoad(world, h.cells, 2);
+}
+
+/**
+ * A shared single producer outranks the long waits: its lesson state (CONTESTED) is too short-lived to reach the
+ * card by duration (research P5), so it counts as critical from the first look, ahead of a 45 s stall.
+ */
+const SHARED_LEAD_TICKS = 45 * TICK_HZ;
+
 /** Buildings with a stall worth a pin, worst first (stalledTicks × criticality). */
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];
   for (const b of world.state.buildings) {
+    if (sharedOneProducer(world, b)) {
+      out.push({ id: b.id, ticks: b.stalledTicks, crit: true, minor: false, score: (b.stalledTicks + SHARED_LEAD_TICKS) * W_CRIT });
+      continue;
+    }
+    const held = heldSpanFor(world, b);
+    if (held) {
+      out.push({ id: b.id, ticks: held.heldTicks, crit: true, minor: false, score: (held.heldTicks + SHARED_LEAD_TICKS) * W_CRIT });
+      continue;
+    }
     if (!isStall(b.status) && b.status.k !== 'NO_INPUT') continue;
     if (b.stalledTicks < MIN_STALL_TICKS) continue;
     const calm = calmStall(world, b, JSON.stringify(b.status));
@@ -115,6 +199,14 @@ export function cureFor(world: World, id: number): Cure {
   if (!b) return null;
   const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}`;
   if (cureCache?.key === key) return cureCache.cure;
+  if (sharedOneProducer(world, b)) {
+    cureCache = { key, cure: 'producer' };
+    return 'producer';
+  }
+  if (heldSpanFor(world, b)) {
+    cureCache = { key, cure: 'pave' };
+    return 'pave';
+  }
   const chain = explainBuilding(world, id, 5, true);
   let cure: Cure = null;
   for (let i = chain.length - 1; i >= 0 && !cure; i--) {

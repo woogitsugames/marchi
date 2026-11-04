@@ -12,11 +12,11 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtInt, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, heldSpanFor, sharedOneProducer, type Cure, type StallEntry } from './stalls';
 import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
@@ -474,7 +474,7 @@ export class Hud {
     b.setAttribute('aria-disabled', String(short > 0));
     setText(this.wagonLabel, short > 0 ? t('tool.wagonShort', { n: fmtInt(short) }) : t('tool.wagon'));
     b.setAttribute('aria-label', short > 0 ? `${t('tool.wagon')} — ${t('fix.short', { n: fmtInt(short) })}` : t('tool.wagon'));
-    for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road') || (id === 'build' && this.cure === 'granary'));
+    for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road') || (id === 'build' && (this.cure === 'granary' || this.cure === 'producer')) || (id === 'cobble' && this.cure === 'pave'));
   }
 
   /**
@@ -496,7 +496,9 @@ export class Hud {
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
     this.cure = b ? cureFor(world, b.id) : null;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${getLang()}` : '';
+    const shared = b ? sharedOneProducer(world, b) : null;
+    const held = b && !shared ? heldSpanFor(world, b) : null;
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -504,7 +506,14 @@ export class Hud {
     this.root.classList.toggle('has-stall', !!b);
     if (!b || !w) return;
     const name = buildingName(world, b.id);
-    setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(stallReason(world, b.id))}</span>`);
+    // one producer for two workshops (research P5): the card names the shortage, not the momentary status
+    // a wagon of its job held at a wooden span (research P4): the card names the bridge, not "waiting for delivery"
+    const reason = shared
+      ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
+      : held
+        ? t(held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
+        : stallReason(world, b.id);
+    setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
     setHtml(this.alarmIcon, buildingStatusIcon(b.status, 34, b.type));
