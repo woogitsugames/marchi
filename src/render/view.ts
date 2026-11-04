@@ -392,6 +392,7 @@ class View implements WorldView {
     this.updateMenuWagon();
     // wagons first (with last frame's camera) so a followed wagon's position is current
     this.wagons.yards = this.buildings?.yards ?? [];
+    this.wagons.exactId = this.rig.followId ?? -1;
     this.wagons.frame(w, alpha, dt, this.rig.camera, this.time);
 
     // --- camera

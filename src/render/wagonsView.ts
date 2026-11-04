@@ -8,6 +8,7 @@
 // Wheels and the horse's gait advance with the distance the drawn rig actually moves (not with
 // time), so hooves stay planted and wheels roll without slipping at any game speed (gait.ts).
 import {
+  Box3,
   Frustum,
   Group,
   InstancedBufferAttribute,
@@ -75,6 +76,8 @@ interface Snap {
   mv: number;
   /** A rendered position exists from the previous frame. */
   drawn: boolean;
+  /** Last exact ground sample: rig origin and heading it was taken at, and its y / pitch (reused while unchanged). */
+  gx: number; gz: number; gfx: number; gfz: number; gy: number; gp: number;
   /** Waiting place beside the stable (D-43), null when not parked. */
   park: ParkSlot | null;
   /** Drawn offset (m) from the sim position toward the waiting place; eases in and out. */
@@ -113,6 +116,7 @@ const _v = new Vector3();
 const _frustum = new Frustum();
 const _pm = new Matrix4();
 const _sphere = new Sphere(new Vector3(), 5);
+const _box = new Box3();
 const _p: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
 const _q: RoadPoint = { x: 0, z: 0, tx: 0, tz: 1 };
 const _pose = new Float32Array(POSE_SIZE);
@@ -250,6 +254,7 @@ export class WagonsView {
           id: w.id, init: false, lag: 0, prevAt: -1, prevNext: -1, curAt: -1, curNext: -1, px: 0, pz: 0, py: 0, podo: 0, cx: 0, cz: 0, cy: 0, codo: 0, dx: 0, dz: 1, hx: 0, hz: 1,
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
           vg: 0, gph: (w.id * 0.618) % 1, roll: 0, gb: 0, mv: 0, drawn: false, park: null, ox: 0, oz: 0,
+          gx: NaN, gz: NaN, gfx: NaN, gfz: NaN, gy: 0, gp: 0,
         };
         this.snaps.set(w.id, s);
       }
@@ -385,12 +390,28 @@ export class WagonsView {
     return this.snaps.get(id);
   }
 
+  /**
+   * Could the rig at (x, z) heading (fx, fz) pass the frustum test below for any ground height? The box holds the
+   * test sphere (5 m around a point 1.8 m ahead, 1.2 m up) for every y in [yMin, yMax]; Frustum.intersectsBox only
+   * answers false when the box is wholly outside one plane, so false here means the exact test fails too.
+   */
+  private mayShow(x: number, z: number, fx: number, fz: number, yMin: number, yMax: number): boolean {
+    const cx = x + fx * 1.8, cz = z + fz * 1.8, r = _sphere.radius;
+    _box.min.set(cx - r, yMin + 1.2 - r, cz - r);
+    _box.max.set(cx + r, yMax + 1.2 + r, cz + r);
+    return _frustum.intersectsBox(_box);
+  }
+
+  /** Wagon whose ground height is always sampled exactly (the followed one: the camera reads its y). */
+  exactId = -1;
+
   frame(world: World, alpha: number, dt: number, camera: PerspectiveCamera, time: number): void {
     if (this.oppDirty) {
       this.oppDirty = false;
       this.markOpposing(world);
     }
     const hf = this.hf;
+    const { min: yMin, max: yMax } = hf.bounds();
     _pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_pm);
     const camPos = camera.position;
@@ -468,14 +489,27 @@ export class WagonsView {
       z += fx * off;
       let y: number;
       let pitch: number;
+      let culled = false;
       if (s.bridge) {
         y = s.py + (s.cy - s.py) * a;
         pitch = s.pitch;
+      } else if (x === s.gx && z === s.gz && fx === s.gfx && fz === s.gfz) {
+        // standing or queued: same spot and heading as the last sample, same ground
+        y = s.gy;
+        pitch = s.gp;
+      } else if (w.id !== this.exactId && (hidden || !this.mayShow(x, z, fx, fz, yMin, yMax))) {
+        // off screen whatever the ground height (or tucked into the stable): no sample. The drawn y stays within
+        // the map's height bounds, so its pin / tap point projects off screen as the exact one would.
+        culled = true;
+        const est = s.drawn ? s.fy : s.py + (s.cy - s.py) * a;
+        y = est < yMin ? yMin : est > yMax ? yMax : est;
+        pitch = 0;
       } else {
         const hF = hf.height(x + fx * 1.6, z + fz * 1.6);
         const hB = hf.height(x - fx * 1.6, z - fz * 1.6);
         y = Math.max(hf.height(x, z), (hF + hB) * 0.5);
         pitch = Math.atan2(hF - hB, 3.2);
+        s.gx = x; s.gz = z; s.gfx = fx; s.gfz = fz; s.gy = y; s.gp = pitch;
       }
       // distance actually drawn this frame, along the heading (lane drift does not count)
       let ds = s.drawn ? (x - s.fx) * fx + (z - s.fz) * fz : 0;
@@ -487,7 +521,7 @@ export class WagonsView {
       s.drawn = true;
       s.fx = x; s.fy = y; s.fz = z;
       s.visible = !hidden;
-      if (hidden) continue;
+      if (hidden || culled) continue;
       _sphere.center.set(x + fx * 1.8, y + 1.2, z + fz * 1.8);
       if (!_frustum.intersectsSphere(_sphere)) continue;
       _M.makeRotationY(s.heading).multiply(_R.makeRotationX(-pitch)).setPosition(x, y, z);
