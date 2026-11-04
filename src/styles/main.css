@@ -1850,6 +1850,13 @@ body.left-handed .stall-row { flex-direction: row-reverse; }
 .stall-eye svg { transition: transform 60ms linear; }
 .stall-eye:active svg { transform: translateY(1px); }
 .stall-row.is-crit .stall-eye { color: #7f1a1e; }
+/* the pace card (day 8c): a slow order, not a stall — the plain parchment panel, no wine bar, ink kicker */
+.stall-row.is-pace .stall-card::before {
+  border-image-source: url("/assets/ui/kit/panel@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
+}
+.stall-row.is-pace .sc-kick { color: var(--ink-soft); }
+.stall-row.is-pace .stall-eye { color: var(--ink); }
 .alarm-seal { position: relative; flex: none; width: 72px; height: 72px; display: grid; place-items: center; color: #f3e1bd; }
 .alarm-seal .al-ic { display: grid; place-items: center; transition: transform 60ms linear; }
 .alarm-seal:active .al-ic { transform: translateY(1px); }

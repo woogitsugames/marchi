@@ -652,4 +652,8 @@ export const en: FullDict = {
   'contract.sealPace.late': '{time} late',
   // short landscape cause chain: the middle links folded behind one row (D-111)
   'why.more': '{n, plural, one {+# link between} other {+# links between}}',
+  // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
+  'hud.pace': 'Order pace',
+  'cause.paceProducer': '×{n}: {rate}/min, {seals} need ≈{need}/min — build more',
+  'fix.paceProducerWhy': 'Flat out: at most {cap}/min. {seals} need ≈{need}/min — a wagon or a road will not help, only one more such building.',
 };

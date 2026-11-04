@@ -694,8 +694,9 @@ export class App implements PanelNav {
       // D-92: while the castellan's notes 1-5 teach the waybill and the crossing, the worst-stall card and
       // its alarm stay hidden (a third pointer beside the ring and the note); they appear, with the
       // first-stall flash, from the re-check note on or as soon as the tutorial ends or is skipped
-      const stalls = this.tutorial && this.tutorial.current < 6 ? [] : ranked;
-      this.hud?.update(this.world, this.pace, stalls);
+      const quiet = !!this.tutorial && this.tutorial.current < 6;
+      const stalls = quiet ? [] : ranked;
+      this.hud?.update(this.world, this.pace, stalls, !quiet);
       this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
       if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
         this.firstCritSeen = true;

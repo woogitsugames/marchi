@@ -7,7 +7,7 @@ import {
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -15,6 +15,7 @@ import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, heldSpanFor, paveCheck, sharedOneProducer } from './stalls';
+import { paceCard, type PaceCard } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -76,6 +77,25 @@ function fixSection(btn: string, hint: string, why: boolean): string {
   return why
     ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
     : `${head}<div class="fix fix-dock">${btn}</div><div class="fix fix-note">${hint}</div>`;
+}
+
+/**
+ * The pace card's fix on its producer's sheet (day 8c): the producers work flat out and still miss the next seal,
+ * so one more of them (the build tool opens with that type, the ghost on the mission's authored site, D-107).
+ */
+function paceCureHtml(world: World, pc: PaceCard): string {
+  const gate = canPlace(world, pc.type);
+  const price = BUILDINGS[pc.type].price;
+  const short = price - world.state.coins;
+  const off = !gate.ok || short > 0;
+  const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${pc.producer}" aria-disabled="${off}">${
+    iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${pc.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+  const hint = !gate.ok
+    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+    : short > 0
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      : `<div class="s-hint">${esc(t('fix.paceProducerWhy', { n: fmtInt(pc.n), cap: fmtDec(pc.cap, 1), seals: t('why.pace.seals', { n: pc.seals }), need: fmtDec(pc.need, 1) }))}</div>`;
+  return fixSection(btn, hint, off);
 }
 
 /**
@@ -533,7 +553,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : stalled || carded ? cureHtml(world, b, chain) : '');
+      // the pace card's producer (day 8c): its fix, unless this building has a stall with a cure of its own
+      const pc = !fix && !(stalled && cureFor(world, b.id)) ? paceCard(world, forecastFor(world, nav.pace)) : null;
+      const pcHere = pc && pc.producer === b.id ? pc : null;
+      setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },

@@ -655,6 +655,10 @@ export const pl = {
   'contract.sealPace.late': 'spóźni się {time}',
   // short landscape cause chain: the middle links folded behind one row (D-111; see PENDING_KEYS)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
+  // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
+  'hud.pace': 'Tempo zamówienia',
+  'cause.paceProducer': '×{n}: {rate}/min, na {seals} trzeba ≈{need}/min — postaw więcej',
+  'fix.paceProducerWhy': 'Bez przerwy: najwyżej {cap}/min. Na {seals} trzeba ≈{need}/min — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -710,6 +714,9 @@ export const PENDING_KEYS = [
   'fix.pave',
   'fix.paveWhy',
   'why.more',
+  'hud.pace',
+  'cause.paceProducer',
+  'fix.paceProducerWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

@@ -1563,3 +1563,21 @@ chain-link target is the first *visible* link (the root when folded). Measured (
 915×412 the root sits at 184–232 px above the dock top 234 in VI/IX/XIII (before: below it); unfolded, the body
 scrolls. `why.more` is pl/en; other languages fall back to English (PENDING_KEYS). UI only, hashes unchanged.
 (decided)
+
+**D-115 — The pace card: a producer too slow for the next seal takes the card slot (day 8c; mission VII).**
+A slow order is no stall, so no building carries a `StallReason` for it, and in VII the worst-stall card was empty
+(50 of 65 looks at 10 s) or calm while the lone fisher made the order miss two seals; the lesson ("a second fisher on
+the water") lived only in the letter, and the reasonable player had 1★ at every reaction time. New UI read
+`paceCard(world, forecast)` (`src/ui/paceCard.ts`): when the contract forecast (F10, `forecastFor`, moved here from
+`pace.ts` so headless tools can use it) is ready and has an aim, the bottleneck good's producers working **flat out**
+(`capPerMin`) still miss the next seal, **one more** producer would reach it (3★, else 2★), and the mission may build
+that type → the card slot shows "Tempo zamówienia · Chata rybaka ×1: 5,3/min, na 3 pieczęcie trzeba ≈8,8/min —
+postaw więcej". It takes the slot only when no real stall needs it (no stall, or the worst one is calm), on the plain
+parchment panel (no wine bar, ink kicker): calm, never red; the alarm seal keeps cycling the calm pins. The eye opens
+the producer's sheet, whose "Naprawa" is "Postaw jeszcze: Chata rybaka" (the existing `producer:` act: build tool with
+the ghost on the mission's authored site, D-107). Generic: no mission names, only the forecast, `buildable` and the
+rank gate; the tutorial's first notes hide it with the stall card. Reasonable player VII eye 10/30/60 s **1/1/1★
+(10,90) → 3/3/3★ (6,96/6,91/7,21)**; no other mission changes (it only fires where a producer of the bottleneck
+good may be built and is too slow). UI only, hashes unchanged. Test `tests/pace-card.test.ts`.
+(decided — owner may find 3★ too easy: the ghost places the fisher on the authored site, so "where" is given away
+as in D-107)
