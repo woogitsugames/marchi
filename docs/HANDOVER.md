@@ -573,7 +573,7 @@ Misje I–XII nietknięte przez zmiany z 11-03 (45 strategii, te same hasze). Zm
 Bez decyzji (robi deweloper, bez zmian haszy): P2 wyszukiwarka luk (węzeł po stronie dostawcy, bez ukośnych skrótów; M5/M6 rozsądny gracz → 3★), P5 karta „jeden producent dla dwóch odbiorców” (M9/M10), karta z P4.
 
 ## Stan nocy 6 — 2026-11-04 (gałąź `claude/w-night6`, deweloper nocny)
-Testy **437/0** (nowe: `tests/workers.test.ts`, `tests/missions-13.test.ts`), typecheck i build zielone, złote hasze misji I–XII
+Testy na koniec nocy **444/0** (nowe: `workers`, `missions-13`, `gap-finder`, `shared-card`, `held-span-card`), następna decyzja **D-106**;, typecheck i build zielone, złote hasze misji I–XII
 bez zmian (dopisane tylko `m13|buy0/buy2`), `npm run bot` (m1) bez zmian: wygrana 8,85 min, 2★, 26 srebra.
 1. **Ludzie przy pracy: tartak, rolnik, rybak (D-101, c70ea83).** Dwóch pilarzy przy pile na wysokich kozłach — górny stoi na
    kłodzie, dolny pod nią, piła to czwarta, osobno instancjonowana część, którą poza unosi (`lift`), więc obaj mają jeden ruch.
