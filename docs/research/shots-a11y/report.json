@@ -1,0 +1,6934 @@
+[
+ {
+  "tag": "menu-412x915",
+  "controls": [
+   {
+    "el": "button.menu-item.is-start",
+    "size": "252x88",
+    "role": "button",
+    "name": "I. Chleb i deski, Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "II. Korek na moście, Jeden wąski most, ruch w obie strony",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "III. Deszczowa jesień, Ulewa zamienia trakty w błoto",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "IV. Zima na przeprawie, Kra zamyka drewniany most o świcie",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "V. Jarmark, Trzy dostawy, trzy terminy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "VI. Ciasny spichlerz, Pełny spichlerz zatrzymuje pracę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "VII. Ryby na post, Rybak nad wodą, zamek za mostem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "VIII. Bruk przed burzą, Najpierw przywieź kamień na bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "IX. Piwo na wesele, Tartak i węglarz walczą o drewno",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "X. Węgiel dla kowala, Jeden drwal na dwa warsztaty",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "XI. Słód na zimę, Daleka słodownia zajmuje wozy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "XII. Wielkie warzenie, Zapas piwa na kolejną dostawę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x81",
+    "role": "button",
+    "name": "XIII. Pierwsze piętro łańcucha, Jeden wóz na całą marchię",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.btn.cf.menu-settings",
+    "size": "149x48",
+    "role": "button",
+    "name": "Ustawienia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Szlaki Królestwa",
+    "sel": "p.subtitle",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Zacznij tutaj",
+    "sel": "span.mi-start",
+    "in": "",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 12,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.03,
+    "worst10": 4.03,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.07
+   },
+   {
+    "text": "Jeden wąski most, ruch w obie strony",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.63,
+    "worst10": 3.43,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Ulewa zamienia trakty w błoto",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Kra zamyka drewniany most o świcie",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Trzy dostawy, trzy terminy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Pełny spichlerz zatrzymuje pracę",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.51,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Rybak nad wodą, zamek za mostem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Najpierw przywieź kamień na bruk",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Tartak i węglarz walczą o drewno",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Jeden drwal na dwa warsztaty",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "Daleka słodownia zajmuje wozy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.08,
+    "bgSpread": 0.05
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-item.is-start",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item.is-valley",
+   "button.menu-item.btn.cf",
+   "body.",
+   "button.menu-item.is-start"
+  ]
+ },
+ {
+  "tag": "settings-412x915",
+  "controls": [
+   {
+    "el": "button.menu-item.is-start",
+    "size": "252x88",
+    "role": "button",
+    "name": "I. Chleb i deski, Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "II. Korek na moście, Jeden wąski most, ruch w obie strony",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "III. Deszczowa jesień, Ulewa zamienia trakty w błoto",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "IV. Zima na przeprawie, Kra zamyka drewniany most o świcie",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "V. Jarmark, Trzy dostawy, trzy terminy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "VI. Ciasny spichlerz, Pełny spichlerz zatrzymuje pracę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x73",
+    "role": "button",
+    "name": "VII. Ryby na post, Rybak nad wodą, zamek za mostem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "VIII. Bruk przed burzą, Najpierw przywieź kamień na bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "IX. Piwo na wesele, Tartak i węglarz walczą o drewno",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "X. Węgiel dla kowala, Jeden drwal na dwa warsztaty",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "XI. Słód na zimę, Daleka słodownia zajmuje wozy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x56",
+    "role": "button",
+    "name": "XII. Wielkie warzenie, Zapas piwa na kolejną dostawę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "252x81",
+    "role": "button",
+    "name": "XIII. Pierwsze piętro łańcucha, Jeden wóz na całą marchię",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.btn.cf.menu-settings",
+    "size": "149x48",
+    "role": "button",
+    "name": "Ustawienia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Szlaki Królestwa",
+    "sel": "p.subtitle",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Zacznij tutaj",
+    "sel": "span.mi-start",
+    "in": "",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 12,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.03,
+    "worst10": 4.03,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.07
+   },
+   {
+    "text": "Jeden wąski most, ruch w obie strony",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.63,
+    "worst10": 3.43,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Ulewa zamienia trakty w błoto",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Kra zamyka drewniany most o świcie",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Trzy dostawy, trzy terminy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Pełny spichlerz zatrzymuje pracę",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.51,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Rybak nad wodą, zamek za mostem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Najpierw przywieź kamień na bruk",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Tartak i węglarz walczą o drewno",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Jeden drwal na dwa warsztaty",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "Daleka słodownia zajmuje wozy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.08,
+    "bgSpread": 0.05
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-item.is-start",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item.is-valley",
+   "button.menu-item.btn.cf",
+   "body.",
+   "button.menu-item.is-start"
+  ]
+ },
+ {
+  "tag": "hud-412x915",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Zamek",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "10:00",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.45,
+    "worst10": 4.25,
+    "bgSpread": 0.11
+   },
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.82,
+    "worst10": 1.32,
+    "bgSpread": 0.3
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line",
+   "div.wb-line",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool.is-disabled",
+   "button.tool",
+   "body.",
+   "button.menu-btn"
+  ]
+ },
+ {
+  "tag": "why-412x915",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seal-only",
+    "size": "64x68",
+    "role": "button",
+    "name": "Rozwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "412x586",
+    "role": "dialog",
+    "name": "Piekarnia",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.link.cf.is-self",
+    "size": "360x56",
+    "role": "button",
+    "name": "Piekarnia Brak dostępnych zapasów mąki",
+    "props": {
+     "disabled": true,
+     "invalid": "false"
+    }
+   },
+   {
+    "el": "button.link.cf.is-root",
+    "size": "360x56",
+    "role": "button",
+    "name": "Młyn wodny przyczyna Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "360x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": false
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "360x56",
+    "role": "button",
+    "name": "Zbuduj drogę i most: 30 srebra",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Produkuje",
+    "sel": "div.section-h",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.18,
+    "worst10": 3.39,
+    "bgSpread": 0.19
+   }
+  ],
+  "pins": [
+   {
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "crit": true,
+    "minor": false,
+    "headL": 0.165,
+    "mapL": 0.097,
+    "headVsMap": 1.46,
+    "worst10": 1.07
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.link.cf.is-root [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seal-only [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "why-codex-412x915",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seal-only",
+    "size": "64x68",
+    "role": "button",
+    "name": "Rozwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "412x586",
+    "role": "dialog",
+    "name": "Piekarnia",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.link.cf.is-self",
+    "size": "360x56",
+    "role": "button",
+    "name": "Piekarnia Brak dostępnych zapasów mąki",
+    "props": {
+     "disabled": true,
+     "invalid": "false"
+    }
+   },
+   {
+    "el": "button.link.cf.is-root",
+    "size": "360x56",
+    "role": "button",
+    "name": "Młyn wodny przyczyna Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "360x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "360x56",
+    "role": "button",
+    "name": "Zbuduj drogę i most: 30 srebra",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Przykład",
+    "sel": "div.codex-h",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 12,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.01,
+    "worst10": 1,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "Piekarnia potrzebuje mąki → wszystkie wozy wiozą d",
+    "sel": "p.codex-chain",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 14,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.26,
+    "worst10": 1.15,
+    "bgSpread": 0.02
+   }
+  ],
+  "pins": [
+   {
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "crit": true,
+    "minor": false,
+    "headL": 0.216,
+    "mapL": 0.098,
+    "headVsMap": 1.8,
+    "worst10": 1.24
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.link.cf.is-root [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seal-only [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "wagon-412x915",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seal-only",
+    "size": "64x68",
+    "role": "button",
+    "name": "Rozwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "412x454",
+    "role": "dialog",
+    "name": "Wóz 1",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.linkish",
+    "size": "86x48",
+    "role": "button",
+    "name": "Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.linkish",
+    "size": "67x48",
+    "role": "button",
+    "name": "Piekarnia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.btn.cf",
+    "size": "176x48",
+    "role": "button",
+    "name": "Śledź wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.btn.cf.is-disabled",
+    "size": "176x48",
+    "role": "button",
+    "name": "Sprzedaj za 15",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "0:49",
+    "sel": "dd.eta.num",
+    "in": "sheet",
+    "fg": "rgb(125,93,35)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.02,
+    "worst10": 3.79,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "1:17",
+    "sel": "dd.eta.num",
+    "in": "sheet",
+    "fg": "rgb(125,93,35)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.09,
+    "worst10": 3.89,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "Sprzedaj za 15",
+    "sel": "span.",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 0.6,
+    "size": 17,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.03,
+    "worst10": 1.1,
+    "bgSpread": 0.39
+   },
+   {
+    "text": "15",
+    "sel": "bdi.num",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 0.6,
+    "size": 17,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.01,
+    "worst10": 1.11,
+    "bgSpread": 0.3
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.close [dlg]",
+   "button.linkish [dlg]",
+   "button.linkish [dlg]",
+   "button.btn.cf [dlg]",
+   "button.btn.cf.is-disabled [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seal-only [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "castle-412x915",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Zamek: Brak wolnego wozu do przewozu desek",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seal-only",
+    "size": "64x68",
+    "role": "button",
+    "name": "Rozwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "412x479",
+    "role": "dialog",
+    "name": "Zamek",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "360x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": false
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "360x56",
+    "role": "button",
+    "name": "Kup wóz −30",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Kup wóz",
+    "sel": "span.",
+    "in": "sheet",
+    "fg": "rgb(243,229,196)",
+    "alpha": 0.55,
+    "size": 17,
+    "bold": false,
+    "large": false,
+    "shadow": true,
+    "ratio": 2.04,
+    "worst10": 1.72,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "−30",
+    "sel": "bdi.num",
+    "in": "sheet",
+    "fg": "rgb(243,229,196)",
+    "alpha": 0.55,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": true,
+    "ratio": 2.04,
+    "worst10": 1.72,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "Prognoza tempa — po pierwszej minucie dostaw.",
+    "sel": "div.pace-wait",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.92,
+    "worst10": 1.45,
+    "bgSpread": 0.47
+   }
+  ],
+  "pins": [
+   {
+    "name": "Zamek: Brak wolnego wozu do przewozu desek",
+    "crit": true,
+    "minor": false,
+    "headL": 0.272,
+    "mapL": 0.129,
+    "headVsMap": 1.8,
+    "worst10": 1.3
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seal-only [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "tutorial-412x915",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.btn.primary.cf",
+    "size": "300x62",
+    "role": "button",
+    "name": "Do dzieła",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "focused": true
+    }
+   },
+   {
+    "el": "div.scrim.letter-scrim",
+    "size": "412x915",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter-wrap",
+    "size": "369x466",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter.l-opening",
+    "size": "369x466",
+    "role": "dialog",
+    "name": "I. Chleb i deski",
+    "props": {
+     "modal": true
+    }
+   },
+   {
+    "el": "i.l-seal.kseal.on",
+    "size": "49x49",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.l-kicker",
+    "size": "299x23",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "h2.",
+    "size": "301x86",
+    "role": "heading",
+    "name": "I. Chleb i deski",
+    "props": {
+     "level": 2
+    }
+   },
+   {
+    "el": "div.l-body",
+    "size": "303x204",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.",
+    "size": "302x147",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.l-sign",
+    "size": "300x53",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.actions",
+    "size": "300x62",
+    "role": "none",
+    "name": "",
+    "props": {}
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "0/30",
+    "sel": "bdi.count.num",
+    "in": "waybill",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.16,
+    "worst10": 3.03,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "/30",
+    "sel": "small.",
+    "in": "waybill",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.88,
+    "worst10": 1.76,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Droga",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Bruk",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.1,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Rozbiórka",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.02,
+    "worst10": 2.6,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "Kup wóz",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.79,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "30",
+    "sel": "span.cost.num",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.91,
+    "worst10": 1.41,
+    "bgSpread": 0.14
+   },
+   {
+    "text": "Ruch",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "body.",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]"
+  ]
+ },
+ {
+  "tag": "end-412x915",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line.done.is-bump",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 30/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line.done.is-bump",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 20/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Gospodarstwo",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "I. Chleb i deski",
+    "sel": "span.rb-t",
+    "in": "waybill",
+    "fg": "rgb(243,229,196)",
+    "alpha": 1,
+    "size": 21,
+    "bold": false,
+    "large": false,
+    "shadow": true,
+    "ratio": 1.35,
+    "worst10": 1.28,
+    "bgSpread": 0.08
+   },
+   {
+    "text": "3:09 do śniegu",
+    "sel": "span.",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.36,
+    "worst10": 1.29,
+    "bgSpread": 0.06
+   },
+   {
+    "text": "3:09",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.4,
+    "worst10": 1.3,
+    "bgSpread": 0.06
+   },
+   {
+    "text": "2",
+    "sel": "span.al-badge.num",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.84,
+    "worst10": 1.52,
+    "bgSpread": 0.13
+   },
+   {
+    "text": "Droga",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Bruk",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.1,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Rozbiórka",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.02,
+    "worst10": 2.6,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.63,
+    "worst10": 1.17,
+    "bgSpread": 0.08
+   },
+   {
+    "text": "Ruch",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line.done.is-bump [outside open dialog]",
+   "div.wb-line.done.is-bump [outside open dialog]",
+   "button.stall-eye [outside open dialog]",
+   "button.alarm-seal [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool.is-disabled [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.btn.primary.cf [dlg]",
+   "button.btn.cf [dlg]",
+   "button.btn.cf [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]"
+  ]
+ },
+ {
+  "tag": "night-412x915",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Młyn wodny: Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (4)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool.is-cure",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "10:30",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.45,
+    "worst10": 4.25,
+    "bgSpread": 0.11
+   }
+  ],
+  "pins": [
+   {
+    "name": "Młyn wodny: Brak wolnego wozu do przewozu zboża",
+    "crit": true,
+    "minor": false,
+    "headL": 0.387,
+    "mapL": 0.026,
+    "headVsMap": 5.72,
+    "worst10": 3.33
+   }
+  ],
+  "focus": [
+   "button.bubble.hit.is-critical",
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line",
+   "div.wb-line",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool.is-cure",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "body.",
+   "button.bubble.hit.is-critical"
+  ]
+ },
+ {
+  "tag": "winter-412x915",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line.is-bump",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 6/48",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-eta",
+    "size": "282x48",
+    "role": "button",
+    "name": "Przy tym tempie: gotowe za 7:38",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-sup",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski Tartak ×1 · 4,8/min",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Chata drwala",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "10:42",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.45,
+    "worst10": 4.25,
+    "bgSpread": 0.11
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line.is-bump",
+   "div.wb-line",
+   "div.wb-pace-eta",
+   "div.wb-pace-sup",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "body.",
+   "button.menu-btn"
+  ]
+ },
+ {
+  "tag": "autumn-412x915",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-minor.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Tartak: Pełno desek — nie ma dokąd wieźć",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line.is-bump",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski 6/24",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "chleb 0/16",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-eta",
+    "size": "282x48",
+    "role": "button",
+    "name": "Przy tym tempie: gotowe za 3:23",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-sup",
+    "size": "282x48",
+    "role": "button",
+    "name": "deski Tartak ×1 · 4/min",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Piekarnia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (4)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-cure",
+    "size": "74x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "7:40",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.45,
+    "worst10": 4.25,
+    "bgSpread": 0.11
+   }
+  ],
+  "pins": [
+   {
+    "name": "Tartak: Pełno desek — nie ma dokąd wieźć",
+    "crit": false,
+    "minor": true,
+    "headL": 0.256,
+    "mapL": 0.071,
+    "headVsMap": 2.53,
+    "worst10": 2.39
+   }
+  ],
+  "focus": [
+   "button.bubble.hit.is-minor",
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line.is-bump",
+   "div.wb-line",
+   "div.wb-pace-eta",
+   "div.wb-pace-sup",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool.is-cure",
+   "button.tool",
+   "body.",
+   "button.bubble.hit.is-minor"
+  ]
+ },
+ {
+  "tag": "menu-915x412",
+  "controls": [
+   {
+    "el": "button.menu-item.is-start",
+    "size": "275x82",
+    "role": "button",
+    "name": "I. Chleb i deski, Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "II. Korek na moście, Jeden wąski most, ruch w obie strony",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "III. Deszczowa jesień, Ulewa zamienia trakty w błoto",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "IV. Zima na przeprawie, Kra zamyka drewniany most o świcie",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "V. Jarmark, Trzy dostawy, trzy terminy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "VI. Ciasny spichlerz, Pełny spichlerz zatrzymuje pracę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "VIII. Bruk przed burzą, Najpierw przywieź kamień na bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "IX. Piwo na wesele, Tartak i węglarz walczą o drewno",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "X. Węgiel dla kowala, Jeden drwal na dwa warsztaty",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XI. Słód na zimę, Daleka słodownia zajmuje wozy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XII. Wielkie warzenie, Zapas piwa na kolejną dostawę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XIII. Pierwsze piętro łańcucha, Jeden wóz na całą marchię",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.is-valley",
+    "size": "275x52",
+    "role": "button",
+    "name": "Wolna dolina Rozbuduj miasteczko, bez terminów",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.btn.cf.menu-settings",
+    "size": "140x52",
+    "role": "button",
+    "name": "Ustawienia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Szlaki Królestwa",
+    "sel": "p.subtitle",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.76,
+    "worst10": 3.39,
+    "bgSpread": 0.07
+   },
+   {
+    "text": "Zacznij tutaj",
+    "sel": "span.mi-start",
+    "in": "",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 12,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.03,
+    "worst10": 4.03,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Jeden wąski most, ruch w obie strony",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.42,
+    "worst10": 3.39,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Ulewa zamienia trakty w błoto",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Kra zamyka drewniany most o świcie",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Najpierw przywieź kamień na bruk",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Tartak i węglarz walczą o drewno",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.56,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Jeden drwal na dwa warsztaty",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.42,
+    "worst10": 3.39,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Daleka słodownia zajmuje wozy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-item.is-start",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item.is-valley",
+   "button.menu-item.btn.cf",
+   "body.",
+   "button.menu-item.is-start"
+  ]
+ },
+ {
+  "tag": "settings-915x412",
+  "controls": [
+   {
+    "el": "button.menu-item.is-start",
+    "size": "275x82",
+    "role": "button",
+    "name": "I. Chleb i deski, Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "II. Korek na moście, Jeden wąski most, ruch w obie strony",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "III. Deszczowa jesień, Ulewa zamienia trakty w błoto",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "IV. Zima na przeprawie, Kra zamyka drewniany most o świcie",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "V. Jarmark, Trzy dostawy, trzy terminy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "VI. Ciasny spichlerz, Pełny spichlerz zatrzymuje pracę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "VIII. Bruk przed burzą, Najpierw przywieź kamień na bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "IX. Piwo na wesele, Tartak i węglarz walczą o drewno",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "X. Węgiel dla kowala, Jeden drwal na dwa warsztaty",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XI. Słód na zimę, Daleka słodownia zajmuje wozy",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XII. Wielkie warzenie, Zapas piwa na kolejną dostawę",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item",
+    "size": "275x52",
+    "role": "button",
+    "name": "XIII. Pierwsze piętro łańcucha, Jeden wóz na całą marchię",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.is-valley",
+    "size": "275x52",
+    "role": "button",
+    "name": "Wolna dolina Rozbuduj miasteczko, bez terminów",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-item.btn.cf.menu-settings",
+    "size": "140x52",
+    "role": "button",
+    "name": "Ustawienia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Szlaki Królestwa",
+    "sel": "p.subtitle",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.76,
+    "worst10": 3.39,
+    "bgSpread": 0.07
+   },
+   {
+    "text": "Zacznij tutaj",
+    "sel": "span.mi-start",
+    "in": "",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 12,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.03,
+    "worst10": 4.03,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Przerzuć most przez rzekę i zdąż przed śniegiem",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Jeden wąski most, ruch w obie strony",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.42,
+    "worst10": 3.39,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Ulewa zamienia trakty w błoto",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Kra zamyka drewniany most o świcie",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "Najpierw przywieź kamień na bruk",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.58,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Tartak i węglarz walczą o drewno",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.56,
+    "worst10": 3.39,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "Jeden drwal na dwa warsztaty",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.42,
+    "worst10": 3.39,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Daleka słodownia zajmuje wozy",
+    "sel": "span.mi-sub",
+    "in": "",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.39,
+    "worst10": 3.39,
+    "bgSpread": 0.02
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-item.is-start",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item",
+   "button.menu-item.is-valley",
+   "button.menu-item.btn.cf",
+   "body.",
+   "button.menu-item.is-start"
+  ]
+ },
+ {
+  "tag": "hud-915x412",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-shown.breathe",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak wolnego wozu do przewozu mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Zamek",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.77,
+    "worst10": 1.35,
+    "bgSpread": 0.3
+   }
+  ],
+  "pins": [
+   {
+    "name": "Piekarnia: Brak wolnego wozu do przewozu mąki",
+    "crit": false,
+    "minor": false,
+    "headL": 0.353,
+    "mapL": 0.069,
+    "headVsMap": 3.38,
+    "worst10": 3.13
+   }
+  ],
+  "focus": [
+   "button.bubble.hit.is-shown",
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line",
+   "div.wb-line",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool.is-disabled",
+   "button.tool",
+   "body.",
+   "button.bubble.hit.is-shown"
+  ]
+ },
+ {
+  "tag": "why-915x412",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (4)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool.is-cure",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "380x254",
+    "role": "dialog",
+    "name": "Piekarnia",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.link.cf.is-self",
+    "size": "328x56",
+    "role": "button",
+    "name": "Piekarnia Brak dostępnych zapasów mąki",
+    "props": {
+     "disabled": true,
+     "invalid": "false"
+    }
+   },
+   {
+    "el": "button.link.cf.is-root",
+    "size": "328x68",
+    "role": "button",
+    "name": "Młyn wodny przyczyna Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "328x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": false
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "328x56",
+    "role": "button",
+    "name": "Zbuduj drogę i most: 30 srebra",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Brak dostępnych zapasów mąki",
+    "sel": "span.l-why",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.65,
+    "worst10": 1.09,
+    "bgSpread": 0.59
+   },
+   {
+    "text": "Młyn wodnyprzyczyna",
+    "sel": "span.l-who",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 15,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.19,
+    "worst10": 1.09,
+    "bgSpread": 0.59
+   },
+   {
+    "text": "przyczyna",
+    "sel": "span.root-tag",
+    "in": "sheet",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.13,
+    "worst10": 1.14,
+    "bgSpread": 0.59
+   }
+  ],
+  "pins": [
+   {
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "crit": true,
+    "minor": false,
+    "headL": 0.195,
+    "mapL": 0.069,
+    "headVsMap": 2.06,
+    "worst10": 1.78
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.link.cf.is-root [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.stall-eye [outside open dialog]",
+   "button.alarm-seal [outside open dialog]",
+   "button.tool.is-cure [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "why-codex-915x412",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (4)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool.is-cure",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "380x254",
+    "role": "dialog",
+    "name": "Piekarnia",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.link.cf.is-self",
+    "size": "328x56",
+    "role": "button",
+    "name": "Piekarnia Brak dostępnych zapasów mąki",
+    "props": {
+     "disabled": true,
+     "invalid": "false"
+    }
+   },
+   {
+    "el": "button.link.cf.is-root",
+    "size": "328x68",
+    "role": "button",
+    "name": "Młyn wodny przyczyna Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "328x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "328x56",
+    "role": "button",
+    "name": "Zbuduj drogę i most: 30 srebra",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Brak dostępnych zapasów mąki",
+    "sel": "span.l-why",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.65,
+    "worst10": 1.09,
+    "bgSpread": 0.59
+   },
+   {
+    "text": "Młyn wodnyprzyczyna",
+    "sel": "span.l-who",
+    "in": "sheet",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 15,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.19,
+    "worst10": 1.09,
+    "bgSpread": 0.59
+   },
+   {
+    "text": "przyczyna",
+    "sel": "span.root-tag",
+    "in": "sheet",
+    "fg": "rgb(111,29,34)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.13,
+    "worst10": 1.14,
+    "bgSpread": 0.59
+   }
+  ],
+  "pins": [
+   {
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "crit": true,
+    "minor": false,
+    "headL": 0.162,
+    "mapL": 0.069,
+    "headVsMap": 1.77,
+    "worst10": 1.63
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.link.cf.is-root [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.stall-eye [outside open dialog]",
+   "button.alarm-seal [outside open dialog]",
+   "button.tool.is-cure [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "wagon-915x412",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "380x254",
+    "role": "dialog",
+    "name": "Wóz 1",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.linkish",
+    "size": "86x48",
+    "role": "button",
+    "name": "Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.linkish",
+    "size": "67x48",
+    "role": "button",
+    "name": "Piekarnia",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.btn.cf",
+    "size": "160x48",
+    "role": "button",
+    "name": "Śledź wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.btn.cf.is-disabled",
+    "size": "160x48",
+    "role": "button",
+    "name": "Sprzedaj za 15",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.77,
+    "worst10": 1.35,
+    "bgSpread": 0.3
+   },
+   {
+    "text": "Dojazd",
+    "sel": "dt.",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.18,
+    "worst10": 3.32,
+    "bgSpread": 0.2
+   },
+   {
+    "text": "0:49",
+    "sel": "dd.eta.num",
+    "in": "sheet",
+    "fg": "rgb(125,93,35)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.2,
+    "worst10": 2.69,
+    "bgSpread": 0.2
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.close [dlg]",
+   "button.linkish [dlg]",
+   "button.linkish [dlg]",
+   "button.btn.cf [dlg]",
+   "button.btn.cf.is-disabled [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool.is-disabled [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "castle-915x412",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Zamek",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "380x254",
+    "role": "dialog",
+    "name": "Zamek",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "Zamknij",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "328x48",
+    "role": "button",
+    "name": "Co to znaczy?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": false
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "328x56",
+    "role": "button",
+    "name": "Kup wóz −30",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.77,
+    "worst10": 1.35,
+    "bgSpread": 0.3
+   },
+   {
+    "text": "Przestój: 0:06",
+    "sel": "span.since",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.61,
+    "worst10": 2.61,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "0:06",
+    "sel": "bdi.num",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.61,
+    "worst10": 2.61,
+    "bgSpread": 0.11
+   },
+   {
+    "text": "Co to znaczy?",
+    "sel": "span.codex-q",
+    "in": "sheet",
+    "fg": "rgb(110,53,32)",
+    "alpha": 1,
+    "size": 15,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.65,
+    "worst10": 2.21,
+    "bgSpread": 0.46
+   },
+   {
+    "text": "Kup wóz",
+    "sel": "span.",
+    "in": "sheet",
+    "fg": "rgb(243,229,196)",
+    "alpha": 0.55,
+    "size": 17,
+    "bold": false,
+    "large": false,
+    "shadow": true,
+    "ratio": 2.04,
+    "worst10": 1.72,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "−30",
+    "sel": "bdi.num",
+    "in": "sheet",
+    "fg": "rgb(243,229,196)",
+    "alpha": 0.55,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": true,
+    "ratio": 2.04,
+    "worst10": 1.72,
+    "bgSpread": 0.05
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.close [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.stall-eye [outside open dialog]",
+   "button.alarm-seal [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool.is-disabled [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "tutorial-915x412",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.btn.primary.cf",
+    "size": "321x63",
+    "role": "button",
+    "name": "Do dzieła",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "focused": true
+    }
+   },
+   {
+    "el": "div.scrim.letter-scrim",
+    "size": "915x412",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter-wrap",
+    "size": "387x347",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter.l-opening",
+    "size": "387x347",
+    "role": "dialog",
+    "name": "I. Chleb i deski",
+    "props": {
+     "modal": true
+    }
+   },
+   {
+    "el": "i.l-seal.kseal.on",
+    "size": "27x27",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.l-kicker",
+    "size": "320x24",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "h2.",
+    "size": "321x37",
+    "role": "heading",
+    "name": "I. Chleb i deski",
+    "props": {
+     "level": 2
+    }
+   },
+   {
+    "el": "div.l-body",
+    "size": "323x147",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.",
+    "size": "322x124",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.l-sign",
+    "size": "320x26",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.actions",
+    "size": "321x63",
+    "role": "none",
+    "name": "",
+    "props": {}
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "12:00 do śniegu",
+    "sel": "span.",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.52,
+    "worst10": 1.41,
+    "bgSpread": 0.18
+   },
+   {
+    "text": "12:00",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 16,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.62,
+    "worst10": 1.46,
+    "bgSpread": 0.45
+   },
+   {
+    "text": "Droga",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Bruk",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "Rozbiórka",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.03,
+    "worst10": 2.64,
+    "bgSpread": 0.05
+   },
+   {
+    "text": "Kup wóz",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.03,
+    "worst10": 2.79,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "30",
+    "sel": "span.cost.num",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.94,
+    "worst10": 1.14,
+    "bgSpread": 0.41
+   },
+   {
+    "text": "Ruch",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.08,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "body.",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]"
+  ]
+ },
+ {
+  "tag": "end-915x412",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line.done.is-bump",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 30/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line.done.is-bump",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 20/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Gospodarstwo",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz — Brakuje 4 srebra",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "30/30",
+    "sel": "bdi.count.num",
+    "in": "waybill",
+    "fg": "rgb(86,96,63)",
+    "alpha": 1,
+    "size": 16,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.38,
+    "worst10": 4.14,
+    "bgSpread": 0.09
+   },
+   {
+    "text": "20/20",
+    "sel": "bdi.count.num",
+    "in": "waybill",
+    "fg": "rgb(86,96,63)",
+    "alpha": 1,
+    "size": 16,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.09,
+    "worst10": 3.97,
+    "bgSpread": 0.06
+   },
+   {
+    "text": "brak 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.77,
+    "worst10": 1.35,
+    "bgSpread": 0.3
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.bubble.hit.is-minor [outside open dialog]",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line.done.is-bump [outside open dialog]",
+   "div.wb-line.done.is-bump [outside open dialog]",
+   "button.stall-eye [outside open dialog]",
+   "button.alarm-seal [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool.is-disabled [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.btn.primary.cf [dlg]",
+   "button.btn.cf [dlg]",
+   "button.btn.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-minor [outside open dialog]"
+  ]
+ },
+ {
+  "tag": "night-915x412",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Młyn wodny: Brak wolnego wozu do przewozu zboża",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Młyn wodny",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (4)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool.is-cure",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [],
+  "pins": [
+   {
+    "name": "Młyn wodny: Brak wolnego wozu do przewozu zboża",
+    "crit": true,
+    "minor": false,
+    "headL": 0.386,
+    "mapL": 0.024,
+    "headVsMap": 5.9,
+    "worst10": 2.1
+   },
+   {
+    "name": "Piekarnia: Brak dostępnych zapasów mąki",
+    "crit": true,
+    "minor": false,
+    "headL": 0.18,
+    "mapL": 0.02,
+    "headVsMap": 3.29,
+    "worst10": 2.45
+   }
+  ],
+  "focus": [
+   "button.bubble.hit.is-critical",
+   "button.bubble.hit.is-critical",
+   "button.bubble.hit.is-critical",
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line",
+   "div.wb-line",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool.is-cure",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "body.",
+   "button.bubble.hit.is-critical"
+  ]
+ },
+ {
+  "tag": "winter-915x412",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "Menu",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "Pauza",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "Tempo ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "Tempo ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "272x48",
+    "role": "button",
+    "name": "Zwiń list przewozowy",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line.is-bump",
+    "size": "109x48",
+    "role": "button",
+    "name": "deski 6/48",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "109x48",
+    "role": "button",
+    "name": "chleb 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-eta",
+    "size": "178x48",
+    "role": "button",
+    "name": "Przy tym tempie: gotowe za 7:38",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-pace-sup",
+    "size": "48x48",
+    "role": "button",
+    "name": "deski Tartak ×1 · 4,8/min",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "Pokaż: Chata drwala",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "Pokaż kolejny zastój (2)",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Droga",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Bruk",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Rozbiórka",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Kup wóz",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "76x72",
+    "role": "button",
+    "name": "Ruch",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "Tartak ×1 · 4,8/min",
+    "sel": "span.",
+    "in": "waybill",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.2,
+    "worst10": 1.05,
+    "bgSpread": 0.05
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.bubble.hit.is-minor",
+   "button.bubble.hit.is-critical",
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line.is-bump",
+   "div.wb-line",
+   "div.wb-pace-eta",
+   "div.wb-pace-sup",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "body.",
+   "button.bubble.hit.is-minor"
+  ]
+ },
+ {
+  "tag": "hud-412x915-ar",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "القائمة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "إيقاف مؤقت",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "السرعة ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "اطوِ الوثيقة",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "ألواح 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "خبز 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.stall-eye",
+    "size": "52x52",
+    "role": "button",
+    "name": "اعرض: القلعة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.alarm-seal",
+    "size": "72x72",
+    "role": "button",
+    "name": "التوقفات: 2 — اعرض التالي",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "طريق",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "رصف",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "هدم",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool.is-disabled",
+    "size": "74x72",
+    "role": "button",
+    "name": "شراء عربة — تنقصك فضة: ⁨4⁩",
+    "props": {
+     "disabled": true,
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "المرور",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "10:00",
+    "sel": "bdi.num",
+    "in": "waybill",
+    "fg": "rgb(238,240,238)",
+    "alpha": 1,
+    "size": 18,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.43,
+    "worst10": 4.2,
+    "bgSpread": 0.11
+   },
+   {
+    "text": "ينقص 4",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(110,26,30)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.77,
+    "worst10": 1.32,
+    "bgSpread": 0.3
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "button.menu-btn",
+   "button.seg.is-on",
+   "button.seg",
+   "button.seg",
+   "button.seg",
+   "button.ribbon",
+   "div.wb-line",
+   "div.wb-line",
+   "button.stall-eye",
+   "button.alarm-seal",
+   "button.tool",
+   "button.tool",
+   "button.tool",
+   "button.tool.is-disabled",
+   "button.tool",
+   "body.",
+   "button.menu-btn"
+  ]
+ },
+ {
+  "tag": "why-412x915-ar",
+  "controls": [
+   {
+    "el": "button.bubble.hit.is-critical.is-shown",
+    "size": "48x56",
+    "role": "button",
+    "name": "المخبز: لا مخزون من ⁨دقيق⁩",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "القائمة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "إيقاف مؤقت",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "السرعة ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seal-only",
+    "size": "64x68",
+    "role": "button",
+    "name": "افتح الوثيقة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "section.sheet",
+    "size": "412x586",
+    "role": "dialog",
+    "name": "المخبز",
+    "props": {
+     "focusable": true,
+     "focused": true,
+     "modal": true
+    }
+   },
+   {
+    "el": "button.close",
+    "size": "48x48",
+    "role": "button",
+    "name": "إغلاق",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.link.cf.is-self",
+    "size": "360x56",
+    "role": "button",
+    "name": "المخبز لا مخزون من ⁨دقيق⁩",
+    "props": {
+     "disabled": true,
+     "invalid": "false"
+    }
+   },
+   {
+    "el": "button.link.cf.is-root",
+    "size": "360x56",
+    "role": "button",
+    "name": "الطاحونة المائية السبب لا عربة متاحة لنقل ⁨حبوب⁩",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.codex-tog.cf",
+    "size": "360x48",
+    "role": "button",
+    "name": "What does it mean?",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": false
+    }
+   },
+   {
+    "el": "button.btn.primary.cf.fix-btn",
+    "size": "360x56",
+    "role": "button",
+    "name": "طريق وجسر: ⁨30⁩ فضة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "ينتج",
+    "sel": "div.section-h",
+    "in": "sheet",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 4.18,
+    "worst10": 3.97,
+    "bgSpread": 0.1
+   }
+  ],
+  "pins": [
+   {
+    "name": "المخبز: لا مخزون من ⁨دقيق⁩",
+    "crit": true,
+    "minor": false,
+    "headL": 0.165,
+    "mapL": 0.098,
+    "headVsMap": 1.45,
+    "worst10": 1.11
+   }
+  ],
+  "focus": [
+   "button.close [dlg]",
+   "button.link.cf.is-root [dlg]",
+   "button.codex-tog.cf [dlg]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.bubble.hit.is-critical [outside open dialog]",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seal-only [outside open dialog]",
+   "button.close [dlg]"
+  ]
+ },
+ {
+  "tag": "tutorial-412x915-ar",
+  "controls": [
+   {
+    "el": "button.menu-btn",
+    "size": "52x52",
+    "role": "button",
+    "name": "القائمة",
+    "props": {
+     "invalid": "false",
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.seg.is-on",
+    "size": "58x48",
+    "role": "button",
+    "name": "إيقاف مؤقت",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "true"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×1",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "64x48",
+    "role": "button",
+    "name": "السرعة ×2",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.seg",
+    "size": "51x48",
+    "role": "button",
+    "name": "السرعة ×4",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.ribbon",
+    "size": "330x48",
+    "role": "button",
+    "name": "اطوِ الوثيقة",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "expanded": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "ألواح 0/30",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "div.wb-line",
+    "size": "282x48",
+    "role": "button",
+    "name": "خبز 0/20",
+    "props": {
+     "focusable": true
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "طريق",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "رصف",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "هدم",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "شراء عربة",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.tool",
+    "size": "74x72",
+    "role": "button",
+    "name": "المرور",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "pressed": "false"
+    }
+   },
+   {
+    "el": "button.btn.primary.cf",
+    "size": "300x62",
+    "role": "button",
+    "name": "إلى العمل",
+    "props": {
+     "invalid": "false",
+     "focusable": true,
+     "focused": true
+    }
+   },
+   {
+    "el": "div.scrim.letter-scrim",
+    "size": "412x915",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter-wrap",
+    "size": "368x419",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.letter.l-opening",
+    "size": "368x419",
+    "role": "dialog",
+    "name": "I. الخبز والألواح",
+    "props": {
+     "modal": true
+    }
+   },
+   {
+    "el": "i.l-seal.kseal.on",
+    "size": "49x49",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.l-kicker",
+    "size": "299x23",
+    "role": "generic",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "h2.",
+    "size": "301x86",
+    "role": "heading",
+    "name": "I. الخبز والألواح",
+    "props": {
+     "level": 2
+    }
+   },
+   {
+    "el": "div.l-body",
+    "size": "302x157",
+    "role": "none",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.",
+    "size": "301x124",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "p.l-sign",
+    "size": "299x30",
+    "role": "paragraph",
+    "name": "",
+    "props": {}
+   },
+   {
+    "el": "div.actions",
+    "size": "300x62",
+    "role": "none",
+    "name": "",
+    "props": {}
+   }
+  ],
+  "lowContrast": [
+   {
+    "text": "0/30",
+    "sel": "bdi.count.num",
+    "in": "waybill",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 3.03,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "/30",
+    "sel": "small.",
+    "in": "waybill",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.99,
+    "worst10": 1.93,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "0/20",
+    "sel": "bdi.count.num",
+    "in": "waybill",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 17,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.96,
+    "worst10": 2.87,
+    "bgSpread": 0.02
+   },
+   {
+    "text": "/20",
+    "sel": "small.",
+    "in": "waybill",
+    "fg": "rgb(77,69,58)",
+    "alpha": 1,
+    "size": 15,
+    "bold": false,
+    "large": false,
+    "shadow": false,
+    "ratio": 1.88,
+    "worst10": 1.83,
+    "bgSpread": 0.01
+   },
+   {
+    "text": "طريق",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.1,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "رصف",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "هدم",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.1,
+    "worst10": 2.84,
+    "bgSpread": 0.03
+   },
+   {
+    "text": "شراء عربة",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.03,
+    "worst10": 2.75,
+    "bgSpread": 0.04
+   },
+   {
+    "text": "30",
+    "sel": "span.cost.num",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 13,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 2.95,
+    "worst10": 1.44,
+    "bgSpread": 0.14
+   },
+   {
+    "text": "المرور",
+    "sel": "span.tl",
+    "in": "rail",
+    "fg": "rgb(43,38,32)",
+    "alpha": 1,
+    "size": 14,
+    "bold": true,
+    "large": false,
+    "shadow": false,
+    "ratio": 3.07,
+    "worst10": 2.83,
+    "bgSpread": 0.03
+   }
+  ],
+  "pins": [],
+  "focus": [
+   "body.",
+   "button.menu-btn [outside open dialog]",
+   "button.seg.is-on [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.seg [outside open dialog]",
+   "button.ribbon [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "div.wb-line [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.tool [outside open dialog]",
+   "button.btn.primary.cf [dlg]",
+   "body.",
+   "button.menu-btn [outside open dialog]"
+  ]
+ }
+]
