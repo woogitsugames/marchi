@@ -24,7 +24,7 @@ import {
   applyCommand, checkInvariants, createWorld, MARKET, RANKS, sandboxStatus, seasonAt, step, TICK_HZ,
   type BuildingStatus, type Command, type World,
 } from '../src/sim/index';
-import { cureFor, rankStalls } from '../src/ui/stalls';
+import { cureFor, heldSpanFor, rankStalls } from '../src/ui/stalls';
 import { DECENT, type BotStep } from './bot-sandbox';
 
 const BAND_MIN = 30;
@@ -39,6 +39,10 @@ type Player = {
   orderRenownX?: number;
   /** Counterfactual (in memory only): from this minute on the market recovers one saturation unit every N s. */
   recover?: { fromMin: number; seconds: number };
+  /** Late-game research (tools/valley-late.ts): runs before createWorld, returns the undo (prototype flags, map). */
+  setup?: () => () => void;
+  /** The eye looks from the first minute (not only after the plan) and also paves a held bridge span (cure 'pave'). */
+  eyeAlways?: boolean;
 };
 
 function capFleet(plan: readonly BotStep[], max: number, start = 2): BotStep[] {
@@ -125,6 +129,8 @@ export interface Band {
   samples: number;
   /** Samples with any pin / a critical worst card / a critical card whose cure is a button. */
   pin: number; crit: number; critCure: number;
+  /** Samples whose worst card is not minor (critical or normal) / and offers a cure button. */
+  real: number; realCure: number;
   /** Worst card status (key) and cure counts. */
   top: Record<string, number>; cures: Record<string, number>;
   /** Root-cause stall seconds by status key (deltas of ledger.stallSeconds). */
@@ -154,7 +160,7 @@ function newBand(from: number): Band {
   return {
     from, to: from + BAND_MIN, earned: 0, perMin: 0, renownGain: 0, orderRenown: 0, merchantSilver: 0,
     coinsEnd: 0, wagonsEnd: 0, buildingsEnd: 0, rankEnd: 0, steps: [], eyeBuys: 0, samples: 0,
-    pin: 0, crit: 0, critCure: 0, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
+    pin: 0, crit: 0, critCure: 0, real: 0, realCure: 0, top: {}, cures: {}, roots: {}, wagonStates: {}, bWorking: 0, bAll: 0,
     ordersDone: 0, ordersOffered: 0, minCoinsSpendable: Infinity,
   };
 }
@@ -163,6 +169,8 @@ const PRODUCERS = new Set(['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'f
 
 export function runValley(name: string, seed: number, minutes: number): RunOut {
   const p = PLAYERS[name]!;
+  // prototype flags and map stay set for the whole run (restored in the finally below)
+  const undoRun = p.setup?.();
   const w: World = createWorld('sandbox', seed);
   const st = w.state;
   const stable = st.buildings.find((b) => b.type === 'stable')!.id;
@@ -244,9 +252,15 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
         inc(band.top, `${b.type}:${statusKey(b.status)}${top.crit ? '!' : top.minor ? '~' : ''}`);
         inc(band.cures, cure ?? 'none');
         if (top.crit) { band.crit++; if (cure) band.critCure++; }
-        if (p.eye && st.tick % (30 * TICK_HZ) === 0 && planDoneMin >= 0 && top.crit && cure === 'wagon' && st.coins >= 30) {
+        if (!top.minor) { band.real++; if (cure) band.realCure++; }
+        if (p.eye && st.tick % (30 * TICK_HZ) === 0 && (planDoneMin >= 0 || p.eyeAlways) && top.crit && cure === 'wagon' && st.coins >= 30) {
           const r = applyCommand(w, { t: 'buyWagon', stable } as Command);
           if (r.ok) { band.eyeBuys++; band.steps.push(`${(st.tick / TICK_HZ / 60).toFixed(1)} eye: wagon (${b.type} ${statusKey(b.status)})`); }
+        }
+        if (p.eye && p.eyeAlways && st.tick % (30 * TICK_HZ) === 0 && top.crit && cure === 'pave') {
+          const held = heldSpanFor(w, b);
+          const r = held ? applyCommand(w, { t: 'road', surface: 2, cells: held.cells } as Command) : null;
+          if (r?.ok) { band.eyeBuys++; band.steps.push(`${(st.tick / TICK_HZ / 60).toFixed(1)} eye: pave span (${b.type} ${statusKey(b.status)})`); }
         }
       }
       for (const wg of st.wagons) {
@@ -289,7 +303,7 @@ export function runValley(name: string, seed: number, minutes: number): RunOut {
     }
     if (st.tick % (BAND_MIN * 60 * TICK_HZ) === 0) { closeBand(); band = newBand(st.tick / TICK_HZ / 60); }
   }
-  } finally { MARKET.recoverTicks = recover0; }
+  } finally { MARKET.recoverTicks = recover0; undoRun?.(); }
   const ev = st.valleyEvents!;
   const seasonPerMin: Record<string, number> = {};
   for (const s of Object.keys(seasonSilver)) seasonPerMin[s] = seasonSilver[s]! / (seasonTicks[s]! / TICK_HZ / 60);
