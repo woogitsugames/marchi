@@ -1,0 +1,296 @@
+diff --git a/src/render/groundCover.ts b/src/render/groundCover.ts
+index 0af3041..29dfa2f 100644
+--- a/src/render/groundCover.ts
++++ b/src/render/groundCover.ts
+@@ -18,7 +18,7 @@ import { net } from '../sim/index';
+ import { CELL, type Heightfield } from './heightfield';
+ import { markInstances } from './instancedParts';
+ import { hash3, rng, vnoise } from './models/kit';
+-import { modelMaterial } from './models/materials';
++import { instancedMaterial, modelMaterial, shareInstancedDepth } from './models/materials';
+ import { treeParts } from './models/trees';
+ import type { RoadField } from './roads';
+ 
+@@ -84,7 +84,8 @@ export class GroundCover {
+ 
+   constructor(private readonly hf: Heightfield) {
+     const tg = bladeClump(13, 0.2, 0.5, 0.18, 0.5, '#363c27', '#6e6a46', 5, '#4f5838');
+-    this.tufts = new InstancedMesh(tg, modelMaterial('grass') as Material, 4000);
++    // own mirror: the tufts carry instanceColor, the reeds do not (one material would rebuild its program twice a render)
++    this.tufts = new InstancedMesh(tg, instancedMaterial('grass', true) as Material, 4000);
+     this.tufts.count = 0;
+     this.tufts.name = 'grass-tufts';
+     this.tufts.receiveShadow = true;
+@@ -95,6 +96,7 @@ export class GroundCover {
+       const m = new InstancedMesh(p.geometry, modelMaterial(p.material) as Material, 220);
+       m.count = 0;
+       m.name = `low-shrub-${p.material}`;
++      shareInstancedDepth(m);
+       m.castShadow = true;
+       m.receiveShadow = true;
+       m.frustumCulled = false;
+diff --git a/src/render/instancedParts.ts b/src/render/instancedParts.ts
+index 34d09aa..134f828 100644
+--- a/src/render/instancedParts.ts
++++ b/src/render/instancedParts.ts
+@@ -2,7 +2,7 @@
+ // begin(), push(matrix) per instance, end(). Shared by the wagons and the yard workers.
+ import { type BufferAttribute, type BufferGeometry, type Group, InstancedMesh, type Material, type Matrix4 } from 'three';
+ import type { ModelPart } from './models/kit';
+-import { instancedMaterial } from './models/materials';
++import { instancedMaterial, shareInstancedDepth } from './models/materials';
+ 
+ /**
+  * Mark the first `n` instances of a per-instance attribute for upload. Only that prefix goes to the GPU
+@@ -28,6 +28,7 @@ export class Parts {
+       m.castShadow = true;
+       m.receiveShadow = true;
+       m.name = name;
++      shareInstancedDepth(m);
+       group.add(m);
+       return m;
+     });
+diff --git a/src/render/models/materials.ts b/src/render/models/materials.ts
+index 97ff9fe..5e658ee 100644
+--- a/src/render/models/materials.ts
++++ b/src/render/models/materials.ts
+@@ -11,9 +11,12 @@ import {
+   DataTexture,
+   DoubleSide,
+   LinearFilter,
++  type InstancedMesh,
+   LinearMipmapLinearFilter,
+   type Material,
++  MeshDepthMaterial,
+   MeshStandardMaterial,
++  RGBADepthPacking,
+   SRGBColorSpace,
+   type Texture,
+ } from 'three';
+@@ -375,10 +378,7 @@ export function treeQualityVariants(high: boolean): Map<Material, Material> {
+     out.set(m, c);
+   }
+   // the instanced mirrors switch with their base material: compile the same variant for them
+-  for (const [m, c] of [...out]) {
+-    const im = instCache.get(m.name.slice('model-'.length) as MatKey);
+-    if (im) out.set(im, c);
+-  }
++  for (const [m, c] of [...out]) for (const im of mirrorsOf(m.name.slice('model-'.length) as MatKey)) out.set(im, c);
+   return out;
+ }
+ 
+@@ -420,7 +420,8 @@ export function applyTextures(key: MatKey, set: TextureSet): void {
+   syncInstanced(key);
+ }
+ 
+-const instCache = new Map<MatKey, MeshStandardMaterial>();
++/** Instanced mirrors by kind: `key` (InstancedMesh users) and `key+color` (InstancedMesh with `instanceColor`). */
++const instCache = new Map<string, MeshStandardMaterial>();
+ 
+ /**
+  * The kind's material for InstancedMesh users (wagon rigs, cargo, yard workers): a mirror of `modelMaterial(key)` with
+@@ -429,50 +430,61 @@ const instCache = new Map<MatKey, MeshStandardMaterial>();
+  * its program parameters on every switch (research 2026-11-05 render #5). The mirror never diverges: every change of
+  * a base material goes through a function here that calls `syncInstanced`, and `materialsFor` lists both for the
+  * shader pre-warm.
++ * `colored`: a separate mirror for InstancedMesh with `instanceColor` (`instancingColor` is checked the same way: the
++ * grass tufts and the reeds shared `model-grass` and rebuilt twice per render, research 2026-11-05 rebuilds).
+  */
+-export function instancedMaterial(key: MatKey): MeshStandardMaterial {
++export function instancedMaterial(key: MatKey, colored = false): MeshStandardMaterial {
+   // guard (D-133): the impostor bake rewrites the billboard material outside this module; no mirror may follow it
+   if (key === 'billboard') throw new Error('instancedMaterial: billboard has no instanced mirror');
+-  let c = instCache.get(key);
++  const id = colored ? key + '+color' : key;
++  let c = instCache.get(id);
+   if (c) return c;
+   const m = modelMaterial(key);
+   c = m.clone();
+   c.onBeforeCompile = m.onBeforeCompile;
+   c.customProgramCacheKey = m.customProgramCacheKey;
+-  c.name = m.name + '-inst';
+-  instCache.set(key, c);
++  c.name = m.name + (colored ? '-inst-color' : '-inst');
++  instCache.set(id, c);
+   return c;
+ }
+ 
+-/** The base material of a kind and its instanced mirror, if one was made. */
++function mirrorsOf(key: MatKey): MeshStandardMaterial[] {
++  const out: MeshStandardMaterial[] = [];
++  for (const id of [key, key + '+color']) { const im = instCache.get(id); if (im) out.push(im); }
++  return out;
++}
++
++/** The base material of a kind and its instanced mirrors, if any were made. */
+ export function materialsFor(key: MatKey): MeshStandardMaterial[] {
+-  const im = instCache.get(key);
+-  return im ? [modelMaterial(key), im] : [modelMaterial(key)];
++  return [modelMaterial(key), ...mirrorsOf(key)];
++}
++
++function drifted(im: MeshStandardMaterial, m: MeshStandardMaterial): boolean {
++  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
++  const b = m as MeshStandardMaterial & { defines?: Record<string, string> };
++  return im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
++    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
++    JSON.stringify(d.defines ?? {}) !== JSON.stringify(b.defines ?? {});
+ }
+ 
+ /** Kinds whose mirror's program-relevant state differs from its base (empty when in sync; tests and debug). */
+ export function mirrorDrift(): MatKey[] {
+   const out: MatKey[] = [];
+-  for (const [key, im] of instCache) {
+-    const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
+-    const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
+-    if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
+-      im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
+-      im.onBeforeCompile !== m.onBeforeCompile || im.customProgramCacheKey !== m.customProgramCacheKey ||
+-      JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) out.push(key);
++  for (const [id, im] of instCache) {
++    const key = id.split('+')[0] as MatKey;
++    const m = modelMaterial(key);
++    if (drifted(im, m) || im.onBeforeCompile !== m.onBeforeCompile || im.customProgramCacheKey !== m.customProgramCacheKey) {
++      if (!out.includes(key)) out.push(key);
++    }
+   }
+   return out;
+ }
+ 
+-/** Copy the program-relevant state of the base material to its mirror (no-op without one). */
++/** Copy the program-relevant state of the base material to its mirrors (no-op without one). */
+ function syncInstanced(key: MatKey): void {
+-  const im = instCache.get(key);
+-  if (!im) return;
+   const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
+-  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
+-  if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
+-    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
+-    JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) {
++  for (const im of mirrorsOf(key)) {
++    if (!drifted(im, m)) continue;
+     im.map = m.map;
+     im.normalMap = m.normalMap;
+     im.roughnessMap = m.roughnessMap;
+@@ -481,11 +493,44 @@ function syncInstanced(key: MatKey): void {
+     im.alphaTest = m.alphaTest;
+     im.side = m.side;
+     im.shadowSide = m.shadowSide;
+-    d.defines = { ...(m.defines ?? {}) };
++    (im as MeshStandardMaterial & { defines?: Record<string, string> }).defines = { ...(m.defines ?? {}) };
+     im.needsUpdate = true;
+   }
+ }
+ 
++let instDepth: MeshDepthMaterial | null = null;
++
++/**
++ * Shadow-pass material for instanced casters (set as `customDepthMaterial` by `shareInstancedDepth`). WebGLShadowMap
++ * draws every caster without a custom depth material (and without an alpha-tested map) with ONE shared
++ * MeshDepthMaterial, so its program flipped between the instanced and the plain variant at every switch between
++ * wagons/trees/shrubs and buildings/bridges in the traversal: 2-4 parameter rebuilds per shadow render (research
++ * 2026-11-05 rebuilds). Same packing and per-draw state (the shadow pass copies side, maps, alpha test and clipping
++ * from the source material into it, exactly as into the shared one), so the depth written is the same.
++ */
++export function instancedDepthMaterial(): MeshDepthMaterial {
++  if (!instDepth) {
++    instDepth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
++    instDepth.name = 'instanced-depth';
++  }
++  return instDepth;
++}
++
++/**
++ * Give an instanced shadow caster the shared instanced depth material, unless it has its own (horse skin, far cards)
++ * or its material makes WebGLShadowMap pick a per-material depth clone (alpha-tested map, alpha to coverage,
++ * displacement): those are never shared with plain meshes and must keep the shadow map's own alpha handling.
++ */
++export function shareInstancedDepth(mesh: InstancedMesh): void {
++  if (mesh.customDepthMaterial) return;
++  const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
++  for (const m of ms) {
++    const s = m as Material & { map?: unknown; alphaMap?: unknown; displacementMap?: unknown; displacementScale?: number };
++    if ((s.displacementMap && s.displacementScale !== 0) || ((s.map || s.alphaMap) && m.alphaTest > 0) || m.alphaToCoverage) return;
++  }
++  mesh.customDepthMaterial = instancedDepthMaterial();
++}
++
+ /**
+  * A detached copy of a kind's material with `set` applied (same shader hooks and program cache
+  * key): lets the renderer compile the textured variant before `applyTextures` binds it.
+diff --git a/src/render/vegetation.ts b/src/render/vegetation.ts
+index f390922..5a7aa83 100644
+--- a/src/render/vegetation.ts
++++ b/src/render/vegetation.ts
+@@ -21,7 +21,7 @@ import { net } from '../sim/index';
+ import { CELL, type Heightfield } from './heightfield';
+ import { markInstances } from './instancedParts';
+ import { rng, vnoise } from './models/kit';
+-import { modelMaterial, treeUniforms } from './models/materials';
++import { modelMaterial, shareInstancedDepth, treeUniforms } from './models/materials';
+ import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeLodFactor, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './models/trees';
+ import type { RoadField } from './roads';
+ import { apronHeight } from './terrain';
+@@ -145,6 +145,7 @@ export class VegetationView {
+             m.castShadow = this.castShadows;
+             m.receiveShadow = true;
+             m.name = `tree-${kind}${v}-${p.material}`;
++            shareInstancedDepth(m);
+             this.group.add(m);
+             return m;
+           }),
+diff --git a/tests/rebuilds.test.ts b/tests/rebuilds.test.ts
+new file mode 100644
+index 0000000..80a503e
+--- /dev/null
++++ b/tests/rebuilds.test.ts
+@@ -0,0 +1,49 @@
++// Research 2026-11-05 rebuilds (frame-cost day 9 item #1): the last program-parameter rebuilds per render.
++// Shadow pass: instanced casters draw their own shared depth material instead of WebGLShadowMap's shared one.
++// Grass: the tufts (instanceColor) draw a colour mirror of model-grass, the reeds (no instanceColor) the base.
++import { DataTexture, InstancedMesh, BoxGeometry, MeshDepthMaterial, MeshStandardMaterial, RGBADepthPacking } from 'three';
++import { applyTextures, instancedDepthMaterial, instancedMaterial, materialsFor, mirrorDrift, modelMaterial, shareInstancedDepth } from '../src/render/models/materials';
++import { assert, eq, test } from './harness';
++
++test('rebuilds: instanced depth material matches the shadow map one (packing), is shared and named', () => {
++  const d = instancedDepthMaterial();
++  eq(d, instancedDepthMaterial(), 'one material for every instanced caster');
++  eq(d.depthPacking, new MeshDepthMaterial({ depthPacking: RGBADepthPacking }).depthPacking, 'same packing as WebGLShadowMap._depthMaterial');
++  eq(d.name, 'instanced-depth', 'named (research tools find it)');
++});
++
++test('rebuilds: shareInstancedDepth only for casters that would draw the shared depth material', () => {
++  const g = new BoxGeometry(1, 1, 1);
++  const plain = new InstancedMesh(g, instancedMaterial('wood'), 2);
++  shareInstancedDepth(plain);
++  eq(plain.customDepthMaterial, instancedDepthMaterial(), 'opaque kind gets it');
++  const alpha = new MeshStandardMaterial({ map: new DataTexture(new Uint8Array(4), 1, 1), alphaTest: 0.5 });
++  const leaf = new InstancedMesh(g, alpha, 2);
++  shareInstancedDepth(leaf);
++  eq(leaf.customDepthMaterial, undefined, 'alpha-tested map keeps the per-material depth clone');
++  const a2c = new InstancedMesh(g, new MeshStandardMaterial({ alphaToCoverage: true }), 2);
++  shareInstancedDepth(a2c);
++  eq(a2c.customDepthMaterial, undefined, 'alpha to coverage keeps the per-material depth clone');
++  const own = new MeshDepthMaterial();
++  const horse = new InstancedMesh(g, instancedMaterial('hide'), 2);
++  horse.customDepthMaterial = own;
++  shareInstancedDepth(horse);
++  eq(horse.customDepthMaterial, own, 'an own custom depth material is kept');
++});
++
++test('rebuilds: grass colour mirror is separate, keyed and hooked like the base, follows textures', () => {
++  const base = modelMaterial('grass'), c = instancedMaterial('grass', true);
++  assert(c !== base && c !== instancedMaterial('grass'), 'separate from the base and the plain mirror');
++  eq(c, instancedMaterial('grass', true), 'one colour mirror per kind');
++  eq(c.name, 'model-grass-inst-color', 'named');
++  eq(c.customProgramCacheKey, base.customProgramCacheKey, 'same program cache key');
++  eq(c.onBeforeCompile, base.onBeforeCompile, 'same shader hook');
++  assert(materialsFor('grass').includes(c), 'pre-warm (texture swap) sees the colour mirror');
++  const t = new DataTexture(new Uint8Array(4), 1, 1);
++  applyTextures('grass', { normalMap: t });
++  eq(c.normalMap, t, 'texture mirrored');
++  eq(mirrorDrift().join(','), '', 'no drift');
++  applyTextures('grass', { normalMap: null });
++  eq(c.normalMap, null, 'removal mirrored');
++  eq(mirrorDrift().join(','), '', 'no drift after removal');
++});
