@@ -1,0 +1,41 @@
+diff --git a/src/render/lighting.ts b/src/render/lighting.ts
+index 73bf279..871541d 100644
+--- a/src/render/lighting.ts
++++ b/src/render/lighting.ts
+@@ -126,6 +126,10 @@ export class Lighting {
+     isNight: false,
+   };
+   private shadowSize = 2048;
++  /** Shadow-map refresh divisor (research shadow pass, option A): 1 = every frame, 2 = every 2nd frame. */
++  shadowEvery = 1;
++  private shadowFrame = 0;
++  private readonly lastFit = [NaN, NaN, NaN, NaN];
+ 
+   constructor(scene: Scene) {
+     this.hemi = new HemisphereLight('#c4c6c4', '#4a3f33', 1.2);
+@@ -241,6 +245,13 @@ export class Lighting {
+     cam.near = 150; cam.far = 300 + r * 1.2 + 80;
+     cam.updateProjectionMatrix();
+     s.target.updateMatrixWorld();
++    // option A: skip the depth pass on odd frames unless the fitted shadow camera moved (pan, zoom, a sun step past
++    // a texel snap) — then the static shadows would slide; only moving casters lag by one frame
++    const lf = this.lastFit, p = s.position;
++    const moved = p.x !== lf[0] || p.y !== lf[1] || p.z !== lf[2] || r !== lf[3];
++    lf[0] = p.x; lf[1] = p.y; lf[2] = p.z; lf[3] = r;
++    s.shadow.autoUpdate = this.shadowEvery <= 1;
++    if (!s.shadow.autoUpdate) s.shadow.needsUpdate = moved || this.shadowFrame++ % this.shadowEvery === 0;
+   }
+ 
+   followCamera(pos: Vector3): void {
+diff --git a/src/render/view.ts b/src/render/view.ts
+index 52ebd20..7114165 100644
+--- a/src/render/view.ts
++++ b/src/render/view.ts
+@@ -706,6 +706,7 @@ class View implements WorldView {
+     // and 4× the shadow-pass fill, while the shadow frustum is fitted to the zoom (28–320 m).
+     const high = this.quality !== 'low';
+     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
++    this.lighting.shadowEvery = this.quality === 'ultra' ? 1 : 2;
+     this.vegetation?.setShadows(high);
+     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
+     setTreeQuality(high);

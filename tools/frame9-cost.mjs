@@ -101,6 +101,12 @@ const setup = await page.evaluate(({ n, cmds, mission }) => {
   return { tick: st.tick, buildings: st.buildings.length, wagons: st.wagons.length, result: st.mission.result };
 }, { n: sandboxN, cmds: benchCmds, mission });
 
+// optional shadow-pass prototype (tools/shadow9-modes.js): SHADOW_MODE=a|b|c, SHADOW_K=<radius factor for b>
+if (process.env.SHADOW_MODE) {
+  const src = readFileSync(new URL('./shadow9-modes.js', import.meta.url), 'utf8').replace(/^\/\/.*\n/gm, '');
+  setup.shadowMode = await page.evaluate(`(${src.trim().replace(/;$/, '')})(${JSON.stringify(process.env.SHADOW_MODE)}, ${Number(process.env.SHADOW_K ?? 0)})`);
+}
+
 const doScatter = () => page.evaluate(() => {
   const app = window.__marchia.app, st = app.world.state, t = app.world.terrain;
   const roads = [];
