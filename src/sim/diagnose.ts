@@ -3,6 +3,7 @@ import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, S
 import { buildingById } from './logistics';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen } from './town';
+import { postOpen } from './tradePost';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, reachable, slopeFactor, type World } from './network';
 import { seasonAt, seasonal, thawing, yieldPercentAt, type Season } from './seasons';
 import { fairStage } from './events';
@@ -87,6 +88,7 @@ export function outputCustomer(world: World, id: number): number {
       const k = st.mission.contract;
       takes = k ? k.castle === c.id && k.need[g] > c.stock[g] : st.market.open;
     }
+    if (!takes && c.type === 'tradePost') takes = postOpen(world); // the free valley's trading post (D-170)
     if (takes && findPath(world, b.gate, c.gate, true)) return c.id;
   }
   return -1;

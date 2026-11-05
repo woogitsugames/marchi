@@ -6,6 +6,7 @@ import {
 } from './defs';
 import type { World } from './network';
 import { fairPercent } from './events';
+import { postCents, postOpen, recoverTradePost, sellAtPost } from './tradePost';
 import type { Building, BuildingType, Good, MarketState, SimState, TownState } from './types';
 
 // --- State -------------------------------------------------------------------------------------
@@ -28,7 +29,12 @@ export function marketOpen(world: World): boolean {
 
 /** Is this building a market that buys deliveries right now? */
 export function isMarket(world: World, b: Building): boolean {
-  return b.type === 'castle' && marketOpen(world);
+  return (b.type === 'castle' && marketOpen(world)) || (b.type === 'tradePost' && postOpen(world));
+}
+
+/** Price of the next unit of g at market building m, in hundredths (castle, or the trading post: D-170). */
+export function marketCents(world: World, m: Building, g: Good): number {
+  return m.type === 'tradePost' ? postCents(world, g) : unitCents(world.state, g, fairPercent(world, g));
 }
 
 /** Price as a whole percentage of the base price for a saturation level (100 down to MARKET.floorPct). */
@@ -71,8 +77,13 @@ export function sellAt(world: World, b: Building, g: Good): number {
   const qty = b.stock[g];
   if (qty <= 0) return 0;
   const m = st.market;
-  m.cents += quoteCents(st, g, qty, fairPercent(world, g));
-  m.saturation[g] = Math.min(MARKET.cap, m.saturation[g] + qty);
+  if (b.type === 'tradePost') {
+    // the trading post (D-170): its own saturation and 125 %; the castle's saturation is untouched
+    m.cents += sellAtPost(world, b, g);
+  } else {
+    m.cents += quoteCents(st, g, qty, fairPercent(world, g));
+    m.saturation[g] = Math.min(MARKET.cap, m.saturation[g] + qty);
+  }
   b.stock[g] = 0;
   st.ledger.consumed[g] += qty;
   st.ledger.sold[g] += qty;
@@ -105,6 +116,7 @@ export function stepTown(world: World): void {
   if (next % MARKET.recoverTicks === 0) {
     for (const g of GOODS) if (st.market.saturation[g] > 0) st.market.saturation[g]--;
   }
+  recoverTradePost(world, next);
   if (next % FLOW_BUCKET_TICKS === 0) {
     // the bucket that just closed completes a window: latch the best rate, then open the next bucket
     st.town.bestFlow = Math.max(st.town.bestFlow, flowPerMinute(st));

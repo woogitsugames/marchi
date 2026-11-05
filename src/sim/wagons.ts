@@ -385,7 +385,8 @@ function finishBusy(world: World, w: Wagon): void {
   to.incoming[j.good] -= j.qty;
   // the market sells on arrival: stock -> consumed, silver paid (conservation holds)
   // accepted royal orders take their share first (D-54), the rest is sold
-  if (isMarket(world, to)) { handInOrders(world, to, j.good); sellAt(world, to, j.good); }
+  // (orders are the castle's: the trading post never takes goods for an order, D-170)
+  if (isMarket(world, to)) { if (to.type === 'castle') handInOrders(world, to, j.good); sellAt(world, to, j.good); }
   w.cargoQty = 0;
   w.cargoGood = null;
   w.job = null;

@@ -270,8 +270,8 @@ W V1–V4 wpisuj `task_time_s` i `task_success`; w V4 również `save_ok`. `time
 | 1 | 200 | 2 | 8 | młyn i piekarnia |
 | 2 | 1000 | 4 | 20 | rybak, kamieniołom, bruk i kamienny most |
 | 3 | 3000 | 6 | 60 | węglarz i słodownia |
-| 4 | 7200 | 7 | 120 | browar |
-| 5 | 14500 | 9 | 160 | ulepszenie wyglądu zamku, bez nowego budynku |
+| 4 | 7200 | 7 | 120 | browar; punkt handlowy za rzeką (125 % ceny, D-170) |
+| 5 | 17000 | 9 | 160 | ulepszenie wyglądu zamku, bez nowego budynku |
 
 - **Start:** `?play=sandbox&speed=0` oraz opcjonalnie **realny** zaawansowany zapis testowej księgi. Nie ustawiaj rangi sztucznie i nie żądaj osiągnięcia rangi 5 w krótkiej sesji.
 - **Zaliczenie:** uczestnik sam odnajduje wymagania następnej rangi i wymienia, co się odblokuje (`rank_understood`); `goods_identified` to liczba prawidłowo wskazanych towarów 0–10. Zapisz `task_time_s` i odróżnij **rozumienie progów** od faktycznego awansu.

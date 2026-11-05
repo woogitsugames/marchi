@@ -2,8 +2,8 @@
 // Also computes each building's status (the "why is it stalled?" data).
 import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
-import { marketOpen, unitCents } from './town';
-import { fairPercent, orderOutstanding } from './events';
+import { isMarket, marketCents, marketOpen } from './town';
+import { orderOutstanding } from './events';
 import { MISSIONS } from './missions';
 import { linkedToStable, postOpen } from './tradePost';
 import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
@@ -269,14 +269,23 @@ export function dispatch(world: World): void {
   // granary push. At most MARKET.wagonSharePct of the fleet hauls to the market at once.
   if (marketOpen(world)) {
     let slots = Math.max(1, Math.floor((st.wagons.length * MARKET.wagonSharePct) / 100));
-    const markets = st.buildings.filter((b) => b.type === 'castle');
+    const markets = st.buildings.filter((b) => isMarket(world, b));
     for (const w of st.wagons) if (w.job && markets.some((m) => m.id === w.job!.to)) slots--;
-    // goods still owed to accepted royal orders go first (D-54; no order = the old price order)
-    const owed = (g: Good): number => (orderOutstanding(st, g) > 0 ? 1 : 0);
-    const goods = GOODS.filter((g) => MARKET.base[g] > 0)
-      .sort((a, c) => owed(c) - owed(a) || unitCents(st, c, fairPercent(world, c)) - unitCents(st, a, fairPercent(world, a)) || GOODS.indexOf(a) - GOODS.indexOf(c));
+    // every (market, good) pair by its own price (the castle, and the trading post from rank 4: D-170). Goods owed to
+    // accepted royal orders go first, and only to the castle (orders are the crown's, D-54). One market = the old order.
+    const owed = (m: Building, g: Good): number => (m.type === 'castle' && orderOutstanding(st, g) > 0 ? 1 : 0);
+    const pairs: { m: Building; g: Good; c: number; o: number }[] = [];
     for (const m of markets) {
-      for (const g of goods) {
+      for (const g of GOODS) {
+        if (MARKET.base[g] <= 0) continue;
+        // a good still owed to an accepted order is not sold at the post meanwhile (it would starve the order)
+        if (m.type === 'tradePost' && orderOutstanding(st, g) > 0) continue;
+        pairs.push({ m, g, c: marketCents(world, m, g), o: owed(m, g) });
+      }
+    }
+    pairs.sort((a, c) => c.o - a.o || c.c - a.c || GOODS.indexOf(a.g) - GOODS.indexOf(c.g) || a.m.id - c.m.id);
+    for (const { m, g } of pairs) {
+      {
         if (slots <= 0 || free.length === 0) break;
         const cap = capacityOf(g);
         if (MARKET.inflightPerGood - m.incoming[g] < cap) continue;

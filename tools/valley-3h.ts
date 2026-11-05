@@ -90,6 +90,10 @@ function wagonOnRed(fromSec: number): (w: World, sec: number) => Command[] {
 export const PLAYERS: Record<string, Player> = {
   passive: { plan: [] },
   decent: { plan: DECENT },
+  // the trading post (D-170): DECENT without its last step (no road to the post), and DECENT whose eye also paves a
+  // span held by ice (the winter card on the way to the post)
+  'decent-nopost': { plan: DECENT.filter((s) => s.name !== 'road to the trading post') },
+  'decent+eye': { plan: DECENT, eye: true, eyeAlways: true },
   orders: { plan: DECENT, orders: true },
   merchant: { plan: DECENT, merchant: true },
   eager: { plan: DECENT, orders: true, merchant: true },
