@@ -28,6 +28,10 @@
    D-129 w osobnym module z testem, **D-132 odcinek błota do brukowania ma własnego ducha — jasną kostkę**
    (`docs/shots/day9b-m3-mud*.jpg`; obejrzyj — jeśli za jasny, przyciemnimy). Testy 470/0. Layout-check: limit
    ładowania 90 s (30 s dawało fałszywe timeouty przy pracy agentów).
+0c. **Render #5 wdrożony (D-133, 06:00):** lustrzane materiały InstancedMesh — piksele identyczne (0 różnic
+   dzień i zimowa noc), przebudowy parametrów 10 → 6 na klatkę. Bez decyzji (obraz bez zmian).
+0d. **Prompt dla innej sesji Claude (tłumaczenia 66 kluczy PENDING_KEYS na 15 języków):**
+   `docs/orders/claude-session-07-i18n.md`, gałąź `claude/x-i18n-day9`.
 1. **„Czekanie na odbiór” (WAITING_PICKUP) z czynnością? — D-128 wdrożone wąsko.** Reguła ogólna („Kup wóz” przy
    każdym czekaniu ≥ 30 s, gdy wszystkie wozy zajęte) kosztowała pieczęcie: jako sama naprawa w arkuszu −7 wierszy
    (VI, VIII, XII skan, X 30 s), z wyjęciem ze spokojnych pinezek −21 (np. IV 2→1★, VIII 3→2★). Wdrożono ją więc
