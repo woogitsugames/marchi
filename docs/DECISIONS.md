@@ -1895,9 +1895,9 @@ On a short side sheet the dock (D-100) covered the hint under the button, and fo
 reason (D-115 "bez przerwy najwyżej 6,7/min", D-128 "Wóz 1 dojedzie po ładunek za 1:19", D-116 "błoto to nie
 przestój"). The hint now lives inside the dock in every layout (under the button on a tall sheet; portrait gains
 2–4 lines in the dock), and with `body.is-short` the dock is a two-column grid: the button (15 px, may wrap to three
-lines inside its 48–56 px) and the hint at 12.5 px, at most three lines (`line-clamp`), so the dock is no taller than
+lines; 14 px, column 1.45fr so it stays at 48 px in pseudo) and the hint at 12.5 px, at most three lines (`line-clamp`), so the dock is no taller than
 before. The subject row of the folded chain (`.c-first .link.is-self`, a `div` since fa5676f) loses the kit card
-frame whose rails touched the letters at 26 px: icon, reason and clock on the parchment over a thin rule. The
+frame whose rails touched the letters at 26 px: icon, reason and clock on the parchment over a thin painted rule (a background line, not a border, block padding 3 px: the row is 2–3 px shorter and the root below keeps clear of the dock). The
 reason still wraps instead of an ellipsis (D-136). Shots `day9e-fixnote-{before,after}-*.jpg`. (decided)
 
 **D-139 — The Flip cover screen folds the cause chain like a short landscape sheet (day 9e; ui audit day 9, P2-4).**
