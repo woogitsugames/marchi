@@ -161,11 +161,12 @@ await page.evaluate(() => {
   });
   // park the browser's rAF chain while a synthetic second runs (App.frame re-requests itself)
   const raf = window.requestAnimationFrame.bind(window);
-  S.parked = false; S.held = [];
+  S.parked = true; S.held = [];
   window.requestAnimationFrame = (f) => (S.parked ? (S.held.push(f), 0) : raf(f));
   S.now = performance.now();
   S.second = () => {
     S.parked = true;
+    S.now = Math.max(S.now, app.lastFrame);
     window.__gl.skipDraw = true; // CPU side only: three.js does all its work and GL state calls, the GPU rasterises nothing
     app.loop.speed = 4;
     const t0 = performance.now();
@@ -173,10 +174,13 @@ await page.evaluate(() => {
     const ms = performance.now() - t0;
     app.loop.speed = 0;
     window.__gl.skipDraw = false;
-    S.parked = false;
-    const h = S.held.splice(0); if (h.length) raf(h[h.length - 1]);
+    S.held.length = 0;
     return ms;
   };
+  // the browser's own frames stay parked between synthetic seconds too (no SwiftShader raster competing for the
+  // CPU); only the real-frame window below lets them run
+  S.unpark = () => { S.parked = false; S.now = performance.now(); app.lastFrame = S.now; raf((t) => app.frame(t)); };
+  S.park = () => { S.parked = true; };
 });
 
 const maps = new Map();
@@ -202,6 +206,9 @@ const isThree = (f) => f.src.includes('three/build/three');
 const quantile = (a, q) => { const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(q * (s.length - 1) + 0.5))]; };
 const stat = (a) => ({ med: +quantile(a, 0.5).toFixed(2), min: +Math.min(...a).toFixed(2), max: +Math.max(...a).toFixed(2) });
 
+const T0 = Date.now();
+const log = (m) => process.stderr.write(`[${((Date.now() - T0) / 1000).toFixed(0)}s] ${scene} ${quality} ${m}\n`);
+log('setup ' + JSON.stringify(setup));
 const out = { scene, quality, dpr, reps, setup, cams: {} };
 for (const cam of cams) {
   const scattered = sandboxN ? await doScatter() : 0;
@@ -218,6 +225,7 @@ for (const cam of cams) {
   // settle: 3 synthetic seconds (JIT, camera, first pins)
   await page.evaluate(() => { const S = window.__f9; S.wrapOwn(); for (let i = 0; i < 3; i++) S.second(); });
 
+  log(cam + ' settled');
   // --- timing reps (no profiler attached)
   const rows = [];
   for (let r = 0; r < reps; r++) {
@@ -241,6 +249,7 @@ for (const cam of cams) {
   const keys = Object.keys(rows[0]);
   const r = { scattered, timing: Object.fromEntries(keys.map((k) => [k, stat(rows.map((x) => x[k]))])) };
 
+  log(cam + ' timing done');
   // --- CPU profile over reps seconds
   await cdp.send('Profiler.enable');
   await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
@@ -295,6 +304,7 @@ for (const cam of cams) {
     topSelf: [...byFn].filter(([k]) => !k.startsWith('(program)')).sort((a, b) => b[1] - a[1]).slice(0, 16).map(([k, v]) => [k, perS(v)]),
   };
 
+  log(cam + ' profile done');
   // --- allocations over reps seconds
   await cdp.send('HeapProfiler.enable');
   await cdp.send('HeapProfiler.collectGarbage');
@@ -320,6 +330,7 @@ for (const cam of cams) {
     top: [...agg].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
   };
 
+  log(cam + ' alloc done');
   // --- state of the scene
   r.scene = await page.evaluate(() => {
     const app = window.__marchia.app, v = app.view, ws = app.world.state.wagons, wv = v.wagons;
@@ -338,11 +349,11 @@ for (const cam of cams) {
   // --- real rAF window at x4: style recalc / layout per painted frame (the synthetic loop never paints)
   const metrics = async () => Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
   await cdp.send('Performance.enable');
-  const f0 = await page.evaluate(() => { window.__marchia.app.loop.speed = 4; return window.__f9.frames; });
+  const f0 = await page.evaluate(() => { window.__marchia.app.loop.speed = 4; window.__f9.unpark(); return window.__f9.frames; });
   const m0 = await metrics();
   await page.waitForTimeout(6000);
   const m1 = await metrics();
-  const f1 = await page.evaluate(() => { window.__marchia.app.loop.speed = 0; return window.__f9.frames; });
+  const f1 = await page.evaluate(() => { window.__marchia.app.loop.speed = 0; window.__f9.park(); return window.__f9.frames; });
   const nf = Math.max(1, f1 - f0);
   r.realFrames = {
     frames: nf, recalcStyleMsPerFrame: +((m1.RecalcStyleDuration - m0.RecalcStyleDuration) * 1000 / nf).toFixed(2),
