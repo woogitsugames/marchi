@@ -1,4 +1,4 @@
-# Handover — MARCHIA (stan 2026-11-05 ~18:00 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+# Handover — MARCHIA (stan 2026-11-05 ~23:50 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
 - Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`,
@@ -17,6 +17,29 @@
   karta błota z niemożliwym brukiem w I), N1 (arkusz zamku po samouczku zasłania kartę zastoju), N3 (list porażki
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
+
+## Noc 2026-11-05/06 — stan i Decyzje na rano
+- `main` = baza = **5415373**: testy 507/0, smoke, layout 102/0. Scalone wieczorem: D-160..D-163 (paczka 9h: tytuł
+  nadwyżki, „Kup wóz” na zamku po niedawnym czekaniu, dok nigdy nie zasłania treści, kolejność kart w dolinie),
+  **D-165..D-167 misja VIII przeprojektowana** (jedna błotnista droga: same wozy ≤ 2★, bruk + 1 wóz 3★ z zapasem
+  38–61 s, rozsądny gracz 3★ przy 10/30/60 s), **D-168 ranga 1 doliny przy renomie 120** (gracz „karta” 7,7–10,4 min),
+  **D-170/D-171 posterunek handlowy za rzeką od rangi 4 + karta „Wąskie gardło”, zapis v9** (DECENT R5 117 min z
+  posterunkiem, 132 bez; złote hasze misji bez zmian), nagłówek karty floty w dolinie „Droga do rangi”, raport rang 2–3.
+- W nocy: deweloper `claude/w-day9i` — błędy F2–F4 z raportu rang 2–3 (duch nie przecina drogi, pętla „Kup wóz” przy
+  nasyconym rynku, karta rangi pomija budynek bez miejsca).
+
+### Decyzje na rano
+1. **Dolina, rangi 2–3 (raport `docs/research/2026-11-05-valley-ranks-2-3.md`):** gracz „karta” ma rangę 2 po 30–32 min
+   (cel 20–30) i 3 po 65–72 min (cel 40–50); hamuje tylko renoma, 850–2 800 srebra leży. **F1 — karta „rozbuduj”**
+   (od rangi 1, gdy brakuje tylko renomy: „postaw jeszcze jednego producenta” działającego łańcucha, z proporcjami)
+   → ranga 2 23–29 min, ranga 3 40–51 min, DECENT bez zmian. Alternatywa: progi renomy 750/2 000 (DECENT wypada z
+   okien testu). Rekomendacja: **F1**.
+2. **Posterunek handlowy (D-170/D-171)** — obejrzeć zrzuty `docs/shots/trade-*.jpg` (model zamknięty/otwarty, kra na
+   drewnianym moście, karta „Wąskie gardło”).
+3. **Przegląd tłumaczeń przez native speakerów** — lista niepewnych miejsc w raporcie D-155 (tytuł XIII, „marchia”,
+   telegraficzne linie tempa, ar/tr odmiany) i nowy list misji VIII w 17 językach (D-167).
+4. APK — odblokować `dl.google.com` + `maven.google.com` w sieci środowiska; usunąć `/mono-before.txt`,
+   `/bot-before.txt`, `/bots-before.txt`.
 
 ## Dzień 2026-11-05 (wieczór)
 - Scalone: D-156 dyspozytor 2 w wariancie L1 (decyzja właściciela; straty pieczęci od dokupionego wozu 28 → 19 / 193,
