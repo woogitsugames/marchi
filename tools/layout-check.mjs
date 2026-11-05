@@ -381,7 +381,7 @@ const CONTROLS = [
   { check: 'covered', css: '.rail-tools::after { content: ""; position: absolute; inset: 0; z-index: 5; background: rgb(0 0 0 / .3); }' },
   // the sticky dock of before D-162 on a short landscape sheet: the waiting mill's link under "Kup wóz"
   { check: 'overflow(under-fix)', scene: 'full-yard', view: '915x412',
-    css: 'body.is-short .fix-dock { position: sticky !important; } body.is-short .sheet-body:has(.fix-dock) { margin-block-end: 0 !important; padding-block-end: 0 !important; }' },
+    css: '.fix-dock { position: sticky !important; } .sheet-body:has(.fix-dock) { margin-block-end: 0 !important; padding-block-end: 0 !important; }' },
 ];
 
 async function main() {

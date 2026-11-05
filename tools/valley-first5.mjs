@@ -167,6 +167,8 @@ async function run([w, h]) {
         } else lk.act += s1.coins !== s.coins ? ' (applied)' : ' (no visible effect)';
       }
       for (let i = 0; i < 3 && await page.locator('#sheets .sheet').count(); i++) { out.taps++; await page.keyboard.press('Escape'); await settle(); }
+      // the build tool stays open after "Postaw" (more of the same can follow): close it too, as the player would
+      if ((await sim()).tool === 'build') { out.taps++; await page.keyboard.press('Escape'); await settle(); }
     }
     out.looks.push(lk);
     log('look', lk.t, '|', lk.card.slice(0, 80), '|', lk.act || '-', '| coins', lk.coins, 'rank', lk.rank);

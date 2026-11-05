@@ -15,6 +15,8 @@ const ALL = {
   'n6-farm': { q: 'play=m1&ff=90&speed=0&open=farm', sizes: [[915, 412]] },
   // the same, the body scrolled half way: the link stays above the dock, never under it
   'n6-farm-scrolled': { q: 'play=m1&ff=90&speed=0&open=farm', sizes: [[915, 412]], scroll: 0.5 },
+  // VI at 1:50, portrait bottom sheet: the chain and "Co to znaczy?" above the docked fix (D-162 on every sheet)
+  'chain-port': { q: 'play=m6&ff=110&speed=0&open=farm', sizes: [[412, 915]] },
   // VIII at 2:20: a farm's grain nobody needs right now (calm surplus)
   'n7-surplus': { q: 'play=m8&ff=140&speed=0&open=farm', sizes: [[412, 915]] },
 };

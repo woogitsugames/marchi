@@ -2474,14 +2474,15 @@ body.is-short .fix-dock .fix-note .s-hint, body.is-short .fix-dock .fix-why > sp
   font-size: 12.5px; line-height: 1.25; overflow-wrap: anywhere;
 }
 body.is-short .fix-dock .fix-why svg { width: 16px; height: 16px; }
-/* D-162 (first-10-minutes-e N6): on a short sheet the scrolling body ends above the dock instead of running under
+/* D-162 (first-10-minutes-e N6): on every sheet the scrolling body ends above the dock instead of running under
    it — a link scrolled beneath a sticky "Kup wóz" ("Młyn wodny" in the full-yard hint) took a tap meant for it
    and spent 30 silver. The dock sits in the paper below the body (absolute, so the body's clip does not reach it);
    the body keeps a bottom margin of the dock's height (--dock-h from sheets.ts, minus the 14 px fade). The fade
-   still dims the body's last 14 px (it takes no taps); the body's bottom padding clears it at the end of the scroll. */
-body.is-short .sheet-paper > .sp-in { position: relative; }
-body.is-short .sheet-body:has(.fix-dock) { margin-block-end: max(0px, calc(var(--dock-h, 0px) - 14px)); padding-block-end: 14px; }
-body.is-short .fix-dock { position: absolute; inset-inline: 8px; inset-block-end: 0; }
+   still dims the body's last 14 px (it takes no taps); the body's bottom padding clears it at the end of the scroll.
+   First on short sheets only; the layout matrix then found "Co to znaczy?" under the docked fix in portrait (pseudo). */
+.sheet-paper > .sp-in { position: relative; }
+.sheet-body:has(.fix-dock) { margin-block-end: max(0px, calc(var(--dock-h, 0px) - 14px)); padding-block-end: 14px; }
+.fix-dock { position: absolute; inset-inline: 8px; inset-block-end: 0; }
 
 /* ---- large system text (D-120, a11y audit F2): Android font size 150 %+ reaches the WebView as textZoom.
    .text-probe (layout.ts watchTextScale) measures it and sets body.is-bigtext. A side sheet then takes the full
