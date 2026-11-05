@@ -1836,3 +1836,35 @@ A5 "Ustawienia covers rows XIII / IV–V" was such a row (menu now: no covered t
 with the fixes (`docs/research/shots-first10d/`): no empty screen in 10 Why sheets, every "pełny magazyn, brak wozu"
 and "wszystkie wozy zajęte" offered "Kup wóz" (5 bought, run c: 3), mission I **won** at 7174 ticks (run c portrait
 lost by 2 breads), "Następna misja" → II. UI/tools only, hashes unchanged. (decided)
+
+**D-136 — Day 9d: the full layout matrix green again (castle 915×412 de/pseudo), the landscape valley events card keeps its open item's actions in view, and quality switches link no program inside a frame (D-65 gap closed).**
+*Castle cause chain (`castle|915x412|de`, `|pseudo`).* On a short landscape side sheet (`body.is-short`) the
+subject row of the cause chain was one line with an ellipsis, so a long reason ("Warten auf Bretter – der Lieferant
+wartet selbst auf Holz", pseudo +40 %) lost its end — the part that says *why*. It now wraps (`overflow-wrap:
+anywhere; hyphens: auto`, line-height 1.15) to a second line, padding 4 px so the text clears the card frame; the row
+stays ≤ 48 px (44 px measured in de). The waybill's clock pill in landscape was `nowrap` in a `nowrap` head and spilled
+13 px out of the 272 px card in pseudo; the pill may now wrap its words (the clock `<bdi>` stays whole) and grows a line
+instead. Shots `day9d-castle-915x412-{de,pseudo}{-before,}.jpg`.
+*Valley events card in landscape (research sandbox-first-30 B5/P3).* Measured: the card itself never reached the rail
+(bottom 322 px, alarm seal 332 px); what lay "under the seal" was the open item's action row scrolled below the
+list's fold — an item opened lower in the list (third of three) showed "Odłóż ofertę" cut by the list edge, and its
+off-screen rectangle sat on the seal's badge, which the audit read as covered. Fix: when the card opens or another
+item opens, the list scrolls the item shown in full so its bottom (the buttons) is inside the visible part
+(`EventCard.revealFocus`, only on a focus/open change, so delivery progress re-renders do not fight the player's
+scroll); the list's height is now tied to the measured `--rail-h` (ends 14 px above the rail, the badge hangs 2 px
+over it) instead of a fixed 156 px. Shots `day9d-valley-ev-915x412{-before,}.jpg`.
+*Shader pre-warm on quality switches (BACKLOG P1, render #5).* Cause, from the program cache keys before/after a
+low → high switch: (1) `WebGLShadowMap` draws depth with `renderBufferDirect(cam, null, …)` — no scene, so **no fog** —
+while the pre-warm compiled every depth stand-in with the scene bound, i.e. with `FogExp2` in the key: the
+pre-warmed depth programs were never the ones the shadow pass used. On a high start this went unnoticed because the
+first real shadow pass (before the deferred pre-warm) linked them; on a low start the trees do not cast, so the first
+high frame linked the tree depth program (plain depth + leaf map, alpha test) and `billboard-depth`. (2) A
+`customDepthMaterial` (far-tree `billboard-depth`, horse skin depth) was compiled in its constructed state, while
+the shadow pass copies side, maps, alpha test and clipping from the drawn material onto it each draw — a FrontSide,
+map-less variant nobody draws. Not the cause: the billboard atlas (128 px cells on low and high, no re-bake) and the
+shadow map size (not in the key). Fix in `src/render/prewarm.ts`: depth stand-ins compile with `scene.fog`
+cleared for that synchronous call; custom depth materials get the same per-draw state as the shadow pass gives them;
+`prewarmMaterialSwap` (used by `View.setQuality`) also compiles the depth variant of every swapped material. Measured
+with `tools/render5-materials.mjs` (sandbox, 200 wagons, 412×915, SwiftShader): in-frame links low → high **2 → 0**,
+high → low → high **0 / 0**, ultra unaffected; a low start holds 42 programs instead of 44 (the two fog depth
+duplicates are gone). Render/UI only, golden hashes unchanged. (decided)
