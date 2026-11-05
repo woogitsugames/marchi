@@ -12,7 +12,7 @@
 // Logged per look: card kind, calm/critical, cure, the cure's result (and why it failed), pace/fleet cue (must stay
 // null without a contract), events and chronicle entries per minute.
 import {
-  BUILDINGS, MAX_WAGONS, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
+  BUILDINGS, MAX_WAGONS, RANKS, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
   unexplainedStalls, newPaceLog, samplePace, type BuildingType, type Command, type PaceLog, type World,
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
@@ -63,6 +63,13 @@ interface Opts {
    * castle. Replaces the sbFleet / sbRank prototypes.
    */
   game?: boolean;
+  /**
+   * Prototype (research valley-ranks-2-3, not in the game): a free-valley "grow" card. When the game's cards leave the
+   * slot empty or calm, the next rank lacks only renown/flow (goods met) and silver covers the building + `keep`, the
+   * card names one more producer of an existing chain (fewest built first, upstream first: farm, mill, bakery, fisher,
+   * woodcutter, sawmill) at the ghost by the castle.
+   */
+  sbGrow?: { keep: number };
 }
 
 export interface Look {
@@ -81,6 +88,7 @@ export interface Result {
   /** seconds of game time with an empty card (sampled every second) and with a calm-only card */
   emptySec: number; calmSec: number; actSec: number; noCureSec: number;
   topSubjects: Record<string, number>;
+  trace: Trace[];
 }
 
 function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
@@ -95,8 +103,22 @@ function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
   return false;
 }
 
+const GROW_ORDER: readonly BuildingType[] = ['farm', 'mill', 'bakery', 'fisher', 'woodcutter', 'sawmill'];
+/** sbGrow prototype: the producer the grow card would name, or null. */
+function growPick(w: World, keep: number): BuildingType | null {
+  const sb = sandboxStatus(w);
+  if (!sb.next || sb.goodsSold < sb.next.goods) return null;
+  const cnt = (t: BuildingType): number => w.state.buildings.filter((q) => q.type === t).length;
+  let best: BuildingType | null = null;
+  for (const t of GROW_ORDER) if (sb.unlocked.includes(t) && (best === null || cnt(t) < cnt(best))) best = t;
+  if (!best || w.state.coins < BUILDINGS[best].price + keep) return null;
+  return best;
+}
+
+export interface Trace { m: number; rank: number; renown: number; goods: number; best: number; flow: number; coins: number; wagons: number; bld: number; card: string }
+
 /** One look: the slot (pace card if it would take it, else the worst stall) and the sheet's cure. */
-function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false, game = false): Look {
+function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false, game = false, growOpt: { keep: number } | null = null): Look {
   const st = w.state;
   const ranked = rankStalls(w);
   const base = { t: st.tick / TICK_HZ, stalls: ranked.length, coins: st.coins, wagons: st.wagons.length, rank: st.town.rank };
@@ -112,6 +134,11 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
         return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'build:' + pc.type : 'build?fail:' + pc.type };
       }
       return { ...card, cure: null, act: '' };
+    }
+    if (game && growOpt && (!ranked.length || ranked[0]!.minor)) {
+      const g = growPick(w, growOpt.keep);
+      if (g) return { ...base, kind: 'sbGrow:' + g, calm: true, crit: false, calmWhy: null, cure: 'producer',
+        act: placeAtGhost(w, g, st.buildings.find((q) => q.type === 'castle')!.id) ? 'grow:' + g : 'grow?fail:' + g };
     }
     if (pc && !game) { r.paceWrong++; return { ...base, kind: 'pace:' + pc.k, calm: true, crit: false, calmWhy: null, cure: null, act: 'pace?' }; }
   }
@@ -174,7 +201,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
   const r: Result = {
     name, seed: seed === undefined ? 'default' : String(seed), minutes, rank: 0, rankMin: [], earned: 0, coins: 0, wagons: 0, buildings: 0,
     actions: {}, looks: [], done: [], paceWrong: 0, fleetWrong: 0, ordersOffered: 0, ordersDone: 0, merchants: 0, chronicle: [],
-    violations: [], next: '', emptySec: 0, calmSec: 0, actSec: 0, noCureSec: 0, topSubjects: {},
+    violations: [], trace: [], next: '', emptySec: 0, calmSec: 0, actSec: 0, noCureSec: 0, topSubjects: {},
   };
   const seenOrders = new Set<string>(), seenMerch = new Set<string>();
   const chron: string[] = [];
@@ -220,12 +247,19 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       }
       for (const id of checkChronicle(w.state, chron)) { chron.push(id); r.chronicle.push({ t: t / TICK_HZ, id }); }
     }
+    if (t % (60 * TICK_HZ) === 0 && t > 0) {
+      const sb = sandboxStatus(w);
+      const ranked = rankStalls(w);
+      const pc = (!ranked.length || ranked[0]!.minor) ? paceCard(w, forecastFor(w, log)) : null;
+      const card = pc ? pc.k + (pc.k === 'rank' || pc.k === 'fleet' ? ':' + pc.type : '') : ranked.length ? (ranked[0]!.minor ? 'calm' : 'stall') : 'empty';
+      r.trace.push({ m: t / TICK_HZ / 60, rank: sb.rank, renown: sb.renown, goods: sb.goodsSold, best: sb.bestFlow, flow: sb.flowNow, coins: w.state.coins, wagons: w.state.wagons.length, bld: w.state.buildings.length, card });
+    }
     if (t % TICK_HZ === 0) {
       fleetBits.push(w.state.wagons.some((q) => (q.status.k === 'IDLE' && !q.job) || isHeld(q.status)) ? 0 : 1);
       if (fleetBits.length > 60) fleetBits.shift();
     }
     if (o.eye > 0 && t > 0 && t % (o.eye * TICK_HZ) === 0) {
-      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank, !!o.game);
+      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank, !!o.game, o.sbGrow ?? null);
       r.looks.push(l);
       if (l.act && !l.act.includes('?')) r.actions[l.act] = (r.actions[l.act] ?? 0) + 1;
     }
@@ -267,6 +301,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const minutes = Number(arg('--minutes') ?? 30);
   const seeds = (arg('--seeds') ?? 'default').split(',').map((s) => (s === 'default' ? undefined : Number(s)));
   const only = arg('--only');
+  // research valley-ranks-2-3: rank threshold overrides, e.g. --ranks 2:renown=700,3:renown=2000
+  for (const part of (arg('--ranks') ?? '').split(',').filter(Boolean)) {
+    const [rk, kv] = part.split(':'); const [key, val] = kv!.split('=');
+    (RANKS[Number(rk)] as unknown as Record<string, number>)[key!] = Number(val);
+  }
   const players: [string, Opts][] = [
     ['none', { plan: null, eye: 0, events: false }],
     ['build', { plan: MIN, eye: 0, events: false }],
@@ -288,6 +327,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ['card-10', { plan: null, eye: 10, events: false, game: true }],
     ['card-30', { plan: null, eye: 30, events: false, game: true }],
     ['card-60', { plan: null, eye: 60, events: false, game: true }],
+    ['card-10+grow', { plan: null, eye: 10, events: false, game: true, sbGrow: { keep: 40 } }],
+    ['card-30+grow', { plan: null, eye: 30, events: false, game: true, sbGrow: { keep: 40 } }],
+    ['card-60+grow', { plan: null, eye: 60, events: false, game: true, sbGrow: { keep: 40 } }],
     ['decent', { plan: DECENT, eye: 0, events: false }],
   ];
   const all: Result[] = [];
