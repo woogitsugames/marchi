@@ -18,6 +18,17 @@
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
 
+## Decyzje właściciela 2026-11-05 ~09:50
+- D-128 zostaje wąsko (bez ogólnej reguły, bez zmiany dyspozytora).
+- Dolina: **„Kup wóz” przy długim czekaniu na odbiór — tak** (karta floty bez kontraktu, rezerwa ~40 srebra);
+  **karta rangi** w spokojnym miejscu karty („brakuje towaru — postaw …”) zamiast obniżania progu; **list otwierający
+  doliny + kamera startowa na zamku** w pionie. Robi koordynator (`claude/focused-carson-c3s2ff`).
+- Duch bruku (D-132/D-134) — wygląd OK. Kamera raz kadruje odcinek ducha poza ekranem / pod arkuszem — tak (w paczce
+  9e dewelopera).
+- Paczka 9d scalona (D-136: zamek 915x412 de/pseudo, karta zdarzeń doliny w poziomie, prewarm przełączenia jakości);
+  audyt UI dni 8c–9 (`docs/research/2026-11-05-ui-audit-day9.md`) → paczka 9e (fokus na `.cf`, krótki poziom, Flip,
+  list porażki, piny pod HUD, kadrowanie ducha).
+
 ## Decyzje na rano
 0. **Stan po nocy (03:30):** scalone **D-127..D-130** (paczka 9a): karta floty na karcie tempa („wszystkie wozy w
    trasie — kup wóz”), karta błota z niemożliwym brukiem ustępuje karcie floty, samouczek po zakończeniu zamyka
