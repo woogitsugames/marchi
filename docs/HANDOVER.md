@@ -1,4 +1,4 @@
-# Handover — MARCHIA (stan 2026-11-05 ~11:45 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+# Handover — MARCHIA (stan 2026-11-05 ~13:45 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
 - Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`,
@@ -17,6 +17,19 @@
   karta błota z niemożliwym brukiem w I), N1 (arkusz zamku po samouczku zasłania kartę zastoju), N3 (list porażki
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
+
+## Dzień 2026-11-05 (po południu)
+- Scalone: D-151 list otwierający dolinę + kamera na zamku, D-152 karta rangi w dolinie, D-153 bramkowanie HUD
+  (−40…75 % `Hud.update`), D-154 zero przebudów programów na render (−22 % alokacji renderu), paczki 9e (audyt UI
+  1–8: D-137..D-139, D-142..D-145) i 9f (D-146..D-149: korzeń łańcucha nad dokiem, krótsze zdania tempa, okrągły
+  fokus, test karty rangi), raporty: przebudowy programów, „więcej wozów = wolniej”.
+- **Dyspozytor 2** (`claude/w-dispatch2`, NIE scalony): reguły C+A zmniejszają szkodę dokupionego wozu (straty
+  pieczęci 28 → 4 / 195 prób), ale psują drabiny lekcji botów VIII, X, XII, XIII. Właściciel: nowa runda badawcza
+  (`claude/research-dispatch2b`, researcher w toku) — szukamy wersji, która trzyma lekcje.
+- W toku: deweloper `claude/x-i18n-day9` — tłumaczenia PENDING_KEYS na 15 języków (decyzja właściciela: robimy tu,
+  nie w innej sesji) + linia „tempo” pod pieczęcią na Flipie (D-155).
+- Właściciel do zrobienia: usunąć `/mono-before.txt`, `/bot-before.txt`, `/bots-before.txt` (artefakt agenta,
+  usuwanie zablokowane przez filtr); APK — odblokować `dl.google.com` w sieci środowiska.
 
 ## Dzień 2026-11-05 (przed południem)
 - Scalone: D-140 (wskazówka wozu w dolinie), D-141 (kolejka wozów liczona raz na zmianę, 0 px różnicy), D-150 (cień co
