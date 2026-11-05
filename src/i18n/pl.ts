@@ -659,6 +659,11 @@ export const pl = {
   // watch-mode seal forecast line (D-99; see PENDING_KEYS)
   'contract.sealPace.eta': 'gotowe za {time}',
   'contract.sealPace.late': 'spóźni się {time}',
+  // watch mode tempo line under the folded seal (D-155)
+  'seal.tempo.producer': 'tempo: za mało {goodGen}',
+  'seal.tempo.mud': 'tempo: błoto spowalnia wozy',
+  'seal.tempo.fleet': 'tempo: kup wóz',
+  'seal.tempo.rank': 'ranga: sprzedaj {goodAcc}',
   // short landscape cause chain: the middle links folded behind one row (D-111; see PENDING_KEYS)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
   // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
@@ -731,6 +736,10 @@ export const PENDING_KEYS = [
   'fix.stoneStored',
   'contract.sealPace.eta',
   'contract.sealPace.late',
+  'seal.tempo.producer',
+  'seal.tempo.mud',
+  'seal.tempo.fleet',
+  'seal.tempo.rank',
   'menu.m13',
   'menu.m13Sub',
   'cause.sharedOne',

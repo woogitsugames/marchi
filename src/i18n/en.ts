@@ -656,6 +656,10 @@ export const en: FullDict = {
   // watch-mode seal forecast line (D-99)
   'contract.sealPace.eta': 'done in {time}',
   'contract.sealPace.late': '{time} late',
+  'seal.tempo.producer': 'pace: too little {goodGen}',
+  'seal.tempo.mud': 'pace: mud slows the wagons',
+  'seal.tempo.fleet': 'pace: buy a wagon',
+  'seal.tempo.rank': 'rank: sell {goodAcc}',
   // short landscape cause chain: the middle links folded behind one row (D-111)
   'why.more': '{n, plural, one {+# link between} other {+# links between}}',
   // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
