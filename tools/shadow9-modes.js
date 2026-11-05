@@ -8,16 +8,27 @@
 //         static map would be re-rendered only when the shadow camera moves; its blit is GPU work)
 (mode, k) => {
   const v = window.__marchia.app.view, L = v.lighting, sun = L.sun;
-  if (mode === 'a') {
+  if (mode === 'a' || mode === 'a0') {
+    // a0: refresh forced whenever the shadow camera moved at all (the sun moves every tick, so ~never skips);
+    // a:  forced on pan/zoom, or once the sun turned > 0.002 rad since the last refresh (well under a texel)
     sun.shadow.autoUpdate = false;
-    let n = 0; const last = [NaN, NaN, NaN, NaN];
-    // decide right before the render (after fitShadow in view.frame)
+    let n = 0; const last = [NaN, NaN, NaN, NaN]; const lastDir = L.env.sunDir.clone();
     const r0 = v.renderer.render.bind(v.renderer);
     v.renderer.render = (scene, cam) => {
-      const p = sun.position, c = sun.shadow.camera;
-      const moved = p.x !== last[0] || p.y !== last[1] || p.z !== last[2] || c.right !== last[3];
-      last[0] = p.x; last[1] = p.y; last[2] = p.z; last[3] = c.right;
-      sun.shadow.needsUpdate = moved || (n++ & 1) === 0 || sun.shadow.map === null;
+      const t = v.rig.target, c = sun.shadow.camera, p = sun.position;
+      let moved;
+      if (mode === 'a0') {
+        moved = p.x !== last[0] || p.y !== last[1] || p.z !== last[2] || c.right !== last[3];
+        last[0] = p.x; last[1] = p.y; last[2] = p.z; last[3] = c.right;
+      } else {
+        moved = t.x !== last[0] || t.z !== last[1] || c.right !== last[3] || L.env.sunDir.dot(lastDir) < 1 - 2e-6;
+        last[0] = t.x; last[1] = t.z; last[3] = c.right;
+      }
+      const up = moved || (n++ & 1) === 0 || sun.shadow.map === null;
+      if (up) lastDir.copy(L.env.sunDir);
+      sun.shadow.needsUpdate = up;
+      window.__shadow9 = window.__shadow9 || { frames: 0, updates: 0 };
+      window.__shadow9.frames++; if (up) window.__shadow9.updates++;
       return r0(scene, cam);
     };
   } else if (mode === 'b') {

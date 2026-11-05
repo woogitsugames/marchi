@@ -355,7 +355,7 @@ for (const cam of cams) {
       stalls: app.ranking.get(app.world, app.loop.journal.length).length,
       sheets: [...document.querySelectorAll('.sheet')].map((e) => e.className.slice(0, 40) + (e.querySelector('.fix-dock') ? ' +dock' : '')),
       dom: document.getElementsByTagName('*').length, heapMB: +(performance.memory.usedJSHeapSize / 1048576).toFixed(1),
-      programs: v.renderer.info.programs?.length ?? 0, camDist: v.rig.dist,
+      programs: v.renderer.info.programs?.length ?? 0, camDist: v.rig.dist, shadow9: window.__shadow9 ?? null,
     };
   });
 
