@@ -3,7 +3,7 @@
 // Cold start -> menu -> "Wolna dolina" -> new ledger -> castellan's letter (D-151) -> "Do dzieła" -> the rank card
 // (D-152) in the worst-stall slot -> its eye -> castle sheet -> "Postaw: <name>" -> build ghost -> "Postaw" on the
 // shelf. Then game time advances in 5 s chunks through the app's loop (tickOnce, as tools/sandbox-first30.mjs) and
-// every 20 s of game time the player looks at the card: eye -> sheet -> the enabled "Naprawa" button if any ->
+// every 30 s of game time the player looks at the card: eye -> sheet -> the enabled "Naprawa" button if any ->
 // if that opened the build tool, "Postaw" -> close. Records taps and game time to the first placed building,
 // every distinct card text, the sheets and fixes, audits (words, targets < 48 px, covered) at the milestones.
 //   npx vite preview --port 5195 --strictPort   (after npm run build)
@@ -91,7 +91,7 @@ async function run([w, h]) {
     const el = page.locator(sel).first();
     if (!(await el.count())) return false;
     await el.evaluate((e) => e.scrollIntoView({ block: 'nearest', behavior: 'instant' })).catch(() => {});
-    const b = await el.boundingBox();
+    const b = await el.boundingBox({ timeout: 5000 }).catch(() => null);
     if (!b) return false;
     out.taps++;
     await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
@@ -150,16 +150,27 @@ async function run([w, h]) {
           if (placed) { out.builds.push({ t: s2.tick / 10, type: s2.buildings.at(-1), taps: out.taps }); if (!out.firstBuild) out.firstBuild = { t: (s2.tick - tStart) / 10, taps: out.taps - tapsBefore, type: s2.buildings.at(-1) }; }
           if (first) await step('after place', { shot: await shot('placed') });
           if (s2.tool === 'build') await page.keyboard.press('Escape');
+          // the new building's sheet opens with its own "Naprawa" (the missing road stretch): the player takes it
+          const next = page.locator('#sheets .sheet:last-child .fix-btn:not(.is-disabled)');
+          if (placed && await next.count()) {
+            const l2 = ((await next.first().textContent()) ?? '').trim().replace(/\s+/g, ' ');
+            const r0 = await page.evaluate(() => window.__marchia.app.world.state.roads.filter(Boolean).length);
+            await tapSel('#sheets .sheet:last-child .fix-btn:not(.is-disabled)');
+            await frames(3);
+            const r1 = await page.evaluate(() => window.__marchia.app.world.state.roads.filter(Boolean).length);
+            lk.act += ` -> ${l2} (${r1 > r0 ? 'road +' + (r1 - r0) : 'no road change'})`;
+            if (first) { out.firstLinked = { t: ((await sim()).tick - tStart) / 10, taps: out.taps - tapsBefore, roads: r1 - r0 }; await step('after road fix', { shot: await shot('road') }); }
+          }
         } else lk.act += s1.coins !== s.coins ? ' (applied)' : ' (no visible effect)';
       }
-      if (await page.locator('#sheets .sheet').count()) await tapSel('#sheets .sheet:last-child button.close');
+      for (let i = 0; i < 3 && await page.locator('#sheets .sheet').count(); i++) { out.taps++; await page.keyboard.press('Escape'); await settle(); }
     }
     out.looks.push(lk);
     log('look', lk.t, '|', lk.card.slice(0, 80), '|', lk.act || '-', '| coins', lk.coins, 'rank', lk.rank);
   };
   await look(true);
   const end = tStart + MINUTES * 600;
-  let nextLook = (await sim()).tick + 200;
+  let nextLook = (await sim()).tick + 300;
   const shotAt = new Set([60, 180, 300]);
   while (true) {
     const s = await sim();
@@ -171,7 +182,7 @@ async function run([w, h]) {
     note('card', a.stall, t); note('notice', a.notice, t); note('ev', a.ev, t); note('rank', a.rank, t); note('plaque', a.plaque, t);
     for (const x of a.toasts) note('toast', x, t);
     for (const m of shotAt) if (t >= m) { shotAt.delete(m); await step('minute ' + m / 60, { shot: await shot('min' + m / 60) }); }
-    if (s.tick + 50 >= nextLook) { nextLook += 200; await look(false); }
+    if (s.tick + 50 >= nextLook) { nextLook += 300; await look(false); }
   }
   out.end = await sim();
   out.wallS = (Date.now() - T0) / 1000;
