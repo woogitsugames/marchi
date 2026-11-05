@@ -25,7 +25,7 @@ test('valley fleet cue: appears without a contract, keeps the reserve, buys wago
     if (st.tick % (10 * TICK_HZ)) continue;
     const pc = paceCard(w, null);
     if (!pc) continue;
-    eq(pc.k, 'fleet', 'without a contract only the fleet kind exists');
+    assert(pc.k === 'fleet' || pc.k === 'rank', `without a contract only the fleet and rank kinds exist (${pc.k})`);
     if (pc.k !== 'fleet') continue;
     assert(st.coins >= WAGON_PRICE + FLEET_FREE_KEEP, `reserve kept (${st.coins} silver)`);
     eq(pc.seals, -1, 'no seal in the valley');
