@@ -1,4 +1,4 @@
-# Handover — MARCHIA (stan 2026-11-05 ~08:30 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+# Handover — MARCHIA (stan 2026-11-05 ~11:45 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
 - Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`,
@@ -17,6 +17,16 @@
   karta błota z niemożliwym brukiem w I), N1 (arkusz zamku po samouczku zasłania kartę zastoju), N3 (list porażki
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
+
+## Dzień 2026-11-05 (przed południem)
+- Scalone: D-140 (wskazówka wozu w dolinie), D-141 (kolejka wozów liczona raz na zmianę, 0 px różnicy), D-150 (cień co
+  2. klatkę na low/high — decyzja właściciela A; ultra bez zmian), raporty: koszt klatki dzień 9
+  (`docs/research/2026-11-05-frame-cost-day9.md`), pass cienia (`docs/research/2026-11-05-shadow-pass.md`).
+- W toku: deweloper `claude/w-day9e` (poprawki audytu UI; przenumerowuje swoje D-140/141 → D-142+), researcher
+  `claude/research-day9f` (pozostałe przebudowy programów: głębia cienia, trawa).
+- Następne: paczka doliny dla dewelopera (karta rangi, list otwierający, kamera na zamku — decyzje 09:50), potem
+  frame-cost #3 (wymuszony layout co 250 ms, HTML listu przewozowego co klatkę).
+- Numeracja decyzji: koordynator używa od D-150 w górę, deweloper D-142..D-149 (kolizje w nocy).
 
 ## Decyzje właściciela 2026-11-05 ~09:50
 - D-128 zostaje wąsko (bez ogólnej reguły, bez zmiany dyspozytora).
