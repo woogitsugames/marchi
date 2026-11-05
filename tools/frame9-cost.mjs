@@ -312,22 +312,27 @@ for (const cam of cams) {
   const heap0 = await page.evaluate((n) => { const h0 = performance.memory.usedJSHeapSize; for (let i = 0; i < n; i++) window.__f9.second(); return [h0, performance.memory.usedJSHeapSize]; }, reps);
   const { profile: hp } = await cdp.send('HeapProfiler.stopSampling');
   await cdp.send('HeapProfiler.disable');
-  const agg = new Map(); let atotal = 0;
-  const walk = async (n, here) => {
+  const agg = new Map(), aggFn = new Map(); let atotal = 0;
+  const walk = async (n, here, hereFn) => {
     const f = await resolve(n.callFrame);
-    let h = here;
+    let h = here, hf = hereFn;
+    if (f.src.startsWith('src/')) hf = `${f.fn} @${f.src}:${f.line}`;
     if (f.src.startsWith('src/')) h = f.src;
     else if (isThree(f) && /^(getProgram|getParameters|getProgramCacheKey)/.test(f.fn)) h = 'three: getProgram/getParameters';
     else if (isThree(f) && f.line === THREE_RENDER && !h) h = 'three: render (other)';
-    if (n.selfSize) { const k = h ?? `${f.fn || 'native'}`; agg.set(k, (agg.get(k) ?? 0) + n.selfSize); atotal += n.selfSize; }
-    for (const ch of n.children) await walk(ch, h && h.startsWith('three') && f.src.startsWith('src/') ? f.src : h);
+    if (n.selfSize) {
+      const k = h ?? `${f.fn || 'native'}`; agg.set(k, (agg.get(k) ?? 0) + n.selfSize); atotal += n.selfSize;
+      const kf = hf ?? k; aggFn.set(kf, (aggFn.get(kf) ?? 0) + n.selfSize);
+    }
+    for (const ch of n.children) await walk(ch, h && h.startsWith('three') && f.src.startsWith('src/') ? f.src : h, hf);
   };
-  await walk(hp.head, null);
+  await walk(hp.head, null, null);
   r.alloc = {
     MBperGameS: +(atotal / 1048576 / reps).toFixed(2),
     KBperFrame: +(atotal / 1024 / reps / 60).toFixed(1),
     heapDeltaMB: +((heap0[1] - heap0[0]) / 1048576).toFixed(1),
     top: [...agg].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
+    topFn: [...aggFn].sort((a, b) => b[1] - a[1]).slice(0, 16).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
   };
 
   log(cam + ' alloc done');
@@ -341,6 +346,7 @@ for (const cam of cams) {
       drawnNear: vis(wv.near.horse), drawnMid: vis(wv.mid.horse), drawnFar: vis(wv.lod1),
       pins: pool.filter((b) => b.key && b.used).length, pinPool: pool.length,
       stalls: app.ranking.get(app.world, app.loop.journal.length).length,
+      sheets: [...document.querySelectorAll('.sheet')].map((e) => e.className.slice(0, 40) + (e.querySelector('.fix-dock') ? ' +dock' : '')),
       dom: document.getElementsByTagName('*').length, heapMB: +(performance.memory.usedJSHeapSize / 1048576).toFixed(1),
       programs: v.renderer.info.programs?.length ?? 0, camDist: v.rig.dist,
     };
