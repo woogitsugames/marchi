@@ -1923,3 +1923,17 @@ gesture and pauses the game exactly like the contract letters. The portrait star
 default orbit target); a new game without a contract now frames the castle footprint and gate (`frameCastleSoon` →
 `frameCells`, which keeps the view when the castle is already well inside the free map area, so landscape is untouched
 when it already shows it). UI only, hashes unchanged. Shots `docs/shots/valley-letter-*.jpg`. (decided — owner 2026-11-05)
+
+**D-153 — The HUD rebuilds its cards once per state change, the waybill pill once per shown second (research frame-cost day 9 #3, HUD part).**
+`Hud.update` ran the stall/pace card (`paceCard`, `cureFor`, `calmWhy`, `JSON.stringify(status)`) and the whole
+`updateContract` (pill HTML via `iconSvg` + `tHtml`, milestone texts) on every frame, then let `setHtml` find that
+nothing changed. Now a key of what that part reads — world and state objects, tick, the stall-ranking array (replaced
+on every command applied in pause, `StallRanking`), pace log, cards flag, language, coins, net version, building count —
+skips the cobble gate, the pace card, the stall card and the waybill between ticks; folding sets `contractDirty`.
+Inside the waybill the title, the pill and the folded seal keep their own keys (mission/lang; tranche, rounded second,
+lang; got/total/second/lang plus the forecast object), and milestone notices build their text only when one fires.
+Verified: DOM of `#ui` every 5 s of ×4 play (paused, 200 ticks stepped per snapshot), missions I and XI, before vs
+after: identical 24/24 against a second "before" run (the two differences against the first run — pin fade class, a
+notice fading out — also differ between two "before" runs). `Hud.update` timed directly in Chromium (1800 calls,
+after 2 min of play): mission I 19→12 µs/frame at 1 tick per 6 frames (×1), 42→18 µs at a tick every frame;
+mission XI 59→14 µs and 254→72 µs (noisy, −40–75 %). UI only, hashes unchanged. (decided)

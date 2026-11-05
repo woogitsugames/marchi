@@ -153,6 +153,20 @@ export class Hud {
   private plaqueSig = '';
   private stallSig = '';
   private wagonSig = '';
+  /**
+   * What the state-derived part of update() last saw (D-153): the stall card, the pace card and the waybill only
+   * change when the state does — a tick, a command applied in pause (the ranking array is replaced then), a new
+   * world, the language — so frames between ticks skip them without building a single string.
+   */
+  private seen = { world: null as World | null, state: null as object | null, tick: -1, stalls: null as StallEntry[] | null,
+    pace: null as PaceLog | null, cards: false, lang: '', coins: -1, net: -1, count: -1 };
+  /** The waybill must be redrawn on the next update even within the same tick (fold, layout). */
+  private contractDirty = true;
+  /** Inputs of the waybill pill, title and folded seal last written (D-153). */
+  private pillKey = '';
+  private titleKey = '';
+  private sealKey = '';
+  private sealFc: unknown = null;
   private cure: Cure = null;
   private lastRank = -1;
   private plaqueWrap: HTMLElement;
@@ -370,6 +384,7 @@ export class Hud {
     this.lastSig = '';
     this.sealsSig = '';
     this.plaqueSig = '';
+    this.contractDirty = true;
     requestAnimationFrame(() => this.measureTop());
   }
 
@@ -453,15 +468,23 @@ export class Hud {
       }
     }
 
-    const cobble = this.toolBtns.get('cobble');
-    if (cobble) {
-      const gate = canSurface(world, 2);
-      cobble.classList.toggle('is-disabled', !gate.ok);
-      cobble.setAttribute('aria-disabled', String(!gate.ok));
+    const lang = getLang();
+    const k = this.seen;
+    const fresh = k.world !== world || k.state !== st || k.tick !== st.tick || k.stalls !== stalls || k.pace !== pace ||
+      k.cards !== cards || k.lang !== lang || k.coins !== st.coins || k.net !== st.netVersion || k.count !== st.buildings.length;
+    if (fresh) {
+      k.world = world; k.state = st; k.tick = st.tick; k.stalls = stalls; k.pace = pace; k.cards = cards; k.lang = lang;
+      k.coins = st.coins; k.net = st.netVersion; k.count = st.buildings.length;
+      const cobble = this.toolBtns.get('cobble');
+      if (cobble) {
+        const gate = canSurface(world, 2);
+        cobble.classList.toggle('is-disabled', !gate.ok);
+        cobble.setAttribute('aria-disabled', String(!gate.ok));
+      }
+      // the pace card (day 8c) takes the slot only when no real stall needs it (none, or the worst one is calm)
+      const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace)) : null;
+      this.updateStalls(world, stalls, pc);
     }
-    // the pace card (day 8c) takes the slot only when no real stall needs it (none, or the worst one is calm)
-    const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace)) : null;
-    this.updateStalls(world, stalls, pc);
     this.updateWagon(st.coins);
 
     if (seasonal(world)) this.updateSeasons(world);
@@ -472,7 +495,10 @@ export class Hud {
     this.plaqueWrap.hidden = !sb?.market;
     if (sb?.market) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, yearAt(st.tick));
     this.events.update(world);
-    if (c) this.updateContract(world, c, pace);
+    if (c && (fresh || this.contractDirty)) {
+      this.contractDirty = false;
+      this.updateContract(world, c, pace);
+    }
   }
 
   /** Kup wóz: the cost badge, the shortfall in place of the label when silver is short, the cure mark. */
@@ -610,19 +636,37 @@ export class Hud {
     const dueMissing = dueNeed ? GOODS.reduce((a, g) => a + Math.max(0, dueNeed[g] - stock[g]), 0) : total - got;
     this.contractMilestones(st.mission.result === 'running', frac, got, total, dueTick, left, dueMissing, !!dueNeed);
     const folded = this.folded();
+    const lang = getLang();
+    // the clocks show whole seconds (fmtDuration rounds), so a key on the rounded second gates the HTML (D-153)
+    const sec = Math.round(left / TICK_HZ);
     if (folded) {
       // watch mode (Flip cover): the pace forecast under the seal's clock (D-99)
-      const extra = this.compact && pace ? sealPaceHtml(world, forecastFor(world, pace)) : '';
-      setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)) + extra);
+      const withPace = this.compact && !!pace;
+      const fc = withPace ? forecastFor(world, pace!) : null;
+      const key = `${got}|${total}|${sec}|${lang}|${withPace ? st.tick : ''}`;
+      if (key !== this.sealKey || fc !== this.sealFc) {
+        this.sealKey = key;
+        this.sealFc = fc;
+        const extra = withPace ? sealPaceHtml(world, fc) : '';
+        setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)) + extra);
+      }
       this.sealOnly.classList.toggle('late', late);
       return;
     }
-    setText(this.wbTitle, missionTitle(st.mission.id));
+    const titleKey = `${st.mission.id}|${lang}`;
+    if (titleKey !== this.titleKey) {
+      this.titleKey = titleKey;
+      setText(this.wbTitle, missionTitle(st.mission.id));
+    }
     // orders in tranches (V, VI): the clock runs to the delivery now due, not to the snow — say which
     const toTranche = dueTick !== c.deadlineTick;
-    setHtml(this.wbPill, toTranche
-      ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toTranche', { time: ticksClock(left), n: cur + 1 })}</span>`
-      : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+    const pillKey = `${toTranche ? cur : -1}|${sec}|${lang}`;
+    if (pillKey !== this.pillKey) {
+      this.pillKey = pillKey;
+      setHtml(this.wbPill, toTranche
+        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toTranche', { time: ticksClock(left), n: cur + 1 })}</span>`
+        : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+    }
     this.wbPill.classList.toggle('late', late);
 
     const fc = pace ? forecastFor(world, pace) : null;
@@ -684,18 +728,19 @@ export class Hud {
     dueMissing: number, tranche: boolean): void {
     const first = this.milestones === null;
     const seen = (this.milestones ??= new Set());
-    const fire = (key: string, icon: IconId, text: string): void => {
+    // the text is built only when the milestone fires, not on every update (D-153)
+    const fire = (key: string, icon: IconId, text: () => string): void => {
       if (seen.has(key)) return;
       seen.add(key);
-      if (!first && running) this.showNotice(icon, esc(text));
+      if (!first && running) this.showNotice(icon, esc(text()));
     };
     if (frac >= 1) return;
-    const missing = fmtInt(dueMissing);
-    if (frac >= 0.5) fire('half', 'seal', t('contract.half', { have: fmtInt(got), total: fmtInt(total) }));
+    const missing = (): string => fmtInt(dueMissing);
+    if (frac >= 0.5) fire('half', 'seal', () => t('contract.half', { have: fmtInt(got), total: fmtInt(total) }));
     if (left <= 0 || dueMissing <= 0) return;
     const icon: IconId = tranche ? 'waiting' : 'snow';
-    if (left < 60 * TICK_HZ) fire(`${dueTick}:1`, icon, t('contract.lastMin', { n: missing }));
-    else if (left < 120 * TICK_HZ) fire(`${dueTick}:2`, icon, t('contract.twoMin', { n: missing }));
+    if (left < 60 * TICK_HZ) fire(`${dueTick}:1`, icon, () => t('contract.lastMin', { n: missing() }));
+    else if (left < 120 * TICK_HZ) fire(`${dueTick}:2`, icon, () => t('contract.twoMin', { n: missing() }));
   }
 
   /**
