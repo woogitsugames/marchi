@@ -2018,7 +2018,8 @@ On a short landscape side sheet (915×412) the docked "Naprawa" leaves ~60 px of
 answers) lay 16–80 px under the dock while the subject row — already named by the title — took the space; unfolding
 "+N" scrolled 12 px and left the root under it. Now `revealAboveDock` (sheets.ts, block: nearest, never pushing the
 element's top above the body) runs on the chain's last link when a sheet opens or its content is replaced, and
-after "+N" unfolds; the subject may scroll away above. Same-key refreshes do not scroll (the player's own scroll
+after "+N" unfolds (and once more two frames after opening, unless the player scrolled: a sheet opened while the
+layout classes were settling measured a different body); the subject may scroll away above. Same-key refreshes do not scroll (the player's own scroll
 wins). After unfolding, focus goes to the root's link instead of the first middle one (a focused link scrolled out
 above would hide its ring; Shift+Tab walks back up). The sheet parts now keep focus across re-renders
 (`setHtmlKeep`, matched by `data-go`/`data-act`): the stall clock and the unfolded state used to drop focus to
