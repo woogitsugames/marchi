@@ -508,10 +508,12 @@ export class Hud {
     this.pace = pc;
     this.alarm.hidden = stalls.length === 0;
     if (pc) {
-      this.cure = pc.k === 'producer' ? 'producer' : pc.risk ? 'pave' : null;
+      this.cure = pc.k === 'producer' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
       const sig = pc.k === 'producer'
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
-        : `pace|${pc.k}|${pc.producer}|${pc.pct}|${pc.cells.length}|${pc.risk}|${stalls.length}|${getLang()}`;
+        : pc.k === 'fleet'
+          ? `pace|${pc.k}|${pc.producer}|${pc.good}|${pc.wagons}|${Math.floor(pc.waitTicks / (10 * TICK_HZ))}|${stalls.length}|${getLang()}`
+          : `pace|${pc.k}|${pc.producer}|${pc.pct}|${pc.cells.length}|${pc.risk}|${stalls.length}|${getLang()}`;
       if (sig === this.stallSig) return;
       this.stallSig = sig;
       this.wagonSig = '';
@@ -522,10 +524,14 @@ export class Hud {
       setText(this.stallKick, t('hud.pace'));
       const name = buildingName(world, pc.producer);
       // a slow order is not a stall: the card says what holds it back and what helps (day 8c)
+      // fleet (D-127): the yard has waited for a wagon while every wagon was on the road (in 10 s steps, so the
+      // live region is not told a new text every second, as the pins' names, D-121)
       const text = pc.k === 'producer'
         ? t('cause.paceProducer', { n: fmtInt(pc.n), rate: fmtDec(pc.rate, 1), need: fmtDec(pc.need, 1), seals: t('why.pace.seals', { n: pc.seals }) })
-        : t('cause.paceMud', { n: fmtInt(pc.cells.length), pct: fmtPercent(pc.pct / 100) });
-      setHtml(this.stallText, `<b>${esc(name)}${pc.k === 'mud' ? ':' : ''}</b> <span dir="auto">${esc(text)}</span>`);
+        : pc.k === 'fleet'
+          ? t('cause.paceFleet', { goodGen: t(`goodGen.${pc.good}` as MessageKey), time: ticksClock(Math.floor(pc.waitTicks / (10 * TICK_HZ)) * 10 * TICK_HZ), n: pc.wagons })
+          : t('cause.paceMud', { n: fmtInt(pc.cells.length), pct: fmtPercent(pc.pct / 100) });
+      setHtml(this.stallText, `<b>${esc(name)}${pc.k === 'producer' ? '' : ':'}</b> <span dir="auto">${esc(text)}</span>`);
       this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
       // calm pins stay on the alarm seal beside the pace card
       const first = stalls[0] ? buildingById(world, stalls[0].id) : null;

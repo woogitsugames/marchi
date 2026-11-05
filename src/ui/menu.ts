@@ -4,6 +4,7 @@ import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type Messag
 import { GOODS, MISSIONS, topStallCauses, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
 import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
+import { lossActionKey } from './stallKinds';
 import { saveErrorMessageKey } from '../platform/saveGate';
 import { VALLEY_SLOTS, type SlotSummary, type ValleySlot } from '../platform/save';
 import { iconSvg } from './icons';
@@ -486,6 +487,17 @@ function causeReason(status: string): string {
   return s !== key ? s : t(base) !== base ? t(base) : status;
 }
 
+/** One action line for the loss's #1 cause (D-130). */
+function lossActionHtml(world: World): string {
+  // a missing road among the three costs comes first: no wagon helps where none can drive (a lost I without the
+  // crossing listed the farm's "full yard, no wagon" above the mill's "no wagon can reach")
+  const three = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
+  const top = three.find((c) => lossActionKey(c.status) === 'end.act.road') ?? three[0];
+  if (!top) return '';
+  const text = t(lossActionKey(top.status), { who: causeSubject(world, top.kind, top.id), time: clock(top.seconds) });
+  return `<p class="lg-act" dir="auto">${esc(text)}</p>`;
+}
+
 /** The three root causes that cost the most time, as a short ledger (subject — reason ...... m:ss). */
 function causesHtml(world: World): string {
   const top = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
@@ -593,6 +605,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
       <dt>${esc(t('contract.left'))}</dt><dd>${bdi(fmtInt(st.coins))}</dd>
     </dl>
     ${c ? causesHtml(world) : ''}
+    ${c && !won ? lossActionHtml(world) : ''}
     ${next ? `<div class="actions l-next"><button class="btn primary cf" data-a="next"><span class="ln-t">${esc(t('contract.next'))}</span><span class="ln-s">${esc(missionTitle(next))}</span></button></div>` : ''}
     <div class="actions">
       <button class="btn${next ? '' : ' primary'} cf" data-a="again">${esc(t('contract.again'))}</button>

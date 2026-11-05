@@ -15,7 +15,7 @@ import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
-import { paceCard, type PaceCard, type PaceMud } from './paceCard';
+import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -85,6 +85,7 @@ function fixSection(btn: string, hint: string, why: boolean): string {
  */
 function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'mud') return mudCureHtml(world, pc);
+  if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -113,6 +114,24 @@ function mudCureHtml(world: World, pc: PaceMud): string {
     : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
       ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
   return fixSection(btn, hint, !ok.ok);
+}
+
+/**
+ * The fleet kind of the pace card (D-127): this yard waits for a wagon while the whole fleet is on the road and the
+ * forecast misses a seal. "Kup wóz" here, with the reason; the card only appears when the silver is there.
+ */
+function fleetCureHtml(world: World, pc: PaceFleet): string {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return '';
+  const short = WAGON_PRICE - world.state.coins;
+  const eta = wagonEta(world, pc.wagon);
+  const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
+    iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
+  const hint = short > 0
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(eta ? t('fix.paceFleetEta', { wagon: wagonName(world, pc.wagon), time: clock(eta.toDest) }) + ' ' : '')}${
+      esc(t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
+  return fixSection(btn, hint, short > 0);
 }
 
 /**
@@ -581,8 +600,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
       // the pace card's producer (day 8c): its fix, unless this building has a stall with a cure of its own
-      const pc = !fix && !(stalled && cureFor(world, b.id)) ? paceCard(world, forecastFor(world, nav.pace)) : null;
-      const pcHere = pc && pc.producer === b.id ? pc : null;
+      const fc = !fix && !(stalled && cureFor(world, b.id)) ? forecastFor(world, nav.pace) : null;
+      const pc = fc ? paceCard(world, fc) : null;
+      // a long pickup wait while the fleet is on the road gets "Kup wóz" on its own sheet too (D-128), not only
+      // the yard the card names
+      const pcHere = pc && pc.producer === b.id ? pc : fc ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
       if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells);
       setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');

@@ -3,10 +3,11 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  GOODS, PACE_WINDOW_TICKS, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
-  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, thawing, trancheForecast,
-  type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
+  BUILDINGS, GOODS, MAX_WAGONS, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, thawing, trancheForecast, validateRoad,
+  type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
+import { iceBeforeWagon } from './stalls';
 
 let cache: { world: World; log: PaceLog; key: string; f: ContractForecast | null } | null = null;
 
@@ -51,7 +52,19 @@ export interface PaceMud {
   risk: boolean; seals: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud;
+/**
+ * 'fleet' (day 9a, D-127) — a producer of the order's chain stands with a full yard for `waitTicks`: the wagon the
+ * dispatcher gave it is still on another trip, no wagon idles at a stable, and the forecast misses three seals.
+ * The fleet is the constraint, but the producer's own status (WAITING_PICKUP) is a calm one, so the stall card
+ * never said so. `producer` is that building (the card's subject); the cure is one more wagon.
+ */
+export interface PaceFleet {
+  k: 'fleet'; good: Good; producer: number; type: BuildingType; wagons: number; waitTicks: number; seals: number;
+  /** The wagon on its way to the yard (the sheet says when it arrives). */
+  wagon: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet;
 
 /** A stretch shorter than this, or a gain below this, is not worth a card. */
 const MUD_MIN_CELLS = 6;
@@ -62,7 +75,114 @@ const MUD_MIN_PCT = 15;
  * buildable list and the rank gate.
  */
 export function paceCard(world: World, f: ContractForecast | null): PaceCard | null {
-  return producerCard(world, f) ?? mudCard(world, f);
+  const prod = producerCard(world, f);
+  if (prod) return prod;
+  const mud = mudCard(world, f);
+  // a cobble stretch the player cannot pay for now yields to the wagon he can (D-127, mission I at 60 s)
+  if (mud && mudPayable(world, mud)) return mud;
+  return fleetCard(world, f) ?? mud;
+}
+
+/** The mud card's cobbles cost no more silver than the player has (stone or rank may still refuse them). */
+function mudPayable(world: World, m: PaceMud): boolean {
+  const r = validateRoad(world, m.cells, 2);
+  return r.ok || r.err.k !== 'NO_COINS';
+}
+
+/** A yard full this long, with the forecast short of a seal, is lost production worth a wagon. */
+export const FLEET_WAIT_TICKS = 20 * TICK_HZ;
+/** The fleet counts as short when no wagon stood idle or held for this share of the last minute. */
+export const FLEET_BUSY_SHARE = 0.9;
+/**
+ * A wagon bought later than this before the seal it aims at rarely pays off (measured on missions I-XIII,
+ * D-127: bought with less room it made X miss 3 seals and never lifted a seal anywhere).
+ */
+export const FLEET_ROOM_TICKS = 210 * TICK_HZ;
+
+/**
+ * How busy the fleet was over the last minute (UI-owned, never in the state): one bit per game second, set when
+ * no wagon stood idle at a stable and none was held at a bridge or cut off (more wagons would wait there too).
+ * Call once per sim tick (the app's onTick; headless tools right after step()). A world never sampled (a freshly
+ * loaded save) shows the fleet card a minute later — harmless.
+ */
+const FLEET_WINDOW = 60;
+interface FleetLog { tick: number; bits: number[] }
+const fleetLogs = new WeakMap<World, FleetLog>();
+export function sampleFleet(world: World): void {
+  const st = world.state;
+  if (st.tick % TICK_HZ !== 0 || !st.mission.contract) return;
+  let log = fleetLogs.get(world);
+  if (!log || st.tick <= log.tick) { log = { tick: st.tick, bits: [] }; fleetLogs.set(world, log); }
+  log.tick = st.tick;
+  log.bits.push(st.wagons.some((w) => (w.status.k === 'IDLE' && !w.job) || isHeld(w.status)) ? 0 : 1);
+  if (log.bits.length > FLEET_WINDOW) log.bits.shift();
+}
+
+/** Share of the last minute the whole fleet was on the road (0 until a full minute was sampled). */
+export function fleetBusyShare(world: World): number {
+  const log = fleetLogs.get(world);
+  if (!log || log.bits.length < FLEET_WINDOW || world.state.tick - log.tick > TICK_HZ) return 0;
+  let n = 0;
+  for (const b of log.bits) n += b;
+  return n / log.bits.length;
+}
+
+/** The forecast's bottleneck good and, upstream, the inputs of its producers (grain -> malt -> beer). */
+function bottleneckChain(world: World, f: ContractForecast): Set<Good> {
+  const out = new Set<Good>([f.goods[f.bottleneck]!.good]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const b of world.state.buildings) {
+      if (!BUILDINGS[b.type].recipe || !outputGoods(b.type).some((g) => out.has(g))) continue;
+      for (const g of inputGoods(b.type)) if (!out.has(g)) { out.add(g); grew = true; }
+    }
+  }
+  return out;
+}
+
+/** The fleet-wide part of the fleet card's rule; the goods of the bottleneck chain when it holds, else null. */
+function fleetGate(world: World, f: ContractForecast | null): Set<Good> | null {
+  const st = world.state;
+  if (!st.mission.contract || st.mission.result !== 'running' || !f || !f.ready || f.bottleneck < 0) return null;
+  // a better seal is still in reach, with time for a new wagon to pay off before it
+  if (!f.aim || f.aim.byTick - st.tick < FLEET_ROOM_TICKS) return null;
+  // a wagon must be buyable now, and must not cost the stone bridge before the ice (D-117)
+  if (st.coins < WAGON_PRICE || st.wagons.length >= MAX_WAGONS || !st.buildings.some((b) => b.type === 'stable')) return null;
+  if (iceBeforeWagon(world)) return null;
+  // a wagon idles at a stable right now, or the fleet was not on the road the whole last minute
+  if (st.wagons.some((w) => w.status.k === 'IDLE' && !w.job) || fleetBusyShare(world) < FLEET_BUSY_SHARE) return null;
+  return bottleneckChain(world, f);
+}
+
+/** This building's yard qualifies: a long pickup wait on the chain, its wagon not held. */
+function fleetWait(world: World, b: Building, goods: Set<Good>, seals: number): PaceFleet | null {
+  const s = b.status, st = world.state;
+  if (s.k !== 'WAITING_PICKUP' || b.stalledTicks < FLEET_WAIT_TICKS || !goods.has(s.good)) return null;
+  // the wagon on its way is held at a bridge or cut off: another wagon would wait there too
+  const w = st.wagons.find((q) => q.id === s.wagon);
+  if (!w || isHeld(w.status)) return null;
+  return { k: 'fleet', good: s.good, producer: b.id, type: b.type, wagons: st.wagons.length, waitTicks: b.stalledTicks, seals, wagon: w.id };
+}
+
+function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
+  const goods = fleetGate(world, f);
+  if (!goods) return null;
+  let best: PaceFleet | null = null;
+  for (const b of world.state.buildings) {
+    const c = fleetWait(world, b, goods, f!.seals);
+    if (c && (!best || c.waitTicks > best.waitTicks || (c.waitTicks === best.waitTicks && c.producer < best.producer))) best = c;
+  }
+  return best;
+}
+
+/**
+ * The fleet cure on this building's own sheet (D-128, first-10-minutes-c N2): the same rule as the card, for any
+ * yard that qualifies — not only the one the card names. Null otherwise (the wait stays calm, no cure).
+ */
+export function fleetCueFor(world: World, f: ContractForecast | null, b: Building): PaceFleet | null {
+  const goods = fleetGate(world, f);
+  return goods ? fleetWait(world, b, goods, f!.seals) : null;
 }
 
 function producerCard(world: World, f: ContractForecast | null): PaceProducer | null {

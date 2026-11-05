@@ -1048,6 +1048,8 @@ bdi { unicode-bidi: isolate; }
 .ledger .lg-time { font-weight: 700; color: #6e3520; }
 .ledger li.lg-none { color: var(--meadow); font-style: italic; }
 .ledger li.lg-none::before { content: none; }
+/* the loss letter's one action line for the #1 cause (D-130): ink on parchment, set like the castellan's hand */
+.letter .lg-act { margin: -8px 0 14px; font-size: 14px; line-height: 1.35; color: var(--ink); font-style: italic; }
 @media (max-height: 500px) { .ledger { margin-bottom: 10px; } .ledger li { padding: 1px 0; } }
 
 /* ================================================================ stall fixed: a wax stamp where the bubble was */

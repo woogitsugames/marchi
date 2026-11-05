@@ -24,7 +24,7 @@ export const CONTRACT_LETTERS = {
         2: "Dobrze wytyczony trakt przyniósł dostawy ze sporym zapasem czasu. Dwie pieczęcie za sprawną pracę wozów.\n— Wszebor",
         3: "Bramę otwarto, nim zziębły konie. Deski i chleb złożono bez zwłoki; tak prowadzi się gród przez jesień.\n— Wszebor",
       },
-      lost: "Przyszedł pierwszy śnieg, a część dostaw została na szlaku. Sprawdź, czy oba brzegi mają drogę i czy wozy odbierają towar.\n— Wszebor",
+      lost: "Przyszedł pierwszy śnieg, a część dostaw została na szlaku. Spójrz niżej, co stało najdłużej, i od tego zacznij następnym razem.\n— Wszebor",
     },
     en: {
       opening: "To the road steward: deliver 30 planks and 20 loaves to the castle before the first snow. The woodcutter and sawmill stand across the river, but the banks are not joined. Build a crossing, then see that flour and bread keep moving.\n— Wszebor, Castellan of Łozinny Bród",
@@ -33,7 +33,7 @@ export const CONTRACT_LETTERS = {
         2: "A well-laid road brought the goods with time to spare. Two seals for sound wagon work.\n— Wszebor",
         3: "The gate opened before the horses grew cold. Bread and planks were stored without delay. This is how a march survives autumn.\n— Wszebor",
       },
-      lost: "The first snow has come, and part of the order remains on the road. Check the crossing and make sure the wagons can collect their loads.\n— Wszebor",
+      lost: "The first snow has come, and part of the order remains on the road. See below what stood longest, and start there next time.\n— Wszebor",
     },
     de: {
       opening: "An den Wegewart: Bringt vor dem ersten Schnee 30 Bretter und 20 Brote zur Burg. Holzfäller und Sägewerk liegen jenseits des Flusses, doch die Ufer sind nicht verbunden. Baut eine Überfahrt und sorgt dafür, dass Mehl und Brot weiterfahren.\n— Wszebor, Burggraf von Łozinny Bród",
