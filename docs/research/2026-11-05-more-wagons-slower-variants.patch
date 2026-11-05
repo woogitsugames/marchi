@@ -1,0 +1,186 @@
+diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
+index 510e282..a4c8673 100644
+--- a/src/sim/logistics.ts
++++ b/src/sim/logistics.ts
+@@ -1,6 +1,6 @@
+ // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
+ // Also computes each building's status (the "why is it stalled?" data).
+-import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
++import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, UNLOAD_TICKS, TICK_HZ, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+ import { contractTarget, storeCapOf } from './contract';
+ import { marketOpen, unitCents } from './town';
+ import { fairPercent, orderOutstanding } from './events';
+@@ -24,6 +24,7 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
+ class DistCache {
+   private fwd = new Map<number, DistMap>();
+   private rev = new Map<number, DistMap>();
++  private revL = new Map<number, DistMap>();
+   constructor(private world: World) {}
+   /** time from node (loaded) to anything */
+   from(node: number): DistMap {
+@@ -37,15 +38,26 @@ class DistCache {
+     if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
+     return m;
+   }
++  /** time from anything (loaded) to node */
++  toLoaded(node: number): DistMap {
++    let m = this.revL.get(node);
++    if (!m) { m = dijkstra(this.world, node, true, true); this.revL.set(node, m); }
++    return m;
++  }
+   /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
+   release(): void {
+     for (const m of this.fwd.values()) releaseDistMap(this.world, m);
+     for (const m of this.rev.values()) releaseDistMap(this.world, m);
++    for (const m of this.revL.values()) releaseDistMap(this.world, m);
++    this.revL.clear();
+     this.fwd.clear();
+     this.rev.clear();
+   }
+ }
+ 
++/** RESEARCH day 9g (prototype switches, never set by the game). */
++export const RULES = { arrive: 0 as 0 | 1 | 2 | 3 | 4 | 5, topUp: 0 };
++
+ export function wagonNode(w: Wagon): number {
+   return w.next >= 0 ? w.next : w.at;
+ }
+@@ -81,6 +93,14 @@ export function assignJob(world: World, wagon: Wagon, from: Building, to: Buildi
+   wagon.status = { k: 'TO_PICKUP' };
+ }
+ 
++/** RESEARCH arrive=4: reserve now, drive after the current drop-off. */
++function queueJob(world: World, wagon: Wagon, from: Building, to: Building, good: Good, qty: number): void {
++  const st = world.state;
++  from.reservedOut[good] += qty;
++  to.incoming[good] += qty;
++  wagon.queued = { id: st.nextId++, good, qty, from: from.id, to: to.id, phase: 'pickup' };
++}
++
+ /**
+  * D-94, free valley only: a workshop that still has input for a cycle (or some on the way) asks for more of
+  * `g` only once min(load, TOP_UP_MIN) units fit. Returns that number while the request is held back, else 0
+@@ -88,12 +108,13 @@ export function assignJob(world: World, wagon: Wagon, from: Building, to: Buildi
+  * "waits for a fuller wagon" line use the same test.
+  */
+ export function topUpHold(world: World, b: Building, g: Good): number {
+-  if (world.state.mission.id !== 'sandbox') return 0;
++  const contractTopUp = RULES.topUp > 0 && world.state.mission.id !== 'sandbox';
++  if (world.state.mission.id !== 'sandbox' && !contractTopUp) return 0;
+   const def = BUILDINGS[b.type];
+   if (!def.recipe || b.type === 'castle' || b.type === 'warehouse' || !inputGoods(b.type).includes(g)) return 0;
+   const want = def.inCap - b.stock[g] - b.incoming[g];
+   const starving = b.stock[g] < (def.recipe.inputs[g] ?? 1) && b.incoming[g] === 0;
+-  const need = Math.min(capacityOf(g), TOP_UP_MIN);
++  const need = Math.min(capacityOf(g), contractTopUp ? RULES.topUp : TOP_UP_MIN);
+   return want > 0 && !starving && want < need ? need : 0;
+ }
+ 
+@@ -140,14 +161,35 @@ export function dispatch(world: World): void {
+   const isSource = (s: Building, g: Good): boolean =>
+     (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0;
+ 
++  let held = false;
++  let chained: Wagon | null = null;
++  const claimed = new Set<number>(); // RESEARCH arrive=3: one held demand per arriving wagon
+   const pickWagon = (source: Building): Wagon | null => {
+-    if (free.length === 0) return null;
++    held = false;
++    chained = null;
++    if (free.length === 0 && RULES.arrive !== 4) return null;
+     const rev = dc.to(source.gate);
+     let best: Wagon | null = null, bestT = Infinity;
+     for (const w of free) {
+       const t = rev.dist[wagonNode(w)]!;
+       if (t < bestT) { bestT = t; best = w; }
+     }
++    if ((best || RULES.arrive === 4) && RULES.arrive > 0) {
++      // RESEARCH: a busy wagon that will be at this source sooner than the best free one takes it then
++      for (const w of st.wagons) {
++        const j = w.job;
++        if (!j || j.phase !== 'dropoff' || isFree(w) || claimed.has(w.id) || w.queued) continue;
++        const to = buildingById(world, j.to);
++        if (!to) continue;
++        if (RULES.arrive === 1 && to.gate !== source.gate) continue;
++        const busy = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
++        const eta = busy + (to.gate === source.gate ? 0 : rev.dist[to.gate]!);
++        if (RULES.arrive === 5) { if (eta + 10 < bestT * 0.6) { held = true; return null; } continue; }
++        if (RULES.arrive === 4) { if (eta < bestT) { bestT = eta; chained = w; } continue; }
++        if (eta < bestT) { held = true; if (RULES.arrive === 3) claimed.add(w.id); return null; }
++      }
++    }
++    if (chained) return chained;
+     return best;
+   };
+ 
+@@ -180,8 +222,14 @@ export function dispatch(world: World): void {
+         : { k: 'NO_INPUT', cause: 'UNREACHABLE', blockedBy: anyAvail });
+       continue;
+     }
+-    if (free.length === 0) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
++    if (free.length === 0 && RULES.arrive !== 4) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
+     const wagon = pickWagon(best);
++    if (held) continue;
++    if (chained) {
++      queueJob(world, chained, best, d.b, d.good, Math.min(d.want, best.stock[d.good] - best.reservedOut[d.good], cap));
++      continue;
++    }
++    if (free.length === 0) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
+     if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) {
+       unmet.set(key, { k: 'NO_WAGON', cause: 'NONE_CAN_REACH' });
+       continue;
+@@ -248,6 +296,8 @@ export function dispatch(world: World): void {
+       // point at the granary that would help: a full one, else one cut off from the roads (NO_ROAD)
+       if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh >= 0 ? fullWh : cutOffWh }); continue; }
+       const wagon = pickWagon(b);
++      if (held) continue;
++      if (chained) { queueJob(world, chained, b, best, g, Math.min(avail, cap, warehouseSpace(best))); continue; }
+       if (!wagon || dc.to(b.gate).dist[wagonNode(wagon)] === Infinity) {
+         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
+         continue;
+@@ -282,11 +332,13 @@ export function gateConnected(world: World, b: Building): boolean {
+ 
+ function incomingWagon(world: World, b: Building, g: Good): number {
+   for (const w of world.state.wagons) if (w.job && w.job.to === b.id && w.job.good === g) return w.id;
++  for (const w of world.state.wagons) if (w.queued && w.queued.to === b.id && w.queued.good === g) return w.id;
+   return -1;
+ }
+ 
+ function pickupWagon(world: World, b: Building, g: Good): number {
+   for (const w of world.state.wagons) if (w.job && w.job.from === b.id && w.job.good === g && w.job.phase === 'pickup') return w.id;
++  for (const w of world.state.wagons) if (w.queued && w.queued.from === b.id && w.queued.good === g) return w.id;
+   return -1;
+ }
+ 
+diff --git a/src/sim/types.ts b/src/sim/types.ts
+index 710c338..42ec017 100644
+--- a/src/sim/types.ts
++++ b/src/sim/types.ts
+@@ -105,6 +105,8 @@ export interface Wagon {
+   bridgeFrom: number;
+   /** Total metres travelled (stats). */
+   odometer: number;
++  /** RESEARCH day 9g (arrive=4): the job this wagon takes right after its current drop-off. */
++  queued?: Job;
+ }
+ 
+ export interface Building {
+diff --git a/src/sim/wagons.ts b/src/sim/wagons.ts
+index b8f147a..0d89b71 100644
+--- a/src/sim/wagons.ts
++++ b/src/sim/wagons.ts
+@@ -391,6 +391,14 @@ function finishBusy(world: World, w: Wagon): void {
+   w.job = null;
+   w.pathVer = -1;
+   w.status = { k: 'RETURNING' };
++  // RESEARCH day 9g (arrive=4): a queued job starts right here
++  const q = w.queued;
++  if (q) {
++    delete w.queued;
++    const from = buildingById(world, q.from), dst = buildingById(world, q.to);
++    if (from && dst) { w.job = q; w.status = { k: 'TO_PICKUP' }; }
++    else { if (from) from.reservedOut[q.good] -= q.qty; if (dst) dst.incoming[q.good] -= q.qty; }
++  }
+ }
+ 
+ /** All goods currently loaded on wagons. */
