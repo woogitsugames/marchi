@@ -23,12 +23,17 @@ import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { newPaceLog, samplePace, type PaceLog } from '../src/sim/index';
 import { writeFileSync } from 'node:fs';
 
+// RULE_ARRIVE=1|2, RULE_TOPUP=N: research day 9g dispatcher prototypes (src/sim/logistics.ts RULES)
+import { RULES } from '../src/sim/logistics';
+RULES.arrive = Number(process.env.RULE_ARRIVE ?? 0) as 0 | 1 | 2;
+RULES.topUp = Number(process.env.RULE_TOPUP ?? 0);
+
 // NOHINT=1: measure the build ghost without the missions' authored sites (before D-107)
 if (process.env.NOHINT) for (const m of Object.values(MISSIONS)) delete m.siteHints;
 
 const col = (w: World, x: number, y1: number, y2: number): number[] => lineCells(w.terrain.w, y1 * w.terrain.w + x, y2 * w.terrain.w + x);
 const row = (w: World, y: number, x1: number, x2: number): number[] => lineCells(w.terrain.w, y * w.terrain.w + x1, y * w.terrain.w + x2);
-const stableOf = (w: World): number => w.state.buildings.find((b) => b.type === 'stable')!.id;
+export const stableOf = (w: World): number => w.state.buildings.find((b) => b.type === 'stable')!.id;
 
 /** The intended fix of each mission (docs/missions/mN.md), as commands. m11's and m13's lessons are wagons only. */
 export const LESSON: Record<string, (w: World) => Command[]> = {
@@ -69,7 +74,10 @@ const FLEET_CARD = process.env.FLEET !== '0';
 /** EYE_PHASE=s: the eye players look s seconds later in each period (robustness of a rule against timing). */
 const EYE_PHASE = Number(process.env.EYE_PHASE ?? 0);
 
-function run(id: string, strat: string, player: Player, actions: Record<string, number> = {}, seen?: Record<string, number>): Row {
+/** Research probes (day 9g): called after every step of run(). */
+export const probe: { onTick: ((w: World) => void) | null } = { onTick: null };
+
+export function run(id: string, strat: string, player: Player, actions: Record<string, number> = {}, seen?: Record<string, number>): Row {
   const w = createWorld(id);
   const log = newPaceLog();
   paceLogs.set(w, log);
@@ -80,6 +88,7 @@ function run(id: string, strat: string, player: Player, actions: Record<string, 
     sampleInputWaits(w); // as the app does every tick (the shared-supply card waits 30 s, D-110)
     samplePace(log, w);
     sampleFleet(w); // as the app does every tick (the fleet card reads the last minute, D-127)
+    probe.onTick?.(w);
   }
   const c = w.state.mission.contract!;
   const end = w.state.mission.result === 'won' ? w.state.mission.endTick : c.deadlineTick + 1;
@@ -294,7 +303,7 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
 }
 
 export const timeline: string[] = [];
-function eyePlayer(reactSec: number, hints: boolean, actions: Record<string, number>, seen: Record<string, number>, letter?: (w: World) => Command[], scan = false): Player {
+export function eyePlayer(reactSec: number, hints: boolean, actions: Record<string, number>, seen: Record<string, number>, letter?: (w: World) => Command[], scan = false): Player {
   timeline.length = 0;
   const letterP = letter ? scripted({ k: 0, at: 60, fix: letter }, actions) : null;
   return (w) => {
