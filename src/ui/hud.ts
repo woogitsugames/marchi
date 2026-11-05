@@ -509,8 +509,10 @@ export class Hud {
     this.pace = pc;
     this.alarm.hidden = stalls.length === 0;
     if (pc) {
-      this.cure = pc.k === 'producer' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
-      const sig = pc.k === 'producer'
+      this.cure = pc.k === 'producer' || pc.k === 'rank' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
+      const sig = pc.k === 'rank'
+        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
+        : pc.k === 'producer'
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
         : pc.k === 'fleet'
           ? `pace|${pc.k}|${pc.producer}|${pc.good}|${pc.wagons}|${Math.floor(pc.waitTicks / (10 * TICK_HZ))}|${stalls.length}|${getLang()}`
@@ -522,8 +524,19 @@ export class Hud {
       this.root.classList.add('has-stall');
       this.stallRow.classList.remove('is-crit');
       this.stallRow.classList.add('is-pace');
-      setText(this.stallKick, t('hud.pace'));
+      setText(this.stallKick, t(pc.k === 'rank' ? 'hud.rankCard' : 'hud.pace'));
       const name = buildingName(world, pc.producer);
+      if (pc.k === 'rank') {
+        // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
+        const text = t('cause.paceRank', { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
+        setHtml(this.stallText, `<span dir="auto">${esc(text)}</span>`);
+        this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
+        const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
+        if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+        setText(this.alarmBadge, fmtInt(stalls.length));
+        this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+        return;
+      }
       // a slow order is not a stall: the card says what holds it back and what helps (day 8c)
       // fleet (D-127): the yard has waited for a wagon while every wagon was on the road (in 10 s steps, so the
       // live region is not told a new text every second, as the pins' names, D-121)

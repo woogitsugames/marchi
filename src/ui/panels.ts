@@ -7,7 +7,7 @@ import {
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -15,7 +15,7 @@ import type { Sheet, SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
-import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud } from './paceCard';
+import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -87,6 +87,7 @@ function fixSection(btn: string, hint: string, why: boolean): string {
 function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'mud') return mudCureHtml(world, pc);
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
+  if (pc.k === 'rank') return rankCureHtml(world, pc);
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -98,6 +99,23 @@ function paceCureHtml(world: World, pc: PaceCard): string {
     : short > 0
       ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.paceProducerWhy', { n: fmtInt(pc.n), cap: fmtDec(pc.cap, 1), seals: t('why.pace.seals', { n: pc.seals }), need: fmtDec(pc.need, 1) }))}</div>`;
+  return fixSection(btn, hint, off);
+}
+
+/**
+ * The free valley's rank card on the castle's sheet (D-152): the next rank lacks a good sold, so the producer that
+ * brings one — the build tool opens with that type, the ghost by the castle. Disabled with the shortfall.
+ */
+function rankCureHtml(world: World, pc: PaceRank): string {
+  const price = BUILDINGS[pc.type].price;
+  const short = price - world.state.coins;
+  const off = short > 0;
+  const name = t(`building.${pc.type}` as MessageKey);
+  const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="rank:${pc.type}" aria-disabled="${off}">${
+    iconSvg('build', 26)}<span>${esc(t('fix.rank', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+  const hint = off
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(t('fix.rankWhy', { sold: fmtInt(pc.sold), goods: fmtInt(pc.goods), rankName: rankName(pc.rank), good: goodName(pc.good) }))}</div>`;
   return fixSection(btn, hint, off);
 }
 
@@ -358,6 +376,11 @@ function wire(sheet: Sheet, nav: PanelNav): void {
       // the pace card's mud stretch (day 8c), recomputed now: the same cells the sheet showed
       const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
       if (pc && pc.k === 'mud' && pc.producer === Number(arg)) nav.buildRoad(pc.cells, 2);
+    }
+    if (act === 'rank' && !el.classList.contains('is-disabled')) {
+      // the free valley's rank card (D-152), recomputed now: build that producer, the ghost by the castle
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      if (pc && pc.k === 'rank' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
       const p = buildingById(nav.world, Number(arg));

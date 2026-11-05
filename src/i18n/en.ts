@@ -674,6 +674,10 @@ export const en: FullDict = {
   'end.act.granary': 'Next time: {who} had nowhere to send its goods for {time} — build a granary or link the customer.',
   'end.act.other': 'Next time: {who} stood {time} — open "Why is it stalled?" at the first stall.',
   'fix.paceFleetEta': '{wagon} reaches the load in {time}; a second wagon collects it sooner.',
+  'hud.rankCard': 'Road to rank',
+  'cause.paceRank': 'Rank {rank} ({rankName}) lacks a good — build: {name}',
+  'fix.rank': 'Build: {name}',
+  'fix.rankWhy': 'Distinct goods sold: {sold} of the {goods} {rankName} needs. No {good} has reached the market yet — this building makes it.',
   'fix.paceFleetWhy': 'No wagon stood free in the last minute, and the forecast gives {seals}. A new wagon collects the load sooner and pays off before the seal.',
   'fix.paceFleetWhyFree': 'For the last minute no wagon stood free. A new wagon picks the load up sooner — goods sold mean silver and renown.',
 };

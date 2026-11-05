@@ -4,7 +4,7 @@
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
   BUILDINGS, GOODS, MAX_WAGONS, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
-  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, thawing, trancheForecast, validateRoad,
+  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
   type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
@@ -64,7 +64,17 @@ export interface PaceFleet {
   wagon: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud | PaceFleet;
+/**
+ * 'rank' (D-152) — the free valley, no contract: the next rank still lacks distinct goods sold, and nothing louder
+ * needs the slot. The card names the next unbuilt producer of an unsold good the rank allows (farm; mill once a farm
+ * stands; bakery once a mill stands; fisher; quarry). `producer` is the castle (the card's subject, its sheet holds the
+ * cure: the build tool with `type` picked, the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
+ */
+export interface PaceRank {
+  k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank;
 
 /** A stretch shorter than this, or a gain below this, is not worth a card. */
 const MUD_MIN_CELLS = 6;
@@ -80,7 +90,32 @@ export function paceCard(world: World, f: ContractForecast | null): PaceCard | n
   const mud = mudCard(world, f);
   // a cobble stretch the player cannot pay for now yields to the wagon he can (D-127, mission I at 60 s)
   if (mud && mudPayable(world, mud)) return mud;
-  return fleetCard(world, f) ?? mud;
+  return fleetCard(world, f) ?? mud ?? rankCard(world);
+}
+
+/**
+ * The rank card's build order (research sandbox-first-30, prototype `sbRank`): a producer, and the building that must
+ * already stand before it is worth building (its input's maker).
+ */
+const RANK_ORDER: readonly (readonly [BuildingType, BuildingType | null])[] = [
+  ['farm', null], ['mill', 'farm'], ['bakery', 'mill'], ['fisher', null], ['quarry', null],
+];
+
+/** The free valley's rank card (D-152), or null. Shown also when silver is short (the sheet says how much). */
+export function rankCard(world: World): PaceRank | null {
+  const st = world.state;
+  if (st.mission.contract || st.mission.result !== 'running') return null;
+  const sb = sandboxStatus(world);
+  if (!sb.market || !sb.next || sb.goodsSold >= sb.next.goods) return null;
+  const castle = st.buildings.find((b) => b.type === 'castle');
+  if (!castle) return null;
+  const has = (t: BuildingType): boolean => st.buildings.some((b) => b.type === t);
+  for (const [type, needs] of RANK_ORDER) {
+    const good = outputGoods(type)[0];
+    if (!good || st.ledger.sold[good] > 0 || has(type) || (needs && !has(needs)) || !sb.unlocked.includes(type)) continue;
+    return { k: 'rank', producer: castle.id, type, good, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods };
+  }
+  return null;
 }
 
 /** The mud card's cobbles cost no more silver than the player has (stone or rank may still refuse them). */

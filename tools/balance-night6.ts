@@ -225,6 +225,8 @@ function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string
   if (pc.k === 'producer') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'producer:' + pc.type : 'producer?fail';
   // fleet (day 9a): the producer's sheet offers "Kup wóz"
   if (pc.k === 'fleet') return applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }).ok ? 'wagon:fleet' : 'wagon?fail';
+  // rank (D-152, free valley only): the castle's sheet opens the build tool by the castle
+  if (pc.k === 'rank') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'rank:' + pc.type : 'rank?fail';
   // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
   if (!pc.risk) return '';
   const r = applyCommand(w, { t: 'road', surface: 2, cells: pc.cells });
