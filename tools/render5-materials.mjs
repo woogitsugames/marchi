@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
 const { SourceMapConsumer } = require('source-map-js');
 
 const [base, quality = 'high', outDir = '.', distsS = '60,320', wagonsS = '200', eventsS = '1'] = process.argv.slice(2);
-const dists = distsS.split(',').map(Number), wagons = Number(wagonsS), events = eventsS !== '0';
+const dists = distsS ? distsS.split(',').map(Number) : [], wagons = Number(wagonsS), events = eventsS !== '0';
 mkdirSync(outDir, { recursive: true });
 const benchCmds = JSON.parse(readFileSync(new URL('./frame-cost-bench.json', import.meta.url), 'utf8'));
 const url = `${base.replace(/\/?$/, '/')}?play=sandbox&ff=30&speed=0&quality=${quality}&dynres=0&debug=1`;
@@ -41,7 +41,10 @@ await page.addInitScript(() => {
     const add = () => { if (G.fb !== null) G.drawsOff++; else G.draws++; };
     wrap('bindFramebuffer', (a) => { G.fb = a[1]; });
     for (const n of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced']) wrap(n, add);
-    wrap('linkProgram', () => { G.link++; if (G.inFrame) G.fLink++; });
+    // a link whose stack passes through setProgram is a draw-time compile (the frame stalls on it), counted from
+    // navigation on; links from renderer.compile (the pre-warm) do not go through setProgram
+    G.drawLinks = [];
+    wrap('linkProgram', () => { G.link++; if (G.inFrame) G.fLink++; const st = new Error().stack || ''; if (st.includes('setProgram')) G.drawLinks.push(Math.round(performance.now())); });
     wrap('compileShader', () => { G.compile++; if (G.inFrame) G.fCompile++; });
   }
 });
@@ -196,7 +199,7 @@ for (const d of dists) {
 
 if (events) {
   const ev = async (label, fn, waitMs = 3000, shot = null) => {
-    const s0 = await page.evaluate(() => ({ fLink: window.__gl.fLink, fCompile: window.__gl.fCompile, link: window.__gl.link, progs: window.__marchia.app.view.renderer.info.programs.length, ids: window.__marchia.app.view.renderer.info.programs.map((p) => p.id) }));
+    const s0 = await page.evaluate(() => ({ dl: window.__gl.drawLinks.length, fLink: window.__gl.fLink, fCompile: window.__gl.fCompile, link: window.__gl.link, progs: window.__marchia.app.view.renderer.info.programs.length, ids: window.__marchia.app.view.renderer.info.programs.map((p) => p.id) }));
     await page.evaluate(fn);
     await page.waitForTimeout(waitMs);
     await frames(4);
@@ -205,7 +208,7 @@ if (events) {
       const r = window.__marchia.app.view.renderer, old = new Set(ids);
       return { fLink: window.__gl.fLink, fCompile: window.__gl.fCompile, link: window.__gl.link, progs: r.info.programs.length, fresh: r.info.programs.filter((p) => !old.has(p.id)).map((p) => p.name) };
     }, s0.ids);
-    const e = { label, inFrameLinks: s1.fLink - s0.fLink, inFrameCompiles: s1.fCompile - s0.fCompile, links: s1.link - s0.link, programs: `${s0.progs} -> ${s1.progs}`, newPrograms: s1.fresh };
+    const e = { label, drawTimeLinks: (await page.evaluate(() => window.__gl.drawLinks.length)) - s0.dl, inFrameLinks: s1.fLink - s0.fLink, inFrameCompiles: s1.fCompile - s0.fCompile, links: s1.link - s0.link, programs: `${s0.progs} -> ${s1.progs}`, newPrograms: s1.fresh };
     console.error(`[render5] event ${JSON.stringify(e)}`);
     out.events.push(e);
   };
@@ -227,6 +230,8 @@ if (events) {
   await ev(`quality-${quality}-settled`, () => {}, 4000);
   void DAY; void SEASON;
 }
+out.drawTimeLinks = await page.evaluate(() => window.__gl.drawLinks);
+out.linksTotal = await page.evaluate(() => window.__gl.link);
 out.errors = errs.slice(0, 5);
 console.log(JSON.stringify(out));
 await browser.close();
