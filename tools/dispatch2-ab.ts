@@ -1,8 +1,8 @@
 // Dispatcher 2 A/B runner (research 2026-11-05, lesson-safe round). One command, one table:
 //   npx tsx tools/dispatch2-ab.ts                      every variant in VARIANTS, 4 at a time
 //   npx tsx tools/dispatch2-ab.ts base CA ratio2 ...   only these
-//   npx tsx tools/dispatch2-ab.ts --spec 'x:a=1,aRatio=2,c=1'   an ad-hoc variant
-// Per variant (child process, RULES from src/sim/logistics.ts set before anything runs):
+//   npx tsx tools/dispatch2-ab.ts --spec 'x:ruleC=true,fleetGate=3'   an ad-hoc variant (fields of DISPATCH2)
+// Per variant (child process, DISPATCH2 from src/sim/logistics.ts set before anything runs):
 //   ladder = the mission lesson-ladder tests (tests/missions*.test.ts, m1-eye-fix) — failures listed;
 //   bot1   = `npm run bot` (mission I scripted bot) seals/minutes;
 //   survey = tools/wagon-monotone.ts (eye-30/60 + one wagon at 1:00..9:00): slower>3 s, seal losses,
@@ -11,29 +11,29 @@
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RULES } from '../src/sim/logistics';
+import { DISPATCH2 } from '../src/sim/logistics';
 
 const here = dirname(fileURLToPath(import.meta.url));
-type Rules = typeof RULES;
+type Rules = typeof DISPATCH2;
 
 export const VARIANTS: Record<string, Partial<Rules>> = {
-  base: { a: 0, c: 0 },
-  CA: { a: 1, c: 1, aMinFree: 0, gFleet: 0 },
-  A: { a: 1, c: 0, aMinFree: 0, gFleet: 0 },
-  C: { a: 0, c: 1, gFleet: 0 },
+  base: { ruleA: false, ruleC: false },
+  CA: { ruleA: true, ruleC: true, minFreeRunS: 0, fleetGate: 0 },
+  A: { ruleA: true, ruleC: false, minFreeRunS: 0, fleetGate: 0 },
+  C: { ruleA: false, ruleC: true, fleetGate: 0 },
   L1: {},
-  g3CA: { a: 1, c: 1, aMinFree: 0, gFleet: 3 },
+  g3CA: { ruleA: true, ruleC: true, minFreeRunS: 0, fleetGate: 3 },
 };
 
 function parseSpec(spec: string): [string, Partial<Rules>] {
   const [name, kv = ''] = spec.split(':');
-  const r: Record<string, number> = {};
-  for (const p of kv.split(',').filter(Boolean)) { const [k, v] = p.split('='); r[k!] = Number(v); }
+  const r: Record<string, number | boolean> = {};
+  for (const p of kv.split(',').filter(Boolean)) { const [k, v] = p.split('='); r[k!] = v === 'true' ? true : v === 'false' ? false : Number(v); }
   return [name!, r as Partial<Rules>];
 }
 
 async function child(rules: Partial<Rules>): Promise<void> {
-  Object.assign(RULES, rules);
+  Object.assign(DISPATCH2, rules);
   const { registry, setFile } = await import('../tests/harness');
   const files = ['missions.test.ts', 'missions-7-9.test.ts', 'missions-10-12.test.ts', 'missions-13.test.ts', 'm1-eye-fix.test.ts'];
   for (const f of files) { setFile(f); await import(join(here, '..', 'tests', f)); }
