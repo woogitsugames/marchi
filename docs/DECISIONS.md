@@ -1884,3 +1884,23 @@ A waiting wagon's slot in its queue (`roads.walkBack` from the head cell, `k × 
 every frame for every queued wagon (O(k²) per queue; the largest allocator at 200 wagons, 1.2–1.4 MB/s, 5–10 % CPU).
 The snap keeps the inputs (cell, slot, heading, road-network version) and the result; it walks again only when one
 changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Render only, hashes unchanged. (decided)
+
+## D-152 — Free-valley rank card (2026-11-05)
+
+Owner decision 2026-11-05 (research `docs/research/2026-11-05-sandbox-first-30.md`, prototype `sbRank` in
+`tools/sandbox-first30.ts`): instead of lowering the rank-2 threshold, the free valley gets a **rank card** in the
+calm slot of the worst-stall card.
+
+- New pace-card kind `rank` (`src/ui/paceCard.ts`, `rankCard`). Shown only with no contract, a running mission,
+  the castle market open, and the next rank still short of distinct goods sold (`sandboxStatus`: `goodsSold <
+  next.goods`); the HUD and the sheets already only consult the pace card when the slot is empty or calm.
+- It names the next unbuilt producer of an unsold good that the rank allows, in a fixed generic order: farm; mill
+  once a farm stands; bakery once a mill stands; fisher; quarry. No mission ids.
+- Priority: the D-140 fleet card first (`fleetCard ?? mud ?? rankCard`), the rank card only when there is no fleet
+  card — a full yard waiting for a wagon is lost silver now, the rank goal is the longer horizon.
+- The card's subject is the castle: its eye opens the castle's sheet, whose "Naprawa" offers "Postaw: <name>"
+  (`data-act="rank:<type>"` → `nav.pickBuild(type, castle)`, the ghost by the castle via `buildSite`). The card is
+  shown also when silver is short; the button is then disabled with "Brakuje N srebra" (`fix.short`).
+- Read-only UI; tests `tests/valley-rank.test.ts` (fresh valley → farm by the castle, read-only; build-order rules
+  while driven by the research's minimal plan; never in any contract mission). `valley-fleet.test.ts` now admits the
+  rank kind beside the fleet kind.

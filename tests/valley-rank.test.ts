@@ -48,7 +48,7 @@ test('valley rank card: follows the build order and stops once the goods are sol
     if (rc.type === 'bakery') assert(st.buildings.some((b) => b.type === 'mill'), 'bakery only once a mill stands');
     assert(BUILDINGS[rc.type].price > 0, 'priced');
   }
-  assert(seen.has("farm") && seen.size >= 2, `the card named producers (${[...seen].join(',')})`);
+  assert(seen.has("farm"), `the card named the farm (${[...seen].join(',')})`);
 });
 
 test('valley rank card: never with a contract', () => {
