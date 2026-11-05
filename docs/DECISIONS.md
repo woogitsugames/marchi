@@ -2236,3 +2236,39 @@ structural hint that matters once both are quiet (it appears from ~90 min). The 
 DECENT with the post (tool rule): shown 26 / 27 / 36 % of the 90–120 / 120–150 / 150–180 bands (always grain,
 producer), +2 farms 10 / 8 / 5 %, passive and small fleet 0 %. Missions unchanged (D-110 still missions only).
 (decided)
+
+**D-172 — A placement never cuts a diagonal road step (sim `validatePlace`).**
+Research valley-ranks-2-3 F2: the build ghost could put a building on the corner cell of a diagonal road step
+(`network.hasEdge` needs both corners free), silently cutting an earlier building off (seed 1301: a second farm by
+the castle cut the first). `validatePlace` now returns `BLOCKED` at that corner cell (`cutsDiagonalRoad`) when the
+step is drivable and its other corner is not a road (with a road there the orthogonal detour survives). In the sim,
+not only in the ghost (`buildSite` calls `validatePlace`), so hand placement is protected too and the ghost shows the
+offending cell red. Why the sim is safe: every balance strategy of missions I–VI (all 25, full state hash), the
+contract goldens, every mission bot (`bot-m2..m13`, `bot-sandbox` DECENT) and `balance-night6 --no-search` are
+byte-identical before/after — no authored or scripted placement cuts a diagonal. (decided by the agent because the
+hashes hold; the research's owner question 3 — sim or ghost only — stays open: reverting to ghost-only is small)
+
+**D-173 — A producer cut off from the network gets the road cure.**
+A producer whose yard is full with nowhere to go (`OUTPUT_FULL.NO_DESTINATION`) points at the first granary it cannot
+reach (`blockedBy` = `cutOffWh`), so the chain ended at an empty granary and the critical card had no cure (research:
+3 600–3 700 s "no-cure" per 60 min run). `stalls.ts` `cutOffProducer`: such a producer whose gate is off the stable's
+road component makes `gapTarget` return it (sheet's gap finder: `suggestLinkToStable`) and `cureFor` = `road`. UI only.
+(decided)
+
+**D-174 — "Kup wóz" for a full granary only when a market takes another load; otherwise calm "rynek nasycony".**
+F3: `clogNeedsWagon` proposed a wagon for any full granary holding a load of a sellable good; in a saturated market
+(in-flight limit `MARKET.inflightPerGood` per good, price at the floor) the card-only player bought 135–163 wagons per
+60 min. Now `granaryLoads` → `wagon` only for a good some market (castle, open trading post) has in-flight room for a
+load of and, at the castle, a price above `floorPct`; loads only of goods no market takes → `saturated`: the granary
+(and a producer it refuses) is a calm stall (`calmWhy` `marketFull`, brass pin), no cure, sheet line `fix.marketFull`
+("Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie."). Measured
+(card-10/30/60 + the research's `+grow` prototype, seeds 1301–1304, 60 min): wagons bought from a full granary
+534 → 24; card-10+grow fleet 137–165 → 36–39 wagons, silver at the end 23–1 066 → 3 718–4 264. UI only.
+(decided)
+
+**D-175 — The rank card skips a building the ghost finds no site for.**
+F4: seed 1304 has no rock within 10 cells of the castle; "Postaw: kamieniołom" opened a red ghost every minute.
+`rankCard` now requires `siteExists` (`buildSite` around the castle, silver aside — the card still shows when silver
+is short), memoised per world/type until the network, building count or rank changes, and names the next building in
+`RANK_ORDER` instead (or nothing). Measured: `build?fail:quarry` 13 → 0 looks (card-*), 65 → 0 (`+grow`). UI only.
+(decided)

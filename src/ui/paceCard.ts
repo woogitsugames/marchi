@@ -8,6 +8,7 @@ import {
   type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
+import { siteExists } from './site';
 
 let cache: { world: World; log: PaceLog; key: string; f: ContractForecast | null } | null = null;
 
@@ -130,6 +131,8 @@ export function rankCard(world: World): PaceRank | null {
   for (const [type, needs] of RANK_ORDER) {
     const good = outputGoods(type)[0];
     if (!good || st.ledger.sold[good] > 0 || has(type) || (needs && !has(needs)) || !sb.unlocked.includes(type)) continue;
+    // D-175: no site by the castle (the ghost would open red): name the next building instead
+    if (!siteExists(world, type, castle.id)) continue;
     return { k: 'rank', producer: castle.id, type, good, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods };
   }
   return null;

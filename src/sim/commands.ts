@@ -4,7 +4,7 @@ import {
   MAX_WAGONS, QUARRY_MIN_HEIGHT, SITE_RULE, STONE_COBBLE, STONE_STONE_BRIDGE, WAGON_PRICE, emptyGoods, GOODS, inputGoods,
 } from './defs';
 import { buildingById, upstreamOf } from './logistics';
-import { grade, net, type World } from './network';
+import { grade, hasEdge, net, type World } from './network';
 import { cancelJob } from './wagons';
 import { acceptOrder, declineMerchant, declineOrder, sellToMerchant } from './events';
 import { canPlace, canSurface, demolishQuote, rankGated } from './town';
@@ -305,6 +305,8 @@ export function validatePlace(world: World, type: BuildingType, x: number, y: nu
     }
   }
   if (t.water[gate] || c.occupied[gate] !== -1) return { ok: false, err: { k: 'BLOCKED', cell: gate } };
+  const cut = cutsDiagonalRoad(world, x, y, def.w, def.h);
+  if (cut >= 0) return { ok: false, err: { k: 'BLOCKED', cell: cut } };
   if (hi - lo > 2.5) return { ok: false, err: { k: 'NOT_FLAT', cell: y * t.w + x } };
   const rule = SITE_RULE[type];
   if (rule === 'NEAR_WATER' && !nearWater(t, x, y, def.w, def.h, gate)) return { ok: false, err: { k: 'NOT_NEAR_WATER' } };
@@ -312,6 +314,36 @@ export function validatePlace(world: World, type: BuildingType, x: number, y: nu
   const cost = free ? 0 : def.price;
   if (cost > st.coins) return { ok: false, err: { k: 'NO_COINS', need: cost, have: st.coins } };
   return { ok: true, cost };
+}
+
+/**
+ * D-172: a footprint must not take the corner cell of a drivable diagonal road step whose other corner is no road
+ * (network.hasEdge: a diagonal edge needs both corner cells free of buildings) — that would silently cut the road and
+ * an earlier building off the network. Returns the offending corner cell, or -1.
+ */
+export function cutsDiagonalRoad(world: World, x0: number, y0: number, w: number, h: number): number {
+  const t = world.terrain, roads = world.state.roads, W = t.w;
+  const inFoot = (x: number, y: number): boolean => x >= x0 && x < x0 + w && y >= y0 && y < y0 + h;
+  for (let y = Math.max(0, y0 - 1); y <= Math.min(t.h - 2, y0 + h); y++) {
+    for (let x = Math.max(0, x0 - 1); x <= Math.min(W - 1, x0 + w); x++) {
+      const a = y * W + x;
+      if (!roads[a]) continue;
+      for (const dx of [1, -1]) {
+        const bx = x + dx;
+        if (bx < 0 || bx >= W) continue;
+        const b = (y + 1) * W + bx;
+        if (!roads[b]) continue;
+        const c1 = y * W + bx, c2 = (y + 1) * W + x; // the step's two orthogonal corners
+        const in1 = inFoot(bx, y), in2 = inFoot(x, y + 1);
+        if (!in1 && !in2) continue;
+        // the other corner is a road: the orthogonal detour survives
+        if ((in1 && !in2 && roads[c2]) || (in2 && !in1 && roads[c1])) continue;
+        if (!hasEdge(world, a, b)) continue;
+        return in1 ? c1 : c2;
+      }
+    }
+  }
+  return -1;
 }
 
 /** Is any cell 8-adjacent to the footprint, or to the gate, water? (fisher's hut) */

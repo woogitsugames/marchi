@@ -714,6 +714,8 @@ export const pl = {
   'post.marketLine': 'Punkt handlowy za rzeką płaci {pct} ceny, z własnym nasyceniem.',
   'post.show': 'Pokaż punkt handlowy',
   'cause.postNoRoad': 'czeka na drogę z mostem',
+  'cause.marketFull': 'pełny — rynek nie weźmie teraz więcej tych towarów',
+  'fix.marketFull': 'Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',

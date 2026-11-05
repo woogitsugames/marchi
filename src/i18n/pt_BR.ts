@@ -655,6 +655,8 @@ export const pt_BR: Dict = {
   "post.marketLine": "O entreposto do outro lado do rio paga {pct}, com saturação própria.",
   "post.show": "Mostrar o entreposto",
   "cause.postNoRoad": "espera uma estrada com ponte",
+  "cause.marketFull": "cheio — o mercado não aceita mais destes bens agora",
+  "fix.marketFull": "O mercado só compra o que consome — uma carroça nova só ficaria esperando. Venda outro bem ou aceite uma encomenda.",
   "hud.bottleneck": "Gargalo",
   "neck.reason": "em média {n} de {m} oficinas esperam",
   "neck.why": "Há 3 minutos, em média {n} de {m} oficinas esperam {goodAcc}. Mais um produtor encurta a fila; uma carroça nova não ajuda aqui.",

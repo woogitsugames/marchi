@@ -655,6 +655,8 @@ export const ko: Dict = {
   "post.marketLine": "강 건너 교역소는 {pct}를 쳐 주며, 포화도는 따로 셉니다.",
   "post.show": "교역소 보기",
   "cause.postNoRoad": "다리가 있는 길을 기다림",
+  "cause.marketFull": "가득 참 — 시장이 지금 이 물품을 더 받지 않음",
+  "fix.marketFull": "시장은 소비하는 만큼만 삽니다. 새 수레는 기다리기만 할 것입니다. 다른 물품을 팔거나 주문을 받으세요.",
   "hud.bottleneck": "병목",
   "neck.reason": "평균 {m}곳 중 {n}곳이 대기",
   "neck.why": "3분 동안 평균 {m}곳 중 {n}곳의 작업장이 {goodAcc}을(를) 기다렸습니다. 생산자를 하나 더 지으면 줄이 짧아집니다. 수레를 늘려도 소용없습니다.",

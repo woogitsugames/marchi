@@ -655,6 +655,8 @@ export const de: Dict = {
   "post.marketLine": "Der Handelsposten jenseits des Flusses zahlt {pct}, mit eigener Sättigung.",
   "post.show": "Handelsposten zeigen",
   "cause.postNoRoad": "wartet auf einen Weg mit Brücke",
+  "cause.marketFull": "voll — der Markt nimmt jetzt keine weiteren dieser Waren",
+  "fix.marketFull": "Der Markt nimmt nur, was er verbraucht — ein neuer Wagen würde nur warten. Verkaufe eine andere Ware oder nimm einen Auftrag an.",
   "hud.bottleneck": "Engpass",
   "neck.reason": "im Schnitt warten {n} von {m} Werkstätten",
   "neck.why": "Seit 3 Minuten warten im Schnitt {n} von {m} Werkstätten auf {goodAcc}. Ein weiterer Erzeuger verkürzt die Schlange; ein neuer Wagen hilft hier nicht.",

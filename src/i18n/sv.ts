@@ -655,6 +655,8 @@ export const sv: Dict = {
   "post.marketLine": "Handelsplatsen på andra sidan floden betalar {pct}, med egen mättnad.",
   "post.show": "Visa handelsplatsen",
   "cause.postNoRoad": "väntar på en väg med bro",
+  "cause.marketFull": "full — marknaden tar inte emot fler av dessa varor nu",
+  "fix.marketFull": "Marknaden tar bara det den gör av med — en ny vagn skulle bara vänta. Sälj en annan vara eller ta emot en beställning.",
   "hud.bottleneck": "Flaskhals",
   "neck.reason": "i snitt väntar {n} av {m} verkstäder",
   "neck.why": "I 3 minuter har i snitt {n} av {m} verkstäder väntat på {goodAcc}. En producent till kortar kön; en ny vagn hjälper inte här.",
