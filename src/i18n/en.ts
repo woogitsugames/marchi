@@ -46,8 +46,8 @@ export const en: FullDict = {
   'status.OUTPUT_FULL.NO_WAGON': 'Storage full: no wagon to collect {good}',
   'status.OUTPUT_FULL.NO_DESTINATION': 'Storage full: nowhere to deliver {good}',
   'status.WAITING_PICKUP': 'Full of {good} — collection: wagon {wagon}',
-  // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155; see PENDING_KEYS)
-  'status.WAGON_DUE': 'Wagon {wagon} comes for the {good} in {time}',
+  // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155)
+  'status.WAGON_DUE': 'Wagon {wagon} comes for the {goodAcc} in {time}',
   'status.STORAGE_FULL': 'Granary is full',
   'status.CONTRACT_DONE': 'Contract fulfilled',
 

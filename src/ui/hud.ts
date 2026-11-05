@@ -160,6 +160,8 @@ export class Hud {
    */
   private seen = { world: null as World | null, state: null as object | null, tick: -1, stalls: null as StallEntry[] | null,
     pace: null as PaceLog | null, cards: false, lang: '', coins: -1, net: -1, count: -1 };
+  /** Free-valley status of the last state change (D-158), null under a contract. */
+  private sb: SandboxStatus | null = null;
   /** The waybill must be redrawn on the next update even within the same tick (fold, layout). */
   private contractDirty = true;
   /** Inputs of the waybill pill, title and folded seal last written (D-153). */
@@ -498,14 +500,18 @@ export class Hud {
     }
     this.updateWagon(st.coins);
 
-    if (seasonal(world)) this.updateSeasons(world);
-
     const c = st.mission.contract;
-    this.waybillWrap.hidden = !c;
-    const sb = c ? null : sandboxStatus(world);
-    this.plaqueWrap.hidden = !sb?.market;
-    if (sb?.market) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, yearAt(st.tick));
-    this.events.update(world);
+    // the season notices, the plaque and the event card read the state only (D-158): between ticks (and commands
+    // in pause, which replace the ranking array) they are skipped like the cards above; a fold clears plaqueSig
+    if (fresh) {
+      if (seasonal(world)) this.updateSeasons(world);
+      this.waybillWrap.hidden = !c;
+      this.sb = c ? null : sandboxStatus(world);
+      this.plaqueWrap.hidden = !this.sb?.market;
+    }
+    const sb = this.sb;
+    if (sb?.market && (fresh || this.plaqueSig === '')) this.updatePlaque(sb, seasonal(world) ? seasonAt(st.tick) : null, yearAt(st.tick));
+    this.events.update(world, fresh);
     if (c && (fresh || this.contractDirty)) {
       this.contractDirty = false;
       this.updateContract(world, c, pace);

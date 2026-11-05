@@ -89,12 +89,12 @@ export class EventCard {
       this.open = !this.open;
       saveSessionFlag('eventsOpen', this.open);
       this.root.classList.remove('is-fresh');
-      this.sig = '';
+      this.sig = ''; this.dirty = true;
     });
     this.body = h('ul.ev-list');
     this.body.addEventListener('click', (e) => {
       const row = (e.target as HTMLElement).closest<HTMLElement>('[data-evx]');
-      if (row) { this.pick = row.dataset.evx ?? null; this.sig = ''; return; }
+      if (row) { this.pick = row.dataset.evx ?? null; this.sig = ''; this.dirty = true; return; }
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-ev]');
       if (!el || el.getAttribute('aria-disabled') === 'true') return;
       const [k, id] = (el.dataset.ev ?? '').split('|') as [string, string];
@@ -110,10 +110,20 @@ export class EventCard {
   setHudFolded(f: boolean): void {
     if (this.hudFolded === f) return;
     this.hudFolded = f;
-    this.sig = '';
+    this.sig = ''; this.dirty = true;
   }
 
-  update(world: World): void {
+  /** Card state changed by the player (open, pick, fold, language): rebuild even between state changes. */
+  private dirty = true;
+  private lang = '';
+
+  /** `changed`: the HUD's state key moved (tick, command, world, language — D-158); otherwise only a toggle of the
+   *  card itself rebuilds it, and no JSON of the orders is built between ticks. */
+  update(world: World, changed = true): void {
+    const lang = getLang();
+    if (!changed && !this.dirty && this.world === world && this.lang === lang) return;
+    this.dirty = false;
+    this.lang = lang;
     const st = world.state;
     const ev = st.mission.contract ? undefined : st.valleyEvents;
     if (!ev) { this.root.hidden = true; this.world = world; return; }

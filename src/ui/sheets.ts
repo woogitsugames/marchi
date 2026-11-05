@@ -33,13 +33,57 @@ let sheetSeq = 0;
 
 /** Height of the sheet's docked fix ("Naprawa", D-100) plus its fade, as --dock-h on the body: the body's
  *  scroll-padding keeps focused and scrolled-to content above it. Only written when it changes. */
-function syncDock(sheet: Sheet): void {
-  const dock = sheet.body.querySelector<HTMLElement>('.fix-dock');
-  const hgt = dock ? `${dock.offsetHeight + 14}px` : '';
-  if (sheet.body.style.getPropertyValue('--dock-h') !== hgt) {
-    if (hgt) sheet.body.style.setProperty('--dock-h', hgt);
-    else sheet.body.style.removeProperty('--dock-h');
+function writeDock(body: HTMLElement, px: number | null): void {
+  const hgt = px === null ? '' : `${px + 14}px`;
+  if (body.style.getPropertyValue('--dock-h') !== hgt) {
+    if (hgt) body.style.setProperty('--dock-h', hgt);
+    else body.style.removeProperty('--dock-h');
   }
+}
+
+/**
+ * The dock each sheet body last showed, observed for size (D-157): the periodic sheet update used to read the
+ * dock's offsetHeight right after the HUD and the sheet content had written the DOM, a forced synchronous layout
+ * every 250 ms. A ResizeObserver reports the height after the browser's own layout (and before paint, so the
+ * --dock-h write still lands in the same frame); the read happens only when the dock appears or changes size.
+ */
+const docks = new WeakMap<HTMLElement, HTMLElement>();
+let dockObserver: ResizeObserver | null | undefined;
+function observer(): ResizeObserver | null {
+  if (dockObserver === undefined) {
+    try {
+      dockObserver = new ResizeObserver((entries) => {
+        for (const e of entries) {
+          const dock = e.target as HTMLElement;
+          const body = dock.parentElement?.closest<HTMLElement>('.sheet-body') ?? null;
+          if (!body || docks.get(body) !== dock) continue;
+          const box = e.borderBoxSize?.[0];
+          writeDock(body, box ? Math.round(box.blockSize) : dock.offsetHeight);
+        }
+      });
+    } catch { dockObserver = null; /* old WebView: measure in place */ }
+  }
+  return dockObserver;
+}
+
+/** `measure`: read the height now (opening / replacing a sheet, once); otherwise the observer keeps it. */
+function syncDock(sheet: Sheet, measure = false): void {
+  const body = sheet.body;
+  const dock = body.querySelector<HTMLElement>('.fix-dock');
+  const ro = observer();
+  const prev = docks.get(body);
+  if (prev !== dock) {
+    if (prev) ro?.unobserve(prev);
+    if (dock) { docks.set(body, dock); ro?.observe(dock); } else docks.delete(body);
+  }
+  if (!dock) writeDock(body, null);
+  else if (measure || !ro) writeDock(body, dock.offsetHeight);
+}
+
+/** A closed sheet's dock leaves the observer (it would report the detached element once more). */
+function dropDock(sheet: Sheet): void {
+  const dock = docks.get(sheet.body);
+  if (dock) { dockObserver?.unobserve(dock); docks.delete(sheet.body); }
 }
 
 /** The docked fix's fade above it (px): content scrolled into it reads as going under the dock. */
@@ -109,7 +153,7 @@ export class Sheets {
     if (top && top.content.key === content.key) {
       top.content = content;
       content.update(top);
-      syncDock(top);
+      syncDock(top, true);
       return top;
     }
     if (top) {
@@ -122,7 +166,7 @@ export class Sheets {
       top.body.innerHTML = '';
       (top.body as HTMLElement & { __html?: string }).__html = undefined;
       content.update(top);
-      syncDock(top);
+      syncDock(top, true);
       revealRoot(top);
       return top;
     }
@@ -134,7 +178,7 @@ export class Sheets {
     sheet.el.classList.add('is-entering');
     this.host.append(sheet.el);
     content.update(sheet);
-    syncDock(sheet);
+    syncDock(sheet, true);
     revealRoot(sheet);
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
@@ -155,6 +199,7 @@ export class Sheets {
     s.content.onClose?.();
     for (const f of s.deferred.splice(0)) f();
     this.detachers.get(s)?.();
+    dropDock(s);
     s.el.classList.add('is-leaving');
     window.setTimeout(() => s.el.remove(), 240);
     // onChange first: it drops body.has-sheet, which hides the rail in portrait — focus() on the worst-stall eye

@@ -2087,3 +2087,37 @@ on the cover; `npm run layout -- --quick` caught the overlap). Keys `seal.tempo.
 Same round: all 77 PENDING_KEYS (days 5–9 incl. D-155) and mission I's new loss letter (D-130) translated into de, es,
 fr, it, nl, pt_BR, sv, tr, ru, uk, ja, ko, zh_Hans, ar, hi; PENDING_KEYS is empty. Numbers in ar texts are
 bidi-isolated (⁨…⁩). Shots `docs/shots/i18n9-*` (`tools/i18n9-shots.mjs`). UI only, hashes unchanged. (decided)
+
+**D-157 — Layout is read at the start of the frame; the "Naprawa" dock height comes from a ResizeObserver (research frame-cost day 9 #3, part a).**
+Every 250 ms `App.frame` ran `sheets.update` → `syncDock` (`offsetHeight` of the docked fix) and then `occluderRects`
+(`getBoundingClientRect` + `getComputedStyle` of the HUD pieces and the sheet paper) after the HUD, the pins and the
+sheet content had written the DOM: a forced synchronous layout, landing in whichever of the two read first. Now the
+occluder rects are read first thing in `App.frame`, from the DOM the browser laid out for the last paint, and the
+pins use them in the same frame (before: from the previous 250 ms read, so they are not staler). The dock's height is
+written by a ResizeObserver on the current `.fix-dock` (it reports after the browser's layout and before paint, so
+`--dock-h` still lands in the same frame); `syncDock` only re-targets the observer when the dock element changes, and
+measures in place only when a sheet opens or its content is replaced (once, as before) or without ResizeObserver.
+A closed sheet's dock leaves the observer. Verified: `#ui` innerHTML every 200 ticks (paused, stepped), 24 snapshots
+per scene, mission I, mission XI with the worst stall's sheet open, free valley with a sheet open: after vs before as
+equal as before vs before (I 22–23/24 in every pairing, XI 23–24/24; the valley differs run to run in pin positions
+from the camera glide — b1 vs b2 0/24 — and the second pair is 24/24). Cost (synthetic frames at ×4, a layout flush
+before each frame standing in for the browser's rendering step; ms per 10 s, two runs): XI + sheet `occluderRects`
+33.5/32.4 → 5.6/5.6, `sheets.update` 14/14 → 16/15; valley + sheet `sheets.update` 50/65 → 22/19, occluders 6–8 → 6;
+mission I without a sheet 6–9 → 5–6. UI only, hashes unchanged. (decided)
+
+**D-158 — Season notices, the plaque and the event card follow the HUD's state key too (frame-cost day 9, rest of D-153).**
+`updateSeasons`, `sandboxStatus` + `updatePlaque` (signature string every frame) and `EventCard.update` (two
+`JSON.stringify` of the orders and the merchant every frame) ran on every frame. They read the state only, so they
+now run when the D-153 key moves (tick, command applied in pause, world, language, …); the plaque also redraws when a
+fold cleared its signature, the event card when the player opened/folded it or picked an item (its own dirty flag).
+The waybill/plaque `hidden` flags are written on state changes only. DOM verified with D-157 (same snapshots).
+`Hud.update` in the free valley, 600 synthetic frames (5 reps, two runs): ×1 12–16 → 5–6 ms (median of reps;
+−55 %), ×4 within noise (26–34 → 27–28 ms: a tick lands in 2 of 3 frames, so the key moves anyway).
+UI only, hashes unchanged. (decided)
+
+**D-159 — `status.WAGON_DUE` uses `{goodAcc}` in every language; the dispatcher-2 keys are translated (PENDING_KEYS empty).**
+pl already said "przyjedzie po {goodAcc}"; en's `{good}` became `{goodAcc}` (the same word in English) so all
+15 dictionaries share one placeholder set and case languages (ru, uk, de) can use their accusative. Romance and
+Germanic languages use the pickup pattern of `status.WAITING_PICKUP` ("Collecte de {goodAcc} : chariot {wagon} dans
+{time}"); `cause.WAGON_DUE` is a short "wagon coming soon". `npm run i18n:coverage`: 0 pending, 0 placeholder
+mismatches. Native-speaker review stays with the other agent-written strings. (decided)

@@ -750,6 +750,13 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ frame & ticks
 
   private frame(now: number): void {
+    // layout reads first (D-157): the occluder rects are read from the DOM the browser laid out for the last paint,
+    // before this frame's HUD, pins and sheets write it — read after those writes they forced a synchronous layout
+    const sheetDue = this.mode === 'game' && now - this.lastSheetUpdate > 250;
+    if (sheetDue) {
+      this.lastSheetUpdate = now;
+      this.markers.occluders = this.occluderRects();
+    }
     const raw = now - this.lastFrame;
     const dt = Math.min(250, raw);
     this.lastFrame = now;
@@ -786,11 +793,8 @@ export class App implements PanelNav {
       this.tutorial?.update(dt);
       this.build.frame();
       this.applyGhost();
-      if (now - this.lastSheetUpdate > 250) {
-        this.lastSheetUpdate = now;
-        this.sheets.update();
-        this.markers.occluders = this.occluderRects();
-      }
+      // the docks' heights come from a ResizeObserver (D-157): no layout read here
+      if (sheetDue) this.sheets.update();
       if (this.world.state.mission.result !== 'running' && !this.endShown) this.showEnd();
     }
     if (this.perfEl && now - this.perfAt > 500) {
