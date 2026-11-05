@@ -1814,7 +1814,10 @@ Found on the way, real: `Sheets.place` added `is-entering` *after* appending the
 `syncDock`, which reads `offsetHeight` when a fix dock exists — the sheet resolved at full opacity first, so it
 dipped out (toward the entry state) and back in for two frames instead of fading up and sliding in. The class is
 now set before the sheet enters the DOM (`src/ui/sheets.ts`), so the 100–250 ms fade/slide is the one the style
-guide describes. Tools: `tools/first10-minutes.mjs` settles on the top sheet's entry state and opacity, shoots
-every Why sheet without a fix (not only the first three), writes an `EMPTY SCREEN` diagnostic when a sheet counts
+guide describes. Side effect for headless tools: a sheet now really starts at opacity 0, and under swiftshader the
+compositor starts its fade seconds late, so a DOM audit right after opening reads it as invisible (or, multiplying
+opacity, as low contrast) — screenshots are unaffected (a capture forces a frame). Tools: `tools/first10-minutes.mjs`
+waits (≤ 30 s) until the top sheet is fully up after every settle, and so does `tools/a11y-audit.mjs`; first10 also
+shoots every Why sheet without a fix (not only the first three), writes an `EMPTY SCREEN` diagnostic when a sheet counts
 0 words, and ignores elements scrolled out of a scroll/clip container (words, covered targets, overlaps) — run c's
 A5 "Ustawienia covers rows XIII / IV–V" was such a row. UI/tools only, hashes unchanged. (decided)

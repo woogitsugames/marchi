@@ -228,7 +228,13 @@ async function run([w, h]) {
     let prev = await sig();
     while (Date.now() - t < maxMs) {
       const s = await sig();
-      if (s === prev) return Date.now() - t;
+      if (s === prev) {
+        // a sheet still fading in: under swiftshader the compositor starts the fade seconds late and the main
+        // thread reads opacity 0 meanwhile (N5) — wait for the sheet to be readable
+        const ok = await page.waitForFunction(() => { const e = document.querySelector('#sheets .sheet:last-child'); return !e || (!e.classList.contains('is-entering') && Number(getComputedStyle(e).opacity) > 0.98); }, null, { timeout: 30000, polling: 250 }).then(() => true, () => false);
+        if (!ok) cur?.notes.push('sheet still fading after 30 s');
+        return Date.now() - t;
+      }
       prev = s;
     }
     cur?.notes.push('UI did not settle in ' + maxMs + ' ms');
