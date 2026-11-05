@@ -50,9 +50,14 @@ void main() {
   float l0 = floor(lv);
   float sz = 0.95 * exp2(l0);
   float face = mix(settFace(vW, sz), settFace(vW, sz * 2.0), lv - l0);
-  vec3 stone = mix(vec3(0.3, 0.27, 0.23), vec3(0.78, 0.73, 0.62), face);
+  // each sett a little lighter or darker (laid stone, not tiles); the deck is lit directly, so the range sits
+  // below the ground ghost's, which the terrain's own shading dims
+  vec2 sp = vW / sz;
+  sp.x += 0.5 * step(0.5, fract(sp.y * 0.5));
+  float jit = fract(sin(dot(floor(sp), vec2(12.9898, 78.233))) * 43758.5453);
+  vec3 stone = mix(vec3(0.26, 0.23, 0.2), vec3(0.64, 0.6, 0.51) * (0.88 + 0.2 * jit), face);
   // an ochre rim along the deck's edges (the parapets), like the ground ghost's verge
-  float rim = smoothstep(0.78, 0.95, abs(vEdge.x));
+  float rim = smoothstep(0.7, 0.92, abs(vEdge.x));
   vec3 col = mix(stone, uOchre, rim) * (0.55 + 0.45 * uLight);
   gl_FragColor = vec4(col, 0.9);
   #include <tonemapping_fragment>

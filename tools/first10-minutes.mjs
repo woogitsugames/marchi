@@ -7,6 +7,7 @@
 // action. Screenshots: small JPGs in docs/research/shots-first10b/ (FIRST10_SHOTDIR).
 // Run c (2026-11-04): deepVis no longer requires a non-zero box on ancestors (0 px tall layer divs hid
 // every letter, sheet and fix button from the audit); one shot of every Why sheet with a fix.
+// Day 9c: every Why sheet without a fix after the third is shot too, and an empty screen is explained (N5).
 //
 // Usage: npx vite preview --port 5195 --strictPort   (after npm run build)
 //        node tools/first10-minutes.mjs 412x915 [more sizes...]   -> JSON on stdout + shots
@@ -40,6 +41,19 @@ function auditPage() {
   // 0 px tall boxes whose children overflow them (run c: every letter and sheet counted 0 words, fix buttons missed)
   const shown = (e) => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) >= 0.05; };
   const deepVis = (el) => { if (!vis(el)) return false; for (let e = el; e && e !== document.body; e = e.parentElement) { if (!shown(e) || e.hidden || e.getAttribute('aria-hidden') === 'true' || e.classList.contains('sr-only')) return false; } return true; };
+  // scrolled out of sight inside a scroll (or clipping) container: the menu's list rows behind "Ustawienia" are
+  // hidden by the list's own scroll box, not covered by the button (day 9c: run c's A5 was such a false positive)
+  const scrolledAway = (el) => {
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+      const q = a.getBoundingClientRect();
+      if (cx < q.left || cx > q.right || cy < q.top || cy > q.bottom) return true;
+    }
+    return false;
+  };
   const desc = (el) => {
     const c = typeof el.className === 'string' ? el.className.split(/\s+/).filter(Boolean).slice(0, 2).join('.') : '';
     const t = (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
@@ -55,7 +69,7 @@ function auditPage() {
     const s = n.nodeValue.trim();
     if (!s) continue;
     const p = n.parentElement;
-    if (!p || p.closest('script,style,svg,.tutorial-hidden') || !deepVis(p)) continue;
+    if (!p || p.closest('script,style,svg,.tutorial-hidden') || !deepVis(p) || scrolledAway(p)) continue;
     const r = p.getBoundingClientRect();
     if (r.bottom <= 0 || r.top >= vh || r.right <= 0 || r.left >= vw) continue;
     const ws = s.split(/\s+/).filter((x) => /\p{L}/u.test(x));
@@ -65,7 +79,7 @@ function auditPage() {
   }
   // tap targets
   const small = [], covered = [], offscreen = [];
-  const inter = [...document.querySelectorAll('button, a[href], input, select, [role=button], [data-wb], [data-go], [data-act]')].filter(deepVis);
+  const inter = [...document.querySelectorAll('button, a[href], input, select, [role=button], [data-wb], [data-go], [data-act]')].filter((e) => deepVis(e) && !scrolledAway(e));
   const canvasLike = (el) => !el || el.tagName === 'CANVAS' || el === document.body || el === document.documentElement || el.classList.contains('scene') ;
   for (const el of inter) {
     const r = el.getBoundingClientRect();
@@ -429,6 +443,18 @@ async function run([w, h]) {
       if (fixes === 1) await shot('fixed');
     } else {
       cur.notes.push('no enabled fix button: ' + a.texts.slice(-8).join(' | ').slice(0, 300));
+      // run c's N5: a Why sheet with no fix is shot every time (only the first three were), and an empty screen
+      // says what hid it (clear screen, a letter, a closing sheet, a hidden layer)
+      if (whys > 3) await shot('why' + whys + '-nofix');
+      if (!a.words) cur.notes.push('EMPTY SCREEN: ' + JSON.stringify(await page.evaluate(() => {
+        const top = document.querySelector('#sheets .sheet:last-child');
+        const chain = [];
+        for (let e = top; e && e !== document.body; e = e.parentElement) {
+          const cs = getComputedStyle(e);
+          chain.push(`${e.tagName.toLowerCase()}#${e.id}.${String(e.className).split(/\s+/).join('.')} op=${cs.opacity} vis=${cs.visibility} disp=${cs.display}${e.hidden ? ' hidden' : ''}${e.inert ? ' inert' : ''}${e.getAttribute('aria-hidden') ? ' aria-hidden' : ''}`);
+        }
+        return { body: document.body.className, sheets: document.querySelectorAll('#sheets .sheet').length, letter: !!document.querySelector('.letter'), chain };
+      })));
       if (a.cure.length) { await tapSel('.tool.is-cure', 'is-cure'); cur.notes.push('cure tool shown but not used by the script'); }
     }
     // close sheets with one gesture (the close/back button if any, else Escape)
