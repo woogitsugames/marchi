@@ -1,0 +1,159 @@
+diff --git a/src/render/instancedParts.ts b/src/render/instancedParts.ts
+index 2486cc6..34d09aa 100644
+--- a/src/render/instancedParts.ts
++++ b/src/render/instancedParts.ts
+@@ -2,7 +2,7 @@
+ // begin(), push(matrix) per instance, end(). Shared by the wagons and the yard workers.
+ import { type BufferAttribute, type BufferGeometry, type Group, InstancedMesh, type Material, type Matrix4 } from 'three';
+ import type { ModelPart } from './models/kit';
+-import { modelMaterial } from './models/materials';
++import { instancedMaterial } from './models/materials';
+ 
+ /**
+  * Mark the first `n` instances of a per-instance attribute for upload. Only that prefix goes to the GPU
+@@ -22,7 +22,7 @@ export class Parts {
+   count = 0;
+   constructor(parts: ModelPart[], readonly cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
+     this.meshes = parts.map((p) => {
+-      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
++      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (instancedMaterial(p.material) as Material), cap);
+       m.count = 0;
+       m.frustumCulled = false;
+       m.castShadow = true;
+diff --git a/src/render/models/materials.ts b/src/render/models/materials.ts
+index 1d106b0..dac2fc9 100644
+--- a/src/render/models/materials.ts
++++ b/src/render/models/materials.ts
+@@ -343,6 +343,7 @@ export function setTreeQuality(high: boolean): void {
+       m.needsUpdate = true;
+     }
+   }
++  for (const k of ['billboard', 'leaves', 'needles'] as const) syncInstanced(k);
+ }
+ 
+ /**
+@@ -373,6 +374,11 @@ export function treeQualityVariants(high: boolean): Map<Material, Material> {
+     c.alphaToCoverage = high;
+     out.set(m, c);
+   }
++  // the instanced mirrors switch with their base material: compile the same variant for them
++  for (const [m, c] of [...out]) {
++    const im = instCache.get(m.name.slice('model-'.length) as MatKey);
++    if (im) out.set(im, c);
++  }
+   return out;
+ }
+ 
+@@ -411,6 +417,57 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
+  */
+ export function applyTextures(key: MatKey, set: TextureSet): void {
+   assignMaps(modelMaterial(key), key, set);
++  syncInstanced(key);
++}
++
++const instCache = new Map<MatKey, MeshStandardMaterial>();
++
++/**
++ * The kind's material for InstancedMesh users (wagon rigs, cargo, yard workers): a mirror of `modelMaterial(key)` with
++ * the same shader hooks and program cache key. three.js keeps one current program per material and keys it by
++ * `instancing`; a material drawn by both an InstancedMesh and a plain Mesh (buildings, bridges) in one frame rebuilds
++ * its program parameters on every switch (research 2026-11-05 render #5). The mirror never diverges: every change of
++ * a base material goes through a function here that calls `syncInstanced`, and `materialsFor` lists both for the
++ * shader pre-warm.
++ */
++export function instancedMaterial(key: MatKey): MeshStandardMaterial {
++  let c = instCache.get(key);
++  if (c) return c;
++  const m = modelMaterial(key);
++  c = m.clone();
++  c.onBeforeCompile = m.onBeforeCompile;
++  c.customProgramCacheKey = m.customProgramCacheKey;
++  c.name = m.name + '-inst';
++  instCache.set(key, c);
++  return c;
++}
++
++/** The base material of a kind and its instanced mirror, if one was made. */
++export function materialsFor(key: MatKey): MeshStandardMaterial[] {
++  const im = instCache.get(key);
++  return im ? [modelMaterial(key), im] : [modelMaterial(key)];
++}
++
++/** Copy the program-relevant state of the base material to its mirror (no-op without one). */
++function syncInstanced(key: MatKey): void {
++  const im = instCache.get(key);
++  if (!im) return;
++  const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
++  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
++  if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
++    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
++    JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) {
++    im.map = m.map;
++    im.normalMap = m.normalMap;
++    im.roughnessMap = m.roughnessMap;
++    im.aoMap = m.aoMap;
++    im.alphaToCoverage = m.alphaToCoverage;
++    im.alphaTest = m.alphaTest;
++    im.side = m.side;
++    im.shadowSide = m.shadowSide;
++    d.defines = { ...(m.defines ?? {}) };
++    im.needsUpdate = true;
++  }
+ }
+ 
+ /**
+diff --git a/src/render/view.ts b/src/render/view.ts
+index 3b55805..c436860 100644
+--- a/src/render/view.ts
++++ b/src/render/view.ts
+@@ -29,7 +29,7 @@ import { GroundCover } from './groundCover';
+ import { CELL, Heightfield } from './heightfield';
+ import { Lighting } from './lighting';
+ import { PartBuilder } from './models/kit';
+-import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
++import { applyTextures, foliageLift, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
+ import { OverlayData } from './overlay';
+ import { PlacementGhostView } from './placementGhost';
+ import { treeAtlasBytes } from './models/trees';
+@@ -221,7 +221,7 @@ class View implements WorldView {
+       const ok = sets.filter((it) => it !== null).map((it) => ({ key: it.key, set: { normalMap: it.s.normalMap, roughnessMap: it.s.roughnessMap } }));
+       // compile the textured variants first (off the main thread), so binding them stalls no frame
+       try {
+-        if (this.warm) await this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, new Map(ok.map((it) => [modelMaterial(it.key), texturedVariant(it.key, it.set)])), this.kindMeshes());
++        if (this.warm) await this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, new Map(ok.flatMap((it) => { const v = texturedVariant(it.key, it.set); return materialsFor(it.key).map((m) => [m, v] as const); })), this.kindMeshes());
+       } catch (e) { console.warn('[view] shader pre-warm (textures)', e); }
+       if (gen !== this.texGen) return;
+       for (const it of ok) applyTextures(it.key, it.set);
+diff --git a/tests/materials-mirror.test.ts b/tests/materials-mirror.test.ts
+new file mode 100644
+index 0000000..eb43129
+--- /dev/null
++++ b/tests/materials-mirror.test.ts
+@@ -0,0 +1,27 @@
++// Render #5 (research 2026-11-05): InstancedMesh users draw a mirror of each kind's material. The mirror must keep
++// the program-relevant state of its base through every change made by the materials module.
++import { DataTexture } from 'three';
++import { applyTextures, instancedMaterial, materialsFor, modelMaterial, texturedVariant } from '../src/render/models/materials';
++import { assert, eq, test } from './harness';
++
++test('materials: instanced mirror shares hooks and key, follows applyTextures', () => {
++  const base = modelMaterial('wood'), im = instancedMaterial('wood');
++  assert(im !== base, 'a separate material');
++  eq(im, instancedMaterial('wood'), 'one mirror per kind');
++  eq(im.customProgramCacheKey, base.customProgramCacheKey, 'same program cache key');
++  eq(im.onBeforeCompile, base.onBeforeCompile, 'same shader hook');
++  eq(materialsFor('wood').length, 2, 'pre-warm sees both');
++  const t = new DataTexture(new Uint8Array(4), 1, 1);
++  const v0 = im.version;
++  applyTextures('wood', { normalMap: t, roughnessMap: t });
++  eq(im.normalMap, t, 'normal map mirrored');
++  eq(im.roughnessMap, t, 'roughness map mirrored');
++  assert(im.version > v0, 'mirror marked for update');
++  const tv = texturedVariant('wood', { normalMap: null });
++  eq(tv.customProgramCacheKey, base.customProgramCacheKey, 'variant keyed like both');
++  applyTextures('wood', { normalMap: null, roughnessMap: null });
++  eq(im.normalMap, null, 'removal mirrored');
++  // grass has its own hooks (foliage lift): the mirror keeps them
++  const g = instancedMaterial('grass');
++  eq(g.customProgramCacheKey, modelMaterial('grass').customProgramCacheKey, 'hooked kind keeps its key');
++});
