@@ -299,7 +299,7 @@ async function run(browser, url, v, lang, sc, css) {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto(`${url}?${sc.q ? sc.q + '&' : ''}${BASE_Q}&lang=${lang}`, { waitUntil: 'load' });
+    await page.goto(`${url}?${sc.q ? sc.q + '&' : ''}${BASE_Q}&lang=${lang}`, { waitUntil: 'load', timeout: 90000 });
     await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 180000 });
     await page.waitForTimeout(600);
     if (sc.act) { await sc.act(page); await page.waitForTimeout(400); }
