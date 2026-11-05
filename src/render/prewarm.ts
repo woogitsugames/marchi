@@ -55,14 +55,21 @@ function needsOwnDepth(m: Material): boolean {
   return !!(s.displacementMap && s.displacementScale !== 0) || ((!!s.alphaMap || !!s.map) && m.alphaTest > 0) || m.alphaToCoverage === true;
 }
 
-/** The material WebGLShadowMap will draw `mesh` with (same program cache key), or null if it draws none. */
+/**
+ * The material WebGLShadowMap will draw `mesh` with (same program cache key), or null if it draws none.
+ * A custom depth material gets the same per-draw state from the source material as the shadow pass gives it
+ * (side, maps, alpha test, clipping): left in its constructed state, it was compiled as a FrontSide, map-less
+ * variant that no shadow pass ever draws, and the real one linked inside the first frame that cast with it
+ * (far-tree `billboard-depth` on a low → high switch, D-136).
+ */
 function depthMaterialOf(mesh: AnyMesh, m: Material): Material | null {
   if (!m.visible) return null;
-  if (mesh.customDepthMaterial) return mesh.customDepthMaterial;
   const side = m.shadowSide !== null ? m.shadowSide : SHADOW_SIDE[m.side];
   const s = m as Material & { map?: MeshDepthMaterial['map']; alphaMap?: MeshDepthMaterial['alphaMap']; displacementMap?: MeshDepthMaterial['displacementMap']; displacementScale?: number; displacementBias?: number };
   let d: MeshDepthMaterial;
-  if (needsOwnDepth(m)) {
+  if (mesh.customDepthMaterial) {
+    d = mesh.customDepthMaterial as MeshDepthMaterial;
+  } else if (needsOwnDepth(m)) {
     let c = depthStandIns.get(m);
     if (!c) {
       c = plainBase.clone();
@@ -197,16 +204,7 @@ export class ShaderPrewarm {
     // KHR_parallel_shader_compile the driver links them while frames keep running
     r.compile(scene, camera);
     r.compile(extraGroup, camera, scene);
-    // the depth pass draws into the shadow map: compile with a render target bound (linear output,
-    // no tone mapping), as WebGLShadowMap does
-    const prev = r.getRenderTarget();
-    this.depthTarget ??= new WebGLRenderTarget(1, 1);
-    r.setRenderTarget(this.depthTarget);
-    try {
-      r.compile(depthGroup, camera, scene);
-    } finally {
-      r.setRenderTarget(prev);
-    }
+    this.compileDepth(depthGroup, camera, scene);
     await settle(r, cancelled);
     if (cancelled()) { this.swapClones.push(...release); return null; }
     await firstUse(r, this.used, cancelled);
@@ -218,6 +216,27 @@ export class ShaderPrewarm {
   }
 
   /**
+   * The depth pass draws into the shadow map: compile with a render target bound (linear output, no tone
+   * mapping), as WebGLShadowMap does. It also draws without a scene (`renderBufferDirect(cam, null, ...)`),
+   * so without fog: fog is part of the program key, and depth programs compiled under the scene's fog were
+   * never the ones the shadow pass used (D-136). Lights still come from `scene` (the shadow count is in the key).
+   */
+  private compileDepth(group: Group, camera: Camera, scene: Scene): void {
+    const r = this.renderer;
+    const prev = r.getRenderTarget();
+    const fog = scene.fog;
+    this.depthTarget ??= new WebGLRenderTarget(1, 1);
+    r.setRenderTarget(this.depthTarget);
+    scene.fog = null;
+    try {
+      r.compile(group, camera, scene);
+    } finally {
+      scene.fog = fog;
+      r.setRenderTarget(prev);
+    }
+  }
+
+  /**
    * Before binding new maps to shared materials: compile the variants the materials will have
    * afterwards, for every mesh using them (and `extras`), so the swap itself compiles nothing.
    * `next` maps each material to a clone carrying the new maps.
@@ -226,6 +245,9 @@ export class ShaderPrewarm {
     if (!next.size) return;
     const r = this.renderer;
     const group = new Group();
+    // the shadow depth variant of the new state too (alpha-to-coverage turns into an alpha test there, and a
+    // mesh that casts only on the new tier draws its depth material for the first time right after the switch)
+    const depthGroup = new Group();
     const seen = new Set<string>();
     for (const mesh of [...meshesOf(scene), ...extras as AnyMesh[]]) {
       for (const m of materialsOf(mesh)) {
@@ -235,9 +257,12 @@ export class ShaderPrewarm {
         if (seen.has(key)) continue;
         seen.add(key);
         group.add(standIn(mesh, c));
+        const d = depthMaterialOf(mesh, c);
+        if (d) depthGroup.add(standIn(mesh, d));
       }
     }
     r.compile(group, camera, scene);
+    this.compileDepth(depthGroup, camera, scene);
     await settle(r, () => false);
     await firstUse(r, this.used, () => false);
     // released by the next full run (after the caller has bound the maps to the real materials)

@@ -1815,7 +1815,9 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
    map's free side; the D-55 side sheet docks over it while open */
 body.is-landscape .ev-card { position: fixed; top: calc(var(--bar-b, 56px) + 8px); inset-inline-end: calc(var(--safe-e) + 10px); margin: 0; }
 body.is-landscape .ev-card:not(.is-folded) { width: 300px; }
-body.is-landscape .ev-list { max-height: calc(100dvh - var(--bar-b, 56px) - 156px - var(--safe-b)); min-height: 96px; }
+/* the open card ends 14 px above the measured rail (the alarm seal's badge hangs 2 px over it), whatever the
+   worst-stall row's height (D-136); the open item scrolls into view inside the list (eventCard.ts) */
+body.is-landscape .ev-list { max-height: calc(100dvh - var(--bar-b, 56px) - 8px - 58px - var(--rail-h) - var(--safe-b) - 14px); min-height: 96px; }
 body.is-landscape .ev-head { font-size: 16px; }
 body.is-landscape .ev-t { font-size: 15px; }
 body.is-split .ev-list { max-height: 52vh; }
@@ -1947,6 +1949,10 @@ body.is-landscape .kseal { width: 24px; height: 24px; }
 body.is-landscape .snow-pill { min-height: 28px; padding-inline: 10px 12px; gap: 4px; font-size: 13px; }
 body.is-landscape .snow-pill svg { width: 15px; height: 15px; }
 body.is-landscape .snow-pill bdi { font-size: 16px; }
+/* a long pill text (pseudo, German) wraps inside the pill rather than spilling out of the card (D-136); the clock stays whole */
+body.is-landscape .snow-pill { white-space: normal; min-width: 0; line-height: 1.15; }
+body.is-landscape .snow-pill > span { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+body.is-landscape .snow-pill bdi { white-space: nowrap; }
 body.is-landscape .wb-goods { display: grid; grid-template-columns: repeat(auto-fit, minmax(66px, 1fr)); column-gap: 8px; }
 body.is-landscape .wb-line {
   grid-template-columns: 24px minmax(0, 1fr); grid-template-areas: "ic n" "ic bar";
@@ -2377,10 +2383,11 @@ body.is-short .chain:not(.is-open) .c-more + li { margin-top: 16px; }
 body.is-short .chain:not(.is-open) .c-more + li::before { top: -16px; height: 16px; line-height: 16px; }
 body.is-short .chain .c-more-btn { position: absolute; top: -16px; inset-inline-end: 0; }
 /* the subject on one line: the sheet's title right above names it; its icon, status and stall clock (as on its map pin) stay */
-body.is-short .chain .c-first .link.is-self { min-height: 0; padding-block: 1px; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; }
+body.is-short .chain .c-first .link.is-self { min-height: 0; padding-block: 4px; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; }
 body.is-short .chain .c-first .is-self .l-icon { width: 24px; height: 24px; }
 body.is-short .chain .c-first .is-self .l-icon svg { width: 22px; height: 22px; }
-body.is-short .chain .c-first .is-self .l-text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the reason is never cut (D-136): a long one (German compounds, pseudo) wraps to a second line inside the row */
+body.is-short .chain .c-first .is-self .l-text { display: block; min-width: 0; line-height: 1.15; overflow-wrap: anywhere; hyphens: auto; }
 body.is-short .chain .c-first .is-self .l-who { display: none; }
 body.is-short .chain .c-first .is-self .l-why { display: inline; font-size: 14px; }
 body.is-short .chain .c-first .is-self .l-since { display: block; font-size: 13px; font-weight: 700; color: #6e3520; white-space: nowrap; }
