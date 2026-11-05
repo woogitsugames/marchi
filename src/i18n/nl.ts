@@ -46,6 +46,7 @@ export const nl: Dict = {
   "status.WAITING_PICKUP": "Vol met {good} — ophalen: wagen {wagon}",
   "status.WAGON_DUE": "Ophalen {goodAcc}: wagen {wagon} over {time}",
   "status.STORAGE_FULL": "Graanschuur is vol",
+  "status.STORAGE_FULL.saturated": "Graanschuur vol — de markt is verzadigd",
   "status.CONTRACT_DONE": "Contract voltooid",
   "wagon.IDLE": "Bij de stal",
   "wagon.TO_PICKUP": "Onderweg om vracht op te halen",

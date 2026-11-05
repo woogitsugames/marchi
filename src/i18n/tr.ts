@@ -46,6 +46,7 @@ export const tr: Dict = {
   "status.WAITING_PICKUP": "Depo dolu: {good} — alacak araba {wagon}",
   "status.WAGON_DUE": "Araba {wagon}, {time} içinde {goodAcc} almaya geliyor",
   "status.STORAGE_FULL": "Tahıl ambarı dolu",
+  "status.STORAGE_FULL.saturated": "Tahıl ambarı dolu — pazar doymuş",
   "status.CONTRACT_DONE": "Sözleşme tamamlandı",
   "wagon.IDLE": "Ahırda",
   "wagon.TO_PICKUP": "Yükü almaya gidiyor",

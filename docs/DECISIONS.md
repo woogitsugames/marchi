@@ -2302,3 +2302,40 @@ card). Now the worst pin is passed only when `stalls[0]` is not minor. UI only. 
 `ALL_FUZZ_MISSIONS` (default of `npm run fuzz`) is m1–m13 + sandbox (was m1–m6 + sandbox). The run count stays 50,
 so each map gets ~3–4 runs a default fuzz (it prints `missions: m1:3 …`); 50 runs × 6000 ticks take ~54 s, 0
 failures. `DEFAULT_FUZZ_MISSIONS` of `npm test` is unchanged (its seeds keep their scenarios). (decided)
+
+**D-180 — A calm stall reads calm in its whole sheet: "Spichlerz pełny — rynek nasycony", ink title, plain row.**
+Day 9j shots (D-178 follow-up): the saturated granary's sheet said the calm "Rynek bierze tyle, ile zje…" under a
+title "Spichlerz pełny" in clay and the "60/60 — brak miejsca na odbiór" row on the wine-barred `panel-alert` — the
+same mixed message D-160 fixed in words for the surplus yard (whose row kept the red bar too). Now `statusKey`
+(`src/ui/stallKinds.ts`) gives `status.STORAGE_FULL.saturated` ("Spichlerz pełny — rynek nasycony" / "Granary full
+— the market is saturated", 17 languages) when `granaryLoads` is `saturated`; the sheet's status line, the chain
+links and the pin's accessible name all read it through `buildingStatusText(…, id)`. For any stall with a calm
+reason (`calmWhy` ≠ null: surplus, saturated market, room in another granary, filled order, stone in store, the
+trading post's road) the sheet uses calm styling: status line `.calm` in ink, the full row `.full-hint.is-calm` on the
+plain `panel` (count in ink, no wine bar), a calm chain root `.link.is-root.is-calm` (brass hairline, ink icon, the
+"przyczyna" tag in dark brass — the cause is still named), the chain header's stall time in `--ink-soft`, and a full
+granary's capacity bar in brass instead of clay. A real full granary (a market takes a load) keeps every red cue.
+`marketTakesLoad` / `granaryLoads` move from `stalls.ts` to `stallKinds.ts` (re-exported) so the pure status title
+can read them without a cycle. Test `tests/valley-cures.test.ts` (title with/without the world, unsaturated). UI only,
+hashes unchanged. Shots `docs/shots/day9k-{before,after}-{412x915,915x412}.jpg` (`tools/day9k-shots.mjs`). (decided)
+
+**D-181 — The alarm seal is crimson wax only while a real stall stands.**
+D-115 put the pace card on the plain panel ("calm, never red") while "the alarm seal keeps cycling the calm pins",
+and D-121 made the scalloped wax rim the shape of "critical". But the seal itself stayed the crimson `seal-alert` with
+only calm pins on the map (landscape and portrait, `day9k-before-hud-*`): the loudest object on screen for nothing to
+do. Now `.alarm-seal.is-calm` when every ranked stall is `minor` (D-178's test): a smooth parchment disc with a brass
+rim and a dark-brass icon (CSS radial gradient, the family of the HUD chips' medallions and the brass pin — smooth =
+lesser, no new sprite); the badge still counts the stalls and a tap still cycles them. Any non-minor stall turns it
+crimson again. Likewise a calm stall heading the stall card when no pace / bottleneck card claims the slot gets
+`.stall-row.is-calm` — the pace card's plain panel and ink kicker (it was the wine-barred alarm panel); the card's
+signature now includes `minor`. UI only. Shots `docs/shots/day9k-{before,after}-hud-{412x915,915x412}.jpg`. (decided)
+
+**D-182 — Audit of calm states shown red (day 9k).**
+Grepped every colour decision on `crit` / `minor` / calm (`stallKinds`, `stalls.rankStalls`, `markers`, `hud`,
+`panels`, `main.css`): pins were already right (calm → brass and smaller, crit only when not calm, worst only when
+not minor, D-178). Fixed here: the sheet (D-180) and the seal/card (D-181). Left open (BACKLOG day 9k), because they
+are calm-ish but not "nothing to do": (a) `minor` stalls without a `calmWhy` — `WAITING_PICKUP`, a full yard whose
+customer still takes it (`outputCustomer`), an input a season slows — keep the clay status line and the wine-barred
+full row in the sheet, although their pin is brass; (b) the stall card's kicker still says "Najgorszy zastój" over a
+calm stall (needs a key, e.g. "Postój"); (c) a wagon held by seasonal ice keeps the clay status line (a stone bridge
+is a real cure); (d) the codex fold already reads its calm variant (D-98), nothing to do. (decided)

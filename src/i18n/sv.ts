@@ -46,6 +46,7 @@ export const sv: Dict = {
   "status.WAITING_PICKUP": "Fullt med {good} — hämtas av vagn {wagon}",
   "status.WAGON_DUE": "Hämtning av {goodAcc}: vagn {wagon} om {time}",
   "status.STORAGE_FULL": "Magasinet är fullt",
+  "status.STORAGE_FULL.saturated": "Magasinet är fullt — marknaden är mättad",
   "status.CONTRACT_DONE": "Kontrakt uppfyllt",
   "wagon.IDLE": "Vid stallet",
   "wagon.TO_PICKUP": "På väg för att hämta last",

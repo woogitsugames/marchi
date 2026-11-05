@@ -46,6 +46,7 @@ export const uk: Dict = {
   "status.WAITING_PICKUP": "Склад повний: {good} забере віз {wagon}",
   "status.WAGON_DUE": "Віз {wagon} забере {goodAcc} за {time}",
   "status.STORAGE_FULL": "Комора повна",
+  "status.STORAGE_FULL.saturated": "Комора повна — ринок насичений",
   "status.CONTRACT_DONE": "Контракт виконано",
   "wagon.IDLE": "У стайні",
   "wagon.TO_PICKUP": "Їде за вантажем",

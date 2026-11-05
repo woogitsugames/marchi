@@ -589,6 +589,9 @@ export class Hud {
     this.pace = pc;
     this.neck = pc ? null : neck;
     this.alarm.hidden = stalls.length === 0;
+    // the seal is crimson wax only while a real stall stands; calm pins alone cycle on the brass seal (D-181)
+    const calmOnly = stalls.length > 0 && stalls.every((s) => s.minor);
+    if (calmOnly !== this.alarm.classList.contains('is-calm')) this.alarm.classList.toggle('is-calm', calmOnly);
     if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
       this.cure = pc.k === 'producer' || pc.k === 'rank' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
@@ -604,7 +607,7 @@ export class Hud {
       this.wagonSig = '';
       this.stallRow.hidden = false;
       this.root.classList.add('has-stall');
-      this.stallRow.classList.remove('is-crit');
+      this.stallRow.classList.remove('is-crit', 'is-calm');
       this.stallRow.classList.add('is-pace');
       // no order in the free valley: its fleet card serves the rank, not an order's pace (day 9h)
       setText(this.stallKick, t(pc.k === 'rank' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
@@ -649,7 +652,7 @@ export class Hud {
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -668,6 +671,8 @@ export class Hud {
           : stallReason(world, b.id);
     setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
+    // a calm stall heading the list (no pace card for it): the plain panel, as the pace card (D-181)
+    this.stallRow.classList.toggle('is-calm', w.minor);
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
     setHtml(this.alarmIcon, buildingStatusIcon(b.status, 34, b.type));
     setText(this.alarmBadge, fmtInt(stalls.length));
@@ -687,7 +692,7 @@ export class Hud {
     this.wagonSig = '';
     this.stallRow.hidden = false;
     this.root.classList.add('has-stall');
-    this.stallRow.classList.remove('is-crit', 'is-pace');
+    this.stallRow.classList.remove('is-crit', 'is-pace', 'is-calm');
     this.stallRow.classList.add('is-neck');
     setText(this.stallKick, t('hud.bottleneck'));
     const who = n.good ? goodName(n.good) : t('neck.fleetWho');

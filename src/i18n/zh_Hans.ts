@@ -46,6 +46,7 @@ export const zh_Hans: Dict = {
   "status.WAITING_PICKUP": "{good}已满：货车{wagon}将来收取",
   "status.WAGON_DUE": "货车{wagon}将在{time}后来取{goodAcc}",
   "status.STORAGE_FULL": "粮仓已满",
+  "status.STORAGE_FULL.saturated": "粮仓已满——市场已饱和",
   "status.CONTRACT_DONE": "契约完成",
   "wagon.IDLE": "在马厩",
   "wagon.TO_PICKUP": "前往取货",
