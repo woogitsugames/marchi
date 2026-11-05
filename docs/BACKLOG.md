@@ -9,6 +9,10 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [x] P2 — (zrobione dzień 9i, D-172..D-175, `claude/w-day9i`; research valley-ranks-2-3 F2–F4) `validatePlace` odrzuca miejsce przecinające ukośny krok drogi (hasze misji bez zmian); odcięty producent dostaje lekarstwo „droga”; „Kup wóz” przy pełnym spichlerzu tylko, gdy rynek weźmie ładunek, inaczej spokojne „rynek nasycony”; karta rangi pomija budynek bez miejsca (seed 1304 kamieniołom).
+- [ ] P2 — (D-174) Spokojne „rynek nasycony” nie ma jeszcze zrzutu ekranu; sprawdzić w playteście, czy gracz rozumie, że ma sprzedać inny towar (bez karty F1 „rozbuduj” nic go nie prowadzi dalej).
+- [ ] P3 — (D-172) Duch na miejscu przecinającym drogę pokazuje zwykłe „zajęte” (BLOCKED) na komórce narożnika — rozważyć osobny komunikat „przetnie drogę”.
+- [ ] P3 — (D-174) 2 nowe klucze (`cause.marketFull`, `fix.marketFull`) w 15 językach to tłumaczenia agenta — do przeglądu natywnego.
 - [ ] P3 — (dzień 9h) Duch budowy podaje koszt drogi dojazdowej liczony przed postawieniem (`accessRoad`, od stajni), a arkusz po postawieniu proponuje krótszą (`suggestLinkToStable` od bramy) — np. „droga 5” vs 4. Ujednolicić albo opisać jako „ok.”.
 - [x] P4 — (zrobione 2026-11-05, D-170/D-171, `claude/w-trade-post`) Późna dolina: punkt handlowy za rzeką od rangi 4 (125 %, zapis v9 + migracja v8 → v9, ranga 5 → 17 000) i karta „Wąskie gardło”; zrzuty `docs/shots/trade-*`.
 - [ ] P3 — (D-170/D-171) 24 nowe klucze (punkt handlowy, wąskie gardło) w 15 językach to tłumaczenia agenta — do przeglądu natywnego z resztą.
