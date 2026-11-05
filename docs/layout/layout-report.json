@@ -143,35 +143,35 @@
   "tag": "build|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "build|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "build|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "build|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "build|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -318,35 +318,35 @@
   "tag": "castle|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-sheet",
+  "body": "left-handed is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "castle|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "castle|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "castle|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "castle|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
@@ -367,14 +367,14 @@
   "tag": "end|360x740|pl",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game",
+  "body": "is-narrow mode-game has-notice",
   "fail": []
  },
  {
   "tag": "end|360x740|pseudo",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game",
+  "body": "is-narrow mode-game has-notice",
   "fail": []
  },
  {
@@ -388,7 +388,7 @@
   "tag": "end|412x915|ar",
   "vw": 412,
   "vh": 915,
-  "body": "left-handed mode-game has-notice",
+  "body": "left-handed mode-game",
   "fail": []
  },
  {
@@ -458,7 +458,7 @@
   "tag": "end|915x412|ar",
   "vw": 915,
   "vh": 412,
-  "body": "left-handed is-landscape is-side is-short mode-game",
+  "body": "left-handed is-landscape is-side is-short mode-game has-notice",
   "fail": []
  },
  {
@@ -493,35 +493,35 @@
   "tag": "end|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-notice",
+  "body": "left-handed is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "end|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "end|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "end|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "end|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
@@ -535,35 +535,35 @@
   "tag": "hud|360x740|de",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-notice",
+  "body": "is-narrow mode-game",
   "fail": []
  },
  {
   "tag": "hud|360x740|pl",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-notice",
+  "body": "is-narrow mode-game",
   "fail": []
  },
  {
   "tag": "hud|360x740|pseudo",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-notice",
+  "body": "is-narrow mode-game",
   "fail": []
  },
  {
   "tag": "hud|360x740|ru",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-notice",
+  "body": "is-narrow mode-game",
   "fail": []
  },
  {
   "tag": "hud|412x915|ar",
   "vw": 412,
   "vh": 915,
-  "body": "left-handed mode-game has-notice",
+  "body": "left-handed mode-game",
   "fail": []
  },
  {
@@ -584,7 +584,7 @@
   "tag": "hud|412x915|pseudo",
   "vw": 412,
   "vh": 915,
-  "body": "mode-game has-notice",
+  "body": "mode-game",
   "fail": []
  },
  {
@@ -605,7 +605,7 @@
   "tag": "hud|904x1000|de",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game has-notice",
+  "body": "is-side is-split mode-game",
   "fail": []
  },
  {
@@ -619,42 +619,42 @@
   "tag": "hud|904x1000|pseudo",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game",
+  "body": "is-side is-split mode-game has-notice",
   "fail": []
  },
  {
   "tag": "hud|904x1000|ru",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game has-notice",
+  "body": "is-side is-split mode-game",
   "fail": []
  },
  {
   "tag": "hud|915x412|ar",
   "vw": 915,
   "vh": 412,
-  "body": "left-handed is-landscape is-side is-short mode-game has-notice",
+  "body": "left-handed is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
   "tag": "hud|915x412|de",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-notice",
+  "body": "is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
   "tag": "hud|915x412|pl",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-notice",
+  "body": "is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
   "tag": "hud|915x412|pseudo",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-notice",
+  "body": "is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
@@ -668,35 +668,35 @@
   "tag": "hud|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-notice",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "hud|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "hud|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "hud|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "hud|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -843,35 +843,35 @@
   "tag": "market|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-sheet",
+  "body": "left-handed is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "market|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "market|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "market|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "market|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
@@ -1018,35 +1018,35 @@
   "tag": "menu|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-menu",
+  "body": "left-handed is-mini is-short mode-menu",
   "fail": []
  },
  {
   "tag": "menu|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu",
+  "body": "is-mini is-short mode-menu",
   "fail": []
  },
  {
   "tag": "menu|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu",
+  "body": "is-mini is-short mode-menu",
   "fail": []
  },
  {
   "tag": "menu|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu",
+  "body": "is-mini is-short mode-menu",
   "fail": []
  },
  {
   "tag": "menu|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu",
+  "body": "is-mini is-short mode-menu",
   "fail": []
  },
  {
@@ -1193,35 +1193,35 @@
   "tag": "opening|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "opening|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "opening|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "opening|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "opening|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -1368,35 +1368,35 @@
   "tag": "rankup|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "rankup|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "rankup|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "rankup|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "rankup|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -1543,35 +1543,35 @@
   "tag": "settings|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-menu has-sheet",
+  "body": "left-handed is-mini is-short mode-menu has-sheet",
   "fail": []
  },
  {
   "tag": "settings|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu has-sheet",
+  "body": "is-mini is-short mode-menu has-sheet",
   "fail": []
  },
  {
   "tag": "settings|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu has-sheet",
+  "body": "is-mini is-short mode-menu has-sheet",
   "fail": []
  },
  {
   "tag": "settings|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu has-sheet",
+  "body": "is-mini is-short mode-menu has-sheet",
   "fail": []
  },
  {
   "tag": "settings|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-menu has-sheet",
+  "body": "is-mini is-short mode-menu has-sheet",
   "fail": []
  },
  {
@@ -1718,35 +1718,35 @@
   "tag": "tutorial|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "tutorial|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "tutorial|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "tutorial|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "tutorial|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -1774,7 +1774,7 @@
   "tag": "valley|360x740|pseudo",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-notice",
+  "body": "is-narrow mode-game",
   "fail": []
  },
  {
@@ -1788,7 +1788,7 @@
   "tag": "valley|412x915|ar",
   "vw": 412,
   "vh": 915,
-  "body": "left-handed mode-game has-notice",
+  "body": "left-handed mode-game",
   "fail": []
  },
  {
@@ -1809,7 +1809,7 @@
   "tag": "valley|412x915|pseudo",
   "vw": 412,
   "vh": 915,
-  "body": "mode-game has-notice",
+  "body": "mode-game",
   "fail": []
  },
  {
@@ -1823,7 +1823,7 @@
   "tag": "valley|904x1000|ar",
   "vw": 904,
   "vh": 1000,
-  "body": "left-handed is-side is-split mode-game has-notice",
+  "body": "left-handed is-side is-split mode-game",
   "fail": []
  },
  {
@@ -1837,28 +1837,28 @@
   "tag": "valley|904x1000|pl",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game has-notice",
+  "body": "is-side is-split mode-game",
   "fail": []
  },
  {
   "tag": "valley|904x1000|pseudo",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game has-notice",
+  "body": "is-side is-split mode-game",
   "fail": []
  },
  {
   "tag": "valley|904x1000|ru",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game",
+  "body": "is-side is-split mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|915x412|ar",
   "vw": 915,
   "vh": 412,
-  "body": "left-handed is-landscape is-side is-short mode-game has-notice",
+  "body": "left-handed is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
@@ -1872,63 +1872,63 @@
   "tag": "valley|915x412|pl",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game",
+  "body": "is-landscape is-side is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|915x412|pseudo",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-notice",
+  "body": "is-landscape is-side is-short mode-game",
   "fail": []
  },
  {
   "tag": "valley|915x412|ru",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game",
+  "body": "is-landscape is-side is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-notice",
+  "body": "left-handed is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "valley|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-notice",
+  "body": "is-mini is-short mode-game has-notice",
   "fail": []
  },
  {
   "tag": "wagon|360x740|ar",
   "vw": 360,
   "vh": 740,
-  "body": "left-handed is-narrow mode-game has-sheet",
+  "body": "left-handed is-narrow mode-game has-sheet has-notice",
   "fail": []
  },
  {
@@ -1942,7 +1942,7 @@
   "tag": "wagon|360x740|pl",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-sheet",
+  "body": "is-narrow mode-game has-sheet has-notice",
   "fail": []
  },
  {
@@ -1956,14 +1956,14 @@
   "tag": "wagon|360x740|ru",
   "vw": 360,
   "vh": 740,
-  "body": "is-narrow mode-game has-sheet",
+  "body": "is-narrow mode-game has-sheet has-notice",
   "fail": []
  },
  {
   "tag": "wagon|412x915|ar",
   "vw": 412,
   "vh": 915,
-  "body": "left-handed mode-game has-sheet",
+  "body": "left-handed mode-game has-sheet has-notice",
   "fail": []
  },
  {
@@ -2019,7 +2019,7 @@
   "tag": "wagon|904x1000|pseudo",
   "vw": 904,
   "vh": 1000,
-  "body": "is-side is-split mode-game has-sheet",
+  "body": "is-side is-split mode-game has-sheet has-notice",
   "fail": []
  },
  {
@@ -2047,56 +2047,56 @@
   "tag": "wagon|915x412|pl",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-sheet",
+  "body": "is-landscape is-side is-short mode-game has-sheet has-notice",
   "fail": []
  },
  {
   "tag": "wagon|915x412|pseudo",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-sheet",
+  "body": "is-landscape is-side is-short mode-game has-sheet has-notice",
   "fail": []
  },
  {
   "tag": "wagon|915x412|ru",
   "vw": 915,
   "vh": 412,
-  "body": "is-landscape is-side is-short mode-game has-sheet has-notice",
+  "body": "is-landscape is-side is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "wagon|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-sheet",
+  "body": "left-handed is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "wagon|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet has-notice",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "wagon|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet has-notice",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "wagon|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "wagon|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet has-notice",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
@@ -2243,35 +2243,35 @@
   "tag": "waybill-m7|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game",
+  "body": "left-handed is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "waybill-m7|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "waybill-m7|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "waybill-m7|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
   "tag": "waybill-m7|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game",
+  "body": "is-mini is-short mode-game",
   "fail": []
  },
  {
@@ -2418,35 +2418,35 @@
   "tag": "why|flip360x380|ar",
   "vw": 360,
   "vh": 380,
-  "body": "left-handed is-mini mode-game has-sheet",
+  "body": "left-handed is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "why|flip360x380|de",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "why|flip360x380|pl",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "why|flip360x380|pseudo",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  },
  {
   "tag": "why|flip360x380|ru",
   "vw": 360,
   "vh": 380,
-  "body": "is-mini mode-game has-sheet",
+  "body": "is-mini is-short mode-game has-sheet",
   "fail": []
  }
 ]

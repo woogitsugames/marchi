@@ -202,6 +202,8 @@ export class App implements PanelNav {
   /** The gap ghost is a dirt stretch to pave (the mud card), drawn as setts (D-132). */
   private ghostPave = false;
   private ghostKey = '';
+  /** The sett ghost last framed by the camera (D-144): framed once per ghost, reset when the ghost goes. */
+  private ghostFramed = '';
 
   constructor(o: AppOptions) {
     this.view = o.view;
@@ -414,25 +416,26 @@ export class App implements PanelNav {
    * middle cell is not the middle of its box (the path bends), so the glide offsets by the difference.
    * Zooms out first only when the crossing is larger than the free area.
    */
-  private frameCells(cells: number[]): void {
+  private frameCells(cells: number[], maxOut = 2): void {
     const to = this.view.cellToScreen?.bind(this.view);
     if (!to || !cells.length) return;
-    const { rect, offset } = this.visibleScene();
-    const box = (): { l: number; t: number; r: number; b: number; ok: boolean } => {
-      const ps = cells.map(to);
-      const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
-      const b = { l: Math.min(...xs), t: Math.min(...ys), r: Math.max(...xs), b: Math.max(...ys) };
-      return { ...b, ok: ps.every((p) => p.visible && wellInside(p.x, p.y, rect, 0.04)) };
-    };
-    let b = box();
-    if (b.ok) return;
+    const ps = cells.map(to);
+    const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+    const b = { l: Math.min(...xs), t: Math.min(...ys), r: Math.max(...xs), b: Math.max(...ys) };
+    // the free part of the map that shows this box largest (beside or under the sheet, D-144)
+    const { rect, offset } = this.visibleScene({ w: b.r - b.l, h: b.b - b.t });
+    const shown = (r: Rect): boolean => ps.every((p) => p.visible && wellInside(p.x, p.y, r, 0.04));
+    if (shown(rect) || shown(this.visibleScene().rect)) return;
     this.stopFollow();
     const fw = (rect.r - rect.l) * 0.8, fh = (rect.b - rect.t) * 0.8;
     const k = Math.max((b.r - b.l) / fw, (b.b - b.t) / fh);
-    if (k > 1) { this.view.camera.zoom(Math.min(2, k), (b.l + b.r) / 2, (b.t + b.b) / 2); b = box(); }
     const mid = cells[cells.length >> 1]!;
     const pm = to(mid);
-    this.view.camera.focusCell(mid, { x: offset.x + pm.x - (b.l + b.r) / 2, y: offset.y + pm.y - (b.t + b.b) / 2 });
+    // the zoom only sets the camera's goal distance (it eases there), so the screen box cannot be measured again
+    // right after it: screen lengths shrink by the zoom factor, the mid cell's offset from the box centre with them
+    const z = k > 1 ? Math.min(maxOut, k) : 1;
+    if (z > 1) this.view.camera.zoom(z, (b.l + b.r) / 2, (b.t + b.b) / 2);
+    this.view.camera.focusCell(mid, { x: offset.x + (pm.x - (b.l + b.r) / 2) / z, y: offset.y + (pm.y - (b.t + b.b) / 2) / z });
   }
 
   /**
@@ -491,6 +494,7 @@ export class App implements PanelNav {
     this.view.setRoadPreview(null);
     this.ghosts = { gap: null, tut: null };
     this.ghostKey = '';
+    this.ghostFramed = '';
   }
 
   /** slot: the valley ledger to play in (free valley only; default the first ledger). */
@@ -572,6 +576,25 @@ export class App implements PanelNav {
     if (k === this.ghostKey) return;
     this.ghostKey = k;
     this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1, pave } : null);
+    if (!c) this.ghostFramed = '';
+    // a sett ghost that appears on an open sheet (the stall turned into a mud or span cure) is framed once too
+    else if (pave) this.frameGhost();
+  }
+
+  /**
+   * The sett ghost of a mud stretch or a stone span (D-132/D-134) in the part of the map the sheet leaves free
+   * (D-144, owner 2026-11-05): ONE camera move when it is off screen or under the sheet, as the tutorial frames its
+   * crossing (D-107); a cut under reduced motion (focusCell). `with` adds the sheet's subject (its gate) so both
+   * stay in view. Once per ghost: panning away afterwards is the player's choice.
+   */
+  private frameGhost(withCell = -1): void {
+    const c = this.ghosts.gap;
+    if (!c?.length || !this.ghostPave) return;
+    const k = c.join(',');
+    if (k === this.ghostFramed) return;
+    this.ghostFramed = k;
+    // a 49-cell stretch can be longer than the free map beside a side sheet: zoom out up to 3x for it
+    this.frameCells(withCell >= 0 ? [...c, withCell] : c, 3);
   }
 
   /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */
@@ -964,7 +987,9 @@ export class App implements PanelNav {
       if (!b) return;
       if (focus) this.stopFollow();
       this.sheets.open(buildingSheet(this, id));
-      this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
+      // a sheet that shows a sett ghost frames the ghost and the building's gate together (D-144); else the subject
+      if (this.ghosts.gap && this.ghostPave) { this.ghostFramed = ''; this.frameGhost(b.gate); }
+      else this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
     } else {
       const w = this.world.state.wagons.find((q) => q.id === id);
       if (!w) return;
@@ -980,7 +1005,7 @@ export class App implements PanelNav {
    * Map area the open sheet, the tool rail and the waybill leave visible (CSS px, canvas-relative), and the
    * offset of its centre from the canvas centre — where the camera puts the subject of a sheet (D-43).
    */
-  private visibleScene(): { rect: Rect; offset: ScreenOffset } {
+  private visibleScene(fit?: { w: number; h: number }): { rect: Rect; offset: ScreenOffset } {
     const c = this.canvas.getBoundingClientRect();
     const scene: Rect = { l: 0, t: 0, r: c.width, b: c.height };
     const obstacles: Rect[] = [];
@@ -997,7 +1022,7 @@ export class App implements PanelNav {
     // empty (its pieces sit in the .hud-top grid), so its pieces are the obstacles (layout check, D-62).
     for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.topbar > .menu-btn, .topbar > .chips, .topbar > .speed')) add(el);
     add(this.layers.hud.querySelector<HTMLElement>('.stall-row'));
-    const rect = freeRect(scene, obstacles);
+    const rect = freeRect(scene, obstacles, fit);
     return { rect, offset: { x: (rect.l + rect.r - scene.r) / 2, y: (rect.t + rect.b - scene.b) / 2 } };
   }
 

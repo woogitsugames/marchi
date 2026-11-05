@@ -237,7 +237,12 @@ export class Markers {
     for (const o of this.occ) {
       if (x + 24 > o.l && x - 24 < o.r && y > o.t && y - 56 < o.b) { under = true; break; }
     }
-    if (under !== b.el.classList.contains('is-under')) b.el.classList.toggle('is-under', under);
+    if (under !== b.el.classList.contains('is-under')) {
+      b.el.classList.toggle('is-under', under);
+      // a pin hidden under the HUD (rail, card, sheet) leaves the Tab order too (D-143, ui audit day 9 P2-6): a
+      // keyboard focus nobody can see; the same building is reached through the card or the panel above it
+      b.el.tabIndex = under ? -1 : 0;
+    }
   }
 
   /** Seconds stalled under the pin (-1: none); the text changes once a second at most. */

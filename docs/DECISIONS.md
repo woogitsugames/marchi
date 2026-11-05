@@ -1947,3 +1947,68 @@ their own depth material); grass tufts (per-instance colour) draw a mirror of `m
 render high 60 m 6 → 0, low 60 m 4 → 0, high 320 m 2 → 0; render allocations −22 % at high 60 m; same draws and
 programs; 0 differing pixels (low/high 60, high 320, winter night), no in-frame links on night/winter/quality switch.
 Test `tests/rebuilds.test.ts`. Render only, hashes unchanged. (decided)
+
+**D-137 — The focus ring is painted on chamfered (`.cf`) surfaces too (day 9e; ui audit day 9, P1).**
+`.cf` cut its corners with `clip-path` on the host, and a clip-path clips the element's own outline and box-shadow:
+the D-123 two-tone ring was computed (`:focus-visible` true, outline 2 px ink) but no pixel of it reached the screen
+on any wine button — "Naprawa" (Kup wóz, Postaw jeszcze, Wybrukuj, Wyłóż most), "Jeszcze raz", "Do dzieła",
+"Następna misja", exactly where D-118 moves focus. While focused, a `.cf` drops its clip and paints its frame colour
+as four corner-cut linear gradients (45°, leg `--c`, the same chamfer); the fill pseudo-element keeps its own
+`chamfer-in` clip, so the button looks the same and the ring lies outside it. Unfocused buttons are untouched (no
+risk to drop shadows that the clip used to hide). Verified by pixels, not styles: `npm run a11y` now Tabs to the
+fix button in XI and reads 20 samples 3 px (ink) and 5 px (outer pale band) outside its top and bottom edges
+(ink 20/20, pale 20/20). The docked hint under the button keeps 10 px clear of it so its text does not cover the ring. Shots `day9e-ring-{before,after}-412x915-pl.jpg`. (decided)
+
+**D-138 — Short landscape: the fix's hint docks beside the button; the chain's subject is a plain row (day 9e; ui audit day 9, P2-2/P2-3).**
+On a short side sheet the dock (D-100) covered the hint under the button, and for the pace cures that hint *is* the
+reason (D-115 "bez przerwy najwyżej 6,7/min", D-128 "Wóz 1 dojedzie po ładunek za 1:19", D-116 "błoto to nie
+przestój"). The hint now lives inside the dock in every layout (under the button on a tall sheet; portrait gains
+2–4 lines in the dock), and with `body.is-short` the dock is a two-column grid: the button (15 px, may wrap to three
+lines; 14 px, column 1.45fr so it stays at 48 px in pseudo) and the hint at 12.5 px, at most three lines (`line-clamp`), so the dock is no taller than
+before. The subject row of the folded chain (`.c-first .link.is-self`, a `div` since fa5676f) loses the kit card
+frame whose rails touched the letters at 26 px: icon, reason and clock on the parchment over a thin painted rule (a background line, not a border, block padding 3 px: the row is 2–3 px shorter and the root below keeps clear of the dock). The
+reason still wraps instead of an ellipsis (D-136). Shots `day9e-fixnote-{before,after}-*.jpg`. (decided)
+
+**D-139 — The Flip cover screen folds the cause chain like a short landscape sheet (day 9e; ui audit day 9, P2-4).**
+`is-short` (D-111) needed a side sheet; Flip (360×380, `is-mini`) has a bottom sheet and three links plus the dock
+left the root ("PRZYCZYNA") under "Zbuduj drogę". `is-short` is now also set for `is-mini`: the middle links fold
+behind "+N", the subject is the one-line row of D-138, the root shows above the dock (`chain-m6`, m3, m11, m13 at
+360×380 pl/pseudo, no new layout issue). Shots `day9e-flipchain-*.jpg`, `day9e-flipsheet-m3-after-360x380-pseudo.jpg`. (decided)
+
+**D-142 — The end letter's action line and buttons: under the signature in landscape, under the title on Flip (day 9e; ui audit day 9, P2-5).**
+The end letter is three parts in the markup (`.l-words` kicker/title/letter, `.l-record` seals/record/ledger,
+`.l-do` the D-130 action line and the buttons), `display: contents` on a tall screen (reading order unchanged). On
+a short landscape screen (the D-53 two-column letter) it is a grid: words top-left, record the whole right column,
+the action under the signature in the left column — de and pseudo no longer push the buttons past the fold. On Flip
+(`is-mini`) the letter is a flex column with the action and buttons right under the title; the castellan's words and
+the record follow and scroll, and the ledger keeps its worst cause only. `showModal` (modal.ts) now scrolls the
+focused button into view (`scrollIntoView({block:'nearest'})` after the focus without scroll), so the D-118 focus is
+never off screen. Won letters follow the same layout ("Następna misja" under the signature / title). Shots
+`day9e-lost-{before,after}-*.jpg`, `day9e-won-after-915x412-pl.jpg`. (decided)
+
+**D-143 — A pin hidden under the HUD leaves the Tab order (day 9e; ui audit day 9, P2-6).**
+A pin under the rail, the card or a sheet is faded out (`.bubble.is-under`, D-62) but stayed a Tab stop, so a
+keyboard focus landed on something invisible. When a pin goes under, its `tabIndex` becomes -1 (0 again when it comes
+out); the building stays reachable through the card, the alarm seal and the sheet above it. `npm run a11y` checks it at
+915×412 (m1 at 1:30: one pin under the HUD, 0 Tab stops on it in 40 Tabs; 3 before). (decided)
+
+**D-144 — The sett ghost of a mud stretch or stone span is framed once in the free map (day 9e; ui audit day 9, P2-7; owner 2026-11-05).**
+Owner decision: when a sheet shows the mud/span sett ghost (D-132/D-134) off screen or under the side sheet, the
+camera makes ONE move to frame those cells in the visible map area, like the tutorial's crossing (D-107); a cut, no
+glide, under reduced motion. The owner also approved the sett ghost's look as it is. Implementation: `App.go` for a
+building whose sheet sets a pave ghost frames the ghost plus the building's gate instead of the D-43 subject glide;
+a pave ghost that appears later on an open sheet is framed by `applyGhost`; once per ghost (`ghostFramed`, reset when
+the ghost goes), so panning away afterwards is the player's choice. `frameCells` (shared with the tutorial) was
+fixed on the way: the camera zoom only sets its goal distance, so the box measured right after it was the old one
+and the centring offset came out by the zoom factor; it now scales the offset by the factor instead of re-measuring.
+It may zoom out up to 3× for a ghost (2× for the tutorial), and `freeRect` takes an optional box size: the free part
+of the map that shows *that* box largest wins (a long flat stretch goes under a short side sheet, not into the tall
+column beside it). Measured in 3D (m3 at 2:50, 49 cells): 904×1000 hidden or under the sheet 14 → 0, 412×915 → 0.
+Shots `day9e-ghost-{before,after}-904x1000-pl.jpg`, `day9e-ghost-after-412x915-pl.jpg`. (decided — owner 2026-11-05)
+
+**D-145 — The side sheet on a tall unfolded screen is only as tall as its content (day 9e; ui audit day 9, P3-1).**
+On 904×1000 the side sheet started under the top bar (layout check) but kept the split dock's bottom edge above the
+rail (`body.is-split:not(.is-flex) .sheet`), so a short card (VII, III, a wagon) ended at ~500 px with ~350 px of
+empty parchment over the map. That rule now also sets `bottom: auto`: the sheet hangs under the bar, grows with its
+content up to the old max-height, and the map under it is free — which is where D-144 puts the ghost.
+Shots `day9e-sideheight-before-904x1000-pl.jpg` / `day9e-ghost-after-904x1000-pl.jpg`. (decided)

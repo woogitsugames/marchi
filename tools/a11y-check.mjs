@@ -6,6 +6,7 @@
 //   dialog    an open sheet is a named NON-modal dialog (D-118: the map and HUD work beside it), focus moves into it
 //             and returns on close
 //   letter    the opening letter is a named modal dialog with focus on its action, the rest of the UI is inert (D-118)
+//   ring      the focus ring is painted around a chamfered (.cf) button, read from the pixels (D-137)
 //   motion    with prefers-reduced-motion: reduce every running CSS animation / transition lasts ≤ 1 ms
 // Exit 1 on any failure. Usage: npm run a11y   (A11Y_URL=http://127.0.0.1:5173/ to use a running server)
 import { createRequire } from 'node:module';
@@ -30,7 +31,7 @@ const errors = [];
 const ok = (cond, what) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${what}`); if (!cond) failures.push(what); };
 
 async function open(q, opts = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
+  const ctx = await browser.newContext({ viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -64,6 +65,19 @@ try {
     ok(axPins.length === pins.length, `pins: all ${pins.length} reach the accessibility tree as buttons (${axPins.length})`);
     await ctx.close();
   }
+  // --- a pin hidden under the HUD (short landscape: under the rail or the card) is no Tab stop (D-143)
+  {
+    const { ctx, page } = await open('play=m1&ff=90&speed=0&view=flat', { viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(1500);
+    const under = await page.$$eval('button.bubble.is-under', (els) => els.length);
+    let hit = 0;
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press('Tab');
+      if (await page.evaluate(() => document.activeElement?.matches('.bubble.is-under') ?? false)) hit++;
+    }
+    ok(hit === 0, `pins: no Tab stop on the ${under} pin(s) under the HUD at 915x412 (${hit} stops)`);
+    await ctx.close();
+  }
   // --- a sheet is a named non-modal dialog (D-118); focus in and back
   {
     const { ctx, page } = await open('play=m1&ff=90&speed=0');
@@ -88,6 +102,53 @@ try {
       back = await page.evaluate(() => document.activeElement?.classList.contains('stall-eye') ?? false);
     }
     ok(back, 'dialog: focus returned to the eye button that opened it');
+    await ctx.close();
+  }
+  // --- the focus ring is painted, not only computed (D-137, ui audit day 9 P1): Tab to the wine fix button (a
+  //     chamfered .cf surface, whose clip-path used to clip the ring) and read the pixels just outside its edges:
+  //     the ink line at 2-4 px and the outer pale band at 4-6 px must both be there along the top and the bottom edge
+  {
+    const { ctx, page } = await open('play=m11&ff=300&speed=0&quality=low&dynres=0&view=flat');
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.stall-eye')?.click());
+    await page.waitForSelector('.sheet .fix-btn', { timeout: 10000 }).catch(() => null);
+    await page.waitForTimeout(600);
+    let found = false;
+    for (let i = 0; i < 40 && !found; i++) {
+      await page.keyboard.press('Tab');
+      found = await page.evaluate(() => document.activeElement?.classList.contains('fix-btn') ?? false);
+    }
+    ok(found, 'ring: Tab reaches the fix button');
+    if (found) {
+      await page.evaluate(() => document.activeElement.scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(300);
+      const r = await page.evaluate(() => { const b = document.activeElement.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; });
+      const pad = 12;
+      const clip = { x: Math.max(0, r.x - pad), y: Math.max(0, r.y - pad), width: r.w + 2 * pad, height: r.h + 2 * pad };
+      const png = (await page.screenshot({ clip })).toString('base64');
+      const res = await page.evaluate(async ({ png, r, clip }) => {
+        const img = new Image();
+        img.src = `data:image/png;base64,${png}`;
+        await img.decode();
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        const g = c.getContext('2d');
+        g.drawImage(img, 0, 0);
+        const sx = img.width / clip.width;
+        const lum = (x, y) => { const d = g.getImageData(Math.round((x - clip.x) * sx), Math.round((y - clip.y) * sx), 1, 1).data; return 0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2]; };
+        let ink = 0, pale = 0, n = 0;
+        for (let k = 1; k <= 10; k++) {
+          const x = r.x + 16 + (k * (r.w - 32)) / 11;
+          for (const [yi, yp] of [[r.y - 3, r.y - 5], [r.y + r.h + 3, r.y + r.h + 5]]) {
+            n++;
+            if (lum(x, yi) < 70) ink++;
+            if (lum(x, yp) > 190) pale++;
+          }
+        }
+        return { ink, pale, n };
+      }, { png, r, clip });
+      ok(res.ink >= res.n - 2 && res.pale >= res.n - 2, `ring: painted around the focused fix button (ink ${res.ink}/${res.n}, pale ${res.pale}/${res.n})`);
+    }
     await ctx.close();
   }
   // --- a letter is a real modal: named, focus on its action, everything under it inert, released on close

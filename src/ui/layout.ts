@@ -148,8 +148,9 @@ export function applyLayoutClasses(l: LayoutInfo): void {
   b.toggle('is-flex', !!l.flex);
   b.toggle('is-book', !!l.book);
   // a side sheet with at most 500 px of height under it (landscape phones, the HUD half in Flex mode): the cause
-  // chain folds its middle links so the root stays above the fix dock (D-111)
-  b.toggle('is-short', l.side && l.h - (l.flex ? l.flex.end : 0) <= 500);
+  // chain folds its middle links so the root stays above the fix dock (D-111); the Flip cover screen (is-mini,
+  // 360x380 with a bottom sheet) has even less room under its sheet head (D-139)
+  b.toggle('is-short', (l.side && l.h - (l.flex ? l.flex.end : 0) <= 500) || l.mini);
   document.body.dataset.screen = l.cls;
   const root = document.documentElement.style;
   if (l.flex) {
