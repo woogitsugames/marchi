@@ -12,6 +12,8 @@ const ALL = {
   // XI at 5:00: the farm's yard has waited ~40 s, all three wagons on the road, the forecast misses 3 seals
   'm11-card': { q: 'play=m11&ff=300&speed=0' },
   'm11-sheet': { q: 'play=m11&ff=300&speed=0', eye: true },
+  // I lost (two wagons, no crossing): the loss letter's action line for the #1 cause (D-130)
+  'm1-lost': { q: 'play=m1&ff=730&speed=0' },
 };
 const pick = args.filter((a) => ALL[a]);
 const cases = pick.length ? pick : Object.keys(ALL);

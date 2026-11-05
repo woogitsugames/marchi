@@ -1701,3 +1701,62 @@ the wagon body and its cargo still cast, so a wagon never "floats". Cargo on far
 50/80/110 m, low −27 % at 50 m and −7…−10 % farther; main pass unchanged. Visible on a phone only at 50 m on low
 (lighter horses on the road); the LOD1 shadow proxy variant was not chosen. Render only, hashes unchanged.
 (decided)
+
+**D-127 — The pace card's fleet kind: a long pickup wait with the whole fleet on the road cues "Kup wóz" (day 9a; mission XI, I at 60 s).**
+Why XI's 60 s player never met a wagon cue: XI's bottleneck is three wagons on a 60-cell haul, but no building ever
+*stalls* on it — the malthouse "waits for a delivery" (no stall: "(no card)" at 6 of 10 looks), the farm stands with a
+full yard in `WAITING_PICKUP` (a wagon is assigned, still on another trip), which is always calm/minor and has no
+cure, and `OUTPUT_FULL.NO_DESTINATION` there is calm because the malthouse is full of incoming grain (a wagon would
+not help it). `NO_WAGON.ALL_BUSY` appeared once in a whole run. Why I at 60 s got an unusable mud card: at 6:00–7:00
+the player holds 60 silver and the cobble stretch costs more (`validateRoad` → `NO_COINS`); the eye opened a sheet
+with a disabled button. New kind `fleet` of `paceCard` (`src/ui/paceCard.ts`), same slot rules as D-115 (only when no
+real stall needs the card; calm panel, never red): a building of the forecast's **bottleneck chain** (the bottleneck
+good and, upstream, its producers' inputs) has stood `WAITING_PICKUP` ≥ 20 s (`FLEET_WAIT_TICKS`), its assigned wagon
+is not held (`isHeld`), no wagon idles at a stable and the fleet was on the road (none idle, none held at a bridge)
+≥ 90 % of the last minute (`sampleFleet`, one bit per game second, UI-owned `WeakMap` like D-110's wait log, sampled
+from the app's `onTick`), the forecast is ready and has an `aim` (a better seal in reach) at least **3:30**
+(`FLEET_ROOM_TICKS`) away, a wagon is affordable and would not cost the stone bridge before the ice (`iceBeforeWagon`,
+D-117). Card: "Gospodarstwo: pełno zboża od 0:50, wszystkie 3 wozy w trasie — kup wóz" (time in 10 s steps for the
+live region); the eye opens the farm's sheet with "Kup wóz −30" and why. A mud card whose cobbles the player cannot
+pay for (`NO_COINS`; stone or rank refusals keep it, D-116) yields to the fleet card; with no fleet card it stays.
+Each gate was measured (all m1..m13, eye/eye+ 10/30/60 s, scan+, letter+eye+; `tools/balance-night6.ts --no-search`,
+new `FLEET=0` and `EYE_PHASE=s` switches): without the room/chain/held gates the wagon cue cost seals in I, II, VI, X,
+XI, XII (a late wagon often *slows* these maps — X loses 3★ from one wagon at 4:00 or 6:00); room 150–190 s or 240 s
+still lost X; 200–225 s lost nothing. Result (0 seal losses at phase 0, 5 and 20 s): **XI eye 10/30/60 s 2/2/1★
+(9,87/10,12/10,94) → 2/2/2★ (9,61/10,07/10,07)**; IV eye 60 s 2 → 3★ (7,34); II eye+ 10 s 2 → 3★, II letter+eye+
+2 → 3★; IX/X/XI faster at the same seals; every other row identical. XI's 3★ needs the wagons before ~2:00 (measured:
+k wagons at ≤ 2:00 → k ≥ 3 gives 3★; at ≥ 3:00 nothing beats 2★), before the forecast can tell (it needs a minute
+of deliveries; XI's first beer reaches the castle at ~4:00). **I at 60 s stays 1★**: after 5:00 no wagon helps in I
+(extra wagons at 5:30–9:00 give 11,65–12,00 min, the one-lane bridge jams) — the mud card now names the shortfall
+honestly or yields; I's 60 s gap is earlier (see D-128). UI only, hashes unchanged. Test `tests/fleet-card.test.ts`;
+shots `docs/shots/day9a-m11-*.jpg` (`tools/day9a-shots.mjs`). (decided)
+
+**D-128 — A long "waiting for pickup" gets "Kup wóz" on its own sheet, under the fleet rule (day 9a; first-10-minutes-c N2; decided by coordinator — owner to confirm).**
+Research c: in mission I `WAITING_PICKUP` is the #1 time loss on both end letters and its sheet offered no cure.
+Coordinator's call: make a long pickup wait (≥ ~30 s) actionable with "Kup wóz" + the wagon's travel time when every
+wagon is busy and one is affordable, calm otherwise. Measured before shipping it as a generic rule
+(`pickupCue`: ≥ 30 s, assigned wagon ≥ 10 s away and not held, no idle wagon, affordable, not before the ice):
+**as the sheet's cure only — 7 seal losses** (VI, VIII, XII scan 3 → 2★; X eye/eye+/scan/letter 30 s 3 → 2★);
+**also lifted out of the calm pins (non-minor ranking) — 21 losses** (IV eye 30/60 s 2 → 1★, VIII 3 → 2★ at 30/60 s,
+XII 3 → 2★ …); adding the fleet-busy share and a "3:30 before 2★" gate still lost 7. A wagon bought on a pickup wait
+mid-game makes several maps slower (dispatcher chaos), so the shipped rule is the D-127 gate: the sheet of **any** yard
+that meets the fleet card's conditions (not only the one the card names, `fleetCueFor`) shows "Kup wóz −30" with
+"Wóz 2 dojedzie po ładunek za 0:40; drugi wóz odbierze go wcześniej." plus the D-127 reason. Outside it the wait
+stays calm and minor, never critical (`isCritical` unchanged: a wagon *is* on its way). Measured: identical to D-127
+(0 losses). Mission I's tutorial window (2:00–5:00, forecast not ready) therefore still has no wagon cue on a pickup
+wait — **owner to decide** whether to accept seal losses elsewhere for it. (decided by coordinator — owner to confirm)
+
+**D-129 — The tutorial's end closes the sheets (day 9a; first-10-minutes-c N1).** Step 6 leaves the castle sheet open;
+in portrait it covered the worst-stall card and the tool rail, so the first stall after the tutorial was invisible.
+`host.finish('done')` now calls `sheets.closeAll()` (next to putting the road tool away); a skipped tutorial keeps
+the player's own sheet. UI only. (decided by coordinator — owner to confirm)
+
+**D-130 — The loss letter gives one action line for the #1 cause; I's loss letter no longer advises a crossing (day 9a; first-10-minutes-c N3).**
+Under "Gdzie stracono czas" a lost contract shows one line from the cause's kind (`lossActionKey`, `src/ui/stallKinds.ts`):
+pickup wait / all busy / full yard without a wagon → "Następnym razem: Gospodarstwo — 4:12 czekania na wóz. Kup wóz
+wcześniej (−30)."; no road / unreachable → link at once (the eye shows the stretch); bridge jam/ice → stone bridge or
+a second crossing; full granary / nowhere to deliver → granary or link the customer; else "open «Dlaczego stoi?» at
+the first stall". The wording avoids gendered verbs (any building name fits). Mission I's authored loss text no
+longer says "check that both banks have a road" (pl/en): "Spójrz niżej, co stało najdłużej, i od tego zacznij
+następnym razem." Other languages keep their old line until translated. Keys `end.act.*` pl/en (PENDING_KEYS).
+Test `tests/loss-action.test.ts`. UI/content only. (decided by coordinator — owner to confirm)
