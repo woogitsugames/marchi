@@ -65,7 +65,14 @@ export function showModal(layer: HTMLElement, scrim: HTMLElement, focusSel: stri
   h.observer.observe(layer, { childList: true });
   h.observer.observe(scrim, { attributes: true, attributeFilter: ['class'] });
   // the focused element is inert now: move into the letter at once and again after layout (fonts, clip-path)
-  const focus = (): void => { scrim.querySelector<HTMLElement>(focusSel)?.focus({ preventScroll: true }); };
+  // ...and bring it into view inside the scrolling scrim: on a short screen the letter's buttons can sit below
+  // the fold (Flip 360x380, D-140), and a focus nobody can see is no focus
+  const focus = (): void => {
+    const el = scrim.querySelector<HTMLElement>(focusSel);
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'nearest' });
+  };
   focus();
   requestAnimationFrame(focus);
 }

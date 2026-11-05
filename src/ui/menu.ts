@@ -594,10 +594,16 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   // a won contract leads on to the next one (day 6: the way to mission II went through the menu)
   const next = won && act.next ? nextMission(st.mission.id) : null;
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'end-title' });
+  // three parts (D-140): the castellan's words, the record, what to do. Portrait reads them in that order; a short
+  // landscape screen sets the record beside the words and the action under the signature, the Flip cover screen
+  // lifts the action right under the title (the rest scrolls below it)
+  letter.classList.add('l-parts');
   letter.innerHTML = `${letterSeal(won)}
+    <div class="l-words">
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2 id="end-title" dir="auto">${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
     ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
+    </div><div class="l-record">
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">
       <dt>${esc(t('contract.time'))}</dt><dd>${bdi(ticksClock(st.mission.endTick >= 0 ? st.mission.endTick : st.tick))}${def ? `<span class="of-limit">${bdi(`/ ${clock(def.deadlineMin * 60)}`)}</span>` : ''}</dd>
@@ -605,12 +611,13 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
       <dt>${esc(t('contract.left'))}</dt><dd>${bdi(fmtInt(st.coins))}</dd>
     </dl>
     ${c ? causesHtml(world) : ''}
+    </div><div class="l-do">
     ${c && !won ? lossActionHtml(world) : ''}
     ${next ? `<div class="actions l-next"><button class="btn primary cf" data-a="next"><span class="ln-t">${esc(t('contract.next'))}</span><span class="ln-s">${esc(missionTitle(next))}</span></button></div>` : ''}
     <div class="actions">
       <button class="btn${next ? '' : ' primary'} cf" data-a="again">${esc(t('contract.again'))}</button>
       <button class="btn cf" data-a="menu">${esc(t('contract.menu'))}</button>
-    </div>`;
+    </div></div>`;
   letter.style.clipPath = deckle('bottom', 31, 6, 30);
   letter.querySelector('[data-a="again"]')!.addEventListener('click', act.again);
   letter.querySelector('[data-a="menu"]')!.addEventListener('click', act.menu);

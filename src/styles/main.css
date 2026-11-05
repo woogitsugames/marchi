@@ -2263,6 +2263,8 @@ body.is-clear .clear-restore {
 }
 /* the old dark plate behind a selected language / segment gives way to the active card; the wax diamond stays */
 .seg .btn.is-on, .lang-grid .btn.is-on { color: var(--ink); }
+/* the three parts are layout-free on a tall screen (words, record, action in reading order) */
+.letter.l-parts :is(.l-words, .l-record, .l-do) { display: contents; }
 /* a short landscape screen: the end letter (with its record and ledger) reads in two columns, so its
    buttons stay on screen without scrolling (D-53) */
 @media (max-height: 500px) and (min-width: 640px) {
@@ -2271,7 +2273,26 @@ body.is-clear .clear-restore {
   .letter:has(.kv) > * { break-inside: avoid; }
   .letter:has(.kv) .kv { break-before: column; }
   .letter:has(.kv) h2 { font-size: 28px; }
+  /* D-140 (ui audit day 9 P2-5): the end letter's action line and buttons go under the signature in the left
+     column, beside the record, so a long ledger or a translated text no longer pushes them past the fold */
+  .letter.l-parts:has(.kv) {
+    column-count: auto; display: grid; column-gap: 28px; align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto 1fr;
+  }
+  .letter.l-parts .l-words { display: block; grid-area: 1 / 1; }
+  .letter.l-parts .l-record { display: block; grid-area: 1 / 2 / 3 / 3; }
+  .letter.l-parts .l-do { display: block; grid-area: 2 / 1; }
+  .letter.l-parts .lg-act { margin-block-start: 0; }
 }
+/* the Flip cover screen (360x380): title, then what to do and the buttons, then the words and the record below them
+   (the letter scrolls inside its scrim); the ledger keeps its worst cause only (D-140) */
+body.is-mini .letter.l-parts { display: flex; flex-direction: column; }
+body.is-mini .letter.l-parts :is(.l-kicker, h2) { order: -2; }
+/* room for the focus ring of the button right under the title */
+body.is-mini .letter.l-parts h2 { margin-block-end: 12px; }
+body.is-mini .letter.l-parts .l-do { display: block; order: -1; margin-block-end: 12px; }
+body.is-mini .letter.l-parts .lg-act { margin: 0 0 8px; }
+body.is-mini .letter.l-parts .ledger li:nth-child(n + 2) { display: none; }
 
 /* valley chronicle (D-57): a ledger page — recorded entries sealed, the rest by title in faded ink */
 .chron-intro { margin: 0 0 10px; font-size: 14px; color: var(--ink-soft); }
