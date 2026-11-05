@@ -9,6 +9,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 - [ ] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02.
 
 ## Do zrobienia
+- [ ] P3 — (dzień 9h) Duch budowy podaje koszt drogi dojazdowej liczony przed postawieniem (`accessRoad`, od stajni), a arkusz po postawieniu proponuje krótszą (`suggestLinkToStable` od bramy) — np. „droga 5” vs 4. Ujednolicić albo opisać jako „ok.”.
 - [x] P2 — (zrobione dzień 9h, D-160/D-161/D-162; research first-10-minutes-e) N7 nagłówek nadwyżki „nikt jej teraz nie potrzebuje”; N8 arkusz po rozwiązanym „wszystkie wozy zajęte” trzyma „Kup wóz” 20 s; N6 krótki poziom: ciało arkusza kończy się nad dokiem, `layout-check` `under-fix`.
 - [ ] P2 — (dzień 9h, D-163, **decyzja właściciela**) Dolina: ranga 1 dla gracza „tylko karta” 11,3–12,8 min (cel < 8 min nieosiągalny kartą: po gospodarstwie wymóg towarów jest spełniony, brakuje renomy 200; nawet 2× producenci + 12 wozów → 9,7 min, DECENT 10,4). Do wyboru: próg renomy rangi 1 (np. 110–120, sim/hasze doliny) albo karta „renoma” bez czynności. Karta rangi i floty w 30 min nie wystąpiły naraz ani razu.
 - [ ] P3 — (dzień 9h) Dymek ducha „30 srebra + droga 5”, a arkusz po postawieniu proponuje drogę za 4 — ta sama droga liczona inaczej (`buildTool.ts` vs `suggestLinkToStable`); sprawdzić źródło liczby.

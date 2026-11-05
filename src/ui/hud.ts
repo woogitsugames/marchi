@@ -589,7 +589,8 @@ export class Hud {
       this.root.classList.add('has-stall');
       this.stallRow.classList.remove('is-crit');
       this.stallRow.classList.add('is-pace');
-      setText(this.stallKick, t(pc.k === 'rank' ? 'hud.rankCard' : 'hud.pace'));
+      // no order in the free valley: its fleet card serves the rank, not an order's pace (day 9h)
+      setText(this.stallKick, t(pc.k === 'rank' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
       const name = buildingName(world, pc.producer);
       if (pc.k === 'rank') {
         // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
