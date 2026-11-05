@@ -1832,4 +1832,7 @@ opacity, as low contrast) — screenshots are unaffected (a capture forces a fra
 waits (≤ 30 s) until the top sheet is fully up after every settle, and so does `tools/a11y-audit.mjs`; first10 also
 shoots every Why sheet without a fix (not only the first three), writes an `EMPTY SCREEN` diagnostic when a sheet counts
 0 words, and ignores elements scrolled out of a scroll/clip container (words, covered targets, overlaps) — run c's
-A5 "Ustawienia covers rows XIII / IV–V" was such a row. UI/tools only, hashes unchanged. (decided)
+A5 "Ustawienia covers rows XIII / IV–V" was such a row (menu now: no covered target, no overlap). Portrait rerun
+with the fixes (`docs/research/shots-first10d/`): no empty screen in 10 Why sheets, every "pełny magazyn, brak wozu"
+and "wszystkie wozy zajęte" offered "Kup wóz" (5 bought, run c: 3), mission I **won** at 7174 ticks (run c portrait
+lost by 2 breads), "Następna misja" → II. UI/tools only, hashes unchanged. (decided)
