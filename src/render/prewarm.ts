@@ -217,16 +217,21 @@ export class ShaderPrewarm {
 
   /**
    * The depth pass draws into the shadow map: compile with a render target bound (linear output, no tone
-   * mapping), as WebGLShadowMap does.
+   * mapping), as WebGLShadowMap does. It also draws without a scene (`renderBufferDirect(cam, null, ...)`),
+   * so without fog: fog is part of the program key, and depth programs compiled under the scene's fog were
+   * never the ones the shadow pass used (D-136). Lights still come from `scene` (the shadow count is in the key).
    */
   private compileDepth(group: Group, camera: Camera, scene: Scene): void {
     const r = this.renderer;
     const prev = r.getRenderTarget();
+    const fog = scene.fog;
     this.depthTarget ??= new WebGLRenderTarget(1, 1);
     r.setRenderTarget(this.depthTarget);
+    scene.fog = null;
     try {
       r.compile(group, camera, scene);
     } finally {
+      scene.fog = fog;
       r.setRenderTarget(prev);
     }
   }
