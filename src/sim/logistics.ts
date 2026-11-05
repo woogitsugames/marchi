@@ -4,6 +4,7 @@ import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TI
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { fairPercent, orderOutstanding } from './events';
+import { MISSIONS } from './missions';
 import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Contract, Good, Wagon } from './types';
 
@@ -31,7 +32,9 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
  */
 export const RULES = {
   a: 1, aMargin: 0, aRatio: 0, aMinFree: 0, aCastle: 1, aInput: 1, aPush: 1, aMarket: 1, aTopUpOnly: 0, aNoBottleneck: 0,
-  c: 1, cStrict: 0,
+  aMaxDue: 0, aFreeCount: 0, c: 1, cStrict: 0, cFreeCount: 0,
+  /** gFleet: rules A and C act only once the fleet is larger than the mission's starting fleet + gFleet - 1. */
+  gFleet: 0,
 };
 
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
@@ -140,6 +143,7 @@ export function dispatch(world: World): void {
   const pushFail = new Map<string, PushFail>();
   const held = new Map<string, Held>();
   const contract = st.mission.contract && st.mission.result === 'running' ? st.mission.contract : null;
+  const gateOpen = RULES.gFleet === 0 || st.wagons.length >= (MISSIONS[st.mission.id]?.wagons ?? 0) + RULES.gFleet;
 
   // --- demands
   const demands: Demand[] = [];
@@ -157,7 +161,7 @@ export function dispatch(world: World): void {
     // what is on the way), or another workshop on the map uses it. Without this, a sawmill whose planks
     // are all delivered keeps pulling wood one unit at a time and takes wagons from the chains that are
     // still short (mission I: the bread chain lost the contract after a late extra wagon).
-    const unwanted = RULES.c && contract !== null && !outputGoods(b.type).some((og) => stillWanted(world, contract, og));
+    const unwanted = RULES.c && gateOpen && free.length >= RULES.cFreeCount && contract !== null && !outputGoods(b.type).some((og) => stillWanted(world, contract, og));
     if (unwanted && !RULES.cStrict) continue;
     for (const g of inputGoods(b.type)) {
       if (unwanted && b.stock[g] + b.incoming[g] >= (def.recipe?.inputs[g] ?? 1)) continue;
@@ -202,7 +206,7 @@ export function dispatch(world: World): void {
       if (t < bestT) { bestT = t; best = w; }
     }
     if (!best) return null;
-    if (!RULES.a) return best;
+    if (!RULES.a || !gateOpen) return best;
     if (ctx === 'castle' ? !RULES.aCastle : ctx === 'input' ? !RULES.aInput : ctx === 'push' ? !RULES.aPush : !RULES.aMarket) return best;
     if (ctx === 'input' && d && RULES.aTopUpOnly) {
       const starvingNow = d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1);
@@ -212,7 +216,7 @@ export function dispatch(world: World): void {
       const castle = buildingById(world, contract.castle);
       if (castle && outputGoods(d.b.type).some((og) => contractTarget(contract, og) - castle.stock[og] - castle.incoming[og] > 0)) return best;
     }
-    if (bestT < RULES.aMinFree) return best;
+    if (bestT < RULES.aMinFree || free.length < RULES.aFreeCount) return best;
     let due: Wagon | null = null, dueT = bestT;
     for (const w of st.wagons) {
       const j = w.job;
@@ -225,6 +229,7 @@ export function dispatch(world: World): void {
       if (t < dueT) { dueT = t; due = w; }
     }
     // the status shows when the busy wagon should stand at the source (whole ticks, rounded up)
+    if (due && RULES.aMaxDue > 0 && dueT > RULES.aMaxDue) due = null;
     if (due && (bestT - dueT < RULES.aMargin || bestT < RULES.aRatio * dueT)) due = null;
     if (due) return { wagon: due.id, at: st.tick + Math.max(1, Math.floor(dueT * TICK_HZ) + 1) };
     return best;

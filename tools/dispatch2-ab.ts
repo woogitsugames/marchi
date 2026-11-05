@@ -7,7 +7,7 @@
 //   bot1   = `npm run bot` (mission I scripted bot) seals/minutes;
 //   survey = tools/wagon-monotone.ts (eye-30/60 + one wagon at 1:00..9:00): slower>3 s, seal losses,
 //            and the plain eye-30/60 player's seal total / minutes (must not drop below baseline).
-// BAL=1 adds tools/balance-night6.ts --no-search seal sum (slow).
+// FAST=1 skips bot and survey for a variant that already fails a ladder test.
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +39,7 @@ async function child(rules: Partial<Rules>): Promise<void> {
   for (const tc of registry) {
     try { await tc.fn(); } catch (e) { fails.push(`${tc.name.slice(0, 12)}: ${(e as Error).message.slice(0, 110)}`); }
   }
+  if (process.env.FAST && fails.length) { console.log('RESULT ' + JSON.stringify({ ladderFails: fails, bot1: '-', survey: { total: 0, worse: 0, loss: 0, gain: 0, mean: 0, worst: 0, baseSeals: 0, baseMin: 0, wins: 0, lossAt: [] } })); return; }
   const { runBot } = await import('./bot');
   const bot = runBot({ checkEvery: 50 });
   const { MISSIONS } = await import('../src/sim/index');
