@@ -18,6 +18,8 @@ const PRE = `const a = window.__marchia.app, w = a.world, W = w.terrain.w;
   const road = (surface) => { const cells = []; for (let y = 25; y <= 57; y++) cells.push(y * W + 39); a.loop.enqueue({ t: 'road', surface, cells }); };
   const wagons = (n) => { for (let i = 0; i < n; i++) a.loop.enqueue({ t: 'buyWagon', stable: stable.id }); };
   const open = () => { w.state.town.rank = 4; w.state.coins = Math.max(w.state.coins, 6000); };
+  // the camera to a cell, then closer (render shots, no sheet)
+  const look = (cell, z = 0.45) => { a.view.camera.focusCell(cell, a.visibleScene().offset); setTimeout(() => { const p = a.view.cellToScreen(cell); a.view.camera.zoom(z, p.x, p.y); }, 2500); };
   const letterOff = () => setTimeout(() => document.querySelector('.rank-letter-wrap')?.click(), 50);`;
 const ALL = {
   // before rank 4: the post's sheet says when it opens
@@ -28,9 +30,26 @@ const ALL = {
   'post-noroad': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); tick(30); letterOff(); a.go('building', post.id, true);` },
   // five minutes of trade: prices at the post against the castle, the last sales
   'post-sales': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(4); tick(3000); letterOff(); a.go('building', post.id, true);` },
+  // RTL: the post's sheet in Arabic
+  'post-sales-ar': { lang: 'ar', sizes: [[412, 915]], q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(4); tick(3000); letterOff(); a.go('building', post.id, true);` },
   // the same sheet scrolled to the last sales
   'post-sales-recent': { q: 'play=sandbox&ff=60&speed=0', scroll: '.post-sales', run: `${PRE} open(); road(1); wagons(4); tick(3000); letterOff(); a.go('building', post.id, true);` },
   // "Targ i ranga": the post's line and its button
+  // the bottleneck card: rank 3, one farm for three mills; four minutes of samples
+  'neck-grain': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} w.state.town.rank = 3; w.state.coins = 6000; for (const g of Object.keys(w.state.ledger.sold)) w.state.ledger.sold[g] += 1;
+    for (const [t, x] of [['farm', 55], ['mill', 58], ['mill', 52], ['mill', 49]]) a.loop.enqueue({ t: 'place', type: t, x, y: 25, facing: 2 });
+    wagons(4); tick(2600); letterOff();`, wait: 4000 },
+  // the same, the eye tapped: the mill that waited longest, with "Postaw jeszcze: Gospodarstwo"
+  'neck-sheet': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} w.state.town.rank = 3; w.state.coins = 6000; for (const g of Object.keys(w.state.ledger.sold)) w.state.ledger.sold[g] += 1;
+    for (const [t, x] of [['farm', 55], ['mill', 58], ['mill', 52], ['mill', 49]]) a.loop.enqueue({ t: 'place', type: t, x, y: 25, facing: 2 });
+    wagons(4); tick(2600); letterOff(); setTimeout(() => document.querySelector('.stall-card .stall-eye')?.click(), 300);`, wait: 4000 },
+  // the post's model in 3D: closed before rank 4, open after (no sheet)
+  'model-closed': { three: true, wait: 7000, q: 'play=sandbox&ff=60&speed=0', run: `${PRE} look(59 * W + 39);` },
+  'model-open': { three: true, wait: 7000, q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(4); tick(600); letterOff(); look(59 * W + 39);` },
+  // winter: ice closes the wooden span on the way to the post; the real card "przęsło" and the floes
+  'post-ice': { three: true, wait: 7000, q: 'play=sandbox&ff=2400&speed=0', run: `${PRE} open(); road(1); wagons(6); letterOff();
+    let held = null; for (let i = 0; i < 9000 && !held; i++) { a.loop.tickOnce(); if (i % 50 === 0) held = w.state.wagons.find((q) => q.status.k === 'BRIDGE_CLOSED' && q.job && q.job.to === post.id && w.state.tick - q.status.since > 250); }
+    look(35 * W + 39, 0.6);` },
   'post-market': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(2); tick(600); letterOff(); a.openMarket();` },
 };
 const pick = args.filter((a) => ALL[a]);
@@ -44,11 +63,11 @@ for (const id of cases) for (const [w, h] of sizes.length ? sizes : ALL[id].size
   page.setDefaultNavigationTimeout(180000);
   page.on('pageerror', (e) => errors.push(`${id} ${w}x${h}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`${id} ${w}x${h}: ${m.text()}`); });
-  await page.goto(`${base}?${c.q}&quality=low&dynres=0&debug=1&lang=${c.lang ?? 'pl'}&view=flat`);
+  await page.goto(`${base}?${c.q}&quality=low&dynres=0&debug=1&lang=${c.lang ?? 'pl'}${c.three ? '' : '&view=flat'}`);
   await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 180000 });
   await page.waitForTimeout(800);
   if (c.run) await page.evaluate(c.run);
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(c.wait ?? 1500);
   if (c.scroll) {
     await page.evaluate((sel) => document.querySelector(`#sheets .sheet:last-child ${sel}`)?.scrollIntoView({ block: 'center' }), c.scroll);
     await page.waitForTimeout(400);
