@@ -1,0 +1,180 @@
+card-10+grow       seed default rank 3 [9.5 / 24.5 / 39.5 / -1 / -1] earned 5634 coins 42 wagons 165 bld 33 orders 2/0 merch 1 chron 23 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon":144,"wagon:card":19,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":1,"grow:woodcutter":4,"grow:sawmill":3,"build:fisher":1,"build:quarry":1,"grow:fisher":8,"granary":3}
+    next: renown 5634/7200 goods 7/7 flow 172/120
+    slot/s: empty 419 calm 1544 actionable 1637 no-cure 0
+    subjects: warehouse:STORAGE_FULL 1570s | sawmill:WAITING_PICKUP(calm) 649s | woodcutter:WAITING_PICKUP(calm) 392s | farm:WAITING_PICKUP(calm) 227s | warehouse:STORAGE_FULL(calm) 93s | bakery:WAITING_PICKUP(calm) 59s
+    looks (359):
+      128x warehouse:STORAGE_FULL(crit) -> wagon
+      50x sawmill:WAITING_PICKUP(calm) -> nothing
+      35x (no card)(calm) -> nothing
+      25x woodcutter:WAITING_PICKUP(calm) -> nothing
+      21x warehouse:STORAGE_FULL(crit) -> wagon?NO_COINS
+      19x farm:WAITING_PICKUP(calm) -> nothing
+      11x card:fleet:woodcutter(calm) -> wagon:card
+      8x sbGrow:fisher(calm) -> grow:fisher
+    acts: 0:10 build:farm, 1:20 wagon, 1:40 wagon:card, 1:50 wagon:card, 6:30 wagon:card, 6:40 wagon:card, 9:40 build:mill, 9:50 build:bakery, 12:50 grow:farm, 13:00 wagon:card, 13:10 grow:mill, 13:20 grow:bakery, 13:30 grow:farm, 13:40 grow:mill, 14:20 wagon:card, 15:00 grow:woodcutter, 16:10 wagon:card, 16:20 wagon:card, 16:40 wagon:card, 17:20 grow:sawmill, 17:30 grow:woodcutter, 18:10 wagon, 18:20 wagon, 18:30 wagon, 18:40 wagon?NO_COINS, 19:40 grow:sawmill, 19:50 grow:woodcutter, 20:40 grow:sawmill, 20:50 grow:woodcutter, 21:00 wagon:card, 21:10 wagon:card, 23:40 wagon:card, 23:50 wagon:card, 24:00 wagon:card, 24:10 wagon:card, 24:20 wagon:card, 24:30 wagon, 24:40 wagon, 24:50 wagon, 25:00 build:fisher, 25:10 build:quarry, 26:30 grow:fisher, 26:40 grow:fisher, 26:50 grow:fisher, 27:00 grow:fisher, 27:10 grow:fisher, 27:20 grow:fisher, 27:30 grow:fisher, 27:40 grow:fisher, 27:50 wagon, 28:00 wagon, 28:10 wagon, 28:20 wagon, 28:30 wagon, 28:40 wagon?NO_COINS, 28:50 granary, 29:30 grow?fail:fisher, 30:00 wagon:card, 30:10 granary, 31:10 wagon:card, 31:20 wagon:card, 31:30 wagon, 31:40 wagon, 31:50 wagon, 32:00 wagon, 32:10 wagon, 32:20 wagon, 32:30 wagon, 32:40 wagon, 32:50 wagon, 33:00 wagon, 33:10 wagon, 33:20 wagon, 33:30 wagon, 33:40 wagon, 33:50 wagon, 34:00 wagon, 34:10 wagon, 34:20 wagon, 34:30 wagon, 34:40 wagon, 34:50 wagon, 35:00 wagon, 35:10 wagon, 35:20 wagon, 35:30 wagon, 35:40 wagon, 35:50 wagon, 36:00 wagon?NO_COINS, 36:10 wagon, 36:20 wagon, 36:30 wagon, 36:40 wagon, 36:50 wagon, 37:00 wagon, 37:10 wagon, 37:20 wagon, 37:30 wagon, 37:40 wagon, 37:50 wagon, 38:00 wagon, 38:10 wagon, 38:20 wagon?NO_COINS, 38:30 wagon, 38:40 wagon, 38:50 wagon, 39:00 wagon, 39:10 wagon, 39:20 wagon, 39:30 wagon?NO_COINS, 39:40 wagon, 39:50 wagon, 40:00 wagon, 40:10 wagon, 40:20 wagon?NO_COINS, 40:30 wagon?NO_COINS, 40:40 wagon, 40:50 wagon, 41:00 wagon?NO_COINS, 41:10 wagon?NO_COINS, 41:20 wagon, 41:30 wagon, 41:40 wagon, 41:50 wagon, 42:00 wagon, 42:10 wagon, 42:20 wagon, 42:30 wagon, 42:40 wagon, 42:50 wagon, 43:00 wagon, 43:10 wagon, 43:20 wagon?NO_COINS, 43:30 wagon, 43:40 wagon, 43:50 wagon, 44:00 wagon?NO_COINS, 44:10 wagon, 44:20 wagon, 44:30 wagon?NO_COINS, 44:40 wagon, 44:50 wagon, 45:00 wagon, 45:10 wagon?NO_COINS, 45:20 wagon?NO_COINS, 45:30 wagon, 45:40 wagon, 45:50 wagon?NO_COINS, 46:00 wagon?NO_COINS, 46:10 wagon, 46:20 wagon, 46:30 wagon, 46:40 wagon, 46:50 wagon, 47:00 granary, 49:40 wagon, 50:10 wagon, 50:20 wagon, 50:30 wagon, 50:40 wagon, 50:50 wagon, 51:00 wagon, 51:10 wagon, 51:20 wagon, 51:30 wagon, 51:40 wagon, 51:50 wagon, 52:00 wagon, 52:10 wagon, 52:20 wagon, 52:30 wagon, 52:40 wagon, 52:50 wagon, 53:00 wagon, 53:10 wagon, 53:20 wagon, 53:30 wagon, 53:40 wagon, 53:50 wagon, 54:00 wagon, 54:10 wagon, 54:20 wagon, 54:30 wagon, 54:40 wagon, 54:50 wagon, 55:00 wagon, 55:10 wagon, 55:20 wagon, 55:30 wagon, 55:40 wagon, 55:50 granary?fail, 56:00 wagon, 56:10 wagon, 56:20 wagon?NO_COINS, 56:30 wagon, 56:40 wagon?NO_COINS, 56:50 wagon, 57:00 wagon, 57:10 wagon, 57:20 wagon, 57:30 wagon?NO_COINS, 57:40 wagon, 57:50 wagon, 58:00 wagon, 58:10 wagon?NO_COINS, 58:20 wagon, 58:30 wagon, 58:40 wagon, 58:50 wagon, 59:00 wagon?NO_COINS, 59:10 wagon, 59:20 wagon?NO_COINS, 59:30 wagon, 59:40 wagon, 59:50 wagon
+
+card-30+grow       seed default rank 3 [8.9 / 25.2 / 44.2 / -1 / -1] earned 4467 coins 3506 wagons 24 bld 20 orders 2/0 merch 1 chron 23 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":20,"wagon":2,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":1,"grow:woodcutter":1,"grow:sawmill":1,"build:fisher":1,"build:quarry":1,"grow:fisher":2,"granary":1}
+    next: renown 4467/7200 goods 7/7 flow 132/120
+    slot/s: empty 1152 calm 2414 actionable 34 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 842s | sawmill:WAITING_PICKUP(calm) 743s | bakery:WAITING_PICKUP(calm) 421s | farm:WAITING_PICKUP(calm) 232s | fisher:WAITING_PICKUP(calm) 69s | mill:WAITING_PICKUP(calm) 53s
+    looks (119):
+      31x (no card)(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      15x bakery:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      8x card:fleet:woodcutter(calm) -> wagon:card
+      6x card:fleet:sawmill(calm) -> wagon:card
+      5x farm:WAITING_PICKUP(calm) -> nothing
+      4x card:fleet:farm(calm) -> wagon:card
+    acts: 0:30 build:farm, 2:00 wagon:card, 2:30 wagon:card, 4:00 wagon, 4:30 wagon:card, 6:00 wagon:card, 9:00 build:mill, 9:30 build:bakery, 12:30 grow:farm, 13:00 grow:mill, 13:30 grow:bakery, 14:00 grow:farm, 14:30 wagon:card, 15:00 wagon:card, 15:30 wagon:card, 16:00 grow:mill, 18:00 wagon:card, 18:30 wagon:card, 19:00 wagon:card, 19:30 wagon:card, 21:30 grow:woodcutter, 23:30 grow:sawmill, 24:00 wagon:card, 25:30 build:fisher, 26:00 build:quarry, 27:00 wagon:card, 27:30 grow:fisher, 28:00 grow:fisher, 28:30 wagon:card, 29:00 wagon:card, 29:30 wagon:card, 30:00 wagon:card, 36:00 wagon:card, 36:30 wagon:card, 37:30 wagon:card, 39:00 wagon, 41:00 granary
+
+card-60+grow       seed default rank 3 [10.4 / 28.5 / 50 / -1 / -1] earned 3875 coins 3074 wagons 21 bld 18 orders 2/0 merch 1 chron 22 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":17,"build:mill":1,"build:bakery":1,"grow:farm":1,"grow:mill":1,"grow:bakery":1,"grow:woodcutter":1,"grow:sawmill":1,"build:fisher":1,"grow:fisher":3,"wagon":2,"build:quarry":1}
+    next: renown 3875/7200 goods 7/7 flow 123/120
+    slot/s: empty 821 calm 2677 actionable 102 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 885s | sawmill:WAITING_PICKUP(calm) 841s | bakery:WAITING_PICKUP(calm) 382s | fisher:WAITING_PICKUP(calm) 235s | farm:WAITING_PICKUP(calm) 185s | warehouse:STORAGE_FULL 93s
+    looks (59):
+      9x sawmill:WAITING_PICKUP(calm) -> nothing
+      7x card:fleet:woodcutter(calm) -> wagon:card
+      6x woodcutter:WAITING_PICKUP(calm) -> nothing
+      6x (no card)(calm) -> nothing
+      4x card:fleet:sawmill(calm) -> wagon:card
+      4x bakery:WAITING_PICKUP(calm) -> nothing
+      3x sbGrow:fisher(calm) -> grow:fisher
+      3x card:fleet:fisher(calm) -> wagon:card
+    acts: 1:00 build:farm, 3:00 wagon:card, 4:00 wagon:card, 5:00 wagon:card, 9:00 wagon:card, 11:00 build:mill, 12:00 build:bakery, 15:00 grow:farm, 16:00 grow:mill, 17:00 grow:bakery, 18:00 grow:woodcutter, 19:00 wagon:card, 20:00 wagon:card, 21:00 wagon:card, 22:00 wagon:card, 23:00 wagon:card, 24:00 wagon:card, 25:00 grow:sawmill, 26:00 wagon:card, 29:00 build:fisher, 30:00 wagon:card, 31:00 grow:fisher, 32:00 grow:fisher, 33:00 grow:fisher, 34:00 wagon:card, 35:00 wagon:card, 36:00 wagon:card, 37:00 wagon:card, 39:00 wagon, 41:00 wagon:card, 45:00 wagon, 50:00 build:quarry
+
+card-10+grow       seed 1302    rank 3 [8.4 / 23.8 / 39.5 / -1 / -1] earned 5779 coins 1066 wagons 137 bld 32 orders 2/0 merch 1 chron 23 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon":115,"wagon:card":20,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":1,"grow:bakery":1,"grow:woodcutter":3,"grow:sawmill":2,"build:fisher":1,"build:quarry":1,"grow:fisher":8,"granary":5}
+    next: renown 5779/7200 goods 7/7 flow 167/120
+    slot/s: empty 294 calm 2172 actionable 1131 no-cure 3
+    subjects: warehouse:STORAGE_FULL 1087s | warehouse:STORAGE_FULL(calm) 618s | sawmill:WAITING_PICKUP(calm) 607s | woodcutter:WAITING_PICKUP(calm) 377s | bakery:WAITING_PICKUP(calm) 184s | farm:WAITING_PICKUP(calm) 174s
+    looks (359):
+      105x warehouse:STORAGE_FULL(crit) -> wagon
+      60x warehouse:STORAGE_FULL(calm) -> nothing
+      43x sawmill:WAITING_PICKUP(calm) -> nothing
+      34x woodcutter:WAITING_PICKUP(calm) -> nothing
+      23x (no card)(calm) -> nothing
+      15x bakery:WAITING_PICKUP(calm) -> nothing
+      11x farm:WAITING_PICKUP(calm) -> nothing
+      10x card:fleet:sawmill(calm) -> wagon:card
+    acts: 0:10 build:farm, 1:20 wagon, 1:40 wagon:card, 1:50 wagon:card, 5:00 wagon:card, 8:30 build:mill, 8:40 build:bakery, 12:10 grow:farm, 12:20 grow:mill, 12:30 grow:bakery, 12:40 grow:woodcutter, 12:50 grow:sawmill, 13:00 grow:farm, 13:20 wagon, 14:20 wagon?NO_COINS, 14:30 wagon?NO_COINS, 14:40 wagon?NO_COINS, 14:50 wagon?NO_COINS, 15:00 wagon, 15:10 wagon, 15:20 wagon?NO_COINS, 15:30 wagon?NO_COINS, 16:10 wagon:card, 16:50 grow:woodcutter, 17:10 wagon:card, 17:40 grow:sawmill, 17:50 grow:woodcutter, 18:00 wagon:card, 18:50 wagon:card, 19:10 wagon, 19:50 wagon:card, 20:10 wagon:card, 20:20 wagon:card, 23:50 build:fisher, 24:00 build:quarry, 25:10 wagon:card, 25:20 wagon:card, 25:30 wagon:card, 26:10 grow:fisher, 26:20 grow:fisher, 26:30 grow:fisher, 26:40 granary, 26:50 grow:fisher, 27:00 wagon:card, 27:10 wagon:card, 27:20 grow:fisher, 27:30 grow:fisher, 27:40 grow:fisher, 28:10 grow:fisher, 28:20 grow?fail:fisher, 29:10 wagon, 29:20 wagon, 29:30 wagon:card, 29:40 wagon:card, 29:50 granary, 30:00 wagon:card, 30:10 wagon:card, 30:20 wagon:card, 32:20 wagon, 32:30 wagon, 32:40 wagon, 32:50 wagon, 33:00 wagon, 33:10 wagon, 33:20 granary, 34:40 wagon, 35:00 wagon, 35:10 wagon, 35:20 wagon, 35:30 wagon, 35:40 wagon, 35:50 wagon, 36:00 wagon, 36:10 wagon, 36:20 wagon, 36:30 wagon, 36:40 wagon, 36:50 wagon, 37:00 wagon, 37:10 wagon, 37:20 wagon, 37:30 wagon, 37:40 wagon, 37:50 wagon, 38:00 wagon, 38:10 wagon, 38:20 wagon, 38:30 wagon, 38:40 wagon, 38:50 wagon, 39:00 wagon, 39:10 wagon, 39:20 wagon, 39:30 wagon, 39:40 wagon, 39:50 granary, 41:10 wagon, 41:20 wagon, 41:30 wagon, 41:40 wagon, 41:50 wagon, 42:10 wagon, 42:20 wagon, 42:30 wagon, 42:40 wagon, 42:50 wagon, 43:00 wagon, 43:10 wagon, 43:20 wagon, 43:30 wagon, 43:40 wagon, 43:50 wagon, 44:00 wagon, 44:10 wagon, 44:20 wagon, 44:30 wagon, 44:40 wagon, 44:50 wagon, 45:00 wagon, 45:10 wagon, 45:20 wagon, 45:30 wagon, 45:40 wagon, 45:50 granary, 51:20 wagon, 51:30 wagon, 51:50 wagon, 52:00 wagon, 52:10 wagon, 52:20 wagon, 52:30 wagon, 52:40 wagon, 52:50 wagon, 53:10 wagon, 53:20 wagon, 53:40 wagon, 54:00 wagon, 54:10 wagon, 54:30 wagon, 55:00 wagon, 55:10 wagon, 55:20 wagon, 55:30 wagon, 55:40 wagon, 55:50 wagon, 56:00 wagon, 56:10 wagon, 56:20 wagon, 56:30 wagon, 56:40 wagon, 56:50 wagon, 57:00 wagon, 57:10 wagon, 57:20 wagon, 57:30 wagon, 57:40 wagon, 57:50 wagon, 58:00 wagon, 58:10 wagon, 58:20 wagon, 58:30 wagon, 58:40 wagon, 58:50 wagon, 59:00 wagon, 59:10 wagon, 59:20 wagon, 59:30 wagon, 59:40 wagon, 59:50 wagon
+
+card-30+grow       seed 1302    rank 3 [8.9 / 24.2 / 44.6 / -1 / -1] earned 4687 coins 3339 wagons 35 bld 22 orders 2/0 merch 1 chron 22 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":19,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":1,"build:fisher":1,"build:quarry":1,"grow:fisher":5,"wagon":14,"granary":1,"grow:woodcutter":1}
+    next: renown 4687/7200 goods 7/7 flow 137/120
+    slot/s: empty 851 calm 2267 actionable 481 no-cure 1
+    subjects: woodcutter:WAITING_PICKUP(calm) 741s | bakery:WAITING_PICKUP(calm) 507s | sawmill:WAITING_PICKUP(calm) 484s | warehouse:STORAGE_FULL 469s | farm:WAITING_PICKUP(calm) 174s | fisher:WAITING_PICKUP(calm) 156s
+    looks (119):
+      24x (no card)(calm) -> nothing
+      18x woodcutter:WAITING_PICKUP(calm) -> nothing
+      10x bakery:WAITING_PICKUP(calm) -> nothing
+      9x warehouse:STORAGE_FULL(crit) -> wagon
+      8x warehouse:STORAGE_FULL(calm) -> nothing
+      7x card:fleet:sawmill(calm) -> wagon:card
+      7x card:fleet:woodcutter(calm) -> wagon:card
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+    acts: 0:30 build:farm, 2:00 wagon:card, 2:30 wagon:card, 4:30 wagon:card, 5:00 wagon:card, 7:00 wagon:card, 9:00 build:mill, 9:30 build:bakery, 12:00 grow:farm, 12:30 grow:mill, 13:00 grow:bakery, 13:30 wagon:card, 14:00 wagon:card, 14:30 wagon:card, 15:00 grow:farm, 15:30 grow:mill, 16:30 wagon:card, 18:30 wagon:card, 19:00 wagon:card, 19:30 wagon:card, 24:30 build:fisher, 25:00 build:quarry, 26:30 grow:fisher, 27:00 grow:fisher, 27:30 grow:fisher, 28:00 wagon:card, 28:30 grow:fisher, 29:00 grow:fisher, 29:30 wagon:card, 30:00 wagon:card, 30:30 wagon, 31:00 wagon, 31:30 granary, 32:00 wagon:card, 32:30 wagon:card, 33:00 wagon:card, 36:30 wagon:card, 38:30 wagon, 39:30 wagon, 40:30 wagon, 41:00 wagon, 41:30 wagon, 42:00 wagon, 43:00 wagon, 43:30 wagon, 44:00 wagon, 44:30 wagon, 45:00 wagon, 45:30 wagon, 48:30 grow:woodcutter
+
+card-60+grow       seed 1302    rank 3 [9.4 / 27.4 / 47.2 / -1 / -1] earned 4161 coins 3373 wagons 21 bld 18 orders 2/0 merch 1 chron 22 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":18,"build:mill":1,"build:bakery":1,"grow:farm":1,"grow:mill":1,"grow:bakery":1,"grow:woodcutter":2,"grow:sawmill":1,"build:fisher":1,"build:quarry":1,"grow:fisher":2,"wagon":1}
+    next: renown 4161/7200 goods 7/7 flow 123/120
+    slot/s: empty 838 calm 2688 actionable 74 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 1049s | sawmill:WAITING_PICKUP(calm) 831s | bakery:WAITING_PICKUP(calm) 376s | fisher:WAITING_PICKUP(calm) 108s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 81s | mill:WAITING_PICKUP(calm) 81s
+    looks (59):
+      11x (no card)(calm) -> nothing
+      9x card:fleet:woodcutter(calm) -> wagon:card
+      8x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x card:fleet:sawmill(calm) -> wagon:card
+      3x card:fleet:bakery(calm) -> wagon:card
+      3x bakery:WAITING_PICKUP(calm) -> nothing
+      3x woodcutter:WAITING_PICKUP(calm) -> nothing
+      2x card:fleet:farm(calm) -> wagon:card
+    acts: 1:00 build:farm, 3:00 wagon:card, 4:00 wagon:card, 5:00 wagon:card, 7:00 wagon:card, 10:00 build:mill, 11:00 build:bakery, 14:00 grow:farm, 15:00 wagon:card, 16:00 grow:mill, 17:00 grow:bakery, 18:00 grow:woodcutter, 19:00 grow:sawmill, 20:00 wagon:card, 21:00 grow:woodcutter, 22:00 wagon:card, 23:00 wagon:card, 24:00 wagon:card, 25:00 wagon:card, 26:00 wagon:card, 27:00 wagon:card, 28:00 build:fisher, 29:00 build:quarry, 30:00 grow:fisher, 31:00 grow:fisher, 32:00 wagon:card, 33:00 wagon:card, 36:00 wagon:card, 39:00 wagon:card, 45:00 wagon:card, 46:00 wagon:card, 51:00 wagon
+
+card-10+grow       seed 1303    rank 3 [8.9 / 22.9 / 40 / -1 / -1] earned 5431 coins 29 wagons 163 bld 29 orders 2/0 merch 1 chron 23 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon":143,"wagon:card":18,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":1,"grow:bakery":1,"grow:woodcutter":3,"grow:sawmill":2,"build:fisher":1,"build:quarry":1,"grow:fisher":7,"granary":3}
+    next: renown 5431/7200 goods 7/7 flow 161/120
+    slot/s: empty 424 calm 1571 actionable 1604 no-cure 1
+    subjects: warehouse:STORAGE_FULL 1601s | woodcutter:WAITING_PICKUP(calm) 480s | sawmill:WAITING_PICKUP(calm) 393s | farm:WAITING_PICKUP(calm) 220s | warehouse:STORAGE_FULL(calm) 159s | fisher:WAITING_PICKUP(calm) 91s
+    looks (359):
+      127x warehouse:STORAGE_FULL(crit) -> wagon
+      42x woodcutter:WAITING_PICKUP(calm) -> nothing
+      33x (no card)(calm) -> nothing
+      26x sawmill:WAITING_PICKUP(calm) -> nothing
+      21x warehouse:STORAGE_FULL(crit) -> wagon?NO_COINS
+      19x farm:WAITING_PICKUP(calm) -> nothing
+      16x warehouse:STORAGE_FULL(calm) -> nothing
+      9x warehouse:STORAGE_FULL -> wagon
+    acts: 0:10 build:farm, 1:20 wagon, 1:40 wagon:card, 1:50 wagon:card, 5:20 wagon:card, 5:30 wagon:card, 9:00 build:mill, 9:10 build:bakery, 12:10 grow:farm, 12:20 grow:mill, 12:30 wagon, 12:40 wagon:card, 12:50 grow:bakery, 13:00 grow:woodcutter, 14:00 grow:farm, 14:40 wagon, 15:30 grow:sawmill, 15:40 grow:woodcutter, 16:00 wagon:card, 16:40 grow:sawmill, 16:50 grow:woodcutter, 17:40 wagon:card, 17:50 wagon:card, 18:00 wagon, 19:00 wagon, 19:10 wagon, 19:40 wagon:card, 23:00 build:fisher, 23:10 build:quarry, 24:40 grow:fisher, 24:50 wagon:card, 25:00 wagon:card, 25:10 wagon:card, 25:20 wagon:card, 25:30 wagon:card, 25:40 wagon:card, 25:50 grow:fisher, 26:00 grow:fisher, 26:10 grow:fisher, 26:20 grow:fisher, 26:30 grow:fisher, 26:40 grow:fisher, 27:10 wagon, 27:20 granary, 28:30 wagon, 28:40 wagon:card, 28:50 wagon:card, 29:00 wagon:card, 29:20 wagon, 29:30 wagon, 29:40 wagon, 29:50 wagon, 30:00 wagon, 30:10 wagon, 30:20 wagon, 30:30 wagon, 30:40 wagon, 30:50 wagon, 31:00 wagon, 31:10 wagon, 31:20 wagon, 31:30 wagon, 31:40 wagon, 31:50 wagon, 32:00 wagon, 32:10 wagon, 32:20 wagon, 32:30 granary, 33:50 granary, 36:20 wagon, 36:40 wagon, 36:50 wagon, 37:00 wagon, 37:10 wagon, 37:20 wagon, 37:30 wagon, 37:40 wagon, 37:50 wagon, 38:00 wagon, 38:10 wagon, 38:20 wagon, 38:30 wagon, 38:40 wagon, 38:50 wagon, 39:00 wagon, 39:10 wagon, 39:20 wagon, 39:30 wagon, 39:40 wagon, 39:50 wagon, 40:00 wagon, 40:10 wagon, 40:20 wagon, 40:30 wagon, 40:40 wagon, 40:50 wagon, 41:00 wagon, 41:10 wagon, 41:20 wagon, 41:30 wagon, 41:40 wagon, 41:50 wagon, 42:00 wagon, 42:10 wagon, 42:20 wagon, 42:30 wagon, 42:40 wagon, 42:50 wagon, 43:00 wagon, 43:10 wagon, 43:20 wagon, 43:30 wagon, 43:40 wagon, 43:50 wagon, 44:00 wagon, 44:10 wagon, 44:20 wagon, 44:30 wagon, 44:40 wagon, 44:50 wagon, 45:00 wagon, 45:10 wagon, 45:20 wagon, 45:30 wagon, 45:40 wagon, 45:50 wagon, 46:00 wagon, 46:10 wagon, 46:20 wagon, 46:30 wagon, 46:40 wagon, 46:50 wagon, 47:00 wagon, 47:10 wagon, 47:20 wagon, 47:30 wagon, 47:40 wagon, 47:50 wagon, 48:00 wagon, 48:10 wagon, 48:20 wagon, 48:30 wagon, 48:40 wagon?NO_COINS, 48:50 wagon, 49:00 wagon?NO_COINS, 49:10 wagon?NO_COINS, 49:20 wagon?NO_COINS, 49:30 wagon, 49:40 wagon, 49:50 wagon, 50:00 wagon, 50:10 wagon, 50:20 wagon, 50:30 wagon, 50:40 wagon?NO_COINS, 50:50 wagon?NO_COINS, 51:00 wagon, 51:20 wagon, 51:30 wagon, 51:40 wagon, 51:50 wagon, 52:00 wagon, 52:10 wagon?NO_COINS, 52:20 wagon, 52:30 wagon?NO_COINS, 52:40 wagon, 52:50 wagon?NO_COINS, 53:00 wagon?NO_COINS, 53:10 wagon, 53:20 wagon?NO_COINS, 53:30 wagon, 53:40 wagon?NO_COINS, 53:50 wagon, 54:00 wagon?NO_COINS, 54:10 wagon, 54:20 wagon, 54:30 wagon, 54:40 wagon, 54:50 wagon, 55:00 wagon, 55:10 wagon?NO_COINS, 55:20 wagon, 55:30 wagon, 55:40 wagon?NO_COINS, 55:50 wagon, 56:00 wagon, 56:10 wagon, 56:20 wagon, 56:30 wagon?NO_COINS, 56:40 wagon, 56:50 wagon, 57:20 wagon, 57:30 wagon, 57:40 wagon?NO_COINS, 58:00 wagon?NO_COINS, 58:10 wagon?NO_COINS, 58:20 wagon, 58:30 wagon, 58:40 wagon, 58:50 wagon?NO_COINS, 59:00 wagon, 59:10 wagon?NO_COINS, 59:20 wagon, 59:30 wagon, 59:40 wagon, 59:50 wagon
+
+card-30+grow       seed 1303    rank 3 [9.3 / 24.4 / 41.8 / -1 / -1] earned 5087 coins 3797 wagons 29 bld 26 orders 2/0 merch 1 chron 23 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":22,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":1,"grow:woodcutter":3,"grow:sawmill":2,"build:fisher":1,"build:quarry":1,"grow:fisher":3,"wagon":5,"granary":3}
+    next: renown 5087/7200 goods 7/7 flow 160/120
+    slot/s: empty 545 calm 2890 actionable 165 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 907s | warehouse:STORAGE_FULL(calm) 667s | woodcutter:WAITING_PICKUP(calm) 654s | bakery:WAITING_PICKUP(calm) 233s | farm:WAITING_PICKUP(calm) 218s | warehouse:STORAGE_FULL 151s
+    looks (119):
+      20x warehouse:STORAGE_FULL(calm) -> nothing
+      19x sawmill:WAITING_PICKUP(calm) -> nothing
+      14x woodcutter:WAITING_PICKUP(calm) -> nothing
+      10x (no card)(calm) -> nothing
+      6x card:fleet:sawmill(calm) -> wagon:card
+      6x card:fleet:woodcutter(calm) -> wagon:card
+      4x card:fleet:farm(calm) -> wagon:card
+      4x card:fleet:bakery(calm) -> wagon:card
+    acts: 0:30 build:farm, 2:00 wagon:card, 2:30 wagon:card, 4:30 wagon:card, 5:00 wagon:card, 7:30 wagon:card, 9:00 wagon:card, 9:30 build:mill, 10:00 build:bakery, 13:00 grow:farm, 13:30 grow:mill, 14:00 grow:bakery, 14:30 grow:farm, 15:00 grow:mill, 15:30 grow:woodcutter, 16:00 wagon:card, 17:00 wagon:card, 17:30 wagon:card, 18:00 wagon:card, 18:30 wagon:card, 19:00 wagon:card, 19:30 grow:sawmill, 20:00 grow:woodcutter, 20:30 grow:sawmill, 21:00 grow:woodcutter, 22:00 wagon:card, 23:30 wagon:card, 24:00 wagon:card, 24:30 wagon:card, 25:00 wagon:card, 25:30 wagon:card, 26:00 wagon:card, 26:30 build:fisher, 27:00 build:quarry, 28:00 grow:fisher, 28:30 grow:fisher, 29:00 grow:fisher, 29:30 wagon, 30:00 wagon, 30:30 wagon, 31:00 wagon, 31:30 granary, 32:00 wagon:card, 36:00 granary, 39:00 wagon:card, 39:30 wagon:card, 40:30 wagon, 42:30 granary
+
+card-60+grow       seed 1303    rank 3 [9.5 / 28.5 / 50.9 / -1 / -1] earned 3688 coins 3095 wagons 17 bld 16 orders 2/0 merch 1 chron 22 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":15,"build:mill":1,"build:bakery":1,"grow:farm":1,"grow:woodcutter":2,"grow:sawmill":2,"build:fisher":1,"build:quarry":1,"grow:fisher":1}
+    next: renown 3688/7200 goods 7/7 flow 118/120
+    slot/s: empty 885 calm 2713 actionable 2 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 1335s | woodcutter:WAITING_PICKUP(calm) 969s | farm:WAITING_PICKUP(calm) 234s | fisher:WAITING_PICKUP(calm) 63s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 55s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 37s
+    looks (59):
+      18x sawmill:WAITING_PICKUP(calm) -> nothing
+      8x (no card)(calm) -> nothing
+      7x card:fleet:woodcutter(calm) -> wagon:card
+      7x card:fleet:sawmill(calm) -> wagon:card
+      5x woodcutter:WAITING_PICKUP(calm) -> nothing
+      2x sbGrow:woodcutter(calm) -> grow:woodcutter
+      2x sbGrow:sawmill(calm) -> grow:sawmill
+      1x card:rank:farm(calm) -> build:farm
+    acts: 1:00 build:farm, 3:00 wagon:card, 4:00 wagon:card, 5:00 wagon:card, 6:00 wagon:card, 10:00 build:mill, 11:00 build:bakery, 14:00 wagon:card, 15:00 grow:farm, 16:00 grow:woodcutter, 17:00 grow:sawmill, 18:00 wagon:card, 19:00 grow:woodcutter, 20:00 wagon:card, 22:00 wagon:card, 23:00 wagon:card, 24:00 wagon:card, 26:00 grow:sawmill, 28:00 wagon:card, 29:00 build:fisher, 30:00 build:quarry, 31:00 grow:fisher, 32:00 wagon:card, 33:00 wagon:card, 36:00 wagon:card, 44:00 wagon:card
+
+card-10+grow       seed 1304    rank 3 [8.2 / 24.3 / 41.5 / -1 / -1] earned 5085 coins 23 wagons 155 bld 26 orders 2/0 merch 1 chron 21 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon":132,"wagon:card":21,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":1,"grow:woodcutter":2,"grow:sawmill":1,"build:fisher":1,"grow:fisher":8,"granary":1}
+    next: renown 5085/7200 goods 6/7 flow 144/120
+    slot/s: empty 491 calm 1492 actionable 1617 no-cure 0
+    subjects: warehouse:STORAGE_FULL 1563s | woodcutter:WAITING_PICKUP(calm) 532s | sawmill:WAITING_PICKUP(calm) 352s | farm:WAITING_PICKUP(calm) 260s | warehouse:STORAGE_FULL(calm) 95s | fisher:WAITING_PICKUP(calm) 90s
+    looks (359):
+      121x warehouse:STORAGE_FULL(crit) -> wagon
+      39x (no card)(calm) -> nothing
+      39x woodcutter:WAITING_PICKUP(calm) -> nothing
+      28x warehouse:STORAGE_FULL(crit) -> wagon?NO_COINS
+      22x sawmill:WAITING_PICKUP(calm) -> nothing
+      19x farm:WAITING_PICKUP(calm) -> nothing
+      15x card:rank:quarry(calm) -> build?fail:quarry
+      8x card:fleet:sawmill(calm) -> wagon:card
+    acts: 0:10 build:farm, 1:20 wagon, 1:40 wagon:card, 1:50 wagon:card, 4:50 wagon:card, 8:20 build:mill, 8:30 build:bakery, 11:30 wagon:card, 11:40 wagon:card, 12:20 grow:farm, 12:30 grow:mill, 12:40 grow:bakery, 13:00 grow:farm, 14:00 wagon:card, 14:10 wagon:card, 14:50 grow:mill, 16:50 wagon:card, 17:00 wagon:card, 17:10 wagon:card, 17:20 grow:woodcutter, 19:20 grow:sawmill, 19:30 wagon:card, 19:40 wagon:card, 19:50 grow:woodcutter, 20:10 wagon:card, 22:00 wagon:card, 22:10 wagon:card, 22:20 wagon:card, 24:20 build:fisher, 24:30 build?fail:quarry, 24:40 build?fail:quarry, 24:50 build?fail:quarry, 25:00 build?fail:quarry, 25:10 build?fail:quarry, 25:20 build?fail:quarry, 25:30 build?fail:quarry, 25:40 build?fail:quarry, 25:50 build?fail:quarry, 26:00 grow:fisher, 26:10 grow:fisher, 26:20 grow:fisher, 26:30 grow:fisher, 26:40 grow:fisher, 26:50 grow:fisher, 27:00 grow:fisher, 27:10 grow:fisher, 27:20 grow?fail:fisher, 27:30 grow?fail:fisher, 27:40 grow?fail:fisher, 27:50 grow?fail:fisher, 28:10 grow?fail:fisher, 28:20 wagon:card, 28:30 wagon:card, 28:40 grow?fail:fisher, 28:50 wagon:card, 29:00 wagon, 29:10 wagon, 29:20 wagon, 29:30 wagon, 29:40 granary, 30:50 wagon:card, 31:20 wagon:card, 32:20 wagon, 32:30 wagon, 32:40 wagon, 32:50 wagon, 33:00 wagon, 33:10 wagon, 33:20 wagon, 33:30 wagon, 33:40 wagon, 33:50 wagon, 34:00 wagon, 34:10 wagon, 34:20 wagon, 34:30 wagon, 34:40 wagon, 34:50 wagon, 35:00 wagon, 35:10 wagon, 35:20 wagon, 35:30 wagon, 35:40 wagon, 35:50 wagon, 36:00 wagon, 36:10 wagon, 36:20 wagon, 36:30 wagon, 36:40 wagon, 36:50 wagon, 37:00 wagon, 37:10 wagon, 37:20 wagon, 37:30 wagon, 37:40 wagon, 37:50 wagon, 38:00 wagon, 38:10 wagon, 38:20 wagon, 38:30 wagon, 38:40 wagon, 38:50 wagon, 39:00 wagon, 39:10 wagon, 39:20 wagon, 39:30 wagon, 39:40 wagon, 39:50 wagon, 40:00 wagon, 40:10 wagon, 40:20 wagon, 40:30 wagon, 40:40 wagon, 40:50 wagon, 41:00 wagon, 41:10 wagon, 41:20 wagon, 41:30 wagon, 41:40 wagon, 41:50 wagon, 42:00 wagon, 42:10 wagon, 42:20 wagon, 42:30 wagon, 42:40 wagon, 42:50 wagon, 43:00 wagon?NO_COINS, 43:10 wagon, 43:20 wagon?NO_COINS, 43:30 wagon, 43:40 wagon, 43:50 wagon, 44:00 wagon, 44:10 wagon?NO_COINS, 44:20 wagon, 44:30 wagon, 44:40 wagon, 44:50 wagon, 45:00 wagon?NO_COINS, 45:10 wagon?NO_COINS, 45:20 wagon, 45:30 wagon, 45:40 wagon?NO_COINS, 45:50 wagon, 46:00 wagon?NO_COINS, 46:10 wagon, 46:20 wagon?NO_COINS, 46:30 wagon?NO_COINS, 46:40 wagon, 46:50 wagon?NO_COINS, 47:00 wagon, 47:10 wagon, 47:20 wagon?NO_COINS, 47:30 wagon, 47:40 wagon?NO_COINS, 47:50 wagon, 48:00 wagon?NO_COINS, 48:10 wagon, 48:20 wagon, 48:30 wagon, 48:40 wagon, 48:50 producer?NO_COINS, 49:00 wagon, 49:10 wagon?NO_COINS, 49:20 wagon, 49:30 wagon, 49:40 wagon?NO_COINS, 49:50 wagon, 50:00 wagon, 50:10 wagon, 50:20 wagon, 50:30 wagon?NO_COINS, 50:40 wagon, 50:50 producer?NO_COINS, 51:00 build?fail:quarry, 51:10 build?fail:quarry, 51:20 build?fail:quarry, 51:30 wagon, 51:40 wagon, 51:50 build?fail:quarry, 52:00 wagon, 52:10 build?fail:quarry, 52:20 build?fail:quarry, 52:30 wagon, 52:40 wagon, 52:50 wagon, 53:00 wagon, 53:10 wagon, 53:20 wagon, 53:30 wagon?NO_COINS, 53:40 wagon?NO_COINS, 53:50 wagon, 54:00 wagon?NO_COINS, 54:10 wagon, 54:20 wagon, 54:30 wagon, 54:40 wagon?NO_COINS, 54:50 wagon, 55:00 wagon?NO_COINS, 55:10 wagon, 55:20 wagon, 55:30 wagon, 55:40 wagon?NO_COINS, 55:50 wagon, 56:00 wagon, 56:10 producer?NO_COINS, 56:20 wagon, 56:30 wagon, 56:40 wagon, 56:50 wagon, 57:00 wagon, 57:10 wagon?NO_COINS, 57:20 producer?NO_COINS, 57:30 producer?NO_COINS, 57:40 wagon, 57:50 wagon, 58:00 wagon?NO_COINS, 58:10 wagon?NO_COINS, 58:20 wagon, 58:30 wagon?NO_COINS, 58:40 wagon?NO_COINS, 58:50 wagon?NO_COINS, 59:00 wagon, 59:10 wagon, 59:20 wagon, 59:30 wagon, 59:40 wagon, 59:50 wagon
+
+card-30+grow       seed 1304    rank 3 [8.5 / 24.8 / 41 / -1 / -1] earned 5360 coins 3944 wagons 35 bld 24 orders 2/0 merch 1 chron 21 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":18,"build:mill":1,"build:bakery":1,"grow:farm":2,"grow:mill":2,"grow:bakery":2,"grow:woodcutter":2,"wagon":15,"grow:sawmill":2,"build:fisher":1,"grow:fisher":4,"granary":1}
+    next: renown 5360/7200 goods 6/7 flow 170/120
+    slot/s: empty 624 calm 2504 actionable 472 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 794s | sawmill:WAITING_PICKUP(calm) 768s | warehouse:STORAGE_FULL 446s | bakery:WAITING_PICKUP(calm) 414s | farm:WAITING_PICKUP(calm) 198s | warehouse:STORAGE_FULL(calm) 153s
+    looks (119):
+      39x card:rank:quarry(calm) -> build?fail:quarry
+      12x (no card)(calm) -> nothing
+      8x warehouse:STORAGE_FULL -> wagon
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      7x card:fleet:woodcutter(calm) -> wagon:card
+      6x card:fleet:sawmill(calm) -> wagon:card
+      6x warehouse:STORAGE_FULL(crit) -> wagon
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+    acts: 0:30 build:farm, 2:00 wagon:card, 2:30 wagon:card, 4:30 wagon:card, 5:00 wagon:card, 7:00 wagon:card, 9:00 build:mill, 9:30 build:bakery, 13:00 grow:farm, 13:30 grow:mill, 14:00 grow:bakery, 14:30 grow:farm, 15:00 grow:woodcutter, 15:30 grow:mill, 16:00 wagon:card, 16:30 grow:bakery, 17:00 wagon:card, 17:30 wagon, 18:30 wagon:card, 19:00 wagon:card, 19:30 wagon:card, 20:00 grow:sawmill, 21:00 wagon:card, 22:00 grow:woodcutter, 22:30 wagon:card, 23:00 wagon:card, 23:30 grow:sawmill, 25:00 build:fisher, 25:30 build?fail:quarry, 26:00 build?fail:quarry, 26:30 wagon:card, 27:00 grow:fisher, 27:30 grow:fisher, 28:00 grow:fisher, 28:30 grow:fisher, 29:00 wagon:card, 29:30 wagon:card, 30:00 wagon:card, 31:00 wagon, 32:00 wagon:card, 32:30 wagon, 33:00 wagon, 33:30 wagon, 34:00 wagon, 34:30 wagon, 35:00 wagon, 35:30 wagon, 36:00 wagon, 36:30 wagon, 37:00 wagon, 38:00 wagon, 38:30 wagon, 39:00 granary, 41:00 build?fail:quarry, 41:30 build?fail:quarry, 42:00 build?fail:quarry, 42:30 wagon, 43:00 build?fail:quarry, 43:30 build?fail:quarry, 44:00 build?fail:quarry, 44:30 build?fail:quarry, 45:00 build?fail:quarry, 45:30 build?fail:quarry, 46:00 build?fail:quarry, 46:30 build?fail:quarry, 47:00 build?fail:quarry, 47:30 build?fail:quarry, 48:00 build?fail:quarry, 48:30 build?fail:quarry, 49:00 build?fail:quarry, 49:30 build?fail:quarry, 50:00 build?fail:quarry, 50:30 build?fail:quarry, 51:00 build?fail:quarry, 51:30 build?fail:quarry, 52:00 build?fail:quarry, 52:30 build?fail:quarry, 53:00 build?fail:quarry, 53:30 build?fail:quarry, 54:00 build?fail:quarry, 54:30 build?fail:quarry, 55:00 build?fail:quarry, 55:30 build?fail:quarry, 56:00 build?fail:quarry, 56:30 build?fail:quarry, 57:00 build?fail:quarry, 57:30 build?fail:quarry, 58:00 build?fail:quarry, 58:30 build?fail:quarry, 59:00 build?fail:quarry, 59:30 build?fail:quarry
+
+card-60+grow       seed 1304    rank 3 [9.3 / 26.6 / 48.4 / -1 / -1] earned 4037 coins 3129 wagons 24 bld 19 orders 2/0 merch 1 chron 20 paceWrong 0 fleetWrong 0 {"build:farm":1,"wagon:card":19,"build:mill":1,"build:bakery":1,"grow:farm":1,"grow:mill":1,"grow:bakery":1,"grow:woodcutter":3,"build:fisher":1,"grow:fisher":1,"grow:sawmill":3,"wagon":3}
+    next: renown 4037/7200 goods 6/7 flow 122/120
+    slot/s: empty 732 calm 2544 actionable 324 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 1083s | woodcutter:WAITING_PICKUP(calm) 818s | bakery:WAITING_PICKUP(calm) 308s | warehouse:STORAGE_FULL 295s | fisher:WAITING_PICKUP(calm) 122s | farm:WAITING_PICKUP(calm) 119s
+    looks (59):
+      11x card:rank:quarry(calm) -> build?fail:quarry
+      10x card:fleet:sawmill(calm) -> wagon:card
+      6x card:fleet:woodcutter(calm) -> wagon:card
+      3x (no card)(calm) -> nothing
+      3x sbGrow:woodcutter(calm) -> grow:woodcutter
+      3x bakery:WAITING_PICKUP(calm) -> nothing
+      3x sbGrow:sawmill(calm) -> grow:sawmill
+      3x warehouse:STORAGE_FULL -> wagon
+    acts: 1:00 build:farm, 3:00 wagon:card, 4:00 wagon:card, 5:00 wagon:card, 7:00 wagon:card, 10:00 build:mill, 11:00 wagon:card, 12:00 build:bakery, 14:00 grow:farm, 15:00 grow:mill, 16:00 wagon:card, 17:00 grow:bakery, 18:00 wagon:card, 19:00 grow:woodcutter, 20:00 wagon:card, 22:00 wagon:card, 23:00 wagon:card, 27:00 build:fisher, 28:00 build?fail:quarry, 29:00 build?fail:quarry, 30:00 wagon:card, 31:00 grow:fisher, 32:00 wagon:card, 33:00 grow:sawmill, 34:00 grow:woodcutter, 35:00 grow:sawmill, 36:00 grow:woodcutter, 37:00 grow:sawmill, 38:00 wagon:card, 40:00 wagon:card, 41:00 wagon:card, 42:00 wagon:card, 44:00 wagon:card, 45:00 wagon, 46:00 wagon:card, 47:00 wagon:card, 49:00 build?fail:quarry, 50:00 build?fail:quarry, 51:00 build?fail:quarry, 52:00 build?fail:quarry, 53:00 build?fail:quarry, 54:00 build?fail:quarry, 55:00 wagon, 56:00 build?fail:quarry, 57:00 build?fail:quarry, 58:00 build?fail:quarry, 59:00 wagon
+
