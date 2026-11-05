@@ -1863,6 +1863,8 @@ body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 .seal-tempo { position: absolute; top: 100%; inset-inline-start: 0; z-index: 1; min-height: 48px; min-width: 48px; max-width: calc(100vw - var(--safe-s, 0px) - 24px);
   display: flex; align-items: flex-start; padding: 2px 0 0; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
 .seal-tempo[hidden] { display: none; }
+/* the rank-up letter (valley) sits under the seal on the Flip cover: the tempo line steps aside while it shows */
+body:has(.rank-letter-wrap) .seal-tempo { visibility: hidden; }
 .seal-tempo .st-line { padding-block: 2px; padding-inline: 8px; font-size: 13px; font-weight: 700; line-height: 1.25; color: #ffe0a0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
