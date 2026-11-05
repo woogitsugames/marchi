@@ -4,6 +4,7 @@ import {
   roadStoneCost, stateHash, step, stoneAvailable, validateRoad, type World,
 } from '../src/sim/index';
 import { assert, eq, test } from './harness';
+import { M8_LANE } from '../src/sim/proposals/missions-7-9';
 
 function m8WithStoneInTransit(): { world: World; wagonId: number; quarryId: number } {
   const world = createWorld('m8');
@@ -67,12 +68,13 @@ test('m8: selling a loaded stone wagon is rejected atomically with WAGON_BUSY', 
 
 test('m8: building cobbles without stone returns exact NO_STONE {need,have}; valid stock is consumed once', () => {
   const w = createWorld('m8');
-  const path = lineCells(w.terrain.w, 44 * w.terrain.w + 45, 44 * w.terrain.w + 56);
+  // the lane (D-165): 23 dirt cells, 23 stones; the two granaries start with 8 each
+  const path = lineCells(w.terrain.w, M8_LANE.y * w.terrain.w + M8_LANE.x1, M8_LANE.y * w.terrain.w + M8_LANE.x2);
   const need = roadStoneCost(w, path, 2);
-  eq(need, 12, 'twelve new land cobbles need twelve stones');
+  eq(need, 23, 'twenty-three new land cobbles need twenty-three stones');
   const warehouse = w.state.buildings.find((b) => b.type === 'warehouse')!;
   const checkBlocked = (have: number): void => {
-    eq(stoneAvailable(w), have, 'unreserved stones in granary');
+    eq(stoneAvailable(w), have, 'unreserved stones in the granaries');
     const before = stateHash(w);
     const validation = validateRoad(w, path, 2);
     assert(!validation.ok, 'paving with ' + have + ' stones must fail');
@@ -98,13 +100,13 @@ test('m8: building cobbles without stone returns exact NO_STONE {need,have}; val
     clean(w, 'after NO_STONE rejection');
   };
 
-  checkBlocked(0);
+  checkBlocked(16);
   // Controlled legal inventory fixture: keep conservation valid while testing the precise partial count.
   warehouse.stock.stone += 5;
   w.state.ledger.produced.stone += 5;
-  checkBlocked(5);
-  warehouse.stock.stone += 7;
-  w.state.ledger.produced.stone += 7;
+  checkBlocked(21);
+  warehouse.stock.stone += 2;
+  w.state.ledger.produced.stone += 2;
   eq(stoneAvailable(w), need, 'exactly enough stone to build');
   const before = w.state.ledger.consumed.stone;
   const result = applyCommand(w, { t: 'road', surface: 2, cells: path });

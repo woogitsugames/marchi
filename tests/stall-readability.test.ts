@@ -8,6 +8,7 @@ import {
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { makeWorld } from '../tools/fuzz-lib';
 import { cureFor } from '../src/ui/stalls';
+import { M8_LANE } from '../src/sim/proposals/missions-7-9';
 import { assert, eq, test } from './harness';
 
 const minute = 60 * TICK_HZ;
@@ -98,15 +99,15 @@ test('Naprawa: OUTPUT_FULL.NO_DESTINATION with a customer is not a granary cure 
 
 test('F4: NO_STONE says how much stone is on its way, waiting at the quarry, or that nobody quarries it', () => {
   const w = createWorld('m8');
-  const cells = row(w, 44, 45, 56);
+  const cells = row(w, M8_LANE.y, M8_LANE.x1, M8_LANE.x2);
   const r0 = applyCommand(w, { t: 'road', surface: 2, cells });
-  assert(!r0.ok && r0.err.k === 'NO_STONE', 'm8 at 0:00: no stone');
+  assert(!r0.ok && r0.err.k === 'NO_STONE', 'm8 at 0:00: not enough stone for the lane');
   if (!r0.ok && r0.err.k === 'NO_STONE') {
-    eq(r0.err.have, 0, 'none in the granary');
+    eq(r0.err.have, 16, '16 of 24 in the granaries');
     eq(r0.err.quarries, 1, 'one quarry');
   }
   let sawComing = false;
-  while (w.state.tick < 3 * minute && stoneAvailable(w) < 12) {
+  while (w.state.tick < 3 * minute && stoneAvailable(w) < cells.length) {
     step(w);
     if (w.state.tick % TICK_HZ) continue;
     const r = applyCommand(w, { t: 'road', surface: 2, cells });

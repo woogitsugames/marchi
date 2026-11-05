@@ -5,7 +5,7 @@ import {
   stars, stateHash, step, stoneAvailable, unexplainedStalls,
   type Command, type World,
 } from '../src/sim/index';
-import { PROPOSED_MISSIONS_7_9, M7_FISHER_SITE, M9_WOODCUTTER_SITE, type Mission789Id } from '../src/sim/proposals/missions-7-9';
+import { PROPOSED_MISSIONS_7_9, M7_FISHER_SITE, M8_LANE, M9_WOODCUTTER_SITE, type Mission789Id } from '../src/sim/proposals/missions-7-9';
 
 export type Strategy = {
   name: string;
@@ -40,10 +40,11 @@ export const STRATEGIES: Record<Mission789Id, Strategy[]> = {
   ],
   m8: [
     { name: 'nic / no action', after: 0, cmds: () => [] },
-    { name: 'czesciowa / extra wagon @0:30', after: 30, cmds: (w) => [wagon(w)] },
-    { name: 'wlasciwa / wagon + cobble x45-56 from quarry', after: 45, whenStone: 12,
+    // the wrong fix with all the silver (D-165): eight more wagons only queue on the muddy lane
+    { name: 'czesciowa / all silver in wagons @0:30', after: 30, cmds: (w) => Array.from({ length: 8 }, () => wagon(w)) },
+    { name: 'wlasciwa / wagon + cobble the lane x31-53', after: 45, whenStone: 23,
       setup: { after: 30, cmds: (w) => [wagon(w)] },
-      cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, 44, 45, 56) }] },
+      cmds: (w) => [{ t: 'road', surface: 2, cells: row(w, M8_LANE.y, M8_LANE.x1, M8_LANE.x2) }] },
   ],
   m9: [
     { name: 'nic / no action', after: 0, cmds: () => [] },

@@ -88,7 +88,8 @@ for (const id of ['m7', 'm12']) {
 test('fleet card: a mud stretch the player cannot pay for yields to the wagon he can (VIII, 40 silver)', () => {
   const w = createWorld('m8');
   const log = newPaceLog();
-  runTo(w, log, 230 * TICK_HZ);
+  // D-165 lane: around 3:10 a yard waits with every wagon busy (the fleet card qualifies)
+  runTo(w, log, 190 * TICK_HZ);
   const f = forecastFor(w, log);
   const rich = paceCard(w, f);
   eq(rich?.k, 'mud', 'with the silver, the mud card (its button reports the missing stone, D-116)');

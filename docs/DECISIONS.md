@@ -2163,3 +2163,33 @@ in BACKLOG for the owner. Browser (`tools/valley-first5.mjs`, 412×915, 8 min): 
 closed the new building's sheet (the build tool stays open) and the next tap hit the leaving sheet; tapped directly,
 "Zbuduj drogę" works in pause (230 → 226, roads +4). The tool no longer presses Escape over a sheet. UI only, hashes
 unchanged. Test `tests/day9h-diagnosis.test.ts`. (decided — measurement; owner question in BACKLOG)
+
+**D-165 — Mission VIII redesigned around one muddy lane that every load crosses (owner 2026-11-05 ~17:40, BACKLOG P4).**
+Owner criterion (2026-11-04): wagons alone ≤ 2★, cobbles + 1 wagon 3★ with ≥ 20 s, reasonable player ≥ 2★ at
+10/30/60 s and 3★ at 10 s, nothing ≤ 1★. The old map failed it (2 wagons 9,05 = 3★; cobbles saved 13 s because 12
+cobbled cells were a sliver of a 47-cell rain road, and the mud card proposed 47 cells — more stone than a granary
+holds). Data only (`src/sim/proposals/missions-7-9.ts`, same valley `valley-m8:1301`): the hamlet (farm, bakery,
+sawmill) and the castle side (mill, woodcutter, castle) face each other across a 23-cell dirt lane `x=31..53, y=24`
+(`M8_LANE`); bread crosses it three times (grain → mill → bakery → castle), planks twice. Rain 1:30–11:00. Contract
+40 planks + 40 bread, 240 silver, 7 wagons, deadline 11:00, seals 6:51 / 7:36. Why it holds: wagons shorten the wait
+for a wagon, not the crossing; cobbles make every crossing ~2.2× faster in rain. Variant search (layouts, lane 16–30,
+fleet 3–12, rain 1:00–2:30, contract 24–44, silver; `tools/m8-ladder.ts` + a robustness sweep over buy/pave timings
+and eye phases) picked the region where the margin stays ≥ 30 s for neighbouring settings (dispatcher chaos moves
+single runs ±20 s). Measured: nothing 8,64 (1★); wagons only k = 1…7 at 0:00/0:30/1:30 7,71–9,36 (1★), all silver
+k = 8 7,23 (2★, −23 s to 3★); cobbles + 1 wagon 5,84–6,22 (3★, +38…+61 s), bot 6,32 (+32 s); eye 10 s 5,95–6,28
+(3★), 30 s 6,27–6,66, 60 s 6,43–6,47 (3★). Without the pace card (PACE=0) the eye players only buy wagons → 1★: the
+mud card (D-116) and the letter carry the lesson. Golden hashes: only `m8|buy0` / `m8|buy2` (valley-events-live)
+re-recorded; every other mission bit-identical (the sim is untouched). (decided)
+
+**D-166 — Two granaries in mission VIII, 8 stone each at the start; the quarry's 8 must still be hauled.**
+`STONE_RESERVE` (18) caps what one granary pulls, so a 23-cell lane needs two (a stone yard by the quarry road and the
+village granary on the lane). 16 of the 23 stand ready, the rest comes from the quarry four to a wagon (ready ~1:23),
+so `NO_STONE` with real numbers and "material needs transport" stay part of the mission. When both granaries are full
+the quarry's wait reads as a calm surplus; after paving the D-95 "stone in store" line returns (test covers both).
+(decided)
+
+**D-167 — Mission VIII tests follow the lane, not the old numbers.** The ladder bot rungs are nothing (1★) / all silver in
+wagons @0:30 (2★) / wagon @0:30 + cobble the lane when 23 stone (3★); the NO_STONE edge test counts 16 → 21 → 23; the
+fleet-card test reads 3:10 (when a yard waits with every wagon busy); the WAGON_DUE semantics test samples m4 +2, m3 +3
+and m8 +2 together (the redesigned VIII holds only 8 jobs with +2). Menu title/subtitle unchanged (still true); the
+letter is rewritten in all 17 languages (agent translations, native review pending with the rest). (decided)

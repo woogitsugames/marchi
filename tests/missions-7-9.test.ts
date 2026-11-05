@@ -4,7 +4,7 @@ import {
   onRock, nearWater, roadStoneCost, stoneAvailable, validatePlace, validateRoad,
 } from '../src/sim/index';
 import {
-  M7_DRY_SITE, M7_FISHER_SITE, M7_VALLEY, M8_FALSE_QUARRY_SITE, M8_QUARRY_SITE, M8_SEED,
+  M7_DRY_SITE, M7_FISHER_SITE, M7_VALLEY, M8_FALSE_QUARRY_SITE, M8_LANE, M8_QUARRY_SITE, M8_SEED,
   M9_VALLEY, M9_WOODCUTTER_SITE, PROPOSED_MISSIONS_7_9,
 } from '../src/sim/proposals/missions-7-9';
 import { generateValley } from '../src/sim/terrain';
@@ -66,25 +66,28 @@ test('m7: dry hut rejected as NOT_NEAR_WATER, shoreline allowed, fish travel ove
   assert(baseline.produced.fish >= 54, 'fisher makes enough fish for the contract');
 });
 
-test('m8: dry quarry rejected, rocky quarry valid, NO_STONE until its 4-unit wagons bring stone', () => {
+test('m8: dry quarry rejected, rocky quarry valid, NO_STONE until its 4-unit wagons bring the lane\'s 23 stone', () => {
   withProposal('m8', () => {
     const w = createWorld('m8');
     assert(onRock(w.terrain, M8_QUARRY_SITE.x, M8_QUARRY_SITE.y, 3, 2), 'quarry on rock');
     const dry = validatePlace(w, 'quarry', M8_FALSE_QUARRY_SITE.x, M8_FALSE_QUARRY_SITE.y, M8_FALSE_QUARRY_SITE.facing);
     assert(!dry.ok, 'dry quarry rejected');
     if (!dry.ok) eq(dry.err.k, 'NOT_ON_ROCK', 'correct geological reason');
-    const path = row(44, 45, 60);
-    const blocked = validateRoad(w, path, 2);
-    assert(!blocked.ok, 'no stone in granary at start');
+    const lane = row(M8_LANE.y, M8_LANE.x1, M8_LANE.x2);
+    eq(lane.length, 23, 'the lane is 23 cells');
+    for (const c of lane) eq(w.state.roads[c], 1, 'the lane is dirt at the start');
+    const blocked = validateRoad(w, lane, 2);
+    assert(!blocked.ok, 'not enough stone in the granaries at start');
     if (!blocked.ok) eq(blocked.err.k, 'NO_STONE', 'proper construction bottleneck');
-    eq(stoneAvailable(w), 0, 'source stone is not yet usable before delivery');
+    eq(stoneAvailable(w), 16, 'the two granaries hold 16 of the 23 at the start; the quarry\'s 8 must be hauled');
     const q = w.state.buildings.find((b) => b.type === 'quarry')!;
-    const wh = w.state.buildings.find((b) => b.type === 'warehouse')!;
-    assert(findPath(w, q.gate, wh.gate, true), 'quarry can deliver to granary');
+    for (const wh of w.state.buildings.filter((b) => b.type === 'warehouse')) {
+      assert(findPath(w, q.gate, wh.gate, true), 'quarry can deliver to every granary');
+    }
   });
   const repaired = runProposed('m8', STRATEGIES.m8[2]!);
-  assert(repaired.peakStoneStored >= 12, 'quarry brought 12 stone to granary before paving');
-  eq(repaired.stoneUsed, 12, '12 units consumed by cobbled road');
+  assert(repaired.peakStoneStored >= 23, 'the quarry brought the missing stone to the granaries before paving');
+  eq(repaired.stoneUsed, 23, '23 units consumed by the cobbled lane');
   assert(repaired.maxStoneWagon <= 4 && repaired.maxStoneWagon > 0, 'heavy stone load limited to four');
   assert((repaired.actionSecond ?? 0) > 45, 'not paved without delivered material');
 });

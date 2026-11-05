@@ -16,7 +16,7 @@ import {
   net, sharedInput, stars, stateHash, step, suggestLinkToStable, thinDelivery, type BuildingType, type Command, type World,
 } from '../src/sim/index';
 import { cureFor, gapTarget, paveSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
-import { M7_FISHER_SITE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
+import { M7_FISHER_SITE, M8_LANE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
 import { buildSite } from '../src/ui/site';
 import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
@@ -45,7 +45,7 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m5: (w) => [{ t: 'road', surface: 1, cells: col(w, 37, 38, 39) }],
   m6: (w) => [{ t: 'road', surface: 1, cells: col(w, 37, 38, 39) }],
   m7: () => [{ t: 'place', type: 'fisher', ...M7_FISHER_SITE }],
-  m8: (w) => [{ t: 'road', surface: 2, cells: row(w, 44, 45, 56) }],
+  m8: (w) => [{ t: 'road', surface: 2, cells: row(w, M8_LANE.y, M8_LANE.x1, M8_LANE.x2) }],
   m9: () => [{ t: 'place', type: 'woodcutter', ...M9_WOODCUTTER_SITE }],
   m10: () => [{ t: 'place', type: 'woodcutter', ...M10_SECOND_WOODCUTTER }],
   m11: () => [],
@@ -304,13 +304,13 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
 }
 
 export const timeline: string[] = [];
-export function eyePlayer(reactSec: number, hints: boolean, actions: Record<string, number>, seen: Record<string, number>, letter?: (w: World) => Command[], scan = false): Player {
+export function eyePlayer(reactSec: number, hints: boolean, actions: Record<string, number>, seen: Record<string, number>, letter?: (w: World) => Command[], scan = false, phase = EYE_PHASE): Player {
   timeline.length = 0;
   const letterP = letter ? scripted({ k: 0, at: 60, fix: letter }, actions) : null;
   return (w) => {
     if (letterP) letterP(w);
     const t = w.state.tick;
-    if (t > 0 && t % (reactSec * TICK_HZ) === (EYE_PHASE % reactSec) * TICK_HZ) {
+    if (t > 0 && t % (reactSec * TICK_HZ) === (phase % reactSec) * TICK_HZ) {
       const a = eyeTap(w, hints, seen, scan);
       if (a) { actions[a] = (actions[a] ?? 0) + 1; timeline.push(`${t / TICK_HZ}s ${a}`); }
     }
