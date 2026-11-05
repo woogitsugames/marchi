@@ -620,6 +620,7 @@ export const pl = {
   'diag.reset': 'Od nowa',
   // rain forecast 30 s ahead (night 5): localized
   'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
+  'hud.rainSoonDirt': 'Za pół minuty deszcz — grunt rozmięknie, wozy zwolnią',
   // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): localized
   'fix.granary': 'Postaw spichlerz',
   'fix.granaryWhy': 'Towar nie ma dokąd jechać: spichlerz przy drodze przyjmie go i zwolni plac.',
@@ -687,6 +688,7 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  'hud.rainSoonDirt',
   'fix.granary',
   'fix.granaryWhy',
   'fix.granaryHint',

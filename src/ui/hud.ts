@@ -446,7 +446,8 @@ export class Hud {
       for (const r of st.rain) {
         if (r.start > st.tick && r.start - st.tick <= RAIN_WARN_TICKS && r.start !== this.rainWarned) {
           this.rainWarned = r.start;
-          this.showNotice('rain', t('hud.rainSoon'));
+          // the cobble advice only where cobbles can be laid (the valley locks them before rank 2)
+          this.showNotice('rain', t(canSurface(world, 2).ok ? 'hud.rainSoon' : 'hud.rainSoonDirt'));
           break;
         }
       }
