@@ -69,15 +69,16 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
 
 /**
  * The "Naprawa" section (D-100): header, the fix button in a dock that sticks to the sheet's bottom edge while
- * the chain above it scrolls (a short landscape side sheet shows ~140 px of body), then the explaining hint in
- * the flow. A disabled button keeps its reason ("Brakuje 10 srebra") inside the dock, next to it.
+ * the chain above it scrolls (a short landscape side sheet shows ~140 px of body). The explaining hint docks with
+ * it (D-138: for the pace cures it is the reason itself, "Wóz 1 dojedzie po ładunek za 1:19"), under the button,
+ * and beside it on a short landscape sheet; a disabled button's reason ("Brakuje 10 srebra") likewise.
  * The dock must be a direct box child of the scrolling body: the sheet's parts are `display: contents`.
  */
 function fixSection(btn: string, hint: string, why: boolean): string {
   const head = `<div class="section-h">${esc(t('fix.title'))}</div>`;
   return why
     ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
-    : `${head}<div class="fix fix-dock">${btn}</div><div class="fix fix-note">${hint}</div>`;
+    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note">${hint}</div></div>`;
 }
 
 /**

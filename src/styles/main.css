@@ -1037,7 +1037,7 @@ bdi { unicode-bidi: isolate; }
 .sheet-body:has(.fix-dock) { padding-block-end: 0; }
 /* focus and scrollIntoView stop above the dock (its height + fade, measured by sheets.ts; a11y F1, D-120) */
 .sheet-body { scroll-padding-block-end: var(--dock-h, 0px); }
-.fix-note { margin-block-start: 4px; }
+.fix-dock .fix-note { margin: 0; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }
@@ -2396,6 +2396,12 @@ body.is-short .chain:not(.is-open) .c-more + li::before { top: -16px; height: 16
 body.is-short .chain .c-more-btn { position: absolute; top: -16px; inset-inline-end: 0; }
 /* the subject on one line: the sheet's title right above names it; its icon, status and stall clock (as on its map pin) stay */
 body.is-short .chain .c-first .link.is-self { min-height: 0; padding-block: 4px; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; }
+/* D-138 (ui audit day 9 P2-3): the subject is a plain row, not a card (it is not a button): no kit frame whose rails
+   touched the letters at this height, just icon, reason and clock on the parchment over a thin rule */
+body.is-short .chain .c-first .link.is-self {
+  border-image: none; border-width: 0; background: none; clip-path: none;
+  border-block-end: 1px solid rgb(74 72 67 / .45); padding-inline: 2px 4px;
+}
 body.is-short .chain .c-first .is-self .l-icon { width: 24px; height: 24px; }
 body.is-short .chain .c-first .is-self .l-icon svg { width: 22px; height: 22px; }
 /* the reason is never cut (D-136): a long one (German compounds, pseudo) wraps to a second line inside the row */
@@ -2406,6 +2412,18 @@ body.is-short .chain .c-first .is-self .l-since { display: block; font-size: 13p
 body.is-short .chain .link:not(.is-self) { min-height: 48px; padding-block: 4px; }
 body.is-short .fix-dock { padding-block: 4px; }
 body.is-short .fix-dock .fix-btn { min-height: 48px; }
+/* D-138 (ui audit day 9 P2-2): the docked hint is the fix's reason (pace cures: "Wóz 1 dojedzie po ładunek za 1:19"),
+   so on a short sheet it stands beside the button instead of under it: no extra height, at most three lines */
+body.is-short .fix-dock:has(> :nth-child(2)) {
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; column-gap: 10px;
+}
+body.is-short .fix-dock .fix-btn { font-size: 15px; padding-inline: 8px 10px; }
+body.is-short .fix-dock > .fix-note, body.is-short .fix-dock > .fix-why { max-height: 48px; overflow: hidden; }
+body.is-short .fix-dock .fix-note .s-hint, body.is-short .fix-dock .fix-why > span {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+  font-size: 12.5px; line-height: 1.25; overflow-wrap: anywhere;
+}
+body.is-short .fix-dock .fix-why svg { width: 16px; height: 16px; }
 
 /* ---- large system text (D-120, a11y audit F2): Android font size 150 %+ reaches the WebView as textZoom.
    .text-probe (layout.ts watchTextScale) measures it and sets body.is-bigtext. A side sheet then takes the full
