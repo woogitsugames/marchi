@@ -1,4 +1,4 @@
-# Handover — MARCHIA (stan 2026-11-05 ~00:00 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+# Handover — MARCHIA (stan 2026-11-05 ~08:30 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
 - Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`,
@@ -32,6 +32,12 @@
    dzień i zimowa noc), przebudowy parametrów 10 → 6 na klatkę. Bez decyzji (obraz bez zmian).
 0d. **Prompt dla innej sesji Claude (tłumaczenia 66 kluczy PENDING_KEYS na 15 języków):**
    `docs/orders/claude-session-07-i18n.md`, gałąź `claude/x-i18n-day9`.
+0f. **Paczka 9c scalona (08:30, main a385075):** D-134 duch bruku na drewnianym przęśle („Wyłóż most kamieniem”),
+   D-135 poprawka wejścia arkuszy + narzędzia (N5 był artefaktem pomiaru). Pomiar „pierwsze 10 minut” d: misja I w
+   pionie **wygrana** (run c przegrał o 2 chleby), „Kup wóz” przy każdym braku wozu. Pieczęci bez zmian. Testy 473/0.
+   Pytanie: kamera ma jeden raz podjechać do ducha bruku/błota poza ekranem (jak D-107)?
+   W toku: deweloper `claude/w-day9d` (zamek 915x412 de/pseudo, „Odłóż” pod pieczęcią w dolinie, prewarm low→high);
+   researcher `claude/research-day9c` (audyt UI dni 8c–9 na Fold/Flip/RTL).
 0e. **Wolna dolina — pierwsze 30 minut (research `docs/research/2026-11-05-sandbox-first-30.md`):** karta zastoju
    w dolinie > 99 % czasu pusta lub spokojna; gracz „tylko karta” ma rangę 1 po 14–17 min (cel 7–10), rangę 2 rzadko
    (cel 18–22); 600–1000 niewydanego srebra. Naprawione od razu: ostrzeżenie o deszczu nie radzi bruku, gdy bruk
