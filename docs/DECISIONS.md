@@ -2272,3 +2272,33 @@ F4: seed 1304 has no rock within 10 cells of the castle; "Postaw: kamieniołom" 
 is short), memoised per world/type until the network, building count or rank changes, and names the next building in
 `RANK_ORDER` instead (or nothing). Measured: `build?fail:quarry` 13 → 0 looks (card-*), 65 → 0 (`+grow`). UI only.
 (decided)
+
+**D-176 — A ghost refused for cutting a diagonal road says "Przetnie drogę".**
+D-172 follow-up: `validatePlace` answers BLOCKED at the corner cell of the cut diagonal step, which the ghost read as
+"a building is in the way". The ghost's reason is now picked by `blockedWhy` (`src/ui/site.ts`, pure, tested): when
+the BLOCKED cell is not a road and the exported pure `cutsDiagonalRoad` names the same cell for the ghost's footprint,
+the label is `place.cutsRoad` ("Przetnie drogę" / "Would cut the road"). The sim result is unchanged (no new error
+kind, hashes unchanged). UI only. (decided)
+
+**D-177 — The ghost's access-road estimate is the sheet's link.**
+BACKLOG P3 (day 9h): the ghost priced `suggestConnection` from the stable's gate, the sheet after placing offers
+`suggestLinkToStable` (cheapest silver from the stable's network, ties by diagonals, then by drive time from the link
+anchor) — "droga 5" vs 4. `suggestLinkToStable` is now a wrapper over `linkToStable(world, target, footprint)`, and
+`suggestLinkForSite(world, type, gate, footprint)` runs the same search for an unplaced building: its footprint blocks
+cells and diagonal corners as the placed building would, its gate counts as road (`place` lays it). Exact, not "ok. N":
+`tests/ghost-link.test.ts` places 40 sites per map (m1 woodcutter, m3 farm, sandbox sawmill) and compares cost and
+cells with the sheet. The old nearest-road fallback stays for a map with no stable network. Read-only, hashes
+unchanged. (decided)
+
+**D-178 — A calm stall heading the stall list keeps its brass pin.**
+D-174 follow-up shots (`docs/shots/day9j-market-full-412x915.jpg`, `-915x412.jpg`, staged by `tools/day9j-shots.mjs`:
+sandbox granary full of wood, castle wood price on the floor, trading post wood in flight at its limit — the natural
+state needs the 60-min card-only run; no mission reaches it with an idle player). The sheet line "Rynek bierze tyle,
+ile zje…" reads well, dark ink with the coin, no fix button. But as the only stall the granary was `stalls[0]` and the
+markers drew it as the crimson "worst" pin, although the HUD already treats a minor first stall as no stall (pace
+card). Now the worst pin is passed only when `stalls[0]` is not minor. UI only. (decided)
+
+**D-179 — The long fuzz covers every mission.**
+`ALL_FUZZ_MISSIONS` (default of `npm run fuzz`) is m1–m13 + sandbox (was m1–m6 + sandbox). The run count stays 50,
+so each map gets ~3–4 runs a default fuzz (it prints `missions: m1:3 …`); 50 runs × 6000 ticks take ~54 s, 0
+failures. `DEFAULT_FUZZ_MISSIONS` of `npm test` is unchanged (its seeds keep their scenarios). (decided)
