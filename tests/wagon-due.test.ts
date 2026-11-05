@@ -22,29 +22,32 @@ test('D-156: no job is held with the authored fleet or one extra wagon (m8, m3, 
   }
 });
 
-test('D-156: WAGON_DUE under L1 is calm, names a busy wagon, offers no wagon cure and ends within a minute (m8 +2)', () => {
-  assert(MISSIONS.m8!.wagons + 2 >= MISSIONS.m8!.wagons + DISPATCH2.fleetGate, 'm8 +2 opens the gate');
+// D-165: mission VIII's redesigned lane holds few jobs (+2: 8 samples), so the sample spans three fleets
+test('D-156: WAGON_DUE under L1 is calm, names a busy wagon, offers no wagon cure and ends within a minute (m4 +2, m3 +3, m8 +2)', () => {
   let samples = 0, longest = 0;
-  const since = new Map<string, number>();
-  run('m8', 2, (w) => {
-    const now = new Set<string>();
-    for (const b of w.state.buildings) {
-      const s = b.status;
-      if (s.k !== 'WAGON_DUE') continue;
-      samples++;
-      const key = `${b.id}:${s.good}`;
-      now.add(key);
-      if (!since.has(key)) since.set(key, w.state.tick);
-      longest = Math.max(longest, w.state.tick - since.get(key)!);
-      assert(!isStall(s) && !isCritical(s, b.stalledTicks), `${b.type} ${b.id}: WAGON_DUE is not a stall`);
-      eq(b.stalledTicks, 0, `${b.type} ${b.id}: stall clock`);
-      assert(s.at > w.state.tick, `${b.type} ${b.id}: the arrival is in the future`);
-      const wagon = w.state.wagons.find((q) => q.id === s.wagon);
-      assert(wagon && wagon.job !== null, `${b.type} ${b.id}: the named wagon is busy (tick ${w.state.tick} at ${s.at} wagon ${JSON.stringify(wagon && [wagon.job, wagon.busyTicks, wagon.status])})`);
-      assert(cureFor(w, b.id) !== 'wagon', `${b.type} ${b.id}: no "buy a wagon" for a held job`);
-    }
-    for (const k of [...since.keys()]) if (!now.has(k)) since.delete(k);
-  });
+  for (const [id, extra] of [['m4', 2], ['m3', 3], ['m8', 2]] as const) {
+    assert(MISSIONS[id]!.wagons + extra >= MISSIONS[id]!.wagons + DISPATCH2.fleetGate, `${id} +${extra} opens the gate`);
+    const since = new Map<string, number>();
+    run(id, extra, (w) => {
+      const now = new Set<string>();
+      for (const b of w.state.buildings) {
+        const s = b.status;
+        if (s.k !== 'WAGON_DUE') continue;
+        samples++;
+        const key = `${b.id}:${s.good}`;
+        now.add(key);
+        if (!since.has(key)) since.set(key, w.state.tick);
+        longest = Math.max(longest, w.state.tick - since.get(key)!);
+        assert(!isStall(s) && !isCritical(s, b.stalledTicks), `${b.type} ${b.id}: WAGON_DUE is not a stall`);
+        eq(b.stalledTicks, 0, `${b.type} ${b.id}: stall clock`);
+        assert(s.at > w.state.tick, `${b.type} ${b.id}: the arrival is in the future`);
+        const wagon = w.state.wagons.find((q) => q.id === s.wagon);
+        assert(wagon && wagon.job !== null, `${b.type} ${b.id}: the named wagon is busy (tick ${w.state.tick} at ${s.at} wagon ${JSON.stringify(wagon && [wagon.job, wagon.busyTicks, wagon.status])})`);
+        assert(cureFor(w, b.id) !== 'wagon', `${b.type} ${b.id}: no "buy a wagon" for a held job`);
+      }
+      for (const k of [...since.keys()]) if (!now.has(k)) since.delete(k);
+    });
+  }
   assert(samples > 100, `holds happen with a big fleet: ${samples}`);
   assert(longest <= 60 * 10, `a hold ends within a minute: ${longest} ticks`);
 });
