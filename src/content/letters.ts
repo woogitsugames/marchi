@@ -60,7 +60,7 @@ export const CONTRACT_LETTERS = {
         2: "Brood en planken bereikten het kasteel. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
         3: "Brood en planken bereikten het kasteel. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
-      lost: "De sneeuw kwam eerder dan een deel van de vracht. Controleer de oversteek en of wagens goederen ophalen.\n— Wszebor",
+      lost: "De eerste sneeuw is gevallen en een deel van de bestelling bleef onderweg. Kijk hieronder wat het langst stilstond en begin daar de volgende keer.\n— Wszebor",
     },
     es: {
       opening: "Al encargado de caminos: lleva 30 tablones y 20 hogazas al castillo antes de la primera nevada. El leñador y el aserradero están al otro lado del río, sin paso entre las orillas. Construye un cruce y mantén el transporte de harina y pan.\n— Wszebor, castellano de Łozinny Bród",
@@ -78,7 +78,7 @@ export const CONTRACT_LETTERS = {
         2: "Pane e assi sono arrivati al castello. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
         3: "Pane e assi sono arrivati al castello. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
-      lost: "È arrivata la prima neve e parte delle merci è rimasta per strada. Controlla il passaggio e il ritiro dei carichi.\n— Wszebor",
+      lost: "È arrivata la prima neve e parte dell'ordine è rimasta per strada. Guarda sotto cosa è rimasto fermo più a lungo e comincia da lì la prossima volta.\n— Wszebor",
     },
     "pt-BR": {
       opening: "Ao encarregado das estradas: entregue 30 tábuas e 20 pães ao castelo antes da primeira neve. O lenhador e a serraria ficam do outro lado do rio, sem ligação entre as margens. Construa uma travessia e mantenha o transporte de farinha e pão.\n— Wszebor, castelão de Łozinny Bród",
@@ -87,7 +87,7 @@ export const CONTRACT_LETTERS = {
         2: "Pães e tábuas chegaram ao castelo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
         3: "Pães e tábuas chegaram ao castelo. Três selos pelo excelente planejamento.\n— Wszebor",
       },
-      lost: "A neve chegou e parte da carga ficou pelo caminho. Verifique a travessia e a coleta pelas carroças.\n— Wszebor",
+      lost: "Chegou a primeira neve e parte do pedido ficou na estrada. Veja abaixo o que ficou parado por mais tempo e comece por aí na próxima vez.\n— Wszebor",
     },
     sv: {
       opening: "Till vägförvaltaren: för 30 plankor och 20 bröd till borgen före första snön. Skogshuggaren och sågverket ligger bortom floden, men stränderna saknar förbindelse. Bygg en överfart och håll mjöl och bröd i rörelse.\n— Wszebor, kastellan av Łozinny Bród",
