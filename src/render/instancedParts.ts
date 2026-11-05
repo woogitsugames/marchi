@@ -2,7 +2,7 @@
 // begin(), push(matrix) per instance, end(). Shared by the wagons and the yard workers.
 import { type BufferAttribute, type BufferGeometry, type Group, InstancedMesh, type Material, type Matrix4 } from 'three';
 import type { ModelPart } from './models/kit';
-import { modelMaterial } from './models/materials';
+import { instancedMaterial } from './models/materials';
 
 /**
  * Mark the first `n` instances of a per-instance attribute for upload. Only that prefix goes to the GPU
@@ -22,7 +22,7 @@ export class Parts {
   count = 0;
   constructor(parts: ModelPart[], readonly cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
     this.meshes = parts.map((p) => {
-      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (modelMaterial(p.material) as Material), cap);
+      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (instancedMaterial(p.material) as Material), cap);
       m.count = 0;
       m.frustumCulled = false;
       m.castShadow = true;

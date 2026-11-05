@@ -29,7 +29,7 @@ import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
 import { PartBuilder } from './models/kit';
-import { applyTextures, foliageLift, type MatKey, materialKinds, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
+import { applyTextures, foliageLift, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
 import { treeAtlasBytes } from './models/trees';
@@ -221,7 +221,7 @@ class View implements WorldView {
       const ok = sets.filter((it) => it !== null).map((it) => ({ key: it.key, set: { normalMap: it.s.normalMap, roughnessMap: it.s.roughnessMap } }));
       // compile the textured variants first (off the main thread), so binding them stalls no frame
       try {
-        if (this.warm) await this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, new Map(ok.map((it) => [modelMaterial(it.key), texturedVariant(it.key, it.set)])), this.kindMeshes());
+        if (this.warm) await this.warm.prewarmMaterialSwap(this.scene, this.rig.camera, new Map(ok.flatMap((it) => { const v = texturedVariant(it.key, it.set); return materialsFor(it.key).map((m) => [m, v] as const); })), this.kindMeshes());
       } catch (e) { console.warn('[view] shader pre-warm (textures)', e); }
       if (gen !== this.texGen) return;
       for (const it of ok) applyTextures(it.key, it.set);

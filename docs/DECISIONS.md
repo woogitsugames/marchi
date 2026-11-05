@@ -1786,3 +1786,15 @@ the game's usual height the stretch is a pale stone band and close up it is a la
 the stretch as a dashed pale-stone line. Only the pace card's mud stretch uses it (`nav.setGhost(cells, true)`); the
 gap finder and tutorial ghosts are unchanged. Render/UI only, hashes unchanged. Shots `day9b-m3-mud{,-near}-412x915.jpg`.
 (decided — owner to look at the shots)
+
+**D-133 — Render #5: instanced parts draw a mirror of each kind's material, with a guard (night 9; coordinator).**
+Research `docs/research/2026-11-05-render5-materials.md`: one material per kind was drawn by InstancedMesh (wagons,
+cargo, yard workers) and plain meshes (buildings, bridges), so three.js rebuilt program parameters at every switch.
+`instancedMaterial(key)` (materials module) is a clone sharing the shader hook and program key; `syncInstanced` copies
+maps, defines and alpha state on every base change made in the module (`applyTextures`, `setTreeQuality`), the
+texture/quality pre-warm (D-65) lists both (`materialsFor`, `treeQualityVariants`). Parameter rebuilds per render
+10 → 6 at 60 m, 10 → 2 at 320 m; `getParameters` allocations −40…−80 %; same program count (44/47/48), pixels
+bit-identical (low/high/ultra, winter night). Guard: `instancedMaterial('billboard')` throws (the impostor bake
+rewrites that material outside the module), `mirrorDrift()` lists out-of-sync mirrors, test
+`tests/materials-mirror.test.ts`. Pixel-identical, so no owner decision needed (owner had asked for shots only
+where pixels change). Render only, hashes unchanged. (decided)
