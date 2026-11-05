@@ -525,10 +525,11 @@ export function letterHtml(text: string): string {
 
 /**
  * The castellan's opening letter for a contract (D-46). Closes with one gesture: a tap anywhere, the
- * button or Escape; `onClose` runs once. Returns null for missions without letters (the free valley).
+ * button or Escape; `onClose` runs once. The free valley gets the castellan's welcome instead of a contract
+ * (D-151). Returns null for missions without letters.
  */
 export function buildOpeningLetter(missionId: string, onClose: () => void): HTMLElement | null {
-  const text = getContractLetter(missionId, 'opening');
+  const text = getContractLetter(missionId, 'opening') ?? (missionId === 'sandbox' ? t('letter.valleyOpening') : null);
   if (!text) return null;
   const letter = h('div.letter.l-opening' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'opening-title' });
   letter.innerHTML = `${letterSeal(true)}

@@ -435,6 +435,20 @@ export class App implements PanelNav {
     this.view.camera.focusCell(mid, { x: offset.x + pm.x - (b.l + b.r) / 2, y: offset.y + pm.y - (b.t + b.b) / 2 });
   }
 
+  /**
+   * A new game without a contract (the free valley) opens on the castle and its road (D-151): the map's
+   * default view is a meadow in portrait. Waits two frames so the HUD has laid out and the camera matrices
+   * are current; frameCells keeps the view when the castle is already well inside the free map area.
+   */
+  private frameCastleSoon(): void {
+    const w = this.world;
+    const castle = w.state.buildings.find((b) => b.type === 'castle');
+    if (!castle) return;
+    const tw = w.terrain.w;
+    const cells = [castle.y * tw + castle.x, (castle.y + castle.h - 1) * tw + castle.x + castle.w - 1, castle.gate];
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (this.world === w) this.frameCells(cells); }));
+  }
+
   /** "Next mission" on a won end letter: straight in, or through the menu's ask sheet when that contract
    *  has an unfinished save (D-36: never overwrite a save without asking). */
   private async startNext(m: MissionKey): Promise<void> {
@@ -485,6 +499,7 @@ export class App implements PanelNav {
     this.missionId = id;
     this.slot = slotFor(id, slot);
     this.enterGame(createWorld(id));
+    if (!this.world.state.mission.contract) this.frameCastleSoon();
     const forced = this.params.get('tut') === '1';
     const tutorial = id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'));
     const opening = letter && !this.debugStart ? buildOpeningLetter(id, () => {
