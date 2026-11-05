@@ -114,9 +114,12 @@ test('dispatch fixes keep bench state hashes (recorded from the pre-fix sim)', (
   // Re-baselined by D-44: (1) the last two bench100 samples (stall ledger only), then (3) every sample for
   // state v7 (`Wagon.n`, `nextWagonN`, version 7); with those fields stripped and version 6 the hashes equal
   // the pre-D-44 ones (713e69f3…/c648427c… series).
+  // Re-baselined by D-156 (dispatcher 2, L1): a 50/100-wagon bench is far above the starting fleet, so rule A
+  // holds jobs for busy wagons from the second sample on (the first, before any hold, is unchanged); with
+  // DISPATCH2.ruleA = false the previous values are reproduced.
   const want: Record<number, string[]> = {
-    50: ['7bfba2c92d9139f9', '1080e5f4625e18f9', 'c5ce8aca8c5fbc0a', '17ea054b961b95b7', 'c5147f050081829f', '3e2b9df1c76b0a6d'],
-    100: ['365d8f9d0273d365', '0ba7f5d9fcd00a49', '871ae932f4281235', '949b37549a859baa', '517282a5b17b586f', '2431f47789a793f6'],
+    50: ['7bfba2c92d9139f9', '423252ba3da33be0', '79b46f3791431ffd', 'b2a01c9de025c215', '3c43926ff74cb9fe', '997ebca7ffb26834'],
+    100: ['365d8f9d0273d365', 'a9e4044b5a02b7ad', '30ea7e203fabebec', 'c2a1462aa56d5cb6', '0116e749ae47d97e', 'b7a9c8d09e6af634'],
   };
 
   for (const n of [50, 100]) {
