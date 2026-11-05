@@ -1786,3 +1786,18 @@ the game's usual height the stretch is a pale stone band and close up it is a la
 the stretch as a dashed pale-stone line. Only the pace card's mud stretch uses it (`nav.setGhost(cells, true)`); the
 gap finder and tutorial ghosts are unchanged. Render/UI only, hashes unchanged. Shots `day9b-m3-mud{,-near}-412x915.jpg`.
 (decided — owner to look at the shots)
+
+**D-133 — The stone-span cure draws the sett ghost on the wooden deck (day 9c; BACKLOG P3 from D-132).**
+"Wyłóż most kamieniem" (`cure === 'pave'`: a wagon held at a wooden span, D-105, or the ice ahead outranking a
+wagon, D-117 `paveSpanFor`) drew nothing on the map: the sheet only called `setGhost` for the gap finder and the mud
+card. The building sheet now passes the span's cells with `pave = true` whenever its fix section is this cure. The
+span's cells are water cells under a wooden deck, where the terrain-draped preview (D-132) lies on the river bed,
+under the water and the planks — so the render gets a deck ghost (`src/render/deckGhost.ts`, owned by the view,
+fed from `setRoadPreview` and rebuilt with the network): one quad per proposed wooden bridge cell, 4 cm above the
+deck, 3 m wide, the same staggered grey-buff setts with dark joints and blended size octaves as the ground ghost,
+each sett slightly lighter or darker, an ochre rim along the parapets, depth-tested (a wagon on the deck covers it).
+Land cells of a proposal keep the terrain ghost; the flat (2D) view already draws the dashed stone line. Shots
+mission IV at 1:00 with two wagons bought (the D-117 state): `day9c-m4-pave{,-near}{-before,}-{412x915,915x412}.jpg`.
+Open: from the castle's sheet the span is off screen in both orientations at the game's usual zoom (the eye centres
+the castle), so the ghost is seen only after a pan — as with the mud stretch, no camera move was added.
+Render/UI only, hashes unchanged. (decided — owner to look at the shots)

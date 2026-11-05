@@ -37,3 +37,13 @@ test('ice ahead: IV — the wagon cure turns into the stone bridge once a wagon 
 test('ice ahead: missions without authored ice never yield', () => {
   for (const id of ['m2', 'm3', 'm7']) eq(iceAheadSpan(createWorld(id)), null, id);
 });
+
+test('ice ahead: the span to pave lies on wooden deck cells over water (the deck ghost draws there, D-133)', () => {
+  const w = createWorld('m4');
+  const ice = iceAheadSpan(w);
+  assert(!!ice, 'span found');
+  for (const c of ice!.cells) {
+    assert(w.terrain.water[c] === 1, `cell ${c} is water`);
+    eq(w.state.roads[c], 1, `cell ${c} is a wooden (dirt-surface) bridge cell`);
+  }
+});
