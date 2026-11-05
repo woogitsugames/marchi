@@ -2111,6 +2111,8 @@ mission I without a sheet 6–9 → 5–6. UI only, hashes unchanged. (decided)
 now run when the D-153 key moves (tick, command applied in pause, world, language, …); the plaque also redraws when a
 fold cleared its signature, the event card when the player opened/folded it or picked an item (its own dirty flag).
 The waybill/plaque `hidden` flags are written on state changes only. DOM verified with D-157 (same snapshots).
+`Hud.update` in the free valley, 600 synthetic frames (5 reps, two runs): ×1 12–16 → 5–6 ms (median of reps;
+−55 %), ×4 within noise (26–34 → 27–28 ms: a tick lands in 2 of 3 frames, so the key moves anyway).
 UI only, hashes unchanged. (decided)
 
 **D-159 — `status.WAGON_DUE` uses `{goodAcc}` in every language; the dispatcher-2 keys are translated (PENDING_KEYS empty).**
