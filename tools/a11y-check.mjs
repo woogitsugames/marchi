@@ -65,7 +65,7 @@ try {
     ok(axPins.length === pins.length, `pins: all ${pins.length} reach the accessibility tree as buttons (${axPins.length})`);
     await ctx.close();
   }
-  // --- a pin hidden under the HUD (short landscape: under the rail or the card) is no Tab stop (D-141)
+  // --- a pin hidden under the HUD (short landscape: under the rail or the card) is no Tab stop (D-143)
   {
     const { ctx, page } = await open('play=m1&ff=90&speed=0&view=flat', { viewport: { width: 915, height: 412 } });
     await page.waitForTimeout(1500);

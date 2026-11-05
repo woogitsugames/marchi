@@ -594,7 +594,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   // a won contract leads on to the next one (day 6: the way to mission II went through the menu)
   const next = won && act.next ? nextMission(st.mission.id) : null;
   const letter = h('div.letter' + (won ? '' : '.lost') as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'end-title' });
-  // three parts (D-140): the castellan's words, the record, what to do. Portrait reads them in that order; a short
+  // three parts (D-142): the castellan's words, the record, what to do. Portrait reads them in that order; a short
   // landscape screen sets the record beside the words and the action under the signature, the Flip cover screen
   // lifts the action right under the title (the rest scrolls below it)
   letter.classList.add('l-parts');

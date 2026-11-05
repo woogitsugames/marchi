@@ -239,7 +239,7 @@ export class Markers {
     }
     if (under !== b.el.classList.contains('is-under')) {
       b.el.classList.toggle('is-under', under);
-      // a pin hidden under the HUD (rail, card, sheet) leaves the Tab order too (D-141, ui audit day 9 P2-6): a
+      // a pin hidden under the HUD (rail, card, sheet) leaves the Tab order too (D-143, ui audit day 9 P2-6): a
       // keyboard focus nobody can see; the same building is reached through the card or the panel above it
       b.el.tabIndex = under ? -1 : 0;
     }

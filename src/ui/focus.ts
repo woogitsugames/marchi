@@ -13,8 +13,10 @@ export interface Rect {
  * Largest rect left of `scene` after cutting each obstacle away in turn (most important first): of the four
  * ways to cut an overlapping obstacle off (keep what lies above, below, left or right of it), the one
  * keeping the most area wins. Obstacles outside the current free rect are ignored.
+ * With `fit` (the screen size of something to frame, D-144) the cut that shows that box largest wins instead:
+ * a long, flat road stretch goes under a short side sheet rather than into the tall column beside it.
  */
-export function freeRect(scene: Rect, obstacles: readonly Rect[]): Rect {
+export function freeRect(scene: Rect, obstacles: readonly Rect[], fit?: { w: number; h: number }): Rect {
   let f = { ...scene };
   for (const o of obstacles) {
     if (o.r <= f.l || o.l >= f.r || o.b <= f.t || o.t >= f.b) continue;
@@ -26,7 +28,8 @@ export function freeRect(scene: Rect, obstacles: readonly Rect[]): Rect {
     ];
     let best = f, area = -1;
     for (const c of cuts) {
-      const a = Math.max(0, c.r - c.l) * Math.max(0, c.b - c.t);
+      const cw = Math.max(0, c.r - c.l), ch = Math.max(0, c.b - c.t);
+      const a = fit ? Math.min(cw / Math.max(1, fit.w), ch / Math.max(1, fit.h)) : cw * ch;
       if (a > area) { area = a; best = c; }
     }
     f = best;

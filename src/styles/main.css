@@ -2182,7 +2182,9 @@ body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
 /* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
-body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); bottom: auto; }
+/* ...and is only as tall as its content (D-145, ui audit day 9 P3-1): it hung from the bar down to the rail (the
+   split dock's bottom edge, above) and a short card left ~300 px of empty parchment over the map */
 /* Flex, wide (Fold inner half-opened): the open card starts under the coins / time / speed row, never over it —
    the bottom segment is short, so it keeps its bottom edge (the rail sits beside it, not under it) */
 body.mode-game.is-flex.is-side .sheet { top: calc(var(--bar-b) + 6px); }
@@ -2273,7 +2275,7 @@ body.is-clear .clear-restore {
   .letter:has(.kv) > * { break-inside: avoid; }
   .letter:has(.kv) .kv { break-before: column; }
   .letter:has(.kv) h2 { font-size: 28px; }
-  /* D-140 (ui audit day 9 P2-5): the end letter's action line and buttons go under the signature in the left
+  /* D-142 (ui audit day 9 P2-5): the end letter's action line and buttons go under the signature in the left
      column, beside the record, so a long ledger or a translated text no longer pushes them past the fold */
   .letter.l-parts:has(.kv) {
     column-count: auto; display: grid; column-gap: 28px; align-items: start;
@@ -2285,7 +2287,7 @@ body.is-clear .clear-restore {
   .letter.l-parts .lg-act { margin-block-start: 0; }
 }
 /* the Flip cover screen (360x380): title, then what to do and the buttons, then the words and the record below them
-   (the letter scrolls inside its scrim); the ledger keeps its worst cause only (D-140) */
+   (the letter scrolls inside its scrim); the ledger keeps its worst cause only (D-142) */
 body.is-mini .letter.l-parts { display: flex; flex-direction: column; }
 body.is-mini .letter.l-parts :is(.l-kicker, h2) { order: -2; }
 /* room for the focus ring of the button right under the title */
