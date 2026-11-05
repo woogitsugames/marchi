@@ -158,7 +158,7 @@ export function generateScenario(
   for (let t = 0; t < opts.ticks && k < ticks.length; t++) {
     while (k < ticks.length && ticks[k] === t) {
       const cmd = genCommand(w, rng);
-      commands.push({ tick: t, cmd });
+      commands.push({ tick: w.state.tick, cmd }); // absolute (= t from a fresh world; a snapshot starts later)
       applyCommand(w, cmd);
       k++;
     }
@@ -167,11 +167,20 @@ export function generateScenario(
   return { mission, coins, ticks: opts.ticks, saveAt, commands };
 }
 
+/** Named start states (serialized SimState) a scenario may use as `mission`, e.g. a late free valley (tools/fuzz-late.ts). */
+export const SNAPSHOTS = new Map<string, string>();
+
 /**
  * `mission` may carry a rank suffix, e.g. 'sandbox@5': the free valley with every rank up to 5
  * already reached (all chains unlocked), so the fuzzer can place the new buildings.
  */
 export function makeWorld(mission: string, coins: number | null): World {
+  const snap = SNAPSHOTS.get(mission);
+  if (snap !== undefined) {
+    const w = deserialize(snap);
+    if (coins !== null) w.state.coins = coins;
+    return w;
+  }
   const at = mission.indexOf('@');
   const w = createWorld(at < 0 ? mission : mission.slice(0, at));
   if (at >= 0) {
