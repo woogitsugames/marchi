@@ -10,6 +10,7 @@ import { PROPOSED_MISSIONS_7_9 } from './proposals/missions-7-9';
 import { PROPOSED_MISSIONS_10_12 } from './proposals/missions-10-12';
 import { M13_MISSION } from './proposals/m13';
 import { freshMarket, freshTown } from './town';
+import { freshTradePost, placeTradePost } from './tradePost';
 import type { World } from './network';
 import type { BuildingType, Good, GoodMap, RainSpell, SimState, Terrain } from './types';
 
@@ -306,6 +307,8 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
       }
     }
   }
+  // the free valley's trading post (state v9, D-170): a map building after the map's own, the slice last in key order
+  if (def.id === 'sandbox') state.tradePost = freshTradePost(placeTradePost(world));
   for (const poly of def.roads) {
     for (let i = 1; i < poly.length; i++) {
       const a = poly[i - 1]!, b = poly[i]!;

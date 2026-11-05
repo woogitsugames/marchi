@@ -8,7 +8,7 @@ import { STATE_VERSION, type World } from '../src/sim/index';
 import { makeEnvelope } from '../src/platform/saveGate';
 import { DECENT, runSandbox } from './bot-sandbox';
 
-if (STATE_VERSION !== 8) throw new Error(`state version is ${STATE_VERSION}, this fixture must be v8`);
+if ((STATE_VERSION as number) !== 8) throw new Error(`state version is ${STATE_VERSION}, this fixture must be v8`);
 let world: World | null = null;
 const r = runSandbox(DECENT, 40, { checkEvery: 600, onTick: (w) => { world = w; } });
 if (r.violations.length) throw new Error(r.violations.join('\n'));

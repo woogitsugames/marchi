@@ -2,6 +2,8 @@
 import { RANKS, STATE_VERSION, emptyGoods, goodsOf, type GoodMap, type SimState } from '../sim/index';
 import { freshMarket, freshTown } from '../sim/town';
 import { freshValleyEvents } from '../sim/events';
+import { freshTradePost, placeTradePost } from '../sim/tradePost';
+import { worldFromState } from '../sim/sim';
 import { LEGACY_SLOT, planLegacy } from './slots';
 import { SaveError, makeEnvelope, prepareLoad, type SaveEnvelope, type SaveErrorCode } from './saveGate';
 import { PROFILE_ID, envelopeChronicle, recordBest, sanitizeProfile, type Profile } from './profile';
@@ -121,6 +123,18 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
     const mission = s.mission as Record<string, unknown>;
     const out: Record<string, unknown> = { ...s, version: 8 };
     if (mission.id === 'sandbox') out.valleyEvents = freshValleyEvents();
+    return out;
+  },
+  // v8 -> v9: the free valley's trading post (D-170). A sandbox save gets the post building on the first free site
+  // of TRADE_POST.sites (placed with the sim's own place(), on a clone: id = nextId, gate road, netVersion + 1) and
+  // the tradePost slice appended last (key order of a fresh state). No free site: the slice with building -1 (the
+  // valley plays on without a post). Every other mission is unchanged apart from the version.
+  8: (s) => {
+    const mission = s.mission as Record<string, unknown>;
+    if (mission.id !== 'sandbox') return { ...s, version: 9 };
+    const out = JSON.parse(JSON.stringify({ ...s, version: 9 })) as Record<string, unknown>;
+    const st = out as unknown as SimState;
+    st.tradePost = freshTradePost(placeTradePost(worldFromState(st))); // terrain from mapId + seed, as on load
     return out;
   },
 };

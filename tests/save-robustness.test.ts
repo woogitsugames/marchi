@@ -60,11 +60,35 @@ function mid(id: string, ticks: number): World {
 
 const v4goods = (m: J): J => Object.fromEntries(GOODS_V4.map((g) => [g, m[g]]));
 
+/**
+ * state v9 (D-170): a state before v9 has no trading post (slice, building, its gate road, one netVersion step).
+ * Its id is simply gone (wagons share the id counter, so nextId stays).
+ */
+function dropTradePost(s: J): void {
+  if (!('tradePost' in s)) return;
+  delete s.tradePost;
+  const b = s.buildings.find((x: J) => x.type === 'tradePost');
+  if (!b) return;
+  s.buildings = s.buildings.filter((x: J) => x !== b);
+  s.roads[b.gate] = 0;
+  s.netVersion -= 1;
+}
+
+/** The fresh state as the v8 -> v9 migration rebuilds it: the post gets the next free id (D-170). */
+function postAsMigrated(s: J): void {
+  if (!('tradePost' in s)) return;
+  const b = s.buildings.find((x: J) => x.type === 'tradePost');
+  b.id = s.nextId;
+  s.tradePost.building = s.nextId;
+  s.nextId += 1;
+}
+
 /** The current state as an older schema (same as tests/save-chain.test.ts, extended with v6). */
 function downgrade(cur: J, to: 4 | 5 | 6): J {
   const s = JSON.parse(JSON.stringify(cur)) as J;
   s.version = to;
   delete s.valleyEvents; // state v8 (D-54)
+  dropTradePost(s); // state v9 (D-170)
   delete s.nextWagonN;
   for (const w of s.wagons) delete w.n;
   if (to === 6) return s;
@@ -102,6 +126,7 @@ for (const from of [4, 5, 6] as const) {
       await rawPut(oldEnvelope('auto', w, from, 111));
       // an old save had no valley events: the migration starts them empty (D-54), so does the reference
       if (w.state.valleyEvents) w.state.valleyEvents = freshValleyEvents();
+      postAsMigrated(w.state as unknown as J); // state v9 (D-170): the migration gives the post the next free id
       await adoptLegacySaves();
       const want = id === 'sandbox' ? 'valley1' : contractSlot(id);
       const list = await listSaves();

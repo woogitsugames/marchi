@@ -5,6 +5,7 @@ import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { fairPercent, orderOutstanding } from './events';
 import { MISSIONS } from './missions';
+import { linkedToStable, postOpen } from './tradePost';
 import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Contract, Good, Wagon } from './types';
 
@@ -452,6 +453,11 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
     // full counts what is already promised to arrive, matching the dispatcher's view of free space
     return sumGoods(b.stock) + sumGoods(b.incoming) >= storeCapOf(b) ? { k: 'STORAGE_FULL' } : { k: 'IDLE' };
+  }
+  if (b.type === 'tradePost') {
+    // closed until rank 4; open: a market that only needs a road from a stable (not just a road stub at its gate)
+    if (!postOpen(world)) return { k: 'IDLE' };
+    return linkedToStable(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
   }
   if (b.type === 'castle') {
     const m = world.state.mission;

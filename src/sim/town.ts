@@ -42,7 +42,7 @@ export function pricePct(saturation: number): number {
  * the valley fair bonus from events.ts fairPercent() (D-54): applied per unit on the saturation-adjusted
  * price and rounded down, so market.cents keeps collecting the fractions.
  */
-function centsAt(g: Good, saturation: number, fairPct: number): number {
+export function centsAt(g: Good, saturation: number, fairPct: number): number {
   const c = MARKET.base[g] * pricePct(saturation);
   return fairPct === 100 ? c : Math.floor((c * fairPct) / 100);
 }
