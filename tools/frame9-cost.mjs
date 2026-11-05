@@ -36,7 +36,7 @@ const mission = sandboxN ? 'sandbox' : scene;
 const ff = mission === 'sandbox' ? 30 : mission === 'm13' ? 20 : 240;
 const url = `${base.replace(/\/?$/, '/')}?play=${mission}&ff=${ff}&speed=0&quality=${quality}&dynres=0&perf=1&debug=1`;
 
-const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] });
+const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', ...(process.env.JSFLAGS ? ['--js-flags=' + process.env.JSFLAGS] : [])] }); // JSFLAGS=--no-turbo-inlining: allocations land in the callee, not the inlining caller
 const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: dpr, isMobile: true, hasTouch: true });
 const page = await ctx.newPage();
 const errs = [];
@@ -318,8 +318,9 @@ for (const cam of cams) {
     let h = here, hf = hereFn;
     if (f.src.startsWith('src/')) hf = `${f.fn} @${f.src}:${f.line}`;
     if (f.src.startsWith('src/')) h = f.src;
-    else if (isThree(f) && /^(getProgram|getParameters|getProgramCacheKey)/.test(f.fn)) h = 'three: getProgram/getParameters';
-    else if (isThree(f) && f.line === THREE_RENDER && !h) h = 'three: render (other)';
+    else if (isThree(f) && /^(getProgram|getParameters|getProgramCacheKey)/.test(f.fn)) { h = 'three: getProgram/getParameters'; hf = h; }
+    else if (isThree(f) && f.line === THREE_RENDER) { h = 'three: render (other)'; hf = h; }
+    else if (isThree(f) && f.line === THREE_SHADOW) { h = 'three: shadow pass'; hf = h; }
     if (n.selfSize) {
       const k = h ?? `${f.fn || 'native'}`; agg.set(k, (agg.get(k) ?? 0) + n.selfSize); atotal += n.selfSize;
       const kf = hf ?? k; aggFn.set(kf, (aggFn.get(kf) ?? 0) + n.selfSize);
