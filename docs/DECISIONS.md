@@ -1884,3 +1884,14 @@ A waiting wagon's slot in its queue (`roads.walkBack` from the head cell, `k × 
 every frame for every queued wagon (O(k²) per queue; the largest allocator at 200 wagons, 1.2–1.4 MB/s, 5–10 % CPU).
 The snap keeps the inputs (cell, slot, heading, road-network version) and the result; it walks again only when one
 changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Render only, hashes unchanged. (decided)
+
+**D-151 — The free valley opens with the castellan's letter and on the castle (owner 2026-11-05; research sandbox-first-30).**
+A new valley ledger (not a continued save, not a debug `?play=` start — the same rules as the contract letters, D-46/D-118)
+now shows a short opening letter from Wszebor: no order, no deadline; renown from goods sold at the castle market and
+the count of different goods raise the rank, the rank plaque shows what is missing; first step — a farm by the castle
+road, the wagons carry its harvest to the market. `buildOpeningLetter` falls back to the i18n key
+`letter.valleyOpening` (pl/en, PENDING_KEYS) when the mission has no contract letter, so the letter closes with one
+gesture and pauses the game exactly like the contract letters. The portrait start view was an empty meadow (the map's
+default orbit target); a new game without a contract now frames the castle footprint and gate (`frameCastleSoon` →
+`frameCells`, which keeps the view when the castle is already well inside the free map area, so landscape is untouched
+when it already shows it). UI only, hashes unchanged. Shots `docs/shots/valley-letter-*.jpg`. (decided — owner 2026-11-05)
