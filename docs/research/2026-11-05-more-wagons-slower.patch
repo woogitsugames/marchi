@@ -1,0 +1,86 @@
+diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
+index 510e282..9f314e1 100644
+--- a/src/sim/logistics.ts
++++ b/src/sim/logistics.ts
+@@ -1,6 +1,6 @@
+ // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
+ // Also computes each building's status (the "why is it stalled?" data).
+-import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
++import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+ import { contractTarget, storeCapOf } from './contract';
+ import { marketOpen, unitCents } from './town';
+ import { fairPercent, orderOutstanding } from './events';
+@@ -24,6 +24,7 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
+ class DistCache {
+   private fwd = new Map<number, DistMap>();
+   private rev = new Map<number, DistMap>();
++  private revLoaded = new Map<number, DistMap>();
+   constructor(private world: World) {}
+   /** time from node (loaded) to anything */
+   from(node: number): DistMap {
+@@ -37,10 +38,18 @@ class DistCache {
+     if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
+     return m;
+   }
++  /** time from anything (loaded) to node */
++  toLoaded(node: number): DistMap {
++    let m = this.revLoaded.get(node);
++    if (!m) { m = dijkstra(this.world, node, true, true); this.revLoaded.set(node, m); }
++    return m;
++  }
+   /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
+   release(): void {
+     for (const m of this.fwd.values()) releaseDistMap(this.world, m);
+     for (const m of this.rev.values()) releaseDistMap(this.world, m);
++    for (const m of this.revLoaded.values()) releaseDistMap(this.world, m);
++    this.revLoaded.clear();
+     this.fwd.clear();
+     this.rev.clear();
+   }
+@@ -140,7 +149,14 @@ export function dispatch(world: World): void {
+   const isSource = (s: Building, g: Good): boolean =>
+     (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0;
+ 
++  // Arrival-aware dispatch (research 2026-11-05): a wagon busy with a drop-off that will stand at
++  // `source` sooner (rest of its loaded trip + unloading + the empty run on) than the nearest free
++  // wagon gets there leaves the job for later: the far free wagon is not sent on a long empty run
++  // that reserves the goods while the near one would have taken them first. `held` tells the caller
++  // not to record a stall (a wagon is about to come); the next dispatch decides again.
++  let held = false;
+   const pickWagon = (source: Building): Wagon | null => {
++    held = false;
+     if (free.length === 0) return null;
+     const rev = dc.to(source.gate);
+     let best: Wagon | null = null, bestT = Infinity;
+@@ -148,6 +164,15 @@ export function dispatch(world: World): void {
+       const t = rev.dist[wagonNode(w)]!;
+       if (t < bestT) { bestT = t; best = w; }
+     }
++    if (!best) return null;
++    for (const w of st.wagons) {
++      const j = w.job;
++      if (!j || j.phase !== 'dropoff') continue;
++      const to = buildingById(world, j.to);
++      if (!to) continue;
++      const rest = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
++      if (rest + (to.gate === source.gate ? 0 : rev.dist[to.gate]!) < bestT) { held = true; return null; }
++    }
+     return best;
+   };
+ 
+@@ -182,6 +207,7 @@ export function dispatch(world: World): void {
+     }
+     if (free.length === 0) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
+     const wagon = pickWagon(best);
++    if (held) continue;
+     if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) {
+       unmet.set(key, { k: 'NO_WAGON', cause: 'NONE_CAN_REACH' });
+       continue;
+@@ -248,6 +274,7 @@ export function dispatch(world: World): void {
+       // point at the granary that would help: a full one, else one cut off from the roads (NO_ROAD)
+       if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh >= 0 ? fullWh : cutOffWh }); continue; }
+       const wagon = pickWagon(b);
++      if (held) continue;
+       if (!wagon || dc.to(b.gate).dist[wagonNode(wagon)] === Infinity) {
+         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
+         continue;

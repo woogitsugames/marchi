@@ -23,10 +23,11 @@ import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { newPaceLog, samplePace, type PaceLog } from '../src/sim/index';
 import { writeFileSync } from 'node:fs';
 
-// RULE_ARRIVE=1|2, RULE_TOPUP=N: research day 9g dispatcher prototypes (src/sim/logistics.ts RULES)
-import { RULES } from '../src/sim/logistics';
-RULES.arrive = Number(process.env.RULE_ARRIVE ?? 0) as 0 | 1 | 2;
-RULES.topUp = Number(process.env.RULE_TOPUP ?? 0);
+// RULE_ARRIVE=1..5, RULE_TOPUP=N: research day 9g dispatcher prototypes; they need
+// docs/research/2026-11-05-more-wagons-slower-variants.patch applied (RULES in src/sim/logistics.ts)
+import * as logistics from '../src/sim/logistics';
+const RULES = (logistics as unknown as { RULES?: { arrive: number; topUp: number } }).RULES;
+if (RULES) { RULES.arrive = Number(process.env.RULE_ARRIVE ?? 0); RULES.topUp = Number(process.env.RULE_TOPUP ?? 0); }
 
 // NOHINT=1: measure the build ghost without the missions' authored sites (before D-107)
 if (process.env.NOHINT) for (const m of Object.values(MISSIONS)) delete m.siteHints;

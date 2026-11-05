@@ -1,0 +1,18 @@
+diff --git a/src/sim/logistics.ts b/src/sim/logistics.ts
+index 510e282..cee66c9 100644
+--- a/src/sim/logistics.ts
++++ b/src/sim/logistics.ts
+@@ -115,6 +115,13 @@ export function dispatch(world: World): void {
+       }
+       continue;
+     }
++    // RESEARCH option C: a contract workshop whose every output is no longer wanted (castle covered for the
++    // whole letter, no other building takes it) asks for no more input
++    if (st.mission.contract && st.mission.result === 'running' && !outputGoods(b.type).some((og) => {
++      const castle = buildingById(world, st.mission.contract!.castle);
++      if (castle && st.mission.contract!.need[og] - castle.stock[og] - castle.incoming[og] > 0) return true;
++      return st.buildings.some((c) => c.type !== 'warehouse' && c.type !== 'castle' && inputGoods(c.type).includes(og));
++    })) continue;
+     for (const g of inputGoods(b.type)) {
+       const want = def.inCap - b.stock[g] - b.incoming[g];
+       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
