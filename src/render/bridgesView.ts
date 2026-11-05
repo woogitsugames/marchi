@@ -3,7 +3,9 @@
 // per material; rebuilt with the road network. Foam collars and short wakes where piles and
 // piers stand in the current: one extra transparent draw call over the water.
 import {
+  BoxGeometry,
   BufferAttribute,
+  CylinderGeometry,
   type BufferGeometry,
   BufferGeometry as Geometry,
   Color,
@@ -19,6 +21,7 @@ import {
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BRIDGE, type BridgeKind, bridgeEndParts, bridgeFootings, bridgeParts } from './models/bridges';
 import { type MatKey, modelMaterial } from './models/materials';
+import { PartBuilder } from './models/kit';
 import { noiseTexture } from './noiseTex';
 import type { BridgeCell } from './roads';
 
@@ -82,6 +85,9 @@ export class BridgesView {
   readonly group = new Group();
   private meshes: Mesh[] = [];
   private foam: Mesh | null = null;
+  /** Ice on the wooden spans (D-170): floes at the piles and frost on the deck, shown only while ice closes them. */
+  private ice: Mesh | null = null;
+  private iceOn = false;
   readonly foamMaterial = new ShaderMaterial({
     uniforms: UniformsUtils.merge([
       UniformsLib.fog,
@@ -105,7 +111,9 @@ export class BridgesView {
     for (const m of this.meshes) { this.group.remove(m); m.geometry.dispose(); }
     this.meshes = [];
     if (this.foam) { this.group.remove(this.foam); this.foam.geometry.dispose(); this.foam = null; }
+    if (this.ice) { this.group.remove(this.ice); this.ice.geometry.dispose(); this.ice = null; }
     if (!cells.length) return;
+    const icePb = new PartBuilder({ seed: 4711, ao: 0, dirt: 0 });
     const byMat = new Map<MatKey, BufferGeometry[]>();
     const S = new Matrix4(), R = new Matrix4(), F = new Matrix4().makeRotationY(Math.PI);
     const add = (parts: ReturnType<typeof bridgeParts>, m: Matrix4) => {
@@ -133,6 +141,25 @@ export class BridgesView {
       if (!hasCellNear(c.x - dx, c.z - dz)) add(bridgeEndParts(kind), m.clone().multiply(F));
       // foam quads at the water surface (only where the bed lies below it: the bank hides the rest)
       const ca = Math.cos(c.angle), sa = Math.sin(c.angle);
+      if (kind === 'wood') {
+        // frost on the deck: a thin pale sheet 2 cm over the planks (Mgła), and 3 floes at each pile pair
+        icePb.add('stone', new BoxGeometry(BRIDGE.woodWidth - 0.2, 0.02, BRIDGE.cell * c.stretch), {
+          color: '#c9c6bb', m: new Matrix4().makeTranslation(c.x, c.y + 0.02, c.z).multiply(R.makeRotationY(c.angle)), noise: 0.25, noiseFreq: 3, vary: 0.05,
+        });
+        for (const f of bridgeFootings(kind)) {
+          _v.set(f.x, 0, f.z * c.stretch).applyMatrix4(R.makeRotationY(c.angle));
+          for (let k = 0; k < 3; k++) {
+            const r = icePb.r(0.45, 0.8), ox = icePb.r(-1.4, 1.4), oz = icePb.r(-1.4, 1.4);
+            icePb.add('stone', new CylinderGeometry(r, r * 1.05, 0.12, 6), {
+              color: '#c9c6bb', m: new Matrix4().makeTranslation(c.x + _v.x + ox, waterLevel + 0.03, c.z + _v.z + oz)
+                .multiply(R.makeRotationY(icePb.r(0, 1)))
+                .multiply(new Matrix4().makeRotationX(icePb.r(-0.06, 0.06))),
+              jitter: 0.05, vary: 0.06,
+              shade: (_p, n, col) => { if (Math.abs(n.y) < 0.5) col.set('#b5b3a9'); },
+            });
+          }
+        }
+      }
       for (const f of bridgeFootings(kind)) {
         const lz = f.z * c.stretch;
         _v.set(f.x, 0, lz).applyMatrix4(R.makeRotationY(c.angle));
@@ -164,6 +191,23 @@ export class BridgesView {
       this.meshes.push(mesh);
       this.group.add(mesh);
     }
+    const iceParts = icePb.build();
+    if (iceParts.length) {
+      const g = mergeGeometries(iceParts.map((p) => {
+        const q = p.geometry.clone();
+        for (const k of Object.keys(q.attributes)) if (!KEEP.has(k)) q.deleteAttribute(k);
+        return q;
+      }), false);
+      if (g) {
+        g.computeBoundingSphere();
+        this.ice = new Mesh(g, modelMaterial('stone') as Material);
+        this.ice.name = 'bridge-ice';
+        this.ice.castShadow = true;
+        this.ice.receiveShadow = true;
+        this.ice.visible = this.iceOn;
+        this.group.add(this.ice);
+      }
+    }
     if (foamIdx.length) {
       const g = new Geometry();
       g.setAttribute('position', new BufferAttribute(new Float32Array(foam[0]!), 3));
@@ -178,6 +222,12 @@ export class BridgesView {
       this.foam.renderOrder = 2;
       this.group.add(this.foam);
     }
+  }
+
+  /** After each tick: the ice shows only while it closes the wooden spans (bridgeIceUntil >= 0). No allocation. */
+  setIce(on: boolean): void {
+    this.iceOn = on;
+    if (this.ice) this.ice.visible = on;
   }
 
   /** Per frame: foam drift and light (same sky tint as the shoreline foam). */
@@ -196,6 +246,7 @@ export class BridgesView {
   dispose(): void {
     for (const m of this.meshes) m.geometry.dispose();
     this.foam?.geometry.dispose();
+    this.ice?.geometry.dispose();
     this.foamMaterial.dispose();
   }
 }

@@ -60,10 +60,12 @@ export type BuildingKind =
   | 'quarry'
   | 'charcoalBurner'
   | 'malthouse'
-  | 'brewery';
+  | 'brewery'
+  // free valley late game (D-170): the trading post across the river
+  | 'tradePost';
 /** The D-29 chain buildings (fish, stone, charcoal, malt → beer). */
 export const CHAIN_KINDS: BuildingKind[] = ['fisher', 'quarry', 'charcoalBurner', 'malthouse', 'brewery'];
-export const BUILDING_KINDS: BuildingKind[] = ['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable', 'castle', ...CHAIN_KINDS];
+export const BUILDING_KINDS: BuildingKind[] = ['woodcutter', 'sawmill', 'farm', 'mill', 'bakery', 'warehouse', 'stable', 'castle', ...CHAIN_KINDS, 'tradePost'];
 
 export type PropKind = 'fence' | 'haystack' | 'barrel' | 'crate';
 export const PROP_KINDS: PropKind[] = ['fence', 'haystack', 'barrel', 'crate'];
@@ -118,6 +120,7 @@ export const BUILDING_CELLS: Record<BuildingKind, [number, number]> = {
   charcoalBurner: [2, 2],
   malthouse: [2, 2],
   brewery: [3, 2],
+  tradePost: [4, 4],
 };
 
 // palette (sRGB)
@@ -955,6 +958,107 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
 }
 
 // -------------------------------------------------------------------------------------------
+// Trading post across the river (free valley late game, D-170)
+// -------------------------------------------------------------------------------------------
+
+/** The merchant's house front: the stall opening (shutters are separate parts, closed or open). */
+const POST_STALL = { x: -1.4, y: 1.75, z: -0.4, w: 4.2, h: 1.2 };
+
+/**
+ * A merchant's house with a wide stall window, the town scales under a lean-to (a steelyard on a chain — the
+ * post's silhouette from afar), a fenced yard with an entry in the middle of the front, a trough, a hitching rail
+ * and barrels. Existing materials only, so it merges into the same draw calls as the other buildings.
+ */
+function tradePost(b: PartBuilder): Partial<BuildingModel> {
+  house(b, {
+    cx: 0, cz: -3.4, len: 9.6, dep: 6.0, wallH: 3.6, plinth: 0.6, pitch: 50,
+    roof: 'shingle', walls: 'daub', door: { u: 3.0, w: 1.2, h: 2.2 }, overhang: 0.6,
+  });
+  // the stall opening: a dark recess and a sill board
+  const st = POST_STALL;
+  box(b, 'wood', st.w, st.h, 0.12, trs(st.x, st.y, st.z + 0.02), { color: '#2a231c', noise: 0, ao: 0, dirt: 0 });
+  box(b, 'wood', st.w + 0.3, 0.12, 0.3, trs(st.x, st.y - st.h / 2 - 0.06, st.z + 0.12), { color: C.timberLight });
+  // the scales under a lean-to at the right front: four bark posts, a shingle roof sloping back
+  const sx = 4.8, sz = 3.0, pw = 3.6, pd = 3.2, ph = 3.2;
+  for (const dx of [-pw / 2, pw / 2]) for (const dz of [-pd / 2, pd / 2]) {
+    rod(b, 'bark', v3(sx + dx, -0.1, sz + dz), v3(sx + dx, ph + (dz < 0 ? 0.3 : 0), sz + dz), 0.12, 0.1, 6, { color: C.timber, vary: 0.1 });
+  }
+  box(b, 'wood', pw + 0.6, 0.1, pd + 0.6, trs(sx, ph + 0.25, sz, 0.12), { color: C.shingle, noise: 0.2, jitter: 0.01 }, 0.4);
+  beam(b, 'wood', v3(sx - pw / 2, ph - 0.1, sz), v3(sx + pw / 2, ph - 0.1, sz), 0.16, 0.16, { color: C.timber });
+  // steelyard: three chain links, the beam a little tilted, a hook with a sack, a stone weight
+  for (let i = 0; i < 3; i++) b.add('metal', new TorusGeometry(0.07, 0.02, 3, 6), { color: '#3a3733', m: trs(sx, ph - 0.3 - i * 0.13, sz, 0, i % 2 ? Math.PI / 2 : 0, 0) });
+  box(b, 'wood', 2.6, 0.12, 0.12, trs(sx, ph - 0.72, sz, 0, 0, 0.08), { color: C.timberLight });
+  rod(b, 'metal', v3(sx - 1.2, ph - 0.8, sz), v3(sx - 1.2, ph - 1.3, sz), 0.02, 0.02, 4, { color: '#3a3733' });
+  b.add('cloth', new SphereGeometry(0.32, 8, 6), { color: '#9c8458', m: trs(sx - 1.2, ph - 1.6, sz, 0, 0, 0, 1, 1.25, 1), jitter: 0.03, renormal: true });
+  rod(b, 'metal', v3(sx + 1.15, ph - 0.6, sz), v3(sx + 1.15, ph - 0.95, sz), 0.015, 0.015, 4, { color: '#3a3733' });
+  b.add('stone', new SphereGeometry(0.2, 8, 6), { ...stoneO(C.stoneDark), m: trs(sx + 1.15, ph - 1.15, sz) });
+  // the yard: post-and-rail fence on the sides and front (entry in the middle), wattle behind the house
+  fenceRun(b, v3(-7.6, 0, -7.6), v3(-7.6, 0, 7.6));
+  fenceRun(b, v3(7.6, 0, -7.6), v3(7.6, 0, 7.6));
+  fenceRun(b, v3(-7.6, 0, 7.6), v3(-2.2, 0, 7.6));
+  fenceRun(b, v3(2.2, 0, 7.6), v3(7.6, 0, 7.6));
+  wattleRun(b, v3(-7.6, 0, -7.6), v3(7.6, 0, -7.6));
+  // sign post at the entry: a cut disc with a bar (a coin on a scale), no letters
+  rod(b, 'bark', v3(-2.6, -0.1, 7.7), v3(-2.6, 2.8, 7.7), 0.09, 0.08, 6, { color: C.timber });
+  b.add('wood', new CylinderGeometry(0.5, 0.5, 0.06, 12), { color: C.boards, m: trs(-2.6, 2.3, 7.82, Math.PI / 2, 0, 0) });
+  box(b, 'wood', 0.7, 0.08, 0.04, trs(-2.6, 2.3, 7.87), { color: C.boardsDark });
+  // always there: a trough, a hitching rail, a barrel
+  box(b, 'wood', 1.8, 0.4, 0.5, trs(-5.2, 0.2, 2.4), { color: C.timber }, 0.3);
+  box(b, 'wood', 1.6, 0.06, 0.4, trs(-5.2, 0.38, 2.4), { color: '#3c4a4c', ao: 0, dirt: 0 });
+  for (const x of [-6.4, -3.6]) rod(b, 'bark', v3(x, -0.1, 4.6), v3(x, 1.0, 4.6), 0.08, 0.07, 6, { color: C.timber });
+  beam(b, 'wood', v3(-6.5, 0.95, 4.6), v3(-3.5, 0.95, 4.6), 0.12, 0.12, { color: C.timberLight });
+  barrelGeom(b, trs(-4.6, 0, 0.5));
+  return { gate: v3(0, 0, 8) };
+}
+
+let postClosedCache: ModelPart[] | null = null;
+let postOpenCache: ModelPart[] | null = null;
+
+/** The trading post before rank 4: both shutters closed in the stall opening (same frame as tradePost()). */
+export function tradePostClosedParts(): ModelPart[] {
+  if (postClosedCache) return postClosedCache;
+  const b = new PartBuilder({ seed: 983, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
+  const st = POST_STALL;
+  for (const dy of [-st.h / 4, st.h / 4]) {
+    box(b, 'wood', st.w, st.h / 2 - 0.02, 0.07, trs(st.x, st.y + dy, st.z + 0.1), { color: C.boards, vary: 0.1 });
+    for (const dx of [-st.w / 3, st.w / 3]) box(b, 'metal', 0.5, 0.06, 0.02, trs(st.x + dx, st.y + dy, st.z + 0.15), { color: '#33302c' });
+  }
+  box(b, 'wood', 0.12, st.h + 0.1, 0.08, trs(st.x, st.y, st.z + 0.15), { color: C.timber }); // the bar
+  postClosedCache = b.build();
+  return postClosedCache;
+}
+
+/**
+ * The trading post open (rank 4): the lower shutter let down as a counter on two struts, the upper one propped up
+ * as an awning, crates, sacks and planks on show, and the one warm accent — a small Glina pennant by the scales.
+ */
+export function tradePostOpenParts(): ModelPart[] {
+  if (postOpenCache) return postOpenCache;
+  const b = new PartBuilder({ seed: 991, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
+  const st = POST_STALL;
+  const front = st.z + 0.06;
+  const ctrY = st.y - st.h / 2;
+  box(b, 'wood', st.w, 0.07, st.h / 2 + 0.1, trs(st.x, ctrY, front + st.h / 4 + 0.05), { color: C.boards, vary: 0.1 });
+  for (const dx of [-st.w / 2 + 0.3, st.w / 2 - 0.3]) beam(b, 'wood', v3(st.x + dx, ctrY - 0.7, front), v3(st.x + dx, ctrY - 0.04, front + st.h / 2 - 0.05), 0.07, 0.07, { color: C.timber });
+  // awning: the upper shutter tilted up on two poles
+  const awY = st.y + st.h / 2 + 0.05;
+  box(b, 'wood', st.w, 0.07, st.h / 2 + 0.2, trs(st.x, awY + 0.18, front + 0.38, -0.5), { color: C.boards, vary: 0.1 });
+  for (const dx of [-st.w / 2 + 0.2, st.w / 2 - 0.2]) rod(b, 'bark', v3(st.x + dx, -0.1, front + 0.85), v3(st.x + dx, awY + 0.38, front + 0.72), 0.045, 0.04, 5, { color: C.timber });
+  // wares: crates by the counter, sacks, a plank stack
+  crateGeom(b, trs(st.x - 2.4, 0.3, 0.6));
+  crateGeom(b, trs(st.x - 1.8, 0.3, 1.1, 0, 0.4));
+  crateGeom(b, trs(st.x - 2.1, 0.88, 0.8, 0, 0.2), 0.5);
+  sack(b, st.x + 2.0, 0.6, 0.3);
+  sack(b, st.x + 2.5, 0.9, 1.2, '#8f7a52');
+  plankStack(b, -4.8, 6.0, Math.PI / 2, 2.6, 2);
+  // pennant on a 5 m pole by the scales
+  rod(b, 'wood', v3(6.9, -0.1, 4.9), v3(6.9, 5.0, 4.9), 0.05, 0.04, 5, { color: C.timber, ao: 0 });
+  box(b, 'cloth', 1.2, 0.45, 0.03, trs(6.9 - 0.62, 4.7, 4.9), { color: C.clay, ao: 0, dirt: 0 });
+  postOpenCache = b.build();
+  return postOpenCache;
+}
+
+// -------------------------------------------------------------------------------------------
 // Public API
 // -------------------------------------------------------------------------------------------
 
@@ -972,6 +1076,7 @@ const BUILDERS: Record<BuildingKind, (b: PartBuilder) => Partial<BuildingModel>>
   charcoalBurner,
   malthouse,
   brewery,
+  tradePost,
 };
 
 const cache = new Map<BuildingKind, BuildingModel>();

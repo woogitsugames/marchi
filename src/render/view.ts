@@ -19,7 +19,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import type { World } from '../sim/index';
-import { isRaining, net, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
+import { bridgeIceUntil, isRaining, net, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
 import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
 import { DeckGhost } from './deckGhost';
@@ -362,6 +362,8 @@ class View implements WorldView {
     if (!this.world || !this.wagons) return;
     if (this.world.state.netVersion !== this.netVer) this.syncNetwork();
     this.wagons.afterTick(this.world, performance.now());
+    // winter ice on the wooden spans (D-170): only a visibility flag per tick
+    this.bridges.setIce(bridgeIceUntil(this.world) >= 0);
   }
 
   frame(alpha: number, dtMs: number): void {
