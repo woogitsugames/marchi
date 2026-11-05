@@ -62,8 +62,15 @@ export function revealAboveDock(body: HTMLElement, el: HTMLElement): void {
  * to sit under it while the subject row (already named by the title) took the space.
  */
 function revealRoot(sheet: Sheet): void {
-  const root = sheet.body.querySelector<HTMLElement>('.chain > li:last-child');
-  if (root) revealAboveDock(sheet.body, root);
+  const reveal = (): void => {
+    const root = sheet.body.querySelector<HTMLElement>('.chain > li:last-child');
+    if (root) revealAboveDock(sheet.body, root);
+  };
+  reveal();
+  // once more after two frames: a sheet opened while the screen's layout classes or the dock were still settling
+  // (a start with ?open=, a rotation) measured a different body; the player's own scroll in between wins
+  const at = sheet.body.scrollTop;
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (sheet.body.isConnected && sheet.body.scrollTop === at) reveal(); }));
 }
 
 export class Sheets {
