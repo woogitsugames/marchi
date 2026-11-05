@@ -1,7 +1,7 @@
-// Mission VIII ladder (redesign, D-165): passive, wagons only k = 1..max, the lesson (cobbles) + k wagons,
+// Mission VIII ladder (redesign, D-165, docs/missions/m8.md): passive, wagons only k = 1..max, the lesson (cobbles) + k wagons,
 // and the "reasonable player" (eye / eye+ every 10/30/60 s, scan, letter) from tools/balance-night6.ts.
 //   npx tsx tools/m8-ladder.ts [--quick]
-import { MISSIONS, TICK_HZ, applyCommand, createWorld, lineCells, stoneAvailable, type Command, type World } from '../src/sim/index';
+import { MISSIONS, TICK_HZ, applyCommand, type Command, type World } from '../src/sim/index';
 import { LESSON, eyePlayer, run, stableOf, type Row } from './balance-night6';
 
 type Player = (w: World) => void;
@@ -58,4 +58,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (r.seen) console.log('    ' + Object.entries(r.seen).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${v}x ${k}`).join(' | '));
   }
 }
-void lineCells; void stoneAvailable; void createWorld;
