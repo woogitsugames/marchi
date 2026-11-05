@@ -17,6 +17,9 @@ import { assert, eq, test } from './harness';
  * Recorded on the pre-D-54 build (commit 10924b2, state v7) with tools-equivalent runs: every
  * non-sandbox mission, 12 min, with and without 2 wagons bought at 0:30, hash of the state with the
  * version set to 0 every 4 min. State v8 must leave all of them untouched.
+ * Re-baselined by D-156 (dispatcher 2, L1): the buy2 runs of m2, m3, m4, m5, m6, m8, m9, m11 and m12 change (2 bought
+ * wagons open the fleet gate of rule A); every buy0 run, the lab and m1/m7/m10/m13 buy2 are untouched,
+ * and with DISPATCH2.ruleA = false the previous values are reproduced.
  */
 const CONTRACT_GOLDEN: Record<string, string> = {
   'lab|buy0': 'f1d465eefe140104,70bb6c651df3077d,3288c1723c2c39b0',
@@ -26,28 +29,28 @@ const CONTRACT_GOLDEN: Record<string, string> = {
   'm10|buy0': '02d241c44b2bcc79,4af90ada046d346e,ddf332951ee78196',
   'm10|buy2': '0eeb5cd9a58cfc9b,b3657227eabf727e,f6bd74fd2d859b30',
   'm11|buy0': '2efa46c20498c847,e6b574e9833b9f71,a0af05f383cbb207',
-  'm11|buy2': '42100d3a3771b2f2,27b49a2782f956f9,a7784da05689f41f',
+  'm11|buy2': '42100d3a3771b2f2,09e9c22768b86b6d,1e718a415f3f7c65',
   'm12|buy0': '3940ac24f4ff8fe4,137dfb930ff7bdde,f1ee1180bc2be3e0',
-  'm12|buy2': 'd5dc1154eafb18f9,2bdeeb6b83f583a7,8de799c191afc20d',
+  'm12|buy2': 'c6b5d3097e506523,7738e7c4380c5671,bae292a1b76fe826',
   // mission XIII (night 6, D-102): recorded when it was added; the older entries did not change
   'm13|buy0': '87e09ed110e446b4,bf3ce0da782b609f,0bed2d07e81cd3e6',
   'm13|buy2': 'df8437e030684067,b5c569eb125532e6,38be8500152843f4',
   'm2|buy0': 'b3acb2f7ad67ff52,b015a53f06f78528,79c49585665d1105',
-  'm2|buy2': 'd3f03ac9ead58690,ae2d30621d81cecc,5988b53ec95b7d97',
+  'm2|buy2': 'b57515a568fec6e7,e89c45171850e6c5,b439ab7698d72ac4',
   'm3|buy0': '19ee2ab5f4a5a6b1,037568dac6697773,2e74a70e8f3ee796',
-  'm3|buy2': '288a933ea7a239bd,038db9c335fba663,f0576a8c356df76d',
+  'm3|buy2': 'af51fe7eb68381f4,2ab17f60726b7e74,833cc93cad075e83',
   'm4|buy0': '00b4b867756865f4,1c31bedc433eba62,07f962aa1f4f794b',
-  'm4|buy2': '751416d7fbeb19ae,1a0b1a53d4660a88,48f3fbe61c0cbe8f',
+  'm4|buy2': 'f5e7a93bf19407a6,bc02d3b781401023,037224c52ee0bc91',
   'm5|buy0': '382f984e99443512,44e8520373ca035e,1024cb0cb41b8ddb',
-  'm5|buy2': 'b21b3d9113ae266e,03fafb530a193f38,5f476266f1077f92',
+  'm5|buy2': '8be41a5640785b56,154f316289a00e47,d9a9a1bdaf09e889',
   'm6|buy0': 'd76efc378da5d55f,ab47945326b59163,e0795bc353e4dd78',
-  'm6|buy2': '2e3556b0c5c6f8e5,4847239996a826a1,e1e2b05e0b430e98',
+  'm6|buy2': '1e6f3901c685b1c7,179b230c64b87688,f2da405bd1c2361f',
   'm7|buy0': '467a6e9d4299ab63,c37f35314bef3b09,86b72066c8b4d8f2',
   'm7|buy2': 'd707eb36d0906711,9a219174a05782b8,ef88461b9dce8377',
   'm8|buy0': '5955cbef4faef7a6,0e99bfc89f1bddc2,229e1574815296fe',
-  'm8|buy2': '79477c3dc55ed409,1a8a6106cf8efc38,7fb4eb0b1ddc9ff3',
+  'm8|buy2': 'c3d5ff9b3ae0308b,05724e325957a586,305b4027952099be',
   'm9|buy0': 'e7df68ecb3830e35,9fcaba7f51a9428b,1e39ee7363ae4129',
-  'm9|buy2': 'fc0af584f360b660,7e1c79eb092fadbe,efb1c52815e58360',
+  'm9|buy2': '43a510290102fe5a,3e9b967ba61d5b84,3ba10082a6d666dc',
 };
 
 function runContract(id: string, buy: number): string {

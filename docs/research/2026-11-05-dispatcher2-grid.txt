@@ -1,0 +1,579 @@
+done a0-C
+done a0-cs
+done a0-cf2
+done A-c0
+done A-C
+done A-cs
+done A-cf2
+done r15-c0
+done r15-cf2
+done r15-cs
+done r15-C
+done r2-c0
+done r2-cs
+done r2-C
+done r2-cf2
+done r3-c0
+done r3-cs
+done r3-C
+done m5-c0
+done r3-cf2
+done m5-cs
+done m5-C
+done m5-cf2
+done m10-c0
+done m10-C
+done m10-cs
+done m10-cf2
+done m30-c0
+done m30-cs
+done m30-C
+done d10-c0
+done m30-cf2
+done d10-C
+done d10-cs
+done d10-cf2
+done d20-c0
+done d20-C
+done d20-cs
+done d20-cf2
+done d40-c0
+done d40-C
+done d40-cs
+done d40-cf2
+done f2-c0
+done f2-C
+done f2-cs
+done f2-cf2
+done f3-c0
+done f3-C
+done f3-cs
+done f3-cf2
+done mf40-c0
+done mf40-C
+done mf40-cs
+done mf40-cf2
+done mf60-c0
+done mf60-C
+done mf60-cs
+done f2r2-c0
+done mf60-cf2
+done f2r2-cs
+done f2r2-C
+done f2m10-c0
+done f2r2-cf2
+done f2m10-C
+done f2m10-cs
+done io-c0
+done f2m10-cf2
+done io-cs
+done io-C
+done io-cf2
+done pm-c0
+done pm-cs
+done pm-C
+done f2io-c0
+done pm-cf2
+done f2io-C
+done f2io-cs
+done f2io-cf2
+| variant | rules | ladder fails | bot I | survey runs | slower | seal loss | gain | mean Δ s | worst | eye Σ seals | eye Σ min |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| a0-C | a:0,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| a0-cs | a:0,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| a0-cf2 | a:0,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| A-c0 | a:1,c:0 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| A-C | a:1,c:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| A-cs | a:1,c:1,cStrict:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| A-cf2 | a:1,c:1,cFreeCount:2 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r15-c0 | aRatio:1.5,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r15-C | aRatio:1.5,c:1 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r15-cs | aRatio:1.5,c:1,cStrict:1 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r15-cf2 | aRatio:1.5,c:1,cFreeCount:2 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r2-c0 | aRatio:2,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r2-C | aRatio:2,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r2-cs | aRatio:2,c:1,cStrict:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r2-cf2 | aRatio:2,c:1,cFreeCount:2 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r3-c0 | aRatio:3,c:0 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r3-C | aRatio:3,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r3-cs | aRatio:3,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| r3-cf2 | aRatio:3,c:1,cFreeCount:2 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m5-c0 | aMargin:5,c:0 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m5-C | aMargin:5,c:1 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m5-cs | aMargin:5,c:1,cStrict:1 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m5-cf2 | aMargin:5,c:1,cFreeCount:2 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m10-c0 | aMargin:10,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m10-C | aMargin:10,c:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m10-cs | aMargin:10,c:1,cStrict:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m10-cf2 | aMargin:10,c:1,cFreeCount:2 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m30-c0 | aMargin:30,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m30-C | aMargin:30,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m30-cs | aMargin:30,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| m30-cf2 | aMargin:30,c:1,cFreeCount:2 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d10-c0 | aMaxDue:10,c:0 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d10-C | aMaxDue:10,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d10-cs | aMaxDue:10,c:1,cStrict:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d10-cf2 | aMaxDue:10,c:1,cFreeCount:2 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d20-c0 | aMaxDue:20,c:0 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d20-C | aMaxDue:20,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d20-cs | aMaxDue:20,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d20-cf2 | aMaxDue:20,c:1,cFreeCount:2 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d40-c0 | aMaxDue:40,c:0 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d40-C | aMaxDue:40,c:1 | 9 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d40-cs | aMaxDue:40,c:1,cStrict:1 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| d40-cf2 | aMaxDue:40,c:1,cFreeCount:2 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2-c0 | aFreeCount:2,c:0 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2-C | aFreeCount:2,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2-cs | aFreeCount:2,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2-cf2 | aFreeCount:2,c:1,cFreeCount:2 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f3-c0 | aFreeCount:3,c:0 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f3-C | aFreeCount:3,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f3-cs | aFreeCount:3,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f3-cf2 | aFreeCount:3,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf40-c0 | aMinFree:40,c:0 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf40-C | aMinFree:40,c:1 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf40-cs | aMinFree:40,c:1,cStrict:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf40-cf2 | aMinFree:40,c:1,cFreeCount:2 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf60-c0 | aMinFree:60,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf60-C | aMinFree:60,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf60-cs | aMinFree:60,c:1,cStrict:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf60-cf2 | aMinFree:60,c:1,cFreeCount:2 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2r2-c0 | aFreeCount:2,aRatio:2,c:0 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2r2-C | aFreeCount:2,aRatio:2,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2r2-cs | aFreeCount:2,aRatio:2,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2r2-cf2 | aFreeCount:2,aRatio:2,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2m10-c0 | aFreeCount:2,aMargin:10,c:0 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2m10-C | aFreeCount:2,aMargin:10,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2m10-cs | aFreeCount:2,aMargin:10,c:1,cStrict:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2m10-cf2 | aFreeCount:2,aMargin:10,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| io-c0 | aCastle:0,aPush:0,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| io-C | aCastle:0,aPush:0,c:1 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| io-cs | aCastle:0,aPush:0,c:1,cStrict:1 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| io-cf2 | aCastle:0,aPush:0,c:1,cFreeCount:2 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| pm-c0 | aPush:0,aMarket:0,c:0 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| pm-C | aPush:0,aMarket:0,c:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| pm-cs | aPush:0,aMarket:0,c:1,cStrict:1 | 7 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| pm-cf2 | aPush:0,aMarket:0,c:1,cFreeCount:2 | 8 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2io-c0 | aFreeCount:2,aCastle:0,aPush:0,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2io-C | aFreeCount:2,aCastle:0,aPush:0,c:1 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2io-cs | aFreeCount:2,aCastle:0,aPush:0,c:1,cStrict:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| f2io-cf2 | aFreeCount:2,aCastle:0,aPush:0,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+  a0-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  a0-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  a0-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  a0-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  a0-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/2
+  a0-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  a0-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  a0-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  a0-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  a0-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/2/2
+  a0-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  a0-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  A-c0: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  A-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  A-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  A-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.02
+  A-c0: m9: all thre: nic / no action: reaches the contract: expected won, got lost
+  A-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  A-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  A-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  A-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  A-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  A-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  A-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.11
+  A-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  A-C: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  A-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  A-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  A-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  A-cs: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  A-cs: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.02
+  A-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/2
+  A-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  A-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  A-cf2: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  A-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  A-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  A-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.02
+  A-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 2/2/3
+  A-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  A-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  A-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  r15-c0: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r15-c0: mission 5: n: m5 nothing: seals: expected 1, got 3
+  r15-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.87/9.15/10.39
+  r15-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  r15-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  r15-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  r15-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r15-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  r15-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.87/9.05/10.43
+  r15-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  r15-C: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  r15-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  r15-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r15-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  r15-cs: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.87/9.05/10.39
+  r15-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/2
+  r15-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  r15-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  r15-cf2: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r15-cf2: mission 5: n: m5 nothing: seals: expected 1, got 3
+  r15-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  r15-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.87/9.15/10.39
+  r15-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  r15-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  r15-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  r2-c0: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r2-c0: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  r2-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  r2-c0: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  r2-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  r2-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  r2-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r2-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  r2-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  r2-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  r2-C: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  r2-cs: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  r2-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  r2-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  r2-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  r2-cf2: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r2-cf2: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  r2-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  r2-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  r2-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/3
+  r2-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  r3-c0: mission 4: n: m4 stone bridge before ice @1:00: seals: expected 3, got 2
+  r3-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  r3-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  r3-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  r3-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r3-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  r3-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  r3-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  r3-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  r3-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  r3-cs: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  r3-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  r3-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  r3-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  r3-cf2: mission 4: n: m4 stone bridge before ice @1:00: seals: expected 3, got 2
+  r3-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  r3-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  r3-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  m5-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m5-c0: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m5-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m5-c0: m12: full gr: malthouse OUTPUT_FULL points through explainBuilding to full granary
+  m5-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  m5-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  m5-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m5-C: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  m5-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m5-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m5-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m5-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m5-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m5-C: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  m5-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m5-cs: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  m5-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m5-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m5-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m5-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m5-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m5-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  m5-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m5-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m5-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m5-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m5-cf2: m12: full gr: malthouse OUTPUT_FULL points through explainBuilding to full granary
+  m5-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  m5-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  m5-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m10-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m10-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  m10-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m10-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m10-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  m10-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m10-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m10-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m10-C: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  m10-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m10-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m10-C: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  m10-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m10-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m10-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m10-cs: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  m10-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m10-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m10-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  m10-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m10-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m10-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m10-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m10-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  m10-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  m30-c0: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m30-c0: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  m30-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  m30-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m30-c0: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  m30-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  m30-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m30-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m30-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m30-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m30-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m30-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m30-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  m30-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  m30-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m30-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  m30-cf2: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  m30-cf2: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  m30-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  m30-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  m30-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/1/3
+  m30-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/3
+  d10-c0: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  d10-c0: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  d10-c0: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  d10-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  d10-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  d10-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  d10-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  d10-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d10-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  d10-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  d10-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  d10-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d10-cf2: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  d10-cf2: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  d10-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  d10-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 0/1/3
+  d20-c0: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d20-c0: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  d20-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.52/9.15
+  d20-c0: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d20-c0: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.93
+  d20-C: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d20-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d20-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  d20-C: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d20-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d20-cs: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d20-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d20-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  d20-cs: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d20-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d20-cf2: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d20-cf2: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  d20-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  d20-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.52/9.15
+  d20-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  d20-cf2: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d20-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d40-c0: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d40-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d40-c0: mission 6: n: m6 nothing: seals: expected 1, got 2
+  d40-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  d40-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/2
+  d40-c0: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d40-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d40-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  d40-C: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d40-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d40-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  d40-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  d40-C: m9: all thre: nic / no action: reaches the contract: expected won, got lost
+  d40-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  d40-C: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d40-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d40-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  d40-cs: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d40-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d40-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  d40-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  d40-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/2
+  d40-cs: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d40-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d40-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  d40-cf2: mission 4: n: m4 nothing: seals: expected 1, got 2
+  d40-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  d40-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  d40-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  d40-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/2
+  d40-cf2: m11: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  d40-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  d40-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  f2-c0: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  f2-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 2/1/3
+  f2-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  f2-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f2-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  f2-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f2-cf2: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  f2-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  f2-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f3-c0: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  f3-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f3-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f3-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f3-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f3-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  f3-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f3-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f3-cs: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f3-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f3-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  f3-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f3-cf2: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  f3-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  f3-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  mf40-c0: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  mf40-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf40-c0: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  mf40-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf40-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf40-C: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  mf40-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  mf40-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf40-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  mf40-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf40-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 2/2/3
+  mf40-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf40-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  mf40-cs: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  mf40-cs: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  mf40-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf40-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  mf40-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf40-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf40-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  mf40-cf2: mission 2: t: seals without fixing the bridge: expected 1, got 2
+  mf40-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf40-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf40-cf2: m9: all thre: m9: repair must beat partial repair, which must beat no action; minutes=10.06/10.28/9.52
+  mf40-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf60-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf60-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf60-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  mf60-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf60-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/3
+  mf60-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf60-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  mf60-cs: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf60-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf60-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  mf60-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf60-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 2/2/3
+  mf60-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  f2r2-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2r2-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f2r2-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2r2-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2r2-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2r2-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  f2r2-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/2/2
+  f2r2-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2r2-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2r2-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2r2-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  f2r2-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/2/2
+  f2r2-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2r2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  f2r2-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f2m10-c0: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2m10-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  f2m10-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2m10-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2m10-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2m10-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  f2m10-C: m12: no acti: measured seal ladder: expected 1/2/3, got 2/1/3
+  f2m10-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2m10-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2m10-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2m10-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  f2m10-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 2/1/3
+  f2m10-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2m10-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  f2m10-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 2/2/3
+  io-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  io-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  io-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.34/11.39/8.99
+  io-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  io-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  io-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  io-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  io-C: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  io-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=9.65/11.39/8.99
+  io-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  io-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  io-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  io-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  io-cs: mission 6: n: m6 connect big granary @0:30: seals: expected 3, got 2
+  io-cs: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=9.65/11.39/8.99
+  io-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  io-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  io-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  io-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  io-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.34/11.39/8.99
+  io-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  io-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  io-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  pm-c0: mission 4: n: m4 nothing: 12.19 min within 5-12
+  pm-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  pm-c0: mission 6: n: m6 nothing: seals: expected 1, got 2
+  pm-c0: m9: all thre: nic / no action: reaches the contract: expected won, got lost
+  pm-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  pm-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  pm-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/2
+  pm-c0: m1: the "eye: react 30 s: won (12.00 min, fixes {"road":1,"wagon":5}): expected won, got lost
+  pm-C: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  pm-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  pm-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  pm-C: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  pm-C: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  pm-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/2
+  pm-C: m1: the "eye: react 30 s: won (12.00 min, fixes {"road":1,"wagon":5}): expected won, got lost
+  pm-cs: mission 4: n: m4 nothing: 12.11 min within 5-12
+  pm-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  pm-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  pm-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/2
+  pm-cs: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  pm-cs: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/2
+  pm-cs: m1: the "eye: react 30 s: won (12.00 min, fixes {"road":1,"wagon":5}): expected won, got lost
+  pm-cf2: mission 4: n: m4 nothing: 12.19 min within 5-12
+  pm-cf2: mission 5: n: m5 nothing: seals: expected 1, got 2
+  pm-cf2: mission 6: n: m6 nothing: seals: expected 1, got 2
+  pm-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 2/2/3
+  pm-cf2: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  pm-cf2: m12: no acti: measured seal ladder: expected 1/2/3, got 2/3/3
+  pm-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/2
+  pm-cf2: m1: the "eye: react 30 s: won (12.00 min, fixes {"road":1,"wagon":5}): expected won, got lost
+  f2io-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2io-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2io-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2io-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2io-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  f2io-C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/1/3
+  f2io-cs: mission 5: n: m5 nothing: seals: expected 1, got 2
+  f2io-cs: mission 6: n: m6 nothing: seals: expected 1, got 2
+  f2io-cs: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  f2io-cs: m10: no acti: measured seal ladder: expected 0/2/3, got 2/1/3
+  f2io-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  f2io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41

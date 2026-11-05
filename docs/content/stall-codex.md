@@ -287,6 +287,28 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. If the route is broken, repair the road gap.
 - **Chain:** Sawmill full of planks → wagon drives to collect them → production resumes.
 
+## `status.WAGON_DUE`
+
+### PL — Wóz zaraz przyjedzie
+
+- **Co to znaczy:** Towar czeka, bo zajęty wóz kończy kurs obok i dojedzie po niego szybciej niż wolny wóz z daleka.
+- **Jak sprawdzić:** Dotknij budynku: linia mówi, który wóz i za ile przyjedzie; dotknij wozu w łańcuchu.
+- **Naprawy / działania:**
+  1. Poczekaj — dyspozytor celowo nie wysyła dalszego wozu.
+  2. Nie kupuj wozu z tego powodu: nowy wóz by tu nie zdążył szybciej.
+  3. Jeśli to trwa długo, sprawdź, czy ten wóz nie stoi przy moście.
+- **Łańcuch:** Tartak pełen desek → wóz 2 rozładowuje obok → za kilka sekund weźmie deski.
+
+### EN — Wagon due shortly
+
+- **Meaning:** The goods wait because a busy wagon finishing a run nearby will get there sooner than a free wagon from far away.
+- **How to check:** Tap the building: the line says which wagon comes and when; tap the wagon in the chain.
+- **Fixes / next steps:**
+  1. Wait — the dispatcher holds the far wagon back on purpose.
+  2. Do not buy a wagon for this: a new one would not get there sooner.
+  3. If it lasts long, check that this wagon is not held at a bridge.
+- **Chain:** Sawmill full of planks → wagon 2 unloads next door → takes the planks in a few seconds.
+
 ## `status.STORAGE_FULL`
 
 ### PL — Spichlerz pełny

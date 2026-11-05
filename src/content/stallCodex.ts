@@ -333,6 +333,30 @@ const CONTENT = {
       "chain": "Sawmill full of planks → wagon drives to collect them → production resumes."
     }
   },
+  "status.WAGON_DUE": {
+    "pl": {
+      "name": "Wóz zaraz przyjedzie",
+      "meaning": "Towar czeka, bo zajęty wóz kończy kurs obok i dojedzie po niego szybciej niż wolny wóz z daleka.",
+      "check": "Dotknij budynku: linia mówi, który wóz i za ile przyjedzie; dotknij wozu w łańcuchu.",
+      "fixes": [
+        "Poczekaj — dyspozytor celowo nie wysyła dalszego wozu.",
+        "Nie kupuj wozu z tego powodu: nowy wóz by tu nie zdążył szybciej.",
+        "Jeśli to trwa długo, sprawdź, czy ten wóz nie stoi przy moście."
+      ],
+      "chain": "Tartak pełen desek → wóz 2 rozładowuje obok → za kilka sekund weźmie deski."
+    },
+    "en": {
+      "name": "Wagon due shortly",
+      "meaning": "The goods wait because a busy wagon finishing a run nearby will get there sooner than a free wagon from far away.",
+      "check": "Tap the building: the line says which wagon comes and when; tap the wagon in the chain.",
+      "fixes": [
+        "Wait — the dispatcher holds the far wagon back on purpose.",
+        "Do not buy a wagon for this: a new one would not get there sooner.",
+        "If it lasts long, check that this wagon is not held at a bridge."
+      ],
+      "chain": "Sawmill full of planks → wagon 2 unloads next door → takes the planks in a few seconds."
+    }
+  },
   "status.STORAGE_FULL": {
     "pl": {
       "name": "Spichlerz pełny",

@@ -63,7 +63,7 @@ export function step(world: World): void {
   if (st.tick % TICK_HZ === 0 && st.mission.result === 'running') accountStalls(world);
   for (const b of st.buildings) {
     const k = b.status.k;
-    b.stalledTicks = k === 'WORKING' || k === 'IDLE' || k === 'CONTRACT_DONE' || k === 'WAITING_DELIVERY' || k === 'WAITING_UPSTREAM' ? 0 : b.stalledTicks + 1;
+    b.stalledTicks = k === 'WORKING' || k === 'IDLE' || k === 'CONTRACT_DONE' || k === 'WAITING_DELIVERY' || k === 'WAITING_UPSTREAM' || k === 'WAGON_DUE' ? 0 : b.stalledTicks + 1;
   }
   st.tick++;
 }
@@ -104,7 +104,7 @@ function produce(world: World): void {
   }
 }
 
-const NOT_STALL = new Set(['WORKING', 'IDLE', 'CONTRACT_DONE', 'WAITING_DELIVERY', 'WAITING_UPSTREAM']);
+const NOT_STALL = new Set(['WORKING', 'IDLE', 'CONTRACT_DONE', 'WAITING_DELIVERY', 'WAITING_UPSTREAM', 'WAGON_DUE']);
 /** Ignore blips shorter than this (seconds) before charging a cause. */
 const STALL_GRACE_TICKS = 2 * TICK_HZ;
 

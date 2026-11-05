@@ -1,0 +1,271 @@
+done g1A-c0
+done g1mf40-c0
+done g1A-cf2
+done g1A-C
+done g1mf40-cf2
+done g1mf60-c0
+done g1mf40-C
+done g1mf60-C
+done g1mf90-c0
+done g1mf60-cf2
+done g1mf90-C
+done g1mf90-cf2
+done g1r2-C
+done g1r2-c0
+done g1f2-c0
+done g1r2-cf2
+done g1f2io-c0
+done g1f2-cf2
+done g1f2io-C
+done g1f2-C
+done g1io-c0
+done g1f2io-cf2
+done g1io-C
+done g1io-cf2
+done g1mf60io-c0
+done g1mf60io-C
+done g1mf60io-cf2
+done g1d10-c0
+done g1d10-C
+done g1d10-cf2
+done g2A-c0
+done g2A-C
+done g2A-cf2
+done g2mf40-C
+done g2mf40-cf2
+done g2mf60-C
+done g2mf60-cf2
+done g2mf90-C
+done g2mf90-cf2
+done g2mf40-c0
+done g2r2-c0
+done g2mf60-c0
+done g2r2-C
+done g2r2-cf2
+done g2mf90-c0
+done g2f2-C
+done g2f2-cf2
+done g2f2io-C
+done g2f2io-cf2
+done g2io-C
+done g2io-cf2
+done g2f2-c0
+done g2mf60io-C
+done g2f2io-c0
+done g2mf60io-cf2
+done g2d10-c0
+done g2io-c0
+done g2d10-C
+done g2d10-cf2
+done mf60-C
+done mf90-c0
+done mf45-c0
+done mf75-c0
+done g2mf60io-c0
+| variant | rules | ladder fails | bot I | survey runs | slower | seal loss | gain | mean Δ s | worst | eye Σ seals | eye Σ min |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| g1A-c0 | gFleet:1,a:1,c:0 | 5 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1A-C | gFleet:1,a:1,c:1 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1A-cf2 | gFleet:1,a:1,c:1,cFreeCount:2 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf40-c0 | gFleet:1,aMinFree:40,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf40-C | gFleet:1,aMinFree:40,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf40-cf2 | gFleet:1,aMinFree:40,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60-c0 | gFleet:1,aMinFree:60,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60-C | gFleet:1,aMinFree:60,c:1 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60-cf2 | gFleet:1,aMinFree:60,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf90-c0 | gFleet:1,aMinFree:90,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf90-C | gFleet:1,aMinFree:90,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf90-cf2 | gFleet:1,aMinFree:90,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1r2-c0 | gFleet:1,aRatio:2,c:0 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1r2-C | gFleet:1,aRatio:2,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1r2-cf2 | gFleet:1,aRatio:2,c:1,cFreeCount:2 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2-c0 | gFleet:1,aFreeCount:2,c:0 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2-C | gFleet:1,aFreeCount:2,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2-cf2 | gFleet:1,aFreeCount:2,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2io-c0 | gFleet:1,aFreeCount:2,aCastle:0,aPush:0,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2io-C | gFleet:1,aFreeCount:2,aCastle:0,aPush:0,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1f2io-cf2 | gFleet:1,aFreeCount:2,aCastle:0,aPush:0,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1io-c0 | gFleet:1,aCastle:0,aPush:0,c:0 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1io-C | gFleet:1,aCastle:0,aPush:0,c:1 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1io-cf2 | gFleet:1,aCastle:0,aPush:0,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60io-c0 | gFleet:1,aMinFree:60,aCastle:0,aPush:0,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60io-C | gFleet:1,aMinFree:60,aCastle:0,aPush:0,c:1 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1mf60io-cf2 | gFleet:1,aMinFree:60,aCastle:0,aPush:0,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1d10-c0 | gFleet:1,aMaxDue:10,c:0 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1d10-C | gFleet:1,aMaxDue:10,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g1d10-cf2 | gFleet:1,aMaxDue:10,c:1,cFreeCount:2 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2A-c0 | gFleet:2,a:1,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2A-C | gFleet:2,a:1,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2A-cf2 | gFleet:2,a:1,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf40-c0 | gFleet:2,aMinFree:40,c:0 | 0 | 3★ 9.16 | 192 | 42 | 21 | 17 | -1.1 | +251 | 62 | 220.3 |
+| g2mf40-C | gFleet:2,aMinFree:40,c:1 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf40-cf2 | gFleet:2,aMinFree:40,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf60-c0 | gFleet:2,aMinFree:60,c:0 | 0 | 3★ 7.94 | 194 | 42 | 19 | 14 | 1.7 | +266 | 62 | 220.3 |
+| g2mf60-C | gFleet:2,aMinFree:60,c:1 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf60-cf2 | gFleet:2,aMinFree:60,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf90-c0 | gFleet:2,aMinFree:90,c:0 | 0 | 3★ 7.94 | 194 | 49 | 26 | 15 | 3.2 | +264 | 61 | 222.1 |
+| g2mf90-C | gFleet:2,aMinFree:90,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf90-cf2 | gFleet:2,aMinFree:90,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2r2-c0 | gFleet:2,aRatio:2,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2r2-C | gFleet:2,aRatio:2,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2r2-cf2 | gFleet:2,aRatio:2,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2f2-c0 | gFleet:2,aFreeCount:2,c:0 | 0 | 3★ 8.85 | 195 | 63 | 32 | 15 | 6.9 | +284 | 61 | 223.3 |
+| g2f2-C | gFleet:2,aFreeCount:2,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2f2-cf2 | gFleet:2,aFreeCount:2,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2f2io-c0 | gFleet:2,aFreeCount:2,aCastle:0,aPush:0,c:0 | 0 | 3★ 8.85 | 195 | 59 | 30 | 15 | 5.6 | +284 | 61 | 223.3 |
+| g2f2io-C | gFleet:2,aFreeCount:2,aCastle:0,aPush:0,c:1 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2f2io-cf2 | gFleet:2,aFreeCount:2,aCastle:0,aPush:0,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2io-c0 | gFleet:2,aCastle:0,aPush:0,c:0 | 0 | 2★ 10.43 | 194 | 51 | 25 | 23 | 1.9 | +246 | 61 | 221.9 |
+| g2io-C | gFleet:2,aCastle:0,aPush:0,c:1 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2io-cf2 | gFleet:2,aCastle:0,aPush:0,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf60io-c0 | gFleet:2,aMinFree:60,aCastle:0,aPush:0,c:0 | 0 | 3★ 8.85 | 195 | 52 | 27 | 15 | 5.4 | +264 | 62 | 220.9 |
+| g2mf60io-C | gFleet:2,aMinFree:60,aCastle:0,aPush:0,c:1 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2mf60io-cf2 | gFleet:2,aMinFree:60,aCastle:0,aPush:0,c:1,cFreeCount:2 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2d10-c0 | gFleet:2,aMaxDue:10,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2d10-C | gFleet:2,aMaxDue:10,c:1 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| g2d10-cf2 | gFleet:2,aMaxDue:10,c:1,cFreeCount:2 | 2 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf60-C | aMinFree:60,c:1 | 4 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf90-c0 | aMinFree:90,c:0 | 1 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf45-c0 | aMinFree:45,c:0 | 6 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+| mf75-c0 | aMinFree:75,c:0 | 3 | - | 0 | 0 | 0 | 0 | 0 | +0 | 0 | 0 |
+  g1A-c0: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  g1A-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1A-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/10.71/11.02
+  g1A-c0: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.46
+  g1A-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1A-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  g1A-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1A-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/10.71/11.11
+  g1A-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1A-C: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.51
+  g1A-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1A-cf2: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  g1A-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1A-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/10.71/11.02
+  g1A-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1A-cf2: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.51
+  g1A-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1mf40-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf40-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf40-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g1mf40-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf40-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1mf40-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g1mf60-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf60-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf60-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf60-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1mf60-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf60-cf2: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  g1mf60-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1mf90-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/8.14/10.43
+  g1mf90-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf90-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/8.14/10.43
+  g1mf90-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1mf90-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1mf90-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf90-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/8.14/10.43
+  g1mf90-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1r2-c0: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  g1r2-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1r2-c0: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.65
+  g1r2-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  g1r2-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1r2-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1r2-C: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.67
+  g1r2-cf2: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  g1r2-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1r2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1r2-cf2: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.67
+  g1f2-c0: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  g1f2-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1f2-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1f2-cf2: mission 5: n: m5 connect granary + 1 wagon @0:30: seals: expected 3, got 2
+  g1f2-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1f2io-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2io-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2io-C: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2io-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1f2io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1f2io-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1f2io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1io-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1io-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1io-c0: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1io-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g1io-C: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1io-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g1io-cf2: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  g1mf60io-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1mf60io-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf60io-C: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1mf60io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1mf60io-cf2: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1mf60io-cf2: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.50/11.39/8.99
+  g1mf60io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1d10-c0: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1d10-c0: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1d10-C: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 3
+  g1d10-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g1d10-cf2: mission 5: n: m5 buy 1 wagon @0:30: seals: expected 2, got 1
+  g1d10-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g1d10-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2A-c0: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.46
+  g2A-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2A-C: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.51
+  g2A-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2A-cf2: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 8.51
+  g2mf40-c0: seal loss at m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m5/30@5 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m9/60@2 m9/60@5 m9/60@8 m10/60@3 m10/60@4 m10/60@6 m12/30@2 m12/60@1 m12/60@2
+  g2mf40-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g2mf40-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2mf40-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g2mf60-c0: seal loss at m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g2mf60-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2mf60-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2mf90-c0: seal loss at m1/60@2 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@6 m8/30@7 m8/60@6 m8/60@7 m9/30@5 m10/30@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g2mf90-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2mf90-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2mf90-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2r2-c0: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.65
+  g2r2-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2r2-C: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.67
+  g2r2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2r2-cf2: m12: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.67
+  g2f2-c0: seal loss at m1/60@7 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@1 m8/30@2 m8/30@3 m8/30@5 m8/30@7 m8/60@1 m8/60@2 m8/60@3 m8/60@5 m8/60@7 m9/30@5 m10/30@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g2f2-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2f2-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2f2-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2f2io-c0: seal loss at m1/60@7 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@1 m8/30@2 m8/30@3 m8/30@7 m8/60@1 m8/60@2 m8/60@3 m8/60@7 m9/30@5 m10/30@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g2f2io-C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2f2io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2f2io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2io-c0: seal loss at m1/30@3 m1/60@5 m1/60@7 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/60@4 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@3 m8/30@7 m8/60@1 m8/60@3 m8/60@7 m10/60@3 m10/60@4 m10/60@6 m12/30@2 m12/60@1 m12/60@2
+  g2io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g2io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.52
+  g2mf60io-c0: seal loss at m1/30@3 m1/60@5 m1/60@7 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@3 m8/30@7 m8/60@1 m8/60@3 m8/60@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g2mf60io-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2mf60io-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2d10-c0: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2d10-C: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  g2d10-cf2: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  g2d10-cf2: m10: no acti: zla / two wagons @0:20 (a wrong fix) earns at most one seal: 9.41
+  mf60-C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf60-C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  mf60-C: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf60-C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/1/3
+  mf90-c0: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=9.65/8.14/10.43
+  mf45-c0: mission 5: n: m5 nothing: seals: expected 1, got 2
+  mf45-c0: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  mf45-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf45-c0: m9: all thre: nic / no action: reaches the contract: expected won, got lost
+  mf45-c0: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  mf45-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/3
+  mf75-c0: m8: all thre: m8: measured 1/2/3 seal ladder: expected 1/2/3, got 1/3/3
+  mf75-c0: m9: all thre: m9: repair must beat partial repair, which must beat no action; minutes=11.22/11.51/8.70
+  mf75-c0: m12: no acti: measured seal ladder: expected 1/2/3, got 1/2/2

@@ -319,7 +319,9 @@ test('determinism with ten goods: same commands, same hash; save/load mid-chain 
 
 function gateV5(f: (s: J) => void, version = STATE_VERSION): GateResult {
   const w = chainsWorld();
-  for (let i = 0; i < 1800; i++) step(w);
+  // the sample must hold a stone wagon (the load-limit case below): from 3:00 on, the first tick one is on the road
+  // (the dispatcher's own timing decides when, D-156; bounded so a fleet without stone fails loudly)
+  for (let i = 0; i < 1800 || (i < 6000 && !w.state.wagons.some((x) => x.cargoGood === 'stone')); i++) step(w);
   const env = JSON.parse(JSON.stringify(makeEnvelope('valley1', w.state, 0))) as J;
   env.stateVersion = version;
   env.state.version = version;
@@ -344,7 +346,8 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
   // a stone wagon may not carry 6
   const st = gateV5((s) => {
     const wg = s.wagons.find((x: J) => x.cargoGood === 'stone');
-    if (wg) { wg.cargoQty = 6; if (wg.job) wg.job.qty = 6; } else s.__noStone = true;
+    assert(wg, 'the sample holds a stone wagon');
+    wg.cargoQty = 6; if (wg.job) wg.job.qty = 6;
   });
   assert(!st.ok, 'stone load of 6 rejected');
   // v4: the new goods did not exist, so fish cargo is unknown, and 6 rank ticks are too many
@@ -397,26 +400,29 @@ function v4View(st: unknown): string {
 
 /** Measured on the state-v4 build (commit 7590de8) with the same runs; see D-30. Deliberate re-baselines:
  *  D-44 (1) a bridge-held wagon root is charged per span in every world: m2 nothing / buy 2 / 2nd wooden
- *  bridge and m4 nothing / buy 3 change (stall ledger only, state with the ledger stripped identical). */
+ *  bridge and m4 nothing / buy 3 change (stall ledger only, state with the ledger stripped identical).
+ *  D-156 (dispatcher 2, L1): exactly the 7 runs with >= 2 bought wagons change (m2 buy 2 / + stone bridge / + 2nd
+ *  wooden bridge, m3 buy 2 / + cobbles, m4 buy 3, m5 buy 2): rule A acts only from the starting fleet + 2. With
+ *  DISPATCH2.ruleA = false every previous value is reproduced. */
 const V4_GOLDEN: Record<string, string> = {
   'm1|nothing (no crossing)': '8d93fdbf6cb41686',
   'm1|wooden bridge x=41 @0:10': 'f8a384c669d73b40',
   'm1|bridge + 2 wagons @0:10': 'bd62ca11c4911697',
   'm2|nothing': '4b902f1db0533e35',
-  'm2|buy 2 wagons': 'c33b5d92f4dbd83f',
-  'm2|buy 2 + stone bridge @45s': 'a439d677a03daddc',
-  'm2|buy 2 + 2nd wooden bridge x=63 @45s': 'a1da025a585ea7ce',
+  'm2|buy 2 wagons': '31cd5f247ea480d1',
+  'm2|buy 2 + stone bridge @45s': 'bec204e835cff528',
+  'm2|buy 2 + 2nd wooden bridge x=63 @45s': 'e809e71ab32bd247',
   'm3|nothing': 'd9640beb3a7098ee',
-  'm3|buy 2 wagons': '801dad9003439978',
-  'm3|buy 2 + cobble corridor @25s': 'b9ba07e0099afaa8',
+  'm3|buy 2 wagons': '40d2b6719d9fa74f',
+  'm3|buy 2 + cobble corridor @25s': 'aaedeb84bd5305e1',
   'm4|nothing': 'da0f0d77de2bf9d3',
-  'm4|buy 3 wagons @1:00': '4e8425fc25b5ddf7',
+  'm4|buy 3 wagons @1:00': '7fcab2a387209e9b',
   'm4|stone bridge late @4:00 (iced)': 'e2757112d3f2eb80',
   'm4|stone bridge before ice @1:00': 'f778f455aa2c7f74',
   'm5|nothing': '55bf74afce0867e2',
   'm5|connect granary @0:30': '9b6cfdbfcc0b4aac',
   'm5|buy 1 wagon @0:30': 'fb40b4a93557fc07',
-  'm5|buy 2 wagons @0:30': 'cb8e5321d50af9cf',
+  'm5|buy 2 wagons @0:30': 'a1d4ed488a9b4973',
   'm5|connect granary + 1 wagon @0:30': '325439c3ced2433a',
   'm6|nothing': '9a30f6b421ab33c8',
   'm6|buy 1 wagon @0:30': '22ff871fcdea8b21',
