@@ -32,6 +32,12 @@
    dzień i zimowa noc), przebudowy parametrów 10 → 6 na klatkę. Bez decyzji (obraz bez zmian).
 0d. **Prompt dla innej sesji Claude (tłumaczenia 66 kluczy PENDING_KEYS na 15 języków):**
    `docs/orders/claude-session-07-i18n.md`, gałąź `claude/x-i18n-day9`.
+0e. **Wolna dolina — pierwsze 30 minut (research `docs/research/2026-11-05-sandbox-first-30.md`):** karta zastoju
+   w dolinie > 99 % czasu pusta lub spokojna; gracz „tylko karta” ma rangę 1 po 14–17 min (cel 7–10), rangę 2 rzadko
+   (cel 18–22); 600–1000 niewydanego srebra. Naprawione od razu: ostrzeżenie o deszczu nie radzi bruku, gdy bruk
+   zablokowany. **Pytania:** (a) wskazówka „Kup wóz” przy długim czekaniu na odbiór w dolinie (bez pieczęci —
+   prototyp: ranga 1 po 11,3 min, +27 % srebra)? (b) próg rangi 2 1000 → ~800 sławy albo karta rangi z drugim
+   łańcuchem? (c) krótki list otwierający dolinę + kamera startowa na zamku w pionie?
 1. **„Czekanie na odbiór” (WAITING_PICKUP) z czynnością? — D-128 wdrożone wąsko.** Reguła ogólna („Kup wóz” przy
    każdym czekaniu ≥ 30 s, gdy wszystkie wozy zajęte) kosztowała pieczęcie: jako sama naprawa w arkuszu −7 wierszy
    (VI, VIII, XII skan, X 30 s), z wyjęciem ze spokojnych pinezek −21 (np. IV 2→1★, VIII 3→2★). Wdrożono ją więc
