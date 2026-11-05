@@ -356,3 +356,11 @@ więc przycisk pokazuje brak kamienia; oko+ 10 s 9,07 → 9,28 (nadal 3★).
 - **IV:** reguła działa tylko na kartę z lekarstwem „wóz”; gracze co 30/60 s nie trafiają na nią przy srebrze ≤ 101
   przed krą, więc zostają przy 2★ (most dopiero na karcie przęsła w 4:00).
 - Wciąż do zrobienia: II przy 30/60 s (1★), XI przy 60 s (1★), I przy 60 s (1★).
+
+## Dopisek 2026-11-05 — VIII po przeprojektowaniu (D-165)
+
+| Misja | Progi 3★/2★/termin | Pasywny | Same wozy (najlepsze k) | Sama lekcja | Optimum | Oko 10/30/60 s | Oko+ 10/30/60 s | Skan+ 30 s | List + oko+ 30 s |
+|---|---|---|---|---|---|---|---|---|---|
+| VIII (nowa) | 6,85/7,6/11 | 8,64 (1) −107/−62 | 7,23 (2) −23/+22 k=8 (całe srebro) | 5,99 (3) +52/+97 | 5,92 (3) +56/+101 lekcja+5 w | 6,25 (3)/6,31 (3)/6,43 (3) | jak oko | 6,31 (3) | 5,99 (3) +52/+97 |
+
+Same wozy k = 1…7: 1★ (7,71–9,36). Bez karty tempa (PACE=0) oko 10/30/60 s: 1★ (kupuje tylko wozy).
