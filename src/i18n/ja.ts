@@ -655,6 +655,8 @@ export const ja: Dict = {
   "post.marketLine": "川向こうの交易所は{pct}を支払います。飽和度は別です。",
   "post.show": "交易所を見る",
   "cause.postNoRoad": "橋のある道を待っています",
+  "cause.marketFull": "満杯 — 市場は今これ以上この品を買いません",
+  "fix.marketFull": "市場は使える分しか買いません。新しい荷車は待つだけです。別の品を売るか、注文を受けてください。",
   "hud.bottleneck": "ボトルネック",
   "neck.reason": "平均{m}軒中{n}軒が待機",
   "neck.why": "3分間、平均で{m}軒中{n}軒の工房が{goodAcc}を待っています。生産者をもう一つ建てれば列が短くなります。荷車を増やしても解決しません。",

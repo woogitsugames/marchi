@@ -655,6 +655,8 @@ export const zh_Hans: Dict = {
   "post.marketLine": "河对岸的贸易站支付{pct}，饱和度单独计算。",
   "post.show": "查看贸易站",
   "cause.postNoRoad": "等待一条带桥的路",
+  "cause.marketFull": "已满——市场现在不再收购这些货物",
+  "fix.marketFull": "市场只收它用得完的货——再买马车也只是等着。卖别的货物，或接一份订单。",
   "hud.bottleneck": "瓶颈",
   "neck.reason": "平均{m}座工坊中有{n}座在等",
   "neck.why": "3分钟来，平均{m}座工坊中有{n}座在等{goodAcc}。再建一个生产者能缩短队伍；加车在这里没用。",

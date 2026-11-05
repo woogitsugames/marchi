@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { codexCalm, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
@@ -248,8 +248,12 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
  * building itself; placed right under the count, above the codex fold, so it is read before the generic advice.
  */
 function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
-  if (chain.length > 1) return '';
   const en = (k: MessageKey): string => (translated(k) ? '' : ' lang="en" dir="ltr"');
+  // D-174: a granary full of loads no market takes now (or a yard it refuses): no "Kup wóz", the plain reason
+  if (marketSaturated(world, b)) {
+    return `<div class="s-hint calm-hint">${iconSvg('coin', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
+  }
+  if (chain.length > 1) return '';
   const s = b.status;
   if (s.k === 'OUTPUT_FULL' && outputSurplus(world, b.id) === 'SPARE') {
     return `<div class="s-hint calm-hint">${iconSvg(s.good, 22, goodName(s.good))}<span${en('fix.surplus')}>${

@@ -655,6 +655,8 @@ export const it: Dict = {
   "post.marketLine": "L’emporio oltre il fiume paga il {pct}, con una saturazione propria.",
   "post.show": "Mostra l’emporio",
   "cause.postNoRoad": "aspetta una strada con un ponte",
+  "cause.marketFull": "pieno: il mercato ora non prende altre di queste merci",
+  "fix.marketFull": "Il mercato prende solo ciò che consuma: un nuovo carro aspetterebbe e basta. Vendi un’altra merce o accetta un ordine.",
   "hud.bottleneck": "Collo di bottiglia",
   "neck.reason": "in media aspettano {n} botteghe su {m}",
   "neck.why": "Da 3 minuti in media {n} botteghe su {m} aspettano {goodAcc}. Un produttore in più accorcia la coda; un carro nuovo qui non aiuta.",

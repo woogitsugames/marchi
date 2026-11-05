@@ -655,6 +655,8 @@ export const tr: Dict = {
   "post.marketLine": "Nehrin karşısındaki ticaret durağı kendi doygunluğuyla {pct} öder.",
   "post.show": "Ticaret durağını göster",
   "cause.postNoRoad": "köprülü bir yol bekliyor",
+  "cause.marketFull": "dolu — pazar şu an bu mallardan daha fazla almıyor",
+  "fix.marketFull": "Pazar yalnızca tüketebildiğini alır — yeni bir araba sadece bekler. Başka bir mal sat ya da bir siparişi kabul et.",
   "hud.bottleneck": "Darboğaz",
   "neck.reason": "ortalama {m} atölyeden {n} tanesi bekliyor",
   "neck.why": "3 dakikadır ortalama {m} atölyeden {n} tanesi şunu bekliyor: {goodAcc}. Bir üretici daha kuyruğu kısaltır; yeni bir araba burada işe yaramaz.",

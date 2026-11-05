@@ -4,7 +4,7 @@
 import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
-import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
+import { GOODS, MARKET, capacityOf, isMarket, marketOpen, pricePct } from '../sim/index';
 
 /**
  * Free valley (research 2026-11-04, valley-3h proposal 2): a full granary that holds at least one wagon load
@@ -13,12 +13,50 @@ import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
  * a wagon empties it. Pure read.
  */
 export function clogNeedsWagon(world: World, granaryId: number): boolean {
-  if (!marketOpen(world)) return false;
+  return granaryLoads(world, granaryId) === 'wagon';
+}
+
+/**
+ * D-174 (research valley-ranks-2-3, F3): will a market take one more wagon load of `good` now? Some market (the castle,
+ * the trading post when open) keeps room for a load under its in-flight limit (MARKET.inflightPerGood, as the
+ * dispatcher checks) and, at the castle, the price is above the floor. Otherwise another wagon would only wait.
+ */
+export function marketTakesLoad(world: World, good: Good): boolean {
+  const cap = capacityOf(good), st = world.state;
+  for (const m of st.buildings) {
+    if (!isMarket(world, m) || MARKET.inflightPerGood - m.incoming[good] < cap) continue;
+    if (m.type === 'castle' && pricePct(st.market.saturation[good]) <= MARKET.floorPct) continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * What the free valley's loads in a granary say: 'wagon' — a full wagon load of a good some market takes now (another
+ * wagon empties it), 'saturated' — loads only of goods the markets will not take more of (D-174: no "Kup wóz", a calm
+ * "rynek nasycony"), null — no market load at all (not the free valley, or nothing sellable). Pure read.
+ */
+export function granaryLoads(world: World, granaryId: number): 'wagon' | 'saturated' | null {
+  if (!marketOpen(world)) return null;
   const g = world.state.buildings.find((q) => q.id === granaryId);
-  if (!g || g.type !== 'warehouse') return false;
+  if (!g || g.type !== 'warehouse') return null;
+  let loads = false;
   for (const good of GOODS) {
     if (good === 'stone' || MARKET.base[good] <= 0) continue; // granary stone is building material
-    if (g.stock[good] - g.reservedOut[good] >= capacityOf(good)) return true;
+    if (g.stock[good] - g.reservedOut[good] < capacityOf(good)) continue;
+    if (marketTakesLoad(world, good)) return 'wagon';
+    loads = true;
+  }
+  return loads ? 'saturated' : null;
+}
+
+/** A full granary (or a producer refused by one) whose loads no market takes now (D-174). */
+export function marketSaturated(world: World, b: Building): boolean {
+  const s = b.status;
+  if (s.k === 'STORAGE_FULL') return granaryLoads(world, b.id) === 'saturated';
+  if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && s.blockedBy >= 0) {
+    const g = buildingById(world, s.blockedBy);
+    return !!g && g.status.k === 'STORAGE_FULL' && granaryLoads(world, g.id) === 'saturated';
   }
   return false;
 }
@@ -55,7 +93,8 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   if (c && c.key === key) return c.calm;
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
-    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0;
+    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
+    marketSaturated(world, b);
   calmCache.set(b.id, { key, calm });
   return calm;
 }
@@ -66,7 +105,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
   if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
@@ -75,6 +114,8 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   if (contractFilled(world, b.id)) return 'orderFilled';
   // D-95: the granary already holds stone to pave with (mission VIII's quarry)
   if (stoneInStore(world, b.id) > 0) return 'stoneStored';
+  // D-174: the markets take no more of what the granary holds; another wagon would only wait
+  if (marketSaturated(world, b)) return 'marketFull';
   return null;
 }
 
@@ -424,10 +465,19 @@ export function cureFor(world: World, id: number): Cure {
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, l.id) !== 'SPARE' && stoneInStore(world, l.id) === 0) cure = 'wagon';
       // only as the root: a full output whose customer still takes the good chains on to it (calm stall)
       // (not when the order of this good is complete: nothing needs it any more, fix 6)
-      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) cure = s.blockedBy >= 0 && clogNeedsWagon(world, s.blockedBy) ? 'wagon' : 'granary';
+      else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) {
+        // D-174: a granary full of loads no market takes: nothing to buy or build (calm "rynek nasycony")
+        const loads = s.blockedBy >= 0 ? granaryLoads(world, s.blockedBy) : null;
+        if (loads === 'saturated') break;
+        cure = loads === 'wagon' ? 'wagon' : 'granary';
+      }
       // a full granary with no other granary to link or fill: another granary (fix 3); in the free valley a
       // granary full of goods the market buys needs wagons, not room (valley-3h proposal 2)
-      else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) cure = clogNeedsWagon(world, l.id) ? 'wagon' : 'granary';
+      else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) {
+        const loads = granaryLoads(world, l.id);
+        if (loads === 'saturated') break;
+        cure = loads === 'wagon' ? 'wagon' : 'granary';
+      }
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
     else if (l.status.k === 'BRIDGE_CLOSED' || l.status.k === 'BRIDGE_JAM') break;
   }
