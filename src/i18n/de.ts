@@ -255,6 +255,7 @@ export const de: Dict = {
   "place.road": "Ein Weg blockiert den Bauplatz",
   "place.building": "Ein Gebäude blockiert den Bauplatz",
   "place.gate": "Das Tor zeigt auf ein Hindernis",
+  "place.cutsRoad": "Würde den Weg durchtrennen",
   "hud.placed": "Gebaut: {name}, −{n} Silber",
   "undo.btn": "Zurück ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "Eis auf der Brücke — offen in {time}",

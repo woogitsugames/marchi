@@ -255,6 +255,7 @@ export const ar: Dict = {
   "place.road": "طريق يعترض البناء",
   "place.building": "مبنى يعترض البناء",
   "place.gate": "البوابة تواجه عائقاً",
+  "place.cutsRoad": "سيقطع الطريق",
   "hud.placed": "بُني ⁨{name}⁩: ⁨−{n}⁩ فضة",
   "undo.btn": "تراجع (⁨{s}⁩ث)",
   "wagon.BRIDGE_CLOSED.in": "جليد على الجسر؛ يفتح بعد ⁨{time}⁩",

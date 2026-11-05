@@ -255,6 +255,7 @@ export const fr: Dict = {
   "place.road": "Une route gêne la construction",
   "place.building": "Un bâtiment gêne la construction",
   "place.gate": "L’entrée fait face à un obstacle",
+  "place.cutsRoad": "Couperait la route",
   "hud.placed": "Construction : {name}, −{n} argent",
   "undo.btn": "Annuler ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "Glace sur le pont — ouverture dans {time}",

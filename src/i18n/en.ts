@@ -275,6 +275,7 @@ export const en: FullDict = {
   'place.road': 'A road is in the way',
   'place.building': 'A building is in the way',
   'place.gate': 'The gate faces an obstacle',
+  'place.cutsRoad': 'Would cut the road',
   'hud.placed': 'Built: {name}, −{n} silver',
   'undo.btn': 'Undo ({s} s)',
   'wagon.BRIDGE_CLOSED.in': 'Ice on the bridge — opens in {time}',

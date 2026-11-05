@@ -255,6 +255,7 @@ export const ru: Dict = {
   "place.road": "Мешает дорога",
   "place.building": "Мешает здание",
   "place.gate": "Перед воротами препятствие",
+  "place.cutsRoad": "Перережет дорогу",
   "hud.placed": "Построено: {name}, −{n} серебра",
   "undo.btn": "Отмена ({s} с)",
   "wagon.BRIDGE_CLOSED.in": "Лёд на мосту — откроется через {time}",

@@ -136,7 +136,7 @@ const DIAGONAL_NEW = 0.001;
  * for a workshop a supplier of its input; otherwise a customer of its output (another workshop, or the castle when
  * the contract orders it). Only buildings the stable's wagons reach count; none -> the stable itself.
  */
-function linkAnchor(world: World, b: Building, onNet: (cell: number) => boolean): Building | null {
+function linkAnchor(world: World, b: Pick<Building, 'id' | 'type'>, onNet: (cell: number) => boolean): Building | null {
   const st = world.state;
   const others = st.buildings.filter((q) => q.id !== b.id && q.type !== 'stable' && onNet(q.gate));
   const best = (list: Building[]): Building | null => {
@@ -170,10 +170,26 @@ function linkAnchor(world: World, b: Building, onNet: (cell: number) => boolean)
  * Read-only; three whole-grid Dijkstras, so call it on demand (panels cache it per network version).
  */
 export function suggestLinkToStable(world: World, buildingId: number): RoadSuggestion | null {
+  const b = world.state.buildings.find((x) => x.id === buildingId);
+  return b ? linkToStable(world, b, null) : null;
+}
+
+/**
+ * The same link for a building not yet placed (the build ghost, BACKLOG P3 day 9h): the footprint blocks the
+ * search as the placed building would, and the gate cell counts as road (`place` lays it), so the estimate is
+ * the link the sheet offers once the building stands — as long as nothing else changes in between.
+ */
+export function suggestLinkForSite(world: World, type: Building['type'], gate: number, footprint: readonly number[]): RoadSuggestion | null {
+  return linkToStable(world, { id: -1, type, gate }, new Set(footprint));
+}
+
+function linkToStable(world: World, b: Pick<Building, 'id' | 'type' | 'gate'>, foot: Set<number> | null): RoadSuggestion | null {
   const st = world.state, t = world.terrain, c = net(world);
-  const b = st.buildings.find((x) => x.id === buildingId);
   const stable = st.buildings.find((x) => x.type === 'stable');
-  if (!b || !stable || b.id === stable.id || !st.roads[stable.gate]) return null;
+  if (!stable || b.id === stable.id || !st.roads[stable.gate]) return null;
+  // a ghost's gate is laid as road on placement; its footprint is a building
+  const road = (i: number): boolean => !!st.roads[i] || (foot !== null && i === b.gate);
+  const blocked = (i: number): boolean => c.occupied[i] !== -1 || (foot !== null && foot.has(i));
   const W = t.w, H = t.h, n = W * H;
   // the stable's network (loaded wagons: a link that only an empty wagon could use would not deliver)
   const fromStable = dijkstra(world, stable.gate, false, true).dist;
@@ -208,10 +224,10 @@ export function suggestLinkToStable(world: World, buildingId: number): RoadSugge
       const vx = ux + DX[d]!, vy = uy + DY[d]!;
       if (vx < 0 || vy < 0 || vx >= W || vy >= H) continue;
       const v = vy * W + vx;
-      if (done[v] || c.occupied[v] !== -1) continue;
-      if (d >= 4 && (c.occupied[uy * W + vx] !== -1 || c.occupied[vy * W + ux] !== -1)) continue;
+      if (done[v] || blocked(v)) continue;
+      if (d >= 4 && (blocked(uy * W + vx) || blocked(vy * W + ux))) continue;
       if (Math.abs(grade(t, u, v)) > MAX_GRADE + 1e-9) continue;
-      const step = st.roads[v] ? 0 : (t.water[v] ? COST_WOOD_BRIDGE : COST_DIRT) + (d >= 4 ? DIAGONAL_NEW : 0);
+      const step = road(v) ? 0 : (t.water[v] ? COST_WOOD_BRIDGE : COST_DIRT) + (d >= 4 ? DIAGONAL_NEW : 0);
       const nd = dist[u]! + step;
       if (nd < dist[v]!) { dist[v] = nd; prev[v] = u; heap.push(v, nd); }
     }
@@ -220,7 +236,7 @@ export function suggestLinkToStable(world: World, buildingId: number): RoadSugge
   // network end first, the target's gate last (a contiguous path for the road command)
   const cells: number[] = [];
   for (let x = bestEnd; x !== -1; x = prev[x]!) cells.push(x);
-  const newCells = cells.filter((i) => !st.roads[i]);
+  const newCells = cells.filter((i) => !road(i));
   if (!newCells.length) return null;
   let cost = 0, bridgeCells = 0;
   for (const i of newCells) {

@@ -255,6 +255,7 @@ export const sv: Dict = {
   "place.road": "En väg är i vägen",
   "place.building": "En byggnad är i vägen",
   "place.gate": "Porten vetter mot ett hinder",
+  "place.cutsRoad": "Skulle skära av vägen",
   "hud.placed": "Byggt: {name}, −{n} silver",
   "undo.btn": "Ångra ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "Is på bron — öppnar om {time}",

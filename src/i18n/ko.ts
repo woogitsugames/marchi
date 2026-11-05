@@ -255,6 +255,7 @@ export const ko: Dict = {
   "place.road": "길이 가로막음",
   "place.building": "건물이 가로막음",
   "place.gate": "문 앞에 장애물이 있음",
+  "place.cutsRoad": "길을 끊게 됩니다",
   "hud.placed": "{name} 건설: 은 −{n}",
   "undo.btn": "취소({s}초)",
   "wagon.BRIDGE_CLOSED.in": "다리가 얼어 막힘 — {time} 후 개통",

@@ -277,6 +277,7 @@ export const pl = {
   'place.road': 'Droga w obrysie',
   'place.building': 'Budynek w obrysie',
   'place.gate': 'Brama wychodzi na przeszkodę',
+  'place.cutsRoad': 'Przetnie drogę',
   'hud.placed': 'Postawiono: {name}, −{n} srebra',
   'undo.btn': 'Cofnij ({s} s)',
   'wagon.BRIDGE_CLOSED.in': 'Kra na moście — otwarcie za {time}',
