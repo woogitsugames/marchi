@@ -7,6 +7,7 @@
 //   lines      — the tutorial note over 3 lines (from 360 px)
 //   overflow   — text that sticks out of its box, or is clipped / ellipsized inside it
 //   covered    — a text run or control painted over by another element (tested with every element hit-testable)
+//   root-under-dock — the last link of a sheet's cause chain has text under the docked fix (D-146)
 //   hscroll    — the page scrolls sideways
 //   console    — console errors / page errors
 // A positive control runs first: known-bad CSS is injected and each check must turn red, otherwise the
@@ -80,6 +81,11 @@ const SCENES = [
     await p.waitForSelector('.letter [data-a="start"]', { timeout: 30000 });
     await p.evaluate(() => document.querySelector('.letter [data-a="start"]').click());
     await p.waitForSelector('.tut-text', { timeout: 30000 });
+  } },
+  // the short-landscape chain (D-111) folded and unfolded: its root must stand above the fix dock (D-146)
+  { name: 'chain', q: 'play=m6&ff=110&speed=0&open=farm' },
+  { name: 'chain-open', q: 'play=m6&ff=110&speed=0&open=farm', act: async (p) => {
+    await p.evaluate(() => document.querySelector('#sheets .sheet:last-child .c-more-btn')?.click());
   } },
   { name: 'rankup', q: 'play=sandbox&speed=0&slot=layout', act: (p) => p.evaluate(() => window.__marchia.rankUp(2)) },
 ];
@@ -255,6 +261,10 @@ function measure() {
       // an ancestor listed before e paints over it through a pseudo-element (its own box paints under its children)
       const top = stack.find((el) => el === e || e.contains(el) || el.contains(e) || paints(el));
       if (!top || top === e || e.contains(top)) continue;
+      // a sheet's fix dock sticks to the bottom of its scrolling body (D-100): what lies under it while the body can
+      // still scroll down is scrolled under it, as in the edge band above; at the end of the scroll it counts
+      const dk = top.closest('.fix-dock');
+      if (dk && sc && sc.contains(dk) && !dk.contains(e) && sc.scrollTop + sc.clientHeight < sc.scrollHeight - 1) continue;
       // a modal (sheet, letter) over the screen below it covers that screen on purpose
       if (top.closest('.sheet, .scrim, [aria-modal="true"]') && !e.closest('.sheet, .scrim, [aria-modal="true"]')) continue;
       // the point lies in a part of e its scroll box / clip has cut away: not on screen, not covered
@@ -276,6 +286,18 @@ function measure() {
     rg.selectNodeContents(tut);
     const lines = new Set([...rg.getClientRects()].filter((q) => q.width > 2).map((q) => Math.round(q.top / 4)));
     if (lines.size > 3) out.overflow.push({ el: label(tut), kind: 'lines', dx: lines.size, dy: 0, in: '3 max' });
+  }
+  // 7. the cause chain's root stands above a sheet's docked fix (D-146). Stricter than the covered check, which
+  // skips text in the 40 px edge band of a scroller: every line of the root's text must end above the dock's top.
+  for (const sh of document.querySelectorAll('#sheets .sheet')) {
+    const dock = sh.querySelector('.fix-dock');
+    const root = sh.querySelector('.chain > li:last-child .l-text');
+    if (!dock || !root || !shown(dock) || !shown(root)) continue;
+    const dt = dock.getBoundingClientRect().top;
+    const rg = document.createRange();
+    rg.selectNodeContents(root);
+    const low = Math.max(...[...rg.getClientRects()].filter((q) => q.width > 2).map((q) => q.bottom));
+    if (low > dt + 1) out.overflow.push({ el: label(root), kind: 'root-under-dock', dx: 0, dy: Math.round(low - dt), in: 'fix dock' });
   }
   out.hscroll = document.documentElement.scrollWidth > vw + 1 || document.body.scrollWidth > vw + 1;
   return out;

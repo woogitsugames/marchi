@@ -262,7 +262,9 @@ export class Hud {
     });
 
     // ---- bottom: worst stall card + alarm seal
-    this.stallText = h('span.sc-text');
+    // dir="auto" (ui audit day 9, P3-2): a line that is one untranslated English text (the rank card) reads LTR in
+    // ar; with "<b>name:</b> reason" the name sets the direction and the reason keeps its own isolate
+    this.stallText = h('span.sc-text', { dir: 'auto' });
     this.stallEye = h('button.stall-eye', { html: iconSvg('eye', 28) });
     this.stallEye.addEventListener('click', () => {
       if (this.pace) { this.act.showStall(this.pace.producer); return; }
@@ -555,7 +557,8 @@ export class Hud {
       if (pc.k === 'rank') {
         // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
         const text = t('cause.paceRank', { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
-        setHtml(this.stallText, `<span dir="auto">${esc(text)}</span>`);
+        // the whole line is this one text: .sc-text's own dir="auto" takes its direction (an English fallback in ar)
+        setHtml(this.stallText, esc(text));
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
         const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
         if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));

@@ -6,7 +6,8 @@
 //   dialog    an open sheet is a named NON-modal dialog (D-118: the map and HUD work beside it), focus moves into it
 //             and returns on close
 //   letter    the opening letter is a named modal dialog with focus on its action, the rest of the UI is inert (D-118)
-//   ring      the focus ring is painted around a chamfered (.cf) button, read from the pixels (D-137)
+//   ring      the focus ring is painted around a chamfered (.cf) button, read from the pixels (D-137); round on
+//             the stall card's eye and a pin's head (D-147)
 //   motion    with prefers-reduced-motion: reduce every running CSS animation / transition lasts ≤ 1 ms
 // Exit 1 on any failure. Usage: npm run a11y   (A11Y_URL=http://127.0.0.1:5173/ to use a running server)
 import { createRequire } from 'node:module';
@@ -150,6 +151,63 @@ try {
       ok(res.ink >= res.n - 2 && res.pale >= res.n - 2, `ring: painted around the focused fix button (ink ${res.ink}/${res.n}, pale ${res.pale}/${res.n})`);
     }
     await ctx.close();
+  }
+  // --- round rings (D-147, ui audit day 9 P3-3): on the stall card's eye and on a pin the two-tone ring follows the
+  //     round shape. Pixels: the ink line on a circle 3 px outside the disc, and no ink where a square ring's
+  //     corner would be (the eye sits on the parchment card, so a corner without a ring reads light)
+  {
+    const { ctx, page } = await open('play=m7&ff=90&speed=0&quality=low&dynres=0&view=flat');
+    await page.waitForTimeout(800);
+    const read = async (page, sel, head) => {
+      await page.keyboard.press('Shift');
+      const r = await page.evaluate(({ sel, head }) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        el.focus();
+        if (!el.matches(':focus-visible')) return null;
+        const b = (head ? el.querySelector(head) : el).getBoundingClientRect();
+        // the pin's head is the top 40 x 40 of its 40 x 48 image (scaled for minor pins)
+        const d = b.width;
+        return { cx: b.left + b.width / 2, cy: b.top + d / 2, rad: d / 2, x: b.left, y: b.top };
+      }, { sel, head });
+      if (!r) return null;
+      await page.waitForTimeout(250);
+      const pad = 14;
+      const clip = { x: Math.max(0, r.cx - r.rad - pad), y: Math.max(0, r.cy - r.rad - pad), width: 2 * (r.rad + pad), height: 2 * (r.rad + pad) };
+      const png = (await page.screenshot({ clip })).toString('base64');
+      return page.evaluate(async ({ png, r, clip }) => {
+        const img = new Image();
+        img.src = `data:image/png;base64,${png}`;
+        await img.decode();
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        const g = c.getContext('2d');
+        g.drawImage(img, 0, 0);
+        const sx = img.width / clip.width;
+        const lum = (x, y) => { const d = g.getImageData(Math.round((x - clip.x) * sx), Math.round((y - clip.y) * sx), 1, 1).data; return 0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2]; };
+        let ink = 0, n = 0;
+        for (let k = 0; k < 12; k++) {
+          const a = (k * Math.PI) / 6 + 0.2;
+          n++;
+          // 3 px outside the disc: the ink band; the darkest of 2.5 / 3 / 3.5 px absorbs rounding
+          if (Math.min(...[2.5, 3, 3.5].map((o) => lum(r.cx + Math.cos(a) * (r.rad + o), r.cy + Math.sin(a) * (r.rad + o)))) < 70) ink++;
+        }
+        const s = r.rad + 3;
+        const corners = [[r.cx - s, r.cy - s], [r.cx + s, r.cy - s]].filter(([x, y]) => lum(x, y) < 70).length;
+        return { ink, n, corners };
+      }, { png, r, clip });
+    };
+    const eye = await read(page, '.stall-row:not([hidden]) .stall-eye', null);
+    ok(!!eye && eye.ink >= eye.n - 2 && eye.corners === 0, `ring: round around the stall card's eye (ink ${eye?.ink}/${eye?.n}, square corners ${eye?.corners})`);
+    await ctx.close();
+    // mission I's red pins (VII's sit off the portrait view)
+    const m1 = await open('play=m1&ff=90&speed=0&quality=low&dynres=0&view=flat');
+    const pinSel = 'button.bubble.is-shown:not(.is-under):not(.is-minor):not(.is-wagon)';
+    await m1.page.waitForSelector(pinSel, { timeout: 20000 }).catch(() => null);
+    await m1.page.waitForTimeout(400); // the pin fades in (150 ms) and settles its breathe
+    const pin = await read(m1.page, pinSel, '.bb');
+    ok(!!pin && pin.ink >= pin.n - 2, `ring: round around a pin's head (ink ${pin?.ink}/${pin?.n})`);
+    await m1.ctx.close();
   }
   // --- a letter is a real modal: named, focus on its action, everything under it inert, released on close
   {

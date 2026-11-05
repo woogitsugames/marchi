@@ -2012,3 +2012,42 @@ rail (`body.is-split:not(.is-flex) .sheet`), so a short card (VII, III, a wagon)
 empty parchment over the map. That rule now also sets `bottom: auto`: the sheet hangs under the bar, grows with its
 content up to the old max-height, and the map under it is free — which is where D-144 puts the ghost.
 Shots `day9e-sideheight-before-904x1000-pl.jpg` / `day9e-ghost-after-904x1000-pl.jpg`. (decided)
+
+**D-146 — The cause chain's root stands above the fix dock; the layout check reads it strictly (day 9f; ui audit day 9, P3-5 + day 9e measurement).**
+On a short landscape side sheet (915×412) the docked "Naprawa" leaves ~60 px of body; the root (the reason the fix
+answers) lay 16–80 px under the dock while the subject row — already named by the title — took the space; unfolding
+"+N" scrolled 12 px and left the root under it. Now `revealAboveDock` (sheets.ts, block: nearest, never pushing the
+element's top above the body) runs on the chain's last link when a sheet opens or its content is replaced, and
+after "+N" unfolds (and once more two frames after opening, unless the player scrolled: a sheet opened while the
+layout classes were settling measured a different body); the subject may scroll away above. Same-key refreshes do not scroll (the player's own scroll
+wins). After unfolding, focus goes to the root's link instead of the first middle one (a focused link scrolled out
+above would hide its ring; Shift+Tab walks back up). The sheet parts now keep focus across re-renders
+(`setHtmlKeep`, matched by `data-go`/`data-act`): the stall clock and the unfolded state used to drop focus to
+`<body>` once a second. `layout-check` gains check 7 `root-under-dock` (every line of the root's text above the
+dock's top, no 40 px edge band) and scenes `chain`/`chain-open` (VI farm); the base build fails it at 915×412
+(pl dy=43 open, pseudo dy=16 / 78), this branch passes. The covered check now treats text under the sticky dock
+while the body can still scroll down as scrolled under it (as its edge band does). UI only, hashes unchanged. (decided)
+
+**D-147 — Round focus rings on the stall card's eye and on pins (day 9f; ui audit day 9, P3-3).**
+The D-123 two-tone ring (pale 2 / ink 2 / pale 2 px) was a square box round the 52 px wax eye and the 48×56 pin.
+The eye takes `border-radius: 50%` while focused (outline and shadow follow it); the pin drops its box ring and
+draws the same three bands as a circle round its 40 px head (`.bb::before`, scales with minor/wagon pins, tip bare).
+`npm run a11y` reads pixels: ink on 12 points of a circle 3 px outside the eye and the pin head, no ink where a square
+ring's corners were. UI only. (decided)
+
+**D-148 — Pace fix reasons start with a complete short sentence; English fallbacks get their own direction (day 9f; day 9e D-138 note, ui audit P3-2).**
+The note beside the fix button in short landscape is clamped to 3 lines (~60 characters). `fix.paceProducerWhy`,
+`fix.paceFleetWhy`, `fix.paceFleetWhyFree` (pl/en, still in PENDING_KEYS, no other language has them) now open with
+the reason in ≤ 50 characters ("Najwyżej 6,7/min, na 3 pieczęcie trzeba ≈8,8/min." / "Przez minutę żaden wóz nie stał
+wolny."); the rest follows, so portrait and tablet keep the full text from one key. `.fix-note` and the text spans
+of `.fix-why` carry `dir="auto"`, and `.sc-text` too (the rank card's line is now plain text so the container's
+direction comes from it): an English fallback in ar reads LTR with its full stop at the end. Harmless once
+translated (the direction then comes from the Arabic text). UI only. (decided)
+
+**D-149 — Rank card follow-ups: a card-following player test, the bottom sheet's dock clears the frame (day 9f; D-152).**
+`tests/valley-rank.test.ts` adds a player who only follows the card: "Postaw: <name>" places the producer at the
+ghost (`buildSite` by the castle), the gap road to it is pressed, a fleet card's "Kup wóz" too; the card must lead
+farm → mill → bakery and every placement must be valid where the ghost stands. On a bottom sheet (412×915) the
+frame's 36 px border image overlaps the body's last 10 px and the dock had 8 px of bottom padding, so a 3-line hint
+under the button (the rank card's) ran into the frame; the dock now keeps 18 px there (side sheets and the Flip
+unchanged: 904×1000 41 px clear, 915×412 note beside the button). UI only, hashes unchanged. (decided)

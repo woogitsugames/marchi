@@ -11,7 +11,7 @@ import {
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
-import type { Sheet, SheetContent } from './sheets';
+import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
@@ -62,7 +62,7 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="fix:${target}" aria-disabled="${short > 0}">${
     iconSvg('road_dirt', 26)}<span>${label}</span></button>`;
   const hint = short > 0
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
   return fixSection(btn, hint, short > 0);
 }
@@ -78,7 +78,7 @@ function fixSection(btn: string, hint: string, why: boolean): string {
   const head = `<div class="section-h">${esc(t('fix.title'))}</div>`;
   return why
     ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
-    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note">${hint}</div></div>`;
+    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note" dir="auto">${hint}</div></div>`;
 }
 
 /**
@@ -96,9 +96,9 @@ function paceCureHtml(world: World, pc: PaceCard): string {
   const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${pc.producer}" aria-disabled="${off}">${
     iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${pc.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const hint = !gate.ok
-    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
     : short > 0
-      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.paceProducerWhy', { n: fmtInt(pc.n), cap: fmtDec(pc.cap, 1), seals: t('why.pace.seals', { n: pc.seals }), need: fmtDec(pc.need, 1) }))}</div>`;
   return fixSection(btn, hint, off);
 }
@@ -115,7 +115,7 @@ function rankCureHtml(world: World, pc: PaceRank): string {
   const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="rank:${pc.type}" aria-disabled="${off}">${
     iconSvg('build', 26)}<span>${esc(t('fix.rank', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const hint = off
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.rankWhy', { sold: fmtInt(pc.sold), goods: fmtInt(pc.goods), rankName: rankName(pc.rank), good: goodName(pc.good) }))}</div>`;
   return fixSection(btn, hint, off);
 }
@@ -131,7 +131,7 @@ function mudCureHtml(world: World, pc: PaceMud): string {
     iconSvg('road_cobble', 26)}<span>${esc(t('fix.mud', { n: fmtInt(pc.cells.length) }))}</span>${bdi(`−${fmtInt(pc.cost)}`)}</button>`;
   const hint = ok.ok
     ? `<div class="s-hint">${esc(t('fix.mudWhy', { pct }))}</div>`
-    : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+    : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span dir="auto">${
       ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
   return fixSection(btn, hint, !ok.ok);
 }
@@ -148,7 +148,7 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
     iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
   const hint = short > 0
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(eta ? t('fix.paceFleetEta', { wagon: wagonName(world, pc.wagon), time: clock(eta.toDest) }) + ' ' : '')}${
       esc(pc.seals < 0 ? t('fix.paceFleetWhyFree') : t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
   return fixSection(btn, hint, short > 0);
@@ -173,9 +173,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="granary:${b.id}" aria-disabled="${off}">${
       iconSvg('warehouse', 26)}<span>${esc(t('fix.granary'))}</span>${bdi(`−${fmtInt(BUILDINGS.warehouse.price)}`)}</button>`;
     const hint = !gate.ok
-      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
-        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.granaryWhy'))}</div>`;
     return fixSection(btn, hint, off);
   }
@@ -191,9 +191,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${sh.producer}" aria-disabled="${off}">${
       iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${sh.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
     const hint = !gate.ok
-      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
-        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
     return fixSection(btn, hint, off);
   }
@@ -211,7 +211,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       ? `<div class="s-hint">${esc(h.held
         ? t('fix.paveWhy', { wagon: wagonName(world, h.held.wagon) })
         : t('fix.iceAheadWhy', { time: ticksClock(h.ice!.startTick - world.state.tick), n: fmtInt(price) }))}</div>`
-      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span dir="auto">${
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
   }
@@ -222,7 +222,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
       iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
     const hint = short > 0
-      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
     return fixSection(btn, hint, short > 0);
   }
@@ -394,6 +394,18 @@ function wire(sheet: Sheet, nav: PanelNav): void {
   });
 }
 
+/**
+ * setHtml that keeps keyboard focus on the same control (matched by its data-go / data-act) when the part is
+ * re-rendered: the chain's stall clock and an unfolded "+N" change the markup, and focus used to drop to <body>.
+ */
+function setHtmlKeep(el: Element, html: string): void {
+  const a = document.activeElement;
+  const k = a instanceof HTMLElement && el.contains(a)
+    ? a.dataset.go ? `[data-go="${CSS.escape(a.dataset.go)}"]` : a.dataset.act ? `[data-act="${CSS.escape(a.dataset.act)}"]` : null
+    : null;
+  if (setHtml(el, html) && k) el.querySelector<HTMLElement>(k)?.focus({ preventScroll: true });
+}
+
 /** Chains whose middle links the player unfolded on a short landscape sheet (per session, never in the sim). */
 const chainOpen = new Set<string>();
 
@@ -429,13 +441,22 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
   return `<ol class="chain${mid > 0 ? ' has-mid' : ''}${open ? ' is-open' : ''}">${items.join('')}</ol>`;
 }
 
-/** Unfold the middle links in place (the sheet's next refresh renders the same open state). */
+/**
+ * Unfold the middle links in place (the sheet's next refresh renders the same open state). The body then scrolls
+ * so the root stands above the docked fix (D-146): on a short landscape sheet only ~60 px of chain shows, and the
+ * root is what the fix answers; the subject and the first links may scroll away above. Focus goes to the root's
+ * link (a link focused while scrolled out of view would hide the ring); Shift+Tab walks back up the chain.
+ */
 function openChain(btn: HTMLElement, key: string): void {
   chainOpen.add(key);
   const ol = btn.closest('.chain');
   ol?.classList.add('is-open');
   btn.setAttribute('aria-expanded', 'true');
-  ol?.querySelector<HTMLButtonElement>('.c-mid button[data-go]')?.focus({ preventScroll: true });
+  const body = btn.closest<HTMLElement>('.sheet-body');
+  const root = ol?.querySelector<HTMLElement>(':scope > li:last-child');
+  if (body && root) revealAboveDock(body, root);
+  const to = root?.querySelector<HTMLButtonElement>('button[data-go]') ?? ol?.querySelector<HTMLButtonElement>('.c-mid button[data-go]');
+  to?.focus({ preventScroll: true });
 }
 
 function chip(g: Good, have: number, cap: number | null, extra: string, empty = false): string {
@@ -620,7 +641,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // three parts, each re-rendered only when its own HTML changes: the stall clock ticking in the chain no
       // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
-      setHtml(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
+      setHtmlKeep(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
@@ -639,8 +660,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const span = paveSpanFor(world, b);
         if (span) nav.setGhost(span.cells, true);
       }
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
-      setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
+      setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },
     onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); },
@@ -722,9 +743,9 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       // the road fix sits after the chain (and the ice hint) as before, in its own part (D-100)
       const cut = html.indexOf('<div class="sheet-actions">');
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
-      setHtml(pLead!, html.slice(0, cut));
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : '');
-      setHtml(pRest!, html.slice(cut));
+      setHtmlKeep(pLead!, html.slice(0, cut));
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : '');
+      setHtmlKeep(pRest!, html.slice(cut));
       return true;
     },
     onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); },
