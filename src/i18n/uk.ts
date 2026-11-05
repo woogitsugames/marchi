@@ -255,6 +255,7 @@ export const uk: Dict = {
   "place.road": "Заважає дорога",
   "place.building": "Заважає будівля",
   "place.gate": "Перед брамою перешкода",
+  "place.cutsRoad": "Переріже дорогу",
   "hud.placed": "Збудовано: {name}, −{n} срібла",
   "undo.btn": "Скасувати {s} с",
   "wagon.BRIDGE_CLOSED.in": "Крига на мосту — відкриється за {time}",

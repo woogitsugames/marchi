@@ -1,6 +1,6 @@
 // Where the build ghost starts when a sheet's "Naprawa" opens the build tool (granary by a full yard, a second
 // producer by a shared one). Pure read of the sim (validatePlace); no DOM, so the headless balance tools use it too.
-import { BUILDINGS, missionSiteHint, validatePlace, type BuildingType, type World } from '../sim/index';
+import { BUILDINGS, cutsDiagonalRoad, missionSiteHint, validatePlace, type BuildingType, type World } from '../sim/index';
 
 export interface Site { x: number; y: number; facing: number; /** The mission's authored site (D-107). */ hint: boolean }
 
@@ -55,4 +55,18 @@ export function siteExists(world: World, type: BuildingType, near: number): bool
   const ok = buildSite(world, type, near, true) !== null;
   m.set(q, { key, ok });
   return ok;
+}
+
+/**
+ * Which plain-words reason a BLOCKED placement at `cell` gets (the `place.*` key suffix). D-176: the corner of a
+ * diagonal road step the footprint would cut (D-172) is told apart by the same pure check the sim runs, so the
+ * ghost says "would cut the road" instead of the generic building/obstacle text. `rect`: x, y, w, h of the footprint.
+ */
+export function blockedWhy(world: World, cell: number, gate: number, foot: ReadonlySet<number>,
+  rect: readonly [number, number, number, number]): 'gate' | 'cutsRoad' | 'water' | 'road' | 'building' {
+  if (cell === gate && !foot.has(cell)) return 'gate';
+  if (!world.state.roads[cell] && cutsDiagonalRoad(world, rect[0], rect[1], rect[2], rect[3]) === cell) return 'cutsRoad';
+  if (world.terrain.water[cell]) return 'water';
+  if (world.state.roads[cell]) return 'road';
+  return 'building';
 }

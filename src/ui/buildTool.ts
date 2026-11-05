@@ -8,7 +8,8 @@
 // Views without those hooks (2D fallback) get the footprint as a cell preview and the labels are
 // placed by inverting view.cellAt (locateCell).
 import {
-  BUILDINGS, SITE_RULE, canPlace, gateCell, isRockCell, lastUndoable, net, suggestConnection, unlockRank, validatePlace,
+  BUILDINGS, SITE_RULE, canPlace, gateCell, isRockCell, lastUndoable, net, suggestConnection, suggestLinkForSite,
+  unlockRank, validatePlace,
   type BuildingType, type Command, type CommandError, type CommandResult, type RoadSuggestion, type World,
   missionBuildable,
 } from '../sim/index';
@@ -18,7 +19,7 @@ import { esc, h, setHtml } from './dom';
 import { bdi, fmtInt, rankName, tHtml } from './format';
 import { iconSvg, type IconId } from './icons';
 import { errorText } from './roadTool';
-import { buildSite, siteCentre } from './site';
+import { blockedWhy, buildSite, siteCentre } from './site';
 
 /** How far above the finger the ghost's centre sits while dragging (CSS px ≈ dp). */
 export const GHOST_LIFT = 72;
@@ -136,16 +137,10 @@ export function siteCells(world: World, type: BuildingType): number[] {
   return cells;
 }
 
-/** Why a placement is refused, in plain words (water / road / building / gate) when the sim names a cell. */
-function placeError(world: World, err: CommandError, gate: number, foot: Set<number>): string {
-  if (err.k === 'BLOCKED') {
-    const c = err.cell;
-    if (c === gate && !foot.has(c)) return t('place.gate');
-    if (world.terrain.water[c]) return t('place.water');
-    if (world.state.roads[c]) return t('place.road');
-    return t('place.building');
-  }
-  return errorText(err);
+/** Why a placement is refused, in plain words (water / road / building / gate / cut road) when the sim names a cell. */
+function placeError(world: World, err: CommandError, gate: number, foot: Set<number>, rect: readonly [number, number, number, number]): string {
+  const why = err.k === 'BLOCKED' ? blockedWhy(world, err.cell, gate, foot, rect) : null;
+  return why ? t(`place.${why}`) : errorText(err);
 }
 
 export class BuildTool {
@@ -388,7 +383,8 @@ export class BuildTool {
 
   private errText(err: CommandError): string {
     const world = this.host.world();
-    return placeError(world, err, this.gateOf(world, this.facing), new Set(this.footprint(world)));
+    const def = BUILDINGS[this.type!];
+    return placeError(world, err, this.gateOf(world, this.facing), new Set(this.footprint(world)), [this.gx, this.gy, def.w, def.h]);
   }
 
   private revalidate(): void {
@@ -436,21 +432,18 @@ export class BuildTool {
   }
 
   /**
-   * New road cells of the cheapest access road to the gate (sim gap finder): from the stable's gate,
-   * so the preview is a road the wagons can actually use, else from the nearest road cell.
-   * A route through the ghost's own footprint is refused. Only called when the ghost changes.
+   * New road cells of the cheapest access road to the gate: the link the building sheet will offer once it
+   * stands (`suggestLinkForSite`, same rule as `suggestLinkToStable` — BACKLOG P3 day 9h), else, with no
+   * stable network to join, from the nearest road cell. Only called when the ghost changes.
    */
   private accessRoad(world: World, gate: number, footprint: number[]): RoadSuggestion | null {
-    const foot = new Set(footprint);
-    const via = (from: number): RoadSuggestion | null => {
-      const s = suggestConnection(world, from, gate);
-      return s && s.newCells.length && !s.cells.some((c) => foot.has(c)) ? s : null;
-    };
-    const stable = world.state.buildings.find((b) => b.type === 'stable');
-    const link = stable ? via(stable.gate) : null;
+    const link = suggestLinkForSite(world, this.type!, gate, footprint);
     if (link) return link;
+    const foot = new Set(footprint);
     const near = this.nearestRoad(world, gate, foot);
-    return near >= 0 ? via(near) : null;
+    if (near < 0) return null;
+    const s = suggestConnection(world, near, gate);
+    return s && s.newCells.length && !s.cells.some((c) => foot.has(c)) ? s : null;
   }
 
   /** Nearest free road cell around a cell (Chebyshev rings up to 12), -1 if none. */

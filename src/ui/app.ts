@@ -782,7 +782,9 @@ export class App implements PanelNav {
       const quiet = !!this.tutorial && this.tutorial.current < 6;
       const stalls = quiet ? [] : ranked;
       this.hud?.update(this.world, this.pace, stalls, !quiet);
-      this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, stalls[0]?.id ?? -1);
+      // a calm (minor) stall heading the list is no "worst" pin: the HUD shows the pace card then, the pin stays brass (D-178)
+      const worst = stalls[0] && !stalls[0].minor ? stalls[0].id : -1;
+      this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, worst);
       if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
         this.firstCritSeen = true;
         this.markers.flash(stalls[0].id);

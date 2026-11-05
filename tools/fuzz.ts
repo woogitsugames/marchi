@@ -1,6 +1,6 @@
 // Long-running simulation fuzzer.
 //   npx tsx tools/fuzz.ts --runs 500 [--ticks 6000] [--seed 1] [--missions m1,m4] [--save] [--timing] [--no-stalls]
-// Each run: a seeded random command sequence on one of the missions (default: every playable map), every tick checked for
+// Each run: a seeded random command sequence on one of the missions (default: every playable map, m1-m13 + sandbox), every tick checked for
 // invariants, unexplained stalls, NaN/Infinity and stuck wagons; a save/load clone runs side by
 // side from a random tick; the whole run is replayed once more for determinism.
 // On failure the sequence is shrunk; --save writes it to tests/regressions/<kind>-<seed>.json.
@@ -37,11 +37,13 @@ let totalTicks = 0, ok = 0, rejected = 0, maxWagons = 0;
 const stepMs: number[] = [], dispatchMs: number[] = [];
 const failures: { seed: number; failure: Failure; shrunk: Scenario }[] = [];
 const byKind = new Map<string, number>();
+const perMission = new Map<string, number>();
 const t0 = performance.now();
 
 for (let r = 0; r < runs; r++) {
   const seed = seed0 + r;
   const sc = generateScenario(seed, { ticks, missions });
+  perMission.set(sc.mission, (perMission.get(sc.mission) ?? 0) + 1);
   const res = runScenario(sc, { rerun: true, timing, checkStalls });
   totalTicks += res.stats.ticks * 2 + (sc.saveAt >= 0 ? res.stats.ticks - sc.saveAt : 0);
   ok += res.stats.commandsOk;
@@ -70,6 +72,7 @@ for (let r = 0; r < runs; r++) {
   }
 }
 
+console.log(`missions: ${missions.map((m) => `${m}:${perMission.get(m) ?? 0}`).join(' ')}`);
 console.log(`runs=${runs} ticks/run=${ticks} simulatedTicks=${totalTicks} commandsOk=${ok} rejected=${rejected} maxWagons=${maxWagons}`);
 console.log(`failures=${failures.length ? [...byKind].map(([k, n]) => `${k}:${n}`).join(',') : 0} time=${((performance.now() - t0) / 1000).toFixed(1)}s`);
 if (timing) {

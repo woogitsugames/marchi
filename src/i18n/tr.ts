@@ -255,6 +255,7 @@ export const tr: Dict = {
   "place.road": "Yol engel oluyor",
   "place.building": "Bina engel oluyor",
   "place.gate": "Kapı bir engele bakıyor",
+  "place.cutsRoad": "Yolu keser",
   "hud.placed": "İnşa edildi: {name}, −{n} gümüş",
   "undo.btn": "Geri al ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "Köprüde buz — {time} sonra açılacak",

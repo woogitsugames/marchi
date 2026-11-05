@@ -255,6 +255,7 @@ export const ja: Dict = {
   "place.road": "建設範囲に道がある",
   "place.building": "建設範囲に建物がある",
   "place.gate": "門の前に障害物がある",
+  "place.cutsRoad": "道を分断してしまう",
   "hud.placed": "{name}を建設：銀−{n}",
   "undo.btn": "戻す({s}秒)",
   "wagon.BRIDGE_CLOSED.in": "橋が凍結。開通まで{time}",

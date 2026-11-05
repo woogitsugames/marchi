@@ -255,6 +255,7 @@ export const it: Dict = {
   "place.road": "Una strada ostacola la costruzione",
   "place.building": "Un edificio ostacola la costruzione",
   "place.gate": "Il cancello si affaccia su un ostacolo",
+  "place.cutsRoad": "Taglierebbe la strada",
   "hud.placed": "Costruito: {name}, −{n} d’argento",
   "undo.btn": "Annulla ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "Ghiaccio sul ponte: riapre tra {time}",

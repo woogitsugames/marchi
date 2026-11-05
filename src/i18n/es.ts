@@ -255,6 +255,7 @@ export const es: Dict = {
   "place.road": "Un camino bloquea el lugar",
   "place.building": "Un edificio bloquea el lugar",
   "place.gate": "La puerta da a un obstáculo",
+  "place.cutsRoad": "Cortaría el camino",
   "hud.placed": "Construido: {name}, −{n} de plata",
   "undo.btn": "Deshacer {s} s",
   "wagon.BRIDGE_CLOSED.in": "Hielo en el puente: abre en {time}",

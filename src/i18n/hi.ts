@@ -255,6 +255,7 @@ export const hi: Dict = {
   "place.road": "निर्माण की जगह पर सड़क है",
   "place.building": "निर्माण की जगह पर इमारत है",
   "place.gate": "द्वार के सामने बाधा है",
+  "place.cutsRoad": "सड़क कट जाएगी",
   "hud.placed": "निर्माण पूरा: {name}, −{n} चाँदी",
   "undo.btn": "पूर्ववत ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "पुल पर बर्फ; {time} में खुलेगा",

@@ -255,6 +255,7 @@ export const nl: Dict = {
   "place.road": "Een weg ligt in de weg",
   "place.building": "Een gebouw staat in de weg",
   "place.gate": "De poort komt uit op een obstakel",
+  "place.cutsRoad": "Zou de weg doorsnijden",
   "hud.placed": "Gebouwd: {name}, −{n} zilver",
   "undo.btn": "Herroep ({s} s)",
   "wagon.BRIDGE_CLOSED.in": "IJs op de brug — open over {time}",

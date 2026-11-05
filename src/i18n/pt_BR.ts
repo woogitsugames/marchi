@@ -255,6 +255,7 @@ export const pt_BR: Dict = {
   "place.road": "Uma estrada impede a construção",
   "place.building": "Um edifício impede a construção",
   "place.gate": "O portão dá para um obstáculo",
+  "place.cutsRoad": "Cortaria a estrada",
   "hud.placed": "Construído: {name}, −{n} de prata",
   "undo.btn": "Desfazer {s} s",
   "wagon.BRIDGE_CLOSED.in": "Gelo na ponte: abre em {time}",

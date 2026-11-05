@@ -255,6 +255,7 @@ export const zh_Hans: Dict = {
   "place.road": "道路挡住了位置",
   "place.building": "建筑挡住了位置",
   "place.gate": "大门前有障碍物",
+  "place.cutsRoad": "会切断道路",
   "hud.placed": "已建造{name}：−{n}银",
   "undo.btn": "撤销({s}秒)",
   "wagon.BRIDGE_CLOSED.in": "桥梁结冰，{time}后开放",
