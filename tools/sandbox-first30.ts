@@ -12,7 +12,7 @@
 // Logged per look: card kind, calm/critical, cure, the cure's result (and why it failed), pace/fleet cue (must stay
 // null without a contract), events and chronicle entries per minute.
 import {
-  MAX_WAGONS, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
+  BUILDINGS, MAX_WAGONS, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
   unexplainedStalls, newPaceLog, samplePace, type BuildingType, type Command, type PaceLog, type World,
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
@@ -50,6 +50,13 @@ interface Opts {
    * cue leaves for the next building (no cue below WAGON_PRICE + keep).
    */
   sbFleet?: { keep: number; maxWagons?: number };
+  /**
+   * Prototype (not in the game): a free-valley rank card. When the slot is empty or calm and the next rank still
+   * lacks distinct goods sold, the card names the next unbuilt producer of an unsold good that the rank allows
+   * (farm; mill once a farm stands; bakery once a mill stands; fisher) and its button opens the build ghost
+   * by the castle (buildSite), as the pace card's "Postaw jeszcze" does.
+   */
+  sbRank?: boolean;
 }
 
 export interface Look {
@@ -83,7 +90,7 @@ function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
 }
 
 /** One look: the slot (pace card if it would take it, else the worst stall) and the sheet's cure. */
-function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null): Look {
+function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false): Look {
   const st = w.state;
   const ranked = rankStalls(w);
   const base = { t: st.tick / TICK_HZ, stalls: ranked.length, coins: st.coins, wagons: st.wagons.length, rank: st.town.rank };
@@ -93,6 +100,22 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
     if (pc) { r.paceWrong++; return { ...base, kind: 'pace:' + pc.k, calm: true, crit: false, calmWhy: null, cure: null, act: 'pace?' }; }
   }
   for (const b of st.buildings) if (fleetCueFor(w, forecastFor(w, log), b)) r.fleetWrong++;
+  // prototype free-valley rank card (see Opts.sbRank)
+  if (rk && (!ranked.length || ranked[0]!.minor)) {
+    const sb = sandboxStatus(w);
+    if (sb.next && sb.goodsSold < sb.next.goods) {
+      const has = (t: BuildingType): boolean => st.buildings.some((q) => q.type === t);
+      const order: [BuildingType, BuildingType | null][] = [['farm', null], ['mill', 'farm'], ['bakery', 'mill'], ['fisher', null], ['quarry', null]];
+      const castle = st.buildings.find((q) => q.type === 'castle')!;
+      for (const [type, needs] of order) {
+        const good = Object.keys(BUILDINGS[type].recipe!.outputs)[0] as keyof typeof st.ledger.sold;
+        if (st.ledger.sold[good] > 0 || has(type) || (needs && !has(needs)) || !sb.unlocked.includes(type)) continue;
+        if (st.coins < BUILDINGS[type].price) return { ...base, kind: 'sbRank:' + type, calm: true, crit: false, calmWhy: null, cure: 'producer', act: 'producer?NO_COINS' };
+        const ok = placeAtGhost(w, type, castle.id);
+        return { ...base, kind: 'sbRank:' + type, calm: true, crit: false, calmWhy: null, cure: 'producer', act: ok ? 'build:' + type : 'build?fail:' + type };
+      }
+    }
+  }
   // prototype free-valley fleet cue (see Opts.sbFleet)
   if (sb && (!ranked.length || ranked[0]!.minor) && st.coins >= WAGON_PRICE + sb.keep && st.wagons.length < (sb.maxWagons ?? MAX_WAGONS) &&
     !st.wagons.some((q) => q.status.k === 'IDLE' && !q.job) && sb.bits.length >= 60 && sb.bits.reduce((a, x) => a + x, 0) >= 54) {
@@ -186,7 +209,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       if (fleetBits.length > 60) fleetBits.shift();
     }
     if (o.eye > 0 && t > 0 && t % (o.eye * TICK_HZ) === 0) {
-      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null);
+      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank);
       r.looks.push(l);
       if (l.act && !l.act.includes('?')) r.actions[l.act] = (r.actions[l.act] ?? 0) + 1;
     }
@@ -242,6 +265,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ['build+eye-10+sbF', { plan: MIN, eye: 10, events: false, sbFleet: { keep: 40 } }],
     ['build+eye-30+sbF', { plan: MIN, eye: 30, events: false, sbFleet: { keep: 40 } }],
     ['build+eye-60+sbF', { plan: MIN, eye: 60, events: false, sbFleet: { keep: 40 } }],
+    ['eye-10+sbF+sbR', { plan: null, eye: 10, events: false, sbFleet: { keep: 40 }, sbRank: true }],
+    ['eye-30+sbF+sbR', { plan: null, eye: 30, events: false, sbFleet: { keep: 40 }, sbRank: true }],
+    ['eye-60+sbF+sbR', { plan: null, eye: 60, events: false, sbFleet: { keep: 40 }, sbRank: true }],
+    ['eye-30+sbR', { plan: null, eye: 30, events: false, sbRank: true }],
     ['decent', { plan: DECENT, eye: 0, events: false }],
   ];
   const all: Result[] = [];
