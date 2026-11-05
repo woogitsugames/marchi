@@ -678,6 +678,7 @@ export const pl = {
   'end.act.other': 'Następnym razem: {who} — {time} przestoju. Otwórz „Dlaczego stoi?” przy pierwszym zastoju.',
   'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
   'fix.paceFleetWhy': 'Przez ostatnią minutę żaden wóz nie stał wolny, a prognoza daje {seals}. Nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
+  'fix.paceFleetWhyFree': 'Przez ostatnią minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -744,6 +745,7 @@ export const PENDING_KEYS = [
   'fix.iceAheadWhy',
   'cause.paceFleet',
   'fix.paceFleetWhy',
+  'fix.paceFleetWhyFree',
   'fix.paceFleetEta',
   'end.act.wagon',
   'end.act.road',

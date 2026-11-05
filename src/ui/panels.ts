@@ -132,7 +132,7 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
   const hint = short > 0
     ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(eta ? t('fix.paceFleetEta', { wagon: wagonName(world, pc.wagon), time: clock(eta.toDest) }) + ' ' : '')}${
-      esc(t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
+      esc(pc.seals < 0 ? t('fix.paceFleetWhyFree') : t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
   return fixSection(btn, hint, short > 0);
 }
 
@@ -602,11 +602,13 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
       // the pace card's producer (day 8c): its fix, unless this building has a stall with a cure of its own
-      const fc = !fix && !(stalled && cureFor(world, b.id)) ? forecastFor(world, nav.pace) : null;
-      const pc = fc ? paceCard(world, fc) : null;
+      // (no forecast without a contract: the free valley still gets the fleet cue, D-140)
+      const paced = !fix && !(stalled && cureFor(world, b.id));
+      const fc = paced ? forecastFor(world, nav.pace) : null;
+      const pc = paced ? paceCard(world, fc) : null;
       // a long pickup wait while the fleet is on the road gets "Kup wóz" on its own sheet too (D-128), not only
       // the yard the card names
-      const pcHere = pc && pc.producer === b.id ? pc : fc ? fleetCueFor(world, fc, b) : null;
+      const pcHere = pc && pc.producer === b.id ? pc : paced ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
       if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
       // the stone-span cure ("Wyłóż most kamieniem"): the same sett ghost, on the wooden deck (D-134)

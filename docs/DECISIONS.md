@@ -1868,3 +1868,13 @@ cleared for that synchronous call; custom depth materials get the same per-draw 
 with `tools/render5-materials.mjs` (sandbox, 200 wagons, 412×915, SwiftShader): in-frame links low → high **2 → 0**,
 high → low → high **0 / 0** (ultra not re-measured); a low start holds 42 programs instead of 44 (the two fog depth
 duplicates are gone). Render/UI only, golden hashes unchanged. (decided)
+
+**D-140 — The fleet cue in the free valley (owner 2026-11-05; research sandbox-first-30).**
+The fleet kind of the pace card (D-127) and the yard sheet's "Kup wóz" (D-128) needed a contract, so the valley's most
+common state ("czekanie na odbiór", 74 % of the card's time) never got a wagon cue and card-only players reached rank 1
+at 14–17 min with 600–1000 silver unspent. Without a contract (`freeFleetGate`, generic: no mission id) the gate drops
+the forecast parts (no seal to aim at, `seals = -1`) and keeps the rest — a wagon buyable, none idle, the fleet on the
+road ≥ 90 % of the last minute, the yard waiting ≥ 20 s — plus a reserve: silver ≥ wagon price + 40 for the next
+building. `sampleFleet` now samples whenever the game runs. Sheet line `fix.paceFleetWhyFree` (pl/en, PENDING_KEYS).
+Missions unchanged (their branch is untouched). Research prototype: rank 1 at ~11.3 min, +27 % silver, no failed
+purchase. Test `tests/valley-fleet.test.ts`. UI only, hashes unchanged. (decided — owner 2026-11-05)

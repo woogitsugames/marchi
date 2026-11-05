@@ -16,3 +16,4 @@ ios/DerivedData/
 /art/store/screens/
 .claude/worktrees/
 __pycache__/
+dist-perf9/
