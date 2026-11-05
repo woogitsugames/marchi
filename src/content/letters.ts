@@ -42,7 +42,7 @@ export const CONTRACT_LETTERS = {
         2: "Der gut angelegte Weg brachte die Waren mit Zeitreserve. Zwei Siegel für die tüchtigen Fuhrleute.\n— Wszebor",
         3: "Bretter und Brot lagen bereit, noch ehe die Pferde froren. Drei Siegel für gute Herbstvorsorge.\n— Wszebor",
       },
-      lost: "Der erste Schnee kam, doch ein Teil der Ladung blieb unterwegs. Prüft die Überfahrt und die Abholung durch die Wagen.\n— Wszebor",
+      lost: "Der erste Schnee kam, und ein Teil des Auftrags blieb unterwegs. Seht unten, was am längsten stand, und beginnt nächstes Mal dort.\n— Wszebor",
     },
     fr: {
       opening: "Au prévôt des routes : faites livrer au château 30 planches et 20 pains avant les premières neiges. Bûcheron et scierie sont au-delà de la rivière, sans liaison entre les rives. Tracez un passage, puis veillez au transport de farine et de pain.\n— Wszebor, châtelain de Łozinny Bród",
@@ -51,7 +51,7 @@ export const CONTRACT_LETTERS = {
         2: "Une route bien tracée a permis de livrer largement avant l'échéance. Deux sceaux pour les charretiers.\n— Wszebor",
         3: "La porte s'est ouverte avant que les chevaux ne prennent froid. Pains et planches sont rangés sans retard. Trois sceaux.\n— Wszebor",
       },
-      lost: "La première neige est tombée, une partie de la cargaison est restée en route. Vérifiez le passage et les chariots.\n— Wszebor",
+      lost: "La première neige est tombée, et une partie de la commande est restée en route. Voyez ci-dessous ce qui a le plus attendu, et commencez par là.\n— Wszebor",
     },
     nl: {
       opening: "Aan de wegbeheerder: lever vóór de eerste sneeuw 30 planken en 20 broden aan het kasteel. De houthakker en zagerij liggen aan de overkant; er is nog geen verbinding. Bouw een oversteek en houd het vervoer van meel en brood op gang.\n— Wszebor, kastelein van Łozinny Bród",
@@ -60,7 +60,7 @@ export const CONTRACT_LETTERS = {
         2: "Brood en planken bereikten het kasteel. Twee zegels voor goed georganiseerde ritten.\n— Wszebor",
         3: "Brood en planken bereikten het kasteel. Drie zegels voor uitstekend vooruitzien.\n— Wszebor",
       },
-      lost: "De sneeuw kwam eerder dan een deel van de vracht. Controleer de oversteek en of wagens goederen ophalen.\n— Wszebor",
+      lost: "De eerste sneeuw is gevallen en een deel van de bestelling bleef onderweg. Kijk hieronder wat het langst stilstond en begin daar de volgende keer.\n— Wszebor",
     },
     es: {
       opening: "Al encargado de caminos: lleva 30 tablones y 20 hogazas al castillo antes de la primera nevada. El leñador y el aserradero están al otro lado del río, sin paso entre las orillas. Construye un cruce y mantén el transporte de harina y pan.\n— Wszebor, castellano de Łozinny Bród",
@@ -69,7 +69,7 @@ export const CONTRACT_LETTERS = {
         2: "El castillo recibió pan y tablones. Dos sellos por los viajes bien organizados.\n— Wszebor",
         3: "El castillo recibió pan y tablones. Tres sellos por tan buena previsión.\n— Wszebor",
       },
-      lost: "Llegó la nieve y parte de la carga quedó en el camino. Comprueba el cruce y la recogida de mercancías.\n— Wszebor",
+      lost: "Llegó la primera nevada y parte del pedido quedó en el camino. Mira abajo qué estuvo parado más tiempo y empieza por ahí la próxima vez.\n— Wszebor",
     },
     it: {
       opening: "Al custode delle strade: porta al castello 30 assi e 20 pagnotte prima della prima neve. Taglialegna e segheria sono oltre il fiume, ma le rive non sono collegate. Costruisci un passaggio e mantieni il trasporto di farina e pane.\n— Wszebor, castellano di Łozinny Bród",
@@ -78,7 +78,7 @@ export const CONTRACT_LETTERS = {
         2: "Pane e assi sono arrivati al castello. Due sigilli per i viaggi ben ordinati.\n— Wszebor",
         3: "Pane e assi sono arrivati al castello. Tre sigilli per un'ottima previdenza.\n— Wszebor",
       },
-      lost: "È arrivata la prima neve e parte delle merci è rimasta per strada. Controlla il passaggio e il ritiro dei carichi.\n— Wszebor",
+      lost: "È arrivata la prima neve e parte dell'ordine è rimasta per strada. Guarda sotto cosa è rimasto fermo più a lungo e comincia da lì la prossima volta.\n— Wszebor",
     },
     "pt-BR": {
       opening: "Ao encarregado das estradas: entregue 30 tábuas e 20 pães ao castelo antes da primeira neve. O lenhador e a serraria ficam do outro lado do rio, sem ligação entre as margens. Construa uma travessia e mantenha o transporte de farinha e pão.\n— Wszebor, castelão de Łozinny Bród",
@@ -87,7 +87,7 @@ export const CONTRACT_LETTERS = {
         2: "Pães e tábuas chegaram ao castelo. Dois selos pelas viagens bem organizadas.\n— Wszebor",
         3: "Pães e tábuas chegaram ao castelo. Três selos pelo excelente planejamento.\n— Wszebor",
       },
-      lost: "A neve chegou e parte da carga ficou pelo caminho. Verifique a travessia e a coleta pelas carroças.\n— Wszebor",
+      lost: "Chegou a primeira neve e parte do pedido ficou na estrada. Veja abaixo o que ficou parado por mais tempo e comece por aí na próxima vez.\n— Wszebor",
     },
     sv: {
       opening: "Till vägförvaltaren: för 30 plankor och 20 bröd till borgen före första snön. Skogshuggaren och sågverket ligger bortom floden, men stränderna saknar förbindelse. Bygg en överfart och håll mjöl och bröd i rörelse.\n— Wszebor, kastellan av Łozinny Bród",
@@ -96,7 +96,7 @@ export const CONTRACT_LETTERS = {
         2: "Bröd och plankor nådde borgen. Två sigill för välordnade körningar.\n— Wszebor",
         3: "Bröd och plankor nådde borgen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
-      lost: "Den första snön kom, men en del av lasten var kvar på vägen. Kontrollera överfarten och vagnarnas hämtning.\n— Wszebor",
+      lost: "Första snön har kommit och en del av beställningen blev kvar på vägen. Se nedan vad som stod längst, och börja där nästa gång.\n— Wszebor",
     },
     tr: {
       opening: "Yol sorumlusuna: İlk kar düşmeden kaleye 30 kalas ve 20 somun ekmek ulaştır. Oduncu ile kereste atölyesi nehrin karşısında, fakat iki kıyı bağlı değil. Bir geçit yap; un ve ekmek taşıyan arabaların yolunu açık tut.\n— Wszebor, Łozinny Bród kale kâhyası",
@@ -105,7 +105,7 @@ export const CONTRACT_LETTERS = {
         2: "Ekmek ile kalas kaleye ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
         3: "Ekmek ile kalas kaleye ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
       },
-      lost: "İlk kar geldi, ama yükün bir kısmı yolda kaldı. Geçidi ve arabaların yük alıp almadığını denetle.\n— Wszebor",
+      lost: "İlk kar geldi ve siparişin bir kısmı yolda kaldı. Aşağıda en uzun neyin durduğuna bak ve bir dahaki sefere oradan başla.\n— Wszebor",
     },
     ru: {
       opening: "Смотрителю дорог: до первого снега доставь в замок 30 досок и 20 буханок хлеба. Лесоруб и лесопилка стоят за рекой, но берега не соединены. Построй переправу и наладь подвоз муки и хлеба.\n— Wszebor, каштелян Łozinny Bród",
@@ -114,7 +114,7 @@ export const CONTRACT_LETTERS = {
         2: "Доски и хлеб доставлены в замок. Две печати за хорошо устроенные рейсы.\n— Wszebor",
         3: "Доски и хлеб доставлены в замок. Три печати за отличную предусмотрительность.\n— Wszebor",
       },
-      lost: "Первый снег пришёл, а часть груза осталась в дороге. Проверь переправу и сбор товаров повозками.\n— Wszebor",
+      lost: "Пришёл первый снег, а часть заказа осталась в пути. Посмотри ниже, что стояло дольше всего, и в следующий раз начни с этого.\n— Wszebor",
     },
     uk: {
       opening: "Наглядачеві шляхів: до першого снігу доправ до замку 30 дощок і 20 хлібин. Лісоруб і лісопилка стоять за річкою, але береги не з'єднані. Збудуй переправу й забезпеч перевезення борошна та хліба.\n— Wszebor, каштелян Łozinny Bród",
@@ -123,7 +123,7 @@ export const CONTRACT_LETTERS = {
         2: "Дошки й хліб прибули до замку. Дві печатки за належно впорядковані рейси.\n— Wszebor",
         3: "Дошки й хліб прибули до замку. Три печатки за чудову завбачливість.\n— Wszebor",
       },
-      lost: "Перший сніг випав, а частина вантажу лишилася в дорозі. Перевір переправу й забір товарів возами.\n— Wszebor",
+      lost: "Випав перший сніг, а частина замовлення лишилася в дорозі. Подивися нижче, що стояло найдовше, і наступного разу почни з цього.\n— Wszebor",
     },
     ja: {
       opening: "街道管理官へ。初雪までに板材30とパン20を城へ運べ。川向こうの木こり小屋と製材所は、まだこちら岸と道で結ばれていない。渡河路を築き、小麦粉とパンの輸送を絶やすな。\n— Wszebor、Łozinny Bród城代",
@@ -132,7 +132,7 @@ export const CONTRACT_LETTERS = {
         2: "パンと板材が城に届いた。よく整えた運行に印章二つ。\n— Wszebor",
         3: "パンと板材が城に届いた。見事な備えに印章三つ。\n— Wszebor",
       },
-      lost: "初雪が来たが荷の一部は道に残った。渡河路と荷車の積み込みを確かめよ。\n— Wszebor",
+      lost: "初雪が来て、注文の一部は道に残った。下で最も長く止まっていたものを確かめ、次はそこから始めよ。\n— Wszebor",
     },
     ko: {
       opening: "도로 관리인에게. 첫눈이 오기 전에 성으로 판자 30개와 빵 20개를 보내라. 벌목꾼과 제재소는 강 건너편에 있으나 양쪽 둑은 이어져 있지 않다. 건널목을 만들고 밀가루와 빵의 운송을 이어 가라.\n— Wszebor, Łozinny Bród 성의 성주",
@@ -141,7 +141,7 @@ export const CONTRACT_LETTERS = {
         2: "빵과 판자가 성에 도착했다.잘 정돈한 운송에 인장 둘을 준다.\n— Wszebor",
         3: "빵과 판자가 성에 도착했다.훌륭한 대비에 인장 셋을 준다.\n— Wszebor",
       },
-      lost: "첫눈이 내렸지만 화물 일부는 길에 남았다. 건널목과 수레의 적재를 확인하라.\n— Wszebor",
+      lost: "첫눈이 내렸고 주문의 일부는 길에 남았다. 아래에서 가장 오래 멈춘 것을 보고 다음에는 거기서 시작하라.\n— Wszebor",
     },
     "zh-Hans": {
       opening: "致道路总管：务必在初雪前将30份木板和20条面包送进城堡。伐木场与锯木厂在河对岸，两岸尚未连通。先建渡口，再确保面粉和面包持续运来。\n— Wszebor，Łozinny Bród城堡总管",
@@ -150,7 +150,7 @@ export const CONTRACT_LETTERS = {
         2: "面包和木板已运抵城堡。运输安排妥当，授予两枚印章。\n— Wszebor",
         3: "面包和木板已运抵城堡。筹划周详，授予三枚印章。\n— Wszebor",
       },
-      lost: "初雪已到，部分货物却仍在途中。检查渡口，并确认马车能取到货物。\n— Wszebor",
+      lost: "初雪已至，部分订单仍在途中。看看下方哪里停得最久，下次就从那里着手。\n— Wszebor",
     },
     ar: {
       opening: "إلى ناظر الطرق: أوصل 30 لوحًا و20 رغيفًا إلى القلعة قبل أول ثلج. الحطاب والمنشرة وراء النهر، لكن الضفتين غير موصولتين. أنشئ معبرًا واحرص على استمرار نقل الدقيق والخبز.\n— Wszebor، حاكم قلعة Łozinny Bród",
@@ -159,7 +159,7 @@ export const CONTRACT_LETTERS = {
         2: "وصل الخبز والألواح إلى القلعة. ختمان لتنظيم الرحلات بإحكام.\n— Wszebor",
         3: "وصل الخبز والألواح إلى القلعة. ثلاثة أختام لحسن التدبير.\n— Wszebor",
       },
-      lost: "سقط أول ثلج وبقي جزء من الحمولة في الطريق. افحص المعبر وقدرة العربات على جمع البضائع.\n— Wszebor",
+      lost: "حلّ أول ثلج وبقي جزء من الطلب في الطريق. انظر أدناه ما توقف أطول مدة، وابدأ منه في المرة القادمة.\n— Wszebor",
     },
     hi: {
       opening: "मार्ग निरीक्षक के नाम: पहली बर्फ़ से पहले किले में 30 तख्ते और 20 रोटियाँ पहुँचाओ। लकड़हारा और आरा-मिल नदी के उस पार हैं, पर दोनों किनारे जुड़े नहीं हैं। पार जाने का रास्ता बनाओ और आटे व रोटी की ढुलाई चालू रखो।\n— Wszebor, Łozinny Bród का किलेदार",
@@ -168,7 +168,7 @@ export const CONTRACT_LETTERS = {
         2: "रोटी और तख्ते किले में पहुँच गए। सुव्यवस्थित फेरों के लिए दो मुहरें।\n— Wszebor",
         3: "रोटी और तख्ते किले में पहुँच गए। उत्तम तैयारी के लिए तीन मुहरें।\n— Wszebor",
       },
-      lost: "पहली बर्फ़ आ गई, पर कुछ सामान राह में रह गया। नदी-पार और गाड़ियों की माल उठाने की क्षमता जाँचो।\n— Wszebor",
+      lost: "पहली बर्फ़ आ गई, और ऑर्डर का कुछ हिस्सा राह में रह गया। नीचे देखो कि सबसे देर तक क्या रुका रहा, और अगली बार वहीं से शुरू करो।\n— Wszebor",
     },
   },
   m2: {

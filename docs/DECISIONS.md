@@ -2073,3 +2073,17 @@ and asserts it. `tests/wagon-due.test.ts`: no hold below the gate (m3, m4, m8 wi
 open (m8 +2) every `WAGON_DUE` is calm, names a busy wagon, offers no "buy a wagon" cure and ends within a minute.
 The D-127/D-128 gate of the "Kup wóz" card stays: a bought wagon still hurts in 19 of 193 tries.
 Full monotonicity needs a lesson redesign of VIII / X / XII (wagons not a ladder rung) — open. (decided — owner 2026-11-05)
+
+**D-155 — Watch mode (Flip cover): one "tempo" line under the folded seal, the full pace card on tap; i18n round day 9 (owner 2026-11-05 ~14:30).**
+On the Flip cover (`Hud.compact`) the rail with the pace card (producer / mud / fleet / rank kinds, `src/ui/paceCard.ts`)
+is hidden and its 2-line text does not fit 360 px. While the pace card holds the card slot, one short line now hangs
+under the folded seal, below the D-99 "gotowe za M:SS" line (in the free valley under the plaque's seal): "tempo: za
+mało ryb" (producer, `{goodGen}` of the bottleneck good), "tempo: błoto spowalnia wozy" (mud), "tempo: kup wóz" (fleet),
+"ranga: sprzedaj ryby" (rank, `{goodAcc}`). Amber on the slate ETA plaque, 13 px, one line with an ellipsis; the button
+is ≥ 48×48 px and absolutely placed, so the seal does not move when the line comes and goes. A tap opens the card's
+subject sheet with the cure (the same `showStall(producer)` as the card's eye). No line on big screens, nor when a real
+stall holds the slot (the alarm pins say that), hidden while the valley's rank-up letter shows (it sits under the seal
+on the cover; `npm run layout -- --quick` caught the overlap). Keys `seal.tempo.producer/mud/fleet/rank`, translated with the rest.
+Same round: all 77 PENDING_KEYS (days 5–9 incl. D-155) and mission I's new loss letter (D-130) translated into de, es,
+fr, it, nl, pt_BR, sv, tr, ru, uk, ja, ko, zh_Hans, ar, hi; PENDING_KEYS is empty. Numbers in ar texts are
+bidi-isolated (⁨…⁩). Shots `docs/shots/i18n9-*` (`tools/i18n9-shots.mjs`). UI only, hashes unchanged. (decided)

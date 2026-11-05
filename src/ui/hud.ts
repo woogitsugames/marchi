@@ -173,6 +173,9 @@ export class Hud {
   private plTitle: HTMLElement;
   private plBody: HTMLElement;
   private plaqueOnly: HTMLElement;
+  /** Watch mode (Flip cover, D-155): one short line under the folded seal naming the pace card's cure. */
+  private tempo: HTMLButtonElement;
+  private tempoSig = '';
   private events: EventCard;
   private rankLetter: HTMLElement | null = null;
   private wasRaining = false;
@@ -305,6 +308,12 @@ export class Hud {
       this.toolBtns.set(id, b);
     }
     const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, this.stallRow, tools);
+
+    // ---- watch-mode tempo line (D-155): the pace card does not fit the Flip cover, its one-line gist does;
+    // a tap opens the card's subject sheet with the cure, as the card's eye does
+    this.tempo = h('button.seal-tempo') as HTMLButtonElement;
+    this.tempo.hidden = true;
+    this.tempo.addEventListener('click', () => { if (this.pace) this.act.showStall(this.pace.producer); });
 
     // ---- valley events (D-54): under the plaque, free valley only
     this.events = new EventCard({ command: (c) => this.act.eventCommand(c), toast: (text, icon) => this.toast(text, 'info', icon, 4200) });
@@ -501,6 +510,28 @@ export class Hud {
       this.contractDirty = false;
       this.updateContract(world, c, pace);
     }
+    this.updateTempo(world, c ? this.waybillWrap : sb?.market ? this.plaqueWrap : null);
+  }
+
+  /**
+   * Watch mode (D-155): "tempo: kup wóz" under the folded seal (or the plaque's seal in the free valley) while
+   * the pace card holds the card slot — the rail with the card is hidden on the Flip cover.
+   */
+  private updateTempo(world: World, wrap: HTMLElement | null): void {
+    const pc = this.compact && wrap ? this.pace : null;
+    const sig = pc ? `${pc.k}|${'good' in pc ? pc.good : ''}|${pc.producer}|${getLang()}` : '';
+    if (sig === this.tempoSig && (!pc || this.tempo.parentElement === wrap)) return;
+    this.tempoSig = sig;
+    this.tempo.hidden = !pc;
+    if (!pc || !wrap) return;
+    if (this.tempo.parentElement !== wrap) wrap.append(this.tempo);
+    const text = pc.k === 'producer'
+      ? t('seal.tempo.producer', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
+      : pc.k === 'rank'
+        ? t('seal.tempo.rank', { goodAcc: t(`goodAcc.${pc.good}` as MessageKey) })
+        : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
+    setHtml(this.tempo, `<span class="st-line" dir="auto">${esc(text)}</span>`);
+    this.tempo.setAttribute('aria-label', `${text}. ${t('hud.worstShow', { name: buildingName(world, pc.producer) })}`);
   }
 
   /** Kup wóz: the cost badge, the shortfall in place of the label when silver is short, the cure mark. */

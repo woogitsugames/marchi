@@ -1483,7 +1483,7 @@ body.is-flex.build-placing .pb-actions .btn { flex: 1; }
   --kparch-dim: #d7c29a;
 }
 
-.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .seal-pace, .eta-tag,
+.k-panel, .wb-panel, .ev-card, .stall-card::before, .chip, .speed, .tool, .ribbon, .snow-pill, .seal-time, .seal-pace, .seal-tempo .st-line, .eta-tag,
 .kbar > i, button.seg.is-on::before, .toast, .notice, .sheet-paper, .letter, .rank-letter, .build-shelf, .undo-btn, .clear-restore {
   border-style: solid;
   border-width: 0;
@@ -1519,7 +1519,7 @@ button.seg.is-on::before {
   border-image-slice: 23.5% 19.2% fill;
   border-image-width: 8px 23px;
 }
-.snow-pill, .seal-time, .seal-pace, .eta-tag {
+.snow-pill, .seal-time, .seal-pace, .seal-tempo .st-line, .eta-tag {
   border-image-source: url("/assets/ui/kit/eta@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/eta@2x.png") 2x, url("/assets/ui/kit/eta@3x.png") 3x);
   border-image-slice: 25% 16.7% fill;
@@ -1858,6 +1858,15 @@ body.is-mini:has(.tut-arrow.is-shown) .rail-hint { visibility: hidden; }
 .seal-pace { margin-top: 2px; padding-block: 1px; padding-inline: 8px; font-size: 12px; font-weight: 700; color: #eef0ee; white-space: nowrap; }
 .seal-pace.warn { color: #ffe0a0; }
 .seal-pace.late { color: #ffc2a8; }
+/* D-155: watch mode — the pace card's gist in one line under the folded seal; the button keeps a 48 px target,
+   the slate plaque inside is the visible part. Absolute, so the seal does not move when the line comes and goes. */
+.seal-tempo { position: absolute; top: 100%; inset-inline-start: 0; z-index: 1; min-height: 48px; min-width: 48px; max-width: calc(100vw - var(--safe-s, 0px) - 24px);
+  display: flex; align-items: flex-start; padding: 2px 0 0; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.seal-tempo[hidden] { display: none; }
+/* the rank-up letter (valley) sits under the seal on the Flip cover: the tempo line steps aside while it shows */
+body:has(.rank-letter-wrap) .seal-tempo { visibility: hidden; }
+.seal-tempo .st-line { padding-block: 2px; padding-inline: 8px; font-size: 13px; font-weight: 700; line-height: 1.25; color: #ffe0a0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 /* ---- bottom rail: worst stall card + alarm seal, the tool cards */
 .rail {
