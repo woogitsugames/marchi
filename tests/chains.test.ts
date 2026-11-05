@@ -319,7 +319,9 @@ test('determinism with ten goods: same commands, same hash; save/load mid-chain 
 
 function gateV5(f: (s: J) => void, version = STATE_VERSION): GateResult {
   const w = chainsWorld();
-  for (let i = 0; i < 1800; i++) step(w);
+  // the sample must hold a stone wagon (the load-limit case below): from 3:00 on, the first tick one is on the road
+  // (the dispatcher's own timing decides when, D-156; bounded so a fleet without stone fails loudly)
+  for (let i = 0; i < 1800 || (i < 6000 && !w.state.wagons.some((x) => x.cargoGood === 'stone')); i++) step(w);
   const env = JSON.parse(JSON.stringify(makeEnvelope('valley1', w.state, 0))) as J;
   env.stateVersion = version;
   env.state.version = version;
@@ -344,7 +346,8 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
   // a stone wagon may not carry 6
   const st = gateV5((s) => {
     const wg = s.wagons.find((x: J) => x.cargoGood === 'stone');
-    if (wg) { wg.cargoQty = 6; if (wg.job) wg.job.qty = 6; } else s.__noStone = true;
+    assert(wg, 'the sample holds a stone wagon');
+    wg.cargoQty = 6; if (wg.job) wg.job.qty = 6;
   });
   assert(!st.ok, 'stone load of 6 rejected');
   // v4: the new goods did not exist, so fish cargo is unknown, and 6 rank ticks are too many
