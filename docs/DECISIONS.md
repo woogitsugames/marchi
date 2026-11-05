@@ -2200,3 +2200,39 @@ cards reached rank 1 at 11.3–12.8 min; the brake was renown (57–112 at 8:00)
 200 → 120 (goods 2 and flow 8 unchanged). Card-only players (tools/sandbox-first30.ts `card-10/30/60`, 4 seeds):
 rank 1 at 7.7–10.4 min; the DECENT bot 6.8–7.1 min (was 10.4; test window 8–12 → 5.5–9). Ranks 2–4 unchanged.
 Sim change for the free valley only (missions have no rank gate); valley hashes move, mission hashes do not. (decided)
+
+**D-170 — Free valley late game: the trading post across the river (owner 2026-11-04, reconfirmed 2026-11-05).**
+Implemented per `docs/specs/2026-11-04-valley-trade-post.md` (the spec's D-111). A new map building `tradePost`
+(4×4 at (37,58), gate north at (39,57) with a dirt stub; fallbacks (43,58), (33,58), (37,62)) and a
+`state.tradePost` slice only in `sandbox` states (last key, so contract states serialize as before). From rank 4 it
+buys every good at 125 % of the castle formula with its own saturation (recovering 1 / 10 s), pays into the shared
+`market.cents`, counts for renown and flow; royal orders stay the castle's (an owed good is not sold at the post
+meanwhile — spec says "only to the castle"; without this the post's 125 % pair took planks from an accepted
+order once the castle's in-flight cap was reached). Dispatch sorts (market, good) pairs: owed → price → GOODS order
+→ id. `NO_ROAD` until a stable's network reaches the gate, shown as a calm brass pin (`cause.postNoRoad`); the
+gap finder offers the road with a bridge. Cannot be demolished. Rank 5 renown 14 500 → 17 000. State v9, migration
+v8 → v9 places the post with the sim's `place()` on a clone (id = old `nextId` — wagons share the id counter, so not
+always 6 as the spec assumed; no free site → `building: -1`, no post). Save gate checks the slice. Real v8
+fixture `tests/fixtures/save-v8-sandbox.json` (pre-v9 build, DECENT 40 min). DECENT gets "road to the trading
+post" at rank 4. Measured (`tools/valley-3h.ts`, seeds 1301–1303, 180 min, on top of D-168): DECENT + post R1–R5
+6,9 / 20,5 / 39,9 / 73,5 / **117,1** (target 112–126), silver 31 453; without the post R5 **131,7** (≤ 135),
+silver 25 023 (+26 % with it); +eye (paves the iced span) 116,3. Idle wagons 90–180 min 1–3 % with the post; the
+winter "iced span" card ~15 % of winter bands. Contract goldens (CONTRACT_GOLDEN, V4_GOLDEN, bench 50/100, terrain)
+unchanged. Render: own model (closed shutters / open counter, wares, Glina pennant), ice floes and deck frost on
+wooden spans while the ice holds (+1 draw call only then). (decided)
+
+**D-171 — "Wąskie gardło": the free valley's bottleneck card, and its place in the calm slot.**
+`src/ui/bottleneck.ts` (spec §3, the spec's D-112): UI-only samples, one per sim second, 3-minute ring per world.
+Card when the window is full and the mean of workshops waiting for one input is ≥ 1,50 (kept until < 1,10), with
+≥ 2 consumers, a placeable producer, and not when half its producers wait themselves (the card names grain, not
+flour); cure "build a producer" (or "wagon" when half the waits are `NO_WAGON`). Fleet variant from rank 2: no idle
+wagon in any second of the window. The waiting set is `stalls.ts` `waitsForInput`, which since D-155 also counts
+`WAGON_DUE` (the research tool `tools/valley-bottleneck.ts` predates it). **Priority in the calm slot:** a real
+(non-minor) stall first, then the pace cards (D-140 fleet cue, D-152/D-163 rank card), then the bottleneck card,
+then the calm pins. Why: the fleet cue is a yard losing silver now with a one-tap cure, the rank card is the goal the
+player is working towards and only exists while goods are missing (early game); the bottleneck card is a 3-minute
+structural hint that matters once both are quiet (it appears from ~90 min). The workshop's sheet gets
+"Postaw jeszcze: …" via `producerCure` (the D-110 shared card or the bottleneck); Build is highlighted. Measured on
+DECENT with the post (tool rule): shown 26 / 27 / 36 % of the 90–120 / 120–150 / 150–180 bands (always grain,
+producer), +2 farms 10 / 8 / 5 %, passive and small fleet 0 %. Missions unchanged (D-110 still missions only).
+(decided)
