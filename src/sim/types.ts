@@ -23,7 +23,9 @@ export type BuildingType =
   | 'quarry'
   | 'charcoalBurner'
   | 'malthouse'
-  | 'brewery';
+  | 'brewery'
+  // free valley late game (D-170): the trading post across the river, a map building
+  | 'tradePost';
 
 /** Road surface per cell. 0 = none. Water cells with a road are bridges. */
 export const SURFACE_NONE = 0;
@@ -249,6 +251,36 @@ export interface SimState {
    * states (the key is absent everywhere else, so contract missions serialize exactly as before).
    */
   valleyEvents?: ValleyEventState;
+  /**
+   * Free valley trading post (state v9, D-170). Only in 'sandbox' states (absent everywhere else, so contract
+   * missions serialize exactly as before); always the last key.
+   */
+  tradePost?: TradePostState;
+}
+
+/** One sale at the trading post (one wagon unloading), for the sheet. */
+export interface TradeSale {
+  /** Tick of the sale. */
+  tick: number;
+  good: Good;
+  /** Units sold (1..WAGON_CAPACITY). */
+  qty: number;
+  /** What the units paid, in hundredths of silver (exact, before the market.cents carry). */
+  cents: number;
+}
+
+/** Free valley trading post (state v9, D-170). Present only in 'sandbox' states, the last key of the state. */
+export interface TradePostState {
+  /** Id of the 'tradePost' building; -1 when an old save had no free site for it (migration v8 -> v9). */
+  building: number;
+  /** The post's own saturation per good, 0..MARKET.cap (castle saturation is untouched by post sales). */
+  saturation: GoodMap;
+  /** Units sold at the post per good (a subset of ledger.sold). */
+  sold: GoodMap;
+  /** Hundredths of silver earned at the post in total (exact; silver shown = floor(earnedCents / 100)). */
+  earnedCents: number;
+  /** The last TRADE_POST.recentMax sales, oldest first. */
+  recent: TradeSale[];
 }
 
 export interface Terrain {

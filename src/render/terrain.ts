@@ -139,7 +139,7 @@ export class TerrainView {
     // yard: footprint dilated by ~1.5 cells, softened by the linear filter
     const yard = new Float32Array(w * h);
     for (const b of world.state.buildings) {
-      const r = b.type === 'castle' ? 2 : 1;
+      const r = b.type === 'castle' || b.type === 'tradePost' ? 2 : 1;
       for (let y = b.y - r; y < b.y + b.h + r; y++) for (let x = b.x - r; x < b.x + b.w + r; x++) {
         if (x < 0 || y < 0 || x >= w || y >= h) continue;
         const inside = x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h;

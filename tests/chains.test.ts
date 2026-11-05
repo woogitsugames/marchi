@@ -356,6 +356,12 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
   for (let i = 0; i < 1200; i++) step(w);
   const v4 = JSON.parse(JSON.stringify(makeEnvelope('auto', w.state, 0))) as J;
   v4.stateVersion = 4; v4.state.version = 4;
+  { // state v9 (D-170): a v4 save had no trading post (slice, building, gate road, one netVersion step)
+    const s4 = v4.state, post = s4.buildings.find((x: J) => x.type === 'tradePost');
+    delete s4.tradePost;
+    s4.buildings = s4.buildings.filter((x: J) => x !== post);
+    s4.roads[post.gate] = 0; s4.netVersion -= 1;
+  }
   const strip = (m: J) => { for (const g of NEW_GOODS) delete m[g]; };
   for (const b of v4.state.buildings) { strip(b.stock); strip(b.reservedOut); strip(b.incoming); }
   for (const k of ['produced', 'consumed', 'destroyed', 'sold']) strip(v4.state.ledger[k]);
@@ -370,6 +376,10 @@ test('save gate v5: all ten goods required, per-good load limits, six ranks; v4 
   if (ok4.ok) {
     const out = migrate(ok4.envelope).state;
     w.state.valleyEvents = freshValleyEvents(); // migrated saves start the valley events empty (D-54)
+    { // state v9 (D-170): the migration places the post with the next free id (wagons share the counter)
+      const post = w.state.buildings.find((b) => b.type === 'tradePost')!;
+      post.id = w.state.nextId; w.state.tradePost!.building = w.state.nextId; w.state.nextId += 1;
+    }
     eq(JSON.stringify(out), serialize(w), 'v4 -> v5 byte-identical to a fresh v5 state (key order)');
   }
 });

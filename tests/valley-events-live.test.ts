@@ -108,8 +108,10 @@ function run(seed: number, ticks: number, saveAt = -1, onTick?: (w: World) => vo
 
 test('events live: the free valley starts with an empty v8 event slice, last in key order', () => {
   const w = createWorld('sandbox');
-  eq(w.state.version, STATE_VERSION, 'v8');
-  eq(Object.keys(w.state).at(-1), 'valleyEvents', 'appended last');
+  eq(w.state.version, STATE_VERSION, 'v9');
+  // state v9 (D-170): the trading post slice is now the last key, the event slice the one before it
+  eq(Object.keys(w.state).at(-1), 'tradePost', 'trading post last');
+  eq(Object.keys(w.state).at(-2), 'valleyEvents', 'events before it');
   eq(JSON.stringify(w.state.valleyEvents), JSON.stringify(freshValleyEvents()), 'empty');
 });
 
@@ -215,7 +217,7 @@ test('events live: the fair is the only price bonus (no autumn beer on top)', ()
 
 const FIXTURE = readFileSync(fileURLToPath(new URL('./fixtures/save-v7-sandbox.json', import.meta.url)), 'utf8');
 
-test('save v7 -> v8: a real v7 free-valley save gets an empty event slice, round trips, keeps running', () => {
+test('save v7 -> v9: a real v7 free-valley save gets an empty event slice and the trading post, round trips, keeps running', () => {
   const parsed = parseSave(FIXTURE);
   assert(parsed.ok, 'v7 fixture passes the gate');
   if (!parsed.ok) return;
@@ -225,7 +227,12 @@ test('save v7 -> v8: a real v7 free-valley save gets an empty event slice, round
   eq(env.stateVersion, STATE_VERSION, 'migrated');
   const w = deserialize(JSON.stringify(env.state));
   eq(JSON.stringify(w.state.valleyEvents), JSON.stringify(freshValleyEvents()), 'empty slice');
-  eq(Object.keys(w.state).join(','), Object.keys(createWorld('sandbox').state).join(','), 'key order of a fresh v8 state');
+  eq(Object.keys(w.state).join(','), Object.keys(createWorld('sandbox').state).join(','), 'key order of a fresh v9 state');
+  // state v9 (D-170): the trading post on its first site, the next free id
+  const post = w.state.buildings.find((b) => b.type === 'tradePost');
+  assert(!!post && post.x === 37 && post.y === 58, 'trading post at (37,58)');
+  eq(w.state.tradePost!.building, post!.id, 'slice names the post');
+  eq(post!.id, (JSON.parse(FIXTURE).state as { nextId: number }).nextId, 'post id = old nextId');
   eq(checkInvariants(w).join('; '), '', 'invariants');
   const again = parseSave(JSON.stringify(makeEnvelope('valley1', w.state, 0)));
   assert(again.ok, 'v8 passes the gate');
@@ -236,6 +243,8 @@ test('save v7 -> v8: a real v7 free-valley save gets an empty event slice, round
   // a contract v7 save migrates to v8 without an event slice
   const m2 = parseSave(readFileSync(fileURLToPath(new URL('./fixtures/save-v6-m2-sold-wagon.json', import.meta.url)), 'utf8'));
   if (m2.ok) assert(!('valleyEvents' in migrate(m2.envelope).state), 'contract: no slice');
+  if (m2.ok) assert(!('tradePost' in migrate(m2.envelope).state), 'contract: no trading post slice');
+  if (m2.ok) assert(!migrate(m2.envelope).state.buildings.some((b) => b.type === 'tradePost'), 'contract: no trading post');
 });
 
 test('save gate v8: event slice shape, ids, templates, prices and placement are checked', () => {

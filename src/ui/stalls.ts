@@ -1,8 +1,9 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
+import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
 
 /**
@@ -52,7 +53,8 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
-  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
+  // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
+  const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0;
   calmCache.set(b.id, { key, calm });
   return calm;
@@ -64,8 +66,10 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
+  // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
+  if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
   if (contractFilled(world, b.id)) return 'orderFilled';
@@ -102,6 +106,19 @@ export function sharedOneProducer(world: World, b: Building): SharedOne | null {
 }
 
 /**
+ * The producer cure of a waiting workshop's sheet: the shared single producer (D-110, missions) or the free valley's
+ * bottleneck card (D-171). `producer` is the building to build next to, `type` the one to build.
+ */
+export interface ProducerCure { producer: number; type: BuildingType; consumers: number; source: 'shared' | 'neck'; good: Good }
+export function producerCure(world: World, b: Building): ProducerCure | null {
+  const sh = sharedOneProducer(world, b);
+  if (sh) return { ...sh, source: 'shared', good: (b.status as { good: Good }).good };
+  const n = bottleneckFor(world, b);
+  if (!n || !n.good || !n.build) return null;
+  return { producer: n.near >= 0 ? n.near : n.focus, type: n.build, consumers: n.consumers, source: 'neck', good: n.good };
+}
+
+/**
  * The shared-supply card waits until the consumer has waited this long for its input (owner 2026-11-04, D-110):
  * from the first second it gave the lesson away before the player had seen the workshops stand.
  */
@@ -112,7 +129,7 @@ interface WaitLog { tick: number; since: Map<number, number> }
 const waitLogs = new WeakMap<World, WaitLog>();
 
 /** Waiting for an input good: no stock and none (yet) on the way, no wagon, or a delivery on the way. */
-function waitsForInput(b: Building): boolean {
+export function waitsForInput(b: Building): boolean {
   const s = b.status;
   if (s.k !== 'WAITING_DELIVERY' && s.k !== 'NO_WAGON' && s.k !== 'WAGON_DUE' && s.k !== 'WAITING_UPSTREAM' && !(s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE')) return false;
   return inputGoods(b.type).includes(s.good);
@@ -126,7 +143,9 @@ function waitsForInput(b: Building): boolean {
 export function sampleInputWaits(world: World): void {
   const st = world.state;
   const can = missionBuildable(st.mission.id);
-  if (can === 'ranked' || can.length === 0) return;
+  // the free valley samples too (D-171): the bottleneck card's eye picks the workshop that has waited longest
+  if (can !== 'ranked' && can.length === 0) return;
+  if (can === 'ranked') sampleBottleneck(world);
   let log = waitLogs.get(world);
   if (!log || st.tick < log.tick) { log = { tick: st.tick, since: new Map() }; waitLogs.set(world, log); }
   log.tick = st.tick;
@@ -358,9 +377,14 @@ let cureCache: { key: string; cure: Cure } | null = null;
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}`;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}`;
   if (cureCache?.key === key) return cureCache.cure;
   if (sharedOneCard(world, b)) {
+    cureCache = { key, cure: 'producer' };
+    return 'producer';
+  }
+  if (bottleneckFor(world, b)) {
+    // the free valley's bottleneck card (D-171): this workshop waits for the card's good; one more producer
     cureCache = { key, cure: 'producer' };
     return 'producer';
   }

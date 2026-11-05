@@ -13,7 +13,7 @@
 // inside state objects are tolerated (a newer schema may add e.g. mission.tranches or
 // building.capOverride). Only the fields this module knows are validated; size and depth are capped
 // for everything.
-import { BUILDINGS, FLOW_BUCKETS, GOODS, GOODS_V4, MARKET, MAX_WAGONS, RANKS, RANKS_V4, STATE_VERSION, WAGON_CAPACITY, capacityOf, isGood } from '../sim/defs';
+import { BUILDINGS, FLOW_BUCKETS, GOODS, GOODS_V4, MARKET, MAX_WAGONS, RANKS, RANKS_V4, STATE_VERSION, TRADE_POST, WAGON_CAPACITY, capacityOf, isGood } from '../sim/defs';
 import { isMapId, mapSize, terrainFor } from '../sim/missions';
 import { checkInvariants } from '../sim/sim';
 import { FAIR_PRICE_PERCENT, MAX_ROYAL_ORDERS, MERCHANT_PRICE_PERCENT, ORDER_TEMPLATES } from '../sim/events';
@@ -600,6 +600,45 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     }
   }
   gateValleyEvents(c, s, version);
+  gateTradePost(c, s, version, ids);
+}
+
+/**
+ * state v9 (D-170): the free valley's trading post slice. Only sandbox states carry it (required there from v9), and
+ * only with it may a 'tradePost' building exist (at most one, the one the slice names).
+ */
+function gateTradePost(c: Ctx, s: Obj, version: number, ids: Map<number, string>): void {
+  const P = 'state';
+  const m = isObj(s.mission) ? s.mission : null;
+  const sandbox = m?.id === 'sandbox';
+  const posts = [...ids].filter(([, t]) => t === 'tradePost').map(([id]) => id);
+  if (posts.length > 1) c.e.add('INCONSISTENT', `${P}.buildings`, `${posts.length} trading posts`);
+  if (!has(s, 'tradePost')) {
+    if (version >= 9 && sandbox) c.e.add('BAD_TYPE', `${P}.tradePost`, 'missing');
+    if (posts.length) c.e.add('INCONSISTENT', `${P}.buildings`, 'a trading post without the tradePost slice');
+    return;
+  }
+  if (!sandbox) { c.e.add('INCONSISTENT', `${P}.tradePost`, 'trading post outside the free valley'); return; }
+  const tp = obj(c, s, 'tradePost', P);
+  if (!tp) return;
+  const p = `${P}.tradePost`;
+  const b = int(c, tp, 'building', p, -1, LIMITS.maxInt);
+  if (b !== null && b >= 0 && ids.get(b) !== 'tradePost') c.e.add('DANGLING_REF', `${p}.building`, `building ${b} is not a trading post`);
+  if (b !== null && posts.some((id) => id !== b)) c.e.add('INCONSISTENT', `${P}.buildings`, 'a trading post the slice does not name');
+  const sat = obj(c, tp, 'saturation', p);
+  if (sat) for (const g of c.goods) int(c, sat, g, `${p}.saturation`, 0, MARKET.cap);
+  goodMap(c, tp, 'sold', p);
+  int(c, tp, 'earnedCents', p, 0, LIMITS.maxInt);
+  const tick = typeof s.tick === 'number' ? s.tick : LIMITS.maxInt;
+  const recent = arr(c, tp, 'recent', p, TRADE_POST.recentMax);
+  if (recent) recent.forEach((r, i) => {
+    const rp = `${p}.recent[${i}]`;
+    if (!isObj(r)) { c.e.add('BAD_TYPE', rp, 'expected object'); return; }
+    int(c, r, 'tick', rp, 0, tick);
+    goodField(c, r, 'good', rp, false);
+    int(c, r, 'qty', rp, 1, WAGON_CAPACITY);
+    int(c, r, 'cents', rp, 0, LIMITS.maxInt);
+  });
 }
 
 const TEMPLATE_IDS = new Set<string>(ORDER_TEMPLATES.map((t) => t.id));

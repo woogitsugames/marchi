@@ -7,7 +7,7 @@ import {
   GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
   type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
-  emptyGoods,
+  emptyGoods, TRADE_POST, tradePostOf,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
@@ -18,6 +18,7 @@ import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
 import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { paceCard, type PaceCard } from './paceCard';
+import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
 
 export type Tool = 'none' | 'road' | 'cobble' | 'demolish' | 'build';
@@ -75,7 +76,14 @@ export function unlockList(rank: number): string {
   if (r.surfaces.includes(2)) parts.push(t('town.unlockCobble'));
   // rank 5 (Stolica) unlocks no building, only the castle upgrade (castleLevel 1)
   if (r.castleLevel > (RANKS[rank - 1]?.castleLevel ?? 0)) parts.push(t('town.unlockCastle'));
+  // rank 4 (Gród) opens the trading post across the river (D-170); the list has no world, so in every valley
+  if (rank === TRADE_POST.rank) parts.push(t('town.unlockPost'));
   return joinList(parts);
+}
+
+/** The rank letter's line about the trading post (D-170): only in the rank-4 letter of a valley that has the post. */
+export function rankPostLine(world: World, rank: number): string {
+  return rank === TRADE_POST.rank && tradePostOf(world) ? t('town.postOpen', { pct: fmtPercent(TRADE_POST.pricePct / 100) }) : '';
 }
 
 /** Kit progress bar (track + fill sprites), quarter marks drawn by CSS. */
@@ -136,6 +144,9 @@ export class Hud {
   private stallText: HTMLElement;
   private stallKick: HTMLElement;
   private stallEye: HTMLButtonElement;
+  /** The bottleneck card in the slot (D-171), and the goods whose card the screen reader has heard. */
+  private neck: BottleneckCard | null = null;
+  private neckAnnounced = new Set<string>();
   /** The pace card in the card slot (day 8c): no real stall, the forecast names the cure. */
   private pace: PaceCard | null = null;
   private alarm: HTMLButtonElement;
@@ -273,6 +284,7 @@ export class Hud {
     this.stallEye = h('button.stall-eye', { html: iconSvg('eye', 28) });
     this.stallEye.addEventListener('click', () => {
       if (this.pace) { this.act.showStall(this.pace.producer); return; }
+      if (this.neck) { this.act.showStall(this.neck.focus); return; }
       const w = this.stalls[0];
       if (w) { this.lastShown = w.id; this.act.showStall(w.id); }
     });
@@ -496,7 +508,10 @@ export class Hud {
       }
       // the pace card (day 8c) takes the slot only when no real stall needs it (none, or the worst one is calm)
       const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace)) : null;
-      this.updateStalls(world, stalls, pc);
+      // the free valley's bottleneck card (D-171): the calm slot's last claim — after a real stall and the pace
+      // cards (fleet cue, rank card), before the calm pins
+      const neck = cards && !pc && (!stalls[0] || stalls[0].minor) ? bottleneckCard(world) : null;
+      this.updateStalls(world, stalls, pc, neck);
     }
     this.updateWagon(st.coins);
 
@@ -569,10 +584,12 @@ export class Hud {
   }
 
   /** Worst stall card and alarm seal; only rewritten when the worst stall, its cause or the count change. */
-  private updateStalls(world: World, stalls: StallEntry[], pc: PaceCard | null = null): void {
+  private updateStalls(world: World, stalls: StallEntry[], pc: PaceCard | null = null, neck: BottleneckCard | null = null): void {
     this.stalls = stalls;
     this.pace = pc;
+    this.neck = pc ? null : neck;
     this.alarm.hidden = stalls.length === 0;
+    if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
       this.cure = pc.k === 'producer' || pc.k === 'rank' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
       const sig = pc.k === 'rank'
@@ -621,6 +638,7 @@ export class Hud {
       this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
       return;
     }
+    if (this.neck) { this.updateNeck(this.neck, stalls); return; }
     this.stallRow.classList.remove('is-pace');
     setText(this.stallKick, t('hud.worst'));
     const w = stalls[0];
@@ -654,6 +672,39 @@ export class Hud {
     setHtml(this.alarmIcon, buildingStatusIcon(b.status, 34, b.type));
     setText(this.alarmBadge, fmtInt(stalls.length));
     this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+  }
+
+  /**
+   * "Wąskie gardło" (D-171): no real stall and no pace card, but over three minutes most workshops of one input
+   * waited for it (or the whole fleet was on the road). Calm look (no alarm bar), its own kicker and seal icon.
+   */
+  private updateNeck(n: BottleneckCard, stalls: StallEntry[]): void {
+    this.cure = n.cure;
+    const waiting = neckWaiting(n);
+    const sig = `neck:${n.kind}:${n.good ?? ''}:${waiting}:${n.consumers}|${n.focus}|${stalls.length}|${getLang()}`;
+    if (sig === this.stallSig) return;
+    this.stallSig = sig;
+    this.wagonSig = '';
+    this.stallRow.hidden = false;
+    this.root.classList.add('has-stall');
+    this.stallRow.classList.remove('is-crit', 'is-pace');
+    this.stallRow.classList.add('is-neck');
+    setText(this.stallKick, t('hud.bottleneck'));
+    const who = n.good ? goodName(n.good) : t('neck.fleetWho');
+    const why = n.good ? t('neck.reason', { n: fmtInt(waiting), m: fmtInt(n.consumers) }) : t('neck.fleet');
+    // dir="auto" on the reason, as the other cards (an English fallback in ar keeps its own direction)
+    setHtml(this.stallText, `<b>${esc(who.charAt(0).toLocaleUpperCase(getLang()) + who.slice(1))}:</b> <span dir="auto">${esc(why)}</span>`);
+    this.stallEye.setAttribute('aria-label', t('neck.show'));
+    // the seal: the card's own icon; its badge still counts the calm pins (hidden when there are none)
+    setHtml(this.alarmIcon, iconSvg('bottleneck', 34));
+    setText(this.alarmBadge, fmtInt(stalls.length));
+    this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+    // the screen reader hears each good's card once per session
+    const key = n.good ?? 'fleet';
+    if (!this.neckAnnounced.has(key)) {
+      this.neckAnnounced.add(key);
+      this.announce(`${t('hud.bottleneck')}: ${who}`);
+    }
   }
 
   private updateContract(world: World, c: Contract, pace: PaceLog | null): void {
@@ -847,14 +898,15 @@ export class Hud {
   }
 
   /** Sealed letter for a new rank: slides in (200 ms), the wax is pressed (120 ms), tap or 6 s to close. */
-  showRankUp(rank: number, holdMs = 6000): void {
+  showRankUp(rank: number, holdMs = 6000, postLine = ''): void {
     this.rankLetter?.remove();
     const unlocks = unlockList(rank);
     const letter = h('div.rank-letter', { role: 'status', html: `
       <div class="l-kicker">${esc(t('contract.kicker'))}</div>
       <h2>${esc(t('town.rankUp', { name: rankName(rank) }))}</h2>
       <p>${esc(t('town.rankText'))}</p>
-      ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}` });
+      ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}
+      ${postLine ? `<p class="rl-unlocks">${iconSvg('tradePost', 20)}<span>${esc(postLine)}</span></p>` : ''}` });
     letter.style.clipPath = deckle('bottom', 4111 + rank, 6, 22);
     letter.append(h('i.rl-seal.kseal.on', { 'aria-hidden': 'true' }));
     const wrap = h('button.rank-letter-wrap.hit', { 'aria-label': t('sheet.close') }, h('div.float', null, letter));

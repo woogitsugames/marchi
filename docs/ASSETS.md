@@ -297,6 +297,15 @@ Placeholder — the UI agent wires these in; licence texts are already in `publi
 Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt`,
 `ofl/alegreyasans/OFL.txt`); identical terms to the `LICENSE` files in the npm packages.
 
+## Drawn in code (no external files)
+
+| Asset | Where | Notes |
+|---|---|---|
+| Icon `tradePost` (steelyard on a post, D-170) | `src/ui/icons.ts` | woodcut on the 24×24 grid, drawn for this game |
+| Icon `bottleneck` (mill hopper on a trestle, D-171) | `src/ui/icons.ts` | woodcut on the 24×24 grid, drawn for this game |
+| Trading post model (closed / open overlay, D-170) | `src/render/models/buildings.ts` (`tradePost`, `tradePostClosedParts`, `tradePostOpenParts`) | procedural, existing materials, 7.75k + 1.3k triangles |
+| Ice floes and deck frost on wooden bridges (D-170) | `src/render/bridgesView.ts` | procedural, `stone` material, visible only while ice closes the spans |
+
 ## Code / runtime files
 
 | File | Origin | Licence | Licence file |

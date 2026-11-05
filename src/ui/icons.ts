@@ -40,6 +40,8 @@ export type IconId =
   | 'charcoalBurner'
   | 'malthouse'
   | 'brewery'
+  // free valley late game (D-170): the trading post across the river
+  | 'tradePost'
   // stall reasons
   | 'no_road'
   | 'no_wagon'
@@ -50,6 +52,8 @@ export type IconId =
   | 'strike'
   | 'no_route'
   | 'storage_full'
+  // free valley bottleneck card (D-171)
+  | 'bottleneck'
   // tools / UI
   | 'road_dirt'
   | 'road_cobble'
@@ -1274,6 +1278,52 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     // steam
     d.inkFine(band(cubic([7, 8.8], [5.6, 7], [8.6, 5.4], [7, 2.4], 8), taper(1.2, 0.4)));
     d.inkFine(band(cubic([11.4, 8.6], [10.2, 6.6], [13, 5], [11.6, 1.8], 8), taper(1.2, 0.4)));
+  },
+
+  tradePost(d) {
+    // a steelyard on a post (D-170): the gallows post with its arm, the beam on a short chain, a sack on the hook,
+    // a round weight on the other end, a low counter below — the only building icon with an arm and a hanging beam
+    d.ink([[2.2, 22.6], [2.8, 2.2], [5, 2.2], [5.4, 22.6]]);
+    d.ink([[3.6, 2], [16.4, 2], [16.4, 4], [3.6, 4.2]]);
+    d.inkFine(band(seg([5.2, 8.4], [9.4, 3.8], 3), 0.9));
+    d.cut(gouge([3.9, 5.4], [3.9, 20.8], 0.5));
+    // chain: three links
+    d.layer();
+    for (const y of [5, 6.9, 8.8]) { d.ink(ell(15.4, y, 0.7, 1.1)); d.cut(ell(15.4, y, 0.28, 0.6)); }
+    // the beam, a little tilted (the sack is heavier)
+    d.ink(band(seg([7.6, 11.6], [22, 9.6], 4), lerpW(1.5, 1.1)));
+    d.cut(ell(15.4, 10.6, 0.45, 0.45));
+    // hook and sack (a full bag, tied at the neck)
+    d.inkFine(band(quad([8.4, 11.6], [8.4, 12.8], [9.4, 13], 5), 0.6));
+    d.ink([[8.6, 13.2], [10.4, 13.2], [9.9, 14.2], [11.6, 15.2], [12.4, 17.4], [11.6, 18.8], [7.2, 18.8], [6.4, 17.4], [7.2, 15.2], [9, 14.2]]);
+    d.cut(gouge([8.8, 14.5], [10.1, 14.5], 0.5));
+    d.hatchCut([[10.6, 15.4], [11.6, 17.4], [11, 18.2], [9.8, 18.2]], -45, 1.3, 0.5);
+    // the weight on a cord: a stone ball, lighter than the sack's side
+    d.inkFine(band(seg([20.6, 9.9], [20.6, 12.4], 2), 0.5));
+    d.ink(circ(20.6, 14.2, 1.8));
+    d.cut(ell(20, 13.6, 0.5, 0.35, -30));
+    // counter: a plank on two legs
+    d.layer();
+    d.ink(rect(6.6, 19.4, 16, 1.6));
+    d.ink(rect(8, 21, 1.3, 1.8), rect(19.8, 21, 1.3, 1.8));
+    d.hatchInk([[9.6, 21.3], [19.6, 21.3], [19.6, 22.8], [9.6, 22.8]], -45, 1.5, 0.5);
+  },
+
+  bottleneck(d) {
+    // a mill hopper on a trestle (D-171): full at the top, a narrow throat, two or three grains below; asymmetric
+    // and with legs, unlike the hourglass of 'waiting'
+    // grain heaped over the rim
+    d.ink([[4.2, 6.4], [6.4, 3.6], [9.6, 2.2], [13.4, 1.8], [16.8, 2.8], [19.8, 5], [20.4, 6.4]]);
+    d.hatchCut([[7, 5.6], [9.8, 3.2], [13.4, 2.8], [16.6, 3.8], [18.8, 5.6]], -45, 1.5, 0.5);
+    // the boarded hopper: wide trapezoid down to the throat
+    d.ink([[2.6, 6.6], [21.4, 6.6], [14, 14.6], [14, 16.4], [10.4, 16.4], [10.4, 14.6]]);
+    d.cut(gouge([5.6, 8.8], [18.4, 8.8], 0.55), gouge([8.2, 11.4], [15.8, 11.4], 0.55));
+    // grains falling out of the throat, one by one
+    d.layer();
+    d.ink(ell(12.2, 18.1, 0.55, 0.8), ell(11.4, 20.1, 0.5, 0.75, 20), ell(12.8, 21.9, 0.5, 0.7, -20));
+    // trestle legs, splayed
+    d.inkFine(band(seg([5.2, 7.2], [2.4, 22.6], 4), lerpW(1.2, 1.4)), band(seg([18.8, 7.2], [21.6, 22.6], 4), lerpW(1.2, 1.4)));
+    d.inkFine(band(seg([3.4, 17.6], [8.8, 17.6], 2), 0.9), band(seg([15.6, 17.6], [20.6, 17.6], 2), 0.9));
   },
 
   // ---- stall reasons -----------------------------------------------------

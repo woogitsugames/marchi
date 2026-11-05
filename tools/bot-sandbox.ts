@@ -85,6 +85,8 @@ export const DECENT: BotStep[] = [
   { name: 'buy wagon', cmds: (w) => [buy(w)] },
   { name: 'buy wagon', cmds: (w) => [buy(w)] },
   { name: 'buy wagon', cmds: (w) => [buy(w)] },
+  // rank 4 (D-170): a road with a wooden bridge to the trading post across the river (column x = 39 down to its gate)
+  { name: 'road to the trading post', rank: 4, cmds: (w) => [{ t: 'road', surface: 1, cells: col(w, 39, 25, 57) }] },
 ];
 
 export interface SandboxRun {

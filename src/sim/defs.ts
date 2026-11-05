@@ -3,7 +3,7 @@ import type { BuildingType, Good, GoodMap } from './types';
 
 export const TICK_HZ = 10;
 export const DT = 1 / TICK_HZ;
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 /**
  * Every good, in the canonical order (the key order of every GoodMap, so of the state hash). The
@@ -138,6 +138,8 @@ export const BUILDINGS: Record<BuildingType, BuildingDef> = {
   charcoalBurner: { type: 'charcoalBurner', w: 2, h: 2, recipe: { inputs: { wood: 2 }, outputs: { charcoal: 1 }, ticks: 20 * s }, inCap: 8, outCap: 8, storeCap: 0, price: 35 },
   malthouse: { type: 'malthouse', w: 2, h: 2, recipe: { inputs: { grain: 2 }, outputs: { malt: 1 }, ticks: 12 * s }, inCap: 8, outCap: 8, storeCap: 0, price: 45 },
   brewery: { type: 'brewery', w: 3, h: 2, recipe: { inputs: { malt: 1 }, outputs: { beer: 2 }, ticks: 16 * s }, inCap: 8, outCap: 12, storeCap: 0, price: 60 },
+  // free valley late game (D-170): the trading post across the river, a map building, never placed by the player
+  tradePost: { type: 'tradePost', w: 4, h: 4, recipe: null, inCap: 0, outCap: 0, storeCap: 0, price: 0 },
 };
 
 /** Placement rule of a building type beyond "flat, dry, free" (checked by validatePlace). */
@@ -206,6 +208,21 @@ export const MARKET: MarketDef = {
   wagonSharePct: 75,
 };
 
+/** Free valley trading post across the river (D-170, research 2026-11-04 valley late game, design D). */
+export const TRADE_POST = {
+  /** Candidate top-left cells, first free one wins (map build and the v8 -> v9 migration); gate faces north. */
+  sites: [{ x: 37, y: 58 }, { x: 43, y: 58 }, { x: 33, y: 58 }, { x: 37, y: 62 }] as readonly { x: number; y: number }[],
+  facing: 2,
+  /** Rank from which the post buys (4 = Gród). */
+  rank: 4,
+  /** Price at the post in percent of the castle formula at the post's own saturation. */
+  pricePct: 125,
+  /** One saturation unit per good recovers every this many ticks (same pace as the castle). */
+  recoverTicks: 10 * TICK_HZ,
+  /** Sales kept for the sheet ("Ostatnie sprzedaże"). */
+  recentMax: 5,
+} as const;
+
 /** Flow window: FLOW_BUCKETS buckets of FLOW_BUCKET_TICKS (18 x 10 s = 3 minutes). */
 export const FLOW_BUCKETS = 18;
 export const FLOW_BUCKET_TICKS = 10 * TICK_HZ;
@@ -236,7 +253,7 @@ export const RANKS: readonly RankDef[] = [
   { renown: 1000, goods: 4, flow: 20, unlocks: ['fisher', 'quarry'], surfaces: [2], castleLevel: 0 },
   { renown: 3000, goods: 6, flow: 60, unlocks: ['charcoalBurner', 'malthouse'], surfaces: [], castleLevel: 0 },
   { renown: 7200, goods: 7, flow: 120, unlocks: ['brewery'], surfaces: [], castleLevel: 0 },
-  { renown: 14500, goods: 9, flow: 160, unlocks: [], surfaces: [], castleLevel: 1 },
+  { renown: 17000, goods: 9, flow: 160, unlocks: [], surfaces: [], castleLevel: 1 },
 ];
 
 /** Number of ranks in state v1-v4 (town.rankTicks had this many entries). */

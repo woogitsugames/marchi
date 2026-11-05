@@ -248,7 +248,7 @@ function demolish(world: World, cell: number): CommandResult {
 function demolishBuilding(world: World, id: number): CommandResult {
   const st = world.state;
   const b = buildingById(world, id)!;
-  if (b.type === 'castle' || b.type === 'stable') return { ok: false, err: { k: 'CANNOT_DEMOLISH', building: id } };
+  if (b.type === 'castle' || b.type === 'stable' || b.type === 'tradePost') return { ok: false, err: { k: 'CANNOT_DEMOLISH', building: id } };
   // Release every reservation pointing at this building before it disappears.
   for (const w of st.wagons) {
     if (!w.job) continue;

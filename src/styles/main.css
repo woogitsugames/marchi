@@ -1328,6 +1328,12 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .ms-price { display: flex; flex-direction: column; align-items: flex-end; }
 .ms-price b { font-size: 17px; }
 .ms-good.is-low .ms-price b { color: #6e3520; }
+/* the trading post (D-170): its line in "Targ i ranga", the last sales on its sheet */
+.ms-post { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--ink-soft); }
+.post-sales { list-style: none; margin: 0; padding: 0; }
+.post-sale { display: flex; align-items: center; gap: 10px; min-height: 40px; border-bottom: 1px solid rgb(74 72 67 / .3); font-size: 15px; }
+.post-sale svg { flex: none; }
+.post-sale small { margin-inline-start: auto; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
 .ms-sat { display: flex; flex-direction: column; gap: 3px; }
 .ms-headrow { min-height: 22px; border-bottom-color: rgb(74 72 67 / .5); }
 .ms-headrow small { font-size: 13px; color: var(--ink-soft); font-variant: small-caps; text-transform: lowercase; letter-spacing: .04em; }
@@ -1899,12 +1905,12 @@ body.left-handed .stall-row { flex-direction: row-reverse; }
 .stall-eye:active svg { transform: translateY(1px); }
 .stall-row.is-crit .stall-eye { color: #7f1a1e; }
 /* the pace card (day 8c): a slow order, not a stall — the plain parchment panel, no wine bar, ink kicker */
-.stall-row.is-pace .stall-card::before {
+.stall-row.is-pace .stall-card::before, .stall-row.is-neck .stall-card::before {
   border-image-source: url("/assets/ui/kit/panel@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
 }
-.stall-row.is-pace .sc-kick { color: var(--ink-soft); }
-.stall-row.is-pace .stall-eye { color: var(--ink); }
+.stall-row.is-pace .sc-kick, .stall-row.is-neck .sc-kick { color: var(--ink-soft); }
+.stall-row.is-pace .stall-eye, .stall-row.is-neck .stall-eye { color: var(--ink); }
 .alarm-seal { position: relative; flex: none; width: 72px; height: 72px; display: grid; place-items: center; color: #f3e1bd; }
 .alarm-seal .al-ic { display: grid; place-items: center; transition: transform 60ms linear; }
 .alarm-seal:active .al-ic { transform: translateY(1px); }

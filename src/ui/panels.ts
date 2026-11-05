@@ -1,7 +1,7 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
   BUILDINGS, GOODS, buildingById, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
-  suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote,
+  suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote, TRADE_POST, MARKET, tradePostStatus,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, translated, type MessageKey } from '../i18n/index';
@@ -14,7 +14,8 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, recentWagonWait, sharedOneProducer } from './stalls';
+import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
 export { gapTarget };
@@ -195,7 +196,8 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (cure === 'producer') {
     // one producer feeds two workshops (research P5): build a second one next to it (the build tool opens
     // with that type picked, the ghost by the first producer)
-    const sh = sharedOneProducer(world, b);
+    // (or the free valley's bottleneck card, D-171: build one more producer of the good most workshops wait for)
+    const sh = producerCure(world, b);
     if (!sh) return '';
     const gate = canPlace(world, sh.type);
     const price = BUILDINGS[sh.type].price;
@@ -207,7 +209,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
-        : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
+        : sh.source === 'neck'
+          ? `<div class="s-hint">${esc(t('neck.why', { goodAcc: t(`goodAcc.${sh.good}` as MessageKey), n: neckN(world), m: fmtInt(sh.consumers) }))}</div>`
+          : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
     return fixSection(btn, hint, off);
   }
   if (cure === 'pave') {
@@ -545,12 +549,58 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
       if (c.castle === b.id && (isStall(b.status) || b.status.k === 'NO_INPUT')) own.push(castlePaceHtml(world, forecastFor(world, pace)));
       parts.push(fold ? castleFold(own.join('')) : own.join(''));
     }
+  } else if (b.type === 'tradePost') {
+    parts.push(postHtml(world));
   } else if (b.type === 'stable') {
     const n = world.state.wagons.filter((w) => w.home === b.id).length;
     parts.push(`<div class="section-h">${esc(t('why.wagons', { n }))}</div>
       <div class="sheet-actions"><button class="btn primary cf" data-act="buy:${b.id}">${iconSvg('buy_wagon', 26)}<span>${esc(t('tool.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button></div>`);
   }
   return parts.join('');
+}
+
+/** The bottleneck card's "n of m" (D-171): the mean waiting consumers, rounded, at least 1. */
+function neckN(world: World): string {
+  const c = bottleneckCard(world);
+  return fmtInt(c ? neckWaiting(c) : 1);
+}
+
+/** The trading post's status line (D-170): closed with the rank it opens at, or buying; null = the usual line (NO_ROAD). */
+function postStatusHtml(world: World, b: Building): string | null {
+  const ps = tradePostStatus(world);
+  if (!ps || b.status.k !== 'IDLE') return null;
+  if (!ps.open) return `<div class="status-line">${iconSvg('seal', 28)}<span>${esc(t('post.closed', { rank: rankName(TRADE_POST.rank) }))}</span></div>`;
+  return `<div class="status-line ok">${iconSvg('coin', 28)}<span>${esc(t('post.open'))}</span></div>`;
+}
+
+/**
+ * The trading post's sheet body (D-170): the terms, its prices (own saturation) against the castle's, the last
+ * sales and, in winter, why a stone bridge pays. Read-only.
+ */
+function postHtml(world: World): string {
+  const ps = tradePostStatus(world);
+  if (!ps) return '';
+  const pct = fmtPercent(TRADE_POST.pricePct / 100);
+  const out: string[] = [];
+  if (ps.open && !ps.linked) out.push(`<div class="s-hint calm-hint">${iconSvg('no_road', 18)}<span>${esc(t('post.noRoad'))}</span></div>`);
+  out.push(`<div class="s-hint calm-hint">${iconSvg('tradePost', 22)}<span>${esc(t('post.terms', { pct }))}</span></div>`);
+  const rows = ps.prices.map((p) => {
+    const sat = Math.min(100, (p.saturation / MARKET.cap) * 100);
+    const vs = p.castleCents > 0 ? fmtPercent(Math.floor((p.cents * 100) / p.castleCents) / 100) : '';
+    return `<li class="ms-good">${iconSvg(p.good, 28, goodName(p.good))}
+      <span class="ms-name"><b>${esc(goodName(p.good))}</b><small>${esc(t('post.vsCastle', { pct: vs }))}</small></span>
+      <span class="ms-price"><b>${bdi(fmtDec(p.cents / 100))}</b><small>${bdi(fmtPercent(p.pct / 100))}</small></span>
+      <span class="ms-sat" title="${esc(t('market.sat'))}"><span class="kbar pl-bar"><i style="width:${sat.toFixed(1)}%"></i></span></span></li>`;
+  }).join('');
+  const head = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
+  out.push(`<div class="section-h">${esc(t('post.prices'))}</div><ul class="ms-prices post-prices">${head}${rows}</ul>`);
+  const now = world.state.tick;
+  const sales = ps.recent.map((r) => `<li class="post-sale">${iconSvg(r.good, 22, goodName(r.good))}<span>${
+    esc(t('post.sale', { qty: fmtInt(r.qty), good: goodName(r.good), n: fmtDec(r.cents / 100) }))}</span><small>${esc(t('post.ago', { time: ticksClock(now - r.tick) }))}</small></li>`).join('');
+  out.push(`<div class="section-h">${esc(t('post.recent'))}</div>${sales ? `<ul class="post-sales">${sales}</ul>` : `<div class="s-hint">${esc(t('post.none'))}</div>`}`);
+  if (ps.units > 0) out.push(`<div class="ms-income">${iconSvg('coin', 22)}<span>${tHtml('post.total', { units: ps.units, n: fmtInt(ps.earned) })}</span></div>`);
+  if (seasonal(world) && seasonAt(now) === 'winter') out.push(`<div class="s-hint ice-hint">${iconSvg('bridge_ice', 18)}<span>${esc(t('post.iceHint'))}</span></div>`);
+  return out.join('');
 }
 
 const SEASON_NOTE_KEY: Record<string, MessageKey> = {
@@ -620,6 +670,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world, id))}</span>${since}</div>`;
       }
+      // the trading post (D-170): "closed until rank 4" / "buying" instead of the plain idle line
+      if (b.type === 'tradePost') top = postStatusHtml(world, b) ?? top;
       // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
       // a building the player just placed gets the link at once, before its first status update
       let target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);

@@ -12,9 +12,9 @@ import {
   Vector3,
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { castleLevel, type Building, type World } from '../sim/index';
+import { castleLevel, postOpen, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { buildingModel, castleUpgradeParts, type BuildingKind, type WorkerSpot } from './models/buildings';
+import { buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
 import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
@@ -177,7 +177,8 @@ export class BuildingsView {
   /** Rebuild if the set of buildings changed. Returns true when rebuilt. */
   sync(world: World): boolean {
     const lvl = castleLevel(world.state);
-    const sig = `${lvl}|` + world.state.buildings.map((b) => `${b.id}:${b.type}:${b.x}:${b.y}:${b.facing}`).join('|');
+    const open = postOpen(world);
+    const sig = `${lvl}|${open ? 1 : 0}|` + world.state.buildings.map((b) => `${b.id}:${b.type}:${b.x}:${b.y}:${b.facing}`).join('|');
     if (sig === this.signature) return false;
     this.signature = sig;
     this.clear();
@@ -195,6 +196,8 @@ export class BuildingsView {
       add(model.parts, m);
       // castle level 1 (free valley rank 5): the extra corner tower with its pennant
       if (b.type === 'castle' && lvl >= 1) add(castleUpgradeParts(), m);
+      // the trading post (D-170): shutters closed until rank 4, then the counter, the wares and the pennant
+      if (b.type === 'tradePost') add(open ? tradePostOpenParts() : tradePostClosedParts(), m);
       if (baseY - lo > 0.3) {
         // field-stone plinth under the main house, reaching into the ground on the low side
         const mb = modelBounds(model.parts);

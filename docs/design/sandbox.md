@@ -134,6 +134,17 @@ Dane wejściowe do strojenia trzymać w jednej tabeli w `defs.ts` (`MARKET`, `RA
 
 ---
 
+### 4.6 Późna gra: punkt handlowy za rzeką i karta „Wąskie gardło” (D-170, D-171)
+
+Od rangi 4 („Gród”) kupuje punkt handlowy na południowym brzegu (budynek mapy od startu, (37,58), brama (39,57)):
+125 % ceny zamku, własne nasycenie (odnowa 1 / 10 s), zamówienia królewskie tylko w zamku. Gracz doprowadza drogę z
+drewnianym mostem (kolumna x = 39, 47 srebra) — zimą kra zamyka most (prawdziwa karta „przęsło”, lek: kamienny most).
+Ranga 5 wymaga 17 000 renomy: z punktem ~117 min, bez ~132 min (`tools/valley-3h.ts decent / decent-nopost`).
+Gdy dolina chodzi bez postojów, spokojne miejsce karty zajmuje „Wąskie gardło”: towar, na który przez 3 min czeka
+średnio ≥ 1,5 warsztatu (lek: jeszcze jeden producent), albo flota, gdy przez 3 min żaden wóz nie stał. Kolejność
+w miejscu karty: prawdziwy postój → karty tempa (flota, ranga) → wąskie gardło → spokojne pinezki.
+Specyfikacja: `docs/specs/2026-11-04-valley-trade-post.md`.
+
 ## 5. Polityka reklam zgodna z D-21 i regułą „no dark patterns"
 
 **Rekomendacja: wersja 1.0 bez reklam**; decyzja o dostawcy po playteście (BACKLOG już mówi „reklamy dopiero po decyzji o dostawcy"). Jeśli reklamy — **wyłącznie** poniższy model.

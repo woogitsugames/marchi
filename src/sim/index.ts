@@ -30,3 +30,7 @@ export {
   fairPercent, fairStage, freshValleyEvents, merchantSurplus, orderOutstanding, producibleGoods,
   type MerchantOffer, type OrderTemplateId, type RoyalOrder, type SeasonalFair, type ValleyEventState,
 } from './events';
+export {
+  freshTradePost, linkedToStable, placeTradePost, postCents, postOpen, tradePostOf, tradePostStatus,
+  type TradePostPrice, type TradePostStatus,
+} from './tradePost';

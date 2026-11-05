@@ -10,6 +10,10 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 
 ## Do zrobienia
 - [ ] P3 — (dzień 9h) Duch budowy podaje koszt drogi dojazdowej liczony przed postawieniem (`accessRoad`, od stajni), a arkusz po postawieniu proponuje krótszą (`suggestLinkToStable` od bramy) — np. „droga 5” vs 4. Ujednolicić albo opisać jako „ok.”.
+- [x] P4 — (zrobione 2026-11-05, D-170/D-171, `claude/w-trade-post`) Późna dolina: punkt handlowy za rzeką od rangi 4 (125 %, zapis v9 + migracja v8 → v9, ranga 5 → 17 000) i karta „Wąskie gardło”; zrzuty `docs/shots/trade-*`.
+- [ ] P3 — (D-170/D-171) 24 nowe klucze (punkt handlowy, wąskie gardło) w 15 językach to tłumaczenia agenta — do przeglądu natywnego z resztą.
+- [ ] P2 — (D-171) Playtest: czy „Wąskie gardło: Zboże” (~90+ min) jest czytelne obok karty floty/rangi; czy gracz buduje farmę, a nie wóz. Wariant floty karty nie ma jeszcze zrzutu (trudny do wywołania skryptem bez prawdziwego postoju).
+- [ ] P4 — (D-170, opcjonalnie ze spec. §7.6) Wpis kroniki „pierwsza sprzedaż za rzeką”.
 - [x] P2 — (zrobione dzień 9h, D-160/D-161/D-162; research first-10-minutes-e) N7 nagłówek nadwyżki „nikt jej teraz nie potrzebuje”; N8 arkusz po rozwiązanym „wszystkie wozy zajęte” trzyma „Kup wóz” 20 s; N6 krótki poziom: ciało arkusza kończy się nad dokiem, `layout-check` `under-fix`.
 - [ ] P2 — (dzień 9h, D-163, **decyzja właściciela**) Dolina: ranga 1 dla gracza „tylko karta” 11,3–12,8 min (cel < 8 min nieosiągalny kartą: po gospodarstwie wymóg towarów jest spełniony, brakuje renomy 200; nawet 2× producenci + 12 wozów → 9,7 min, DECENT 10,4). Do wyboru: próg renomy rangi 1 (np. 110–120, sim/hasze doliny) albo karta „renoma” bez czynności. Karta rangi i floty w 30 min nie wystąpiły naraz ani razu.
 - [ ] P3 — (dzień 9h) Dymek ducha „30 srebra + droga 5”, a arkusz po postawieniu proponuje drogę za 4 — ta sama droga liczona inaczej (`buildTool.ts` vs `suggestLinkToStable`); sprawdzić źródło liczby.

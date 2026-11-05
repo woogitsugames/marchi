@@ -13,7 +13,8 @@
 //   B bigorders / bigorders+eye         — orders player, from R4 orders x3 goods; renown = silver / 2 always;
 //     orders-half                       — the same without x3 (proposal 1 of the valley-3h report alone);
 //   C seasonal / seasonal+eye           — the season's two wanted goods pay 150 % (no state);
-//   D trade / trade+eye / trade-stone   — a trade post south of the river (castle-type market #2, own
+//   D trade / trade+eye / trade-stone   — OBSOLETE since the real trading post (D-170, state v9): these players add
+//                                         a second post on top of the map's own; kept for the record only. A trade post south of the river (castle-type market #2, own
 //                                         saturation, 150 % prices) buys from R4; the player builds the road
 //                                         with a wooden bridge (trade-stone: stone bridge) once the plan is done;
 //   E rankdemand / rankdemand+eye       — the town grows: recovery 10 s -> 8 s at R4, 6 s at R5 (no state).
@@ -158,7 +159,7 @@ function farms(n: number): (w: World, sec: number, done: boolean) => Command[] {
   };
 }
 const both = (a: Player['extra'], b: Player['extra']): Player['extra'] => (w, sec, done) => [...(a?.(w, sec, done) ?? []), ...(b?.(w, sec, done) ?? [])];
-/** Counterfactual R5 renown threshold (in memory; game 14 500) around another player's setup. */
+/** Counterfactual R5 renown threshold (in memory; game 17 000 since D-170) around another player's setup. */
 function r5(base: string, renown: number): Player {
   const p = PLAYERS[base]!;
   return { ...p, setup: () => { const undo = p.setup?.(); const keep = sim.RANKS[5]!.renown; (sim.RANKS[5] as { renown: number }).renown = renown; return () => { (sim.RANKS[5] as { renown: number }).renown = keep; undo?.(); }; } };
@@ -179,9 +180,10 @@ for (const n of Object.keys(PLAYERS)) {
   PLAYERS[`${n}+fleet`] = { ...p, extra: ex ? (w, sec, done) => [...ex(w, sec, done), ...fleet(w, sec, done)] : fleet };
 }
 
+// the D players (trade*) are obsolete since the real trading post (D-170): they would add a second post to the map
 const LATE_LIST = ['decent', 'decent+eye', 'upgrade', 'upgrade+eye', 'upgrade5', 'orders', 'orders-half', 'bigorders', 'bigorders+eye',
-  'seasonal', 'seasonal+eye', 'trade', 'trade+eye', 'trade-stone', 'trade-stone+eye', 'trade125', 'trade125+eye', 'rankdemand', 'rankdemand+eye',
-  'decent+fleet', 'upgrade+fleet', 'bigorders+fleet', 'seasonal+fleet', 'trade+fleet', 'trade+eye+fleet', 'trade125+fleet', 'rankdemand+fleet'];
+  'seasonal', 'seasonal+eye', 'rankdemand', 'rankdemand+eye',
+  'decent+fleet', 'upgrade+fleet', 'bigorders+fleet', 'seasonal+fleet', 'rankdemand+fleet'];
 
 const f1 = (n: number): string => n.toFixed(1);
 const avg = (a: number[]): number => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
