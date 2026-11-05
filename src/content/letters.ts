@@ -96,7 +96,7 @@ export const CONTRACT_LETTERS = {
         2: "Bröd och plankor nådde borgen. Två sigill för välordnade körningar.\n— Wszebor",
         3: "Bröd och plankor nådde borgen. Tre sigill för utmärkt framförhållning.\n— Wszebor",
       },
-      lost: "Den första snön kom, men en del av lasten var kvar på vägen. Kontrollera överfarten och vagnarnas hämtning.\n— Wszebor",
+      lost: "Första snön har kommit och en del av beställningen blev kvar på vägen. Se nedan vad som stod längst, och börja där nästa gång.\n— Wszebor",
     },
     tr: {
       opening: "Yol sorumlusuna: İlk kar düşmeden kaleye 30 kalas ve 20 somun ekmek ulaştır. Oduncu ile kereste atölyesi nehrin karşısında, fakat iki kıyı bağlı değil. Bir geçit yap; un ve ekmek taşıyan arabaların yolunu açık tut.\n— Wszebor, Łozinny Bród kale kâhyası",
@@ -105,7 +105,7 @@ export const CONTRACT_LETTERS = {
         2: "Ekmek ile kalas kaleye ulaştı. Düzenli seferler için iki mühür.\n— Wszebor",
         3: "Ekmek ile kalas kaleye ulaştı. İyi hazırlık için üç mühür.\n— Wszebor",
       },
-      lost: "İlk kar geldi, ama yükün bir kısmı yolda kaldı. Geçidi ve arabaların yük alıp almadığını denetle.\n— Wszebor",
+      lost: "İlk kar geldi ve siparişin bir kısmı yolda kaldı. Aşağıda en uzun neyin durduğuna bak ve bir dahaki sefere oradan başla.\n— Wszebor",
     },
     ru: {
       opening: "Смотрителю дорог: до первого снега доставь в замок 30 досок и 20 буханок хлеба. Лесоруб и лесопилка стоят за рекой, но берега не соединены. Построй переправу и наладь подвоз муки и хлеба.\n— Wszebor, каштелян Łozinny Bród",
@@ -114,7 +114,7 @@ export const CONTRACT_LETTERS = {
         2: "Доски и хлеб доставлены в замок. Две печати за хорошо устроенные рейсы.\n— Wszebor",
         3: "Доски и хлеб доставлены в замок. Три печати за отличную предусмотрительность.\n— Wszebor",
       },
-      lost: "Первый снег пришёл, а часть груза осталась в дороге. Проверь переправу и сбор товаров повозками.\n— Wszebor",
+      lost: "Пришёл первый снег, а часть заказа осталась в пути. Посмотри ниже, что стояло дольше всего, и в следующий раз начни с этого.\n— Wszebor",
     },
     uk: {
       opening: "Наглядачеві шляхів: до першого снігу доправ до замку 30 дощок і 20 хлібин. Лісоруб і лісопилка стоять за річкою, але береги не з'єднані. Збудуй переправу й забезпеч перевезення борошна та хліба.\n— Wszebor, каштелян Łozinny Bród",
