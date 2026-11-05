@@ -2051,3 +2051,16 @@ farm → mill → bakery and every placement must be valid where the ghost stand
 frame's 36 px border image overlaps the body's last 10 px and the dock had 8 px of bottom padding, so a 3-line hint
 under the button (the rank card's) ran into the frame; the dock now keeps 18 px there (side sheets and the Flip
 unchanged: 904×1000 41 px clear, 915×412 note beside the button). UI only, hashes unchanged. (decided)
+
+**D-155 — Watch mode (Flip cover): one "tempo" line under the folded seal, the full pace card on tap; i18n round day 9 (owner 2026-11-05 ~14:30).**
+On the Flip cover (`Hud.compact`) the rail with the pace card (producer / mud / fleet / rank kinds, `src/ui/paceCard.ts`)
+is hidden and its 2-line text does not fit 360 px. While the pace card holds the card slot, one short line now hangs
+under the folded seal, below the D-99 "gotowe za M:SS" line (in the free valley under the plaque's seal): "tempo: za
+mało ryb" (producer, `{goodGen}` of the bottleneck good), "tempo: błoto spowalnia wozy" (mud), "tempo: kup wóz" (fleet),
+"ranga: sprzedaj ryby" (rank, `{goodAcc}`). Amber on the slate ETA plaque, 13 px, one line with an ellipsis; the button
+is ≥ 48×48 px and absolutely placed, so the seal does not move when the line comes and goes. A tap opens the card's
+subject sheet with the cure (the same `showStall(producer)` as the card's eye). No line on big screens, nor when a real
+stall holds the slot (the alarm pins say that). Keys `seal.tempo.producer/mud/fleet/rank`, translated with the rest.
+Same round: all 77 PENDING_KEYS (days 5–9 incl. D-155) and mission I's new loss letter (D-130) translated into de, es,
+fr, it, nl, pt_BR, sv, tr, ru, uk, ja, ko, zh_Hans, ar, hi; PENDING_KEYS is empty. Numbers in ar texts are
+bidi-isolated (⁨…⁩). Shots `docs/shots/i18n9-*` (`tools/i18n9-shots.mjs`). UI only, hashes unchanged. (decided)
