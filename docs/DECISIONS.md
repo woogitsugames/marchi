@@ -2193,3 +2193,10 @@ wagons @0:30 (2★) / wagon @0:30 + cobble the lane when 23 stone (3★); the NO
 fleet-card test reads 3:10 (when a yard waits with every wagon busy); the WAGON_DUE semantics test samples m4 +2, m3 +3
 and m8 +2 together (the redesigned VIII holds only 8 jobs with +2). Menu title/subtitle unchanged (still true); the
 letter is rewritten in all 17 languages (agent translations, native review pending with the rest). (decided)
+
+**D-168 — Free valley rank 1 at renown 120 instead of 200 (owner 2026-11-05 ~18:50).**
+Research run e / day 9h (`docs/research/2026-11-05-first-10-minutes-e.md`, D-163): a player who follows only the
+cards reached rank 1 at 11.3–12.8 min; the brake was renown (57–112 at 8:00), not the cards. `RANKS[1].renown`
+200 → 120 (goods 2 and flow 8 unchanged). Card-only players (tools/sandbox-first30.ts `card-10/30/60`, 4 seeds):
+rank 1 at 7.7–10.4 min; the DECENT bot 6.8–7.1 min (was 10.4; test window 8–12 → 5.5–9). Ranks 2–4 unchanged.
+Sim change for the free valley only (missions have no rank gate); valley hashes move, mission hashes do not. (decided)
