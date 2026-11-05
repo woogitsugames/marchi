@@ -1,0 +1,469 @@
+{
+ "size": "412x915",
+ "taps": 32,
+ "steps": [
+  {
+   "name": "menu",
+   "t": 74.4,
+   "taps": 0,
+   "coins": 86,
+   "words": 110,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "",
+   "plaque": "",
+   "toasts": [],
+   "notice": "",
+   "ev": "",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "valleyRow": {
+    "top": 946,
+    "bottom": 1004,
+    "vh": 915
+   },
+   "shot": "valley-port-01-menu.jpg"
+  },
+  {
+   "name": "ledger",
+   "t": 80.2,
+   "taps": 1,
+   "coins": 86,
+   "words": 136,
+   "small": [],
+   "covered": [
+    "button.menu-item \"XI. Słód na zimę, Daleka słodownia zajmu\" under div.sheet-grip",
+    "button.menu-item \"XII. Wielkie warzenie, Zapas piwa na kol\" under h3 \"Księgi osad\"",
+    "button.menu-item \"XIII. Pierwsze piętro łańcucha, Jeden wó\" under button.slot-new \"Księga I: Nowa osada\"",
+    "button.menu-item.is-valley \"Wolna dolinaRozbuduj miasteczko, bez ter\" under button.slot-new \"Księga II: Nowa osada\"",
+    "button.menu-item.btn \"Ustawienia\" under span.slot-sub \"Pusta księga — zacznij od pierwszej chat\""
+   ],
+   "letter": "",
+   "stall": "",
+   "plaque": "",
+   "toasts": [],
+   "notice": "",
+   "ev": "",
+   "rank": "",
+   "sheet": "Wolna dolinaKsięgi osad INowa osadaPusta księga — zacznij od pierwszej chaty IINowa osadaPusta księga — zacznij od pierwszej chaty IIINowa osadaPusta księga — zacznij od pierwszej chaty",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-02-ledger.jpg"
+  },
+  {
+   "name": "letter",
+   "t": 0,
+   "taps": 2,
+   "coins": 260,
+   "words": 61,
+   "small": [],
+   "covered": [],
+   "letter": "Pismo z zamku Wolna dolina Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi renomę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.— Wszebor, kasztelan Łozinnego Brodu Do dzieła",
+   "stall": "",
+   "plaque": "",
+   "toasts": [],
+   "notice": "",
+   "ev": "",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-03-letter.jpg"
+  },
+  {
+   "name": "game start (letter closed)",
+   "t": 7.3,
+   "taps": 3,
+   "coins": 260,
+   "words": 35,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "Droga do rangiDo rangi 1 (Wieś targowa) brakuje towaru — postaw: Gospodarstwo0",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-04-start.jpg"
+  },
+  {
+   "name": "rank card eye -> castle sheet",
+   "t": 7.3,
+   "taps": 4,
+   "coins": 260,
+   "words": 29,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "ZamekStoiNaprawaPostaw: Gospodarstwo−30Różne sprzedane towary: 0 z 2 potrzebnych na rangę Wieś targowa. Tego towaru (zboże) targ jeszcze nie widział — ten budynek go dostarczy.",
+   "fix": [
+    "button.btn.primary \"Postaw: Gospodarstwo−30\""
+   ],
+   "shelf": [],
+   "shot": "valley-port-05-sheet.jpg"
+  },
+  {
+   "name": "build ghost after \"Postaw\"",
+   "t": 7.3,
+   "taps": 5,
+   "coins": 260,
+   "words": 40,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [
+    "button.btn.primary \"Postaw\" 124x56 y746"
+   ],
+   "shot": "valley-port-06-ghost.jpg"
+  },
+  {
+   "name": "after place",
+   "t": 7.3,
+   "taps": 6,
+   "coins": 230,
+   "words": 24,
+   "small": [],
+   "covered": [
+    "button.build-card.cf \"Chata drwala, 20\" under button.btn.cf \"Cofnij (30 s)+30\"",
+    "button.build-card.cf \"Tartak, 40\" under button.btn.cf \"Cofnij (30 s)+30\"",
+    "button.build-card.cf \"Gospodarstwo, 30\" under button.btn.cf \"Cofnij (30 s)+30\"",
+    "button.build-card.cf \"Spichlerz, 30\" under button.btn.cf \"Cofnij (30 s)+30\"",
+    "button.build-card.cf \"Stajnia, 40\" under div.sheet-paper \"GospodarstwoProdukujeNaprawaZbuduj drogę\""
+   ],
+   "letter": "",
+   "stall": "",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "GospodarstwoProdukujeNaprawaZbuduj drogę: 4 srebraBrakujący odcinek zaznaczono na mapie.Cofnij (30 s)+30Produkuje 0/8",
+   "fix": [
+    "button.btn.primary \"Zbuduj drogę: 4 srebra\""
+   ],
+   "shelf": [],
+   "shot": "valley-port-07-placed.jpg"
+  },
+  {
+   "name": "after road fix",
+   "t": 7.3,
+   "taps": 7,
+   "coins": 230,
+   "words": 26,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-08-road.jpg"
+  },
+  {
+   "name": "minute 1",
+   "t": 67.3,
+   "taps": 9,
+   "coins": 230,
+   "words": 31,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny1",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-09-min1.jpg"
+  },
+  {
+   "name": "minute 3",
+   "t": 187.3,
+   "taps": 20,
+   "coins": 183,
+   "words": 36,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "Tempo zamówieniaGospodarstwo: pełno zboża od 1:50, wszystkie 4 wozy w trasie — kup wóz2",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 17/200 Różne towary 1/2 Przepływ na minutę 5/8 +5 srebra/minWiosna · rok 1+5/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny2",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-10-min3.jpg"
+  },
+  {
+   "name": "minute 5",
+   "t": 307.3,
+   "taps": 30,
+   "coins": 155,
+   "words": 31,
+   "small": [],
+   "covered": [],
+   "letter": "",
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 49/200 Różne towary 1/2 Przepływ na minutę 11/8 +10 srebra/minWiosna · rok 1+5/min",
+   "toasts": [],
+   "notice": "",
+   "ev": "Wieści z doliny2",
+   "rank": "",
+   "sheet": "",
+   "fix": [],
+   "shelf": [],
+   "shot": "valley-port-11-min5.jpg"
+  }
+ ],
+ "looks": [
+  {
+   "t": 7.3,
+   "coins": 260,
+   "rank": 0,
+   "wagons": 2,
+   "card": "Droga do rangiDo rangi 1 (Wieś targowa) brakuje towaru — postaw: Gospodarstwo0",
+   "sheet": "ZamekStoiNaprawaPostaw: Gospodarstwo−30Różne sprzedane towary: 0 z 2 potrzebnych na rangę Wieś targowa. Tego towaru (zboże) targ jeszcze nie widział — ten budynek go dostarczy.",
+   "fix": [
+    "button.btn.primary \"Postaw: Gospodarstwo−30\""
+   ],
+   "act": "Postaw: Gospodarstwo−30 -> placed farm -> Zbuduj drogę: 4 srebra (no road change)"
+  },
+  {
+   "t": 37.3,
+   "coins": 230,
+   "rank": 0,
+   "wagons": 2,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:07 TartakPełno desek — odbiór: wóz 1 0:07 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. Potrzebuje 1/8+6 w drod",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 67.3,
+   "coins": 230,
+   "rank": 0,
+   "wagons": 2,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:27 Chata drwalaPełno drewna — odbiór: wóz 2 0:27 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. Produkuje ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 97.3,
+   "coins": 230,
+   "rank": 0,
+   "wagons": 2,
+   "card": "Najgorszy zastójGospodarstwo: brak drogi do bramy1",
+   "sheet": "Dlaczego stoi?GospodarstwoBrak drogi do bramyPrzestój: 0:26 Co to znaczy? Brak drogi do bramy — Brama budynku nie ma przejezdnego połączenia z sąsiednią drogą. Jak sprawdzićDotknij budynku i obejrzyj drogę przy jego bramie. Co zrobićDorysuj drogę od bramy do traktu.Usuń przerwę lub wytycz obejście stromego terenu.Połącz trasę ze stajnią i odbiorcą. PrzykładPiekarnia bez drogi → brak dostaw mąki → brak chleba dla zamku. NaprawaZbuduj drogę: 4 srebraBrakujący odcinek zaznaczono na mapie.Produkuje ",
+   "fix": [
+    "button.btn.primary \"Zbuduj drogę: 4 srebra\""
+   ],
+   "act": "Zbuduj drogę: 4 srebra (applied)"
+  },
+  {
+   "t": 127.3,
+   "coins": 243,
+   "rank": 0,
+   "wagons": 2,
+   "card": "Tempo zamówieniaGospodarstwo: pełno zboża od 0:50, wszystkie 2 wozy w trasie — kup wóz2",
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 0:56 GospodarstwoPełno zboża — odbiór: wóz 2 0:56 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. NaprawaKup ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 157.3,
+   "coins": 213,
+   "rank": 0,
+   "wagons": 3,
+   "card": "Tempo zamówieniaGospodarstwo: pełno zboża od 1:20, wszystkie 3 wozy w trasie — kup wóz2",
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 1:26 GospodarstwoPełno zboża — odbiór: wóz 2 1:26 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. NaprawaKup ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 187.3,
+   "coins": 183,
+   "rank": 0,
+   "wagons": 4,
+   "card": "Tempo zamówieniaGospodarstwo: pełno zboża od 1:50, wszystkie 4 wozy w trasie — kup wóz2",
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 1:56 GospodarstwoPełno zboża — odbiór: wóz 2 1:56 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. NaprawaKup ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 217.3,
+   "coins": 153,
+   "rank": 0,
+   "wagons": 5,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:46 Chata drwalaPełno drewna — odbiór: wóz 4 0:46 Wóz 4Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. Produkuje ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 247.3,
+   "coins": 153,
+   "rank": 0,
+   "wagons": 5,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:17 TartakPełno desek — odbiór: wóz 5 0:17 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. Potrzebuje 2/8Produkuje",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 277.3,
+   "coins": 153,
+   "rank": 0,
+   "wagons": 5,
+   "card": "Tempo zamówieniaTartak: pełno desek od 0:40, wszystkie 5 wozów w trasie — kup wóz2",
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:47 TartakPełno desek — odbiór: wóz 5 0:47 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. NaprawaKup wóz−30Wóz 5 ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 307.3,
+   "coins": 155,
+   "rank": 0,
+   "wagons": 6,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:13 Chata drwalaPełno drewna — odbiór: wóz 6 0:13 Wóz 6Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na przyjazd wozu.Przy korku na moście zapewnij objazd.Przy braku trasy napraw przerwę w drodze. PrzykładTartak pełen desek → wóz jedzie po deski → tartak wznowi produkcję. Produkuje ",
+   "fix": [],
+   "act": ""
+  }
+ ],
+ "timeline": [
+  {
+   "t": 5,
+   "kind": "ev",
+   "text": "Wieści z doliny1"
+  },
+  {
+   "t": 5,
+   "kind": "plaque",
+   "text": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1+0/min"
+  },
+  {
+   "t": 25,
+   "kind": "card",
+   "text": "Najgorszy zastójTartak: czekanie na odbiór1"
+  },
+  {
+   "t": 40,
+   "kind": "card",
+   "text": "Najgorszy zastójChata drwala: czekanie na odbiór1"
+  },
+  {
+   "t": 70,
+   "kind": "card",
+   "text": "Najgorszy zastójGospodarstwo: brak drogi do bramy1"
+  },
+  {
+   "t": 85,
+   "kind": "toast",
+   "text": "Kupiec z wozem pod płótnem stanął przy bramie: kupi deski"
+  },
+  {
+   "t": 95,
+   "kind": "card",
+   "text": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu1"
+  },
+  {
+   "t": 115,
+   "kind": "card",
+   "text": "Tempo zamówieniaTartak: pełno desek od 0:20, wszystkie 2 wozy w trasie — kup wóz2"
+  },
+  {
+   "t": 120,
+   "kind": "card",
+   "text": "Tempo zamówieniaGospodarstwo: pełno zboża od 0:50, wszystkie 2 wozy w trasie — kup wóz2"
+  },
+  {
+   "t": 125,
+   "kind": "toast",
+   "text": "Kronika: Trzeci wóz w drodze"
+  },
+  {
+   "t": 185,
+   "kind": "card",
+   "text": "Najgorszy zastójGospodarstwo: czekanie na odbiór2"
+  },
+  {
+   "t": 270,
+   "kind": "card",
+   "text": "Tempo zamówieniaTartak: pełno desek od 0:40, wszystkie 5 wozów w trasie — kup wóz2"
+  }
+ ],
+ "builds": [
+  {
+   "t": 7.3,
+   "type": "farm",
+   "taps": 6
+  }
+ ],
+ "firstBuild": {
+  "t": 0,
+  "taps": 4,
+  "type": "farm"
+ },
+ "errors": [],
+ "firstLinked": {
+  "t": 0,
+  "taps": 5,
+  "roads": 0
+ },
+ "end": {
+  "tick": 3073,
+  "coins": 155,
+  "rank": 0,
+  "wagons": 6,
+  "buildings": [
+   "woodcutter",
+   "sawmill",
+   "stable",
+   "warehouse",
+   "castle",
+   "farm"
+  ],
+  "tool": "none"
+ },
+ "wallS": 1767.962
+}

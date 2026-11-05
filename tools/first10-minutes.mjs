@@ -177,6 +177,11 @@ async function run([w, h]) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
+  // run e: a landscape page lost window.__marchia mid-run under 3 parallel browsers (not reproduced solo): log a
+  // renderer crash and a real document change (sheets push history entries for Android back: those keep the URL)
+  page.on('crash', () => { errors.push('PAGE CRASH'); log('PAGE CRASH'); });
+  let lastUrl = '';
+  page.on('framenavigated', (f) => { if (f === page.mainFrame() && f.url() !== lastUrl) { if (lastUrl) log('navigated', f.url()); lastUrl = f.url(); } });
   const steps = [];
   const gaps = [];
   let cur = null, shotN = 0, taps = 0;
