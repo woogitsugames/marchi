@@ -38,7 +38,7 @@ test('ice ahead: missions without authored ice never yield', () => {
   for (const id of ['m2', 'm3', 'm7']) eq(iceAheadSpan(createWorld(id)), null, id);
 });
 
-test('ice ahead: the span to pave lies on wooden deck cells over water (the deck ghost draws there, D-133)', () => {
+test('ice ahead: the span to pave lies on wooden deck cells over water (the deck ghost draws there, D-134)', () => {
   const w = createWorld('m4');
   const ice = iceAheadSpan(w);
   assert(!!ice, 'span found');

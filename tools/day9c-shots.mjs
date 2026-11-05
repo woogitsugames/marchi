@@ -1,7 +1,7 @@
 // Day 9c screenshots: mission IV before the ice, the stone-span cure ("Wyłóż most kamieniem") with its ghost on the
-// wooden deck (D-133).
+// wooden deck (D-134).
 // Built game: npm run build; npx vite preview --port 5194 --strictPort.
-//   NO_GHOST=1 clears the road preview (the look before D-133) for before/after shots
+//   NO_GHOST=1 clears the road preview (the look before D-134) for before/after shots
 //   node tools/day9c-shots.mjs [baseUrl] [case ...] [WxH ...] [--tag x] -> docs/shots/day9c-<case>[-x]-<w>x<h>.jpg
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -38,7 +38,7 @@ for (const [w, h] of sizes.length ? sizes : [[412, 915], [915, 412]]) for (const
   if (c.near) {
     await page.evaluate((d) => {
       const a = window.__marchia.app, W = a.world.terrain.w, t = a.world.terrain, st = a.world.state;
-      // the proposed span, or (no ghost, the look before D-133) the bridge cells of the network
+      // the proposed span, or (no ghost, the look before D-134) the bridge cells of the network
       let cells = a.ghosts.gap;
       if (!cells?.length) { cells = []; for (let i = 0; i < t.water.length; i++) if (t.water[i] && st.roads[i]) cells.push(i); }
       if (!cells.length) return;
@@ -48,7 +48,7 @@ for (const [w, h] of sizes.length ? sizes : [[412, 915], [915, 412]]) for (const
     }, c.near);
     await page.waitForTimeout(1500);
   }
-  // NO_GHOST=1: the look before D-133 (no ghost for the stone-span cure)
+  // NO_GHOST=1: the look before D-134 (no ghost for the stone-span cure)
   if (process.env.NO_GHOST === '1') { await page.evaluate(() => window.__marchia.app.view.setRoadPreview(null)); await page.waitForTimeout(800); }
   const info = await page.evaluate(() => ({
     card: document.querySelector('.stall-row:not([hidden]) .stall-card')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,

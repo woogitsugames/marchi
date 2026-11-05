@@ -343,6 +343,7 @@ export function setTreeQuality(high: boolean): void {
       m.needsUpdate = true;
     }
   }
+  for (const k of ['billboard', 'leaves', 'needles'] as const) syncInstanced(k);
 }
 
 /**
@@ -372,6 +373,11 @@ export function treeQualityVariants(high: boolean): Map<Material, Material> {
     const c = variant(m);
     c.alphaToCoverage = high;
     out.set(m, c);
+  }
+  // the instanced mirrors switch with their base material: compile the same variant for them
+  for (const [m, c] of [...out]) {
+    const im = instCache.get(m.name.slice('model-'.length) as MatKey);
+    if (im) out.set(im, c);
   }
   return out;
 }
@@ -411,6 +417,73 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
  */
 export function applyTextures(key: MatKey, set: TextureSet): void {
   assignMaps(modelMaterial(key), key, set);
+  syncInstanced(key);
+}
+
+const instCache = new Map<MatKey, MeshStandardMaterial>();
+
+/**
+ * The kind's material for InstancedMesh users (wagon rigs, cargo, yard workers): a mirror of `modelMaterial(key)` with
+ * the same shader hooks and program cache key. three.js keeps one current program per material and keys it by
+ * `instancing`; a material drawn by both an InstancedMesh and a plain Mesh (buildings, bridges) in one frame rebuilds
+ * its program parameters on every switch (research 2026-11-05 render #5). The mirror never diverges: every change of
+ * a base material goes through a function here that calls `syncInstanced`, and `materialsFor` lists both for the
+ * shader pre-warm.
+ */
+export function instancedMaterial(key: MatKey): MeshStandardMaterial {
+  // guard (D-133): the impostor bake rewrites the billboard material outside this module; no mirror may follow it
+  if (key === 'billboard') throw new Error('instancedMaterial: billboard has no instanced mirror');
+  let c = instCache.get(key);
+  if (c) return c;
+  const m = modelMaterial(key);
+  c = m.clone();
+  c.onBeforeCompile = m.onBeforeCompile;
+  c.customProgramCacheKey = m.customProgramCacheKey;
+  c.name = m.name + '-inst';
+  instCache.set(key, c);
+  return c;
+}
+
+/** The base material of a kind and its instanced mirror, if one was made. */
+export function materialsFor(key: MatKey): MeshStandardMaterial[] {
+  const im = instCache.get(key);
+  return im ? [modelMaterial(key), im] : [modelMaterial(key)];
+}
+
+/** Kinds whose mirror's program-relevant state differs from its base (empty when in sync; tests and debug). */
+export function mirrorDrift(): MatKey[] {
+  const out: MatKey[] = [];
+  for (const [key, im] of instCache) {
+    const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
+    const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
+    if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
+      im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
+      im.onBeforeCompile !== m.onBeforeCompile || im.customProgramCacheKey !== m.customProgramCacheKey ||
+      JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) out.push(key);
+  }
+  return out;
+}
+
+/** Copy the program-relevant state of the base material to its mirror (no-op without one). */
+function syncInstanced(key: MatKey): void {
+  const im = instCache.get(key);
+  if (!im) return;
+  const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
+  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
+  if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
+    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
+    JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) {
+    im.map = m.map;
+    im.normalMap = m.normalMap;
+    im.roughnessMap = m.roughnessMap;
+    im.aoMap = m.aoMap;
+    im.alphaToCoverage = m.alphaToCoverage;
+    im.alphaTest = m.alphaTest;
+    im.side = m.side;
+    im.shadowSide = m.shadowSide;
+    d.defines = { ...(m.defines ?? {}) };
+    im.needsUpdate = true;
+  }
 }
 
 /**

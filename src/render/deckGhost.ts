@@ -1,4 +1,4 @@
-// The pave ghost on a bridge deck (D-133): the stone-span cure ("pave the bridge in stone") proposes cells over the
+// The pave ghost on a bridge deck (D-134): the stone-span cure ("pave the bridge in stone") proposes cells over the
 // water, where the terrain-draped road preview (D-132) lies on the river bed under the water and the wooden deck.
 // One quad per proposed bridge cell, a few centimetres above the planks, drawn with the same grey-buff setts with
 // dark joints and an ochre rim as the mud stretch's ghost on the ground.

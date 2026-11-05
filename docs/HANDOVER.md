@@ -24,6 +24,10 @@
    arkusze (N1), list porażki ma jedną linię czynności dla straty nr 1 (N3). Rozsądny gracz: **XI 60 s 1★ → 2★,
    IV 60 s 2★ → 3★, II oko+ 10 s 2★ → 3★**, żadna misja nie traci pieczęci. I przy 60 s zostaje 1★ — po 5:00 żaden
    wóz już nie pomaga (most jednopasmowy się korkuje). Testy 467/0.
+0b. **Paczka 9b scalona (04:40):** D-131 „Sprzedaj za 15” czytelne jako wyłączone (6,6:1, powód pod spodem),
+   D-129 w osobnym module z testem, **D-132 odcinek błota do brukowania ma własnego ducha — jasną kostkę**
+   (`docs/shots/day9b-m3-mud*.jpg`; obejrzyj — jeśli za jasny, przyciemnimy). Testy 470/0. Layout-check: limit
+   ładowania 90 s (30 s dawało fałszywe timeouty przy pracy agentów).
 1. **„Czekanie na odbiór” (WAITING_PICKUP) z czynnością? — D-128 wdrożone wąsko.** Reguła ogólna („Kup wóz” przy
    każdym czekaniu ≥ 30 s, gdy wszystkie wozy zajęte) kosztowała pieczęcie: jako sama naprawa w arkuszu −7 wierszy
    (VI, VIII, XII skan, X 30 s), z wyjęciem ze spokojnych pinezek −21 (np. IV 2→1★, VIII 3→2★). Wdrożono ją więc

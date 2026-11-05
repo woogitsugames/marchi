@@ -1787,7 +1787,19 @@ the stretch as a dashed pale-stone line. Only the pace card's mud stretch uses i
 gap finder and tutorial ghosts are unchanged. Render/UI only, hashes unchanged. Shots `day9b-m3-mud{,-near}-412x915.jpg`.
 (decided — owner to look at the shots)
 
-**D-133 — The stone-span cure draws the sett ghost on the wooden deck (day 9c; BACKLOG P3 from D-132).**
+**D-133 — Render #5: instanced parts draw a mirror of each kind's material, with a guard (night 9; coordinator).**
+Research `docs/research/2026-11-05-render5-materials.md`: one material per kind was drawn by InstancedMesh (wagons,
+cargo, yard workers) and plain meshes (buildings, bridges), so three.js rebuilt program parameters at every switch.
+`instancedMaterial(key)` (materials module) is a clone sharing the shader hook and program key; `syncInstanced` copies
+maps, defines and alpha state on every base change made in the module (`applyTextures`, `setTreeQuality`), the
+texture/quality pre-warm (D-65) lists both (`materialsFor`, `treeQualityVariants`). Parameter rebuilds per render
+10 → 6 at 60 m, 10 → 2 at 320 m; `getParameters` allocations −40…−80 %; same program count (44/47/48), pixels
+bit-identical (low/high/ultra, winter night). Guard: `instancedMaterial('billboard')` throws (the impostor bake
+rewrites that material outside the module), `mirrorDrift()` lists out-of-sync mirrors, test
+`tests/materials-mirror.test.ts`. Pixel-identical, so no owner decision needed (owner had asked for shots only
+where pixels change). Render only, hashes unchanged. (decided)
+
+**D-134 — The stone-span cure draws the sett ghost on the wooden deck (day 9c; BACKLOG P3 from D-132).**
 "Wyłóż most kamieniem" (`cure === 'pave'`: a wagon held at a wooden span, D-105, or the ice ahead outranking a
 wagon, D-117 `paveSpanFor`) drew nothing on the map: the sheet only called `setGhost` for the gap finder and the mud
 card. The building sheet now passes the span's cells with `pave = true` whenever its fix section is this cure. The
@@ -1802,7 +1814,7 @@ Open: from the castle's sheet the span is off screen in both orientations at the
 the castle), so the ghost is seen only after a pan — as with the mud stretch, no camera move was added.
 Render/UI only, hashes unchanged. (decided — owner to look at the shots)
 
-**D-134 — Research c's N5 ("0 words at three stalls") was the audit reading a sheet mid-fade; the fade itself was broken (day 9c; first-10-minutes-c N5, fix list item 6).**
+**D-135 — Research c's N5 ("0 words at three stalls") was the audit reading a sheet mid-fade; the fade itself was broken (day 9c; first-10-minutes-c N5, fix list item 6).**
 What the audit measured: after the eye tap it counted the words of every visible text node (`deepVis`: no hidden,
 transparent or `aria-hidden` ancestor) and the enabled `.fix-btn`s. Repeating portrait with a diagnostic on an empty
 screen reproduced it at once (the first Why sheet): `words 0, letters 18` (only the HUD's numbers), while the

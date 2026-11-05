@@ -296,7 +296,7 @@ try {
           if (s.act) await s.act(page);
           await page.waitForTimeout(400);
           // a sheet still fading in reads as low contrast (its opacity is multiplied in): under swiftshader the
-          // compositor starts the fade late (D-134), so wait until it is fully up
+          // compositor starts the fade late (D-135), so wait until it is fully up
           await page.waitForFunction(() => { const e = document.querySelector('#sheets .sheet:last-child'); return !e || (!e.classList.contains('is-entering') && Number(getComputedStyle(e).opacity) > 0.98); }, null, { timeout: 30000, polling: 250 }).catch(() => {});
           if (mode === 'base') {
             const inter = await page.evaluate(collectInteractive);
