@@ -4,7 +4,9 @@ Data: 2026-11-05 · gałąź `claude/research-dispatch2b` (od `claude/w-dispatch
 Narzędzia (nowe): `tools/dispatch2-ab.ts` (A/B jednym poleceniem: testy drabin lekcji + bot I + ankieta
 „jeden wóz więcej” dla każdego wariantu, 4 procesy naraz, tabela markdown; `FAST=1` pomija ankietę,
 gdy drabina już pęka), `tools/dispatch2-bal.ts` (`balance-night6 --no-search` pod wariantem).
-Przełączniki: `RULES` w `src/sim/logistics.ts` (tylko narzędzia je zmieniają; gra używa wartości domyślnych).
+Przełączniki w czasie badania: `RULES` w `src/sim/logistics.ts`. Po decyzji właściciela (D-156, wdrożone L1) zostało
+`DISPATCH2 = { ruleA, fleetGate, minFreeRunS, ruleC }`. Pozostałe warianty z tabel odtworzysz z historii gałęzi
+(commit 47c29cc).
 
 ## TL;DR
 
@@ -89,6 +91,9 @@ Wszystkie testy drabin (`missions*`, `m1-eye-fix`), `sandbox`, `bridge`, `season
 `thin-delivery`, `next-letter-surplus`, `m8-stone-stored` i `fleet-card` przechodzą. W C + A padały 23 testy.
 Hasze **nie są** przenagrane. `npm run typecheck` przechodzi.
 
+**Aktualizacja (D-156, wdrożenie):** hasze przenagrane, fikstura v5 naprawiona (próbka z wozem kamienia),
+dodany `tests/wagon-due.test.ts`. `npm test` → 482 passed, 0 failed.
+
 ## Rekomendacja
 
 1. **Jeśli najważniejsze są drabiny lekcji, wdrożyć L1** (D-nowe). Zmiana w dyspozytorze to dwie linie
@@ -107,7 +112,7 @@ Hasze **nie są** przenagrane. `npm run typecheck` przechodzi.
 
 ## Pliki
 
-- `src/sim/logistics.ts` — `RULES` (domyślnie L1), bramka floty, próg wolnego dojazdu, warianty kontekstu i C.
+- `src/sim/logistics.ts` — `DISPATCH2` (L1: bramka floty, próg wolnego dojazdu; C tylko dla narzędzi).
 - `tools/dispatch2-ab.ts`, `tools/dispatch2-bal.ts` — runner A/B i balans pod wariantem.
 - `docs/research/2026-11-05-dispatcher2-grid.txt`, `…-grid2.txt`, `…-grid3.txt` — surowe tabele 193 wariantów
   (`FAST=1`: wiersze z pękniętą drabiną nie mają ankiety).
