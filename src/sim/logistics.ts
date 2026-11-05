@@ -21,6 +21,19 @@ type Unmet =
 
 type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
 
+/**
+ * Research knobs (dispatcher 2, lesson-safe round 2026-11-05). Tools flip these; the game uses the defaults.
+ * a: rule A on/off. aMargin: busy wagon must arrive this many s sooner. aRatio: free wagon's empty run must be
+ * >= aRatio x the busy wagon's ETA. aMinFree: free wagon's run must be >= this many s. aCastle / aInput /
+ * aPush / aMarket: contexts where A may hold. aTopUpOnly: on inputs, hold only when the workshop is not
+ * starving. aNoBottleneck: never hold an input whose workshop feeds a good the castle still lacks.
+ * c: rule C on/off. cStrict: C also needs the workshop to hold input for one cycle (no idle stall from C).
+ */
+export const RULES = {
+  a: 1, aMargin: 0, aRatio: 0, aMinFree: 0, aCastle: 1, aInput: 1, aPush: 1, aMarket: 1, aTopUpOnly: 0, aNoBottleneck: 0,
+  c: 1, cStrict: 0,
+};
+
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
 interface Held { wagon: number; at: number }
 
@@ -144,8 +157,10 @@ export function dispatch(world: World): void {
     // what is on the way), or another workshop on the map uses it. Without this, a sawmill whose planks
     // are all delivered keeps pulling wood one unit at a time and takes wagons from the chains that are
     // still short (mission I: the bread chain lost the contract after a late extra wagon).
-    if (contract && !outputGoods(b.type).some((og) => stillWanted(world, contract, og))) continue;
+    const unwanted = RULES.c && contract !== null && !outputGoods(b.type).some((og) => stillWanted(world, contract, og));
+    if (unwanted && !RULES.cStrict) continue;
     for (const g of inputGoods(b.type)) {
+      if (unwanted && b.stock[g] + b.incoming[g] >= (def.recipe?.inputs[g] ?? 1)) continue;
       const want = def.inCap - b.stock[g] - b.incoming[g];
       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
@@ -178,7 +193,7 @@ export function dispatch(world: World): void {
   // slower, 28 lost a seal). So the job waits: pickWagon returns the busy wagon as a `Held` (the next
   // dispatch, every DISPATCH_INTERVAL ticks, decides again with fresh positions and nothing is reserved
   // meanwhile). A wagon held at ice or without a route never holds a job: its arrival is unknown.
-  const pickWagon = (source: Building): Wagon | Held | null => {
+  const pickWagon = (source: Building, ctx: 'castle' | 'input' | 'push' | 'market', d: Demand | null = null): Wagon | Held | null => {
     if (free.length === 0) return null;
     const rev = dc.to(source.gate);
     let best: Wagon | null = null, bestT = Infinity;
@@ -187,6 +202,17 @@ export function dispatch(world: World): void {
       if (t < bestT) { bestT = t; best = w; }
     }
     if (!best) return null;
+    if (!RULES.a) return best;
+    if (ctx === 'castle' ? !RULES.aCastle : ctx === 'input' ? !RULES.aInput : ctx === 'push' ? !RULES.aPush : !RULES.aMarket) return best;
+    if (ctx === 'input' && d && RULES.aTopUpOnly) {
+      const starvingNow = d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1);
+      if (starvingNow) return best;
+    }
+    if (ctx === 'input' && d && RULES.aNoBottleneck && contract) {
+      const castle = buildingById(world, contract.castle);
+      if (castle && outputGoods(d.b.type).some((og) => contractTarget(contract, og) - castle.stock[og] - castle.incoming[og] > 0)) return best;
+    }
+    if (bestT < RULES.aMinFree) return best;
     let due: Wagon | null = null, dueT = bestT;
     for (const w of st.wagons) {
       const j = w.job;
@@ -199,6 +225,7 @@ export function dispatch(world: World): void {
       if (t < dueT) { dueT = t; due = w; }
     }
     // the status shows when the busy wagon should stand at the source (whole ticks, rounded up)
+    if (due && (bestT - dueT < RULES.aMargin || bestT < RULES.aRatio * dueT)) due = null;
     if (due) return { wagon: due.id, at: st.tick + Math.max(1, Math.floor(dueT * TICK_HZ) + 1) };
     return best;
   };
@@ -234,7 +261,7 @@ export function dispatch(world: World): void {
       continue;
     }
     if (free.length === 0) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
-    const wagon = pickWagon(best);
+    const wagon = pickWagon(best, d.prio === 0 ? 'castle' : 'input', d);
     if (isHeldJob(wagon)) { held.set(key, wagon); continue; }
     if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) {
       unmet.set(key, { k: 'NO_WAGON', cause: 'NONE_CAN_REACH' });
@@ -270,7 +297,7 @@ export function dispatch(world: World): void {
           if (t < bestT) { bestT = t; best = s; }
         }
         if (!best) continue;
-        const wagon = pickWagon(best);
+        const wagon = pickWagon(best, 'market');
         if (isHeldJob(wagon) || !wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) continue;
         assignJob(world, wagon, best, m, g, cap);
         free.splice(free.indexOf(wagon), 1);
@@ -301,7 +328,7 @@ export function dispatch(world: World): void {
       const key = b.id + ':' + g;
       // point at the granary that would help: a full one, else one cut off from the roads (NO_ROAD)
       if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh >= 0 ? fullWh : cutOffWh }); continue; }
-      const wagon = pickWagon(b);
+      const wagon = pickWagon(b, 'push');
       if (isHeldJob(wagon)) { held.set(key, wagon); continue; }
       if (!wagon || dc.to(b.gate).dist[wagonNode(wagon)] === Infinity) {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
