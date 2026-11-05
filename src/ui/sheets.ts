@@ -97,10 +97,12 @@ export class Sheets {
     const sheet = this.build(content);
     sheet.returnFocus = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
     this.stack.push(sheet);
+    // the entry state before the first style resolution: syncDock (and some updates) read layout, which used to
+    // resolve the sheet at full opacity first, so it dipped out and back in instead of fading up (day 9c, N5)
+    sheet.el.classList.add('is-entering');
     this.host.append(sheet.el);
     content.update(sheet);
     syncDock(sheet);
-    sheet.el.classList.add('is-entering');
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
     // keyboard and screen-reader focus into the sheet (the dialog itself: announced by its title, no ring on the

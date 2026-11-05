@@ -608,6 +608,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const pcHere = pc && pc.producer === b.id ? pc : fc ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
       if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
+      // the stone-span cure ("Wyłóż most kamieniem"): the same sett ghost, on the wooden deck (D-134)
+      else if (!fix && !pcHere && (stalled || carded) && cureFor(world, b.id) === 'pave') {
+        const span = paveSpanFor(world, b);
+        if (span) nav.setGhost(span.cells, true);
+      }
       setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;

@@ -1798,3 +1798,41 @@ bit-identical (low/high/ultra, winter night). Guard: `instancedMaterial('billboa
 rewrites that material outside the module), `mirrorDrift()` lists out-of-sync mirrors, test
 `tests/materials-mirror.test.ts`. Pixel-identical, so no owner decision needed (owner had asked for shots only
 where pixels change). Render only, hashes unchanged. (decided)
+
+**D-134 — The stone-span cure draws the sett ghost on the wooden deck (day 9c; BACKLOG P3 from D-132).**
+"Wyłóż most kamieniem" (`cure === 'pave'`: a wagon held at a wooden span, D-105, or the ice ahead outranking a
+wagon, D-117 `paveSpanFor`) drew nothing on the map: the sheet only called `setGhost` for the gap finder and the mud
+card. The building sheet now passes the span's cells with `pave = true` whenever its fix section is this cure. The
+span's cells are water cells under a wooden deck, where the terrain-draped preview (D-132) lies on the river bed,
+under the water and the planks — so the render gets a deck ghost (`src/render/deckGhost.ts`, owned by the view,
+fed from `setRoadPreview` and rebuilt with the network): one quad per proposed wooden bridge cell, 4 cm above the
+deck, 3 m wide, the same staggered grey-buff setts with dark joints and blended size octaves as the ground ghost,
+each sett slightly lighter or darker, an ochre rim along the parapets, depth-tested (a wagon on the deck covers it).
+Land cells of a proposal keep the terrain ghost; the flat (2D) view already draws the dashed stone line. Shots
+mission IV at 1:00 with two wagons bought (the D-117 state): `day9c-m4-pave{,-near}{-before,}-{412x915,915x412}.jpg`.
+Open: from the castle's sheet the span is off screen in both orientations at the game's usual zoom (the eye centres
+the castle), so the ghost is seen only after a pan — as with the mud stretch, no camera move was added.
+Render/UI only, hashes unchanged. (decided — owner to look at the shots)
+
+**D-135 — Research c's N5 ("0 words at three stalls") was the audit reading a sheet mid-fade; the fade itself was broken (day 9c; first-10-minutes-c N5, fix list item 6).**
+What the audit measured: after the eye tap it counted the words of every visible text node (`deepVis`: no hidden,
+transparent or `aria-hidden` ancestor) and the enabled `.fix-btn`s. Repeating portrait with a diagnostic on an empty
+screen reproduced it at once (the first Why sheet): `words 0, letters 18` (only the HUD's numbers), while the
+screenshot taken right after shows the full sheet. The sheet was in its entry fade: under swiftshader a frame takes
+seconds after the camera move, and CSS transitions only advance with frames, so `getComputedStyle(sheet).opacity`
+stayed near 0 for 5–15 s of wall time. The card and sheet were fine — run c's #6–#8 ("pełny magazyn, brak wozu")
+offered "Kup wóz" exactly as #5 did; the portrait run lost those wagons to the tool, not to the game.
+Found on the way, real: `Sheets.place` added `is-entering` *after* appending the sheet and running `update` and
+`syncDock`, which reads `offsetHeight` when a fix dock exists — the sheet resolved at full opacity first, so it
+dipped out (toward the entry state) and back in for two frames instead of fading up and sliding in. The class is
+now set before the sheet enters the DOM (`src/ui/sheets.ts`), so the 100–250 ms fade/slide is the one the style
+guide describes. Side effect for headless tools: a sheet now really starts at opacity 0, and under swiftshader the
+compositor starts its fade seconds late, so a DOM audit right after opening reads it as invisible (or, multiplying
+opacity, as low contrast) — screenshots are unaffected (a capture forces a frame). Tools: `tools/first10-minutes.mjs`
+waits (≤ 30 s) until the top sheet is fully up after every settle, and so does `tools/a11y-audit.mjs`; first10 also
+shoots every Why sheet without a fix (not only the first three), writes an `EMPTY SCREEN` diagnostic when a sheet counts
+0 words, and ignores elements scrolled out of a scroll/clip container (words, covered targets, overlaps) — run c's
+A5 "Ustawienia covers rows XIII / IV–V" was such a row (menu now: no covered target, no overlap). Portrait rerun
+with the fixes (`docs/research/shots-first10d/`): no empty screen in 10 Why sheets, every "pełny magazyn, brak wozu"
+and "wszystkie wozy zajęte" offered "Kup wóz" (5 bought, run c: 3), mission I **won** at 7174 ticks (run c portrait
+lost by 2 breads), "Następna misja" → II. UI/tools only, hashes unchanged. (decided)
