@@ -88,7 +88,7 @@ export function codexCalm(world: World, l: ReasonLink): boolean {
 /**
  * One producer feeds two (or more) workshops of this input, and the mission lets the player build another one
  * (research 2026-11-04, P5; missions IX, X): the cure is a second producer, not a wagon. sharedInput holds only
- * while the building waits for that input (NO_INPUT, NO_WAGON, WAITING_DELIVERY / _UPSTREAM). Pure read.
+ * while the building waits for that input (NO_INPUT, NO_WAGON, WAGON_DUE, WAITING_DELIVERY / _UPSTREAM). Pure read.
  */
 export interface SharedOne { producer: number; type: BuildingType; consumers: number }
 export function sharedOneProducer(world: World, b: Building): SharedOne | null {
@@ -114,7 +114,7 @@ const waitLogs = new WeakMap<World, WaitLog>();
 /** Waiting for an input good: no stock and none (yet) on the way, no wagon, or a delivery on the way. */
 function waitsForInput(b: Building): boolean {
   const s = b.status;
-  if (s.k !== 'WAITING_DELIVERY' && s.k !== 'NO_WAGON' && s.k !== 'WAITING_UPSTREAM' && !(s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE')) return false;
+  if (s.k !== 'WAITING_DELIVERY' && s.k !== 'NO_WAGON' && s.k !== 'WAGON_DUE' && s.k !== 'WAITING_UPSTREAM' && !(s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE')) return false;
   return inputGoods(b.type).includes(s.good);
 }
 

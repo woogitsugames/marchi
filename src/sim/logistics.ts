@@ -1,11 +1,11 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
-import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TOP_UP_MIN, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { contractTarget, storeCapOf } from './contract';
 import { marketOpen, unitCents } from './town';
 import { fairPercent, orderOutstanding } from './events';
 import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
-import type { Building, BuildingStatus, Good, Wagon } from './types';
+import type { Building, BuildingStatus, Contract, Good, Wagon } from './types';
 
 interface Demand {
   b: Building;
@@ -21,9 +21,13 @@ type Unmet =
 
 type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
 
+/** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
+interface Held { wagon: number; at: number }
+
 class DistCache {
   private fwd = new Map<number, DistMap>();
   private rev = new Map<number, DistMap>();
+  private revLoaded = new Map<number, DistMap>();
   constructor(private world: World) {}
   /** time from node (loaded) to anything */
   from(node: number): DistMap {
@@ -37,10 +41,18 @@ class DistCache {
     if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
     return m;
   }
+  /** time from anything (loaded) to node */
+  toLoaded(node: number): DistMap {
+    let m = this.revLoaded.get(node);
+    if (!m) { m = dijkstra(this.world, node, true, true); this.revLoaded.set(node, m); }
+    return m;
+  }
   /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
   release(): void {
     for (const m of this.fwd.values()) releaseDistMap(this.world, m);
     for (const m of this.rev.values()) releaseDistMap(this.world, m);
+    for (const m of this.revLoaded.values()) releaseDistMap(this.world, m);
+    this.revLoaded.clear();
     this.fwd.clear();
     this.rev.clear();
   }
@@ -64,6 +76,16 @@ function remainingContract(world: World, b: Building, g: Good): number {
   const m = world.state.mission;
   if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
   return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
+}
+
+/**
+ * Rule C (D-155): the castle still lacks `g` for the whole letter (stock + on the way), or a workshop on
+ * the map uses `g` as an input. Granaries do not count: storing a good nobody needs is no reason to make it.
+ */
+function stillWanted(world: World, contract: Contract, g: Good): boolean {
+  const castle = buildingById(world, contract.castle);
+  if (castle && contract.need[g] - castle.stock[g] - castle.incoming[g] > 0) return true;
+  return world.state.buildings.some((c) => c.type !== 'warehouse' && c.type !== 'castle' && inputGoods(c.type).includes(g));
 }
 
 function warehouseSpace(b: Building): number {
@@ -103,6 +125,8 @@ export function dispatch(world: World): void {
   const free: Wagon[] = st.wagons.filter(isFree);
   const unmet = new Map<string, Unmet>();
   const pushFail = new Map<string, PushFail>();
+  const held = new Map<string, Held>();
+  const contract = st.mission.contract && st.mission.result === 'running' ? st.mission.contract : null;
 
   // --- demands
   const demands: Demand[] = [];
@@ -115,6 +139,12 @@ export function dispatch(world: World): void {
       }
       continue;
     }
+    // Dispatcher 2, rule C (D-155): in a contract mission a workshop none of whose outputs is still wanted
+    // asks for no more input. Wanted = the castle still lacks some of it for the whole letter (stock and
+    // what is on the way), or another workshop on the map uses it. Without this, a sawmill whose planks
+    // are all delivered keeps pulling wood one unit at a time and takes wagons from the chains that are
+    // still short (mission I: the bread chain lost the contract after a late extra wagon).
+    if (contract && !outputGoods(b.type).some((og) => stillWanted(world, contract, og))) continue;
     for (const g of inputGoods(b.type)) {
       const want = def.inCap - b.stock[g] - b.incoming[g];
       if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
@@ -140,7 +170,15 @@ export function dispatch(world: World): void {
   const isSource = (s: Building, g: Good): boolean =>
     (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0;
 
-  const pickWagon = (source: Building): Wagon | null => {
+  // Dispatcher 2, rule A (D-155) — arrival before dispatch. The nearest FREE wagon is not always the one
+  // that gets to `source` first: a wagon still delivering close by (rest of its loaded run + unloading +
+  // the empty run on to `source`) may stand there sooner. Sending the far free wagon then reserves the
+  // goods for a long empty run while the near one arrives, finds nothing and drives off for scraps —
+  // the "one more wagon makes it slower" effect (research 2026-11-05: 56 of 195 extra-wagon tries
+  // slower, 28 lost a seal). So the job waits: pickWagon returns the busy wagon as a `Held` (the next
+  // dispatch, every DISPATCH_INTERVAL ticks, decides again with fresh positions and nothing is reserved
+  // meanwhile). A wagon held at ice or without a route never holds a job: its arrival is unknown.
+  const pickWagon = (source: Building): Wagon | Held | null => {
     if (free.length === 0) return null;
     const rev = dc.to(source.gate);
     let best: Wagon | null = null, bestT = Infinity;
@@ -148,8 +186,23 @@ export function dispatch(world: World): void {
       const t = rev.dist[wagonNode(w)]!;
       if (t < bestT) { bestT = t; best = w; }
     }
+    if (!best) return null;
+    let due: Wagon | null = null, dueT = bestT;
+    for (const w of st.wagons) {
+      const j = w.job;
+      if (!j || j.phase !== 'dropoff' || w.status.k === 'BRIDGE_CLOSED' || w.status.k === 'NO_ROUTE') continue;
+      const to = buildingById(world, j.to);
+      if (!to) continue;
+      // seconds until the drop-off is done: the unloading left, or the loaded run plus a full unloading
+      const rest = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
+      const t = rest + (to.gate === source.gate ? 0 : rev.dist[to.gate]!);
+      if (t < dueT) { dueT = t; due = w; }
+    }
+    // the status shows when the busy wagon should stand at the source (whole ticks, rounded up)
+    if (due) return { wagon: due.id, at: st.tick + Math.max(1, Math.floor(dueT * TICK_HZ) + 1) };
     return best;
   };
+  const isHeldJob = (w: Wagon | Held | null): w is Held => w !== null && !('job' in w);
 
   for (const d of demands) {
     // Full loads by default; a starving producer accepts a small first load to restart.
@@ -182,6 +235,7 @@ export function dispatch(world: World): void {
     }
     if (free.length === 0) { unmet.set(key, { k: 'NO_WAGON', cause: 'ALL_BUSY' }); continue; }
     const wagon = pickWagon(best);
+    if (isHeldJob(wagon)) { held.set(key, wagon); continue; }
     if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) {
       unmet.set(key, { k: 'NO_WAGON', cause: 'NONE_CAN_REACH' });
       continue;
@@ -217,7 +271,7 @@ export function dispatch(world: World): void {
         }
         if (!best) continue;
         const wagon = pickWagon(best);
-        if (!wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) continue;
+        if (isHeldJob(wagon) || !wagon || dc.to(best.gate).dist[wagonNode(wagon)] === Infinity) continue;
         assignJob(world, wagon, best, m, g, cap);
         free.splice(free.indexOf(wagon), 1);
         slots--;
@@ -248,6 +302,7 @@ export function dispatch(world: World): void {
       // point at the granary that would help: a full one, else one cut off from the roads (NO_ROAD)
       if (!best) { pushFail.set(key, { cause: 'NO_DESTINATION', blockedBy: fullWh >= 0 ? fullWh : cutOffWh }); continue; }
       const wagon = pickWagon(b);
+      if (isHeldJob(wagon)) { held.set(key, wagon); continue; }
       if (!wagon || dc.to(b.gate).dist[wagonNode(wagon)] === Infinity) {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
         continue;
@@ -258,7 +313,7 @@ export function dispatch(world: World): void {
     }
   }
 
-  diagnose(world, unmet, pushFail, dc);
+  diagnose(world, unmet, pushFail, held, dc);
   dc.release();
 }
 
@@ -290,11 +345,11 @@ function pickupWagon(world: World, b: Building, g: Good): number {
   return -1;
 }
 
-function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, dc: DistCache): void {
+function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache): void {
   const st = world.state;
   void net(world);
   for (const b of st.buildings) {
-    b.status = statusFor(world, b, unmet, pushFail, dc);
+    b.status = statusFor(world, b, unmet, pushFail, held, dc);
   }
 }
 
@@ -337,11 +392,14 @@ function upstreamReason(world: World, b: Building, g: Good, dc: DistCache): Buil
   return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: held >= 0 ? held : stalled >= 0 ? stalled : any };
 }
 
-function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, dc: DistCache): BuildingStatus {
+function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, held: Map<string, Held>, dc: DistCache): BuildingStatus {
   if (b.incoming[g] > 0) {
     const w = incomingWagon(world, b, g);
     if (w >= 0) return { k: 'WAITING_DELIVERY', good: g, wagon: w };
   }
+  // the goods exist and a busy wagon will fetch them sooner than a free one could (rule A): not a wagon shortage
+  const h = held.get(b.id + ':' + g);
+  if (h) return { k: 'WAGON_DUE', good: g, wagon: h.wagon, at: h.at };
   const u = unmet.get(b.id + ':' + g);
   if (u && u.k === 'NO_WAGON') return { k: 'NO_WAGON', good: g, cause: u.cause };
   if (u && u.k === 'NO_INPUT' && u.cause === 'UNREACHABLE') return { k: 'NO_INPUT', good: g, cause: u.cause, blockedBy: u.blockedBy };
@@ -369,7 +427,7 @@ function contestedBy(world: World, b: Building, g: Good, dc: DistCache): number 
   return -1;
 }
 
-function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, dc: DistCache): BuildingStatus {
+function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache): BuildingStatus {
   const def = BUILDINGS[b.type];
   if (b.type === 'stable') return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
   if (b.type === 'warehouse') {
@@ -390,8 +448,8 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
       // with tranches only the goods of the letter currently due count
       const target = contractTarget(m.contract, g);
       if (target - b.stock[g] <= 0) continue;
-      const r = inputReason(world, b, g, unmet, dc);
-      if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM') { if (!waiting) waiting = r; continue; }
+      const r = inputReason(world, b, g, unmet, held, dc);
+      if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM' || r.k === 'WAGON_DUE') { if (!waiting) waiting = r; continue; }
       if (target - b.stock[g] - b.incoming[g] > 0) return r;
     }
     return waiting ?? { k: 'IDLE' };
@@ -400,12 +458,14 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
   if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
   const r = def.recipe!;
   for (const g of inputGoods(b.type)) {
-    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet, dc);
+    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet, held, dc);
   }
   for (const g of outputGoods(b.type)) {
     if (b.stock[g] + (r.outputs[g] ?? 0) > def.outCap) {
       const pw = pickupWagon(world, b, g);
       if (pw >= 0) return { k: 'WAITING_PICKUP', good: g, wagon: pw };
+      const h = held.get(b.id + ':' + g);
+      if (h) return { k: 'WAGON_DUE', good: g, wagon: h.wagon, at: h.at };
       const f = pushFail.get(b.id + ':' + g);
       if (f) return { k: 'OUTPUT_FULL', good: g, cause: f.cause, blockedBy: f.blockedBy };
       return { k: 'OUTPUT_FULL', good: g, cause: 'NO_WAGON', blockedBy: -1 };

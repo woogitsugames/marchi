@@ -49,6 +49,12 @@ export type BuildingStatus =
   | { k: 'NO_WAGON'; good: Good; cause: 'ALL_BUSY' | 'NONE_CAN_REACH' }
   /** Output buffer full and nobody hauls it away. */
   | { k: 'OUTPUT_FULL'; good: Good; cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number }
+  /**
+   * Goods ready at a source, and a wagon still busy with a delivery nearby will stand there at tick `at`,
+   * sooner than any free wagon could (dispatcher rule A, D-155): the job waits for it. Not a stall and
+   * not a wagon shortage. Read on the consumer (its input) or on the producer (its full output).
+   */
+  | { k: 'WAGON_DUE'; good: Good; wagon: number; at: number }
   /** Output full, but a wagon is already on its way to collect it. */
   | { k: 'WAITING_PICKUP'; good: Good; wagon: number }
   | { k: 'STORAGE_FULL' }

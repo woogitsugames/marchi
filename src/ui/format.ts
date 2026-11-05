@@ -110,6 +110,8 @@ export function buildingStatusText(s: BuildingStatus, world?: World): string {
     params.goodAcc = t(`goodAcc.${s.good}` as MessageKey);
   }
   if ('wagon' in s) params.wagon = world ? wagonNumber(world, s.wagon) ?? '—' : s.wagon;
+  // a held job (D-155): when the busy wagon should stand at the source, counted down from the sim tick
+  if (s.k === 'WAGON_DUE') params.time = world ? iso(ticksClock(Math.max(0, s.at - world.state.tick))) : '—';
   return capFirst(t(key, params));
 }
 
@@ -151,6 +153,7 @@ export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof
     case 'NO_WAGON': return iconSvg('no_wagon', size);
     case 'OUTPUT_FULL': return iconSvg('output_full', size);
     case 'WAITING_PICKUP': return iconSvg('waiting', size);
+    case 'WAGON_DUE': return iconSvg('wagon', size);
     case 'WAITING_DELIVERY': return iconSvg(s.good, size);
     case 'WAITING_UPSTREAM': return iconSvg('waiting', size);
     case 'STORAGE_FULL': return iconSvg('storage_full', size);

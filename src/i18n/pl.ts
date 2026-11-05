@@ -45,6 +45,8 @@ export const pl = {
   'status.OUTPUT_FULL.NO_WAGON': 'Pełno {goodGen} — brak wozu do odbioru',
   'status.OUTPUT_FULL.NO_DESTINATION': 'Pełno {goodGen} — nie ma dokąd wieźć',
   'status.WAITING_PICKUP': 'Pełno {goodGen} — odbiór: wóz {wagon}',
+  // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155; see PENDING_KEYS)
+  'status.WAGON_DUE': 'Wóz {wagon} przyjedzie po {goodAcc} za {time}',
   'status.STORAGE_FULL': 'Spichlerz pełny',
   'status.CONTRACT_DONE': 'Kontrakt wykonany',
 
@@ -239,6 +241,7 @@ export const pl = {
   'cause.OUTPUT_FULL.NO_WAGON': 'pełny magazyn, brak wozu',
   'cause.OUTPUT_FULL.NO_DESTINATION': 'pełny magazyn, nie ma dokąd wieźć',
   'cause.WAITING_PICKUP': 'czekanie na odbiór',
+  'cause.WAGON_DUE': 'wóz zaraz przyjedzie',
   'cause.STORAGE_FULL': 'spichlerz pełny',
   'cause.BRIDGE_JAM': 'korek na moście',
   'cause.NO_ROUTE': 'brak drogi do celu',
@@ -768,6 +771,8 @@ export const PENDING_KEYS = [
   'pin.worst',
   'pin.critical',
   'pin.stood',
+  'status.WAGON_DUE',
+  'cause.WAGON_DUE',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

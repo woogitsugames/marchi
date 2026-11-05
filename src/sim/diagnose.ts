@@ -282,6 +282,8 @@ function nextFromBuilding(s: BuildingStatus): { kind: 'building' | 'wagon'; id: 
     case 'WAITING_DELIVERY': return { kind: 'wagon', id: s.wagon };
     case 'WAITING_UPSTREAM': return { kind: 'building', id: s.from };
     case 'WAITING_PICKUP': return { kind: 'wagon', id: s.wagon };
+    // a held job (D-155): the chain goes on to the busy wagon that will come for the goods
+    case 'WAGON_DUE': return { kind: 'wagon', id: s.wagon };
     case 'OUTPUT_FULL': return s.blockedBy >= 0 ? { kind: 'building', id: s.blockedBy } : null;
     default: return null;
   }
@@ -419,7 +421,7 @@ export function seasonNote(world: World, id: number): SeasonNote | null {
  * charcoal burner). The sim says CONTESTED only while nothing else explains the wait; most of the
  * time a wagon is already on the way or every wagon is busy, which hides the lesson. This is the
  * card's read-only view of the same fact: `id` waits for its input `good` (WAITING_DELIVERY,
- * NO_WAGON, WAITING_UPSTREAM, NO_INPUT except UNREACHABLE) while that good is promised to a
+ * NO_WAGON, WAGON_DUE, WAITING_UPSTREAM, NO_INPUT except UNREACHABLE) while that good is promised to a
  * consumer of another kind or already held by one. `rival`: the one with most of it held or on
  * the way (`there`, lowest id on ties); `here`: the same count for `id`; `producers` /
  * `consumers`: buildings that make / use the good (granaries excluded). Null when no consumer of
@@ -441,7 +443,7 @@ export function sharedInput(world: World, id: number): SharedInput | null {
   if (!b) return null;
   const s = b.status;
   let g: Good;
-  if (s.k === 'WAITING_DELIVERY' || s.k === 'NO_WAGON' || s.k === 'WAITING_UPSTREAM') g = s.good;
+  if (s.k === 'WAITING_DELIVERY' || s.k === 'NO_WAGON' || s.k === 'WAGON_DUE' || s.k === 'WAITING_UPSTREAM') g = s.good;
   else if (s.k === 'NO_INPUT' && s.cause !== 'UNREACHABLE') g = s.good;
   else return null;
   if (!inputGoods(b.type).includes(g)) return null;
