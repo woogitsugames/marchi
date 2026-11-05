@@ -1866,5 +1866,5 @@ shadow map size (not in the key). Fix in `src/render/prewarm.ts`: depth stand-in
 cleared for that synchronous call; custom depth materials get the same per-draw state as the shadow pass gives them;
 `prewarmMaterialSwap` (used by `View.setQuality`) also compiles the depth variant of every swapped material. Measured
 with `tools/render5-materials.mjs` (sandbox, 200 wagons, 412×915, SwiftShader): in-frame links low → high **2 → 0**,
-high → low → high **0 / 0**, ultra unaffected; a low start holds 42 programs instead of 44 (the two fog depth
+high → low → high **0 / 0** (ultra not re-measured); a low start holds 42 programs instead of 44 (the two fog depth
 duplicates are gone). Render/UI only, golden hashes unchanged. (decided)
