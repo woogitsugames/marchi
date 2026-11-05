@@ -98,6 +98,11 @@ export const FLEET_BUSY_SHARE = 0.9;
  * D-127: bought with less room it made X miss 3 seals and never lifted a seal anywhere).
  */
 export const FLEET_ROOM_TICKS = 210 * TICK_HZ;
+/**
+ * Without a contract (the free valley) there is no seal to aim at: the cue keeps this much silver for the next
+ * building (owner 2026-11-05; research sandbox-first-30: rank 1 at ~11 min instead of 14–17, no failed purchase).
+ */
+export const FLEET_FREE_KEEP = 40;
 
 /**
  * How busy the fleet was over the last minute (UI-owned, never in the state): one bit per game second, set when
@@ -110,7 +115,7 @@ interface FleetLog { tick: number; bits: number[] }
 const fleetLogs = new WeakMap<World, FleetLog>();
 export function sampleFleet(world: World): void {
   const st = world.state;
-  if (st.tick % TICK_HZ !== 0 || !st.mission.contract) return;
+  if (st.tick % TICK_HZ !== 0 || st.mission.result !== 'running') return;
   let log = fleetLogs.get(world);
   if (!log || st.tick <= log.tick) { log = { tick: st.tick, bits: [] }; fleetLogs.set(world, log); }
   log.tick = st.tick;
@@ -144,7 +149,9 @@ function bottleneckChain(world: World, f: ContractForecast): Set<Good> {
 /** The fleet-wide part of the fleet card's rule; the goods of the bottleneck chain when it holds, else null. */
 function fleetGate(world: World, f: ContractForecast | null): Set<Good> | null {
   const st = world.state;
-  if (!st.mission.contract || st.mission.result !== 'running' || !f || !f.ready || f.bottleneck < 0) return null;
+  if (st.mission.result !== 'running') return null;
+  if (!st.mission.contract) return freeFleetGate(world);
+  if (!f || !f.ready || f.bottleneck < 0) return null;
   // a better seal is still in reach, with time for a new wagon to pay off before it
   if (!f.aim || f.aim.byTick - st.tick < FLEET_ROOM_TICKS) return null;
   // a wagon must be buyable now, and must not cost the stone bridge before the ice (D-117)
@@ -153,6 +160,17 @@ function fleetGate(world: World, f: ContractForecast | null): Set<Good> | null {
   // a wagon idles at a stable right now, or the fleet was not on the road the whole last minute
   if (st.wagons.some((w) => w.status.k === 'IDLE' && !w.job) || fleetBusyShare(world) < FLEET_BUSY_SHARE) return null;
   return bottleneckChain(world, f);
+}
+
+/**
+ * No contract (the free valley, D-140): no forecast and no seal, so every good counts; the rest of the gate is the
+ * contract one (a wagon buyable, none idle, the fleet on the road the whole last minute) plus a silver reserve.
+ */
+function freeFleetGate(world: World): Set<Good> | null {
+  const st = world.state;
+  if (st.coins < WAGON_PRICE + FLEET_FREE_KEEP || st.wagons.length >= MAX_WAGONS || !st.buildings.some((b) => b.type === 'stable')) return null;
+  if (st.wagons.some((w) => w.status.k === 'IDLE' && !w.job) || fleetBusyShare(world) < FLEET_BUSY_SHARE) return null;
+  return new Set<Good>(GOODS);
 }
 
 /** This building's yard qualifies: a long pickup wait on the chain, its wagon not held. */
@@ -170,7 +188,7 @@ function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
   if (!goods) return null;
   let best: PaceFleet | null = null;
   for (const b of world.state.buildings) {
-    const c = fleetWait(world, b, goods, f!.seals);
+    const c = fleetWait(world, b, goods, f?.seals ?? -1);
     if (c && (!best || c.waitTicks > best.waitTicks || (c.waitTicks === best.waitTicks && c.producer < best.producer))) best = c;
   }
   return best;
@@ -182,7 +200,7 @@ function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
  */
 export function fleetCueFor(world: World, f: ContractForecast | null, b: Building): PaceFleet | null {
   const goods = fleetGate(world, f);
-  return goods ? fleetWait(world, b, goods, f!.seals) : null;
+  return goods ? fleetWait(world, b, goods, f?.seals ?? -1) : null;
 }
 
 function producerCard(world: World, f: ContractForecast | null): PaceProducer | null {

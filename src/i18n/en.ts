@@ -675,4 +675,5 @@ export const en: FullDict = {
   'end.act.other': 'Next time: {who} stood {time} — open "Why is it stalled?" at the first stall.',
   'fix.paceFleetEta': '{wagon} reaches the load in {time}; a second wagon collects it sooner.',
   'fix.paceFleetWhy': 'No wagon stood free in the last minute, and the forecast gives {seals}. A new wagon collects the load sooner and pays off before the seal.',
+  'fix.paceFleetWhyFree': 'For the last minute no wagon stood free. A new wagon picks the load up sooner — goods sold mean silver and renown.',
 };
