@@ -44,7 +44,7 @@ await page.addInitScript(() => {
     // a link whose stack passes through setProgram is a draw-time compile (the frame stalls on it), counted from
     // navigation on; links from renderer.compile (the pre-warm) do not go through setProgram
     G.drawLinks = [];
-    wrap('linkProgram', () => { G.link++; if (G.inFrame) G.fLink++; const st = new Error().stack || ''; if (st.includes('setProgram')) G.drawLinks.push(Math.round(performance.now())); });
+    wrap('linkProgram', () => { G.link++; if (G.inFrame) G.fLink++; const st = new Error().stack || ''; if (st.includes('setProgram')) G.drawLinks.push([Math.round(performance.now()), G.link - 1]); });
     wrap('compileShader', () => { G.compile++; if (G.inFrame) G.fCompile++; });
   }
 });
@@ -264,7 +264,8 @@ if (events) {
   await ev(`quality-${quality}-settled`, () => {}, 4000);
   void DAY; void SEASON;
 }
-out.drawTimeLinks = await page.evaluate(() => window.__gl.drawLinks);
+// link ordinal -> program (programs are created in link order; valid while none was released)
+out.drawTimeLinks = await page.evaluate(() => { const ps = window.__marchia.app.view.renderer.info.programs; return window.__gl.drawLinks.map(([t, i]) => [t, ps[i] ? ps[i].name : '?']); });
 out.linksTotal = await page.evaluate(() => window.__gl.link);
 out.errors = errs.slice(0, 5);
 console.log(JSON.stringify(out));
