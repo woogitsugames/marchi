@@ -18,9 +18,11 @@ type Rules = typeof RULES;
 
 export const VARIANTS: Record<string, Partial<Rules>> = {
   base: { a: 0, c: 0 },
-  CA: {},
-  A: { c: 0 },
-  C: { a: 0 },
+  CA: { a: 1, c: 1, aMinFree: 0, gFleet: 0 },
+  A: { a: 1, c: 0, aMinFree: 0, gFleet: 0 },
+  C: { a: 0, c: 1, gFleet: 0 },
+  L1: {},
+  g3CA: { a: 1, c: 1, aMinFree: 0, gFleet: 3 },
 };
 
 function parseSpec(spec: string): [string, Partial<Rules>] {

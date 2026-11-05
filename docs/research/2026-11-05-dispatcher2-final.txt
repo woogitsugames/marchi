@@ -1,0 +1,34 @@
+| variant | rules | ladder fails | bot I | survey runs | slower | seal loss | gain | mean Δ s | worst | eye Σ seals | eye Σ min |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| base | a:0,c:0 | 0 | 3★ 8.85 | 195 | 56 | 28 | 15 | 5.3 | +284 | 61 | 223.3 |
+| CA | a:1,c:1,aMinFree:0,gFleet:0 | 7 | 3★ 9.02 | 191 | 26 | 4 | 35 | -4.8 | +268 | 61 | 214.6 |
+| A | a:1,c:0,aMinFree:0,gFleet:0 | 8 | 3★ 9.17 | 190 | 26 | 5 | 27 | -7.4 | +265 | 60 | 217.4 |
+| C | a:0,c:1,gFleet:0 | 5 | 3★ 8.12 | 197 | 33 | 17 | 23 | 0.4 | +308 | 60 | 223.2 |
+| L1 |  | 0 | 3★ 7.94 | 193 | 40 | 19 | 17 | 0.1 | +213 | 63 | 220.5 |
+| g3CA | a:1,c:1,aMinFree:0,gFleet:3 | 0 | 3★ 9.02 | 194 | 46 | 22 | 25 | -1.5 | +212 | 60 | 222.3 |
+  base: seal loss at m1/60@7 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@1 m8/30@3 m8/30@7 m8/60@1 m8/60@3 m8/60@7 m9/30@5 m10/30@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  CA: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  CA: mission 5: n: m5 nothing: seals: expected 1, got 2
+  CA: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  CA: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.11
+  CA: m10: no acti: measured seal ladder: expected 0/2/3, got 2/2/3
+  CA: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  CA: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  CA: seal loss at m4/30@2 m4/30@3 m4/60@2 m4/60@3
+  A: mission 4: n: m4 stone bridge late @4:00 (iced): seals: expected 2, got 3
+  A: mission 5: n: m5 nothing: seals: expected 1, got 2
+  A: mission 6: n: m6 buy 1 wagon @0:30: seals: expected 2, got 1
+  A: m8: all thre: m8: repair must beat partial repair, which must beat no action; minutes=10.68/10.71/11.02
+  A: m9: all thre: nic / no action: reaches the contract: expected won, got lost
+  A: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/2
+  A: m12: no acti: measured seal ladder: expected 1/2/3, got 3/3/3
+  A: m13: doing n: nothing / one wagon early / three wagons early: expected 0/2/3, got 0/1/3
+  A: seal loss at m4/30@2 m4/30@3 m4/60@2 m4/60@3 m9/30@4
+  C: mission 5: n: m5 nothing: seals: expected 1, got 2
+  C: mission 6: n: m6 nothing: seals: expected 1, got 2
+  C: m9: all thre: m9: measured 1/2/3 seal ladder: expected 1/2/3, got 1/2/2
+  C: m10: no acti: measured seal ladder: expected 0/2/3, got 1/2/3
+  C: m12: no acti: measured seal ladder: expected 1/2/3, got 1/3/2
+  C: seal loss at m2/30@4 m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m8/30@1 m8/30@3 m8/30@7 m8/60@1 m8/60@3 m8/60@7 m11/30@3 m11/30@4 m12/60@1 m12/60@2
+  L1: seal loss at m4/30@1 m4/30@2 m4/30@3 m4/60@2 m4/60@3 m5/30@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2
+  g3CA: seal loss at m4/30@2 m4/30@3 m4/60@2 m4/60@3 m6/30@2 m6/30@3 m6/60@1 m6/60@2 m6/60@3 m8/30@1 m8/30@3 m8/60@1 m8/60@3 m10/30@7 m10/60@3 m10/60@4 m10/60@6 m11/30@3 m11/30@4 m12/30@2 m12/60@1 m12/60@2

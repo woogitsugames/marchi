@@ -23,12 +23,16 @@ type Unmet =
 type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
 
 /**
- * Research knobs (dispatcher 2, lesson-safe round 2026-11-05). Tools flip these; the game uses the defaults.
+ * Dispatcher 2 knobs (research 2026-11-05 "lesson-safe", docs/research/2026-11-05-dispatcher2-lesson-safe.md).
+ * The defaults are the lesson-safe variant L1: rule A only once the fleet is >= the mission's starting fleet + 2
+ * (gFleet) and only when the nearest free wagon's empty run is >= 50 s (aMinFree); rule C off. Tools
+ * (tools/dispatch2-ab.ts, tools/dispatch2-bal.ts) flip them for A/B runs; the game never changes them.
  * a: rule A on/off. aMargin: busy wagon must arrive this many s sooner. aRatio: free wagon's empty run must be
  * >= aRatio x the busy wagon's ETA. aMinFree: free wagon's run must be >= this many s. aCastle / aInput /
  * aPush / aMarket: contexts where A may hold. aTopUpOnly: on inputs, hold only when the workshop is not
  * starving. aNoBottleneck: never hold an input whose workshop feeds a good the castle still lacks.
- * c: rule C on/off. cStrict: C also needs the workshop to hold input for one cycle (no idle stall from C).
+ * aMaxDue: hold only when the busy wagon is due within this many s. aFreeCount: hold only with >= N free wagons.
+ * c: rule C on/off. cStrict: C still feeds a starving workshop. cFreeCount: C only with >= N free wagons.
  */
 export const RULES = {
   a: 1, aMargin: 0, aRatio: 0, aMinFree: 50, aCastle: 1, aInput: 1, aPush: 1, aMarket: 1, aTopUpOnly: 0, aNoBottleneck: 0,
