@@ -12,7 +12,7 @@
 // Logged per look: card kind, calm/critical, cure, the cure's result (and why it failed), pace/fleet cue (must stay
 // null without a contract), events and chronicle entries per minute.
 import {
-  BUILDINGS, MAX_WAGONS, RANKS, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
+  BUILDINGS, MARKET, MAX_WAGONS, RANKS, validatePlace, type Good, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
   unexplainedStalls, newPaceLog, samplePace, type BuildingType, type Command, type PaceLog, type World,
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
@@ -91,8 +91,38 @@ export interface Result {
   trace: Trace[];
 }
 
+/**
+ * Research valley-ranks-2-3: a site whose footprint touches an orthogonal corner of a diagonal road step cuts that
+ * road (network.ts: a diagonal edge needs both corner cells free of buildings). `safeSites` makes the ghost skip them.
+ */
+let safeSites = false;
+function cutsDiagonal(w: World, type: BuildingType, x0: number, y0: number): boolean {
+  const W = w.terrain.w, def = BUILDINGS[type], roads = w.state.roads;
+  const inFoot = (x: number, y: number): boolean => x >= x0 && x < x0 + def.w && y >= y0 && y < y0 + def.h;
+  for (let y = y0 - 1; y <= y0 + def.h; y++) for (let x = x0 - 1; x <= x0 + def.w; x++) {
+    if (!roads[y * W + x]) continue;
+    for (const [dx, dy] of [[1, 1], [1, -1]] as const) {
+      if (!roads[(y + dy) * W + x + dx]) continue;
+      if (inFoot(x + dx, y) || inFoot(x, y + dy)) return true;
+    }
+  }
+  return false;
+}
+function safeBuildSite(w: World, type: BuildingType, near: number): { x: number; y: number; facing: number } | null {
+  const b = w.state.buildings.find((q) => q.id === near)!;
+  const def = BUILDINGS[type];
+  const ox = b.x + (b.w >> 1) - (def.w >> 1), oy = b.y + (b.h >> 1) - (def.h >> 1);
+  for (let r = 1; r <= 10; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    const x = ox + dx, y = oy + dy;
+    if (x < 1 || y < 1 || x + def.w >= w.terrain.w || y + def.h >= w.terrain.h || cutsDiagonal(w, type, x, y)) continue;
+    for (let f = 0; f < 4; f++) if (validatePlace(w, type, x, y, f).ok) return { x, y, facing: f };
+  }
+  return null;
+}
+
 function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
-  const s = buildSite(w, type, near);
+  const s = safeSites ? safeBuildSite(w, type, near) : buildSite(w, type, near);
   if (!s) return false;
   const before = w.state.buildings.length;
   if (!applyCommand(w, put(type, s.x, s.y, s.facing)).ok) return false;
@@ -104,18 +134,38 @@ function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
 }
 
 const GROW_ORDER: readonly BuildingType[] = ['farm', 'mill', 'bakery', 'fisher', 'woodcutter', 'sawmill'];
-/** sbGrow prototype: the producer the grow card would name, or null. */
+/**
+ * sbGrow prototype: the producer the grow card would name, or null. Only from rank 1 (rank 0 is the rank card's and
+ * the fleet cue's), only while the next rank lacks renown alone, and only a building whose chain stays balanced:
+ * a raw producer no sooner than its consumer (farm <= mill, woodcutter <= sawmill), a processor only behind a spare
+ * supplier (mill < farm, bakery < mill, sawmill < woodcutter). Fewest built first; ties in GROW_ORDER.
+ */
 function growPick(w: World, keep: number): BuildingType | null {
   const sb = sandboxStatus(w);
-  if (!sb.next || sb.goodsSold < sb.next.goods) return null;
+  if (sb.rank < 1 || !sb.next || sb.goodsSold < sb.next.goods || sb.renown >= sb.next.renown) return null;
   const cnt = (t: BuildingType): number => w.state.buildings.filter((q) => q.type === t).length;
+  const ok = (t: BuildingType): boolean => {
+    if (!sb.unlocked.includes(t)) return false;
+    switch (t) {
+      case 'farm': return cnt('farm') <= cnt('mill');
+      case 'mill': return cnt('mill') < cnt('farm');
+      case 'bakery': return cnt('bakery') < cnt('mill');
+      case 'woodcutter': return cnt('woodcutter') <= cnt('sawmill');
+      case 'sawmill': return cnt('sawmill') < cnt('woodcutter');
+      default: return true;
+    }
+  };
+  // the chain's end good must still fetch a fair price (saturation below half the cap): a saturated market wants
+  // another good, not more of the same
+  const end: Partial<Record<BuildingType, Good>> = { farm: 'bread', mill: 'bread', bakery: 'bread', fisher: 'fish', woodcutter: 'planks', sawmill: 'planks' };
+  const fresh = (t: BuildingType): boolean => w.state.market.saturation[end[t]!] < MARKET.cap / 2;
   let best: BuildingType | null = null;
-  for (const t of GROW_ORDER) if (sb.unlocked.includes(t) && (best === null || cnt(t) < cnt(best))) best = t;
+  for (const t of GROW_ORDER) if (ok(t) && fresh(t) && (best === null || cnt(t) < cnt(best))) best = t;
   if (!best || w.state.coins < BUILDINGS[best].price + keep) return null;
   return best;
 }
 
-export interface Trace { m: number; rank: number; renown: number; goods: number; best: number; flow: number; coins: number; wagons: number; bld: number; card: string }
+export interface Trace { m: number; rank: number; renown: number; goods: number; best: number; flow: number; coins: number; wagons: number; bld: number; card: string; wh: string; sat: string }
 
 /** One look: the slot (pace card if it would take it, else the worst stall) and the sheet's cure. */
 function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false, game = false, growOpt: { keep: number } | null = null): Look {
@@ -252,7 +302,9 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       const ranked = rankStalls(w);
       const pc = (!ranked.length || ranked[0]!.minor) ? paceCard(w, forecastFor(w, log)) : null;
       const card = pc ? pc.k + (pc.k === 'rank' || pc.k === 'fleet' ? ':' + pc.type : '') : ranked.length ? (ranked[0]!.minor ? 'calm' : 'stall') : 'empty';
-      r.trace.push({ m: t / TICK_HZ / 60, rank: sb.rank, renown: sb.renown, goods: sb.goodsSold, best: sb.bestFlow, flow: sb.flowNow, coins: w.state.coins, wagons: w.state.wagons.length, bld: w.state.buildings.length, card });
+      r.trace.push({ m: t / TICK_HZ / 60, rank: sb.rank, renown: sb.renown, goods: sb.goodsSold, best: sb.bestFlow, flow: sb.flowNow, coins: w.state.coins, wagons: w.state.wagons.length, bld: w.state.buildings.length, card,
+        wh: w.state.buildings.filter((q) => q.type === 'warehouse').map((q) => Object.entries(q.stock).filter(([, v]) => v > 0).map(([g, v]) => g + v).join('+') || '0').join(' '),
+        sat: Object.entries(w.state.market.saturation).filter(([, v]) => v > 0).map(([g, v]) => g + v).join(' ') });
     }
     if (t % TICK_HZ === 0) {
       fleetBits.push(w.state.wagons.some((q) => (q.status.k === 'IDLE' && !q.job) || isHeld(q.status)) ? 0 : 1);
@@ -301,6 +353,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const minutes = Number(arg('--minutes') ?? 30);
   const seeds = (arg('--seeds') ?? 'default').split(',').map((s) => (s === 'default' ? undefined : Number(s)));
   const only = arg('--only');
+  safeSites = args.includes('--safe-sites');
   // research valley-ranks-2-3: rank threshold overrides, e.g. --ranks 2:renown=700,3:renown=2000
   for (const part of (arg('--ranks') ?? '').split(',').filter(Boolean)) {
     const [rk, kv] = part.split(':'); const [key, val] = kv!.split('=');
@@ -330,6 +383,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ['card-10+grow', { plan: null, eye: 10, events: false, game: true, sbGrow: { keep: 40 } }],
     ['card-30+grow', { plan: null, eye: 30, events: false, game: true, sbGrow: { keep: 40 } }],
     ['card-60+grow', { plan: null, eye: 60, events: false, game: true, sbGrow: { keep: 40 } }],
+    ['card-30+ev', { plan: null, eye: 30, events: true, game: true }],
+    ['card-30+grow+ev', { plan: null, eye: 30, events: true, game: true, sbGrow: { keep: 40 } }],
     ['decent', { plan: DECENT, eye: 0, events: false }],
   ];
   const all: Result[] = [];
