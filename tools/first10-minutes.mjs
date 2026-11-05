@@ -7,7 +7,9 @@
 // action. Screenshots: small JPGs in docs/research/shots-first10b/ (FIRST10_SHOTDIR).
 // Run c (2026-11-04): deepVis no longer requires a non-zero box on ancestors (0 px tall layer divs hid
 // every letter, sheet and fix button from the audit); one shot of every Why sheet with a fix.
-// Day 9c: every Why sheet without a fix after the third is shot too, and an empty screen is explained (N5).
+// Day 9c: every Why sheet without a fix after the third is shot too, and an empty screen is explained (N5: an
+// audit taken while the sheet was still fading in; settle now waits for the sheet's opacity); elements scrolled
+// out of a scroll container are not counted (words, covered targets, overlaps).
 //
 // Usage: npx vite preview --port 5195 --strictPort   (after npm run build)
 //        node tools/first10-minutes.mjs 412x915 [more sizes...]   -> JSON on stdout + shots
@@ -216,7 +218,9 @@ async function run([w, h]) {
     const stall = document.querySelector('.stall-row');
     res([t && !t.ended ? t.current : 0, document.querySelector('.tutorial .tut-text')?.textContent ?? '',
       r(document.querySelector('.tutorial .tut-ring.is-shown')), r(document.querySelector('.tut-note-wrap:not(.is-gone)')),
-      top ? r(top) : '-', document.querySelectorAll('.letter').length, document.querySelectorAll('.menu-item').length,
+      // the sheet's entry/exit state and opacity too: with starved frames (swiftshader) its fade lasts seconds, and
+      // an audit taken mid-fade counted 0 words (run c's N5)
+      top ? r(top) + (top.classList.contains('is-entering') || top.classList.contains('is-leaving') ? '~' : '') + Math.round(Number(getComputedStyle(top).opacity) * 10) : '-', document.querySelectorAll('.letter').length, document.querySelectorAll('.menu-item').length,
       stall ? stall.hidden : 'x', a?.tool ?? ''].join('|'));
   }))));
   const settle = async (maxMs = 10000) => {
