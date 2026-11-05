@@ -1,7 +1,7 @@
 // The rank card in the free valley (owner 2026-11-05, D-152): no contract, the slot empty or calm, the next rank still
 // lacks distinct goods sold -> the card names the next unbuilt producer of an unsold good (farm, mill, bakery, ...).
 // Never with a contract; read-only. Driven like the fleet test: the research's minimal build order.
-import { BUILDINGS, MISSIONS, TICK_HZ, applyCommand, createWorld, stateHash, step } from '../src/sim/index';
+import { BUILDINGS, MISSIONS, TICK_HZ, applyCommand, createWorld, stateHash, step, suggestLinkToStable } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
 import { buildSite } from '../src/ui/site';
 import { paceCard, rankCard, sampleFleet } from '../src/ui/paceCard';
@@ -61,4 +61,35 @@ test('valley rank card: never with a contract', () => {
     const pc = paceCard(w, null);
     assert(!pc || pc.k !== 'rank', `pace card is not the rank kind in ${id}`);
   }
+});
+
+// D-152 follow-up (day 9f): a player who only follows the card. Whenever it is the rank kind and the silver is
+// there, "Postaw: <name>" places that producer at the ghost the button opens (buildSite by the castle), and the
+// placed building's own sheet fix — the missing road to it (gap finder) — is pressed too; a fleet card's "Kup wóz"
+// likewise. The card must lead through farm -> mill -> bakery, each placement valid where the ghost stands.
+test('valley rank card: a player following it places farm, mill and bakery at the ghost', () => {
+  const w = createWorld('sandbox');
+  const placed: string[] = [];
+  const stable = w.state.buildings.find((b) => b.type === 'stable')!.id;
+  const end = 45 * 60 * TICK_HZ;
+  while (w.state.tick < end && placed.length < 3) {
+    step(w);
+    sampleFleet(w);
+    if (w.state.tick % (10 * TICK_HZ)) continue;
+    const pc = paceCard(w, null);
+    if (pc?.k === 'fleet') { applyCommand(w, { t: 'buyWagon', stable }); continue; }
+    if (pc?.k !== 'rank' || w.state.coins < BUILDINGS[pc.type].price) continue;
+    const site = buildSite(w, pc.type, pc.producer);
+    assert(!!site, `a ghost site for ${pc.type}`);
+    if (!site) return;
+    const before = w.state.buildings.length;
+    const res = applyCommand(w, { t: 'place', type: pc.type, x: site.x, y: site.y, facing: site.facing });
+    assert(res.ok, `${pc.type} placed at the ghost (${res.ok ? '' : res.err.k})`);
+    if (!res.ok) return;
+    const b = w.state.buildings[before]!;
+    const link = suggestLinkToStable(w, b.id);
+    if (link && link.cells.length && w.state.coins >= link.cost) applyCommand(w, { t: 'road', surface: 1, cells: link.cells });
+    placed.push(pc.type);
+  }
+  eq(placed.join(','), 'farm,mill,bakery', `the card led through farm, mill, bakery by ${Math.round(w.state.tick / TICK_HZ / 60)} min`);
 });

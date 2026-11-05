@@ -664,7 +664,7 @@ export const pl = {
   // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
   'hud.pace': 'Tempo zamówienia',
   'cause.paceProducer': '×{n}: {rate}/min, na {seals} trzeba ≈{need}/min — postaw więcej',
-  'fix.paceProducerWhy': 'Bez przerwy: najwyżej {cap}/min. Na {seals} trzeba ≈{need}/min — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
+  'fix.paceProducerWhy': 'Najwyżej {cap}/min, na {seals} trzeba ≈{need}/min. Pracuje bez przerwy — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
   'cause.paceMud': 'błoto spowalnia dostawy — bruk na {n} polach przyspieszy je o {pct}',
   'fix.mud': 'Wybrukuj odcinek: {n, plural, one {# pole} few {# pola} many {# pól} other {# pola}}',
   'fix.mudWhy': 'Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o {pct} szybsza, a prognoza nie daje trzech pieczęci.',
@@ -681,8 +681,8 @@ export const pl = {
   'cause.paceRank': 'Do rangi {rank} ({rankName}) brakuje towaru — postaw: {name}',
   'fix.rank': 'Postaw: {name}',
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
-  'fix.paceFleetWhy': 'Przez ostatnią minutę żaden wóz nie stał wolny, a prognoza daje {seals}. Nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
-  'fix.paceFleetWhyFree': 'Przez ostatnią minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
+  'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
+  'fix.paceFleetWhyFree': 'Przez minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
   // free valley opening letter (D-151; see PENDING_KEYS)
   'letter.valleyOpening': 'Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi renomę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
 } as const;

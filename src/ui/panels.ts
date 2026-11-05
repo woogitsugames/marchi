@@ -62,7 +62,7 @@ function fixHtml(world: World, target: number, s: RoadSuggestion): string {
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="fix:${target}" aria-disabled="${short > 0}">${
     iconSvg('road_dirt', 26)}<span>${label}</span></button>`;
   const hint = short > 0
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
   return fixSection(btn, hint, short > 0);
 }
@@ -78,7 +78,7 @@ function fixSection(btn: string, hint: string, why: boolean): string {
   const head = `<div class="section-h">${esc(t('fix.title'))}</div>`;
   return why
     ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
-    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note">${hint}</div></div>`;
+    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note" dir="auto">${hint}</div></div>`;
 }
 
 /**
@@ -96,9 +96,9 @@ function paceCureHtml(world: World, pc: PaceCard): string {
   const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${pc.producer}" aria-disabled="${off}">${
     iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${pc.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const hint = !gate.ok
-    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
     : short > 0
-      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.paceProducerWhy', { n: fmtInt(pc.n), cap: fmtDec(pc.cap, 1), seals: t('why.pace.seals', { n: pc.seals }), need: fmtDec(pc.need, 1) }))}</div>`;
   return fixSection(btn, hint, off);
 }
@@ -115,7 +115,7 @@ function rankCureHtml(world: World, pc: PaceRank): string {
   const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="rank:${pc.type}" aria-disabled="${off}">${
     iconSvg('build', 26)}<span>${esc(t('fix.rank', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const hint = off
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.rankWhy', { sold: fmtInt(pc.sold), goods: fmtInt(pc.goods), rankName: rankName(pc.rank), good: goodName(pc.good) }))}</div>`;
   return fixSection(btn, hint, off);
 }
@@ -131,7 +131,7 @@ function mudCureHtml(world: World, pc: PaceMud): string {
     iconSvg('road_cobble', 26)}<span>${esc(t('fix.mud', { n: fmtInt(pc.cells.length) }))}</span>${bdi(`−${fmtInt(pc.cost)}`)}</button>`;
   const hint = ok.ok
     ? `<div class="s-hint">${esc(t('fix.mudWhy', { pct }))}</div>`
-    : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+    : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span dir="auto">${
       ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
   return fixSection(btn, hint, !ok.ok);
 }
@@ -148,7 +148,7 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
     iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
   const hint = short > 0
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(eta ? t('fix.paceFleetEta', { wagon: wagonName(world, pc.wagon), time: clock(eta.toDest) }) + ' ' : '')}${
       esc(pc.seals < 0 ? t('fix.paceFleetWhyFree') : t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
   return fixSection(btn, hint, short > 0);
@@ -173,9 +173,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="granary:${b.id}" aria-disabled="${off}">${
       iconSvg('warehouse', 26)}<span>${esc(t('fix.granary'))}</span>${bdi(`−${fmtInt(BUILDINGS.warehouse.price)}`)}</button>`;
     const hint = !gate.ok
-      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
-        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.granaryWhy'))}</div>`;
     return fixSection(btn, hint, off);
   }
@@ -191,9 +191,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${sh.producer}" aria-disabled="${off}">${
       iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${sh.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
     const hint = !gate.ok
-      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span>${esc(errorText(gate.err))}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
-        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
     return fixSection(btn, hint, off);
   }
@@ -211,7 +211,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       ? `<div class="s-hint">${esc(h.held
         ? t('fix.paveWhy', { wagon: wagonName(world, h.held.wagon) })
         : t('fix.iceAheadWhy', { time: ticksClock(h.ice!.startTick - world.state.tick), n: fmtInt(price) }))}</div>`
-      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span>${
+      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span dir="auto">${
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
   }
@@ -222,7 +222,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
       iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
     const hint = short > 0
-      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span>${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
       : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
     return fixSection(btn, hint, short > 0);
   }

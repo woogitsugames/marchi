@@ -2061,6 +2061,15 @@ body.is-flex .rail { z-index: 1; }
   animation: pin-ring 660ms ease-out 3;
 }
 .bubble .bb { position: relative; }
+/* round focus rings (D-147; ui audit day 9, P3-3): the D-123 two-tone ring (pale 2 / ink 2 / pale 2 px) follows the
+   round shapes instead of a square box — the eye's wax disc, and the pin's head (its 40 px circle; the tip stays
+   bare). The pin's ring is drawn on the head itself, so it scales with a minor / wagon pin */
+.stall-eye:focus-visible { border-radius: 50%; }
+.bubble:focus-visible { outline: none; box-shadow: none; }
+.bubble:focus-visible .bb::before {
+  content: ''; position: absolute; inset-block-start: 0; inset-inline-start: 0; width: 40px; height: 40px; border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 4px var(--focus-ink), 0 0 0 6px var(--focus-pale); pointer-events: none;
+}
 @keyframes pin-ring { 0% { opacity: .9; transform: scale(1); } 36% { opacity: 0; transform: scale(1.75); } 100% { opacity: 0; transform: scale(1.75); } }
 .stall-row .stall-card { transition: filter 200ms var(--ease); }
 .stall-row.is-first .stall-card { filter: drop-shadow(0 2px 2px rgb(30 22 14 / .35)) drop-shadow(0 0 2px rgb(226 182 92)) drop-shadow(0 0 6px rgb(200 150 62)); }
