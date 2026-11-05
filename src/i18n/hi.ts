@@ -46,6 +46,7 @@ export const hi: Dict = {
   "status.WAITING_PICKUP": "भंडार भरा: {good} लेने गाड़ी {wagon}",
   "status.WAGON_DUE": "गाड़ी {wagon} {time} में {goodAcc} लेने आएगी",
   "status.STORAGE_FULL": "अनाज भंडार भरा है",
+  "status.STORAGE_FULL.saturated": "अनाज भंडार भरा है — बाज़ार संतृप्त है",
   "status.CONTRACT_DONE": "अनुबंध पूरा हुआ",
   "wagon.IDLE": "अस्तबल में",
   "wagon.TO_PICKUP": "माल लेने जा रही है",

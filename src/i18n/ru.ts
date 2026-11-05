@@ -46,6 +46,7 @@ export const ru: Dict = {
   "status.WAITING_PICKUP": "Склад полон: {good} заберёт повозка {wagon}",
   "status.WAGON_DUE": "Повозка {wagon} заберёт {goodAcc} через {time}",
   "status.STORAGE_FULL": "Амбар полон",
+  "status.STORAGE_FULL.saturated": "Амбар полон — рынок насыщен",
   "status.CONTRACT_DONE": "Контракт выполнен",
   "wagon.IDLE": "В конюшне",
   "wagon.TO_PICKUP": "Едет за грузом",

@@ -46,6 +46,7 @@ export const pt_BR: Dict = {
   "status.WAITING_PICKUP": "Cheio de {good} — coleta: carroça {wagon}",
   "status.WAGON_DUE": "Coleta de {goodAcc}: carroça {wagon} em {time}",
   "status.STORAGE_FULL": "Celeiro cheio",
+  "status.STORAGE_FULL.saturated": "Celeiro cheio — o mercado está saturado",
   "status.CONTRACT_DONE": "Contrato cumprido",
   "wagon.IDLE": "No estábulo",
   "wagon.TO_PICKUP": "A caminho da coleta",

@@ -46,6 +46,7 @@ export const ar: Dict = {
   "status.WAITING_PICKUP": "المخزن ممتلئ: تجمع ⁨{good}⁩ العربة ⁨{wagon}⁩",
   "status.WAGON_DUE": "العربة ⁨{wagon}⁩ آتية لأخذ ⁨{goodAcc}⁩ خلال ⁨{time}⁩",
   "status.STORAGE_FULL": "المخزن ممتلئ",
+  "status.STORAGE_FULL.saturated": "المخزن ممتلئ — السوق مشبع",
   "status.CONTRACT_DONE": "اكتمل العقد",
   "wagon.IDLE": "في الإسطبل",
   "wagon.TO_PICKUP": "في الطريق لجمع الحمولة",

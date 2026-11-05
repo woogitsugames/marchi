@@ -50,6 +50,7 @@ export const en: FullDict = {
   // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155)
   'status.WAGON_DUE': 'Wagon {wagon} comes for the {goodAcc} in {time}',
   'status.STORAGE_FULL': 'Granary is full',
+  'status.STORAGE_FULL.saturated': 'Granary full — the market is saturated',
   'status.CONTRACT_DONE': 'Contract fulfilled',
 
   'wagon.IDLE': 'At the stable',

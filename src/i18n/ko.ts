@@ -46,6 +46,7 @@ export const ko: Dict = {
   "status.WAITING_PICKUP": "{good} 가득 참: 수거 수레 {wagon}",
   "status.WAGON_DUE": "수레 {wagon}가 {time} 후 {goodAcc}을(를) 가지러 옵니다",
   "status.STORAGE_FULL": "곡물 창고가 가득 찼습니다",
+  "status.STORAGE_FULL.saturated": "곡물 창고 가득 참 — 시장 포화",
   "status.CONTRACT_DONE": "계약 완료",
   "wagon.IDLE": "마구간에 있음",
   "wagon.TO_PICKUP": "화물을 가지러 이동 중",

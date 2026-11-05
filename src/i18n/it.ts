@@ -46,6 +46,7 @@ export const it: Dict = {
   "status.WAITING_PICKUP": "Pieno di {good} — ritiro: carro {wagon}",
   "status.WAGON_DUE": "Ritiro di {goodAcc}: carro {wagon} tra {time}",
   "status.STORAGE_FULL": "Granaio pieno",
+  "status.STORAGE_FULL.saturated": "Granaio pieno: il mercato è saturo",
   "status.CONTRACT_DONE": "Contratto completato",
   "wagon.IDLE": "Alla stalla",
   "wagon.TO_PICKUP": "Va a ritirare il carico",

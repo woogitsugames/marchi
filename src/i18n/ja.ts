@@ -46,6 +46,7 @@ export const ja: Dict = {
   "status.WAITING_PICKUP": "{good}で満杯：荷車{wagon}が回収予定",
   "status.WAGON_DUE": "荷車{wagon}が{time}後に{goodAcc}を取りに来ます",
   "status.STORAGE_FULL": "穀物倉庫が満杯です",
+  "status.STORAGE_FULL.saturated": "穀物倉庫が満杯 — 市場は飽和しています",
   "status.CONTRACT_DONE": "契約達成",
   "wagon.IDLE": "馬小屋にいます",
   "wagon.TO_PICKUP": "荷物の回収へ移動中",

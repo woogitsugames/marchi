@@ -49,6 +49,7 @@ export const pl = {
   // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155; see PENDING_KEYS)
   'status.WAGON_DUE': 'Wóz {wagon} przyjedzie po {goodAcc} za {time}',
   'status.STORAGE_FULL': 'Spichlerz pełny',
+  'status.STORAGE_FULL.saturated': 'Spichlerz pełny — rynek nasycony',
   'status.CONTRACT_DONE': 'Kontrakt wykonany',
 
   'wagon.IDLE': 'Stoi w stajni',

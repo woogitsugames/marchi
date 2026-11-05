@@ -439,6 +439,8 @@ body.is-side .sheet-grip::before { display: none; }
 .status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; overflow-wrap: break-word; hyphens: auto; font-size: 17px; font-weight: 700; margin: 0 0 4px; }
 .status-line.bad { color: #6e3520; }
 .status-line.ok { color: var(--meadow); }
+/* a stall with nothing to fix (surplus, saturated market, …: calmWhy) reads in ink, not clay (D-180) */
+.status-line.calm { color: var(--ink); }
 .status-line .since { margin-inline-start: auto; font-size: 13px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
 .section-h {
   display: flex;
@@ -453,6 +455,7 @@ body.is-side .sheet-grip::before { display: none; }
 }
 .section-h::after { content: ''; flex: 1; height: 1px; background: rgb(74 72 67 / .45); order: 1; }
 .section-h .since { order: 2; margin-inline-start: 0; text-transform: none; letter-spacing: 0; font-size: 13px; color: #6e3520; font-weight: 700; }
+.section-h.is-calm .since { color: var(--ink-soft); }
 
 .goods { display: flex; flex-wrap: wrap; gap: 6px; }
 .good-chip {
@@ -527,6 +530,10 @@ body.is-side .sheet-grip::before { display: none; }
 .link .root-tag { display: inline-block; font-size: 13px; font-weight: 700; color: var(--clay); font-variant: small-caps; text-transform: lowercase; letter-spacing: .06em; margin-inline-start: 6px; }
 .link.is-self { --frame: #b9b09e; --fill: var(--parchment); }
 .link.is-root { --fill: #e2d3c2; }
+/* a calm root (D-180): brass hairline, ink icon and tag — the cause is named, nothing is alarmed */
+.link.is-root.is-calm { --frame: var(--brass); --fill: #e6dac0; }
+.link.is-root.is-calm .l-icon { color: var(--ink); --icon-halo: #dcd3c0; }
+.link.is-calm .root-tag { color: var(--brass-dk); }
 
 /* rows centre, not baseline: a value led by an icon (cargo, speed) or a 48 px link (destination) has no text
    baseline of its own, so baseline alignment dropped the label to the icon's bottom edge, ~half a row low */
@@ -1283,6 +1290,7 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
 .cap-bar > i { background: var(--ochre); }
 .cap-bar > b { background: repeating-linear-gradient(-45deg, var(--ochre) 0 2px, transparent 2px 4px); }
 .cap-bar.is-full > i { background: var(--clay); }
+.cap-bar.is-full.is-calm > i { background: var(--brass); }
 .cap-small, .ice-hint { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; color: #6e3520; font-weight: 700; }
 .ice-hint { color: var(--ink-soft); margin-top: 8px; }
 
@@ -1905,13 +1913,18 @@ body.left-handed .stall-row { flex-direction: row-reverse; }
 .stall-eye:active svg { transform: translateY(1px); }
 .stall-row.is-crit .stall-eye { color: #7f1a1e; }
 /* the pace card (day 8c): a slow order, not a stall — the plain parchment panel, no wine bar, ink kicker */
-.stall-row.is-pace .stall-card::before, .stall-row.is-neck .stall-card::before {
+.stall-row.is-pace .stall-card::before, .stall-row.is-neck .stall-card::before, .stall-row.is-calm .stall-card::before {
   border-image-source: url("/assets/ui/kit/panel@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
 }
-.stall-row.is-pace .sc-kick, .stall-row.is-neck .sc-kick { color: var(--ink-soft); }
-.stall-row.is-pace .stall-eye, .stall-row.is-neck .stall-eye { color: var(--ink); }
+.stall-row.is-pace .sc-kick, .stall-row.is-neck .sc-kick, .stall-row.is-calm .sc-kick { color: var(--ink-soft); }
+.stall-row.is-pace .stall-eye, .stall-row.is-neck .stall-eye, .stall-row.is-calm .stall-eye { color: var(--ink); }
 .alarm-seal { position: relative; flex: none; width: 72px; height: 72px; display: grid; place-items: center; color: #f3e1bd; }
+/* only calm stalls (D-181): a smooth brass-rimmed parchment disc — no wax, no scallops (smooth = lesser, D-121) */
+.alarm-seal.is-calm {
+  background: radial-gradient(circle closest-side, #efe0bf 0 74%, var(--brass) 76% 88%, var(--brass-dk) 90% 97%, transparent 99%);
+  color: var(--brass-dk);
+}
 .alarm-seal .al-ic { display: grid; place-items: center; transition: transform 60ms linear; }
 .alarm-seal:active .al-ic { transform: translateY(1px); }
 .al-badge {
@@ -2416,6 +2429,12 @@ body.is-mini .letter.l-parts .ledger li:nth-child(n + 2) { display: none; }
   border-image-width: 12px;
 }
 :root[dir='rtl'] .full-hint::before { transform: scaleX(-1); }
+/* a calm full (D-180): the plain parchment panel, no wine bar; the count in ink */
+.full-hint.is-calm::before {
+  border-image-source: url("/assets/ui/kit/panel@2x.png");
+  border-image-source: image-set(url("/assets/ui/kit/panel@2x.png") 2x, url("/assets/ui/kit/panel@3x.png") 3x);
+}
+.full-hint.is-calm .fh-count { color: var(--ink); }
 .full-hint .fh-who .linkish { min-height: 48px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .full-hint .fh-count { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #6e3520; }
 .full-hint .fh-count svg { flex: none; }

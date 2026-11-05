@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { calmWhy, codexCalm, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
@@ -309,7 +309,9 @@ function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
   } else return '';
   const named = subject.id !== b.id
     ? `<button class="linkish" data-go="building:${subject.id}">${esc(buildingName(world, subject.id))}</button>` : '';
-  let html = `<div class="full-hint">${named ? `<div class="fh-who">${named}</div>` : ''}<div class="fh-count">${line}</div>`;
+  // a calm full (surplus, saturated market, room elsewhere — calmWhy): the plain panel, the count in ink (D-180)
+  const calm = calmWhy(world, subject) !== null;
+  let html = `<div class="full-hint${calm ? ' is-calm' : ''}">${named ? `<div class="fh-who">${named}</div>` : ''}<div class="fh-count">${line}</div>`;
   if (subject.id === b.id) {
     // the effect: buildings whose cause chain runs through this one (a producer refused by a full granary), and
     // for a full yard the customers short of this very good — it lies here while they wait for a wagon
@@ -435,12 +437,14 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
   const items = chain.map((l, i) => {
     const self = l.kind === selfKind && l.id === selfId;
     const root = i === last && chain.length > 1 && isStallLink(l);
+    // a calm root (surplus, saturated market, …: nothing to fix there) keeps the "cause" tag but not the clay (D-180)
+    const calmRoot = root && codexCalm(world, l);
     const tag = root ? `<span class="root-tag">${esc(t('why.root'))}</span>` : '';
     // the sheet's own subject is a plain row, not a dead button (a11y: no 26 px "target" in the short chain, D-111)
     const el = self ? 'div' : 'button';
     const attrs = self ? '' : `data-go="${l.kind}:${l.id}"`;
     const pos = i === 0 ? 'c-first' : i === last ? 'c-last' : 'c-mid';
-    return `<li class="${pos}" data-because="${because}"><${el} class="link cf${root ? ' is-root' : ''}${self ? ' is-self' : ''}" ${attrs}>
+    return `<li class="${pos}" data-because="${because}"><${el} class="link cf${root ? ' is-root' : ''}${calmRoot ? ' is-calm' : ''}${self ? ' is-self' : ''}" ${attrs}>
       <span class="l-icon">${linkIcon(world, l, 32)}</span>
       <span class="l-text"><span class="l-who">${esc(linkSubject(world, l))}${tag}</span><span class="l-why">${esc(linkText(world, l))}</span></span>
       ${self ? `<span class="l-since">${since}</span>` : `<span class="l-go fwd">${iconSvg('back', 18)}</span>`}</${el}></li>`;
@@ -532,7 +536,7 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
     const small = b.capOverride >= 0 && b.capOverride < (def.storeCap ?? 0)
       ? `<div class="s-hint cap-small">${iconSvg('storage_full', 18)}<span>${tHtml('why.capSmall', { n: fmtInt(cap) })}</span></div>` : '';
     parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: fmtRatio(held, cap) })}</span></div>
-      <div class="cap-bar${full ? ' is-full' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
+      <div class="cap-bar${full ? ' is-full' : ''}${full && calmWhy(world, b) ? ' is-calm' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
     if (rankGated(world) || world.state.mission.roadStone) {
       // free valley (and missions that build with stone): granaries keep a stone reserve for cobbles and stone bridges
@@ -662,6 +666,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       wire(sheet, nav);
       if (pressed(sheet)) return true;
       const stalled = isStall(b.status) || b.status.k === 'NO_INPUT';
+      // a stall with nothing to fix (calmWhy) reads calm: ink title, no clay (D-180)
+      const calm = stalled && calmWhy(world, b) !== null;
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
       sheet.title.textContent = t(`building.${b.type}` as MessageKey);
@@ -669,9 +675,9 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;
       if (chain.length > 1) {
-        top = `<div class="section-h chain-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id, b.stalledTicks > 0 ? `<bdi class="num">${esc(ticksClock(b.stalledTicks))}</bdi>` : '')}`;
+        top = `<div class="section-h chain-h${calm ? ' is-calm' : ''}">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id, b.stalledTicks > 0 ? `<bdi class="num">${esc(ticksClock(b.stalledTicks))}</bdi>` : '')}`;
       } else {
-        const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
+        const cls = stalled ? (calm ? 'calm' : 'bad') : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
         top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world, id))}</span>${since}</div>`;
       }
       // the trading post (D-170): "closed until rank 4" / "buying" instead of the plain idle line

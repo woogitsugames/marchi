@@ -1,6 +1,6 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { TICK_HZ, outputSurplus, type BuildingStatus, type ReasonLink, type WagonStatus } from '../sim/index';
+import { GOODS, MARKET, TICK_HZ, capacityOf, isMarket, marketOpen, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
 
@@ -72,7 +72,43 @@ export function lossActionKey(status: string): MessageKey {
  * say "no wagon to collect" (first-10-minutes-e N7, D-160).
  */
 export function statusKey(s: BuildingStatus, world?: World, id = -1): MessageKey {
+  // a granary full of loads no market takes now (D-174) is calm: "Spichlerz pełny — rynek nasycony" (D-180)
+  if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryLoads(world, id) === 'saturated') return 'status.STORAGE_FULL.saturated';
   if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && world && id >= 0 && outputSurplus(world, id) === 'SPARE') return 'status.OUTPUT_FULL.surplus';
   const cause = 'cause' in s ? s.cause : null;
   return (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
+}
+
+/**
+ * D-174 (research valley-ranks-2-3, F3): will a market take one more wagon load of `good` now? Some market (the castle,
+ * the trading post when open) keeps room for a load under its in-flight limit (MARKET.inflightPerGood, as the
+ * dispatcher checks) and, at the castle, the price is above the floor. Otherwise another wagon would only wait.
+ */
+export function marketTakesLoad(world: World, good: Good): boolean {
+  const cap = capacityOf(good), st = world.state;
+  for (const m of st.buildings) {
+    if (!isMarket(world, m) || MARKET.inflightPerGood - m.incoming[good] < cap) continue;
+    if (m.type === 'castle' && pricePct(st.market.saturation[good]) <= MARKET.floorPct) continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * What the free valley's loads in a granary say: 'wagon' — a full wagon load of a good some market takes now (another
+ * wagon empties it), 'saturated' — loads only of goods the markets will not take more of (D-174: no "Kup wóz", a calm
+ * "rynek nasycony"), null — no market load at all (not the free valley, or nothing sellable). Pure read.
+ */
+export function granaryLoads(world: World, granaryId: number): 'wagon' | 'saturated' | null {
+  if (!marketOpen(world)) return null;
+  const g = world.state.buildings.find((q) => q.id === granaryId);
+  if (!g || g.type !== 'warehouse') return null;
+  let loads = false;
+  for (const good of GOODS) {
+    if (good === 'stone' || MARKET.base[good] <= 0) continue; // granary stone is building material
+    if (g.stock[good] - g.reservedOut[good] < capacityOf(good)) continue;
+    if (marketTakesLoad(world, good)) return 'wagon';
+    loads = true;
+  }
+  return loads ? 'saturated' : null;
 }

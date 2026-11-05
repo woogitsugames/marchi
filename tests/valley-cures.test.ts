@@ -4,6 +4,7 @@
 import { BUILDINGS, MARKET, capacityOf, createWorld, gateCell, stateHash, validatePlace, type BuildingType, type World } from '../src/sim/index';
 import { calmWhy, cureFor, cutOffProducer, gapTarget, granaryLoads } from '../src/ui/stalls';
 import { rankCard } from '../src/ui/paceCard';
+import { statusKey } from '../src/ui/stallKinds';
 import { buildSite, siteExists } from '../src/ui/site';
 import { assert, eq, test } from './harness';
 
@@ -111,7 +112,10 @@ test('a full granary needs a wagon only while a market takes another load (D-174
   wh.stalledTicks = 600;
   eq(cureFor(w, wh.id), null, 'no Kup wóz, no granary');
   eq(calmWhy(w, wh), 'marketFull', 'the calm reason');
+  eq(statusKey(wh.status, w, wh.id), 'status.STORAGE_FULL.saturated', 'the calm title (D-180)');
+  eq(statusKey(wh.status), 'status.STORAGE_FULL', 'without the world: the plain title');
   st.market.saturation.bread = 0;
+  eq(statusKey(wh.status, w, wh.id), 'status.STORAGE_FULL', 'a market takes a load: the plain title');
   eq(cureFor(w, wh.id) === 'wagon' || cureFor(w, wh.id) === null, true, 'unsaturated: the old cure path');
 });
 
