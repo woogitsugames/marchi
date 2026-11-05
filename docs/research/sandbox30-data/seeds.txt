@@ -1,0 +1,689 @@
+none               seed default rank 0 [-1 / -1 / -1 / -1 / -1] earned 204 coins 464 wagons 2 bld 5 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 204/200 goods 1/2 flow 16/8
+    slot/s: empty 289 calm 1511 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 720s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 595s | woodcutter:WAITING_PICKUP(calm) 196s
+
+build              seed default rank 0 [-1 / -1 / -1 / -1 / -1] earned 205 coins 435 wagons 2 bld 6 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 205/200 goods 1/2 flow 11/8
+    slot/s: empty 56 calm 1429 actionable 315 no-cure 0
+    subjects: farm:OUTPUT_FULL.NO_WAGON(calm) 572s | farm:WAITING_PICKUP(calm) 356s | warehouse:STORAGE_FULL 315s | sawmill:WAITING_PICKUP(calm) 287s | woodcutter:WAITING_PICKUP(calm) 132s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 69s
+    built: 0.5 farm by the castle road
+
+eye-10             seed default rank 1 [15.2 / -1 / -1 / -1 / -1] earned 405 coins 605 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 405/1000 goods 2/4 flow 28/20
+    slot/s: empty 806 calm 994 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 595s | sawmill:WAITING_PICKUP(calm) 382s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 14s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 3s
+    looks (179):
+      79x (no card)(calm) -> nothing
+      62x woodcutter:WAITING_PICKUP(calm) -> nothing
+      36x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 4:50 wagon
+
+eye-30             seed default rank 1 [15.7 / -1 / -1 / -1 / -1] earned 447 coins 617 wagons 5 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon":3}
+    next: renown 447/1000 goods 2/4 flow 25/20
+    slot/s: empty 841 calm 959 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 473s | woodcutter:WAITING_PICKUP(calm) 453s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 19s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 14s
+    looks (59):
+      27x (no card)(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      14x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 5:00 wagon, 9:30 wagon
+
+eye-60             seed default rank 1 [17.1 / -1 / -1 / -1 / -1] earned 424 coins 624 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 424/1000 goods 2/4 flow 27/20
+    slot/s: empty 728 calm 1065 actionable 7 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 573s | woodcutter:WAITING_PICKUP(calm) 448s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 44s | sawmill:NO_WAGON.ALL_BUSY 7s
+    looks (29):
+      10x sawmill:WAITING_PICKUP(calm) -> nothing
+      10x (no card)(calm) -> nothing
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 4:00 wagon, 7:00 wagon
+
+build+eye-10       seed default rank 2 [12.2 / 29.8 / -1 / -1 / -1] earned 1021 coins 1015 wagons 6 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 1021/3000 goods 5/6 flow 62/60
+    slot/s: empty 716 calm 1077 actionable 7 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 584s | woodcutter:WAITING_PICKUP(calm) 371s | farm:WAITING_PICKUP(calm) 105s | bakery:WAITING_PICKUP(calm) 9s | bakery:NO_WAGON.ALL_BUSY 7s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 5s
+    looks (179):
+      71x (no card)(calm) -> nothing
+      57x sawmill:WAITING_PICKUP(calm) -> nothing
+      36x woodcutter:WAITING_PICKUP(calm) -> nothing
+      10x farm:WAITING_PICKUP(calm) -> nothing
+      2x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:NO_WAGON.ALL_BUSY -> wagon
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+    acts: 2:20 wagon, 3:10 wagon, 4:10 wagon, 12:50 wagon
+    built: 0.5 farm by the castle road, 12.2 mill, 12.2 bakery, 29.8 road to the river, 29.8 fisher by the river
+
+build+eye-30       seed default rank 1 [14.1 / -1 / -1 / -1 / -1] earned 803 coins 833 wagons 6 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 803/1000 goods 5/4 flow 62/20
+    slot/s: empty 393 calm 1389 actionable 18 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 545s | sawmill:WAITING_PICKUP(calm) 511s | farm:WAITING_PICKUP(calm) 221s | bakery:WAITING_PICKUP(calm) 47s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 29s | farm:OUTPUT_FULL.NO_WAGON(calm) 14s
+    looks (59):
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      17x sawmill:WAITING_PICKUP(calm) -> nothing
+      12x (no card)(calm) -> nothing
+      7x farm:WAITING_PICKUP(calm) -> nothing
+      2x bakery:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 5:00 wagon, 7:00 wagon, 15:30 wagon, 26:00 wagon
+    built: 0.5 farm by the castle road, 14.1 mill, 14.1 bakery
+
+build+eye-60       seed default rank 1 [14.1 / -1 / -1 / -1 / -1] earned 740 coins 830 wagons 4 bld 8 orders 2/0 merch 1 chron 13 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 740/1000 goods 5/4 flow 65/20
+    slot/s: empty 340 calm 1437 actionable 23 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 554s | sawmill:WAITING_PICKUP(calm) 415s | farm:WAITING_PICKUP(calm) 168s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 64s | mill:WAITING_PICKUP(calm) 63s | bakery:WAITING_PICKUP(calm) 62s
+    looks (29):
+      10x woodcutter:WAITING_PICKUP(calm) -> nothing
+      7x (no card)(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      3x farm:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:WAITING_PICKUP(calm) -> nothing
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+    acts: 5:00 wagon, 7:00 wagon
+    built: 0.5 farm by the castle road, 14.1 mill, 14.1 bakery
+
+build+eye-30+ev    seed default rank 1 [13.8 / -1 / -1 / -1 / -1] earned 777 coins 807 wagons 6 bld 8 orders 5/3 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 705/1000 goods 5/4 flow 44/20
+    slot/s: empty 390 calm 1401 actionable 9 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 501s | woodcutter:WAITING_PICKUP(calm) 482s | farm:WAITING_PICKUP(calm) 244s | bakery:WAITING_PICKUP(calm) 46s | mill:OUTPUT_FULL.NO_WAGON(calm) 42s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 30s
+    looks (59):
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      15x sawmill:WAITING_PICKUP(calm) -> nothing
+      14x (no card)(calm) -> nothing
+      7x farm:WAITING_PICKUP(calm) -> nothing
+      3x bakery:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 5:00 wagon, 7:00 wagon, 17:30 wagon, 28:30 wagon
+    built: 0.5 farm by the castle road, 13.8 mill, 13.8 bakery
+
+eye-30+sbF         seed default rank 1 [14.5 / -1 / -1 / -1 / -1] earned 435 coins 605 wagons 5 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":3}
+    next: renown 435/1000 goods 2/4 flow 27/20
+    slot/s: empty 878 calm 922 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 534s | sawmill:WAITING_PICKUP(calm) 383s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 5s
+    looks (59):
+      27x (no card)(calm) -> nothing
+      18x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x sbFleet:sawmill(calm) -> wagon:sbFleet
+    acts: 2:30 wagon:sbFleet, 3:30 wagon:sbFleet, 5:30 wagon:sbFleet
+
+build+eye-10+sbF   seed default rank 1 [11.7 / -1 / -1 / -1 / -1] earned 968 coins 938 wagons 8 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 968/1000 goods 5/4 flow 61/20
+    slot/s: empty 856 calm 944 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 483s | woodcutter:WAITING_PICKUP(calm) 410s | farm:WAITING_PICKUP(calm) 48s | mill:WAITING_PICKUP(calm) 3s
+    looks (179):
+      86x (no card)(calm) -> nothing
+      46x sawmill:WAITING_PICKUP(calm) -> nothing
+      38x woodcutter:WAITING_PICKUP(calm) -> nothing
+      3x farm:WAITING_PICKUP(calm) -> nothing
+      3x sbFleet:sawmill(calm) -> wagon:sbFleet
+      2x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 2:10 wagon:sbFleet, 2:20 wagon:sbFleet, 4:30 wagon:sbFleet, 6:40 wagon:sbFleet, 29:20 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.8 mill, 11.8 bakery
+
+build+eye-30+sbF   seed default rank 1 [11.3 / -1 / -1 / -1 / -1] earned 998 coins 968 wagons 8 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 998/1000 goods 5/4 flow 64/20
+    slot/s: empty 928 calm 872 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 497s | sawmill:WAITING_PICKUP(calm) 324s | farm:WAITING_PICKUP(calm) 47s | mill:WAITING_PICKUP(calm) 4s
+    looks (59):
+      29x (no card)(calm) -> nothing
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      6x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 2:00 wagon:sbFleet, 2:30 wagon:sbFleet, 4:30 wagon:sbFleet, 5:00 wagon:sbFleet, 5:30 wagon:sbFleet, 6:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.3 mill, 11.3 bakery
+
+build+eye-60+sbF   seed default rank 1 [12.5 / -1 / -1 / -1 / -1] earned 958 coins 958 wagons 7 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":5}
+    next: renown 958/1000 goods 5/4 flow 58/20
+    slot/s: empty 823 calm 977 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 458s | sawmill:WAITING_PICKUP(calm) 353s | farm:WAITING_PICKUP(calm) 151s | mill:WAITING_PICKUP(calm) 8s | farm:OUTPUT_FULL.NO_WAGON(calm) 7s
+    looks (29):
+      11x (no card)(calm) -> nothing
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      6x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:farm(calm) -> wagon:sbFleet
+      2x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 4:00 wagon:sbFleet, 5:00 wagon:sbFleet, 6:00 wagon:sbFleet, 9:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 12.5 mill, 12.5 bakery
+
+decent             seed default rank 2 [10.4 / 22.3 / -1 / -1 / -1] earned 1686 coins 960 wagons 18 bld 16 orders 2/0 merch 1 chron 18 paceWrong 0 fleetWrong 0 {}
+    next: renown 1686/3000 goods 6/6 flow 103/60
+    slot/s: empty 566 calm 1216 actionable 18 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 618s | sawmill:WAITING_PICKUP(calm) 495s | mill:WAITING_PICKUP(calm) 62s | fisher:WAITING_PICKUP(calm) 25s | warehouse:STORAGE_FULL 18s | farm:WAITING_PICKUP(calm) 16s
+    built: 0.0 buy wagon, 0.0 buy wagon, 0.0 farm by the castle road, 0.1 buy wagon, 0.1 buy wagon, 0.1 buy wagon, 10.4 mill, 10.4 bakery, 10.5 buy wagon, 10.5 road east, 10.5 second farm, 10.5 buy wagon, 10.5 second woodcutter, 10.6 second sawmill, 10.6 buy wagon, 11.4 second mill, 12.5 second bakery, 13.2 buy wagon, 13.7 buy wagon, 13.8 buy wagon, 22.4 road to the river, 22.4 fisher by the river, 22.4 road to the ridge, 22.4 quarry under the ridge, 22.4 buy wagon, 22.4 buy wagon, 26.4 cobble castle road, 26.5 second road to the river, 26.5 second fisher, 26.5 buy wagon, 29.9 cobble quarry road, 29.9 buy wagon, 29.9 buy wagon
+
+none               seed 1301    rank 0 [-1 / -1 / -1 / -1 / -1] earned 204 coins 464 wagons 2 bld 5 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 204/200 goods 1/2 flow 16/8
+    slot/s: empty 289 calm 1511 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 720s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 595s | woodcutter:WAITING_PICKUP(calm) 196s
+
+build              seed 1301    rank 0 [-1 / -1 / -1 / -1 / -1] earned 205 coins 435 wagons 2 bld 6 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 205/200 goods 1/2 flow 11/8
+    slot/s: empty 56 calm 1429 actionable 315 no-cure 0
+    subjects: farm:OUTPUT_FULL.NO_WAGON(calm) 572s | farm:WAITING_PICKUP(calm) 356s | warehouse:STORAGE_FULL 315s | sawmill:WAITING_PICKUP(calm) 287s | woodcutter:WAITING_PICKUP(calm) 132s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 69s
+    built: 0.5 farm by the castle road
+
+eye-10             seed 1301    rank 1 [15.2 / -1 / -1 / -1 / -1] earned 405 coins 605 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 405/1000 goods 2/4 flow 28/20
+    slot/s: empty 806 calm 994 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 595s | sawmill:WAITING_PICKUP(calm) 382s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 14s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 3s
+    looks (179):
+      79x (no card)(calm) -> nothing
+      62x woodcutter:WAITING_PICKUP(calm) -> nothing
+      36x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 4:50 wagon
+
+eye-30             seed 1301    rank 1 [15.7 / -1 / -1 / -1 / -1] earned 447 coins 617 wagons 5 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon":3}
+    next: renown 447/1000 goods 2/4 flow 25/20
+    slot/s: empty 841 calm 959 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 473s | woodcutter:WAITING_PICKUP(calm) 453s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 19s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 14s
+    looks (59):
+      27x (no card)(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      14x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 5:00 wagon, 9:30 wagon
+
+eye-60             seed 1301    rank 1 [17.1 / -1 / -1 / -1 / -1] earned 424 coins 624 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 424/1000 goods 2/4 flow 27/20
+    slot/s: empty 728 calm 1065 actionable 7 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 573s | woodcutter:WAITING_PICKUP(calm) 448s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 44s | sawmill:NO_WAGON.ALL_BUSY 7s
+    looks (29):
+      10x sawmill:WAITING_PICKUP(calm) -> nothing
+      10x (no card)(calm) -> nothing
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 4:00 wagon, 7:00 wagon
+
+build+eye-10       seed 1301    rank 2 [12.2 / 29.8 / -1 / -1 / -1] earned 1021 coins 1015 wagons 6 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 1021/3000 goods 5/6 flow 62/60
+    slot/s: empty 716 calm 1077 actionable 7 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 584s | woodcutter:WAITING_PICKUP(calm) 371s | farm:WAITING_PICKUP(calm) 105s | bakery:WAITING_PICKUP(calm) 9s | bakery:NO_WAGON.ALL_BUSY 7s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 5s
+    looks (179):
+      71x (no card)(calm) -> nothing
+      57x sawmill:WAITING_PICKUP(calm) -> nothing
+      36x woodcutter:WAITING_PICKUP(calm) -> nothing
+      10x farm:WAITING_PICKUP(calm) -> nothing
+      2x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:NO_WAGON.ALL_BUSY -> wagon
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+    acts: 2:20 wagon, 3:10 wagon, 4:10 wagon, 12:50 wagon
+    built: 0.5 farm by the castle road, 12.2 mill, 12.2 bakery, 29.8 road to the river, 29.8 fisher by the river
+
+build+eye-30       seed 1301    rank 1 [14.1 / -1 / -1 / -1 / -1] earned 803 coins 833 wagons 6 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 803/1000 goods 5/4 flow 62/20
+    slot/s: empty 393 calm 1389 actionable 18 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 545s | sawmill:WAITING_PICKUP(calm) 511s | farm:WAITING_PICKUP(calm) 221s | bakery:WAITING_PICKUP(calm) 47s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 29s | farm:OUTPUT_FULL.NO_WAGON(calm) 14s
+    looks (59):
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      17x sawmill:WAITING_PICKUP(calm) -> nothing
+      12x (no card)(calm) -> nothing
+      7x farm:WAITING_PICKUP(calm) -> nothing
+      2x bakery:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 5:00 wagon, 7:00 wagon, 15:30 wagon, 26:00 wagon
+    built: 0.5 farm by the castle road, 14.1 mill, 14.1 bakery
+
+build+eye-60       seed 1301    rank 1 [14.1 / -1 / -1 / -1 / -1] earned 740 coins 830 wagons 4 bld 8 orders 2/0 merch 1 chron 13 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 740/1000 goods 5/4 flow 65/20
+    slot/s: empty 340 calm 1437 actionable 23 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 554s | sawmill:WAITING_PICKUP(calm) 415s | farm:WAITING_PICKUP(calm) 168s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 64s | mill:WAITING_PICKUP(calm) 63s | bakery:WAITING_PICKUP(calm) 62s
+    looks (29):
+      10x woodcutter:WAITING_PICKUP(calm) -> nothing
+      7x (no card)(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      3x farm:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:WAITING_PICKUP(calm) -> nothing
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+    acts: 5:00 wagon, 7:00 wagon
+    built: 0.5 farm by the castle road, 14.1 mill, 14.1 bakery
+
+build+eye-30+ev    seed 1301    rank 1 [13.8 / -1 / -1 / -1 / -1] earned 777 coins 807 wagons 6 bld 8 orders 5/3 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 705/1000 goods 5/4 flow 44/20
+    slot/s: empty 390 calm 1401 actionable 9 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 501s | woodcutter:WAITING_PICKUP(calm) 482s | farm:WAITING_PICKUP(calm) 244s | bakery:WAITING_PICKUP(calm) 46s | mill:OUTPUT_FULL.NO_WAGON(calm) 42s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 30s
+    looks (59):
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      15x sawmill:WAITING_PICKUP(calm) -> nothing
+      14x (no card)(calm) -> nothing
+      7x farm:WAITING_PICKUP(calm) -> nothing
+      3x bakery:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 5:00 wagon, 7:00 wagon, 17:30 wagon, 28:30 wagon
+    built: 0.5 farm by the castle road, 13.8 mill, 13.8 bakery
+
+eye-30+sbF         seed 1301    rank 1 [14.5 / -1 / -1 / -1 / -1] earned 435 coins 605 wagons 5 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":3}
+    next: renown 435/1000 goods 2/4 flow 27/20
+    slot/s: empty 878 calm 922 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 534s | sawmill:WAITING_PICKUP(calm) 383s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 5s
+    looks (59):
+      27x (no card)(calm) -> nothing
+      18x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x sbFleet:sawmill(calm) -> wagon:sbFleet
+    acts: 2:30 wagon:sbFleet, 3:30 wagon:sbFleet, 5:30 wagon:sbFleet
+
+build+eye-10+sbF   seed 1301    rank 1 [11.7 / -1 / -1 / -1 / -1] earned 968 coins 938 wagons 8 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 968/1000 goods 5/4 flow 61/20
+    slot/s: empty 856 calm 944 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 483s | woodcutter:WAITING_PICKUP(calm) 410s | farm:WAITING_PICKUP(calm) 48s | mill:WAITING_PICKUP(calm) 3s
+    looks (179):
+      86x (no card)(calm) -> nothing
+      46x sawmill:WAITING_PICKUP(calm) -> nothing
+      38x woodcutter:WAITING_PICKUP(calm) -> nothing
+      3x farm:WAITING_PICKUP(calm) -> nothing
+      3x sbFleet:sawmill(calm) -> wagon:sbFleet
+      2x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 2:10 wagon:sbFleet, 2:20 wagon:sbFleet, 4:30 wagon:sbFleet, 6:40 wagon:sbFleet, 29:20 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.8 mill, 11.8 bakery
+
+build+eye-30+sbF   seed 1301    rank 1 [11.3 / -1 / -1 / -1 / -1] earned 998 coins 968 wagons 8 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 998/1000 goods 5/4 flow 64/20
+    slot/s: empty 928 calm 872 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 497s | sawmill:WAITING_PICKUP(calm) 324s | farm:WAITING_PICKUP(calm) 47s | mill:WAITING_PICKUP(calm) 4s
+    looks (59):
+      29x (no card)(calm) -> nothing
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      6x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 2:00 wagon:sbFleet, 2:30 wagon:sbFleet, 4:30 wagon:sbFleet, 5:00 wagon:sbFleet, 5:30 wagon:sbFleet, 6:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.3 mill, 11.3 bakery
+
+build+eye-60+sbF   seed 1301    rank 1 [12.5 / -1 / -1 / -1 / -1] earned 958 coins 958 wagons 7 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":5}
+    next: renown 958/1000 goods 5/4 flow 58/20
+    slot/s: empty 823 calm 977 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 458s | sawmill:WAITING_PICKUP(calm) 353s | farm:WAITING_PICKUP(calm) 151s | mill:WAITING_PICKUP(calm) 8s | farm:OUTPUT_FULL.NO_WAGON(calm) 7s
+    looks (29):
+      11x (no card)(calm) -> nothing
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      6x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:farm(calm) -> wagon:sbFleet
+      2x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 4:00 wagon:sbFleet, 5:00 wagon:sbFleet, 6:00 wagon:sbFleet, 9:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 12.5 mill, 12.5 bakery
+
+decent             seed 1301    rank 2 [10.4 / 22.3 / -1 / -1 / -1] earned 1686 coins 960 wagons 18 bld 16 orders 2/0 merch 1 chron 18 paceWrong 0 fleetWrong 0 {}
+    next: renown 1686/3000 goods 6/6 flow 103/60
+    slot/s: empty 566 calm 1216 actionable 18 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 618s | sawmill:WAITING_PICKUP(calm) 495s | mill:WAITING_PICKUP(calm) 62s | fisher:WAITING_PICKUP(calm) 25s | warehouse:STORAGE_FULL 18s | farm:WAITING_PICKUP(calm) 16s
+    built: 0.0 buy wagon, 0.0 buy wagon, 0.0 farm by the castle road, 0.1 buy wagon, 0.1 buy wagon, 0.1 buy wagon, 10.4 mill, 10.4 bakery, 10.5 buy wagon, 10.5 road east, 10.5 second farm, 10.5 buy wagon, 10.5 second woodcutter, 10.6 second sawmill, 10.6 buy wagon, 11.4 second mill, 12.5 second bakery, 13.2 buy wagon, 13.7 buy wagon, 13.8 buy wagon, 22.4 road to the river, 22.4 fisher by the river, 22.4 road to the ridge, 22.4 quarry under the ridge, 22.4 buy wagon, 22.4 buy wagon, 26.4 cobble castle road, 26.5 second road to the river, 26.5 second fisher, 26.5 buy wagon, 29.9 cobble quarry road, 29.9 buy wagon, 29.9 buy wagon
+
+none               seed 1302    rank 0 [-1 / -1 / -1 / -1 / -1] earned 221 coins 481 wagons 2 bld 5 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 221/200 goods 1/2 flow 17/8
+    slot/s: empty 325 calm 1475 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 794s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 385s | woodcutter:WAITING_PICKUP(calm) 283s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 13s
+
+build              seed 1302    rank 0 [-1 / -1 / -1 / -1 / -1] earned 205 coins 435 wagons 2 bld 6 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 205/200 goods 1/2 flow 11/8
+    slot/s: empty 56 calm 1398 actionable 346 no-cure 0
+    subjects: farm:OUTPUT_FULL.NO_WAGON(calm) 576s | farm:WAITING_PICKUP(calm) 356s | warehouse:STORAGE_FULL 346s | sawmill:WAITING_PICKUP(calm) 268s | woodcutter:WAITING_PICKUP(calm) 131s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 55s
+    built: 0.5 farm by the castle road
+
+eye-10             seed 1302    rank 1 [15.3 / -1 / -1 / -1 / -1] earned 410 coins 610 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 410/1000 goods 2/4 flow 27/20
+    slot/s: empty 871 calm 928 actionable 1 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 557s | sawmill:WAITING_PICKUP(calm) 363s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 4s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 4s | sawmill:NO_WAGON.ALL_BUSY 1s
+    looks (179):
+      80x (no card)(calm) -> nothing
+      59x woodcutter:WAITING_PICKUP(calm) -> nothing
+      38x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:20 wagon, 4:40 wagon
+
+eye-30             seed 1302    rank 1 [16.2 / -1 / -1 / -1 / -1] earned 424 coins 624 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 424/1000 goods 2/4 flow 24/20
+    slot/s: empty 688 calm 1112 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 575s | woodcutter:WAITING_PICKUP(calm) 490s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 41s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 6s
+    looks (59):
+      22x (no card)(calm) -> nothing
+      20x sawmill:WAITING_PICKUP(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      2x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 13:30 wagon
+
+eye-60             seed 1302    rank 1 [16.8 / -1 / -1 / -1 / -1] earned 429 coins 629 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 429/1000 goods 2/4 flow 25/20
+    slot/s: empty 747 calm 1026 actionable 27 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 549s | sawmill:WAITING_PICKUP(calm) 421s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 56s | sawmill:NO_WAGON.ALL_BUSY 27s
+    looks (29):
+      11x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x (no card)(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 4:00 wagon, 7:00 wagon
+
+build+eye-10       seed 1302    rank 1 [13.1 / -1 / -1 / -1 / -1] earned 934 coins 964 wagons 6 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 934/1000 goods 5/4 flow 68/20
+    slot/s: empty 571 calm 1229 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 457s | sawmill:WAITING_PICKUP(calm) 455s | farm:WAITING_PICKUP(calm) 256s | mill:WAITING_PICKUP(calm) 31s | bakery:WAITING_PICKUP(calm) 11s | mill:OUTPUT_FULL.NO_WAGON(calm) 7s
+    looks (179):
+      57x (no card)(calm) -> nothing
+      44x sawmill:WAITING_PICKUP(calm) -> nothing
+      44x woodcutter:WAITING_PICKUP(calm) -> nothing
+      27x farm:WAITING_PICKUP(calm) -> nothing
+      2x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      2x mill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 2:20 wagon, 4:30 wagon, 9:40 wagon, 20:40 wagon
+    built: 0.5 farm by the castle road, 13.2 mill, 13.2 bakery
+
+build+eye-30       seed 1302    rank 1 [14.9 / -1 / -1 / -1 / -1] earned 786 coins 816 wagons 6 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 786/1000 goods 5/4 flow 60/20
+    slot/s: empty 502 calm 1281 actionable 17 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 495s | sawmill:WAITING_PICKUP(calm) 310s | farm:WAITING_PICKUP(calm) 272s | mill:WAITING_PICKUP(calm) 59s | bakery:WAITING_PICKUP(calm) 45s | mill:OUTPUT_FULL.NO_WAGON(calm) 34s
+    looks (59):
+      17x (no card)(calm) -> nothing
+      16x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      8x farm:WAITING_PICKUP(calm) -> nothing
+      2x mill:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+    acts: 4:30 wagon, 6:30 wagon, 19:00 wagon, 22:30 wagon
+    built: 0.5 farm by the castle road, 14.9 mill, 14.9 bakery
+
+build+eye-60       seed 1302    rank 1 [16 / -1 / -1 / -1 / -1] earned 768 coins 828 wagons 5 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":3}
+    next: renown 768/1000 goods 5/4 flow 65/20
+    slot/s: empty 395 calm 1379 actionable 26 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 569s | sawmill:WAITING_PICKUP(calm) 412s | farm:WAITING_PICKUP(calm) 212s | farm:OUTPUT_FULL.NO_WAGON(calm) 115s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 33s | mill:NO_WAGON.ALL_BUSY 25s
+    looks (29):
+      9x woodcutter:WAITING_PICKUP(calm) -> nothing
+      7x sawmill:WAITING_PICKUP(calm) -> nothing
+      6x (no card)(calm) -> nothing
+      3x farm:WAITING_PICKUP(calm) -> nothing
+      2x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 7:00 wagon, 8:00 wagon, 28:00 wagon
+    built: 0.5 farm by the castle road, 16.0 mill, 16.0 bakery
+
+build+eye-30+ev    seed 1302    rank 1 [16.1 / -1 / -1 / -1 / -1] earned 905 coins 935 wagons 6 bld 8 orders 5/5 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 776/1000 goods 5/4 flow 52/20
+    slot/s: empty 475 calm 1300 actionable 25 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 476s | sawmill:WAITING_PICKUP(calm) 359s | farm:WAITING_PICKUP(calm) 273s | mill:WAITING_PICKUP(calm) 100s | bakery:WAITING_PICKUP(calm) 31s | farm:OUTPUT_FULL.NO_WAGON(calm) 23s
+    looks (59):
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      15x (no card)(calm) -> nothing
+      12x sawmill:WAITING_PICKUP(calm) -> nothing
+      8x farm:WAITING_PICKUP(calm) -> nothing
+      2x mill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:NO_WAGON.ALL_BUSY -> wagon
+    acts: 4:30 wagon, 6:30 wagon, 18:00 wagon, 25:00 wagon
+    built: 0.5 farm by the castle road, 16.1 mill, 16.1 bakery
+
+eye-30+sbF         seed 1302    rank 1 [14.4 / -1 / -1 / -1 / -1] earned 444 coins 584 wagons 6 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":3,"wagon":1}
+    next: renown 444/1000 goods 2/4 flow 25/20
+    slot/s: empty 905 calm 895 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 500s | woodcutter:WAITING_PICKUP(calm) 381s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 14s
+    looks (59):
+      29x (no card)(calm) -> nothing
+      14x woodcutter:WAITING_PICKUP(calm) -> nothing
+      12x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+    acts: 2:30 wagon:sbFleet, 4:00 wagon, 4:30 wagon:sbFleet, 5:00 wagon:sbFleet
+
+build+eye-10+sbF   seed 1302    rank 2 [11.4 / 29.4 / -1 / -1 / -1] earned 1014 coins 948 wagons 8 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 1014/3000 goods 5/6 flow 65/60
+    slot/s: empty 964 calm 836 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 426s | woodcutter:WAITING_PICKUP(calm) 368s | farm:WAITING_PICKUP(calm) 40s | mill:WAITING_PICKUP(calm) 2s
+    looks (179):
+      92x (no card)(calm) -> nothing
+      41x sawmill:WAITING_PICKUP(calm) -> nothing
+      38x woodcutter:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:sawmill(calm) -> wagon:sbFleet
+      2x farm:WAITING_PICKUP(calm) -> nothing
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 2:10 wagon:sbFleet, 2:20 wagon:sbFleet, 4:30 wagon:sbFleet, 8:20 wagon:sbFleet, 20:10 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.4 mill, 11.4 bakery, 29.4 road to the river, 29.4 fisher by the river
+
+build+eye-30+sbF   seed 1302    rank 2 [11.5 / 29.9 / -1 / -1 / -1] earned 1016 coins 950 wagons 8 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 1016/3000 goods 5/6 flow 61/60
+    slot/s: empty 876 calm 924 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 513s | woodcutter:WAITING_PICKUP(calm) 337s | farm:WAITING_PICKUP(calm) 66s | mill:WAITING_PICKUP(calm) 8s
+    looks (59):
+      28x (no card)(calm) -> nothing
+      12x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x mill:WAITING_PICKUP(calm) -> nothing
+      1x farm:WAITING_PICKUP(calm) -> nothing
+    acts: 2:00 wagon:sbFleet, 2:30 wagon:sbFleet, 4:30 wagon:sbFleet, 5:00 wagon:sbFleet, 8:30 wagon:sbFleet, 25:30 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.5 mill, 11.5 bakery, 30.0 road to the river, 30.0 fisher by the river
+
+build+eye-60+sbF   seed 1302    rank 2 [11.8 / 29.1 / -1 / -1 / -1] earned 1038 coins 972 wagons 8 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 1038/3000 goods 5/6 flow 63/60
+    slot/s: empty 870 calm 930 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 440s | sawmill:WAITING_PICKUP(calm) 355s | farm:WAITING_PICKUP(calm) 131s | mill:WAITING_PICKUP(calm) 3s | farm:OUTPUT_FULL.NO_WAGON(calm) 1s
+    looks (29):
+      13x (no card)(calm) -> nothing
+      5x woodcutter:WAITING_PICKUP(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      2x sbFleet:farm(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 4:00 wagon:sbFleet, 5:00 wagon:sbFleet, 8:00 wagon:sbFleet, 9:00 wagon:sbFleet, 20:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.8 mill, 11.8 bakery, 29.1 road to the river, 29.2 fisher by the river
+
+decent             seed 1302    rank 2 [10.5 / 22.5 / -1 / -1 / -1] earned 1721 coins 1097 wagons 16 bld 16 orders 2/0 merch 1 chron 21 paceWrong 0 fleetWrong 0 {}
+    next: renown 1721/3000 goods 7/6 flow 122/60
+    slot/s: empty 590 calm 1210 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 715s | woodcutter:WAITING_PICKUP(calm) 482s | farm:WAITING_PICKUP(calm) 11s | mill:WAITING_PICKUP(calm) 1s | fisher:WAITING_PICKUP(calm) 1s
+    built: 0.0 buy wagon, 0.0 buy wagon, 0.0 farm by the castle road, 0.1 buy wagon, 0.1 buy wagon, 0.1 buy wagon, 10.5 mill, 10.5 bakery, 10.5 buy wagon, 10.6 road east, 10.6 second farm, 10.6 buy wagon, 10.6 second woodcutter, 10.6 second sawmill, 10.6 buy wagon, 11.9 second mill, 12.8 second bakery, 13.4 buy wagon, 13.8 buy wagon, 14.3 buy wagon, 22.5 road to the river, 22.5 fisher by the river, 22.5 road to the ridge, 22.5 quarry under the ridge, 22.5 buy wagon, 22.6 buy wagon, 26.9 cobble castle road, 26.9 second road to the river, 26.9 second fisher, 26.9 buy wagon
+
+none               seed 1303    rank 0 [-1 / -1 / -1 / -1 / -1] earned 204 coins 464 wagons 2 bld 5 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 204/200 goods 1/2 flow 11/8
+    slot/s: empty 298 calm 1502 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 744s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 551s | woodcutter:WAITING_PICKUP(calm) 207s
+
+build              seed 1303    rank 0 [-1 / -1 / -1 / -1 / -1] earned 205 coins 435 wagons 2 bld 6 orders 2/0 merch 1 chron 1 paceWrong 0 fleetWrong 0 {}
+    next: renown 205/200 goods 1/2 flow 11/8
+    slot/s: empty 56 calm 1406 actionable 338 no-cure 0
+    subjects: farm:OUTPUT_FULL.NO_WAGON(calm) 560s | warehouse:STORAGE_FULL 338s | farm:WAITING_PICKUP(calm) 334s | sawmill:WAITING_PICKUP(calm) 246s | woodcutter:WAITING_PICKUP(calm) 191s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 57s
+    built: 0.5 farm by the castle road
+
+eye-10             seed 1303    rank 1 [15.8 / -1 / -1 / -1 / -1] earned 429 coins 629 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 429/1000 goods 2/4 flow 27/20
+    slot/s: empty 869 calm 931 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 540s | sawmill:WAITING_PICKUP(calm) 375s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 13s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 3s
+    looks (179):
+      87x (no card)(calm) -> nothing
+      53x woodcutter:WAITING_PICKUP(calm) -> nothing
+      37x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 4:50 wagon
+
+eye-30             seed 1303    rank 1 [16.3 / -1 / -1 / -1 / -1] earned 432 coins 632 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 432/1000 goods 2/4 flow 26/20
+    slot/s: empty 817 calm 983 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 495s | woodcutter:WAITING_PICKUP(calm) 462s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 13s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 13s
+    looks (59):
+      26x (no card)(calm) -> nothing
+      17x woodcutter:WAITING_PICKUP(calm) -> nothing
+      14x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x woodcutter:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+    acts: 3:30 wagon, 5:00 wagon
+
+eye-60             seed 1303    rank 1 [16.9 / -1 / -1 / -1 / -1] earned 404 coins 604 wagons 4 bld 5 orders 2/0 merch 1 chron 4 paceWrong 0 fleetWrong 0 {"wagon":2}
+    next: renown 404/1000 goods 2/4 flow 27/20
+    slot/s: empty 775 calm 1014 actionable 11 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 526s | sawmill:WAITING_PICKUP(calm) 442s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 46s | sawmill:NO_WAGON.ALL_BUSY 11s
+    looks (29):
+      13x (no card)(calm) -> nothing
+      10x woodcutter:WAITING_PICKUP(calm) -> nothing
+      4x sawmill:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:NO_WAGON.ALL_BUSY -> wagon
+    acts: 4:00 wagon, 7:00 wagon
+
+build+eye-10       seed 1303    rank 1 [13.4 / -1 / -1 / -1 / -1] earned 980 coins 980 wagons 7 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":5}
+    next: renown 980/1000 goods 5/4 flow 63/20
+    slot/s: empty 864 calm 927 actionable 9 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 467s | sawmill:WAITING_PICKUP(calm) 374s | farm:WAITING_PICKUP(calm) 70s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 8s | mill:NO_WAGON.ALL_BUSY 8s | farm:OUTPUT_FULL.NO_WAGON(calm) 4s
+    looks (179):
+      87x (no card)(calm) -> nothing
+      44x woodcutter:WAITING_PICKUP(calm) -> nothing
+      35x sawmill:WAITING_PICKUP(calm) -> nothing
+      7x farm:WAITING_PICKUP(calm) -> nothing
+      2x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:NO_WAGON.ALL_BUSY -> wagon
+      1x bakery:NO_WAGON.ALL_BUSY -> wagon
+    acts: 2:20 wagon, 3:10 wagon, 4:10 wagon, 13:40 wagon, 14:30 wagon
+    built: 0.5 farm by the castle road, 13.4 mill, 13.4 bakery
+
+build+eye-30       seed 1303    rank 1 [16 / -1 / -1 / -1 / -1] earned 795 coins 855 wagons 5 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":3}
+    next: renown 795/1000 goods 5/4 flow 62/20
+    slot/s: empty 459 calm 1330 actionable 11 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 489s | sawmill:WAITING_PICKUP(calm) 472s | farm:WAITING_PICKUP(calm) 176s | farm:OUTPUT_FULL.NO_WAGON(calm) 88s | mill:WAITING_PICKUP(calm) 77s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 11s
+    looks (59):
+      17x (no card)(calm) -> nothing
+      16x sawmill:WAITING_PICKUP(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      5x farm:WAITING_PICKUP(calm) -> nothing
+      3x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      3x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 7:30 wagon, 8:00 wagon, 8:30 wagon
+    built: 0.5 farm by the castle road, 16.1 mill, 16.1 bakery
+
+build+eye-60       seed 1303    rank 1 [17.6 / -1 / -1 / -1 / -1] earned 729 coins 759 wagons 6 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 729/1000 goods 5/4 flow 66/20
+    slot/s: empty 361 calm 1439 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 432s | sawmill:WAITING_PICKUP(calm) 400s | farm:WAITING_PICKUP(calm) 233s | farm:OUTPUT_FULL.NO_WAGON(calm) 222s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 69s | woodcutter:OUTPUT_FULL.NO_WAGON(calm) 36s
+    looks (29):
+      7x woodcutter:WAITING_PICKUP(calm) -> nothing
+      7x (no card)(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x farm:WAITING_PICKUP(calm) -> nothing
+      3x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x bakery:WAITING_PICKUP(calm) -> nothing
+      1x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 8:00 wagon, 9:00 wagon, 17:00 wagon, 25:00 wagon
+    built: 0.5 farm by the castle road, 17.6 mill, 17.6 bakery
+
+build+eye-30+ev    seed 1303    rank 1 [15.5 / -1 / -1 / -1 / -1] earned 1027 coins 1057 wagons 6 bld 8 orders 5/5 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon":4}
+    next: renown 875/1000 goods 5/4 flow 68/20
+    slot/s: empty 612 calm 1187 actionable 1 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 461s | sawmill:WAITING_PICKUP(calm) 430s | farm:WAITING_PICKUP(calm) 206s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 40s | mill:WAITING_PICKUP(calm) 30s | farm:OUTPUT_FULL.NO_WAGON(calm) 20s
+    looks (59):
+      19x (no card)(calm) -> nothing
+      15x woodcutter:WAITING_PICKUP(calm) -> nothing
+      14x sawmill:WAITING_PICKUP(calm) -> nothing
+      6x farm:WAITING_PICKUP(calm) -> nothing
+      2x sawmill:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x farm:OUTPUT_FULL.NO_WAGON(calm) -> wagon
+      1x sawmill:NO_WAGON.ALL_BUSY -> wagon
+      1x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 5:00 wagon, 7:00 wagon, 7:30 wagon, 20:30 wagon
+    built: 0.5 farm by the castle road, 15.5 mill, 15.6 bakery
+
+eye-30+sbF         seed 1303    rank 1 [15.1 / -1 / -1 / -1 / -1] earned 469 coins 639 wagons 5 bld 5 orders 2/0 merch 1 chron 5 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":3}
+    next: renown 469/1000 goods 2/4 flow 28/20
+    slot/s: empty 889 calm 911 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 490s | sawmill:WAITING_PICKUP(calm) 415s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 6s
+    looks (59):
+      31x (no card)(calm) -> nothing
+      14x woodcutter:WAITING_PICKUP(calm) -> nothing
+      11x sawmill:WAITING_PICKUP(calm) -> nothing
+      2x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x sbFleet:sawmill(calm) -> wagon:sbFleet
+    acts: 2:30 wagon:sbFleet, 3:30 wagon:sbFleet, 5:00 wagon:sbFleet
+
+build+eye-10+sbF   seed 1303    rank 2 [12.1 / 29.5 / -1 / -1 / -1] earned 1014 coins 918 wagons 9 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":7}
+    next: renown 1014/3000 goods 5/6 flow 63/60
+    slot/s: empty 972 calm 828 actionable 0 no-cure 0
+    subjects: woodcutter:WAITING_PICKUP(calm) 461s | sawmill:WAITING_PICKUP(calm) 319s | farm:WAITING_PICKUP(calm) 41s | mill:WAITING_PICKUP(calm) 7s
+    looks (179):
+      95x (no card)(calm) -> nothing
+      44x woodcutter:WAITING_PICKUP(calm) -> nothing
+      31x sawmill:WAITING_PICKUP(calm) -> nothing
+      3x sbFleet:sawmill(calm) -> wagon:sbFleet
+      3x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      2x farm:WAITING_PICKUP(calm) -> nothing
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 2:10 wagon:sbFleet, 2:20 wagon:sbFleet, 4:30 wagon:sbFleet, 6:40 wagon:sbFleet, 9:00 wagon:sbFleet, 25:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 12.1 mill, 12.1 bakery, 29.5 road to the river, 29.5 fisher by the river
+
+build+eye-30+sbF   seed 1303    rank 2 [11.4 / 29.5 / -1 / -1 / -1] earned 1022 coins 956 wagons 8 bld 9 orders 2/0 merch 1 chron 15 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 1022/3000 goods 5/6 flow 65/60
+    slot/s: empty 899 calm 901 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 450s | woodcutter:WAITING_PICKUP(calm) 393s | farm:WAITING_PICKUP(calm) 43s | mill:WAITING_PICKUP(calm) 15s
+    looks (59):
+      32x (no card)(calm) -> nothing
+      12x woodcutter:WAITING_PICKUP(calm) -> nothing
+      8x sawmill:WAITING_PICKUP(calm) -> nothing
+      4x sbFleet:sawmill(calm) -> wagon:sbFleet
+      1x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      1x mill:WAITING_PICKUP(calm) -> nothing
+    acts: 2:00 wagon:sbFleet, 2:30 wagon:sbFleet, 4:30 wagon:sbFleet, 5:00 wagon:sbFleet, 6:00 wagon:sbFleet, 26:30 wagon:sbFleet
+    built: 0.5 farm by the castle road, 11.4 mill, 11.5 bakery, 29.5 road to the river, 29.5 fisher by the river
+
+build+eye-60+sbF   seed 1303    rank 1 [12.4 / -1 / -1 / -1 / -1] earned 974 coins 944 wagons 8 bld 8 orders 2/0 merch 1 chron 14 paceWrong 0 fleetWrong 0 {"wagon:sbFleet":6}
+    next: renown 974/1000 goods 5/4 flow 63/20
+    slot/s: empty 821 calm 979 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 478s | woodcutter:WAITING_PICKUP(calm) 295s | farm:WAITING_PICKUP(calm) 149s | sawmill:OUTPUT_FULL.NO_WAGON(calm) 45s | mill:WAITING_PICKUP(calm) 8s | farm:OUTPUT_FULL.NO_WAGON(calm) 4s
+    looks (29):
+      13x (no card)(calm) -> nothing
+      5x woodcutter:WAITING_PICKUP(calm) -> nothing
+      5x sawmill:WAITING_PICKUP(calm) -> nothing
+      3x sbFleet:woodcutter(calm) -> wagon:sbFleet
+      2x sbFleet:farm(calm) -> wagon:sbFleet
+      1x sbFleet:sawmill(calm) -> wagon:sbFleet
+    acts: 2:00 wagon:sbFleet, 4:00 wagon:sbFleet, 5:00 wagon:sbFleet, 8:00 wagon:sbFleet, 9:00 wagon:sbFleet, 17:00 wagon:sbFleet
+    built: 0.5 farm by the castle road, 12.4 mill, 12.5 bakery
+
+decent             seed 1303    rank 2 [10.6 / 22.7 / -1 / -1 / -1] earned 1688 coins 1064 wagons 16 bld 16 orders 2/0 merch 1 chron 21 paceWrong 0 fleetWrong 0 {}
+    next: renown 1688/3000 goods 7/6 flow 118/60
+    slot/s: empty 631 calm 1169 actionable 0 no-cure 0
+    subjects: sawmill:WAITING_PICKUP(calm) 616s | woodcutter:WAITING_PICKUP(calm) 515s | mill:WAITING_PICKUP(calm) 34s | farm:WAITING_PICKUP(calm) 4s
+    built: 0.0 buy wagon, 0.0 buy wagon, 0.0 farm by the castle road, 0.1 buy wagon, 0.1 buy wagon, 0.1 buy wagon, 10.6 mill, 10.6 bakery, 10.6 buy wagon, 10.6 road east, 10.7 second farm, 10.7 buy wagon, 10.7 second woodcutter, 10.7 second sawmill, 10.7 buy wagon, 11.1 second mill, 12.9 second bakery, 13.6 buy wagon, 14.2 buy wagon, 14.9 buy wagon, 22.7 road to the river, 22.7 fisher by the river, 22.7 road to the ridge, 22.8 quarry under the ridge, 22.8 buy wagon, 22.8 buy wagon, 27.3 cobble castle road, 27.3 second road to the river, 27.3 second fisher, 27.3 buy wagon
+
