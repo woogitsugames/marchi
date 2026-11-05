@@ -31,10 +31,12 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
  * c: rule C on/off. cStrict: C also needs the workshop to hold input for one cycle (no idle stall from C).
  */
 export const RULES = {
-  a: 1, aMargin: 0, aRatio: 0, aMinFree: 0, aCastle: 1, aInput: 1, aPush: 1, aMarket: 1, aTopUpOnly: 0, aNoBottleneck: 0,
-  aMaxDue: 0, aFreeCount: 0, c: 1, cStrict: 0, cFreeCount: 0,
+  a: 1, aMargin: 0, aRatio: 0, aMinFree: 50, aCastle: 1, aInput: 1, aPush: 1, aMarket: 1, aTopUpOnly: 0, aNoBottleneck: 0,
+  aMaxDue: 0, aFreeCount: 0, c: 0, cStrict: 0, cFreeCount: 0,
   /** gFleet: rules A and C act only once the fleet is larger than the mission's starting fleet + gFleet - 1. */
-  gFleet: 0,
+  gFleet: 2,
+  /** aSameGate: hold only for a busy wagon whose drop-off is the source itself (backhaul). */
+  aSameGate: 0,
 };
 
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
@@ -225,6 +227,7 @@ export function dispatch(world: World): void {
       if (!to) continue;
       // seconds until the drop-off is done: the unloading left, or the loaded run plus a full unloading
       const rest = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
+      if (RULES.aSameGate && to.gate !== source.gate) continue;
       const t = rest + (to.gate === source.gate ? 0 : rev.dist[to.gate]!);
       if (t < dueT) { dueT = t; due = w; }
     }
