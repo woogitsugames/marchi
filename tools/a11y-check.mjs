@@ -6,6 +6,7 @@
 //   dialog    an open sheet is a named NON-modal dialog (D-118: the map and HUD work beside it), focus moves into it
 //             and returns on close
 //   letter    the opening letter is a named modal dialog with focus on its action, the rest of the UI is inert (D-118)
+//   ring      the focus ring is painted around a chamfered (.cf) button, read from the pixels (D-137)
 //   motion    with prefers-reduced-motion: reduce every running CSS animation / transition lasts ≤ 1 ms
 // Exit 1 on any failure. Usage: npm run a11y   (A11Y_URL=http://127.0.0.1:5173/ to use a running server)
 import { createRequire } from 'node:module';
@@ -30,7 +31,7 @@ const errors = [];
 const ok = (cond, what) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${what}`); if (!cond) failures.push(what); };
 
 async function open(q, opts = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
+  const ctx = await browser.newContext({ viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -62,6 +63,19 @@ try {
     ok(pins.every((l) => /\S.*: \S/.test(l)), `pins: every pin is named "<building>: <cause>" (${pins.slice(0, 2).join(' | ')})`);
     const axPins = ax.filter((n) => n.role === 'button' && pins.includes(n.name));
     ok(axPins.length === pins.length, `pins: all ${pins.length} reach the accessibility tree as buttons (${axPins.length})`);
+    await ctx.close();
+  }
+  // --- a pin hidden under the HUD (short landscape: under the rail or the card) is no Tab stop (D-141)
+  {
+    const { ctx, page } = await open('play=m1&ff=90&speed=0&view=flat', { viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(1500);
+    const under = await page.$$eval('button.bubble.is-under', (els) => els.length);
+    let hit = 0;
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press('Tab');
+      if (await page.evaluate(() => document.activeElement?.matches('.bubble.is-under') ?? false)) hit++;
+    }
+    ok(hit === 0, `pins: no Tab stop on the ${under} pin(s) under the HUD at 915x412 (${hit} stops)`);
     await ctx.close();
   }
   // --- a sheet is a named non-modal dialog (D-118); focus in and back
