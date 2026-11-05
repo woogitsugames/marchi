@@ -2012,3 +2012,25 @@ rail (`body.is-split:not(.is-flex) .sheet`), so a short card (VII, III, a wagon)
 empty parchment over the map. That rule now also sets `bottom: auto`: the sheet hangs under the bar, grows with its
 content up to the old max-height, and the map under it is free — which is where D-144 puts the ghost.
 Shots `day9e-sideheight-before-904x1000-pl.jpg` / `day9e-ghost-after-904x1000-pl.jpg`. (decided)
+
+**D-156 — Dispatcher 2 "L1": rule A only with a fleet well above the authored one; rule C off (owner 2026-11-05, ~15:00).**
+Rules from `claude/w-dispatch2` (D-155): **A** — a job waits for a busy wagon that stands at the source sooner than
+the nearest free one (the building shows the calm `WAGON_DUE` "Wóz N przyjedzie po … za 0:12"); **C** — a contract
+workshop whose output nobody wants gets no more input. C + A broke the bots' lesson ladders (VIII, X, XII, XIII and
+IV-VI: 23 red tests). Research `docs/research/2026-11-05-dispatcher2-lesson-safe.md` (~220 variants, runner
+`tools/dispatch2-ab.ts`) found no variant that keeps every ladder and removes the harm of a bought wagon: in VIII one
+wagon is the "partial" rung and in X / XII two wagons are the "wrong fix", so any rule that makes wagons stop hurting
+also lifts those rungs. Shipped variant **L1** (`DISPATCH2` in `src/sim/logistics.ts`): rule A acts only when the
+fleet has ≥ the mission's starting wagons + 2 (`fleetGate`) and the nearest free wagon would drive ≥ 50 s empty
+(`minFreeRunS`); rule C is off (`ruleC` stays only for the A/B tools, which flip `DISPATCH2` before a run).
+Numbers vs the greedy dispatcher: one-more-wagon survey (13 missions × eye-30/60 × a wagon at 1:00 … 9:00) — slower
+runs 56 → 40, lost seals 28 → 19 (C + A: 26 / 4; 5 of L1's 19 are m4's silver-before-ice economics); eye player
+without the extra wagon 61 → 63 seals; bot I (`npm run bot`) 8,85 → 7,94 min ★3; balance-night6 (128 rows) 9 seals
+up, 1 down (m12 "wagons only", XII's wrong fix 2 → 1★), no win ↔ loss flip, −18,8 min. Every lesson-ladder test
+passes unchanged. Hashes: only runs with ≥ 2 bought wagons change — v4 golden 7 of 26, v7 contract golden 9 of 26
+(buy2 of m2–m6, m8, m9, m11, m12), dispatcher bench 50/100 from the 2nd sample; with `ruleA = false` all previous
+values are reproduced. The v5 save-gate test now samples the first tick a stone wagon is on the road (from 3:00)
+and asserts it. `tests/wagon-due.test.ts`: no hold below the gate (m3, m4, m8 with 0/1 extra wagons); with the gate
+open (m8 +2) every `WAGON_DUE` is calm, names a busy wagon, offers no "buy a wagon" cure and ends within a minute.
+The D-127/D-128 gate of the "Kup wóz" card stays: a bought wagon still hurts in 19 of 193 tries.
+Full monotonicity needs a lesson redesign of VIII / X / XII (wagons not a ladder rung) — open. (decided — owner 2026-11-05)
