@@ -19,7 +19,20 @@
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
 
 ## Decyzje na rano
-1. **„Czekanie na odbiór” (WAITING_PICKUP) z czynnością?** Research c: w misji I to strata czasu nr 1 na liście
+0. **Stan po nocy (03:30):** scalone **D-127..D-130** (paczka 9a): karta floty na karcie tempa („wszystkie wozy w
+   trasie — kup wóz”), karta błota z niemożliwym brukiem ustępuje karcie floty, samouczek po zakończeniu zamyka
+   arkusze (N1), list porażki ma jedną linię czynności dla straty nr 1 (N3). Rozsądny gracz: **XI 60 s 1★ → 2★,
+   IV 60 s 2★ → 3★, II oko+ 10 s 2★ → 3★**, żadna misja nie traci pieczęci. I przy 60 s zostaje 1★ — po 5:00 żaden
+   wóz już nie pomaga (most jednopasmowy się korkuje). Testy 467/0.
+1. **„Czekanie na odbiór” (WAITING_PICKUP) z czynnością? — D-128 wdrożone wąsko.** Reguła ogólna („Kup wóz” przy
+   każdym czekaniu ≥ 30 s, gdy wszystkie wozy zajęte) kosztowała pieczęcie: jako sama naprawa w arkuszu −7 wierszy
+   (VI, VIII, XII skan, X 30 s), z wyjęciem ze spokojnych pinezek −21 (np. IV 2→1★, VIII 3→2★). Wdrożono ją więc
+   tylko pod warunkami karty floty (łańcuch wąskiego gardła, flota w trasie ≥ 90 % ostatniej minuty, następna
+   pieczęć ≥ 3:30 dalej, stać na wóz). Skutek: w oknie samouczka misji I (2:00–5:00) nadal brak wskazówki wozu.
+   Opcje: (a) zostawić tak (rekomendacja), (b) przyjąć straty pieczęci, (c) wyjątek tylko dla misji samouczka
+   (dziś zakazane — brak `mission.id` w regułach), (d) zmiana dyspozytora w sim (zmienia hasze). Też potwierdzić
+   D-129, D-130 („decided by coordinator”). Nowe teksty `cause.paceFleet`, `fix.paceFleet*`, `end.act.*` tylko pl/en.
+   Pierwotny opis pytania: Research c: w misji I to strata czasu nr 1 na liście
    końcowym (4–5 min), arkusz nie daje naprawy; portret przegrał I o 2 chleby przez brak jednego wozu. Koordynator
    zlecił (do potwierdzenia): długie czekanie (≥ ~30 s lub pełny magazyn) przy zajętych wszystkich wozach i stać
    na wóz → „Kup wóz” z czasem dojazdu; inaczej zostaje spokojne. Alternatywa: zostawić spokojne (czysta lekcja
