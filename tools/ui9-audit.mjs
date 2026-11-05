@@ -138,11 +138,19 @@ async function run(browser, v, lang, sc) {
 }
 
 const jobs = [];
+// the full matrix is 288 jobs; the default plan: pl everywhere, pseudo without the focus/pin scenes, ar on the
+// two portrait sizes, de (new keys still English, PENDING_KEYS) on the phone only. --all for everything.
+const PLAN = (sc, v, lang) => argv.includes('--all') || lang === 'pl'
+  || (lang === 'pseudo' && !/^(ring|pins)/.test(sc.name))
+  || (lang === 'ar' && /412x915|904x1000/.test(v.id) && !/^(ring|pins|chain-m13)/.test(sc.name))
+  || (lang === 'de' && /412x915|915x412/.test(v.id) && /^(m7-card|m3-sheet|m11-sheet|m1-lost|wagon|chain-m6)$/.test(sc.name));
 for (const v of VIEWS) for (const lang of LANGS) for (const sc of SCENES) {
   if (ONLY && !ONLY.test(`${sc.name}|${v.id}|${lang}`)) continue;
+  if (!PLAN(sc, v, lang)) continue;
   jobs.push([v, lang, sc]);
 }
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// the flat (Canvas2D) map needs no GL: without a GPU process the pages stay cheap on a shared 4-core box
+const browser = await chromium.launch({ args: THREE || process.env.GL ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--disable-gpu'] });
 const results = [];
 let k = 0;
 await Promise.all(Array.from({ length: CONC }, async () => {
