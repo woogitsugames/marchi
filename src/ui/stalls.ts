@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { isCritical, isStall } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 import { GOODS, MARKET, capacityOf, marketOpen } from '../sim/index';
@@ -316,6 +316,23 @@ export function rankStalls(world: World): StallEntry[] {
 }
 
 /**
+ * D-173 (research valley-ranks-2-3, F2): a producer whose full yard has nowhere to go (OUTPUT_FULL.NO_DESTINATION)
+ * because its own gate is off the stable's road network — e.g. a later building cut the diagonal road step it hung
+ * on. The sim names the first granary it cannot reach (`blockedBy`), so the chain ends at an empty granary; the cure
+ * is the road from this producer to the network, not that granary. Its id, or -1. Pure read.
+ */
+export function cutOffProducer(world: World, chain: ReasonLink[]): number {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return -1;
+  for (const l of chain) {
+    if (l.kind !== 'building' || l.status.k !== 'OUTPUT_FULL' || l.status.cause !== 'NO_DESTINATION') continue;
+    const b = buildingById(world, l.id);
+    if (b && !reachable(world, b.gate, stable.gate)) return b.id;
+  }
+  return -1;
+}
+
+/**
  * Building whose missing link to the stable is the root of this chain, or -1 (the sheet's gap finder offers
  * the cheapest road from the stable to it). NO_WAGON.ALL_BUSY counts when no stable reaches any source of
  * the good (audit 2026-11-03, fix 5): the target is that source, as for NONE_CAN_REACH it is the consumer.
@@ -323,6 +340,8 @@ export function rankStalls(world: World): StallEntry[] {
 export function gapTarget(world: World, chain: ReasonLink[]): number {
   const root = chain[chain.length - 1];
   if (!root) return -1;
+  const cut = cutOffProducer(world, chain);
+  if (cut >= 0) return cut;
   if (root.kind === 'building') {
     const s = root.status;
     if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
@@ -393,7 +412,7 @@ export function cureFor(world: World, id: number): Cure {
     return 'pave';
   }
   const chain = explainBuilding(world, id, 5, true);
-  let cure: Cure = null;
+  let cure: Cure = cutOffProducer(world, chain) >= 0 ? 'road' : null;
   for (let i = chain.length - 1; i >= 0 && !cure; i--) {
     const l = chain[i]!;
     if (l.kind === 'building') {

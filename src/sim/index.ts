@@ -3,11 +3,11 @@ export * from './types';
 export * from './defs';
 export * from './sim';
 export {
-  applyCommand, validateRoad, validatePlace, gateCell, lineCells, roadCellCost, roadStoneCost, stoneAvailable, stoneOutlook, nearWater, onRock, isRockCell,
+  applyCommand, validateRoad, validatePlace, cutsDiagonalRoad, gateCell, lineCells, roadCellCost, roadStoneCost, stoneAvailable, stoneOutlook, nearWater, onRock, isRockCell,
   type Command, type CommandResult, type CommandError,
 } from './commands';
 export { MISSIONS, VALLEY_W, VALLEY_H, demolishIsFinal, missionBuildable, missionSeasons, missionSiteHint, type SiteHint } from './missions';
-export { isRaining, cellSpeed, edgeLength, findPath, pathTime, net, hasEdge, grade, type World } from './network';
+export { isRaining, cellSpeed, edgeLength, findPath, pathTime, net, hasEdge, grade, reachable, type World } from './network';
 export { buildingById, gateConnected, topUpHold } from './logistics';
 export { busyOutOfReach, contractFilled, explainBuilding, explainWagon, granaryRelief, heldWagon, isHeld, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
 export {
