@@ -25,6 +25,8 @@ export class OverlayData {
   readonly ghostOn = new Vector2(0, 0);
   /** 1 = the road preview is a proposed connection (hatched), 0 = a drawn road (solid). */
   previewDash = { value: 0 };
+  /** 1 = the road preview is a dirt stretch to pave (pale setts with dark joints), 0 = a road to build. */
+  previewPave = { value: 0 };
   /** Suitable ground for the building being placed (quarry: rock, fisher: by the water), R channel. */
   readonly siteTexture: DataTexture;
   private readonly siteData: Uint8Array;
@@ -79,6 +81,7 @@ export class OverlayData {
     if (this.preview && this.preview.badCell >= 0) d[this.preview.badCell * 4 + 3] = 0;
     this.preview = p ? { cells: p.cells.slice(), valid: p.valid, badCell: p.badCell } : null;
     this.previewDash.value = p && p.dashed ? 1 : 0;
+    this.previewPave.value = p && p.pave ? 1 : 0;
     if (p) {
       const n = this.w * this.h;
       for (const c of p.cells) if (c >= 0 && c < n) d[c * 4 + (p.valid ? 1 : 2)] = 255;

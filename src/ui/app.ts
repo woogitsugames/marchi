@@ -199,6 +199,8 @@ export class App implements PanelNav {
   private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
+  /** The gap ghost is a dirt stretch to pave (the mud card), drawn as setts (D-132). */
+  private ghostPave = false;
   private ghostKey = '';
 
   constructor(o: AppOptions) {
@@ -532,8 +534,9 @@ export class App implements PanelNav {
   }
 
   /** PanelNav: the gap finder's ghost road while its sheet is open. */
-  setGhost(cells: number[] | null): void {
+  setGhost(cells: number[] | null, pave = false): void {
     this.ghosts.gap = cells;
+    this.ghostPave = !!cells && pave;
   }
 
   undoPlace(building: number): void {
@@ -549,10 +552,11 @@ export class App implements PanelNav {
     if (this.draft.busy) { this.ghostKey = '#draft'; return; }
     if (this.build.ghostOn) { this.ghostKey = '#build'; return; }
     const c = this.ghosts.gap ?? this.ghosts.tut;
-    const k = c ? c.join(',') : '';
+    const pave = this.ghosts.gap !== null && this.ghostPave;
+    const k = c ? (pave ? 'p' : '') + c.join(',') : '';
     if (k === this.ghostKey) return;
     this.ghostKey = k;
-    this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1 } : null);
+    this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1, pave } : null);
   }
 
   /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */

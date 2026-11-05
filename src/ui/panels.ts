@@ -38,7 +38,8 @@ export interface PanelNav {
   /** Lay road (1, dirt) or cobbles / a stone bridge (2) over these cells. */
   buildRoad(cells: number[], surface?: 1 | 2): void;
   /** Ghost road on the map for the gap finder (null clears it). */
-  setGhost(cells: number[] | null): void;
+  /** Ghost road on the map while a sheet is open; `pave`: an existing dirt stretch proposed for cobbles (D-132). */
+  setGhost(cells: number[] | null, pave?: boolean): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
@@ -606,7 +607,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // the yard the card names
       const pcHere = pc && pc.producer === b.id ? pc : fc ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
-      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells);
+      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
       setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
