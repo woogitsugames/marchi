@@ -158,7 +158,7 @@ try {
   {
     const { ctx, page } = await open('play=m7&ff=90&speed=0&quality=low&dynres=0&view=flat');
     await page.waitForTimeout(800);
-    const read = async (sel, head) => {
+    const read = async (page, sel, head) => {
       await page.keyboard.press('Shift');
       const r = await page.evaluate(({ sel, head }) => {
         const el = document.querySelector(sel);
@@ -197,11 +197,17 @@ try {
         return { ink, n, corners };
       }, { png, r, clip });
     };
-    const eye = await read('.stall-row:not([hidden]) .stall-eye', null);
+    const eye = await read(page, '.stall-row:not([hidden]) .stall-eye', null);
     ok(!!eye && eye.ink >= eye.n - 2 && eye.corners === 0, `ring: round around the stall card's eye (ink ${eye?.ink}/${eye?.n}, square corners ${eye?.corners})`);
-    const pin = await read('button.bubble.is-shown:not(.is-under):not(.is-minor):not(.is-wagon)', '.bb');
-    ok(!!pin && pin.ink >= pin.n - 2, `ring: round around a pin's head (ink ${pin?.ink}/${pin?.n})`);
     await ctx.close();
+    // mission I's red pins (VII's sit off the portrait view)
+    const m1 = await open('play=m1&ff=90&speed=0&quality=low&dynres=0&view=flat');
+    const pinSel = 'button.bubble.is-shown:not(.is-under):not(.is-minor):not(.is-wagon)';
+    await m1.page.waitForSelector(pinSel, { timeout: 20000 }).catch(() => null);
+    await m1.page.waitForTimeout(400); // the pin fades in (150 ms) and settles its breathe
+    const pin = await read(m1.page, pinSel, '.bb');
+    ok(!!pin && pin.ink >= pin.n - 2, `ring: round around a pin's head (ink ${pin?.ink}/${pin?.n})`);
+    await m1.ctx.close();
   }
   // --- a letter is a real modal: named, focus on its action, everything under it inert, released on close
   {
