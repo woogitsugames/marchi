@@ -1884,3 +1884,17 @@ A waiting wagon's slot in its queue (`roads.walkBack` from the head cell, `k × 
 every frame for every queued wagon (O(k²) per queue; the largest allocator at 200 wagons, 1.2–1.4 MB/s, 5–10 % CPU).
 The snap keeps the inputs (cell, slot, heading, road-network version) and the result; it walks again only when one
 changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Render only, hashes unchanged. (decided)
+
+**D-153 — The HUD rebuilds its cards once per state change, the waybill pill once per shown second (research frame-cost day 9 #3, HUD part).**
+`Hud.update` ran the stall/pace card (`paceCard`, `cureFor`, `calmWhy`, `JSON.stringify(status)`) and the whole
+`updateContract` (pill HTML via `iconSvg` + `tHtml`, milestone texts) on every frame, then let `setHtml` find that
+nothing changed. Now a key of what that part reads — world and state objects, tick, the stall-ranking array (replaced
+on every command applied in pause, D-ranking), pace log, cards flag, language, coins, net version, building count —
+skips the cobble gate, the pace card, the stall card and the waybill between ticks; folding sets `contractDirty`.
+Inside the waybill the title, the pill and the folded seal keep their own keys (mission/lang; tranche, rounded second,
+lang; got/total/second/lang plus the forecast object), and milestone notices build their text only when one fires.
+Verified: DOM of `#ui` every 5 s of ×4 play (paused, 200 ticks stepped per snapshot), missions I and XI, before vs
+after: identical 24/24 against a second "before" run (the two differences against the first run — pin fade class, a
+notice fading out — also differ between two "before" runs). `Hud.update` timed directly in Chromium (1800 calls,
+after 2 min of play): mission I 19→12 µs/frame at 1 tick per 6 frames (×1), 42→18 µs at a tick every frame;
+mission XI 59→14 µs and 254→72 µs (noisy, −40–75 %). UI only, hashes unchanged. (decided)
