@@ -11,7 +11,7 @@ import {
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
-import type { Sheet, SheetContent } from './sheets';
+import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
@@ -394,6 +394,18 @@ function wire(sheet: Sheet, nav: PanelNav): void {
   });
 }
 
+/**
+ * setHtml that keeps keyboard focus on the same control (matched by its data-go / data-act) when the part is
+ * re-rendered: the chain's stall clock and an unfolded "+N" change the markup, and focus used to drop to <body>.
+ */
+function setHtmlKeep(el: Element, html: string): void {
+  const a = document.activeElement;
+  const k = a instanceof HTMLElement && el.contains(a)
+    ? a.dataset.go ? `[data-go="${CSS.escape(a.dataset.go)}"]` : a.dataset.act ? `[data-act="${CSS.escape(a.dataset.act)}"]` : null
+    : null;
+  if (setHtml(el, html) && k) el.querySelector<HTMLElement>(k)?.focus({ preventScroll: true });
+}
+
 /** Chains whose middle links the player unfolded on a short landscape sheet (per session, never in the sim). */
 const chainOpen = new Set<string>();
 
@@ -429,13 +441,22 @@ function chainHtml(world: World, chain: ReasonLink[], selfKind: 'building' | 'wa
   return `<ol class="chain${mid > 0 ? ' has-mid' : ''}${open ? ' is-open' : ''}">${items.join('')}</ol>`;
 }
 
-/** Unfold the middle links in place (the sheet's next refresh renders the same open state). */
+/**
+ * Unfold the middle links in place (the sheet's next refresh renders the same open state). The body then scrolls
+ * so the root stands above the docked fix (D-146): on a short landscape sheet only ~60 px of chain shows, and the
+ * root is what the fix answers; the subject and the first links may scroll away above. Focus goes to the root's
+ * link (a link focused while scrolled out of view would hide the ring); Shift+Tab walks back up the chain.
+ */
 function openChain(btn: HTMLElement, key: string): void {
   chainOpen.add(key);
   const ol = btn.closest('.chain');
   ol?.classList.add('is-open');
   btn.setAttribute('aria-expanded', 'true');
-  ol?.querySelector<HTMLButtonElement>('.c-mid button[data-go]')?.focus({ preventScroll: true });
+  const body = btn.closest<HTMLElement>('.sheet-body');
+  const root = ol?.querySelector<HTMLElement>(':scope > li:last-child');
+  if (body && root) revealAboveDock(body, root);
+  const to = root?.querySelector<HTMLButtonElement>('button[data-go]') ?? ol?.querySelector<HTMLButtonElement>('.c-mid button[data-go]');
+  to?.focus({ preventScroll: true });
 }
 
 function chip(g: Good, have: number, cap: number | null, extra: string, empty = false): string {
@@ -620,7 +641,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // three parts, each re-rendered only when its own HTML changes: the stall clock ticking in the chain no
       // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
-      setHtml(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
+      setHtmlKeep(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
@@ -639,8 +660,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const span = paveSpanFor(world, b);
         if (span) nav.setGhost(span.cells, true);
       }
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
-      setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
+      setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },
     onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); },
@@ -722,9 +743,9 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       // the road fix sits after the chain (and the ice hint) as before, in its own part (D-100)
       const cut = html.indexOf('<div class="sheet-actions">');
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
-      setHtml(pLead!, html.slice(0, cut));
-      setHtml(pFix!, fix ? fixHtml(world, target, fix) : '');
-      setHtml(pRest!, html.slice(cut));
+      setHtmlKeep(pLead!, html.slice(0, cut));
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : '');
+      setHtmlKeep(pRest!, html.slice(cut));
       return true;
     },
     onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); },

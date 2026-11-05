@@ -42,6 +42,30 @@ function syncDock(sheet: Sheet): void {
   }
 }
 
+/** The docked fix's fade above it (px): content scrolled into it reads as going under the dock. */
+const DOCK_FADE = 14;
+
+/**
+ * Scroll a sheet body by the least amount that puts `el` above the docked fix and its fade (block: nearest),
+ * never pushing its top above the body's top. No-op without a dock or when `el` already clears it.
+ */
+export function revealAboveDock(body: HTMLElement, el: HTMLElement): void {
+  const dock = body.querySelector<HTMLElement>('.fix-dock');
+  if (!dock || dock.contains(el)) return;
+  const r = el.getBoundingClientRect(), d = dock.getBoundingClientRect(), b = body.getBoundingClientRect();
+  if (r.bottom > d.top - DOCK_FADE) body.scrollTop += Math.min(r.bottom - (d.top - DOCK_FADE), Math.max(0, r.top - b.top));
+}
+
+/**
+ * The root of the sheet's cause chain stands above the docked fix when a subject is shown (D-146): on a short
+ * landscape side sheet the dock leaves ~60 px of body, and the chain's root — the reason the fix answers — used
+ * to sit under it while the subject row (already named by the title) took the space.
+ */
+function revealRoot(sheet: Sheet): void {
+  const root = sheet.body.querySelector<HTMLElement>('.chain > li:last-child');
+  if (root) revealAboveDock(sheet.body, root);
+}
+
 export class Sheets {
   private stack: Sheet[] = [];
   private suppressPop = 0;
@@ -92,6 +116,7 @@ export class Sheets {
       (top.body as HTMLElement & { __html?: string }).__html = undefined;
       content.update(top);
       syncDock(top);
+      revealRoot(top);
       return top;
     }
     const sheet = this.build(content);
@@ -103,6 +128,7 @@ export class Sheets {
     this.host.append(sheet.el);
     content.update(sheet);
     syncDock(sheet);
+    revealRoot(sheet);
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
     try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
     // keyboard and screen-reader focus into the sheet (the dialog itself: announced by its title, no ring on the
@@ -183,13 +209,7 @@ export class Sheets {
     // scroll-padding (--dock-h, syncDock) steers focus scrolling, and this catches what the browser left under it
     body.addEventListener('focusin', (e) => {
       const el = e.target as HTMLElement;
-      const dock = body.querySelector<HTMLElement>('.fix-dock');
-      if (!dock || dock.contains(el)) return;
-      requestAnimationFrame(() => {
-        const r = el.getBoundingClientRect(), d = dock.getBoundingClientRect(), b = body.getBoundingClientRect();
-        const fade = 14; // the dock's fade above it
-        if (r.bottom > d.top - fade) body.scrollTop += Math.min(r.bottom - (d.top - fade), Math.max(0, r.top - b.top));
-      });
+      requestAnimationFrame(() => revealAboveDock(body, el));
     });
     return sheet;
   }
