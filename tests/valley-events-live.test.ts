@@ -47,8 +47,9 @@ const CONTRACT_GOLDEN: Record<string, string> = {
   'm6|buy2': '1e6f3901c685b1c7,179b230c64b87688,f2da405bd1c2361f',
   'm7|buy0': '467a6e9d4299ab63,c37f35314bef3b09,86b72066c8b4d8f2',
   'm7|buy2': 'd707eb36d0906711,9a219174a05782b8,ef88461b9dce8377',
-  'm8|buy0': '5955cbef4faef7a6,0e99bfc89f1bddc2,229e1574815296fe',
-  'm8|buy2': 'c3d5ff9b3ae0308b,05724e325957a586,305b4027952099be',
+  // mission VIII redesigned (D-165, data only: the lane, two granaries, 7 wagons): both m8 runs re-recorded
+  'm8|buy0': '671277e22af06c89,4022535e956e5469,d42d47806180b952',
+  'm8|buy2': 'f5da60f9d831a070,8ee9a8afa1f3fba1,74012692692f129c',
   'm9|buy0': 'e7df68ecb3830e35,9fcaba7f51a9428b,1e39ee7363ae4129',
   'm9|buy2': '43a510290102fe5a,3e9b967ba61d5b84,3ba10082a6d666dc',
 };
