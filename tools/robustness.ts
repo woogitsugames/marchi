@@ -241,7 +241,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const print = (r: RunReport) => {
     const ok = !r.violations.length && !r.diverged;
     if (!ok) bad++;
-    console.log(`${r.name.padEnd(8)} ${r.result.padEnd(7)} ${(r.ticks / TICK_HZ / 60).toFixed(1).padStart(6)} min journal=${r.journal} ` +
+    console.log(`${r.name.padEnd(8)} ${r.result.padEnd(7)} ${(r.ticks / TICK_HZ / 60).toFixed(1).padStart(6)} min journal=${r.journal} hash=${r.hash} ` +
       `saves@${r.saveTicks.join(',')} ${r.diverged ? 'DIVERGED ' + r.diverged : 'bit-identical'} ${r.extra} ${(r.ms / 1000).toFixed(1)}s` +
       (r.cmdErrors.length ? ` cmdErr=${r.cmdErrors.join('|')}` : '') + (r.violations.length ? '\n   VIOLATIONS ' + r.violations.join('\n   ') : ''));
   };
