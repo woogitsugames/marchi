@@ -1878,3 +1878,9 @@ road ≥ 90 % of the last minute, the yard waiting ≥ 20 s — plus a reserve: 
 building. `sampleFleet` now samples whenever the game runs. Sheet line `fix.paceFleetWhyFree` (pl/en, PENDING_KEYS).
 Missions unchanged (their branch is untouched). Research prototype: rank 1 at ~11.3 min, +27 % silver, no failed
 purchase. Test `tests/valley-fleet.test.ts`. UI only, hashes unchanged. (decided — owner 2026-11-05)
+
+**D-141 — Queued wagons walk the road back once per change, not per frame (research frame-cost day 9 #2).**
+A waiting wagon's slot in its queue (`roads.walkBack` from the head cell, `k × QUEUE_GAP` metres) was recomputed
+every frame for every queued wagon (O(k²) per queue; the largest allocator at 200 wagons, 1.2–1.4 MB/s, 5–10 % CPU).
+The snap keeps the inputs (cell, slot, heading, road-network version) and the result; it walks again only when one
+changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Render only, hashes unchanged. (decided)

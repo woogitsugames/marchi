@@ -78,6 +78,8 @@ interface Snap {
   drawn: boolean;
   /** Last exact ground sample: rig origin and heading it was taken at, and its y / pitch (reused while unchanged). */
   gx: number; gz: number; gfx: number; gfz: number; gy: number; gp: number;
+  /** Queue slot cache (research frame-cost day 9 #2): walkBack inputs (cell, slot, heading, road version) and result. */
+  qAt: number; qK: number; qHx: number; qHz: number; qV: number; qx: number; qz: number; qtx: number; qtz: number;
   /** Waiting place beside the stable (D-43), null when not parked. */
   park: ParkSlot | null;
   /** Drawn offset (m) from the sim position toward the waiting place; eases in and out. */
@@ -265,6 +267,7 @@ export class WagonsView {
           moving: false, bridge: false, lane: 1, pitch: 0, heading: 0, laneS: 1, opp: false, fx: 0, fy: 0, fz: 0, visible: false, seen: 0,
           vg: 0, gph: (w.id * 0.618) % 1, roll: 0, gb: 0, mv: 0, drawn: false, park: null, ox: 0, oz: 0,
           gx: NaN, gz: NaN, gfx: NaN, gfz: NaN, gy: 0, gp: 0,
+          qAt: -1, qK: 0, qHx: NaN, qHz: NaN, qV: -1, qx: 0, qz: 0, qtx: 0, qtz: 0,
         };
         this.snaps.set(w.id, s);
       }
@@ -485,10 +488,16 @@ export class WagonsView {
         this.stack.set(w.at, k + 1);
         if (k > 0) {
           // queue back along the drawn road, facing the node waited at
-          const p = this.roads.walkBack(w.at, fx, fz, k * QUEUE_GAP, _p);
-          x = p.x; z = p.z;
-          if (p.tx !== 0 || p.tz !== 0) {
-            fx = p.tx; fz = p.tz;
+          // a queued wagon asks the same question every frame: walk the road back once per change of slot,
+          // heading or road network, not per frame (O(k) per wagon, O(k²) per queue)
+          if (s.qAt !== w.at || s.qK !== k || s.qHx !== fx || s.qHz !== fz || s.qV !== this.roads.version) {
+            const p = this.roads.walkBack(w.at, fx, fz, k * QUEUE_GAP, _p);
+            s.qAt = w.at; s.qK = k; s.qHx = fx; s.qHz = fz; s.qV = this.roads.version;
+            s.qx = p.x; s.qz = p.z; s.qtx = p.tx; s.qtz = p.tz;
+          }
+          x = s.qx; z = s.qz;
+          if (s.qtx !== 0 || s.qtz !== 0) {
+            fx = s.qtx; fz = s.qtz;
             s.heading = Math.atan2(fx, fz);
           }
         }
