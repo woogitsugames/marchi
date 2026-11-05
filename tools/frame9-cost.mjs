@@ -101,6 +101,12 @@ const setup = await page.evaluate(({ n, cmds, mission }) => {
   return { tick: st.tick, buildings: st.buildings.length, wagons: st.wagons.length, result: st.mission.result };
 }, { n: sandboxN, cmds: benchCmds, mission });
 
+// optional shadow-pass prototype (tools/shadow9-modes.js): SHADOW_MODE=a|b|c, SHADOW_K=<radius factor for b>
+if (process.env.SHADOW_MODE) {
+  const src = readFileSync(new URL('./shadow9-modes.js', import.meta.url), 'utf8').replace(/^\/\/.*\n/gm, '');
+  setup.shadowMode = await page.evaluate(`(${src.trim().replace(/;$/, '')})(${JSON.stringify(process.env.SHADOW_MODE)}, ${Number(process.env.SHADOW_K ?? 0)})`);
+}
+
 const doScatter = () => page.evaluate(() => {
   const app = window.__marchia.app, st = app.world.state, t = app.world.terrain;
   const roads = [];
@@ -349,7 +355,7 @@ for (const cam of cams) {
       stalls: app.ranking.get(app.world, app.loop.journal.length).length,
       sheets: [...document.querySelectorAll('.sheet')].map((e) => e.className.slice(0, 40) + (e.querySelector('.fix-dock') ? ' +dock' : '')),
       dom: document.getElementsByTagName('*').length, heapMB: +(performance.memory.usedJSHeapSize / 1048576).toFixed(1),
-      programs: v.renderer.info.programs?.length ?? 0, camDist: v.rig.dist,
+      programs: v.renderer.info.programs?.length ?? 0, camDist: v.rig.dist, shadow9: window.__shadow9 ?? null,
     };
   });
 

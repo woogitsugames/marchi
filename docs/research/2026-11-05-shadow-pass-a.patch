@@ -1,0 +1,46 @@
+diff --git a/src/render/lighting.ts b/src/render/lighting.ts
+index 73bf279..a3df62b 100644
+--- a/src/render/lighting.ts
++++ b/src/render/lighting.ts
+@@ -126,6 +126,11 @@ export class Lighting {
+     isNight: false,
+   };
+   private shadowSize = 2048;
++  /** Shadow-map refresh divisor (research shadow pass, option A): 1 = every frame, 2 = every 2nd frame. */
++  shadowEvery = 1;
++  private shadowFrame = 0;
++  private readonly lastFit = [NaN, NaN, NaN];
++  private readonly lastSunDir = new Vector3();
+ 
+   constructor(scene: Scene) {
+     this.hemi = new HemisphereLight('#c4c6c4', '#4a3f33', 1.2);
+@@ -223,6 +228,17 @@ export class Lighting {
+    */
+   fitShadow(target: Vector3, radius: number): void {
+     const s = this.sun;
++    // option A: on skipped frames keep the whole fit (and the map) of the last refresh; only moving casters lag.
++    // Refresh on pan/zoom, and once the sun turned > 0.002 rad (sub-texel at 28-320 m) since the last refresh.
++    const lf = this.lastFit;
++    const moved = target.x !== lf[0] || target.z !== lf[1] || radius !== lf[2] || this.env.sunDir.dot(this.lastSunDir) < 1 - 2e-6;
++    lf[0] = target.x; lf[1] = target.z; lf[2] = radius;
++    s.shadow.autoUpdate = this.shadowEvery <= 1;
++    if (!s.shadow.autoUpdate) {
++      s.shadow.needsUpdate = moved || this.shadowFrame++ % this.shadowEvery === 0 || s.shadow.map === null;
++      if (!s.shadow.needsUpdate) return;
++    }
++    this.lastSunDir.copy(this.env.sunDir);
+     const cam = s.shadow.camera;
+     const r = Math.max(12, radius);
+     const texel = (2 * r) / this.shadowSize;
+diff --git a/src/render/view.ts b/src/render/view.ts
+index 52ebd20..7114165 100644
+--- a/src/render/view.ts
++++ b/src/render/view.ts
+@@ -706,6 +706,7 @@ class View implements WorldView {
+     // and 4× the shadow-pass fill, while the shadow frustum is fitted to the zoom (28–320 m).
+     const high = this.quality !== 'low';
+     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
++    this.lighting.shadowEvery = this.quality === 'ultra' ? 1 : 2;
+     this.vegetation?.setShadows(high);
+     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
+     setTreeQuality(high);
