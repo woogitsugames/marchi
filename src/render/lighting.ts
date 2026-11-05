@@ -126,6 +126,11 @@ export class Lighting {
     isNight: false,
   };
   private shadowSize = 2048;
+  /** Shadow-map refresh divisor (D-150, research shadow pass option A): 1 = every frame, 2 = every 2nd frame. */
+  shadowEvery = 1;
+  private shadowFrame = 0;
+  private readonly lastFit = [NaN, NaN, NaN];
+  private readonly lastSunDir = new Vector3();
 
   constructor(scene: Scene) {
     this.hemi = new HemisphereLight('#c4c6c4', '#4a3f33', 1.2);
@@ -223,6 +228,17 @@ export class Lighting {
    */
   fitShadow(target: Vector3, radius: number): void {
     const s = this.sun;
+    // option A: on skipped frames keep the whole fit (and the map) of the last refresh; only moving casters lag.
+    // Refresh on pan/zoom, and once the sun turned > 0.002 rad (sub-texel at 28-320 m) since the last refresh.
+    const lf = this.lastFit;
+    const moved = target.x !== lf[0] || target.z !== lf[1] || radius !== lf[2] || this.env.sunDir.dot(this.lastSunDir) < 1 - 2e-6;
+    lf[0] = target.x; lf[1] = target.z; lf[2] = radius;
+    s.shadow.autoUpdate = this.shadowEvery <= 1;
+    if (!s.shadow.autoUpdate) {
+      s.shadow.needsUpdate = moved || this.shadowFrame++ % this.shadowEvery === 0 || s.shadow.map === null;
+      if (!s.shadow.needsUpdate) return;
+    }
+    this.lastSunDir.copy(this.env.sunDir);
     const cam = s.shadow.camera;
     const r = Math.max(12, radius);
     const texel = (2 * r) / this.shadowSize;

@@ -1884,3 +1884,11 @@ A waiting wagon's slot in its queue (`roads.walkBack` from the head cell, `k × 
 every frame for every queued wagon (O(k²) per queue; the largest allocator at 200 wagons, 1.2–1.4 MB/s, 5–10 % CPU).
 The snap keeps the inputs (cell, slot, heading, road-network version) and the result; it walks again only when one
 changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Render only, hashes unchanged. (decided)
+
+**D-150 — Shadow map refreshed every 2nd frame on low and high (owner 2026-11-05, option A; research shadow pass).**
+Research `docs/research/2026-11-05-shadow-pass.md` (shots `docs/research/shots-shadow9/`). `Lighting.shadowEvery`
+= 2 on low/high, 1 on ultra: the single sun shadow map (no cascades) is redrawn every 2nd frame, at once whenever the
+camera pans or zooms (fit target/radius changed) or the sun turned > 0.002 rad since the last refresh; on skipped
+frames the map and its matrix stay as last drawn, so only moving casters lag one frame. Shadow draws 61 → 30 (high),
+34 → 17 (low), shadow-pass CPU about −50 % (≈ −7…14 % of the frame); a still frame differs in 0.25 % of pixels.
+Options B (tighter frustum: no CPU gain) and C (cached static casters: ~150 lines, seam risk) not taken. (decided)

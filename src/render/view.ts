@@ -706,6 +706,7 @@ class View implements WorldView {
     // and 4× the shadow-pass fill, while the shadow frustum is fitted to the zoom (28–320 m).
     const high = this.quality !== 'low';
     this.lighting.setShadowMapSize(high ? 2048 : 1024, true);
+    this.lighting.shadowEvery = this.quality === 'ultra' ? 1 : 2;
     this.vegetation?.setShadows(high);
     if (this.vegetation) this.vegetation.nearDist = high ? 95 : 60;
     setTreeQuality(high);
