@@ -1,0 +1,1365 @@
+{
+ "size": "915x412",
+ "menu": {
+  "rows": [
+   {
+    "t": "IZacznij tutajChleb i deskiPrzerzuć most",
+    "top": 86,
+    "bottom": 170,
+    "h": 84
+   },
+   {
+    "t": "IIKorek na mościeJeden wąski most, ruch ",
+    "top": 171,
+    "bottom": 223,
+    "h": 52
+   },
+   {
+    "t": "IIIDeszczowa jesieńUlewa zamienia trakty",
+    "top": 224,
+    "bottom": 276,
+    "h": 52
+   },
+   {
+    "t": "IVZima na przeprawieKra zamyka drewniany",
+    "top": 277,
+    "bottom": 329,
+    "h": 52
+   },
+   {
+    "t": "VJarmarkTrzy dostawy, trzy terminy",
+    "top": 330,
+    "bottom": 382,
+    "h": 52
+   },
+   {
+    "t": "VICiasny spichlerzPełny spichlerz zatrzy",
+    "top": 383,
+    "bottom": 435,
+    "h": 52
+   },
+   {
+    "t": "VIIRyby na postRybak nad wodą, zamek za ",
+    "top": 436,
+    "bottom": 488,
+    "h": 52
+   },
+   {
+    "t": "VIIIBruk przed burząNajpierw przywieź ka",
+    "top": 86,
+    "bottom": 138,
+    "h": 52
+   },
+   {
+    "t": "IXPiwo na weseleTartak i węglarz walczą ",
+    "top": 139,
+    "bottom": 191,
+    "h": 52
+   },
+   {
+    "t": "XWęgiel dla kowalaJeden drwal na dwa war",
+    "top": 192,
+    "bottom": 244,
+    "h": 52
+   },
+   {
+    "t": "XISłód na zimęDaleka słodownia zajmuje w",
+    "top": 245,
+    "bottom": 297,
+    "h": 52
+   },
+   {
+    "t": "XIIWielkie warzenieZapas piwa na kolejną",
+    "top": 298,
+    "bottom": 350,
+    "h": 52
+   },
+   {
+    "t": "XIIIPierwsze piętro łańcuchaJeden wóz na",
+    "top": 351,
+    "bottom": 403,
+    "h": 52
+   },
+   {
+    "t": "Wolna dolinaRozbuduj miasteczko, bez ter",
+    "top": 411,
+    "bottom": 463,
+    "h": 52
+   },
+   {
+    "t": "Ustawienia",
+    "top": 332,
+    "bottom": 384,
+    "h": 52
+   }
+  ],
+  "vh": 412,
+  "valley": {
+   "t": "Wolna dolinaRozbuduj miasteczko, bez ter",
+   "top": 411,
+   "bottom": 463,
+   "h": 52
+  }
+ },
+ "slot": {
+  "words": 128,
+  "small": [],
+  "covered": [],
+  "overlaps": [],
+  "stall": "",
+  "stallRect": null,
+  "cure": [],
+  "ev": "",
+  "evRect": null,
+  "evOpen": null,
+  "plaque": "",
+  "plaqueRect": null,
+  "toasts": [],
+  "toastRects": [],
+  "notice": "",
+  "rank": "",
+  "pins": 0,
+  "sheet": "Wolna dolinaKsięgi osad INowa osadaPusta księga — zacznij od pierwszej chaty IINowa osadaPusta księga — zacznij od pierwszej chaty IIINowa osadaPusta księga — zacznij od pierwszej chaty",
+  "fix": [],
+  "rail": null,
+  "label": "ledger picker",
+  "t": 74.6,
+  "coins": 86
+ },
+ "start": {
+  "words": 24,
+  "small": [],
+  "covered": [],
+  "overlaps": [],
+  "stall": "",
+  "stallRect": null,
+  "cure": [],
+  "ev": "Wieści z doliny1",
+  "evRect": [
+   710,
+   68,
+   195,
+   52
+  ],
+  "evOpen": "false",
+  "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1",
+  "plaqueRect": [
+   70,
+   8,
+   272,
+   201
+  ],
+  "toasts": [],
+  "toastRects": [],
+  "notice": "",
+  "rank": "",
+  "pins": 0,
+  "sheet": "",
+  "fix": [],
+  "rail": [
+   0,
+   332,
+   915,
+   80
+  ],
+  "label": "game start",
+  "t": 1.4,
+  "coins": 260
+ },
+ "timeline": [
+  {
+   "t": 15.2,
+   "kind": "ev",
+   "text": "Wieści z doliny1"
+  },
+  {
+   "t": 35.2,
+   "kind": "card",
+   "text": "Najgorszy zastójTartak: czekanie na odbiór1"
+  },
+  {
+   "t": 35.2,
+   "kind": "build",
+   "text": "farm"
+  },
+  {
+   "t": 45.2,
+   "kind": "card",
+   "text": "Najgorszy zastójChata drwala: czekanie na odbiór1"
+  },
+  {
+   "t": 95.2,
+   "kind": "toast",
+   "text": "Kupiec z wozem pod płótnem stanął przy bramie: kupi deski"
+  },
+  {
+   "t": 105.2,
+   "kind": "card",
+   "text": "Najgorszy zastójGospodarstwo: czekanie na odbiór2"
+  },
+  {
+   "t": 115.2,
+   "kind": "toast",
+   "text": "Kronika: Deski u bram zamku"
+  },
+  {
+   "t": 295.2,
+   "kind": "cure",
+   "text": "Kup wóz30"
+  },
+  {
+   "t": 295.2,
+   "kind": "card",
+   "text": "Najgorszy zastójChata drwala: pełny magazyn, brak wozu2"
+  },
+  {
+   "t": 365.2,
+   "kind": "toast",
+   "text": "Zamówienie królewskie: Straż przy granicy"
+  },
+  {
+   "t": 445.2,
+   "kind": "card",
+   "text": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu1"
+  },
+  {
+   "t": 485.2,
+   "kind": "toast",
+   "text": "Kronika: Trzeci wóz w drodze"
+  },
+  {
+   "t": 585.2,
+   "kind": "toast",
+   "text": "Kronika: Trzy dobra w obrocie"
+  },
+  {
+   "t": 585.2,
+   "kind": "toast",
+   "text": "Kronika: Sześć miar zboża"
+  },
+  {
+   "t": 585.2,
+   "kind": "toast",
+   "text": "Kronika: Pierwsze zboże"
+  },
+  {
+   "t": 945.2,
+   "kind": "toast",
+   "text": "Kronika: Wieś targowa"
+  },
+  {
+   "t": 945.2,
+   "kind": "build",
+   "text": "mill"
+  },
+  {
+   "t": 965.2,
+   "kind": "toast",
+   "text": "Postawiono: Młyn wodny, −40 srebra"
+  },
+  {
+   "t": 965.2,
+   "kind": "build",
+   "text": "bakery"
+  },
+  {
+   "t": 985.2,
+   "kind": "toast",
+   "text": "Kronika: Koło młyńskie"
+  },
+  {
+   "t": 985.2,
+   "kind": "toast",
+   "text": "Postawiono: Piekarnia, −40 srebra"
+  },
+  {
+   "t": 985.2,
+   "kind": "rank",
+   "text": "Pismo z zamku Nowa ranga: Wieś targowa Kasztelan wpisał nową rangę osady do ksiąg. Odblokowano: Młyn wodny i Piekarnia"
+  },
+  {
+   "t": 1025.2,
+   "kind": "toast",
+   "text": "Kronika: Piec rozpalony"
+  },
+  {
+   "t": 1125.2,
+   "kind": "notice",
+   "text": "Deszcz — wozy zwalniają na drogach gruntowych"
+  },
+  {
+   "t": 1145.2,
+   "kind": "toast",
+   "text": "Kronika: Trzy postacie zboża"
+  },
+  {
+   "t": 1145.2,
+   "kind": "toast",
+   "text": "Kronika: Mąka u zamku"
+  },
+  {
+   "t": 1145.2,
+   "kind": "toast",
+   "text": "Kronika: Targ czterech dóbr"
+  },
+  {
+   "t": 1245.2,
+   "kind": "card",
+   "text": "Najgorszy zastójMłyn wodny: czekanie na odbiór1"
+  },
+  {
+   "t": 1625.2,
+   "kind": "card",
+   "text": "Najgorszy zastójPiekarnia: czekanie na odbiór1"
+  },
+  {
+   "t": 1685.2,
+   "kind": "toast",
+   "text": "Jarmark na zboże w następnym sezonie: kupcy zapłacą o 25% więcej"
+  }
+ ],
+ "looks": [
+  {
+   "t": 35.2,
+   "coins": 260,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:05 TartakPełno desek — odbiór: wóz 1 0:05 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 65.2,
+   "coins": 230,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:25 Chata drwalaPełno drewna — odbiór: wóz 2 0:25 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 95.2,
+   "coins": 230,
+   "wagons": 2,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 125.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 0:26 GospodarstwoPełno zboża — odbiór: wóz 2 0:26 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. C",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 155.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:53 TartakPełno desek — odbiór: wóz 2 0:53 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 185.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 1:23 TartakPełno desek — odbiór: wóz 2 1:23 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 215.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 0:31 GospodarstwoPełno zboża — odbiór: wóz 1 0:31 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. C",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 245.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 1:01 GospodarstwoPełno zboża — odbiór: wóz 1 1:01 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. C",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 275.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 1:31 GospodarstwoPełno zboża — odbiór: wóz 1 1:31 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. C",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 305.2,
+   "coins": 247,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 1:28 Chata drwalaPełno drewna — odbiór: wóz 1 1:28 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 345.2,
+   "coins": 264,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 2:08 Chata drwalaPełno drewna — odbiór: wóz 1 2:08 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 365.2,
+   "coins": 264,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 2:28 Chata drwalaPełno drewna — odbiór: wóz 1 2:28 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 405.2,
+   "coins": 264,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 3:08 Chata drwalaPełno drewna — odbiór: wóz 1 3:08 Wóz 1Załadunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobi",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 425.2,
+   "coins": 264,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 3:07 TartakPełno desek — odbiór: wóz 2 3:07 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 465.2,
+   "coins": 264,
+   "wagons": 2,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu2",
+   "cure": [
+    "button.tool.is-cure \"Kup wóz\""
+   ],
+   "sheet": "Dlaczego stoi?GospodarstwoPełno zboża — brak wozu do odbioruPrzestój: 2:078/8 zboża — brak miejsca na nowy towarSkutek: produkcja stoi, dopóki towar nie wyjedzie. Co to znaczy? Pełno — brak wozu — Budynek nie może produkować dalej, bo jego wyroby czekają na odbiór, a brak wozu. Jak sprawdzićDotknij ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 485.2,
+   "coins": 234,
+   "wagons": 3,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu3",
+   "cure": [
+    "button.tool.is-cure \"Kup wóz\""
+   ],
+   "sheet": "Dlaczego stoi?GospodarstwoPełno zboża — brak wozu do odbioruPrzestój: 2:278/8 zboża — brak miejsca na nowy towarSkutek: produkcja stoi, dopóki towar nie wyjedzie. Co to znaczy? Pełno — brak wozu — Budynek nie może produkować dalej, bo jego wyroby czekają na odbiór, a brak wozu. Jak sprawdzićDotknij ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 525.2,
+   "coins": 204,
+   "wagons": 4,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu3",
+   "cure": [
+    "button.tool.is-cure \"Kup wóz\""
+   ],
+   "sheet": "Dlaczego stoi?GospodarstwoPełno zboża — brak wozu do odbioruPrzestój: 3:078/8 zboża — brak miejsca na nowy towarSkutek: produkcja stoi, dopóki towar nie wyjedzie. Co to znaczy? Pełno — brak wozu — Budynek nie może produkować dalej, bo jego wyroby czekają na odbiór, a brak wozu. Jak sprawdzićDotknij ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 545.2,
+   "coins": 174,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójGospodarstwo: czekanie na odbiór3",
+   "cure": [],
+   "sheet": "Dlaczego stoi?GospodarstwoŁańcuch przyczynPrzestój: 3:27 GospodarstwoPełno zboża — odbiór: wóz 5 3:27 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. C",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 585.2,
+   "coins": 202,
+   "wagons": 5,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 605.2,
+   "coins": 208,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:18 TartakPełno desek — odbiór: wóz 2 0:18 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 645.2,
+   "coins": 230,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:07 TartakPełno desek — odbiór: wóz 5 0:07 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 665.2,
+   "coins": 234,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:27 TartakPełno desek — odbiór: wóz 5 0:27 Wóz 5Załadunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPoczekaj na ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 705.2,
+   "coins": 255,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:10 Chata drwalaPełno drewna — odbiór: wóz 2 0:10 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 725.2,
+   "coins": 259,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:30 Chata drwalaPełno drewna — odbiór: wóz 2 0:30 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 765.2,
+   "coins": 281,
+   "wagons": 5,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 785.2,
+   "coins": 285,
+   "wagons": 5,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 825.2,
+   "coins": 304,
+   "wagons": 5,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 845.2,
+   "coins": 304,
+   "wagons": 5,
+   "rank": 0,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 885.2,
+   "coins": 325,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:23 Chata drwalaPełno drewna — odbiór: wóz 2 0:23 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 905.2,
+   "coins": 325,
+   "wagons": 5,
+   "rank": 0,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:43 Chata drwalaPełno drewna — odbiór: wóz 2 0:43 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 945.2,
+   "coins": 348,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 965.2,
+   "coins": 308,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1005.2,
+   "coins": 268,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1025.2,
+   "coins": 285,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1065.2,
+   "coins": 315,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1085.2,
+   "coins": 321,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1125.2,
+   "coins": 321,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:03 Chata drwalaPełno drewna — odbiór: wóz 5 0:03 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1145.2,
+   "coins": 361,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:23 Chata drwalaPełno drewna — odbiór: wóz 5 0:23 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1185.2,
+   "coins": 383,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 1:03 Chata drwalaPełno drewna — odbiór: wóz 5 1:03 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1205.2,
+   "coins": 399,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1245.2,
+   "coins": 437,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójMłyn wodny: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Młyn wodnyŁańcuch przyczynPrzestój: 0:21 Młyn wodnyPełno mąki — odbiór: wóz 5 0:21 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zro",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1265.2,
+   "coins": 471,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:21 TartakPełno desek — odbiór: wóz 1 0:21 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1305.2,
+   "coins": 497,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1325.2,
+   "coins": 497,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:12 TartakPełno desek — odbiór: wóz 4 0:12 Wóz 4Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1365.2,
+   "coins": 531,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:19 Chata drwalaPełno drewna — odbiór: wóz 3 0:19 Wóz 3Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1385.2,
+   "coins": 531,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:39 Chata drwalaPełno drewna — odbiór: wóz 3 0:39 Wóz 3Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1425.2,
+   "coins": 565,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 1:03 TartakPełno desek — odbiór: wóz 1 1:03 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1445.2,
+   "coins": 565,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 1:23 TartakPełno desek — odbiór: wóz 1 1:23 Wóz 1Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1485.2,
+   "coins": 601,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójMłyn wodny: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Młyn wodnyŁańcuch przyczynPrzestój: 0:35 Młyn wodnyPełno mąki — odbiór: wóz 3 0:35 Wóz 3Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zro",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1505.2,
+   "coins": 601,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójMłyn wodny: czekanie na odbiór4",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Młyn wodnyŁańcuch przyczynPrzestój: 0:55 Młyn wodnyPełno mąki — odbiór: wóz 3 0:55 Wóz 3Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zro",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1545.2,
+   "coins": 638,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 1:02 Chata drwalaPełno drewna — odbiór: wóz 4 1:02 Wóz 4Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1565.2,
+   "coins": 653,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1605.2,
+   "coins": 684,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1625.2,
+   "coins": 701,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójPiekarnia: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?PiekarniaŁańcuch przyczynPrzestój: 0:04 PiekarniaPełno chleba — odbiór: wóz 5 0:04 Wóz 5Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zro",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1665.2,
+   "coins": 732,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 0:41 Chata drwalaPełno drewna — odbiór: wóz 2 0:41 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1685.2,
+   "coins": 749,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?Chata drwalaŁańcuch przyczynPrzestój: 1:01 Chata drwalaPełno drewna — odbiór: wóz 2 1:01 Wóz 2Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. ",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1725.2,
+   "coins": 775,
+   "wagons": 5,
+   "rank": 1,
+   "card": "",
+   "cure": [],
+   "sheet": "",
+   "fix": [],
+   "act": ""
+  },
+  {
+   "t": 1745.2,
+   "coins": 775,
+   "wagons": 5,
+   "rank": 1,
+   "card": "Najgorszy zastójGospodarstwo: pełny magazyn, brak wozu1",
+   "cure": [
+    "button.tool.is-cure \"Kup wóz\""
+   ],
+   "sheet": "Dlaczego stoi?GospodarstwoPełno zboża — brak wozu do odbioruPrzestój: 0:148/8 zboża — brak miejsca na nowy towarSkutek: produkcja stoi, dopóki towar nie wyjedzie. Co to znaczy? Pełno — brak wozu — Budynek nie może produkować dalej, bo jego wyroby czekają na odbiór, a brak wozu. Jak sprawdzićDotknij ",
+   "fix": [
+    "button.btn.primary \"Kup wóz−30\""
+   ],
+   "act": "Kup wóz−30 (applied)"
+  },
+  {
+   "t": 1785.2,
+   "coins": 775,
+   "wagons": 6,
+   "rank": 1,
+   "card": "Najgorszy zastójTartak: czekanie na odbiór2",
+   "cure": [],
+   "sheet": "Dlaczego stoi?TartakŁańcuch przyczynPrzestój: 0:34 TartakPełno desek — odbiór: wóz 3 0:34 Wóz 3Jedzie po ładunek Co to znaczy? Czeka na odbiór — Zapas wyrobów jest pełny, ale wóz już dostał zlecenie odbioru. Jak sprawdzićDotknij producenta, potem wozu w łańcuchu; sprawdź, gdzie utknął. Co zrobićPocz",
+   "fix": [],
+   "act": ""
+  }
+ ],
+ "audits": [
+  {
+   "words": 128,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "",
+   "stallRect": null,
+   "cure": [],
+   "ev": "",
+   "evRect": null,
+   "evOpen": null,
+   "plaque": "",
+   "plaqueRect": null,
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "Wolna dolinaKsięgi osad INowa osadaPusta księga — zacznij od pierwszej chaty IINowa osadaPusta księga — zacznij od pierwszej chaty IIINowa osadaPusta księga — zacznij od pierwszej chaty",
+   "fix": [],
+   "rail": null,
+   "label": "ledger picker",
+   "t": 74.6,
+   "coins": 86
+  },
+  {
+   "words": 24,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "",
+   "stallRect": null,
+   "cure": [],
+   "ev": "Wieści z doliny1",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 0/200 Różne towary 0/2 Przepływ na minutę 0/8 +0 srebra/minWiosna · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "game start",
+   "t": 1.4,
+   "coins": 260
+  },
+  {
+   "words": 31,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór2",
+   "stallRect": [
+    510,
+    332,
+    397,
+    72
+   ],
+   "cure": [],
+   "ev": "Wieści z doliny2",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 17/200 Różne towary 1/2 Przepływ na minutę 5/8 +0 srebra/minWiosna · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "minute 5",
+   "t": 305.2,
+   "coins": 247
+  },
+  {
+   "words": 30,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "Najgorszy zastójTartak: czekanie na odbiór1",
+   "stallRect": [
+    510,
+    332,
+    397,
+    72
+   ],
+   "cure": [],
+   "ev": "Wieści z doliny3",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "OsadaDo rangi „Wieś targowa”Renoma 68/200 Różne towary 3/2 Przepływ na minutę 9/8 +11 srebra/minWiosna · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "minute 10",
+   "t": 605.2,
+   "coins": 208
+  },
+  {
+   "words": 31,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "stallRect": [
+    510,
+    332,
+    397,
+    72
+   ],
+   "cure": [],
+   "ev": "Wieści z doliny3",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "Wieś targowaDo rangi „Miasteczko”Renoma 208/1000 Różne towary 3/4 Przepływ na minutę 32/20 +14 srebra/minLato · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "rank letter",
+   "t": 985.2,
+   "coins": 268
+  },
+  {
+   "words": 24,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "",
+   "stallRect": null,
+   "cure": [],
+   "ev": "Wieści z doliny3",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "Wieś targowaDo rangi „Miasteczko”Renoma 339/1000 Różne towary 5/4 Przepływ na minutę 43/20 +38 srebra/minLato · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "minute 20",
+   "t": 1205.2,
+   "coins": 399
+  },
+  {
+   "words": 31,
+   "small": [],
+   "covered": [],
+   "overlaps": [],
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "stallRect": [
+    510,
+    332,
+    397,
+    72
+   ],
+   "cure": [],
+   "ev": "Wieści z doliny4",
+   "evRect": [
+    710,
+    68,
+    195,
+    52
+   ],
+   "evOpen": "false",
+   "plaque": "Wieś targowaDo rangi „Miasteczko”Renoma 764/1000 Różne towary 5/4 Przepływ na minutę 58/20 +41 srebra/minJesień · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "minute 30",
+   "t": 1805.2,
+   "coins": 794
+  },
+  {
+   "words": 63,
+   "small": [],
+   "covered": [
+    "button.btn.ev-btn \"Odłóż\" under path"
+   ],
+   "overlaps": [
+    "span \"Przyjmij\" x span.sc-kick \"Najgorszy zastój\"",
+    "button.btn.ev-btn \"Odłóż\" x span.al-badge.num \"1\""
+   ],
+   "stall": "Najgorszy zastójChata drwala: czekanie na odbiór1",
+   "stallRect": [
+    510,
+    332,
+    397,
+    72
+   ],
+   "cure": [],
+   "ev": "Wieści z doliny4 Jarmark trwa: za zboże kupcy płacą o 25% więcejDom poborcy myta58 Straż przy granicy Niewielka strażnica potrzebuje desek na naprawę pomostu i ziarna dla wartowników.Nagroda: 59 srebra · 29 renomy 0/8 0/10PrzyjmijOdłóżWędrowny kupiec4,2",
+   "evRect": [
+    605,
+    68,
+    300,
+    254
+   ],
+   "evOpen": "true",
+   "plaque": "Wieś targowaDo rangi „Miasteczko”Renoma 764/1000 Różne towary 5/4 Przepływ na minutę 58/20 +41 srebra/minJesień · rok 1",
+   "plaqueRect": [
+    70,
+    8,
+    272,
+    201
+   ],
+   "toasts": [],
+   "toastRects": [],
+   "notice": "",
+   "rank": "",
+   "pins": 0,
+   "sheet": "",
+   "fix": [],
+   "rail": [
+    0,
+    332,
+    915,
+    80
+   ],
+   "label": "event card open",
+   "t": 1805.2,
+   "coins": 794
+  }
+ ],
+ "shots": [
+  "land-01-menu.jpg",
+  "land-02-ledger.jpg",
+  "land-03-start.jpg",
+  "land-04-look1.jpg",
+  "land-05-look2.jpg",
+  "land-06-first-toast.jpg",
+  "land-07-merchant.jpg",
+  "land-08-min5.jpg",
+  "land-09-look-fix.jpg",
+  "land-10-min10.jpg",
+  "land-11-rank.jpg",
+  "land-12-rain.jpg",
+  "land-13-min20.jpg",
+  "land-14-min30.jpg",
+  "land-15-ev-open.jpg"
+ ],
+ "errors": [],
+ "taps": 92,
+ "menuScroll": true,
+ "startState": {
+  "tick": 14,
+  "coins": 260,
+  "rank": 0,
+  "wagons": 2,
+  "speed": 1,
+  "buildings": 5
+ },
+ "cureSeen": 7,
+ "pinsMax": 1,
+ "chunks": 105,
+ "end": {
+  "tick": 18052,
+  "coins": 794,
+  "rank": 1,
+  "wagons": 6,
+  "speed": 0,
+  "buildings": 8
+ },
+ "wallS": 1870.832
+}
