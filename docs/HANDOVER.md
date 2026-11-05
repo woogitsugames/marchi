@@ -25,7 +25,10 @@
   38–61 s, rozsądny gracz 3★ przy 10/30/60 s), **D-168 ranga 1 doliny przy renomie 120** (gracz „karta” 7,7–10,4 min),
   **D-170/D-171 posterunek handlowy za rzeką od rangi 4 + karta „Wąskie gardło”, zapis v9** (DECENT R5 117 min z
   posterunkiem, 132 bez; złote hasze misji bez zmian), nagłówek karty floty w dolinie „Droga do rangi”, raport rang 2–3.
-- W nocy: deweloper `claude/w-day9i` — błędy F2–F4 z raportu rang 2–3 (duch nie przecina drogi, pętla „Kup wóz” przy
+- Scalone w nocy: D-172..D-175 (F2–F4: duch/stawianie nie przecina drogi, „Kup wóz” tylko gdy rynek przyjmie ładunek,
+  karta rangi pomija budynek bez miejsca), raport odporności `docs/research/2026-11-06-robustness.md` (0 błędów sim;
+  test czystości obejmuje teraz podkatalogi). W toku: `claude/w-day9j` drobiazgi UI.
+- (było) W nocy: deweloper `claude/w-day9i` — błędy F2–F4 z raportu rang 2–3 (duch nie przecina drogi, pętla „Kup wóz” przy
   nasyconym rynku, karta rangi pomija budynek bez miejsca).
 
 ### Decyzje na rano
@@ -34,6 +37,9 @@
    (od rangi 1, gdy brakuje tylko renomy: „postaw jeszcze jednego producenta” działającego łańcucha, z proporcjami)
    → ranga 2 23–29 min, ranga 3 40–51 min, DECENT bez zmian. Alternatywa: progi renomy 750/2 000 (DECENT wypada z
    okien testu). Rekomendacja: **F1**.
+1b. **F2 (D-172): blokada stawiania budynku, który przetnie ukośny odcinek drogi** — wdrożona w symulacji
+   (`validatePlace`), więc działa też przy stawianiu ręcznym; hasze wszystkich misji bez zmian. Zostawić tak
+   (rekomendacja) czy tylko dla ducha z kart?
 2. **Posterunek handlowy (D-170/D-171)** — obejrzeć zrzuty `docs/shots/trade-*.jpg` (model zamknięty/otwarty, kra na
    drewnianym moście, karta „Wąskie gardło”).
 3. **Przegląd tłumaczeń przez native speakerów** — lista niepewnych miejsc w raporcie D-155 (tytuł XIII, „marchia”,
