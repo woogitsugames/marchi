@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const b = await chromium.launch({ args: ['--disable-gpu'] });
 const p = await (await b.newContext({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true })).newPage();
-await p.goto('http://127.0.0.1:5195/?play=m11&ff=300&speed=0&quality=low&dynres=0&debug=1&view=flat&lang=pl');
+await p.goto(`http://127.0.0.1:${process.env.PORT ?? 5195}/?play=m11&ff=300&speed=0&quality=low&dynres=0&debug=1&view=flat&lang=pl`);
 await p.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 180000 });
 await p.waitForTimeout(1000);
 await p.evaluate(() => document.querySelector('.stall-eye')?.click()); await p.waitForTimeout(1200);

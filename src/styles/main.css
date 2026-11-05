@@ -146,6 +146,18 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   background: var(--fill, var(--parchment));
   z-index: -1;
 }
+/* focus ring on a chamfered surface (D-137, ui audit day 9 P1): the host clip-path clipped the D-123 outline and its
+   pale bands, so the wine fix buttons showed no ring at all. While focused the host drops the clip and paints its
+   frame colour as four corner-cut gradients (same 45° chamfer, leg --c), which leaves the ring outside the box. */
+.cf:focus-visible {
+  --cg: calc(var(--c) * .7071);
+  clip-path: none;
+  background:
+    linear-gradient(135deg, transparent var(--cg), var(--frame, var(--iron)) 0) top left / 50.5% 50.5% no-repeat,
+    linear-gradient(225deg, transparent var(--cg), var(--frame, var(--iron)) 0) top right / 50.5% 50.5% no-repeat,
+    linear-gradient(315deg, transparent var(--cg), var(--frame, var(--iron)) 0) bottom right / 50.5% 50.5% no-repeat,
+    linear-gradient(45deg, transparent var(--cg), var(--frame, var(--iron)) 0) bottom left / 50.5% 50.5% no-repeat;
+}
 .parch { --fill: var(--fibre) 0 0 / 220px 220px, var(--parchment); }
 .parch-dim { --fill: var(--fibre) 0 0 / 220px 220px, var(--parchment-dim); }
 .oak { --fill: var(--oak); color: var(--parchment); }
