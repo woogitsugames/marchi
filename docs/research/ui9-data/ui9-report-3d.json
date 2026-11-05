@@ -1,0 +1,712 @@
+[
+ {
+  "tag": "m3-sheet|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game has-sheet",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "mode-game has-sheet",
+   "card": {
+    "r": [
+     8,
+     736,
+     326,
+     827
+    ],
+    "t": "Tempo zamówieniaTartak: błoto spowalnia dostawy — bruk na 49 polach przyspieszy je o 53%",
+    "cls": "stall-card",
+    "sw": 318,
+    "cw": 318,
+    "sh": 91,
+    "ch": 91
+   },
+   "eye": [
+    266,
+    755,
+    318,
+    807
+   ],
+   "sheet": {
+    "r": [
+     0,
+     453,
+     412,
+     915
+    ],
+    "title": null,
+    "bodyR": [
+     18,
+     545,
+     394,
+     889
+    ],
+    "scroll": [
+     344,
+     344,
+     0
+    ]
+   },
+   "fix": {
+    "r": [
+     26,
+     616,
+     386,
+     672
+    ],
+    "t": "Wybrukuj odcinek: 49 pól−147",
+    "sw": 360,
+    "cw": 360,
+    "dis": "false"
+   },
+   "fixNote": "Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o 53% szybsza, a prognoza nie daje trzech pieczęci.",
+   "dock": [
+    26,
+    610,
+    386,
+    680
+   ],
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": {
+    "el": "section.sheet",
+    "r": [
+     0,
+     453,
+     412,
+     915
+    ],
+    "outline": "none 3px rgb(43, 38, 32) off 2px",
+    "shadow": "none"
+   },
+   "pins": [
+    {
+     "r": [
+      38,
+      367,
+      86,
+      423
+     ],
+     "n": "Najgorszy zastój — Gospodarstwo: Pełno zboża — odbiór: wóz 3, stoi 0:50",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "m3-sheet|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game has-sheet",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "is-side is-split mode-game has-sheet",
+   "card": {
+    "r": [
+     428,
+     920,
+     818,
+     992
+    ],
+    "t": "Tempo zamówieniaTartak: błoto spowalnia dostawy — bruk na 49 polach przyspieszy je o 53%",
+    "cls": "stall-card",
+    "sw": 390,
+    "cw": 390,
+    "sh": 72,
+    "ch": 72
+   },
+   "eye": [
+    758,
+    930,
+    810,
+    982
+   ],
+   "sheet": {
+    "r": [
+     514,
+     66,
+     894,
+     908
+    ],
+    "title": null,
+    "bodyR": [
+     532,
+     154,
+     876,
+     498
+    ],
+    "scroll": [
+     344,
+     344,
+     0
+    ]
+   },
+   "fix": {
+    "r": [
+     540,
+     225,
+     868,
+     281
+    ],
+    "t": "Wybrukuj odcinek: 49 pól−147",
+    "sw": 328,
+    "cw": 328,
+    "dis": "false"
+   },
+   "fixNote": "Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o 53% szybsza, a prognoza nie daje trzech pieczęci.",
+   "dock": [
+    540,
+    219,
+    868,
+    289
+   ],
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": {
+    "el": "section.sheet",
+    "r": [
+     514,
+     66,
+     894,
+     908
+    ],
+    "outline": "none 3px rgb(43, 38, 32) off 2px",
+    "shadow": "none"
+   },
+   "pins": []
+  },
+  "console": []
+ },
+ {
+  "tag": "m3-sheet|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side is-short mode-game has-notice has-sheet",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "is-landscape is-side is-short mode-game has-notice has-sheet",
+   "card": {
+    "r": [
+     428,
+     332,
+     829,
+     404
+    ],
+    "t": "Tempo zamówieniaTartak: błoto spowalnia dostawy — bruk na 49 polach przyspieszy je o 53%",
+    "cls": "stall-card",
+    "sw": 401,
+    "cw": 401,
+    "sh": 72,
+    "ch": 72
+   },
+   "eye": [
+    769,
+    342,
+    821,
+    394
+   ],
+   "sheet": {
+    "r": [
+     525,
+     66,
+     905,
+     320
+    ],
+    "title": null,
+    "bodyR": [
+     543,
+     144,
+     887,
+     290
+    ],
+    "scroll": [
+     330,
+     146,
+     0
+    ]
+   },
+   "fix": {
+    "r": [
+     551,
+     213,
+     879,
+     261
+    ],
+    "t": "Wybrukuj odcinek: 49 pól−147",
+    "sw": 328,
+    "cw": 328,
+    "dis": "false"
+   },
+   "fixNote": "Błoto to nie przestój: wozy jadą wolniej. Na bruku ta dostawa będzie o 53% szybsza, a prognoza nie daje trzech pieczęci.",
+   "dock": [
+    551,
+    209,
+    879,
+    265
+   ],
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": {
+    "el": "section.sheet",
+    "r": [
+     525,
+     66,
+     905,
+     320
+    ],
+    "outline": "none 3px rgb(43, 38, 32) off 2px",
+    "shadow": "none"
+   },
+   "pins": [
+    {
+     "r": [
+      55,
+      154,
+      103,
+      210
+     ],
+     "n": "Chata drwala: Pełno drewna — odbiór: wóz 4, stoi 0:30",
+     "cls": "bubble hit is-minor is-shown breathe is-under"
+    },
+    {
+     "r": [
+      693,
+      98,
+      741,
+      154
+     ],
+     "n": "Piekarnia: Brak wolnego wozu do przewozu mąki",
+     "cls": "bubble hit is-shown breathe is-under"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "pins|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "mode-game",
+   "card": {
+    "r": [
+     8,
+     755,
+     326,
+     827
+    ],
+    "t": "Najgorszy zastójMłyn wodny: wszystkie wozy zajęte",
+    "cls": "stall-card",
+    "sw": 318,
+    "cw": 318,
+    "sh": 72,
+    "ch": 72
+   },
+   "eye": [
+    266,
+    765,
+    318,
+    817
+   ],
+   "sheet": null,
+   "fix": null,
+   "fixNote": null,
+   "dock": null,
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": null,
+   "pins": [
+    {
+     "r": [
+      190,
+      400,
+      238,
+      456
+     ],
+     "n": "Najgorszy zastój — Młyn wodny: Brak wolnego wozu do przewozu zboża, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "pins|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "is-side is-split mode-game",
+   "card": {
+    "r": [
+     428,
+     922,
+     818,
+     990
+    ],
+    "t": "Najgorszy zastójMłyn wodny: wszystkie wozy zajęte",
+    "cls": "stall-card",
+    "sw": 390,
+    "cw": 390,
+    "sh": 68,
+    "ch": 68
+   },
+   "eye": [
+    758,
+    930,
+    810,
+    982
+   ],
+   "sheet": null,
+   "fix": null,
+   "fixNote": null,
+   "dock": null,
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": null,
+   "pins": [
+    {
+     "r": [
+      441,
+      441,
+      489,
+      497
+     ],
+     "n": "Najgorszy zastój — Młyn wodny: Brak wolnego wozu do przewozu zboża, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "pins|915x412|pl",
+  "vw": 915,
+  "vh": 412,
+  "body": "is-landscape is-side is-short mode-game",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "is-landscape is-side is-short mode-game",
+   "card": {
+    "r": [
+     428,
+     334,
+     829,
+     402
+    ],
+    "t": "Najgorszy zastójMłyn wodny: wszystkie wozy zajęte",
+    "cls": "stall-card",
+    "sw": 401,
+    "cw": 401,
+    "sh": 68,
+    "ch": 68
+   },
+   "eye": [
+    769,
+    342,
+    821,
+    394
+   ],
+   "sheet": null,
+   "fix": null,
+   "fixNote": null,
+   "dock": null,
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": null,
+   "pins": [
+    {
+     "r": [
+      112,
+      340,
+      160,
+      396
+     ],
+     "n": "Krytyczny zastój — Gospodarstwo: Pełno zboża — brak wozu do odbioru, stoi 0:50",
+     "cls": "bubble hit is-critical is-shown breathe is-under"
+    },
+    {
+     "r": [
+      439,
+      149,
+      487,
+      205
+     ],
+     "n": "Najgorszy zastój — Młyn wodny: Brak wolnego wozu do przewozu zboża, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    },
+    {
+     "r": [
+      639,
+      201,
+      687,
+      257
+     ],
+     "n": "Krytyczny zastój — Piekarnia: Brak dostępnych zapasów mąki, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": [
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+  ]
+ },
+ {
+  "tag": "ring-map|412x915|pl",
+  "vw": 412,
+  "vh": 915,
+  "body": "mode-game",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "mode-game",
+   "card": {
+    "r": [
+     8,
+     755,
+     326,
+     827
+    ],
+    "t": "Najgorszy zastójMłyn wodny: wszystkie wozy zajęte",
+    "cls": "stall-card",
+    "sw": 318,
+    "cw": 318,
+    "sh": 72,
+    "ch": 72
+   },
+   "eye": [
+    266,
+    765,
+    318,
+    817
+   ],
+   "sheet": null,
+   "fix": null,
+   "fixNote": null,
+   "dock": null,
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": {
+    "el": "button.bubble.hit",
+    "r": [
+     190,
+     400,
+     238,
+     456
+    ],
+    "outline": "solid 2px rgb(29, 24, 19) off 2px",
+    "shadow": "rgb(246, 233, 200) 0px 0px 0px 2px, rgb(246, 233, 200) 0px 0px 0px 6px"
+   },
+   "pins": [
+    {
+     "r": [
+      190,
+      400,
+      238,
+      456
+     ],
+     "n": "Najgorszy zastój — Młyn wodny: Brak wolnego wozu do przewozu zboża, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "ring-map|904x1000|pl",
+  "vw": 904,
+  "vh": 1000,
+  "body": "is-side is-split mode-game",
+  "offscreen": [],
+  "overlap": [],
+  "small": [],
+  "overflow": [],
+  "hscroll": false,
+  "probe": {
+   "dir": "ltr",
+   "body": "is-side is-split mode-game",
+   "card": {
+    "r": [
+     428,
+     922,
+     818,
+     990
+    ],
+    "t": "Najgorszy zastójMłyn wodny: wszystkie wozy zajęte",
+    "cls": "stall-card",
+    "sw": 390,
+    "cw": 390,
+    "sh": 68,
+    "ch": 68
+   },
+   "eye": [
+    758,
+    930,
+    810,
+    982
+   ],
+   "sheet": null,
+   "fix": null,
+   "fixNote": null,
+   "dock": null,
+   "subject": null,
+   "more": null,
+   "letter": null,
+   "letterScroll": null,
+   "act": null,
+   "lossTxt": null,
+   "sell": null,
+   "focus": {
+    "el": "button.bubble.hit",
+    "r": [
+     441,
+     441,
+     489,
+     497
+    ],
+    "outline": "solid 2px rgb(29, 24, 19) off 2px",
+    "shadow": "rgb(246, 233, 200) 0px 0px 0px 2px, rgb(246, 233, 200) 0px 0px 0px 6px"
+   },
+   "pins": [
+    {
+     "r": [
+      441,
+      441,
+      489,
+      497
+     ],
+     "n": "Najgorszy zastój — Młyn wodny: Brak wolnego wozu do przewozu zboża, stoi 1:30",
+     "cls": "bubble hit is-critical is-shown breathe"
+    }
+   ]
+  },
+  "console": []
+ },
+ {
+  "tag": "ring-map|915x412|pl",
+  "error": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5195/?play=m1&ff=90&speed=0&quality=low&dynres=0&debug=1&lang=pl",
+  "console": []
+ }
+]
