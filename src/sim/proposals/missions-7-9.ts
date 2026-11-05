@@ -20,8 +20,8 @@ export const M7_FISHER_SITE = { x: 39, y: 30, facing: 2 } as const;
 export const M7_DRY_SITE = { x: 30, y: 20, facing: 2 } as const;
 export const M8_QUARRY_SITE = { x: 57, y: 7, facing: 0 } as const;
 export const M8_FALSE_QUARRY_SITE = { x: 30, y: 28, facing: 0 } as const;
-/** VIII's lesson (D-165): the dirt lane every crossing load uses, bakery gate to castle gate (24 cells, 24 stone). */
-export const M8_LANE = { y: 24, x1: 30, x2: 53 } as const;
+/** VIII's lesson (D-165): the dirt lane every crossing load uses, from the bakery gate to the castle gate (23 cells, 23 stone) — the stretch the mud card offers. */
+export const M8_LANE = { y: 24, x1: 31, x2: 53 } as const;
 export const M9_WOODCUTTER_SITE = { x: 12, y: 34, facing: 1 } as const;
 
 /** Mission data; missions.ts assigns these to MISSIONS.m7..m9. */
@@ -50,9 +50,9 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
   },
   m8: {
     id: 'm8', mapId: 'valley-m8', seed: M8_SEED,
-    // Redesign (D-165): every load of the bread and plank chains crosses one 24-cell dirt lane (x=30..53, y=24)
+    // Redesign (D-165): every load of the bread and plank chains crosses one dirt lane (x=31..53, y=24, 23 cells)
     // between the western hamlet (farm, bakery, sawmill) and the eastern end (mill, woodcutter, castle). The storm
-    // turns it to mud; more wagons only queue on it, cobbles (24 stone) make every crossing twice as fast.
+    // turns it to mud; more wagons barely shorten that wait, cobbles (23 stone) make every crossing twice as fast.
     coins: 240, wagons: 7,
     buildable: ['quarry'],
     buildings: [
@@ -61,7 +61,7 @@ export const PROPOSED_MISSIONS_7_9: Record<Mission789Id, MissionDef> = {
       { type: 'stable', x: 41, y: 22, facing: 0 },
       { type: 'quarry', ...M8_QUARRY_SITE, stock: { stone: 8 } },
       // the stone yard by the quarry road and the village granary on the lane: each keeps at most 18 stone
-      // (STONE_RESERVE), so the 24 the lane needs only fit in two
+      // (STONE_RESERVE), so the 23 the lane needs only fit in two
       { type: 'warehouse', x: 59, y: 18, facing: 3, stock: { stone: 8 } },
       { type: 'warehouse', x: 39, y: 25, facing: 2, stock: { stone: 8 } },
       { type: 'farm', x: 25, y: 21, facing: 0, stock: { grain: 6 } },
