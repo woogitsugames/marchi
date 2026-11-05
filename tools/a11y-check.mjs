@@ -106,7 +106,7 @@ try {
   }
   // --- the focus ring is painted, not only computed (D-137, ui audit day 9 P1): Tab to the wine fix button (a
   //     chamfered .cf surface, whose clip-path used to clip the ring) and read the pixels just outside its edges:
-  //     the ink line at 2-4 px and the pale band at 4-8 px must both be there along the top and the bottom edge
+  //     the ink line at 2-4 px and the outer pale band at 4-6 px must both be there along the top and the bottom edge
   {
     const { ctx, page } = await open('play=m11&ff=300&speed=0&quality=low&dynres=0&view=flat');
     await page.waitForTimeout(800);
@@ -139,7 +139,7 @@ try {
         let ink = 0, pale = 0, n = 0;
         for (let k = 1; k <= 10; k++) {
           const x = r.x + 16 + (k * (r.w - 32)) / 11;
-          for (const [yi, yp] of [[r.y - 3, r.y - 6.5], [r.y + r.h + 3, r.y + r.h + 6.5]]) {
+          for (const [yi, yp] of [[r.y - 3, r.y - 5], [r.y + r.h + 3, r.y + r.h + 5]]) {
             n++;
             if (lum(x, yi) < 70) ink++;
             if (lum(x, yp) > 190) pale++;

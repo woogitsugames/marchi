@@ -1038,6 +1038,9 @@ bdi { unicode-bidi: isolate; }
 /* focus and scrollIntoView stop above the dock (its height + fade, measured by sheets.ts; a11y F1, D-120) */
 .sheet-body { scroll-padding-block-end: var(--dock-h, 0px); }
 .fix-dock .fix-note { margin: 0; }
+/* the hint under the button keeps clear of its 8 px focus ring (D-137/D-138) */
+.fix-dock > .fix-btn + * { margin-block-start: 6px; }
+body.is-short .fix-dock > .fix-btn + * { margin-block-start: 0; }
 /* hint-only remedies (one-lane bridge jam, a stranded output in a fixed-map mission): icon beside the text */
 .jam-hint, .granary-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
 .jam-hint svg, .granary-hint svg { flex: none; }

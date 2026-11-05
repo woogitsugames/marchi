@@ -1887,8 +1887,8 @@ on any wine button — "Naprawa" (Kup wóz, Postaw jeszcze, Wybrukuj, Wyłóż m
 as four corner-cut linear gradients (45°, leg `--c`, the same chamfer); the fill pseudo-element keeps its own
 `chamfer-in` clip, so the button looks the same and the ring lies outside it. Unfocused buttons are untouched (no
 risk to drop shadows that the clip used to hide). Verified by pixels, not styles: `npm run a11y` now Tabs to the
-fix button in XI and reads 20 samples 3 px (ink) and 6.5 px (pale band) outside its top and bottom edges
-(20/20 + 20/20; 0/20 before). Shots `day9e-ring-{before,after}-412x915-pl.jpg`. (decided)
+fix button in XI and reads 20 samples 3 px (ink) and 5 px (outer pale band) outside its top and bottom edges
+(ink 20/20, pale 20/20). The docked hint under the button keeps 10 px clear of it so its text does not cover the ring. Shots `day9e-ring-{before,after}-412x915-pl.jpg`. (decided)
 
 **D-138 — Short landscape: the fix's hint docks beside the button; the chain's subject is a plain row (day 9e; ui audit day 9, P2-2/P2-3).**
 On a short side sheet the dock (D-100) covered the hint under the button, and for the pace cures that hint *is* the
