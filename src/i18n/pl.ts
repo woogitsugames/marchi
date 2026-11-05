@@ -373,7 +373,7 @@ export const pl = {
   'menu.m11Sub': 'Daleka słodownia zajmuje wozy',
   'menu.m12': 'XII. Wielkie warzenie',
   'menu.m12Sub': 'Zapas piwa na kolejną dostawę',
-  // mission XIII (night 6, D-102): see PENDING_KEYS
+  // mission XIII (night 6, D-102): localized
   'menu.m13': 'XIII. Pierwsze piętro łańcucha',
   'menu.m13Sub': 'Jeden wóz na całą marchię',
   // free valley seasons (D-33): localized
@@ -395,7 +395,7 @@ export const pl = {
   'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
   'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
   'wagon.slowThaw': 'roztopy — {pct}% normalnej prędkości; bruk nie rozmięka',
-  // demolish tool in contract missions: second tap confirms (see PENDING_KEYS)
+  // demolish tool in contract missions: second tap confirms (localized)
   'demolish.confirm': '{name}: w tej misji nie postawisz go ponownie. Dotknij jeszcze raz, by rozebrać.',
   // seasons / stall readability playtest fixes (2026-11-02): localized
   'err.NO_STONE.coming': 'W drodze do spichlerzy: {incoming}, czeka w kamieniołomach: {quarry}.',
@@ -624,11 +624,11 @@ export const pl = {
   // "Naprawa" for a full output with nowhere to go (day 1, owner decision 2): localized
   'fix.granary': 'Postaw spichlerz',
   'fix.granaryWhy': 'Towar nie ma dokąd jechać: spichlerz przy drodze przyjmie go i zwolni plac.',
-  // one producer for two workshops (research 2026-11-04, P5): see PENDING_KEYS
+  // one producer for two workshops (research 2026-11-04, P5): localized
   'cause.sharedOne': '{who} to jedyny dostawca dla {n, plural, one {# warsztatu} few {# warsztatów} many {# warsztatów} other {# warsztatu}}',
   'fix.producer': 'Postaw jeszcze: {name}',
   'fix.producerWhy': '{who}: jedyny dostawca dla {n, plural, one {# warsztatu} few {# warsztatów} many {# warsztatów} other {# warsztatu}}. Drugi taki budynek obok podwoi dostawy; nowy wóz tu nie pomoże.',
-  // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): see PENDING_KEYS
+  // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): localized
   'cause.heldJam': '{wagon} stoi przed wąskim mostem',
   'cause.heldIce': '{wagon} stoi przed mostem zamkniętym przez krę',
   'fix.pave': 'Wyłóż most kamieniem',
@@ -638,25 +638,25 @@ export const pl = {
   'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',
   // best seals and time per contract in the mission menu (day 1, owner decision 13): localized
   'menu.bestAria': 'Najlepszy wynik: {n} z 3 pieczęci, czas {time}',
-  // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (see PENDING_KEYS)
+  // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (localized)
   'fix.surplus': 'Nadwyżka: nikt teraz nie potrzebuje {goodGen}, poczeka na placu. Nowy wóz tego nie przyspieszy.',
   'cause.surplus': 'nadwyżka, nikt jej teraz nie potrzebuje',
-  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (see PENDING_KEYS)
+  // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (localized)
   'fix.storeRoom': 'Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:',
   'cause.storeRoom': 'pełny, ale inny spichlerz ma miejsce',
-  // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (see PENDING_KEYS)
+  // diagnosis audit 2026-11-03, fix 6: the order of this good is filled (localized)
   'fix.orderFilled': 'Zamówienie na {goodAcc} wypełnione — reszta zostaje na placu, nic nie trzeba robić.',
   'cause.orderFilled': 'zamówienie wypełnione, reszta czeka',
-  // day 6 (first ten minutes): end letter onwards, cold-start menu (see PENDING_KEYS)
+  // day 6 (first ten minutes): end letter onwards, cold-start menu (localized)
   'contract.next': 'Następna misja',
   'menu.startHere': 'Zacznij tutaj',
   'menu.m1Sub': 'Przerzuć most przez rzekę i zdąż przed śniegiem',
-  // free valley top-up in fuller loads (D-94; see PENDING_KEYS)
+  // free valley top-up in fuller loads (D-94; localized)
   'why.topUp': 'Ma {goodGen} na pracę; dowóz zamówi, gdy zmieści się {n} — pełniejszy wóz, mniej kursów.',
-  // mission VIII quarry with paving stone already stored (D-95; see PENDING_KEYS)
+  // mission VIII quarry with paving stone already stored (D-95; localized)
   'cause.stoneStored': 'czeka na wóz, a spichlerz ma już kamień na bruk',
   'fix.stoneStored': '{n, plural, one {W spichlerzu jest # kamień} few {W spichlerzu są # kamienie} many {W spichlerzu jest # kamieni} other {W spichlerzu jest # kamienia}} — wystarczy na bruk ({cells}). Kamieniołom poczeka na wolny wóz; nowy wóz i tak najpierw wiezie wkład warsztatów.',
-  // watch-mode seal forecast line (D-99; see PENDING_KEYS)
+  // watch-mode seal forecast line (D-99; localized)
   'contract.sealPace.eta': 'gotowe za {time}',
   'contract.sealPace.late': 'spóźni się {time}',
   // watch mode tempo line under the folded seal (D-155)
@@ -664,9 +664,9 @@ export const pl = {
   'seal.tempo.mud': 'tempo: błoto spowalnia wozy',
   'seal.tempo.fleet': 'tempo: kup wóz',
   'seal.tempo.rank': 'ranga: sprzedaj {goodAcc}',
-  // short landscape cause chain: the middle links folded behind one row (D-111; see PENDING_KEYS)
+  // short landscape cause chain: the middle links folded behind one row (D-111; localized)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
-  // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
+  // day 8c: the pace card (a slow order, not a stall) — localized
   'hud.pace': 'Tempo zamówienia',
   'cause.paceProducer': '×{n}: {rate}/min, na {seals} trzeba ≈{need}/min — postaw więcej',
   'fix.paceProducerWhy': 'Najwyżej {cap}/min, na {seals} trzeba ≈{need}/min. Pracuje bez przerwy — wóz ani droga tego nie przyspieszą, tylko kolejny taki budynek.',
@@ -688,7 +688,7 @@ export const pl = {
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
   'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
   'fix.paceFleetWhyFree': 'Przez minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
-  // free valley opening letter (D-151; see PENDING_KEYS)
+  // free valley opening letter (D-151; localized)
   'letter.valleyOpening': 'Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi renomę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
 } as const;
 
@@ -700,83 +700,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'hud.rainSoonDirt',
-  'fix.granary',
-  'fix.granaryWhy',
-  'fix.granaryHint',
-  'hud.speedHint',
-  'menu.bestAria',
-  'why.pace.waitTranche',
-  'contract.toTranche',
-  'contract.pace.rate',
-  'codex.toggle',
-  'codex.check',
-  'codex.fixes',
-  'codex.example',
-  'wagon.mudVsCobble',
-  'wagon.thawVsCobble',
-  'why.full.out',
-  'why.full.outBatch',
-  'why.full.store',
-  'why.full.halted',
-  'why.full.refuses',
-  'why.full.waiting',
-  'why.full.blocked',
-  'fix.surplus',
-  'cause.surplus',
-  'fix.storeRoom',
-  'cause.storeRoom',
-  'fix.orderFilled',
-  'cause.orderFilled',
-  'contract.next',
-  'menu.startHere',
-  'menu.m1Sub',
-  'why.topUp',
-  'cause.stoneStored',
-  'fix.stoneStored',
-  'contract.sealPace.eta',
-  'contract.sealPace.late',
-  'seal.tempo.producer',
-  'seal.tempo.mud',
-  'seal.tempo.fleet',
-  'seal.tempo.rank',
-  'menu.m13',
-  'menu.m13Sub',
-  'cause.sharedOne',
-  'fix.producer',
-  'fix.producerWhy',
-  'cause.heldJam',
-  'cause.heldIce',
-  'fix.pave',
-  'fix.paveWhy',
-  'why.more',
-  'hud.pace',
-  'cause.paceProducer',
-  'fix.paceProducerWhy',
-  'cause.paceMud',
-  'fix.mud',
-  'fix.mudWhy',
-  'cause.iceAhead',
-  'fix.iceAheadWhy',
-  'cause.paceFleet',
-  'fix.paceFleetWhy',
-  'fix.paceFleetWhyFree',
-  'letter.valleyOpening',
-  'fix.paceFleetEta',
-  'hud.rankCard',
-  'cause.paceRank',
-  'fix.rank',
-  'fix.rankWhy',
-  'end.act.wagon',
-  'end.act.road',
-  'end.act.bridge',
-  'end.act.granary',
-  'end.act.other',
-  'menu.shortcuts',
-  'menu.shortcutsHint',
-  'pin.worst',
-  'pin.critical',
-  'pin.stood',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
