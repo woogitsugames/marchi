@@ -683,6 +683,8 @@ export const pl = {
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
   'fix.paceFleetWhy': 'Przez ostatnią minutę żaden wóz nie stał wolny, a prognoza daje {seals}. Nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
   'fix.paceFleetWhyFree': 'Przez ostatnią minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
+  // free valley opening letter (D-151; see PENDING_KEYS)
+  'letter.valleyOpening': 'Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi renomę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
 } as const;
 
 export type MessageKey = keyof typeof pl;
@@ -750,6 +752,7 @@ export const PENDING_KEYS = [
   'cause.paceFleet',
   'fix.paceFleetWhy',
   'fix.paceFleetWhyFree',
+  'letter.valleyOpening',
   'fix.paceFleetEta',
   'hud.rankCard',
   'cause.paceRank',

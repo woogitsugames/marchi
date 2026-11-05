@@ -1912,3 +1912,14 @@ calm slot of the worst-stall card.
 - Read-only UI; tests `tests/valley-rank.test.ts` (fresh valley → farm by the castle, read-only; build-order rules
   while driven by the research's minimal plan; never in any contract mission). `valley-fleet.test.ts` now admits the
   rank kind beside the fleet kind.
+
+**D-151 — The free valley opens with the castellan's letter and on the castle (owner 2026-11-05; research sandbox-first-30).**
+A new valley ledger (not a continued save, not a debug `?play=` start — the same rules as the contract letters, D-46/D-118)
+now shows a short opening letter from Wszebor: no order, no deadline; renown from goods sold at the castle market and
+the count of different goods raise the rank, the rank plaque shows what is missing; first step — a farm by the castle
+road, the wagons carry its harvest to the market. `buildOpeningLetter` falls back to the i18n key
+`letter.valleyOpening` (pl/en, PENDING_KEYS) when the mission has no contract letter, so the letter closes with one
+gesture and pauses the game exactly like the contract letters. The portrait start view was an empty meadow (the map's
+default orbit target); a new game without a contract now frames the castle footprint and gate (`frameCastleSoon` →
+`frameCells`, which keeps the view when the castle is already well inside the free map area, so landscape is untouched
+when it already shows it). UI only, hashes unchanged. Shots `docs/shots/valley-letter-*.jpg`. (decided — owner 2026-11-05)
