@@ -5,6 +5,8 @@
 // Per step it records taps, wall time, sim time, PL words on screen, tap targets < 48 px, clipped /
 // covered text, what the tutorial points at (on/off screen, under the note), and gaps with no clear next
 // action. Screenshots: small JPGs in docs/research/shots-first10b/ (FIRST10_SHOTDIR).
+// Run c (2026-11-04): deepVis no longer requires a non-zero box on ancestors (0 px tall layer divs hid
+// every letter, sheet and fix button from the audit); one shot of every Why sheet with a fix.
 //
 // Usage: npx vite preview --port 5195 --strictPort   (after npm run build)
 //        node tools/first10-minutes.mjs 412x915 [more sizes...]   -> JSON on stdout + shots
@@ -34,7 +36,10 @@ function auditPage() {
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   };
-  const deepVis = (el) => { for (let e = el; e && e !== document.body; e = e.parentElement) { if (!vis(e) || e.hidden || e.getAttribute('aria-hidden') === 'true' || e.classList.contains('sr-only')) return false; } return true; };
+  // ancestors are checked for visibility/display/opacity only, not for size: the HUD/sheet/letter layers are
+  // 0 px tall boxes whose children overflow them (run c: every letter and sheet counted 0 words, fix buttons missed)
+  const shown = (e) => { const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) >= 0.05; };
+  const deepVis = (el) => { if (!vis(el)) return false; for (let e = el; e && e !== document.body; e = e.parentElement) { if (!shown(e) || e.hidden || e.getAttribute('aria-hidden') === 'true' || e.classList.contains('sr-only')) return false; } return true; };
   const desc = (el) => {
     const c = typeof el.className === 'string' ? el.className.split(/\s+/).filter(Boolean).slice(0, 2).join('.') : '';
     const t = (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
@@ -408,9 +413,12 @@ async function run([w, h]) {
     whys++;
     const stallText = await page.evaluate(() => document.querySelector('.stall-row .sc-text')?.textContent?.trim() ?? '');
     cur.notes.push('stall card: ' + stallText);
+    // a card left open (e.g. the castle card from tutorial step 6) may cover the stall card: the player closes it first
+    const eyeCovered = await page.evaluate(() => { const e = document.querySelector('.stall-eye'); if (!e) return false; const r = e.getBoundingClientRect(); const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!h && !e.contains(h); });
+    if (eyeCovered) { cur.notes.push('stall card covered by an open sheet: close it (1 gesture)'); cur.taps++; taps++; await page.keyboard.press('Escape'); await settle(); }
     await tapSel('.stall-eye', 'oko');
     const a = await audit('why sheet');
-    if (whys === 1) await shot('why');
+    if (whys <= 3) await shot('why' + whys);
     if (a.fix.length) {
       cur.notes.push('fix: ' + a.fix.join(' / '));
       const c0 = (await sim()).coins;
