@@ -543,6 +543,11 @@ body.is-side .sheet-grip::before { display: none; }
 .setting .s-label { font-size: 15px; font-weight: 700; margin-bottom: 6px; display: block; }
 .setting .s-hint { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
 .sell-hint { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+/* "Sprzedaj za 15" while the wagon is on a run (day 9b, D-131): the kit's disabled card stays, but the label sits on
+   a parchment plaque at full opacity instead of fading the whole card to .6 (2.0:1, a11y F19); the coin dims */
+.sheet .btn.cf.sell-btn.is-disabled { opacity: 1; }
+.sheet .btn.sell-btn.is-disabled svg { opacity: .45; }
+.sheet .btn.sell-btn.is-disabled .sell-l { background: var(--kparch); box-shadow: 0 0 0 2px var(--kparch); border-radius: 2px; padding-inline: 4px; color: var(--ink-soft); }
 /* volume sliders: an oak groove with an ochre fill and a chamfered iron slider; 48 px tall hit area */
 .vol {
   -webkit-appearance: none;

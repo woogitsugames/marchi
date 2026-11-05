@@ -42,6 +42,7 @@ import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
+import { tutorialEndActions } from './tutorialEnd';
 import { DiagPanel } from './diagPanel';
 import { fmtInt, iso, buildingName } from './format';
 import type { IconId } from './icons';
@@ -514,12 +515,10 @@ export class App implements PanelNav {
         this.prefs.tutorialM1 = r;
         savePrefs(this.prefs);
         if (this.tutorial === tut) this.tutorial = null;
-        // done or skipped: put the road tool away, so the next tap on the map opens a card instead of drawing a
-        // road (first-10-minutes-b, item 3)
-        if (this.tool === 'road' || this.tool === 'cobble') this.setTool('none');
-        // done: the last step left the castle sheet open, and in portrait it covered the worst-stall card, so the
-        // first stall after the tutorial was invisible (first-10-minutes-c N1, D-129). Skipped: the player's own sheet stays.
-        if (r === 'done') this.sheets.closeAll();
+        // road tool away (done or skipped); sheets closed when done (D-129) — see tutorialEndActions
+        const act = tutorialEndActions(r, this.tool);
+        if (act.toolAway) this.setTool('none');
+        if (act.closeSheets) this.sheets.closeAll();
       },
     });
     this.tutorial = tut;
