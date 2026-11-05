@@ -1889,7 +1889,7 @@ changes. `jam-diff` (60 wagons, 48 queued, 90 frames): 0 differing pixels. Rende
 `Hud.update` ran the stall/pace card (`paceCard`, `cureFor`, `calmWhy`, `JSON.stringify(status)`) and the whole
 `updateContract` (pill HTML via `iconSvg` + `tHtml`, milestone texts) on every frame, then let `setHtml` find that
 nothing changed. Now a key of what that part reads — world and state objects, tick, the stall-ranking array (replaced
-on every command applied in pause, D-ranking), pace log, cards flag, language, coins, net version, building count —
+on every command applied in pause, `StallRanking`), pace log, cards flag, language, coins, net version, building count —
 skips the cobble gate, the pace card, the stall card and the waybill between ticks; folding sets `contractDirty`.
 Inside the waybill the title, the pill and the folded seal keep their own keys (mission/lang; tranche, rounded second,
 lang; got/total/second/lang plus the forecast object), and milestone notices build their text only when one fires.
