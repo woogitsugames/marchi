@@ -18,7 +18,7 @@ import {
 import { onLangChange, t } from '../i18n/index';
 import { botPlan, menuWorld } from '../game/menuScene';
 import { h, isRtl } from './dom';
-import { Hud, type Tool } from './hud';
+import { Hud, rankPostLine, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
@@ -288,7 +288,7 @@ export class App implements PanelNav {
       app: this,
       findSteepDraft: () => this.findSteepDraft(),
       /** Screenshots: the rank-up letter without playing ten minutes. */
-      rankUp: (r: number) => this.hud?.showRankUp(r, 60000),
+      rankUp: (r: number) => this.hud?.showRankUp(r, 60000, rankPostLine(this.world, r)),
       ready: false,
     } : { ready: false };
   }
@@ -677,7 +677,7 @@ export class App implements PanelNav {
       eventCommand: (cmd) => this.enqueue(cmd),
       rankUp: (r) => {
         if (audio.ready) void audio.play('ui.paper');
-        this.hud?.showRankUp(r);
+        this.hud?.showRankUp(r, 6000, rankPostLine(this.world, r));
         this.hud?.announce(t('town.rankUp', { name: t(`rank.${r}` as 'rank.0') }));
       },
     }, this.prefs.waybillCollapsed);
@@ -945,7 +945,7 @@ export class App implements PanelNav {
   }
 
   private openMarket(): void {
-    this.sheets.open(marketSheet(() => this.world));
+    this.sheets.open(marketSheet(() => this.world, (id) => this.go('building', id, true)));
   }
 
   /** Middle of the map area between the top cluster and the bottom rail / build shelf (first ghost position). */

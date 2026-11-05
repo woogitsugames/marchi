@@ -695,6 +695,25 @@ export const pl = {
   'fix.paceFleetWhyFree': 'Przez minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
   // free valley opening letter (D-151; localized)
   'letter.valleyOpening': 'Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi renomę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
+  // free valley trading post (D-170)
+  'building.tradePost': 'Punkt handlowy',
+  'town.unlockPost': 'punkt handlowy za rzeką',
+  'town.postOpen': 'Za rzeką otwarto punkt handlowy: płaci {pct} ceny zamku. Doprowadź do niego drogę z mostem.',
+  'post.closed': 'Otworzy się w randze „{rank}”.',
+  'post.open': 'Kupuje',
+  'post.terms': 'Kupuje każdy towar po {pct} ceny zamku, z własnym nasyceniem.',
+  'post.noRoad': 'Kupcy czekają po drugiej stronie rzeki: doprowadź drogę z mostem do bramy.',
+  'post.prices': 'Ceny w punkcie',
+  'post.vsCastle': '{pct} ceny zamku',
+  'post.recent': 'Ostatnie sprzedaże',
+  'post.sale': '{qty} × {good}: {n} srebra',
+  'post.ago': '{time} temu',
+  'post.none': 'Jeszcze nic tu nie sprzedano.',
+  'post.total': 'Sprzedano tu: {units} szt. za {n} srebra',
+  'post.iceHint': 'Zimą kra zamyka drewniany most na kilka minut. Kamienny most jest przejezdny cały rok.',
+  'post.marketLine': 'Punkt handlowy za rzeką płaci {pct} ceny, z własnym nasyceniem.',
+  'post.show': 'Pokaż punkt handlowy',
+  'cause.postNoRoad': 'czeka na drogę z mostem',
 } as const;
 
 export type MessageKey = keyof typeof pl;

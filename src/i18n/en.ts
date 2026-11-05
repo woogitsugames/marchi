@@ -691,4 +691,23 @@ export const en: FullDict = {
   'fix.paceFleetWhyFree': 'No wagon stood free for a minute. A new wagon picks the load up sooner — goods sold mean silver and renown.',
   // free valley opening letter (D-151; see PENDING_KEYS)
   'letter.valleyOpening': 'To the steward of the valley: no order and no deadline await you here — the valley is yours while the wagons roll. Every good sold at the castle market brings renown, and the number of different goods raises your rank as well; the rank plaque shows what is still missing. Begin with a farm by the castle road — the wagons will carry its harvest to the market.\n— Wszebor, Castellan of Łozinny Bród',
+  // free valley trading post (D-170)
+  'building.tradePost': 'Trading post',
+  'town.unlockPost': 'the trading post across the river',
+  'town.postOpen': 'A trading post has opened across the river: it pays {pct} of the castle price. Build a road and a bridge to it.',
+  'post.closed': 'Opens at the rank “{rank}”.',
+  'post.open': 'Buying',
+  'post.terms': 'Buys every good at {pct} of the castle price, with its own saturation.',
+  'post.noRoad': 'The merchants wait across the river: build a road and a bridge to the gate.',
+  'post.prices': 'Prices at the post',
+  'post.vsCastle': '{pct} of the castle price',
+  'post.recent': 'Recent sales',
+  'post.sale': '{qty} × {good}: {n} silver',
+  'post.ago': '{time} ago',
+  'post.none': 'Nothing sold here yet.',
+  'post.total': 'Sold here: {units, plural, one {# unit} other {# units}} for {n} silver',
+  'post.iceHint': 'In winter, ice closes a wooden bridge for a few minutes. A stone bridge stays open all year.',
+  'post.marketLine': 'The trading post across the river pays {pct}, with its own saturation.',
+  'post.show': 'Show the trading post',
+  'cause.postNoRoad': 'waits for a road and a bridge',
 };

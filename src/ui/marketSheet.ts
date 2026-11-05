@@ -1,6 +1,6 @@
 // "Targ i ranga" sheet (free valley): what the next rank needs, castle market prices per good
 // (base, current %, saturation), buildings open and locked, and when each rank was reached.
-import { BUILDINGS, MARKET, RANKS, sandboxStatus, type BuildingType, type World } from '../sim/index';
+import { BUILDINGS, MARKET, RANKS, TRADE_POST, sandboxStatus, tradePostStatus, type BuildingType, type World } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import { bdi, fmtDec, fmtInt, fmtPercent, goodName, rankName, tHtml, ticksClock } from './format';
@@ -8,13 +8,23 @@ import { iconSvg, type IconId } from './icons';
 import type { Sheet, SheetContent } from './sheets';
 import { unlockList } from './hud';
 
-export function marketSheet(world: () => World): SheetContent {
+export function marketSheet(world: () => World, go?: (id: number) => void): SheetContent {
   return {
     key: 'market',
     update(sheet: Sheet) {
       const w = world();
       const sb = sandboxStatus(w);
       if (!sb.market) return false;
+      const body = sheet.body as HTMLElement & { __postGo?: boolean };
+      if (go && !body.__postGo) {
+        // "Pokaż punkt handlowy" (D-170): the post's own sheet
+        body.__postGo = true;
+        body.addEventListener('click', (e) => {
+          const el = (e.target as HTMLElement).closest<HTMLElement>('[data-go]');
+          const id = el?.dataset.go?.startsWith('building:') ? Number(el.dataset.go.slice(9)) : NaN;
+          if (Number.isFinite(id)) go(id);
+        });
+      }
       setHtml(sheet.icon, iconSvg('castle', 36));
       sheet.kicker.textContent = t('town.open');
       sheet.title.textContent = rankName(sb.rank);
@@ -48,14 +58,18 @@ export function marketSheet(world: () => World): SheetContent {
       const headRow = `<li class="ms-good ms-headrow" aria-hidden="true"><span></span><span></span><small>${esc(t('market.colPrice'))}</small><small>${esc(t('market.sat'))}</small></li>`;
       const fair = sb.prices.find((p) => p.fairPct > 100);
       const fairHint = fair ? `<div class="s-hint season-hint">${iconSvg(fair.good, 18, goodName(fair.good))}<span>${esc(t('events.fair.active', { good: t(`goodAcc.${fair.good}` as MessageKey) }))}</span></div>` : '';
+      // the trading post across the river (D-170), once it buys: one line and the way to its sheet
+      const ps = tradePostStatus(w);
+      const post = ps && ps.open ? `<div class="s-hint ms-post">${iconSvg('tradePost', 18)}<span>${esc(t('post.marketLine', { pct: fmtPercent(TRADE_POST.pricePct / 100) }))}</span></div>
+        <div class="sheet-actions"><button class="btn cf" data-go="building:${ps.building.id}">${iconSvg('tradePost', 24)}<span>${esc(t('post.show'))}</span></button></div>` : '';
       const prices = `<div class="section-h">${esc(t('market.prices'))}</div><ul class="ms-prices">${headRow}${rows}</ul>
-        ${fairHint}<div class="s-hint">${esc(t('market.satHint'))}</div>`;
+        ${fairHint}<div class="s-hint">${esc(t('market.satHint'))}</div>${post}`;
 
       // buildings: open ones plain, locked ones hatched with their rank
       const card = (b: BuildingType, rank: number): string => `<span class="ms-b${rank >= 0 ? ' is-locked' : ''}">${iconSvg(b as IconId, 28)}
         <span>${esc(t(`building.${b}` as MessageKey))}</span>${rank >= 0 ? `<small>${esc(t('build.rankN', { n: rank }))}</small>` : ''}</span>`;
       const blds = `<div class="section-h">${esc(t('market.buildings'))}</div><div class="ms-blds">${
-        sb.unlocked.filter((b) => b !== 'castle' && BUILDINGS[b]).map((b) => card(b, -1)).join('')}${sb.locked.map((l) => card(l.type, l.rank)).join('')}</div>`;
+        sb.unlocked.filter((b) => b !== 'castle' && b !== 'tradePost' && BUILDINGS[b]).map((b) => card(b, -1)).join('')}${sb.locked.map((l) => card(l.type, l.rank)).join('')}</div>`;
 
       // rank history
       const hist = `<div class="section-h">${esc(t('market.history'))}</div><ol class="ms-hist">${RANKS.map((_, i) => {

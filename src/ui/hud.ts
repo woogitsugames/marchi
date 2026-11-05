@@ -7,7 +7,7 @@ import {
   GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
   type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
-  emptyGoods,
+  emptyGoods, TRADE_POST, tradePostOf,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
@@ -75,7 +75,14 @@ export function unlockList(rank: number): string {
   if (r.surfaces.includes(2)) parts.push(t('town.unlockCobble'));
   // rank 5 (Stolica) unlocks no building, only the castle upgrade (castleLevel 1)
   if (r.castleLevel > (RANKS[rank - 1]?.castleLevel ?? 0)) parts.push(t('town.unlockCastle'));
+  // rank 4 (Gród) opens the trading post across the river (D-170); the list has no world, so in every valley
+  if (rank === TRADE_POST.rank) parts.push(t('town.unlockPost'));
   return joinList(parts);
+}
+
+/** The rank letter's line about the trading post (D-170): only in the rank-4 letter of a valley that has the post. */
+export function rankPostLine(world: World, rank: number): string {
+  return rank === TRADE_POST.rank && tradePostOf(world) ? t('town.postOpen', { pct: fmtPercent(TRADE_POST.pricePct / 100) }) : '';
 }
 
 /** Kit progress bar (track + fill sprites), quarter marks drawn by CSS. */
@@ -846,14 +853,15 @@ export class Hud {
   }
 
   /** Sealed letter for a new rank: slides in (200 ms), the wax is pressed (120 ms), tap or 6 s to close. */
-  showRankUp(rank: number, holdMs = 6000): void {
+  showRankUp(rank: number, holdMs = 6000, postLine = ''): void {
     this.rankLetter?.remove();
     const unlocks = unlockList(rank);
     const letter = h('div.rank-letter', { role: 'status', html: `
       <div class="l-kicker">${esc(t('contract.kicker'))}</div>
       <h2>${esc(t('town.rankUp', { name: rankName(rank) }))}</h2>
       <p>${esc(t('town.rankText'))}</p>
-      ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}` });
+      ${unlocks ? `<p class="rl-unlocks">${iconSvg('build', 20)}<span>${esc(t('town.unlocks', { list: unlocks }))}</span></p>` : ''}
+      ${postLine ? `<p class="rl-unlocks">${iconSvg('tradePost', 20)}<span>${esc(postLine)}</span></p>` : ''}` });
     letter.style.clipPath = deckle('bottom', 4111 + rank, 6, 22);
     letter.append(h('i.rl-seal.kseal.on', { 'aria-hidden': 'true' }));
     const wrap = h('button.rank-letter-wrap.hit', { 'aria-label': t('sheet.close') }, h('div.float', null, letter));

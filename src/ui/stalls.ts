@@ -52,7 +52,8 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
-  const calm = outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
+  // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
+  const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0;
   calmCache.set(b.id, { key, calm });
   return calm;
@@ -64,8 +65,10 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
+  // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
+  if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
   if (contractFilled(world, b.id)) return 'orderFilled';
