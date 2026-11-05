@@ -22,6 +22,7 @@ import type { World } from '../sim/index';
 import { isRaining, net, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
 import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
+import { DeckGhost } from './deckGhost';
 import { BuildingsView } from './buildingsView';
 import { CameraRig } from './cameraRig';
 import { Effects } from './fx';
@@ -98,6 +99,9 @@ class View implements WorldView {
   private cover: GroundCover | null = null;
   private buildings: BuildingsView | null = null;
   private bridges = new BridgesView();
+  /** The pave ghost on a wooden deck (D-133); the terrain-draped preview lies on the river bed there. */
+  private deckGhost = new DeckGhost();
+  private previewReq: RoadPreview | null = null;
   private wagons: WagonsView | null = null;
   private fx = new Effects();
   private ghost = new PlacementGhostView();
@@ -147,7 +151,7 @@ class View implements WorldView {
   constructor() {
     this.lighting = new Lighting(this.scene);
     this.scene.add(this.worldGroup);
-    this.worldGroup.add(this.treeGroup, this.bridges.group, this.fx.smoke, this.fx.rain, this.ghost.group);
+    this.worldGroup.add(this.treeGroup, this.bridges.group, this.deckGhost.group, this.fx.smoke, this.fx.rain, this.ghost.group);
     const ring = new RingGeometry(4.46, 4.74, 56, 1);
     ring.rotateX(-Math.PI / 2);
     this.deckRing = new Mesh(ring, new MeshBasicMaterial({ color: new Color('#8c4a2f'), transparent: true, opacity: 0.85, depthWrite: false }));
@@ -330,6 +334,7 @@ class View implements WorldView {
     net(w);
     this.roads.rebuild(w);
     this.bridges.rebuild(this.roads.bridges, this.hf!.waterLevel);
+    this.syncDeckGhost();
     this.buildings!.sync(w);
     this.terrain!.updateGround(w);
     this.vegetation!.rebuild(w, this.roads);
@@ -428,6 +433,7 @@ class View implements WorldView {
     (wu.uSunCol!.value as Color).copy(env.sunColor).multiplyScalar(env.isNight ? 0.2 : 1);
     (this.water!.mistMaterial.uniforms.uColor!.value as Color).copy(env.fogColor).lerp(env.skyH, 0.3);
     this.bridges.update(this.time, env.light, env.skyH);
+    this.deckGhost.update(env.light);
 
     this.buildings!.update(w, dt);
     this.vegetation!.update(cam.position);
@@ -614,6 +620,13 @@ class View implements WorldView {
 
   setRoadPreview(p: RoadPreview | null): void {
     this.overlay?.setPreview(p);
+    this.previewReq = p;
+    this.syncDeckGhost();
+  }
+
+  private syncDeckGhost(): void {
+    const p = this.previewReq;
+    this.deckGhost.set(p && p.pave ? p.cells : null, this.roads?.bridges ?? []);
   }
 
   setPlacementGhost(g: PlacementGhost | null): void {
@@ -747,6 +760,7 @@ class View implements WorldView {
     this.pendingTerrainTex = null;
     void disposeTextures();
     this.bridges.dispose();
+    this.deckGhost.dispose();
     this.ghost.dispose();
     this.deckRing.geometry.dispose();
     (this.deckRing.material as MeshBasicMaterial).dispose();
