@@ -2245,8 +2245,8 @@ step is drivable and its other corner is not a road (with a road there the ortho
 not only in the ghost (`buildSite` calls `validatePlace`), so hand placement is protected too and the ghost shows the
 offending cell red. Why the sim is safe: every balance strategy of missions I–VI (all 25, full state hash), the
 contract goldens, every mission bot (`bot-m2..m13`, `bot-sandbox` DECENT) and `balance-night6 --no-search` are
-byte-identical before/after — no authored or scripted placement cuts a diagonal. (decided; owner question 3 of the
-research answered "sim" — revert to UI-only is a one-line change if the owner prefers)
+byte-identical before/after — no authored or scripted placement cuts a diagonal. (decided by the agent because the
+hashes hold; the research's owner question 3 — sim or ghost only — stays open: reverting to ghost-only is small)
 
 **D-173 — A producer cut off from the network gets the road cure.**
 A producer whose yard is full with nowhere to go (`OUTPUT_FULL.NO_DESTINATION`) points at the first granary it cannot
@@ -2263,7 +2263,7 @@ load of and, at the castle, a price above `floorPct`; loads only of goods no mar
 (and a producer it refuses) is a calm stall (`calmWhy` `marketFull`, brass pin), no cure, sheet line `fix.marketFull`
 ("Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie."). Measured
 (card-10/30/60 + the research's `+grow` prototype, seeds 1301–1304, 60 min): wagons bought from a full granary
-571 → 21 looks; card-10+grow fleet 137–165 → 36–39 wagons, silver at the end 23–1 066 → 3 718–4 264. UI only.
+534 → 24; card-10+grow fleet 137–165 → 36–39 wagons, silver at the end 23–1 066 → 3 718–4 264. UI only.
 (decided)
 
 **D-175 — The rank card skips a building the ghost finds no site for.**
