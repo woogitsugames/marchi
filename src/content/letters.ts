@@ -42,7 +42,7 @@ export const CONTRACT_LETTERS = {
         2: "Der gut angelegte Weg brachte die Waren mit Zeitreserve. Zwei Siegel für die tüchtigen Fuhrleute.\n— Wszebor",
         3: "Bretter und Brot lagen bereit, noch ehe die Pferde froren. Drei Siegel für gute Herbstvorsorge.\n— Wszebor",
       },
-      lost: "Der erste Schnee kam, doch ein Teil der Ladung blieb unterwegs. Prüft die Überfahrt und die Abholung durch die Wagen.\n— Wszebor",
+      lost: "Der erste Schnee kam, und ein Teil des Auftrags blieb unterwegs. Seht unten, was am längsten stand, und beginnt nächstes Mal dort.\n— Wszebor",
     },
     fr: {
       opening: "Au prévôt des routes : faites livrer au château 30 planches et 20 pains avant les premières neiges. Bûcheron et scierie sont au-delà de la rivière, sans liaison entre les rives. Tracez un passage, puis veillez au transport de farine et de pain.\n— Wszebor, châtelain de Łozinny Bród",
@@ -51,7 +51,7 @@ export const CONTRACT_LETTERS = {
         2: "Une route bien tracée a permis de livrer largement avant l'échéance. Deux sceaux pour les charretiers.\n— Wszebor",
         3: "La porte s'est ouverte avant que les chevaux ne prennent froid. Pains et planches sont rangés sans retard. Trois sceaux.\n— Wszebor",
       },
-      lost: "La première neige est tombée, une partie de la cargaison est restée en route. Vérifiez le passage et les chariots.\n— Wszebor",
+      lost: "La première neige est tombée, et une partie de la commande est restée en route. Voyez ci-dessous ce qui a le plus attendu, et commencez par là.\n— Wszebor",
     },
     nl: {
       opening: "Aan de wegbeheerder: lever vóór de eerste sneeuw 30 planken en 20 broden aan het kasteel. De houthakker en zagerij liggen aan de overkant; er is nog geen verbinding. Bouw een oversteek en houd het vervoer van meel en brood op gang.\n— Wszebor, kastelein van Łozinny Bród",
@@ -69,7 +69,7 @@ export const CONTRACT_LETTERS = {
         2: "El castillo recibió pan y tablones. Dos sellos por los viajes bien organizados.\n— Wszebor",
         3: "El castillo recibió pan y tablones. Tres sellos por tan buena previsión.\n— Wszebor",
       },
-      lost: "Llegó la nieve y parte de la carga quedó en el camino. Comprueba el cruce y la recogida de mercancías.\n— Wszebor",
+      lost: "Llegó la primera nevada y parte del pedido quedó en el camino. Mira abajo qué estuvo parado más tiempo y empieza por ahí la próxima vez.\n— Wszebor",
     },
     it: {
       opening: "Al custode delle strade: porta al castello 30 assi e 20 pagnotte prima della prima neve. Taglialegna e segheria sono oltre il fiume, ma le rive non sono collegate. Costruisci un passaggio e mantieni il trasporto di farina e pane.\n— Wszebor, castellano di Łozinny Bród",
