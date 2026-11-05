@@ -1,6 +1,7 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
 import { TICK_HZ, type BuildingStatus, type ReasonLink, type WagonStatus } from '../sim/index';
+import type { MessageKey } from '../i18n/index';
 
 /** A building status counts as a stall worth a bubble. */
 export function isStall(s: BuildingStatus): boolean {
@@ -49,4 +50,17 @@ export function isStallLink(l: ReasonLink): boolean {
 export function codexLink(chain: readonly ReasonLink[], self: ReasonLink): ReasonLink {
   for (let i = chain.length - 1; i >= 0; i--) if (isStallLink(chain[i]!)) return chain[i]!;
   return self;
+}
+
+/**
+ * What to do next time about the loss's #1 cause (first-10-minutes-c N3, D-130): one action line under the ledger
+ * of a lost contract, from the cause's kind — never advice about something that already stands.
+ */
+export function lossActionKey(status: string): MessageKey {
+  const [k, cause] = status.split('.');
+  if (k === 'WAITING_PICKUP' || (k === 'NO_WAGON' && cause === 'ALL_BUSY') || (k === 'OUTPUT_FULL' && cause === 'NO_WAGON')) return 'end.act.wagon';
+  if (k === 'NO_ROAD' || k === 'NO_ROUTE' || (k === 'NO_INPUT' && cause === 'UNREACHABLE') || (k === 'NO_WAGON' && cause === 'NONE_CAN_REACH')) return 'end.act.road';
+  if (k === 'BRIDGE_JAM' || k === 'BRIDGE_CLOSED') return 'end.act.bridge';
+  if (k === 'STORAGE_FULL' || (k === 'OUTPUT_FULL' && cause === 'NO_DESTINATION')) return 'end.act.granary';
+  return 'end.act.other';
 }
