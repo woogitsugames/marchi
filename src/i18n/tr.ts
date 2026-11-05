@@ -655,4 +655,10 @@ export const tr: Dict = {
   "post.marketLine": "Nehrin karşısındaki ticaret durağı kendi doygunluğuyla {pct} öder.",
   "post.show": "Ticaret durağını göster",
   "cause.postNoRoad": "köprülü bir yol bekliyor",
+  "hud.bottleneck": "Darboğaz",
+  "neck.reason": "ortalama {m} atölyeden {n} tanesi bekliyor",
+  "neck.why": "3 dakikadır ortalama {m} atölyeden {n} tanesi şunu bekliyor: {goodAcc}. Bir üretici daha kuyruğu kısaltır; yeni bir araba burada işe yaramaz.",
+  "neck.fleetWho": "Arabalar",
+  "neck.fleet": "3 dakikadır hepsi yolda",
+  "neck.show": "En uzun bekleyen atölyeyi göster",
 };

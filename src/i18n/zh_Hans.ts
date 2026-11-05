@@ -655,4 +655,10 @@ export const zh_Hans: Dict = {
   "post.marketLine": "河对岸的贸易站支付{pct}，饱和度单独计算。",
   "post.show": "查看贸易站",
   "cause.postNoRoad": "等待一条带桥的路",
+  "hud.bottleneck": "瓶颈",
+  "neck.reason": "平均{m}座工坊中有{n}座在等",
+  "neck.why": "3分钟来，平均{m}座工坊中有{n}座在等{goodAcc}。再建一个生产者能缩短队伍；加车在这里没用。",
+  "neck.fleetWho": "车队",
+  "neck.fleet": "3分钟来全部在路上",
+  "neck.show": "查看等得最久的工坊",
 };

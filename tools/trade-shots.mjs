@@ -17,18 +17,21 @@ const PRE = `const a = window.__marchia.app, w = a.world, W = w.terrain.w;
   const stable = w.state.buildings.find((b) => b.type === 'stable');
   const road = (surface) => { const cells = []; for (let y = 25; y <= 57; y++) cells.push(y * W + 39); a.loop.enqueue({ t: 'road', surface, cells }); };
   const wagons = (n) => { for (let i = 0; i < n; i++) a.loop.enqueue({ t: 'buyWagon', stable: stable.id }); };
-  const open = () => { w.state.town.rank = 4; w.state.coins = Math.max(w.state.coins, 6000); };`;
+  const open = () => { w.state.town.rank = 4; w.state.coins = Math.max(w.state.coins, 6000); };
+  const letterOff = () => setTimeout(() => document.querySelector('.rank-letter-wrap')?.click(), 50);`;
 const ALL = {
   // before rank 4: the post's sheet says when it opens
   'post-closed': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} a.go('building', post.id, true);` },
   // the rank-4 letter with the post line
   'post-letter': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); tick(10); window.__marchia.rankUp(4);` },
   // rank 4, no road yet: the calm NO_ROAD line, "Zbuduj drogę i most" from the gap finder
-  'post-noroad': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); tick(30); a.go('building', post.id, true);` },
+  'post-noroad': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); tick(30); letterOff(); a.go('building', post.id, true);` },
   // five minutes of trade: prices at the post against the castle, the last sales
-  'post-sales': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(4); tick(3000); a.go('building', post.id, true);` },
+  'post-sales': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(4); tick(3000); letterOff(); a.go('building', post.id, true);` },
+  // the same sheet scrolled to the last sales
+  'post-sales-recent': { q: 'play=sandbox&ff=60&speed=0', scroll: '.post-sales', run: `${PRE} open(); road(1); wagons(4); tick(3000); letterOff(); a.go('building', post.id, true);` },
   // "Targ i ranga": the post's line and its button
-  'post-market': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(2); tick(600); a.openMarket();` },
+  'post-market': { q: 'play=sandbox&ff=60&speed=0', run: `${PRE} open(); road(1); wagons(2); tick(600); letterOff(); a.openMarket();` },
 };
 const pick = args.filter((a) => ALL[a]);
 const cases = pick.length ? pick : Object.keys(ALL);
@@ -46,6 +49,10 @@ for (const id of cases) for (const [w, h] of sizes.length ? sizes : ALL[id].size
   await page.waitForTimeout(800);
   if (c.run) await page.evaluate(c.run);
   await page.waitForTimeout(1500);
+  if (c.scroll) {
+    await page.evaluate((sel) => document.querySelector(`#sheets .sheet:last-child ${sel}`)?.scrollIntoView({ block: 'center' }), c.scroll);
+    await page.waitForTimeout(400);
+  }
   const info = await page.evaluate(() => {
     const sh = document.querySelector('#sheets .sheet:last-child');
     const card = document.querySelector('.stall-card');

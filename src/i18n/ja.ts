@@ -655,4 +655,10 @@ export const ja: Dict = {
   "post.marketLine": "川向こうの交易所は{pct}を支払います。飽和度は別です。",
   "post.show": "交易所を見る",
   "cause.postNoRoad": "橋のある道を待っています",
+  "hud.bottleneck": "ボトルネック",
+  "neck.reason": "平均{m}軒中{n}軒が待機",
+  "neck.why": "3分間、平均で{m}軒中{n}軒の工房が{goodAcc}を待っています。生産者をもう一つ建てれば列が短くなります。荷車を増やしても解決しません。",
+  "neck.fleetWho": "荷車",
+  "neck.fleet": "3分間すべて走行中",
+  "neck.show": "最も長く待っている工房を見る",
 };

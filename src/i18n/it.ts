@@ -655,4 +655,10 @@ export const it: Dict = {
   "post.marketLine": "L’emporio oltre il fiume paga il {pct}, con una saturazione propria.",
   "post.show": "Mostra l’emporio",
   "cause.postNoRoad": "aspetta una strada con un ponte",
+  "hud.bottleneck": "Collo di bottiglia",
+  "neck.reason": "in media aspettano {n} botteghe su {m}",
+  "neck.why": "Da 3 minuti in media {n} botteghe su {m} aspettano {goodAcc}. Un produttore in più accorcia la coda; un carro nuovo qui non aiuta.",
+  "neck.fleetWho": "Carri",
+  "neck.fleet": "tutti in viaggio da 3 minuti",
+  "neck.show": "Mostra la bottega che aspetta da più tempo",
 };

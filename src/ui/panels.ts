@@ -14,7 +14,8 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, recentWagonWait, sharedOneProducer } from './stalls';
+import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
 export { gapTarget };
@@ -195,7 +196,8 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
   if (cure === 'producer') {
     // one producer feeds two workshops (research P5): build a second one next to it (the build tool opens
     // with that type picked, the ghost by the first producer)
-    const sh = sharedOneProducer(world, b);
+    // (or the free valley's bottleneck card, D-171: build one more producer of the good most workshops wait for)
+    const sh = producerCure(world, b);
     if (!sh) return '';
     const gate = canPlace(world, sh.type);
     const price = BUILDINGS[sh.type].price;
@@ -207,7 +209,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
       : short > 0
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
-        : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
+        : sh.source === 'neck'
+          ? `<div class="s-hint">${esc(t('neck.why', { goodAcc: t(`goodAcc.${sh.good}` as MessageKey), n: neckN(world), m: fmtInt(sh.consumers) }))}</div>`
+          : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
     return fixSection(btn, hint, off);
   }
   if (cure === 'pave') {
@@ -555,6 +559,12 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
   return parts.join('');
 }
 
+/** The bottleneck card's "n of m" (D-171): the mean waiting consumers, rounded, at least 1. */
+function neckN(world: World): string {
+  const c = bottleneckCard(world);
+  return fmtInt(c ? neckWaiting(c) : 1);
+}
+
 /** The trading post's status line (D-170): closed with the rank it opens at, or buying; null = the usual line (NO_ROAD). */
 function postStatusHtml(world: World, b: Building): string | null {
   const ps = tradePostStatus(world);
@@ -572,8 +582,8 @@ function postHtml(world: World): string {
   if (!ps) return '';
   const pct = fmtPercent(TRADE_POST.pricePct / 100);
   const out: string[] = [];
-  if (ps.open && !ps.linked) out.push(`<div class="s-hint">${iconSvg('no_road', 18)}<span>${esc(t('post.noRoad'))}</span></div>`);
-  out.push(`<div class="s-hint">${iconSvg('tradePost', 18)}<span>${esc(t('post.terms', { pct }))}</span></div>`);
+  if (ps.open && !ps.linked) out.push(`<div class="s-hint calm-hint">${iconSvg('no_road', 18)}<span>${esc(t('post.noRoad'))}</span></div>`);
+  out.push(`<div class="s-hint calm-hint">${iconSvg('tradePost', 22)}<span>${esc(t('post.terms', { pct }))}</span></div>`);
   const rows = ps.prices.map((p) => {
     const sat = Math.min(100, (p.saturation / MARKET.cap) * 100);
     const vs = p.castleCents > 0 ? fmtPercent(Math.floor((p.cents * 100) / p.castleCents) / 100) : '';

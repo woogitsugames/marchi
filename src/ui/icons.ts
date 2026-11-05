@@ -52,6 +52,8 @@ export type IconId =
   | 'strike'
   | 'no_route'
   | 'storage_full'
+  // free valley bottleneck card (D-171)
+  | 'bottleneck'
   // tools / UI
   | 'road_dirt'
   | 'road_cobble'
@@ -1305,6 +1307,23 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.ink(rect(6.6, 19.4, 16, 1.6));
     d.ink(rect(8, 21, 1.3, 1.8), rect(19.8, 21, 1.3, 1.8));
     d.hatchInk([[9.6, 21.3], [19.6, 21.3], [19.6, 22.8], [9.6, 22.8]], -45, 1.5, 0.5);
+  },
+
+  bottleneck(d) {
+    // a mill hopper on a trestle (D-171): full at the top, a narrow throat, two or three grains below; asymmetric
+    // and with legs, unlike the hourglass of 'waiting'
+    // grain heaped over the rim
+    d.ink([[4.2, 6.4], [6.4, 3.6], [9.6, 2.2], [13.4, 1.8], [16.8, 2.8], [19.8, 5], [20.4, 6.4]]);
+    d.hatchCut([[7, 5.6], [9.8, 3.2], [13.4, 2.8], [16.6, 3.8], [18.8, 5.6]], -45, 1.5, 0.5);
+    // the boarded hopper: wide trapezoid down to the throat
+    d.ink([[2.6, 6.6], [21.4, 6.6], [14, 14.6], [14, 16.4], [10.4, 16.4], [10.4, 14.6]]);
+    d.cut(gouge([5.6, 8.8], [18.4, 8.8], 0.55), gouge([8.2, 11.4], [15.8, 11.4], 0.55));
+    // grains falling out of the throat, one by one
+    d.layer();
+    d.ink(ell(12.2, 18.1, 0.55, 0.8), ell(11.4, 20.1, 0.5, 0.75, 20), ell(12.8, 21.9, 0.5, 0.7, -20));
+    // trestle legs, splayed
+    d.inkFine(band(seg([5.2, 7.2], [2.4, 22.6], 4), lerpW(1.2, 1.4)), band(seg([18.8, 7.2], [21.6, 22.6], 4), lerpW(1.2, 1.4)));
+    d.inkFine(band(seg([3.4, 17.6], [8.8, 17.6], 2), 0.9), band(seg([15.6, 17.6], [20.6, 17.6], 2), 0.9));
   },
 
   // ---- stall reasons -----------------------------------------------------

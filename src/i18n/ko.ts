@@ -655,4 +655,10 @@ export const ko: Dict = {
   "post.marketLine": "강 건너 교역소는 {pct}를 쳐 주며, 포화도는 따로 셉니다.",
   "post.show": "교역소 보기",
   "cause.postNoRoad": "다리가 있는 길을 기다림",
+  "hud.bottleneck": "병목",
+  "neck.reason": "평균 {m}곳 중 {n}곳이 대기",
+  "neck.why": "3분 동안 평균 {m}곳 중 {n}곳의 작업장이 {goodAcc}을(를) 기다렸습니다. 생산자를 하나 더 지으면 줄이 짧아집니다. 수레를 늘려도 소용없습니다.",
+  "neck.fleetWho": "수레",
+  "neck.fleet": "3분째 모두 운행 중",
+  "neck.show": "가장 오래 기다린 작업장 보기",
 };

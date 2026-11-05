@@ -655,4 +655,10 @@ export const nl: Dict = {
   "post.marketLine": "De handelspost aan de overkant van de rivier betaalt {pct}, met een eigen verzadiging.",
   "post.show": "Toon de handelspost",
   "cause.postNoRoad": "wacht op een weg met brug",
+  "hud.bottleneck": "Knelpunt",
+  "neck.reason": "gemiddeld wachten {n} van de {m} werkplaatsen",
+  "neck.why": "Al 3 minuten wachten gemiddeld {n} van de {m} werkplaatsen op {goodAcc}. Nog één producent maakt de rij korter; een nieuwe wagen helpt hier niet.",
+  "neck.fleetWho": "Wagens",
+  "neck.fleet": "al 3 minuten allemaal onderweg",
+  "neck.show": "Toon de werkplaats die het langst wacht",
 };

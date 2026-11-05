@@ -655,4 +655,10 @@ export const fr: Dict = {
   "post.marketLine": "Le comptoir de l’autre côté de la rivière paie {pct}, avec sa propre saturation.",
   "post.show": "Voir le comptoir",
   "cause.postNoRoad": "attend une route avec un pont",
+  "hud.bottleneck": "Goulot d’étranglement",
+  "neck.reason": "en moyenne {n} ateliers sur {m} attendent",
+  "neck.why": "Depuis 3 minutes, en moyenne {n} ateliers sur {m} attendent {goodAcc}. Un producteur de plus raccourcit la file ; un nouveau chariot n’y changera rien.",
+  "neck.fleetWho": "Chariots",
+  "neck.fleet": "tous en route depuis 3 minutes",
+  "neck.show": "Montrer l’atelier qui attend depuis le plus longtemps",
 };

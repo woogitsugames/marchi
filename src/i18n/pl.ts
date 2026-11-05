@@ -714,6 +714,13 @@ export const pl = {
   'post.marketLine': 'Punkt handlowy za rzeką płaci {pct} ceny, z własnym nasyceniem.',
   'post.show': 'Pokaż punkt handlowy',
   'cause.postNoRoad': 'czeka na drogę z mostem',
+  // free valley bottleneck card (D-171)
+  'hud.bottleneck': 'Wąskie gardło',
+  'neck.reason': 'czeka średnio {n} z {m} warsztatów',
+  'neck.why': 'Na {goodAcc} czeka średnio {n} z {m} warsztatów od 3 minut. Jeszcze jeden producent skróci kolejkę; nowy wóz tu nie pomoże.',
+  'neck.fleetWho': 'Wozy',
+  'neck.fleet': 'wszystkie w drodze od 3 minut',
+  'neck.show': 'Pokaż warsztat, który czeka najdłużej',
 } as const;
 
 export type MessageKey = keyof typeof pl;

@@ -710,4 +710,11 @@ export const en: FullDict = {
   'post.marketLine': 'The trading post across the river pays {pct}, with its own saturation.',
   'post.show': 'Show the trading post',
   'cause.postNoRoad': 'waits for a road and a bridge',
+  // free valley bottleneck card (D-171)
+  'hud.bottleneck': 'Bottleneck',
+  'neck.reason': 'on average {n} of {m} workshops wait',
+  'neck.why': 'On average {n} of {m} workshops have waited for {goodAcc} for 3 minutes. One more producer shortens the queue; a new wagon will not help here.',
+  'neck.fleetWho': 'Wagons',
+  'neck.fleet': 'all on the road for 3 minutes',
+  'neck.show': 'Show the workshop that has waited longest',
 };
