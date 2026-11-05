@@ -72,6 +72,8 @@ export class EventCard {
   private pick: string | null = null;
   private hudFolded = false;
   private sig = '';
+  /** Focus/open state of the last render: the list scrolls to the full item only when this changes. */
+  private shown = '';
   /** Toast bookkeeping: the world it belongs to, ids already seen, orders of the last frame. */
   private world: World | null = null;
   private seen = new Set<string>();
@@ -131,7 +133,7 @@ export class EventCard {
     this.head.setAttribute('aria-label', open ? t('events.card.fold') : t('events.card.unfold', { n }));
     this.count.textContent = fmtInt(n);
     this.body.hidden = !open;
-    if (!open) return;
+    if (!open) { this.shown = ''; return; }
 
     const items: string[] = [];
     if (ev.fair && fairOn !== 'none') {
@@ -151,13 +153,29 @@ export class EventCard {
         const sell = surplus > 0
           ? `<button class="btn primary cf ev-btn" data-ev="sell|${esc(m.id)}">${iconSvg('coin', 22)}<span>${esc(t('events.merchant.sell', { n: fmtInt(surplus) }))}</span></button>`
           : `<span class="ev-note">${esc(t('events.merchant.none'))}</span>`;
-        items.push(`<li class="ev-item ev-merchant">
+        items.push(`<li class="ev-item ev-merchant is-focus">
           <div class="ev-oh"><span class="ev-gi">${iconSvg(m.good, 20, goodName(m.good))}</span><span class="ev-t" dir="auto">${esc(t('events.merchant.title'))}</span></div>
           <div class="ev-txt" dir="auto">${esc(offer)}</div>
           <div class="ev-acts">${sell}<button class="btn ev-btn ev-later" data-ev="mdecline|${esc(m.id)}">${esc(t('events.merchant.dismiss'))}</button></div></li>`);
       }
     }
     setHtml(this.body, items.join(''));
+    // the item shown in full (its actions) inside the list's visible part when the card opens or another
+    // item opens: in landscape the list is short and an item lower down otherwise opens below the fold (D-136)
+    const shown = `${focus}`;
+    if (shown !== this.shown) {
+      this.shown = shown;
+      this.revealFocus();
+    }
+  }
+
+  private revealFocus(): void {
+    const li = this.body.querySelector<HTMLElement>(':scope > .ev-item.is-focus');
+    if (!li || this.body.scrollHeight <= this.body.clientHeight) return;
+    const lr = li.getBoundingClientRect(), br = this.body.getBoundingClientRect();
+    // the bottom (the action buttons) first; the title may then sit above the fold of a very short list
+    if (lr.bottom > br.bottom) this.body.scrollTop += lr.bottom - br.bottom;
+    else if (lr.top < br.top) this.body.scrollTop -= br.top - lr.top;
   }
 
   /** The one item shown in full: the row the player opened, else the oldest accepted order (it takes the
@@ -187,7 +205,7 @@ export class EventCard {
     // the castle's request in a sentence (docs/content/events.md) while it is an offer to weigh; once
     // accepted the item is about deliveries and stays short
     const desc = o.accepted ? '' : `<div class="ev-txt ev-desc" dir="auto">${esc(t(`events.order.d.${o.templateId}` as MessageKey))}</div>`;
-    return `<li class="ev-item ev-order${o.accepted ? ' is-on' : ''}">
+    return `<li class="ev-item ev-order is-focus${o.accepted ? ' is-on' : ''}">
       <div class="ev-oh"><span class="ev-seal">${iconSvg('seal', 18)}</span><span class="ev-t" dir="auto">${esc(orderTitle(o))}</span></div>
       ${desc}${reward}${tail}</li>`;
   }
