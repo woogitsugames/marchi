@@ -36,25 +36,24 @@ nie automatyczne dodanie kluczy lokalizacji.
 
 **PL — Podtytuł:** Najpierw przywieź kamień na bruk. (menu: skrócone, by mieściło się w jednej linii przy 412 px)
 
-**PL — List kasztelana:**
+**PL — List kasztelana:** (przeprojektowanie D-165, 2026-11-05; w grze: `src/content/letters.ts`)
 
-> Nad doliną zbierają się chmury. Zanim deszcz zamieni trakty w błoto, chcę dostać
-> 24 deski i 20 chlebów. Kamieniołom pracuje na skalnym wzgórzu, lecz kamienie leżące
-> w jego składzie nie wybrukują drogi. Niech wozy przewiozą je do spichlerza.
-> Dopiero wtedy napraw południowy odcinek traktu. Pamiętaj, że ciężki kamień
-> przewozimy po cztery sztuki na wóz, a nie po sześć.
+> Nad doliną zbierają się chmury. Chcę 40 desek i 40 bochenków. Każdy worek i każda
+> deska jadą tym samym traktem między przysiółkiem a grodem, a ulewa zamieni go w błoto.
+> Dodatkowe wozy niewiele tam pomogą. Wybrukuj trakt: potrzeba 23 kamieni w spichlerzach.
+> 16 już tam leży, resztę wozy muszą przywieźć z kamieniołomu, po cztery na wóz.
 
 **EN — Title:** Paving Before the Storm
 
 **EN — Subtitle:** Road stone must be hauled before it can be laid.
 
-**EN — Castellan's letter:**
+**EN — Castellan's letter:** (redesign D-165)
 
-> Storm clouds are gathering over the valley. I require 24 planks and 20 loaves
-> before muddy tracks delay our deliveries. The quarry stands on sound rock,
-> but stone still sitting at the quarry cannot pave a road. Send wagons to bring
-> it to the granary, then improve the southern road. Heavy stone travels only
-> four units to a wagon, not the usual six. Build only after the load arrives.
+> Storm clouds gather over the valley. I require 40 planks and 40 loaves. Every sack
+> and every plank travels the one lane between the hamlet and the castle, and the rain
+> will turn it to mud. More wagons will not help much there. Pave the lane: it takes
+> 23 stone in the granaries. 16 lie there already; wagons must bring the rest from
+> the quarry, four to a wagon.
 
 ## IX
 
