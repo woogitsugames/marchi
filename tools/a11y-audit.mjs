@@ -5,7 +5,9 @@
 //             controls, clickable non-buttons, disabled buttons that carry information
 //   target    hit boxes under 48 x 48 CSS px (visible, interactive)
 //   contrast  text colour vs. the composited background behind it (WCAG ratio); text over the canvas/map or an
-//             image background is reported separately as "over-map" with the colour of its own plate, if any
+//             image background is reported separately as "over-map" with the colour of its own plate, if any;
+//             text inside an `inert` subtree (the HUD under a letter's scrim, modal.ts) is flagged `inert` and
+//             not counted as low contrast: it is dimmed on purpose and out of the accessibility tree (D-131)
 //   pins      map pins: sampled map pixels around each pin vs. the pin plate (non-text contrast, 3:1)
 //   focus     Tab order (up to 60 stops): element, visible focus indicator, inside the viewport, inside the open dialog
 //   scale     text scaled to 200 % (every computed font-size x2, as Android WebView textZoom does): clipped text,
@@ -93,6 +95,8 @@ function collectText() {
     if (!nodes.length) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility === 'hidden' || el.closest('[hidden], .sr-only, [aria-hidden="true"]')) continue;
+    // HUD under a letter's scrim: inert (modal.ts), out of the AX tree, dimmed on purpose; measured but not counted
+    const inert = !!el.closest('[inert]');
     let hidden = false, op = 1;
     for (let p = el; p; p = p.parentElement) { const c = getComputedStyle(p); op *= Number(c.opacity); if (c.display === 'none' || Number(c.opacity) === 0) { hidden = true; break; } }
     if (hidden || op < 0.05) continue;
@@ -119,7 +123,7 @@ function collectText() {
     for (let p = el; p; p = p.parentElement) { if (p.matches('.sheet, .letter, .waybill, .hud-top, .rail, .menu, .tut-note-wrap, .stall-card, .bubble, .toasts, .scrim')) { over = p.className.split(' ')[0]; break; } }
     out.push({
       text: el.textContent.replace(/\s+/g, ' ').trim().slice(0, 50), sel: `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 3).join('.')}`,
-      in: over, fg, alpha: (fg[3] ?? 1) * op, size, bold, large: size >= 24 || (bold && size >= 18.66), shadow: cs.textShadow !== 'none',
+      in: over, inert, fg, alpha: (fg[3] ?? 1) * op, size, bold, large: size >= 24 || (bold && size >= 18.66), shadow: cs.textShadow !== 'none',
       box: [Math.max(0, r.left), Math.max(0, r.top), Math.min(innerWidth, r.right), Math.min(innerHeight, r.bottom)],
     });
   }
@@ -328,7 +332,8 @@ try {
           `controls=${vis.length}`,
           `unnamed=${vis.filter((q) => q.ax && !q.ax.ignored && !q.ax.name.trim()).length}`,
           `small=${vis.filter((q) => q.w < 48 || q.h < 48).length}`,
-          `lowContrast=${entry.contrast.filter((q) => q.ratio !== null && q.ratio < (q.large ? 3 : 4.5)).length}`,
+          `lowContrast=${entry.contrast.filter((q) => !q.inert && q.ratio !== null && q.ratio < (q.large ? 3 : 4.5)).length}`,
+          `inertText=${entry.contrast.filter((q) => q.inert).length}`,
           `pins=${entry.pins.length}`,
           `focusStops=${entry.focus.length}`, `noRing=${entry.focus.filter((f) => f.tag !== 'body' && !f.ring).length}`,
           `scaleIssues=${entry.scale.length}`, `errors=${entry.errors.length}`);

@@ -105,6 +105,28 @@ try {
     ok(await page.evaluate(() => document.querySelectorAll('[inert]').length === 0), 'letter: nothing inert once it is closed');
     await ctx.close();
   }
+  // --- the end letter: the dimmed HUD under its scrim is inert (out of the AX tree), so its low contrast there is
+  //     by design; every visible text outside the letter must sit in an inert subtree (day 9b, D-131)
+  {
+    const { ctx, page } = await open('play=m1&ff=730&speed=0');
+    await page.waitForSelector('.letter[role="dialog"]', { timeout: 60000 }).catch(() => null);
+    await page.waitForTimeout(600);
+    const ax = await axNodes(page);
+    const dlg = ax.find((n) => n.role === 'dialog');
+    ok(!!dlg && dlg.modal === true && dlg.name.trim().length > 0, `end letter: modal dialog named "${dlg?.name ?? ''}"`);
+    const loose = await page.evaluate(() => {
+      const out = [];
+      for (const el of document.querySelectorAll('#ui *')) {
+        if (el.closest('.scrim, [inert], [hidden], [aria-hidden="true"], .sr-only')) continue;
+        const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+        const r = el.getBoundingClientRect();
+        if (own && r.width > 1 && r.height > 1 && getComputedStyle(el).visibility !== 'hidden') out.push(el.textContent.trim().slice(0, 30));
+      }
+      return out;
+    });
+    ok(loose.length === 0, `end letter: no live text outside the letter${loose.length ? ` (${loose.slice(0, 4).join(' | ')})` : ''}`);
+    await ctx.close();
+  }
   // --- reduced motion: everything that moves finishes at once
   {
     const { ctx, page } = await open('play=m1&bot=1&ff=150&speed=0', { reduced: true });

@@ -1763,3 +1763,26 @@ the first stall". The wording avoids gendered verbs (any building name fits). Mi
 longer says "check that both banks have a road" (pl/en): "Spójrz niżej, co stało najdłużej, i od tego zacznij
 następnym razem." Other languages keep their old line until translated. Keys `end.act.*` pl/en (PENDING_KEYS).
 Test `tests/loss-action.test.ts`. UI/content only. (decided by coordinator — owner to confirm)
+
+**D-131 — A11y leftovers of day 8d: the disabled "Sprzedaj za 15" reads; the HUD under a letter is out of the contrast count (day 9b; audit F19).**
+(a) The wagon card's "Sprzedaj za 15" is really disabled while the wagon has a job, cargo, is loading or moving (the
+sim's `sellWagon` rule, `canSell` in `panels.ts`); it was drawn at the kit's 0.6 opacity (2.0:1). Now the kit's
+disabled card stays (hatched, `card-disabled`), the card itself at full opacity, the coin icon at .45, and the
+label on a parchment plaque (`--kparch`, 2 px spread) in `--ink-soft` — the D-122 "brak N" treatment; the reason
+("Sprzedasz go, gdy skończy kurs i stanie pusty") is tied to the button by `aria-describedby`. Audit: 2.05 → none
+below 4.5:1. Other disabled kit buttons keep their opacity (no low-contrast report outside this one).
+(b) The end letter's 13–14 low-contrast items were all HUD under the letter's scrim (waybill "do śniegu", counts,
+the worst-stall card, the tool rail) — already `inert` (`modal.ts`, D-118), so out of the AX tree and dimmed on
+purpose; no letter text was below 4.5:1. `tools/a11y-audit.mjs` now flags text inside `[inert]` as `inert` and leaves
+it out of `lowContrast` (`inertText=N` in its summary); `tools/a11y-check.mjs` gained an end-letter check (modal,
+named, no live text outside the letter). UI/tools only, hashes unchanged. (decided)
+
+**D-132 — The mud stretch to pave has its own ghost: pale setts, not the dirt-road ochre (day 9b; BACKLOG P3 from D-116).**
+Checked at 412×915 in mission III's rain (2:50, the mud card's sheet): the ochre road ghost on the wet track read as
+one more dry dirt road — visible, but it did not say "cobbles here" (`docs/shots/day9b-m3-mud{,-near}-before-412x915.jpg`).
+`RoadPreview.pave` (render API) → `OverlayData.previewPave` → `uPrevPave` in the terrain shader: staggered grey-buff
+setts (~0.95 m) with dark joints and an ochre rim; the setts grow in blended octaves with screen footprint, so from
+the game's usual height the stretch is a pale stone band and close up it is a laid course. The flat (2D) view draws
+the stretch as a dashed pale-stone line. Only the pace card's mud stretch uses it (`nav.setGhost(cells, true)`); the
+gap finder and tutorial ghosts are unchanged. Render/UI only, hashes unchanged. Shots `day9b-m3-mud{,-near}-412x915.jpg`.
+(decided — owner to look at the shots)

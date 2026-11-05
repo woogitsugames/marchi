@@ -32,6 +32,8 @@ export interface RoadPreview {
   badCell: number;
   /** Proposed, not yet built (e.g. the access road a placement would need): drawn hatched. */
   dashed?: boolean;
+  /** Existing dirt road proposed for cobbles (the pace card's mud stretch, D-116): drawn as pale setts (D-132). */
+  pave?: boolean;
 }
 
 /** Building placement ghost (build tool). x, y = footprint top-left cell, as in the place command. */

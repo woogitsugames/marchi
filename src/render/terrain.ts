@@ -77,6 +77,7 @@ export class TerrainView {
       uGhostBad: { value: overlay.ghostBad },
       uGhostOn: { value: overlay.ghostOn },
       uPrevDash: overlay.previewDash,
+      uPrevPave: overlay.previewPave,
       uOchre: { value: new Color('#b8893a') },
       uClay: { value: new Color('#8c4a2f') },
       uDetail: { value: 1 },
@@ -308,6 +309,7 @@ uniform vec4 uGhostGate;
 uniform vec4 uGhostBad;
 uniform vec2 uGhostOn;
 uniform float uPrevDash;
+uniform float uPrevPave;
 uniform vec3 uOchre;
 uniform vec3 uClay;
 uniform float uDetail;
@@ -350,6 +352,13 @@ void sampleLayerNT(float L, vec2 uv, float k, vec2 wxz, out vec3 a, out vec3 n, 
   a = mix(aA, aB, w); n = mix(nA, nB, w); ro = mix(roA, roB, w);
 }
 #define BLEND(w, a2, n2, ro2) { A = mix(A, a2, w); N = mix(N, n2, w); RO = mix(RO, ro2, w); }
+// 1 inside a sett, 0 on the joints: staggered rows of size metres (the pave ghost, D-132)
+float settFace(vec2 wxz, float size) {
+  vec2 sp = wxz / size;
+  sp.x += 0.5 * step(0.5, fract(sp.y * 0.5));
+  vec2 sf = abs(fract(sp) - 0.5);
+  return 1.0 - smoothstep(0.34, 0.44, max(sf.x, sf.y));
+}
 float rutProfile(float d) {
   // wheel ruts at ±0.86 m (wagon track 1.72 m)
   float r1 = exp(-pow((d - 0.86) / 0.2, 2.0));
@@ -590,7 +599,20 @@ const FRAG_MAIN = /* glsl */ `
     float k = site * (0.18 + 0.5 * cross);
     ovCol = mix(ovCol, uOchre * 0.82, k); ovA = max(ovA, k * 0.75);
   }
-  if (pv > 0.0) { ovCol = mix(ovCol, uOchre, pv); ovA = max(ovA, pv * 0.65); }
+  if (pv > 0.0 && uPrevPave > 0.5) {
+    // a dirt stretch to pave (D-132): grey-buff setts in staggered rows with dark joints, so it reads as "cobbles
+    // here" against the wet, dark mud it lies on (the ochre wash looked like one more dirt road in the rain). The
+    // setts grow in octaves with distance (blended), so the joints stay a few pixels apart and never alias away.
+    float lv = log2(max(1.0, fw * 6.0 / 0.95));
+    float l0 = floor(lv);
+    float sz = 0.95 * exp2(l0);
+    float face = mix(settFace(wxz, sz), settFace(wxz, sz * 2.0), lv - l0);
+    vec3 stone = mix(vec3(0.3, 0.27, 0.23), vec3(0.78, 0.73, 0.62), face);
+    // an ochre rim where the stretch meets the verge, like the road preview's own colour
+    float rim = 1.0 - smoothstep(0.35, 0.8, pv);
+    ovCol = mix(ovCol, mix(stone, uOchre, rim), pv);
+    ovA = max(ovA, pv * 0.9);
+  } else if (pv > 0.0) { ovCol = mix(ovCol, uOchre, pv); ovA = max(ovA, pv * 0.65); }
   if (pb > 0.0) { ovCol = mix(ovCol, uClay, pb); ovA = max(ovA, pb * 0.6); }
   float bad = smoothstep(0.3, 0.6, ov.a);
   if (bad > 0.0) {

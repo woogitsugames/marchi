@@ -38,7 +38,8 @@ export interface PanelNav {
   /** Lay road (1, dirt) or cobbles / a stone bridge (2) over these cells. */
   buildRoad(cells: number[], surface?: 1 | 2): void;
   /** Ghost road on the map for the gap finder (null clears it). */
-  setGhost(cells: number[] | null): void;
+  /** Ghost road on the map while a sheet is open; `pave`: an existing dirt stretch proposed for cobbles (D-132). */
+  setGhost(cells: number[] | null, pave?: boolean): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
@@ -606,7 +607,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // the yard the card names
       const pcHere = pc && pc.producer === b.id ? pc : fc ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
-      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells);
+      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
       setHtml(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
       setHtml(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
@@ -683,8 +684,10 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still
       const canSell = !w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0;
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
-        `<button class="btn cf${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}">${iconSvg('coin', 22)}<span>${tHtml('wagon.sell', { n: fmtInt(WAGON_REFUND) })}</span></button></div>` +
-        (canSell ? '' : `<div class="s-hint sell-hint">${esc(t('wagon.sellBusy'))}</div>`);
+        // disabled: the kit's hatched card with the label on a parchment plaque (readable, like "brak N", D-122)
+        // and the reason tied to the button (day 9b, D-131)
+        `<button class="btn cf sell-btn${canSell ? '' : ' is-disabled'}" data-act="sell:${id}" aria-disabled="${!canSell}"${canSell ? '' : ` aria-describedby="sell-why-${id}"`}>${iconSvg('coin', 22)}<span class="sell-l">${tHtml('wagon.sell', { n: fmtInt(WAGON_REFUND) })}</span></button></div>` +
+        (canSell ? '' : `<div class="s-hint sell-hint" id="sell-why-${id}">${esc(t('wagon.sellBusy'))}</div>`);
       // the road fix sits after the chain (and the ice hint) as before, in its own part (D-100)
       const cut = html.indexOf('<div class="sheet-actions">');
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);

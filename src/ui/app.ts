@@ -42,6 +42,7 @@ import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
+import { tutorialEndActions } from './tutorialEnd';
 import { DiagPanel } from './diagPanel';
 import { fmtInt, iso, buildingName } from './format';
 import type { IconId } from './icons';
@@ -198,6 +199,8 @@ export class App implements PanelNav {
   private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
+  /** The gap ghost is a dirt stretch to pave (the mud card), drawn as setts (D-132). */
+  private ghostPave = false;
   private ghostKey = '';
 
   constructor(o: AppOptions) {
@@ -514,12 +517,10 @@ export class App implements PanelNav {
         this.prefs.tutorialM1 = r;
         savePrefs(this.prefs);
         if (this.tutorial === tut) this.tutorial = null;
-        // done or skipped: put the road tool away, so the next tap on the map opens a card instead of drawing a
-        // road (first-10-minutes-b, item 3)
-        if (this.tool === 'road' || this.tool === 'cobble') this.setTool('none');
-        // done: the last step left the castle sheet open, and in portrait it covered the worst-stall card, so the
-        // first stall after the tutorial was invisible (first-10-minutes-c N1, D-129). Skipped: the player's own sheet stays.
-        if (r === 'done') this.sheets.closeAll();
+        // road tool away (done or skipped); sheets closed when done (D-129) — see tutorialEndActions
+        const act = tutorialEndActions(r, this.tool);
+        if (act.toolAway) this.setTool('none');
+        if (act.closeSheets) this.sheets.closeAll();
       },
     });
     this.tutorial = tut;
@@ -533,8 +534,9 @@ export class App implements PanelNav {
   }
 
   /** PanelNav: the gap finder's ghost road while its sheet is open. */
-  setGhost(cells: number[] | null): void {
+  setGhost(cells: number[] | null, pave = false): void {
     this.ghosts.gap = cells;
+    this.ghostPave = !!cells && pave;
   }
 
   undoPlace(building: number): void {
@@ -550,10 +552,11 @@ export class App implements PanelNav {
     if (this.draft.busy) { this.ghostKey = '#draft'; return; }
     if (this.build.ghostOn) { this.ghostKey = '#build'; return; }
     const c = this.ghosts.gap ?? this.ghosts.tut;
-    const k = c ? c.join(',') : '';
+    const pave = this.ghosts.gap !== null && this.ghostPave;
+    const k = c ? (pave ? 'p' : '') + c.join(',') : '';
     if (k === this.ghostKey) return;
     this.ghostKey = k;
-    this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1 } : null);
+    this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1, pave } : null);
   }
 
   /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */

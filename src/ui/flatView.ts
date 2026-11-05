@@ -467,14 +467,17 @@ class FlatView implements WorldView {
     const W = world.terrain.w;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = p.valid ? 'rgba(184,137,58,0.9)' : 'rgba(140,74,47,0.9)';
+    // a dirt stretch to pave (D-132): pale stone in short setts, not the ochre of a road to build
+    ctx.strokeStyle = p.pave ? 'rgba(236,227,204,0.95)' : p.valid ? 'rgba(184,137,58,0.9)' : 'rgba(140,74,47,0.9)';
     ctx.lineWidth = 0.6;
+    ctx.setLineDash(p.pave ? [0.3, 0.12] : []);
     ctx.beginPath();
     p.cells.forEach((c, i) => {
       const x = (c % W) + 0.5, y = Math.floor(c / W) + 0.5;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
+    ctx.setLineDash([]);
     for (const c of p.cells) {
       const x = c % W, y = Math.floor(c / W);
       ctx.fillStyle = world.terrain.water[c] ? 'rgba(228,220,203,0.55)' : 'rgba(228,220,203,0.18)';
