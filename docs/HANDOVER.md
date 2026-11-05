@@ -1,4 +1,4 @@
-# Handover — MARCHIA (stan 2026-11-05 ~13:45 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
+# Handover — MARCHIA (stan 2026-11-05 ~18:00 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
 - Repo w kontenerze: **`/home/user/marchi`** (nie /workspace). Worktree: deweloper `/home/user/marchi-saves`,
@@ -17,6 +17,18 @@
   karta błota z niemożliwym brukiem w I), N1 (arkusz zamku po samouczku zasłania kartę zastoju), N3 (list porażki
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
+
+## Dzień 2026-11-05 (wieczór)
+- Scalone: D-156 dyspozytor 2 w wariancie L1 (decyzja właściciela; straty pieczęci od dokupionego wozu 28 → 19 / 193,
+  drabiny lekcji całe, rozsądny gracz 61 → 63, nowe złote hasze, status `WAGON_DUE` „Wóz N przyjedzie”), D-155
+  tłumaczenia wszystkich kluczy na 15 języków + linia „tempo” na Flipie (lista do przeglądu native speakerów w raporcie
+  agenta — `docs/DECISIONS.md` D-155), D-157..D-159 (odczyt layoutu na początku klatki, bramkowanie HUD, klucze
+  WAGON_DUE), raport „pierwsze 10 minut e” (`docs/research/2026-11-05-first-10-minutes-e.md`).
+- Decyzje właściciela ~17:40: **misja VIII przeprojektowana tutaj** (deweloper `claude/w-m8-redesign`, kryterium: same
+  wozy ≤ 2★, bruk + 1 wóz 3★ z zapasem ≥ 20 s); potem **posterunek handlowy doliny** wg `docs/specs/2026-11-04-valley-trade-post.md`.
+  Inne sesje dla tych zadań nieaktualne.
+- W toku: drugi agent `claude/w-day9h` — poprawki run e: N7 (tytuł nadwyżki), N8 (zamek bez naprawy), N6 (dok zasłania
+  ogniwo), V2 (karta rangi wraca w dolinie; cel ranga 1 < 8 min).
 
 ## Dzień 2026-11-05 (po południu)
 - Scalone: D-151 list otwierający dolinę + kamera na zamku, D-152 karta rangi w dolinie, D-153 bramkowanie HUD
