@@ -143,7 +143,7 @@ export class Markers {
         shown.add(bd.id);
         b.el.classList.toggle('is-minor', (bd.status.k === 'WAITING_PICKUP' || calm) && !isWorst);
         this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 24, bd.type), crit || isWorst, false,
-          () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world)}`, isWorst ? 'worst' : crit ? 'critical' : '');
+          () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world, bd.id)}`, isWorst ? 'worst' : crit ? 'critical' : '');
         // how long it has stood, from 20 s on (BACKLOG P2): a pin that keeps counting is the one to read first
         this.setTime(b, bd.stalledTicks >= PIN_TIME_TICKS ? Math.floor(bd.stalledTicks / TICK_HZ) : -1);
         const ring = bd.id === this.flashId && performance.now() < this.flashUntil;

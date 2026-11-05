@@ -8,6 +8,7 @@
 //   overflow   — text that sticks out of its box, or is clipped / ellipsized inside it
 //   covered    — a text run or control painted over by another element (tested with every element hit-testable)
 //   root-under-dock — the last link of a sheet's cause chain has text under the docked fix (D-146)
+//   under-fix  — a link or button of a sheet's body, where the body shows it, under the docked fix button (D-162)
 //   hscroll    — the page scrolls sideways
 //   console    — console errors / page errors
 // A positive control runs first: known-bad CSS is injected and each check must turn red, otherwise the
@@ -83,6 +84,8 @@ const SCENES = [
     await p.waitForSelector('.tut-text', { timeout: 30000 });
   } },
   // the short-landscape chain (D-111) folded and unfolded: its root must stand above the fix dock (D-146)
+  // a full yard: its hint links the mill that waits, above the docked "Kup wóz" (D-162)
+  { name: 'full-yard', q: 'play=m1&ff=90&speed=0&open=farm' },
   { name: 'chain', q: 'play=m6&ff=110&speed=0&open=farm' },
   { name: 'chain-open', q: 'play=m6&ff=110&speed=0&open=farm', act: async (p) => {
     await p.evaluate(() => document.querySelector('#sheets .sheet:last-child .c-more-btn')?.click());
@@ -299,6 +302,21 @@ function measure() {
     const low = Math.max(...[...rg.getClientRects()].filter((q) => q.width > 2).map((q) => q.bottom));
     if (low > dt + 1) out.overflow.push({ el: label(root), kind: 'root-under-dock', dx: 0, dy: Math.round(low - dt), in: 'fix dock' });
   }
+  // 8. no link or button of a sheet's body lies, where the body shows it, under the docked fix button (D-162,
+  // first-10-minutes-e N6: "Młyn wodny" scrolled under "Kup wóz −30" took the tap for a purchase)
+  for (const sh of document.querySelectorAll('#sheets .sheet')) {
+    const btn = sh.querySelector('.fix-dock .fix-btn');
+    const body = sh.querySelector('.sheet-body');
+    if (!btn || !body || !shown(btn)) continue;
+    const br = btn.getBoundingClientRect(), sb = body.getBoundingClientRect();
+    for (const e of body.querySelectorAll('button, a, .linkish')) {
+      if (e.closest('.fix-dock') || !shown(e)) continue;
+      const r = e.getBoundingClientRect();
+      const x = r.left + r.width / 2, y = r.top + r.height / 2;
+      if (y < sb.top || y > sb.bottom) continue;
+      if (x >= br.left && x <= br.right && y >= br.top && y <= br.bottom) out.overflow.push({ el: label(e), kind: 'under-fix', dx: 0, dy: Math.round(y - br.top), in: 'fix button' });
+    }
+  }
   out.hscroll = document.documentElement.scrollWidth > vw + 1 || document.body.scrollWidth > vw + 1;
   return out;
 }
@@ -361,6 +379,9 @@ const CONTROLS = [
   { check: 'overflow', css: '.tool .tl { font-size: 34px !important; white-space: nowrap !important; max-width: none !important; }' },
   { check: 'offscreen', css: '.rail { transform: translateY(70px) !important; }' },
   { check: 'covered', css: '.rail-tools::after { content: ""; position: absolute; inset: 0; z-index: 5; background: rgb(0 0 0 / .3); }' },
+  // the sticky dock of before D-162 on a short landscape sheet: the waiting mill's link under "Kup wóz"
+  { check: 'overflow(under-fix)', scene: 'full-yard', view: '915x412',
+    css: '.fix-dock { position: sticky !important; } .sheet-body:has(.fix-dock) { margin-block-end: 0 !important; padding-block-end: 0 !important; }' },
 ];
 
 async function main() {
@@ -369,14 +390,16 @@ async function main() {
   let bad = 0;
   try {
     if (!NO_CONTROL) {
-      const hud = SCENES.find((s) => s.name === 'hud');
-      const v = VIEWS[0];
-      const clean = await run(browser, url, v, 'pl', hud, null);
-      const base = new Set(failures(clean));
+      const cleanRuns = new Map();
       for (const c of CONTROLS) {
-        const m = await run(browser, url, v, 'pl', hud, c.css);
+        const sc = SCENES.find((s) => s.name === (c.scene ?? 'hud'));
+        const v = VIEWS.find((q) => q.id === (c.view ?? VIEWS[0].id));
+        const key = `${sc.name}|${v.id}`;
+        if (!cleanRuns.has(key)) cleanRuns.set(key, new Set(failures(await run(browser, url, v, 'pl', sc, null))));
+        const base = cleanRuns.get(key);
+        const m = await run(browser, url, v, 'pl', sc, c.css);
         const caught = failures(m).filter((f) => !base.has(f) && f.startsWith(c.check));
-        console.log(`control ${c.check.padEnd(9)} ${caught.length ? 'caught' : 'MISSED'}${caught.length ? '  e.g. ' + caught[0] : ''}`);
+        console.log(`control ${c.check.padEnd(19)} ${caught.length ? 'caught' : 'MISSED'}${caught.length ? '  e.g. ' + caught[0] : ''}`);
         if (!caught.length) bad++;
       }
       if (bad) { console.log(`positive control failed (${bad}) — the checker does not see injected faults`); }

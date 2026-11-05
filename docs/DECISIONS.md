@@ -2121,3 +2121,45 @@ pl already said "przyjedzie po {goodAcc}"; en's `{good}` became `{goodAcc}` (the
 Germanic languages use the pickup pattern of `status.WAITING_PICKUP` ("Collecte de {goodAcc} : chariot {wagon} dans
 {time}"); `cause.WAGON_DUE` is a short "wagon coming soon". `npm run i18n:coverage`: 0 pending, 0 placeholder
 mismatches. Native-speaker review stays with the other agent-written strings. (decided)
+
+**D-160 — A surplus yard's status title follows the calm variant (day 9h; first-10-minutes-e N7).**
+The sheet of a full yard nobody needs right now read "Pełno zboża — brak wozu do odbioru" above "Nadwyżka: … Nowy wóz
+tego nie przyspieszy." — two answers to "kupić wóz?" in one look. `statusKey()` (`src/ui/stallKinds.ts`, pure) picks
+`status.OUTPUT_FULL.surplus` ("Nadwyżka zboża — teraz nikt jej nie potrzebuje") for `OUTPUT_FULL.NO_WAGON` when
+`outputSurplus` is `SPARE`, the same test the HUD card (`cause.surplus`) and the calm hint use. `buildingStatusText`
+takes the building id (sheet status line, chain links, pins). 17 languages. UI only, hashes unchanged.
+Test `tests/day9h-diagnosis.test.ts`; shots `docs/shots/day9h-n7-surplus{-before,}-412x915.jpg`. (decided)
+
+**D-161 — A wagon wait that resolved while its sheet opened keeps "Kup wóz" for 20 s (day 9h; first-10-minutes-e N8).**
+The card "Zamek: wszystkie wozy zajęte" opened a castle sheet with no fix: headless, the castle's `NO_WAGON.ALL_BUSY`
+in mission I lasts 5–35 s and resolves as soon as a wagon takes the job — at ×4 often between the card and the sheet.
+The card was right, the sheet honest, the player left without a cure. `StallRanking` (once per sim tick) now remembers
+the last tick each building waited for a free wagon (`ALL_BUSY` with a reachable source, or a full yard that is not a
+surplus; UI memory, not state). A sheet with no stall and no other fix shows the wagon cure for `BUSY_MEMO_TICKS`
+(20 s) after that wait, with the reason "Przed chwilą czekano tu na wolny wóz — wszystkie były w trasie. Kolejny wóz
+skróci następne takie czekanie." Not during the tutorial, not when the ice ahead outranks a wagon (D-117). Alternative
+rejected: point the card at another building — the castle *is* the one that waited. UI only, hashes unchanged. (decided)
+
+**D-162 — Every sheet: the body scrolls above the fix dock, never under it (day 9h; first-10-minutes-e N6).**
+The sticky dock (D-100) let "Młyn wodny" (the full-yard hint's link) scroll under "Kup wóz −30": a tap on the link
+bought a wagon. The dock is now absolute in the sheet's paper below the body (outside the body's scroll clip) and the
+body keeps a bottom margin of the dock's height (`--dock-h` from `sheets.ts` minus the 14 px fade) plus 14 px padding,
+so its last line clears the fade at the end of the scroll. First done for `is-short` only; the new check then found
+"Co to znaczy?" under the docked fix on the portrait bottom sheet (chain scene, pseudo), so it applies to every sheet.
+`layout-check`: new `under-fix` check (a body link/button whose middle, where the body
+shows it, lies on the fix button), a `full-yard` scene (I at 1:30, farm sheet) and a positive control (the old sticky
+dock at 915×412 must be caught). Shots `docs/shots/day9h-n6-farm{-before,,-scrolled}-915x412.jpg`. (decided)
+
+**D-163 — Free valley: the rank card goes before the fleet card from two wagons per producer; rank 1 timing is an economy question (day 9h; first-10-minutes-e V2, V1).**
+`paceCard`: in the valley the rank card (D-152) takes the slot ahead of the fleet card (D-140) once
+`wagons ≥ 2 × producing buildings` (`fleetEnough`, `FLEET_ENOUGH_PER_PRODUCER`). Measured with the new card-only players of
+`tools/sandbox-first30.ts` (`card-10/30/60`, the game's own pace cards and their cures; seeds default/1301–1303): rank 1 at
+11.3–12.8 min with 6–8 wagons, **identical with and without the rule** (and for "rank first always", "≥ 1×", "start + 2"):
+in 30 min the two cards never compete. The research's reading of V2 was off: after the farm the rank-1 goods requirement
+(2) is met, so the rank card has nothing to name; rank 1 waits for **renown 200** (57–112 at 8:00). Even 2× producers + 12
+wagons reach rank 1 at 9.7 min (DECENT bot 10.4), so the < 8 min target needs a balance decision (rank-1 renown, sim) —
+in BACKLOG for the owner. Browser (`tools/valley-first5.mjs`, 412×915, 8 min): farm after 4 taps, road fix +4 at once,
+4 "Kup wóz" from the fleet card, 8:00 rank 0, 7 wagons, 172 silver. **V1 was a tool artifact:** Escape after "Postaw"
+closed the new building's sheet (the build tool stays open) and the next tap hit the leaving sheet; tapped directly,
+"Zbuduj drogę" works in pause (230 → 226, roads +4). The tool no longer presses Escape over a sheet. UI only, hashes
+unchanged. Test `tests/day9h-diagnosis.test.ts`. (decided — measurement; owner question in BACKLOG)

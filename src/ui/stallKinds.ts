@@ -1,7 +1,8 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { TICK_HZ, type BuildingStatus, type ReasonLink, type WagonStatus } from '../sim/index';
+import { TICK_HZ, outputSurplus, type BuildingStatus, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
+import type { World } from '../sim/index';
 
 /** A building status counts as a stall worth a bubble. */
 export function isStall(s: BuildingStatus): boolean {
@@ -63,4 +64,15 @@ export function lossActionKey(status: string): MessageKey {
   if (k === 'BRIDGE_JAM' || k === 'BRIDGE_CLOSED') return 'end.act.bridge';
   if (k === 'STORAGE_FULL' || (k === 'OUTPUT_FULL' && cause === 'NO_DESTINATION')) return 'end.act.granary';
   return 'end.act.other';
+}
+
+/**
+ * The status title key: 'status.<k>' or 'status.<k>.<cause>'. With the building's `id`, a full yard nobody needs
+ * right now reads as the calm surplus — the sheet below it says a new wagon would not help, so the title must not
+ * say "no wagon to collect" (first-10-minutes-e N7, D-160).
+ */
+export function statusKey(s: BuildingStatus, world?: World, id = -1): MessageKey {
+  if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && world && id >= 0 && outputSurplus(world, id) === 'SPARE') return 'status.OUTPUT_FULL.surplus';
+  const cause = 'cause' in s ? s.cause : null;
+  return (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
 }

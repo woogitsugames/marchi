@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, cureFor, gapTarget, paveCheck, paveSpanFor, sharedOneProducer } from './stalls';
+import { codexCalm, cureFor, gapTarget, iceBeforeWagon, paveCheck, paveSpanFor, recentWagonWait, sharedOneProducer } from './stalls';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
 
 export { gapTarget };
@@ -154,6 +154,19 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
   return fixSection(btn, hint, short > 0);
 }
 
+/** "Kup wóz" from the stable, with its reason (or the silver short of it). */
+function wagonCureHtml(world: World, why: string): string {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return '';
+  const short = WAGON_PRICE - world.state.coins;
+  const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
+    iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
+  const hint = short > 0
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(why)}</div>`;
+  return fixSection(btn, hint, short > 0);
+}
+
 /**
  * One remedy under the chain when its root is not a missing road (that one has the road fix above):
  * every wagon busy -> buy a wagon here (no trip back to the rail); a one-lane wooden bridge jams ->
@@ -215,17 +228,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
   }
-  if (cure === 'wagon') {
-    const stable = world.state.buildings.find((q) => q.type === 'stable');
-    if (!stable) return '';
-    const short = WAGON_PRICE - world.state.coins;
-    const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
-      iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
-    const hint = short > 0
-      ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
-      : `<div class="s-hint">${esc(t('fix.wagonWhy'))}</div>`;
-    return fixSection(btn, hint, short > 0);
-  }
+  if (cure === 'wagon') return wagonCureHtml(world, t('fix.wagonWhy'));
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
   if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
     const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
@@ -615,7 +618,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         top = `<div class="section-h chain-h">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id, b.stalledTicks > 0 ? `<bdi class="num">${esc(ticksClock(b.stalledTicks))}</bdi>` : '')}`;
       } else {
         const cls = stalled ? 'bad' : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
-        top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world))}</span>${since}</div>`;
+        top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world, id))}</span>${since}</div>`;
       }
       // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
       // a building the player just placed gets the link at once, before its first status update
@@ -660,7 +663,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         const span = paveSpanFor(world, b);
         if (span) nav.setGhost(span.cells, true);
       }
-      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain) : '');
+      // the card said "wszystkie wozy zajęte" but a wagon took the job while the sheet opened (×4): the same cure,
+      // with the wait it answers (first-10-e N8, D-161)
+      const ago = !fix && !pcHere && !stalled && !carded && !nav.tutorialRunning?.() && !iceBeforeWagon(world) ? recentWagonWait(world, id) : -1;
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain)
+        : ago >= 0 ? wagonCureHtml(world, t('fix.wagonLately')) : '');
       setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
     },

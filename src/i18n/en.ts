@@ -44,6 +44,7 @@ export const en: FullDict = {
   'status.NO_WAGON.ALL_BUSY': 'No free wagon for {good}',
   'status.NO_WAGON.NONE_CAN_REACH': 'No free wagon can reach the {good}',
   'status.OUTPUT_FULL.NO_WAGON': 'Storage full: no wagon to collect {good}',
+  'status.OUTPUT_FULL.surplus': 'Surplus {good}: nobody needs it right now',
   'status.OUTPUT_FULL.NO_DESTINATION': 'Storage full: nowhere to deliver {good}',
   'status.WAITING_PICKUP': 'Full of {good} — collection: wagon {wagon}',
   // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155)
@@ -228,6 +229,7 @@ export const en: FullDict = {
   'fix.short': 'Short by {n} silver',
   'fix.wagon': 'Buy a wagon',
   'fix.wagonWhy': 'Every wagon is busy: a new one leaves the stable for the most urgent delivery.',
+  'fix.wagonLately': 'A moment ago this waited for a free wagon — every one was on the road. Another wagon shortens the next such wait.',
   'fix.jam': 'A wooden bridge has one lane. A second crossing nearby splits the traffic.',
   'fix.jamStone': 'A wooden bridge has one lane. Pave it in stone (cobbles) or build a second crossing.',
   'contract.causes': 'Where the time went',

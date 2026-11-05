@@ -57,6 +57,12 @@ interface Opts {
    * by the castle (buildSite), as the pace card's "Postaw jeszcze" does.
    */
   sbRank?: boolean;
+  /**
+   * The game's own cards (day 9h): when no real stall needs the slot, the pace card the HUD shows (paceCard: the
+   * fleet cue D-140 or the rank card D-152) and its sheet's cure — "Kup wóz", or "Postaw: …" at the ghost by the
+   * castle. Replaces the sbFleet / sbRank prototypes.
+   */
+  game?: boolean;
 }
 
 export interface Look {
@@ -90,16 +96,26 @@ function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
 }
 
 /** One look: the slot (pace card if it would take it, else the worst stall) and the sheet's cure. */
-function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false): Look {
+function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false, game = false): Look {
   const st = w.state;
   const ranked = rankStalls(w);
   const base = { t: st.tick / TICK_HZ, stalls: ranked.length, coins: st.coins, wagons: st.wagons.length, rank: st.town.rank };
   // the pace card would take the slot when no real stall needs it: it must never exist without a contract
   if (!ranked.length || ranked[0]!.minor) {
     const pc = paceCard(w, forecastFor(w, log));
-    if (pc) { r.paceWrong++; return { ...base, kind: 'pace:' + pc.k, calm: true, crit: false, calmWhy: null, cure: null, act: 'pace?' }; }
+    if (pc && game) {
+      const kind = 'card:' + pc.k + (pc.k === 'rank' || pc.k === 'fleet' ? ':' + pc.type : '');
+      const card = { ...base, kind, calm: true, crit: false, calmWhy: null };
+      if (pc.k === 'fleet') { const res = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }); return { ...card, cure: 'wagon', act: res.ok ? 'wagon:card' : 'wagon?' + res.err.k }; }
+      if (pc.k === 'rank') {
+        if (st.coins < BUILDINGS[pc.type].price) return { ...card, cure: 'producer', act: 'producer?NO_COINS' };
+        return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'build:' + pc.type : 'build?fail:' + pc.type };
+      }
+      return { ...card, cure: null, act: '' };
+    }
+    if (pc && !game) { r.paceWrong++; return { ...base, kind: 'pace:' + pc.k, calm: true, crit: false, calmWhy: null, cure: null, act: 'pace?' }; }
   }
-  for (const b of st.buildings) if (fleetCueFor(w, forecastFor(w, log), b)) r.fleetWrong++;
+  if (!game) for (const b of st.buildings) if (fleetCueFor(w, forecastFor(w, log), b)) r.fleetWrong++;
   // prototype free-valley rank card (see Opts.sbRank)
   if (rk && (!ranked.length || ranked[0]!.minor)) {
     const sb = sandboxStatus(w);
@@ -209,7 +225,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       if (fleetBits.length > 60) fleetBits.shift();
     }
     if (o.eye > 0 && t > 0 && t % (o.eye * TICK_HZ) === 0) {
-      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank);
+      const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank, !!o.game);
       r.looks.push(l);
       if (l.act && !l.act.includes('?')) r.actions[l.act] = (r.actions[l.act] ?? 0) + 1;
     }
@@ -269,6 +285,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ['eye-30+sbF+sbR', { plan: null, eye: 30, events: false, sbFleet: { keep: 40 }, sbRank: true }],
     ['eye-60+sbF+sbR', { plan: null, eye: 60, events: false, sbFleet: { keep: 40 }, sbRank: true }],
     ['eye-30+sbR', { plan: null, eye: 30, events: false, sbRank: true }],
+    ['card-10', { plan: null, eye: 10, events: false, game: true }],
+    ['card-30', { plan: null, eye: 30, events: false, game: true }],
+    ['card-60', { plan: null, eye: 60, events: false, game: true }],
     ['decent', { plan: DECENT, eye: 0, events: false }],
   ];
   const all: Result[] = [];

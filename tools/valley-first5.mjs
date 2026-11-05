@@ -149,7 +149,10 @@ async function run([w, h]) {
           lk.act += placed ? ` -> placed ${s2.buildings.at(-1)}` : ' -> NOT placed' + (ok ? '' : ' (no place button)');
           if (placed) { out.builds.push({ t: s2.tick / 10, type: s2.buildings.at(-1), taps: out.taps }); if (!out.firstBuild) out.firstBuild = { t: (s2.tick - tStart) / 10, taps: out.taps - tapsBefore, type: s2.buildings.at(-1) }; }
           if (first) await step('after place', { shot: await shot('placed') });
-          if (s2.tool === 'build') await page.keyboard.press('Escape');
+          // the new building's sheet is open over the build tool: Escape would close that sheet, not the tool, and the
+          // next tap hit the leaving sheet (V1 of first-10-minutes-e was this artifact, day 9h); close the tool only
+          // when no sheet came up
+          if (s2.tool === 'build' && !(await page.locator('#sheets .sheet:not(.is-leaving)').count())) await page.keyboard.press('Escape');
           // the new building's sheet opens with its own "Naprawa" (the missing road stretch): the player takes it
           const next = page.locator('#sheets .sheet:last-child .fix-btn:not(.is-disabled)');
           if (placed && await next.count()) {
@@ -164,6 +167,8 @@ async function run([w, h]) {
         } else lk.act += s1.coins !== s.coins ? ' (applied)' : ' (no visible effect)';
       }
       for (let i = 0; i < 3 && await page.locator('#sheets .sheet').count(); i++) { out.taps++; await page.keyboard.press('Escape'); await settle(); }
+      // the build tool stays open after "Postaw" (more of the same can follow): close it too, as the player would
+      if ((await sim()).tool === 'build') { out.taps++; await page.keyboard.press('Escape'); await settle(); }
     }
     out.looks.push(lk);
     log('look', lk.t, '|', lk.card.slice(0, 80), '|', lk.act || '-', '| coins', lk.coins, 'rank', lk.rank);
