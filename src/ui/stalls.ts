@@ -314,6 +314,39 @@ export function gapTarget(world: World, chain: ReasonLink[]): number {
   return -1;
 }
 
+/** How long after a wagon shortage resolves its sheet still offers the wagon (first-10-e N8, D-161): 20 s. */
+export const BUSY_MEMO_TICKS = 20 * TICK_HZ;
+const busyMemo = new WeakMap<World, Map<number, number>>();
+
+/** A wait for a free wagon (NO_WAGON.ALL_BUSY, or a full yard no wagon collects that is not a surplus). */
+function waitsForWagon(world: World, b: Building): boolean {
+  const s = b.status;
+  return (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY' && busyOutOfReach(world, b.id) < 0) ||
+    (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && outputSurplus(world, b.id) !== 'SPARE' && stoneInStore(world, b.id) === 0);
+}
+
+/**
+ * Remember the tick each building last waited for a free wagon (UI memory, not state). StallRanking calls it on
+ * every recompute, i.e. once per sim tick the app sees.
+ */
+export function noteWagonWaits(world: World): void {
+  let m = busyMemo.get(world);
+  if (!m) busyMemo.set(world, (m = new Map()));
+  for (const b of world.state.buildings) if (b.stalledTicks >= MIN_STALL_TICKS && waitsForWagon(world, b)) m.set(b.id, world.state.tick);
+}
+
+/**
+ * The stall card said "wszystkie wozy zajęte", but by the time its sheet opened (×4) a wagon had taken the job:
+ * the sheet still offers "Kup wóz" for BUSY_MEMO_TICKS after the wait, while nothing else is wrong there
+ * (first-10-e N8, D-161). Ticks since that wait, or -1.
+ */
+export function recentWagonWait(world: World, id: number): number {
+  const at = busyMemo.get(world)?.get(id);
+  if (at === undefined) return -1;
+  const ago = world.state.tick - at;
+  return ago >= 0 && ago <= BUSY_MEMO_TICKS ? ago : -1;
+}
+
 let cureCache: { key: string; cure: Cure } | null = null;
 /**
  * What the player can buy or build against the root of a building's stall chain: a wagon when the
@@ -385,6 +418,7 @@ export class StallRanking {
       this.world = world; this.state = st; this.tick = st.tick; this.net = st.netVersion;
       this.count = st.buildings.length; this.version = version;
       this.cached = rankStalls(world);
+      noteWagonWaits(world);
       this.computed++;
     }
     return this.cached;

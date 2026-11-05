@@ -43,6 +43,7 @@ export const pl = {
   'status.NO_WAGON.ALL_BUSY': 'Brak wolnego wozu do przewozu {goodGen}',
   'status.NO_WAGON.NONE_CAN_REACH': 'Żaden wolny wóz nie dojedzie po {goodAcc}',
   'status.OUTPUT_FULL.NO_WAGON': 'Pełno {goodGen} — brak wozu do odbioru',
+  'status.OUTPUT_FULL.surplus': 'Nadwyżka {goodGen} — teraz nikt jej nie potrzebuje',
   'status.OUTPUT_FULL.NO_DESTINATION': 'Pełno {goodGen} — nie ma dokąd wieźć',
   'status.WAITING_PICKUP': 'Pełno {goodGen} — odbiór: wóz {wagon}',
   // dispatcher 2: a busy wagon nearby comes sooner than a free one (D-155; see PENDING_KEYS)
@@ -228,6 +229,7 @@ export const pl = {
   'fix.short': 'Brakuje {n} srebra',
   'fix.wagon': 'Kup wóz',
   'fix.wagonWhy': 'Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.',
+  'fix.wagonLately': 'Przed chwilą czekano tu na wolny wóz — wszystkie były w trasie. Kolejny wóz skróci następne takie czekanie.',
   'fix.jam': 'Most drewniany ma jeden pas. Druga przeprawa obok rozdzieli ruch.',
   'fix.jamStone': 'Most drewniany ma jeden pas. Wyłóż go kamieniem (bruk) albo zbuduj drugą przeprawę.',
   'contract.causes': 'Gdzie stracono czas',

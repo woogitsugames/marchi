@@ -3,6 +3,7 @@ import { BUILDINGS, RANKS, TICK_HZ, buildingById, type BuildingStatus, type Good
 import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
 import { bridgeJamCause, type BridgeJamCause } from './bridgeJam';
 import { esc } from './dom';
+import { statusKey } from './stallKinds';
 
 export function isRtl(): boolean {
   return RTL_LANGS.has(getLang());
@@ -88,14 +89,16 @@ export function wagonName(world: World, id: number): string {
   return n === null ? t('wagon.kicker') : t('wagon.name', { id: n });
 }
 
-/** Status keys: 'status.<k>' or 'status.<k>.<cause>'. */
-export function buildingStatusText(s: BuildingStatus, world?: World): string {
+/**
+ * Status keys: 'status.<k>' or 'status.<k>.<cause>'. `id` (the building with this status) lets a full yard
+ * nobody needs right now read as the calm surplus, never "no wagon to collect" (first-10-e N7, D-160).
+ */
+export function buildingStatusText(s: BuildingStatus, world?: World, id = -1): string {
   // contested input: name the consumer that takes it ("Drewno idzie do: Tartak"), the chain links to it
   if (s.k === 'NO_INPUT' && s.cause === 'CONTESTED' && world && s.blockedBy >= 0 && buildingById(world, s.blockedBy)) {
     return capFirst(t('status.NO_INPUT.CONTESTED.to', { good: goodName(s.good), rival: buildingName(world, s.blockedBy) }));
   }
-  const cause = 'cause' in s ? s.cause : null;
-  let key = (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
+  let key = statusKey(s, world, id);
   const params: Record<string, string | number> = {};
   // "the supplier is making it now" only while it is: a supplier waiting for its own input says so (F5, D-44)
   const sup = s.k === 'WAITING_UPSTREAM' && world ? buildingById(world, s.from) : undefined;
@@ -136,14 +139,14 @@ export function linkText(world: World, l: ReasonLink): string {
     const g = l.status.good;
     return capFirst(t('why.waitsCustomer', { good: goodName(g), goodGen: t(`goodGen.${g}` as MessageKey) }));
   }
-  return l.kind === 'building' ? buildingStatusText(l.status, world) : wagonStatusText(world, l.status);
+  return l.kind === 'building' ? buildingStatusText(l.status, world, l.id) : wagonStatusText(world, l.status);
 }
 
 export function linkSubject(world: World, l: ReasonLink): string {
   return l.kind === 'building' ? buildingName(world, l.id) : wagonName(world, l.id);
 }
 
-export { codexLink, isCritical, isStall, isStallLink, isWagonWait } from './stallKinds';
+export { codexLink, isCritical, isStall, isStallLink, isWagonWait, statusKey } from './stallKinds';
 
 /** Icon markup for a building status (missing good = good icon with a stroke-through). */
 export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof typeof BUILDINGS): string {
