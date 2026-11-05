@@ -90,7 +90,24 @@ export function paceCard(world: World, f: ContractForecast | null): PaceCard | n
   const mud = mudCard(world, f);
   // a cobble stretch the player cannot pay for now yields to the wagon he can (D-127, mission I at 60 s)
   if (mud && mudPayable(world, mud)) return mud;
-  return fleetCard(world, f) ?? mud ?? rankCard(world);
+  // the free valley (D-163): the rank card's producer comes before one more wagon once the fleet serves its yards
+  const rank = rankCard(world);
+  if (rank && fleetEnough(world)) return rank;
+  return fleetCard(world, f) ?? mud ?? rank;
+}
+
+/** Wagons per producing building from which the free valley's fleet counts as enough (D-163). */
+export const FLEET_ENOUGH_PER_PRODUCER = 2;
+
+/**
+ * The free valley's fleet serves its producers well enough that the rank card's building goes first (D-163,
+ * first-10-minutes-e V2): two wagons or more per producing building. Below that the fleet card keeps the slot.
+ */
+export function fleetEnough(world: World): boolean {
+  const st = world.state;
+  let producers = 0;
+  for (const b of st.buildings) if (BUILDINGS[b.type].recipe && outputGoods(b.type).length > 0) producers++;
+  return producers > 0 && st.wagons.length >= FLEET_ENOUGH_PER_PRODUCER * producers;
 }
 
 /**

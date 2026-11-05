@@ -2,6 +2,7 @@
 // N8 — a wagon shortage that resolved while its sheet opened still offers the wagon for a short memory.
 import { TICK_HZ, applyCommand, buildingById, createWorld, explainBuilding, outputSurplus, step, suggestLinkToStable } from '../src/sim/index';
 import { pl } from '../src/i18n/pl';
+import { FLEET_ENOUGH_PER_PRODUCER, fleetEnough, paceCard } from '../src/ui/paceCard';
 import { statusKey } from '../src/ui/stallKinds';
 import { BUSY_MEMO_TICKS, StallRanking, gapTarget, noteWagonWaits, rankStalls, recentWagonWait } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
@@ -45,4 +46,18 @@ test('N8: the castle\'s short "all wagons busy" is remembered for 20 s after it 
   while (w.state.tick <= resolvedAt + BUSY_MEMO_TICKS + 1) { step(w); noteWagonWaits(w); }
   const back = castle.status.k === 'NO_WAGON';
   if (!back) eq(recentWagonWait(w, castle.id) >= 0, false, 'forgotten after 20 s');
+});
+
+test('V2: the rank card goes before the fleet card once the valley has two wagons per producer', () => {
+  const w = createWorld('sandbox');
+  const producers = w.state.buildings.filter((b) => b.type !== 'castle' && b.type !== 'stable' && b.type !== 'warehouse').length;
+  eq(fleetEnough(w), w.state.wagons.length >= FLEET_ENOUGH_PER_PRODUCER * producers, 'the rule');
+  eq(fleetEnough(w), false, 'the start fleet is not enough');
+  const stable = w.state.buildings.find((b) => b.type === 'stable')!;
+  while (!fleetEnough(w)) assert(applyCommand(w, { t: 'buyWagon', stable: stable.id }).ok, 'wagon bought');
+  const pc = paceCard(w, null);
+  eq(pc?.k, 'rank', 'the rank card takes the slot');
+  // never in a mission: no rank card with a contract
+  const m = createWorld('m1');
+  eq(paceCard(m, null)?.k === 'rank', false, 'mission I: no rank card');
 });
