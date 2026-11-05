@@ -489,7 +489,10 @@ function causeReason(status: string): string {
 
 /** One action line for the loss's #1 cause (D-130). */
 function lossActionHtml(world: World): string {
-  const top = topStallCauses(world, 1).filter((c) => c.seconds >= 5)[0];
+  // a missing road among the three costs comes first: no wagon helps where none can drive (a lost I without the
+  // crossing listed the farm's "full yard, no wagon" above the mill's "no wagon can reach")
+  const three = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
+  const top = three.find((c) => lossActionKey(c.status) === 'end.act.road') ?? three[0];
   if (!top) return '';
   const text = t(lossActionKey(top.status), { who: causeSubject(world, top.kind, top.id), time: clock(top.seconds) });
   return `<p class="lg-act" dir="auto">${esc(text)}</p>`;

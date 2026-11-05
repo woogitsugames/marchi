@@ -1752,7 +1752,10 @@ in portrait it covered the worst-stall card and the tool rail, so the first stal
 the player's own sheet. UI only. (decided by coordinator — owner to confirm)
 
 **D-130 — The loss letter gives one action line for the #1 cause; I's loss letter no longer advises a crossing (day 9a; first-10-minutes-c N3).**
-Under "Gdzie stracono czas" a lost contract shows one line from the cause's kind (`lossActionKey`, `src/ui/stallKinds.ts`):
+Under "Gdzie stracono czas" a lost contract shows one line for the #1 cause — or, when one of the three listed is
+a missing road (no road, unreachable, no wagon can reach, no route), for that one: no wagon helps where none can drive
+(a lost I without the crossing listed "Gospodarstwo: pełny magazyn, brak wozu" above "Młyn: żaden wóz nie dojedzie").
+The line comes from the cause's kind (`lossActionKey`, `src/ui/stallKinds.ts`):
 pickup wait / all busy / full yard without a wagon → "Następnym razem: Gospodarstwo — 4:12 czekania na wóz. Kup wóz
 wcześniej (−30)."; no road / unreachable → link at once (the eye shows the stretch); bridge jam/ice → stone bridge or
 a second crossing; full granary / nowhere to deliver → granary or link the customer; else "open «Dlaczego stoi?» at
