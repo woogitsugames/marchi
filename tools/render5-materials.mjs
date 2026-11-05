@@ -100,6 +100,19 @@ await page.evaluate(({ n, cmds }) => {
   while (proto && !Object.prototype.hasOwnProperty.call(proto, 'customProgramCacheKey')) proto = Object.getPrototypeOf(proto);
   const pf = proto.customProgramCacheKey;
   proto.customProgramCacheKey = function () { hit(this); return pf.call(this); };
+  // TOGGLE: put the base material back on the instanced meshes that carry a mirror ('-inst') = the shipped state,
+  // on the same frozen frame (exact before/after pixel pair on one page)
+  window.__r5swap = (toBase) => {
+    const base = new Map();
+    app.view.scene.traverse((o) => { if (o.isMesh && !o.isInstancedMesh && o.material && !Array.isArray(o.material)) base.set(o.material.name, o.material); });
+    let n = 0;
+    app.view.scene.traverse((o) => {
+      if (!o.isInstancedMesh) return;
+      if (toBase && o.material.name.endsWith('-inst')) { const b = base.get(o.material.name.slice(0, -5)); if (b) { o.userData.__r5inst = o.material; o.material = b; n++; } }
+      if (!toBase && o.userData.__r5inst) { o.material = o.userData.__r5inst; delete o.userData.__r5inst; n++; }
+    });
+    return n;
+  };
   window.__r5wrapAll = () => app.view.scene.traverse((o) => { if (o.material) for (const m of [].concat(o.material)) wrapOwn(m); });
 }, { n: wagons, cmds: benchCmds });
 
@@ -143,6 +156,7 @@ for (const d of dists) {
   await page.waitForTimeout(2500);
   await freeze(true);
   await frames(3);
+  const one = async (mode) => {
   const r = await page.evaluate(() => {
     const app = window.__marchia.app, v = app.view, r = v.renderer, cam = v.rig.camera, C = window.__cpk, G = window.__gl;
     window.__r5wrapAll();
@@ -192,9 +206,20 @@ for (const d of dists) {
   r.allocGetParamsKB = +(gp / K / 1024).toFixed(1);
   r.allocTop = [...by].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => [k, +(v / K / 1024).toFixed(1)]);
   await frames(2);
-  await page.screenshot({ path: `${outDir}/${quality}-${d}.png`, timeout: 600000 });
-  console.error(`[render5] ${quality} ${d} m: ${JSON.stringify(r)} (${Math.round(performance.now() / 1000)} s)`);
-  out.runs.push({ dist: d, ...r });
+  await page.screenshot({ path: `${outDir}/${quality}-${d}${mode}.png`, timeout: 600000 });
+  console.error(`[render5] ${quality} ${d} m${mode}: ${JSON.stringify(r)} (${Math.round(performance.now() / 1000)} s)`);
+  out.runs.push({ dist: d, mode, ...r });
+  };
+  await one('');
+  if (process.env.TOGGLE === '1') {
+    const n = await page.evaluate(() => window.__r5swap(true));
+    await frames(3);
+    await one('-base');
+    await page.evaluate(() => window.__r5swap(false));
+    await frames(3);
+    await page.screenshot({ path: `${outDir}/${quality}-${d}-again.png`, timeout: 600000 });
+    out.runs[out.runs.length - 1].swapped = n;
+  }
 }
 
 if (events) {
@@ -203,7 +228,16 @@ if (events) {
     await page.evaluate(fn);
     await page.waitForTimeout(waitMs);
     await frames(4);
-    if (shot) await page.screenshot({ path: `${outDir}/${quality}-${shot}.png`, timeout: 600000 });
+    if (shot) {
+      await page.evaluate(() => { const v = window.__marchia.app.view; if (!v.__frame0) v.__frame0 = v.frame.bind(v); v.frame = (a) => v.__frame0(a, 0); });
+      await frames(3);
+      await page.screenshot({ path: `${outDir}/${quality}-${shot}.png`, timeout: 600000 });
+      if (process.env.TOGGLE === '1') {
+        await page.evaluate(() => window.__r5swap(true)); await frames(3);
+        await page.screenshot({ path: `${outDir}/${quality}-${shot}-base.png`, timeout: 600000 });
+        await page.evaluate(() => window.__r5swap(false)); await frames(3);
+      }
+    }
     const s1 = await page.evaluate((ids) => {
       const r = window.__marchia.app.view.renderer, old = new Set(ids);
       return { fLink: window.__gl.fLink, fCompile: window.__gl.fCompile, link: window.__gl.link, progs: r.info.programs.length, fresh: r.info.programs.filter((p) => !old.has(p.id)).map((p) => p.name) };
