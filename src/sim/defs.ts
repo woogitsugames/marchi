@@ -249,7 +249,7 @@ export interface RankDef {
  */
 export const RANKS: readonly RankDef[] = [
   { renown: 0, goods: 0, flow: 0, unlocks: ['woodcutter', 'sawmill', 'farm', 'stable', 'warehouse'], surfaces: [1], castleLevel: 0 },
-  { renown: 200, goods: 2, flow: 8, unlocks: ['mill', 'bakery'], surfaces: [], castleLevel: 0 },
+  { renown: 120, goods: 2, flow: 8, unlocks: ['mill', 'bakery'], surfaces: [], castleLevel: 0 },
   { renown: 1000, goods: 4, flow: 20, unlocks: ['fisher', 'quarry'], surfaces: [2], castleLevel: 0 },
   { renown: 3000, goods: 6, flow: 60, unlocks: ['charcoalBurner', 'malthouse'], surfaces: [], castleLevel: 0 },
   { renown: 7200, goods: 7, flow: 120, unlocks: ['brewery'], surfaces: [], castleLevel: 0 },

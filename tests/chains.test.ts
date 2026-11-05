@@ -277,7 +277,8 @@ test('decent bot plays 90 valley minutes: ranks 3-4 on time, all ten goods sold,
   const r = runSandbox(DECENT, 90, { checkEvery: 5 });
   assert(r.violations.length === 0, r.violations.slice(0, 3).join('\n'));
   const m = r.rankMin;
-  assert(m[1]! >= 8 && m[1]! <= 12, `rank 1 at ${m[1]}`);
+  // rank 1 at renown 120 (owner 2026-11-05, D-168): a card-only player ~8 min, the decent bot ~7
+  assert(m[1]! >= 5.5 && m[1]! <= 9, `rank 1 at ${m[1]}`);
   assert(m[2]! >= 20 && m[2]! <= 30, `rank 2 at ${m[2]}`);
   assert(m[3]! >= 40 && m[3]! <= 50, `rank 3 at ${m[3]}`);
   assert(m[4]! >= 70 && m[4]! <= 90, `rank 4 at ${m[4]}`);
