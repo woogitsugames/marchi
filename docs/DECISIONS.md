@@ -1801,3 +1801,20 @@ mission IV at 1:00 with two wagons bought (the D-117 state): `day9c-m4-pave{,-ne
 Open: from the castle's sheet the span is off screen in both orientations at the game's usual zoom (the eye centres
 the castle), so the ghost is seen only after a pan — as with the mud stretch, no camera move was added.
 Render/UI only, hashes unchanged. (decided — owner to look at the shots)
+
+**D-134 — Research c's N5 ("0 words at three stalls") was the audit reading a sheet mid-fade; the fade itself was broken (day 9c; first-10-minutes-c N5, fix list item 6).**
+What the audit measured: after the eye tap it counted the words of every visible text node (`deepVis`: no hidden,
+transparent or `aria-hidden` ancestor) and the enabled `.fix-btn`s. Repeating portrait with a diagnostic on an empty
+screen reproduced it at once (the first Why sheet): `words 0, letters 18` (only the HUD's numbers), while the
+screenshot taken right after shows the full sheet. The sheet was in its entry fade: under swiftshader a frame takes
+seconds after the camera move, and CSS transitions only advance with frames, so `getComputedStyle(sheet).opacity`
+stayed near 0 for 5–15 s of wall time. The card and sheet were fine — run c's #6–#8 ("pełny magazyn, brak wozu")
+offered "Kup wóz" exactly as #5 did; the portrait run lost those wagons to the tool, not to the game.
+Found on the way, real: `Sheets.place` added `is-entering` *after* appending the sheet and running `update` and
+`syncDock`, which reads `offsetHeight` when a fix dock exists — the sheet resolved at full opacity first, so it
+dipped out (toward the entry state) and back in for two frames instead of fading up and sliding in. The class is
+now set before the sheet enters the DOM (`src/ui/sheets.ts`), so the 100–250 ms fade/slide is the one the style
+guide describes. Tools: `tools/first10-minutes.mjs` settles on the top sheet's entry state and opacity, shoots
+every Why sheet without a fix (not only the first three), writes an `EMPTY SCREEN` diagnostic when a sheet counts
+0 words, and ignores elements scrolled out of a scroll/clip container (words, covered targets, overlaps) — run c's
+A5 "Ustawienia covers rows XIII / IV–V" was such a row. UI/tools only, hashes unchanged. (decided)
