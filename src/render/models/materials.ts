@@ -11,9 +11,12 @@ import {
   DataTexture,
   DoubleSide,
   LinearFilter,
+  type InstancedMesh,
   LinearMipmapLinearFilter,
   type Material,
+  MeshDepthMaterial,
   MeshStandardMaterial,
+  RGBADepthPacking,
   SRGBColorSpace,
   type Texture,
 } from 'three';
@@ -375,10 +378,7 @@ export function treeQualityVariants(high: boolean): Map<Material, Material> {
     out.set(m, c);
   }
   // the instanced mirrors switch with their base material: compile the same variant for them
-  for (const [m, c] of [...out]) {
-    const im = instCache.get(m.name.slice('model-'.length) as MatKey);
-    if (im) out.set(im, c);
-  }
+  for (const [m, c] of [...out]) for (const im of mirrorsOf(m.name.slice('model-'.length) as MatKey)) out.set(im, c);
   return out;
 }
 
@@ -420,7 +420,8 @@ export function applyTextures(key: MatKey, set: TextureSet): void {
   syncInstanced(key);
 }
 
-const instCache = new Map<MatKey, MeshStandardMaterial>();
+/** Instanced mirrors by kind: `key` (InstancedMesh users) and `key+color` (InstancedMesh with `instanceColor`). */
+const instCache = new Map<string, MeshStandardMaterial>();
 
 /**
  * The kind's material for InstancedMesh users (wagon rigs, cargo, yard workers): a mirror of `modelMaterial(key)` with
@@ -429,50 +430,61 @@ const instCache = new Map<MatKey, MeshStandardMaterial>();
  * its program parameters on every switch (research 2026-11-05 render #5). The mirror never diverges: every change of
  * a base material goes through a function here that calls `syncInstanced`, and `materialsFor` lists both for the
  * shader pre-warm.
+ * `colored`: a separate mirror for InstancedMesh with `instanceColor` (`instancingColor` is checked the same way: the
+ * grass tufts and the reeds shared `model-grass` and rebuilt twice per render, research 2026-11-05 rebuilds).
  */
-export function instancedMaterial(key: MatKey): MeshStandardMaterial {
+export function instancedMaterial(key: MatKey, colored = false): MeshStandardMaterial {
   // guard (D-133): the impostor bake rewrites the billboard material outside this module; no mirror may follow it
   if (key === 'billboard') throw new Error('instancedMaterial: billboard has no instanced mirror');
-  let c = instCache.get(key);
+  const id = colored ? key + '+color' : key;
+  let c = instCache.get(id);
   if (c) return c;
   const m = modelMaterial(key);
   c = m.clone();
   c.onBeforeCompile = m.onBeforeCompile;
   c.customProgramCacheKey = m.customProgramCacheKey;
-  c.name = m.name + '-inst';
-  instCache.set(key, c);
+  c.name = m.name + (colored ? '-inst-color' : '-inst');
+  instCache.set(id, c);
   return c;
 }
 
-/** The base material of a kind and its instanced mirror, if one was made. */
+function mirrorsOf(key: MatKey): MeshStandardMaterial[] {
+  const out: MeshStandardMaterial[] = [];
+  for (const id of [key, key + '+color']) { const im = instCache.get(id); if (im) out.push(im); }
+  return out;
+}
+
+/** The base material of a kind and its instanced mirrors, if any were made. */
 export function materialsFor(key: MatKey): MeshStandardMaterial[] {
-  const im = instCache.get(key);
-  return im ? [modelMaterial(key), im] : [modelMaterial(key)];
+  return [modelMaterial(key), ...mirrorsOf(key)];
+}
+
+function drifted(im: MeshStandardMaterial, m: MeshStandardMaterial): boolean {
+  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
+  const b = m as MeshStandardMaterial & { defines?: Record<string, string> };
+  return im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
+    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
+    JSON.stringify(d.defines ?? {}) !== JSON.stringify(b.defines ?? {});
 }
 
 /** Kinds whose mirror's program-relevant state differs from its base (empty when in sync; tests and debug). */
 export function mirrorDrift(): MatKey[] {
   const out: MatKey[] = [];
-  for (const [key, im] of instCache) {
-    const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
-    const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
-    if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
-      im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
-      im.onBeforeCompile !== m.onBeforeCompile || im.customProgramCacheKey !== m.customProgramCacheKey ||
-      JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) out.push(key);
+  for (const [id, im] of instCache) {
+    const key = id.split('+')[0] as MatKey;
+    const m = modelMaterial(key);
+    if (drifted(im, m) || im.onBeforeCompile !== m.onBeforeCompile || im.customProgramCacheKey !== m.customProgramCacheKey) {
+      if (!out.includes(key)) out.push(key);
+    }
   }
   return out;
 }
 
-/** Copy the program-relevant state of the base material to its mirror (no-op without one). */
+/** Copy the program-relevant state of the base material to its mirrors (no-op without one). */
 function syncInstanced(key: MatKey): void {
-  const im = instCache.get(key);
-  if (!im) return;
   const m = modelMaterial(key) as MeshStandardMaterial & { defines?: Record<string, string> };
-  const d = im as MeshStandardMaterial & { defines?: Record<string, string> };
-  if (im.map !== m.map || im.normalMap !== m.normalMap || im.roughnessMap !== m.roughnessMap || im.aoMap !== m.aoMap ||
-    im.alphaToCoverage !== m.alphaToCoverage || im.alphaTest !== m.alphaTest || im.side !== m.side || im.shadowSide !== m.shadowSide ||
-    JSON.stringify(d.defines ?? {}) !== JSON.stringify(m.defines ?? {})) {
+  for (const im of mirrorsOf(key)) {
+    if (!drifted(im, m)) continue;
     im.map = m.map;
     im.normalMap = m.normalMap;
     im.roughnessMap = m.roughnessMap;
@@ -481,9 +493,42 @@ function syncInstanced(key: MatKey): void {
     im.alphaTest = m.alphaTest;
     im.side = m.side;
     im.shadowSide = m.shadowSide;
-    d.defines = { ...(m.defines ?? {}) };
+    (im as MeshStandardMaterial & { defines?: Record<string, string> }).defines = { ...(m.defines ?? {}) };
     im.needsUpdate = true;
   }
+}
+
+let instDepth: MeshDepthMaterial | null = null;
+
+/**
+ * Shadow-pass material for instanced casters (set as `customDepthMaterial` by `shareInstancedDepth`). WebGLShadowMap
+ * draws every caster without a custom depth material (and without an alpha-tested map) with ONE shared
+ * MeshDepthMaterial, so its program flipped between the instanced and the plain variant at every switch between
+ * wagons/trees/shrubs and buildings/bridges in the traversal: 2-4 parameter rebuilds per shadow render (research
+ * 2026-11-05 rebuilds). Same packing and per-draw state (the shadow pass copies side, maps, alpha test and clipping
+ * from the source material into it, exactly as into the shared one), so the depth written is the same.
+ */
+export function instancedDepthMaterial(): MeshDepthMaterial {
+  if (!instDepth) {
+    instDepth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
+    instDepth.name = 'instanced-depth';
+  }
+  return instDepth;
+}
+
+/**
+ * Give an instanced shadow caster the shared instanced depth material, unless it has its own (horse skin, far cards)
+ * or its material makes WebGLShadowMap pick a per-material depth clone (alpha-tested map, alpha to coverage,
+ * displacement): those are never shared with plain meshes and must keep the shadow map's own alpha handling.
+ */
+export function shareInstancedDepth(mesh: InstancedMesh): void {
+  if (mesh.customDepthMaterial) return;
+  const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  for (const m of ms) {
+    const s = m as Material & { map?: unknown; alphaMap?: unknown; displacementMap?: unknown; displacementScale?: number };
+    if ((s.displacementMap && s.displacementScale !== 0) || ((s.map || s.alphaMap) && m.alphaTest > 0) || m.alphaToCoverage) return;
+  }
+  mesh.customDepthMaterial = instancedDepthMaterial();
 }
 
 /**

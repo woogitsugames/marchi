@@ -2,7 +2,7 @@
 // begin(), push(matrix) per instance, end(). Shared by the wagons and the yard workers.
 import { type BufferAttribute, type BufferGeometry, type Group, InstancedMesh, type Material, type Matrix4 } from 'three';
 import type { ModelPart } from './models/kit';
-import { instancedMaterial } from './models/materials';
+import { instancedMaterial, shareInstancedDepth } from './models/materials';
 
 /**
  * Mark the first `n` instances of a per-instance attribute for upload. Only that prefix goes to the GPU
@@ -28,6 +28,7 @@ export class Parts {
       m.castShadow = true;
       m.receiveShadow = true;
       m.name = name;
+      shareInstancedDepth(m);
       group.add(m);
       return m;
     });

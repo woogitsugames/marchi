@@ -1937,3 +1937,13 @@ after: identical 24/24 against a second "before" run (the two differences agains
 notice fading out — also differ between two "before" runs). `Hud.update` timed directly in Chromium (1800 calls,
 after 2 min of play): mission I 19→12 µs/frame at 1 tick per 6 frames (×1), 42→18 µs at a tick every frame;
 mission XI 59→14 µs and 254→72 µs (noisy, −40–75 %). UI only, hashes unchanged. (decided)
+
+**D-154 — No program rebuilds left per render: one instanced depth material, a grass-tuft mirror (research rebuilds).**
+Research `docs/research/2026-11-05-rebuilds.md`. three.js draws every opaque shadow caster without its own depth
+material with one shared depth material; instanced casters (trunks, shrubs, workers, wagon parts) and plain meshes
+alternate, so it rebuilt program parameters at every switch (4 per shadow render at 60 m). Instanced casters now get
+one shared instanced depth material (`shareInstancedDepth`, skipped for alpha-tested / A2C materials and meshes with
+their own depth material); grass tufts (per-instance colour) draw a mirror of `model-grass` like D-133. Rebuilds per
+render high 60 m 6 → 0, low 60 m 4 → 0, high 320 m 2 → 0; render allocations −22 % at high 60 m; same draws and
+programs; 0 differing pixels (low/high 60, high 320, winter night), no in-frame links on night/winter/quality switch.
+Test `tests/rebuilds.test.ts`. Render only, hashes unchanged. (decided)

@@ -18,7 +18,7 @@ import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { markInstances } from './instancedParts';
 import { hash3, rng, vnoise } from './models/kit';
-import { modelMaterial } from './models/materials';
+import { instancedMaterial, modelMaterial, shareInstancedDepth } from './models/materials';
 import { treeParts } from './models/trees';
 import type { RoadField } from './roads';
 
@@ -84,7 +84,8 @@ export class GroundCover {
 
   constructor(private readonly hf: Heightfield) {
     const tg = bladeClump(13, 0.2, 0.5, 0.18, 0.5, '#363c27', '#6e6a46', 5, '#4f5838');
-    this.tufts = new InstancedMesh(tg, modelMaterial('grass') as Material, 4000);
+    // own mirror: the tufts carry instanceColor, the reeds do not (one material would rebuild its program twice a render)
+    this.tufts = new InstancedMesh(tg, instancedMaterial('grass', true) as Material, 4000);
     this.tufts.count = 0;
     this.tufts.name = 'grass-tufts';
     this.tufts.receiveShadow = true;
@@ -95,6 +96,7 @@ export class GroundCover {
       const m = new InstancedMesh(p.geometry, modelMaterial(p.material) as Material, 220);
       m.count = 0;
       m.name = `low-shrub-${p.material}`;
+      shareInstancedDepth(m);
       m.castShadow = true;
       m.receiveShadow = true;
       m.frustumCulled = false;

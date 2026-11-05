@@ -21,7 +21,7 @@ import { net } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { markInstances } from './instancedParts';
 import { rng, vnoise } from './models/kit';
-import { modelMaterial, treeUniforms } from './models/materials';
+import { modelMaterial, shareInstancedDepth, treeUniforms } from './models/materials';
 import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeLodFactor, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './models/trees';
 import type { RoadField } from './roads';
 import { apronHeight } from './terrain';
@@ -145,6 +145,7 @@ export class VegetationView {
             m.castShadow = this.castShadows;
             m.receiveShadow = true;
             m.name = `tree-${kind}${v}-${p.material}`;
+            shareInstancedDepth(m);
             this.group.add(m);
             return m;
           }),
