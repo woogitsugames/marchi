@@ -1035,6 +1035,9 @@ bdi { unicode-bidi: isolate; }
 }
 /* the dock reaches the body's bottom edge: no padding strip for the scrolled text to show through */
 .sheet-body:has(.fix-dock) { padding-block-end: 0; }
+/* a bottom sheet's frame (36 px border image over 26 px of paper padding) overlaps the body's last 10 px: the dock's
+   own bottom padding clears it, so a hint under the button does not run into the frame (D-149, rank card 412x915) */
+body:not(.is-side):not(.is-mini) .fix-dock { padding-block-end: 18px; }
 /* focus and scrollIntoView stop above the dock (its height + fade, measured by sheets.ts; a11y F1, D-120) */
 .sheet-body { scroll-padding-block-end: var(--dock-h, 0px); }
 .fix-dock .fix-note { margin: 0; }
