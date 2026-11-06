@@ -23,13 +23,23 @@ import { createFlatView } from './ui/flatView';
 import { startupMark } from './platform/marks';
 
 // The three.js view is written separately; the glob keeps the build working when it is absent.
-const renderModules = import.meta.glob<{ createWorldView?: CreateWorldView }>('./render/view.ts');
+const renderModules = import.meta.glob<ViewModule>('./render/view.ts');
 
-async function pickView(params: URLSearchParams): Promise<{ view: WorldView; kind: 'three' | 'flat' }> {
+type ViewModule = { createWorldView?: CreateWorldView };
+
+/** Start fetching and evaluating the three.js view chunk (null for ?view=flat or when it is absent). */
+function loadViewModule(params: URLSearchParams): Promise<ViewModule> | null {
   const load = renderModules['./render/view.ts'];
-  if (params.get('view') !== 'flat' && load) {
+  if (params.get('view') === 'flat' || !load) return null;
+  const p = load();
+  p.catch(() => undefined); // handled in pickView; no unhandled rejection while the fonts load
+  return p;
+}
+
+async function pickView(loading: Promise<ViewModule> | null): Promise<{ view: WorldView; kind: 'three' | 'flat' }> {
+  if (loading) {
     try {
-      const mod = await load();
+      const mod = await loading;
       if (mod.createWorldView) {
         const view = mod.createWorldView();
         return { view, kind: 'three' };
@@ -62,6 +72,8 @@ async function boot(): Promise<void> {
     document.getElementById('scene')?.setAttribute('aria-label', t('app.valley'));
   };
   onLangChange(label);
+  // the view chunk (three.js, models) loads while the fonts and the dictionary do, not after them (D-221)
+  const viewModule = loadViewModule(params);
   // the dictionary, the document title and the canvas label are ready before the first frame (with the fonts)
   const langReady = setLang(lang).then(label);
   // Fonts first so the first frame of the menu is set in the right faces.
@@ -85,7 +97,7 @@ async function boot(): Promise<void> {
 
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
   const ui = document.getElementById('ui') as HTMLElement;
-  let picked = await pickView(params);
+  let picked = await pickView(viewModule);
   startupMark('view-module');
   let app: App;
   try {
