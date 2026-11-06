@@ -32,11 +32,13 @@
   nasyconym rynku, karta rangi pomija budynek bez miejsca).
 
 ### Decyzje na rano
-1. **Dolina, rangi 2–3 (raport `docs/research/2026-11-05-valley-ranks-2-3.md`):** gracz „karta” ma rangę 2 po 30–32 min
+1. **[GOTOWE DO SCALENIA — gałąź `claude/w-valley-grow`, D-192 proposed] Dolina, rangi 2–3 (raport `docs/research/2026-11-05-valley-ranks-2-3.md`):** gracz „karta” ma rangę 2 po 30–32 min
    (cel 20–30) i 3 po 65–72 min (cel 40–50); hamuje tylko renoma, 850–2 800 srebra leży. **F1 — karta „rozbuduj”**
    (od rangi 1, gdy brakuje tylko renomy: „postaw jeszcze jednego producenta” działającego łańcucha, z proporcjami)
    → ranga 2 23–29 min, ranga 3 40–51 min, DECENT bez zmian. Alternatywa: progi renomy 750/2 000 (DECENT wypada z
-   okien testu). Rekomendacja: **F1**.
+   okien testu). Rekomendacja: **F1**. Zrobione na zapas: ranga 2 po 23–28 min, ranga 3 po 39–55 min (card-10/30/60, 4 seedy;
+   1 z 12 przebiegów 54,6 min, bo rynek nasycony), DECENT i hasze misji bez zmian, testy 536/0, zrzuty
+   `docs/shots/valley-grow-*.jpg` na gałęzi. Na „tak” scalam od razu.
 1b. **F2 (D-172): blokada stawiania budynku, który przetnie ukośny odcinek drogi** — wdrożona w symulacji
    (`validatePlace`), więc działa też przy stawianiu ręcznym; hasze wszystkich misji bez zmian. Zostawić tak
    (rekomendacja) czy tylko dla ducha z kart?
