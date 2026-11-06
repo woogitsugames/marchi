@@ -12,6 +12,10 @@
 - **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
   liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
   pomoc także z mapy („?” na karcie) — TAK. Otwarte nadal: progi XIV/XV i wyzwanie kontraktu (po playteście).
+- Zrobione: **D-254 „?” na kartach budynku/wozu/rynku** → pomoc na temacie karty (`claude/w-help`, scalone).
+- Kolejka (następny wolny agent): (a) samouczek budowania, krok „dlaczego stoi” wywołany celowo — chata postawiona przed
+  drogą stoi naprawdę (`NO_ROAD`), więc krok przyczyny przed krokiem drogi (bez komend od samouczka; nowy tekst w 17
+  językach); (b) gołe korony drzew liściastych zimą (D-203 follow-up) + zrzuty do akceptacji; (c) research „dwa zamki”.
 
 # Handover — MARCHIA (stan 2026-11-06 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
