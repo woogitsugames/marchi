@@ -18,6 +18,15 @@
   radzi most, który stoi). Researcher `claude/research-day9a` — render #5 (osobne materiały InstancedMesh).
 - Inne sesje: brak `claude/x-trade-post` / `claude/x-m8-redesign`, brak nowych `gpt/*`, brak otwartych PR.
 
+## Dzień 2026-11-06
+- Decyzje właściciela rano: F1 „rozbuduj” scalona (D-192), D-172 zostaje wszędzie, spokojne stany wszędzie (D-193,
+  scalone), S6 przeniesione do misji VI (D-197, scalone), posterunek OK, przegląd tłumaczeń + ikony + dźwięki + listy +
+  opisy sklepu → **paczka GPT 12** (`docs/orders/gpt6-orders-12.zip`, zlecenia 66–70), wyzwanie kontraktu po playteście.
+- **APK odblokowane** (sieć środowiska przepuszcza `dl.google.com`/`maven.google.com`): `npm run setup:android`, potem
+  `npm run apk -- --skip-web` (Maven Central 429 → ponawiać). Ostatnie APK: **ddac168** (~11:00).
+- Kierunek właściciela: grafika/animacje (deweloper `claude/w-gfx10`), misje XIV–XV (researcher `claude/research-m14`),
+  potem wydajność telefonu i samouczek/onboarding.
+
 ## Noc 2026-11-05/06 — stan i Decyzje na rano
 - `main` = baza = **5415373**: testy 507/0, smoke, layout 102/0. Scalone wieczorem: D-160..D-163 (paczka 9h: tytuł
   nadwyżki, „Kup wóz” na zamku po niedawnym czekaniu, dok nigdy nie zasłania treści, kolejność kart w dolinie),
