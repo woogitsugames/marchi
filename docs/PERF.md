@@ -129,3 +129,30 @@ Wniosek wyciągać z różnicy `x4` − `pause` (koszt symulacji i ruchu wozów)
 |---|---|---|---:|---|---:|---:|---:|---:|---:|---:|
 | Galaxy Z Fold 8 Ultra | fold-open | high | — | pause | — | — | — | — | — | — |
 | Galaxy Z Fold 8 Ultra | fold-open | high | — | x4 | — | — | — | — | — | — |
+
+## 2026-11-06 — dzień 10: start, pamięć, wyciek przy restartach (D-220..D-223)
+
+Raport: `docs/research/2026-11-06-perf-day10.md`. SwiftShader, kontener pod obciążeniem (load 10–31): czasy względne,
+liczniki pewne.
+
+**Start** (`tools/startup-probe.mjs`, znaczniki `marchia:*` widoczne też w DevTools na APK; mediany 6 przebiegów,
+ms od nawigacji, ścieżka przez menu):
+
+| jakość | ready przed → po | pierwsza klatka przed → po | największe pozycje (CPU desktopu) |
+|---|---:|---:|---|
+| high | 2981 → 2782 (−7 %) | 4275 → 4186 | budowa świata menu ~1,4 s; kompilacja programów w 1. klatce 1,0–1,3 s |
+| low | 2857 → 2529 (−11 %) | 4060 → 3882 | jw. |
+
+Zmiany: moduł widoku równolegle z fontami; wypiek szumu O(n²) (bajty identyczne); lista zapisów czytana w trakcie budowy
+świata menu (D-221).
+
+**Pamięć** (`tools/memory-probe.mjs`, high, start → XII → menu ×10): przed — rysowania w XII 138 → 786 na 2 klatki,
+sterta 100,8 → 127,7 MB, +5 geometrii i +1 tekstura na restart (drzewa poprzedniego świata zostawały w scenie
+i były rysowane: każda misja z menu rysowała drzewa doliny z menu). Po (D-222): 86 rysowań, 62 geometrie, 25 tekstur,
+sterta 99,9 → 101,4 MB po 10 cyklach. Dolina 3 h: sterta 116,0 → 116,45 MB, geometrie/tekstury stałe.
+
+**Alokacje na klatkę** (D-223): XII 60 m high 3,68 → 3,35 MB/s, 160 m 2,71 → 2,34; XV −3…−7 %; dolina −2…−6 %.
+Najwięcej zostaje w three.js (`setValueV3f` ~0,47 MB/s — światła pory dnia co klatkę).
+
+Na telefonie do zmierzenia: kompilacja shaderów w pierwszej klatce (`?diag=1`, chrome://inspect → Performance,
+znaczniki `marchia:ready` / `marchia:first-frame`).
