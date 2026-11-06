@@ -459,7 +459,7 @@ export class Tutorial {
     const note = this.notePlaced;
     // never across other controls (coins, speed, neighbouring tools) or the open card
     // (the waybill's ribbon and seal row too: in Flex the rows have the most room above, through the title)
-    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
+    const blockers = [...document.querySelectorAll('.gate-pin:not([hidden]), .build-shelf:not([hidden]), .topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
       .map(visibleBox).filter((b): b is Box => !!b && !hits(grow(box, -8), b));
     const crease = bookCrease();
     if (crease) blockers.push(crease);
@@ -480,7 +480,7 @@ export class Tutorial {
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
     const ghost = this.ghostBox();
-    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.build-shelf:not([hidden])'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     // one layout read per width per placement: the free-slot scan below asks for the same widths often
