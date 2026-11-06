@@ -768,8 +768,8 @@ export const en: FullDict = {
   'cause.pacePostRoad': 'buys more than the saturated castle — build a road to it',
   'cause.marketFull': 'full — the market takes no more of these goods now',
   'fix.marketFull': 'The market only takes what it can use — a new wagon would just wait. Sell another good or accept an order.',
-  'fix.marketFullPost': 'The castle takes no more for now. The trading post across the river buys more — build a road with a bridge.',
-  'fix.marketFullPostRoad': 'The castle takes no more for now. The trading post buys more — build a road to it.',
+  'fix.marketFullPost': 'The trading post across the river buys more.',
+  'fix.marketFullPostRoad': 'The trading post buys more.',
   'cause.unwanted': 'full — nobody needs these goods now',
   'fix.unwanted': 'Neither the order nor any workshop takes what lies here — a new wagon would just wait. If a producer stands because of it, its goods need another granary.',
   // free valley bottleneck card (D-171)

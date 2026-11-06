@@ -48,6 +48,8 @@ export class CameraRig implements CameraControl {
   private cssH = 1;
   /** Focus glide in progress: target x/z eased from (fx, fz) to the goal over FOCUS_MS. */
   private glide: { fx: number; fz: number; t: number } | null = null;
+  /** How far (m) the orbit target may leave the map: the last focusCell's screen shift (D-245), 0 before any. */
+  private slack = 0;
   /** Where a followed wagon is kept on screen, relative to the canvas centre (CSS px). */
   private followOffset: ScreenOffset | null = null;
 
@@ -157,10 +159,18 @@ export class CameraRig implements CameraControl {
     this.followId = null;
     const d = this.screenShift(px, pz, screenOffset, this.goalDist, this.goalYaw, _g);
     this.goal.set(px - d.x, 0, pz - d.z);
+    // a subject by the map edge still lands in the free part of the view (D-245: the trading post on the south edge
+    // under a tall portrait sheet): the orbit target may leave the map by the shift, never further
+    this.slack = Math.sqrt(d.x * d.x + d.z * d.z);
     this.clampGoal();
     // reduced motion: the view cuts to the subject instead of gliding (D-124)
     if (reducedMotion()) { this.glide = null; this.target.x = this.goal.x; this.target.z = this.goal.z; return; }
     this.glide = { fx: this.target.x, fz: this.target.z, t: 0 };
+  }
+
+  settled(): boolean {
+    return !this.glide && Math.abs(this.dist - this.goalDist) <= this.goalDist * 0.01 &&
+      Math.abs(this.target.x - this.goal.x) + Math.abs(this.target.z - this.goal.z) <= 0.5;
   }
 
   follow(wagonId: number | null, screenOffset?: ScreenOffset): void {
@@ -207,8 +217,9 @@ export class CameraRig implements CameraControl {
 
   private clampGoal(): void {
     if (!this.hf) return;
-    this.goal.x = MathUtils.clamp(this.goal.x, 0, this.hf.sizeX);
-    this.goal.z = MathUtils.clamp(this.goal.z, 0, this.hf.sizeZ);
+    const m = this.slack;
+    this.goal.x = MathUtils.clamp(this.goal.x, -m, this.hf.sizeX + m);
+    this.goal.z = MathUtils.clamp(this.goal.z, -m, this.hf.sizeZ + m);
   }
 
   /** Advance damping and place the camera. followPos: current position of the followed wagon. */
