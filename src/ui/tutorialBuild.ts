@@ -62,6 +62,12 @@ export class BuildTutorial extends Tutorial {
         if ((next === 3 && tool === 'build') || (next === 4 && (tool === 'road' || tool === 'cobble' || tool === 'build'))) this.bhost.toolAway();
       }
     }
+    // the one camera move per step (as in mission I): the hut (step 4) or its gate (step 3, road tool in hand) into
+    // the free part of the map — in landscape the valley card or a docked sheet can lie over it
+    if (!this.framed && (this.step === 4 || (this.step === 3 && (this.host.tool() === 'road' || this.host.tool() === 'cobble')))) {
+      const cells = this.hutCells();
+      if (cells.length) { this.framed = true; this.host.showCells(cells); }
+    }
     this.render();
   }
 
