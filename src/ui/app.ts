@@ -49,6 +49,7 @@ import { playtestStart } from '../game/playtest';
 import { TrialRecorder, armPlaytestGesture, playtestSheet } from './playtestSheet';
 import { isStall, isWagonWait } from './stallKinds';
 import { fmtInt, iso, buildingName } from './format';
+import { startupMark } from '../platform/marks';
 import type { IconId } from './icons';
 import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
 
@@ -336,10 +337,12 @@ export class App implements PanelNav {
     } else {
       await this.showMenu();
     }
+    startupMark('world');
     this.lastFrame = performance.now();
     requestAnimationFrame((t) => this.frame(t));
     if (this.trial) this.trial.record.readyAt = performance.now();
     (window as unknown as { __marchia: { ready: boolean } }).__marchia.ready = true;
+    startupMark('ready');
   }
 
   // ------------------------------------------------------------------ screens
@@ -352,9 +355,12 @@ export class App implements PanelNav {
     document.body.classList.add('mode-menu');
     document.body.classList.remove('mode-game');
     // live scene: mission 1 valley with a bridge already thrown over the river and wagons on it
+    startupMark('menu-start');
     const w = menuWorld();
     this.setWorld(w);
+    startupMark('menu-world');
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
+    startupMark('menu-sim');
     this.loop.speed = 1;
     this.view.setMenuMode(true);
     music.setMood('menu');
@@ -363,7 +369,9 @@ export class App implements PanelNav {
     // "Continue" is added when the save list arrives
     this.save = null;
     this.renderMenu();
+    startupMark('menu-dom');
     await this.refreshSaves(true);
+    startupMark('menu-saves');
   }
 
   /** "Continue" = the most recently played save of any kind (contract or any valley ledger). */
@@ -782,7 +790,10 @@ export class App implements PanelNav {
 
   // ------------------------------------------------------------------ frame & ticks
 
+  private firstFrameMarked = false;
+
   private frame(now: number): void {
+    if (!this.firstFrameMarked) { this.firstFrameMarked = true; queueMicrotask(() => startupMark('first-frame')); }
     // layout reads first (D-157): the occluder rects are read from the DOM the browser laid out for the last paint,
     // before this frame's HUD, pins and sheets write it — read after those writes they forced a synchronous layout
     const sheetDue = this.mode === 'game' && now - this.lastSheetUpdate > 250;

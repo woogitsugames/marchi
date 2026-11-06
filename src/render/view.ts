@@ -20,6 +20,7 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { bridgeIceUntil, castleLevel, isRaining, net, postOpen, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
+import { startupMark } from '../platform/marks';
 import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
 import { DeckGhost } from './deckGhost';
@@ -234,7 +235,7 @@ class View implements WorldView {
       this.warmPending = true;
       await disposeTexturesExcept(q);
     });
-    this.texturesReady = Promise.all([terrain, models]).then(() => undefined);
+    this.texturesReady = Promise.all([terrain, models]).then(() => { startupMark(`textures-${q}`); });
   }
 
   private bindTerrainTextures(t: TerrainTextureSet): void {
@@ -313,7 +314,7 @@ class View implements WorldView {
     if (!warm || !this.world) return;
     setTimeout(() => {
       if (!this.world || this.warm !== warm) return;
-      warm.run(this.scene, this.rig.camera, this.kindMeshes()).catch((e: unknown) => console.warn('[view] shader pre-warm', e));
+      warm.run(this.scene, this.rig.camera, this.kindMeshes()).then((st) => { if (st) startupMark(`prewarm-${warm.runs}`); }).catch((e: unknown) => console.warn('[view] shader pre-warm', e));
     }, 0);
   }
 

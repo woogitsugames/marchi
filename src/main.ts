@@ -20,6 +20,7 @@ import { RTL_LANGS, detectLang, isPseudo, onLangChange, parseLang, scriptOf, set
 import type { CreateWorldView, WorldView } from './render/api';
 import { App } from './ui/app';
 import { createFlatView } from './ui/flatView';
+import { startupMark } from './platform/marks';
 
 // The three.js view is written separately; the glob keeps the build working when it is absent.
 const renderModules = import.meta.glob<{ createWorldView?: CreateWorldView }>('./render/view.ts');
@@ -41,6 +42,7 @@ async function pickView(params: URLSearchParams): Promise<{ view: WorldView; kin
 }
 
 async function boot(): Promise<void> {
+  startupMark('boot');
   const params = new URLSearchParams(location.search);
   // Hidden on-device benchmark (separate Vite entry, D-56): only with ?debug=1&bench=device, never linked from menus.
   if (params.get('debug') === '1' && params.get('bench') === 'device') {
@@ -75,6 +77,7 @@ async function boot(): Promise<void> {
       new Promise((r) => setTimeout(r, 1500)),
     ]);
   } catch { /* fonts are a nicety */ }
+  startupMark('fonts');
 
   // No page zoom: block iOS gesture events and double-tap zoom outside scrollable sheet bodies.
   document.addEventListener('gesturestart', (e) => e.preventDefault());
@@ -83,6 +86,7 @@ async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
   const ui = document.getElementById('ui') as HTMLElement;
   let picked = await pickView(params);
+  startupMark('view-module');
   let app: App;
   try {
     app = new App({ canvas, ui, view: picked.view, params });
@@ -96,6 +100,7 @@ async function boot(): Promise<void> {
     app = new App({ canvas: fresh, ui, view: picked.view, params });
   }
   document.body.dataset.view = picked.kind;
+  startupMark('app');
   // screenshot/perf scripts drive the camera through this handle (debug only, never read by the game)
   if (params.get('perf') === '1') (window as unknown as { __marchiaView?: WorldView }).__marchiaView = picked.view;
   await app.start();

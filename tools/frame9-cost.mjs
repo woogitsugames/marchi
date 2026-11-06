@@ -33,7 +33,8 @@ const CAM = { near: 60, mid: 160, far: 320 };
 const benchCmds = JSON.parse(readFileSync(new URL('./frame-cost-bench.json', import.meta.url), 'utf8'));
 const sandboxN = scene.startsWith('sandbox') ? Number(scene.slice(7)) : 0;
 const mission = sandboxN ? 'sandbox' : scene;
-const ff = mission === 'sandbox' ? 30 : mission === 'm13' ? 20 : 240;
+// m15: the busiest stretch of XV (frame9-m13-peak: 4-5 wagons moving, 3 stalled from 6:00); FF=<s> overrides
+const ff = process.env.FF ? Number(process.env.FF) : mission === 'sandbox' ? 30 : mission === 'm13' ? 20 : mission === 'm15' ? 390 : 240;
 const url = `${base.replace(/\/?$/, '/')}?play=${mission}&ff=${ff}&speed=0&quality=${quality}&dynres=0&perf=1&debug=1`;
 
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', ...(process.env.JSFLAGS ? ['--js-flags=' + process.env.JSFLAGS] : [])] }); // JSFLAGS=--no-turbo-inlining: allocations land in the callee, not the inlining caller
