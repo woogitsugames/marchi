@@ -221,3 +221,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-256 | — | Lazy wagon rigs and cargo; shared cached models are not disposed with a view | decided | sim |
 | D-257 | 2026-11-06 | Time-of-day lights refresh every 2nd frame (owner decision 2026-11-06, BACKLOG P2 allocator) | decided | inne |
 | D-258 | — | With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built | decided | UI |
+| D-259 | 2026-11-06 | Build tutorial: the stall is triggered on purpose (owner 2026-11-06 ~21:20, "wywołać celowo") | decided | inne |
