@@ -2626,3 +2626,40 @@ unreachable; the castle was at its in-flight limit. A real player pressing the c
 `granaryUnwanted`). Pure read, no hash change. card-10: 142 → 41 wagons, earned 9891 → 9841 (noise), rank minutes
 unchanged; card-30/60 identical; balance-night6 `--no-search` identical to the base. The granaries now read calm
 "rynek nasycony"; what would actually help (a road to the post) is not named — BACKLOG P2. (decided)
+
+**D-220 — Startup milestones as `marchia:*` User Timing marks; startup and memory probes (perf day 10, owner direction 2026-11-06).**
+`startupMark(name)` (`src/platform/marks.ts`, once per name, never read by the game) marks boot, fonts, view-module,
+app, menu-start/-world/-sim/-dom/-saves, world, ready, first-frame, textures-<tier> and prewarm-<n>; any DevTools
+recording on the APK (chrome://inspect) shows them. `tools/startup-probe.mjs` reads them per fresh browser with the main
+thread's CPU per phase (CPU profile aligned to the marks), GL time by kind and long tasks; `tools/memory-probe.mjs`
+samples heap after GC, `renderer.info.memory`, programs, DOM counters and draws at the menu, across start → menu →
+start cycles and through a 3 h valley. Report `docs/research/2026-11-06-perf-day10.md`. (decided)
+
+**D-221 — Startup: the view chunk loads with the fonts, the shader noise bakes in O(n²), the save list is read while the menu world is built.**
+`boot` awaited the fonts (and the dictionary) before it even requested the three.js view chunk; the import now starts
+first and is awaited after. `noiseTexture` box-blurred 256² × 4 channels by summing 2r+1 taps per texel (r up to 18,
+~250 ms on desktop on the startup path); it is a running sum now — `tests/noise-tex.test.ts` checks the baked bytes
+against the old per-texel sum: identical. The menu's save list and profile (IndexedDB) were read only after the menu
+world (terrain, models, 70 s of menu sim) was built; the read is started before it and taken by the first
+`refreshSaves`, so the I/O overlaps the CPU work; `ready` and the first frame still come after the list (a variant that
+drew the first frame before the list made "Continue" appear seconds later under software GL: the pre-warm's compile
+tasks ran ahead of the IndexedDB callbacks — not taken). Render pixels unchanged (jam-diff 0). (decided)
+
+**D-222 — A world change disposes everything of the previous world: trees, wagon and worker batches, the road mask.**
+`VegetationView.dispose` disposed its instanced meshes but left them in the view's shared tree group, still holding
+their instance counts: every world change kept the previous world's trees in the scene and **drawn** — the menu valley's
+trees stood in every mission started from the menu (a mission opened by `?play=`, as all screenshots and perf tools
+do, never showed it). XII after ten menu ↔ mission restarts: 786 draws per two frames instead of 138, 662 scene objects
+instead of 133–142. `WagonsView.dispose` did not free its geometries (horse pose attributes, cargo), `BuildingsView`
+kept its worker batches, `RoadField`'s mask texture was never disposed: +5–6 geometries and +1 texture per world change.
+Now the tree meshes leave the group and every per-view geometry and the old mask are disposed; restarts are flat in
+draws, scene objects, geometries and textures. The trees a mission shows after the menu are now exactly those of a
+direct start (harness `prior=m12` check). Render only, hashes unchanged. (decided)
+
+**D-223 — Two per-frame allocators gone: one reused update range per instance attribute, light keys parsed once.**
+`markInstances` called `addUpdateRange`, a new `{start, count}` per instanced attribute per frame; a WeakMap keeps one
+range object per attribute and puts it back in the (emptied) list — with a single range three.js never merges, so the
+upload is the same `bufferSubData`. `Lighting.lerpKey` parsed two hex strings with `Color.set` six times a frame (plus
+the rain hemi colour); the keys are parsed once into cached Colors. Mission XII 60 m high 3.68 → 3.35 MB/s allocated
+(−9 %), 160 m 2.71 → 2.34 (−14 %); XV −3…−7 %, valley 200 −2…−6 %; `lighting.ts` 181 → 56 KB/s. Pixels identical
+(jam-diff). (decided)

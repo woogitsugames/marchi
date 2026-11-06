@@ -1,0 +1,9 @@
+# f: before(9c5078e) vs after, low
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# d: before, no prior vs prior=m12 (low)
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":49771,"maxChannelDiff":155,"errs":[]}
+# c: after, no prior vs prior=m12 (low)
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# e: before vs after, high, 60 m
+{"query":"wagons=30&t=90&speed=4&frames=40&cam=41.5,35,60,-0.75&tod=0.4&hud=0&quality=high","a":{"wagons":30,"moving":5,"opp":0,"tick":953},"b":{"wagons":30,"moving":5,"opp":0,"tick":953},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+DONE

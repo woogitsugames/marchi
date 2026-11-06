@@ -33,7 +33,8 @@ const CAM = { near: 60, mid: 160, far: 320 };
 const benchCmds = JSON.parse(readFileSync(new URL('./frame-cost-bench.json', import.meta.url), 'utf8'));
 const sandboxN = scene.startsWith('sandbox') ? Number(scene.slice(7)) : 0;
 const mission = sandboxN ? 'sandbox' : scene;
-const ff = mission === 'sandbox' ? 30 : mission === 'm13' ? 20 : 240;
+// m15: the busiest stretch of XV (frame9-m13-peak: 4-5 wagons moving, 3 stalled from 6:00); FF=<s> overrides
+const ff = process.env.FF ? Number(process.env.FF) : mission === 'sandbox' ? 30 : mission === 'm13' ? 20 : mission === 'm15' ? 390 : 240;
 const url = `${base.replace(/\/?$/, '/')}?play=${mission}&ff=${ff}&speed=0&quality=${quality}&dynres=0&perf=1&debug=1`;
 
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', ...(process.env.JSFLAGS ? ['--js-flags=' + process.env.JSFLAGS] : [])] }); // JSFLAGS=--no-turbo-inlining: allocations land in the callee, not the inlining caller
@@ -66,9 +67,11 @@ await page.addInitScript(() => {
         default:
       }
       const isDraw = name.startsWith('draw');
+      // `arguments` + apply, not rest parameters: a rest array per GL call (~500 per frame) was the tool's own
+      // allocation, and the heap profiler charged it to the inlining three.js caller (perf day 10)
       P[name] = pre
-        ? function (...a) { if (G.on) G.calls++; pre(a); if (isDraw && G.skipDraw) return undefined; return f.apply(this, a); }
-        : function (...a) { if (G.on) G.calls++; return f.apply(this, a); };
+        ? function () { if (G.on) G.calls++; pre(arguments); if (isDraw && G.skipDraw) return undefined; return f.apply(this, arguments); }
+        : function () { if (G.on) G.calls++; return f.apply(this, arguments); };
     }
   }
 });
@@ -200,7 +203,7 @@ const resolve = async (cf) => {
   const fn = cf.functionName || '(anon)';
   if (cf.url && cf.url.endsWith('.js')) {
     const c = await consumerFor(cf.url);
-    if (c) { const o = c.originalPositionFor({ line: cf.lineNumber + 1, column: cf.columnNumber }); if (o.source) return { fn, src: o.source.replace(/^(\.\.\/)+/, '').replace(/^node_modules\//, ''), line: o.line }; }
+    if (c) { const o = c.originalPositionFor({ line: cf.lineNumber + 1, column: cf.columnNumber }); if (o.source) return { fn, src: o.source.replace(/^.*?\/?(?=src\/)/, '').replace(/^.*node_modules\//, ''), line: o.line }; }
     return { fn, src: cf.url.split('/').pop(), line: cf.lineNumber + 1 };
   }
   return { fn, src: '', line: 0 };
@@ -318,7 +321,7 @@ for (const cam of cams) {
   const heap0 = await page.evaluate((n) => { const h0 = performance.memory.usedJSHeapSize; for (let i = 0; i < n; i++) window.__f9.second(); return [h0, performance.memory.usedJSHeapSize]; }, reps);
   const { profile: hp } = await cdp.send('HeapProfiler.stopSampling');
   await cdp.send('HeapProfiler.disable');
-  const agg = new Map(), aggFn = new Map(); let atotal = 0;
+  const agg = new Map(), aggFn = new Map(), aggThree = new Map(); let atotal = 0;
   const walk = async (n, here, hereFn) => {
     const f = await resolve(n.callFrame);
     let h = here, hf = hereFn;
@@ -327,6 +330,7 @@ for (const cam of cams) {
     else if (isThree(f) && /^(getProgram|getParameters|getProgramCacheKey)/.test(f.fn)) { h = 'three: getProgram/getParameters'; hf = h; }
     else if (isThree(f) && f.line === THREE_RENDER) { h = 'three: render (other)'; hf = h; }
     else if (isThree(f) && f.line === THREE_SHADOW) { h = 'three: shadow pass'; hf = h; }
+    if (n.selfSize && isThree(f) && h && h.startsWith('three')) { const kt = `${f.fn} @${f.src.replace(/^.*three\/build\//, '')}:${f.line}`; aggThree.set(kt, (aggThree.get(kt) ?? 0) + n.selfSize); }
     if (n.selfSize) {
       const k = h ?? `${f.fn || 'native'}`; agg.set(k, (agg.get(k) ?? 0) + n.selfSize); atotal += n.selfSize;
       const kf = hf ?? k; aggFn.set(kf, (aggFn.get(kf) ?? 0) + n.selfSize);
@@ -339,6 +343,7 @@ for (const cam of cams) {
     KBperFrame: +(atotal / 1024 / reps / 60).toFixed(1),
     heapDeltaMB: +((heap0[1] - heap0[0]) / 1048576).toFixed(1),
     top: [...agg].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
+    threeTop: [...aggThree].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
     topFn: [...aggFn].sort((a, b) => b[1] - a[1]).slice(0, 16).map(([k, v]) => [k, +(v / 1024 / reps).toFixed(0)]),
   };
 

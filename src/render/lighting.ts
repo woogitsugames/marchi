@@ -74,16 +74,21 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-const tmpA = new Color(), tmpB = new Color();
+const tmpA = new Color();
 const _right = new Vector3(), _up = new Vector3(), _snap = new Vector3();
 function lerpKey(f: number, pick: (k: Key) => string, out: Color): Color {
   let i = 0;
   while (i < KEYS.length - 2 && KEYS[i + 1]!.f <= f) i++;
   const a = KEYS[i]!, b = KEYS[i + 1]!;
   const t = Math.min(1, Math.max(0, (f - a.f) / (b.f - a.f)));
-  tmpA.set(pick(a));
-  tmpB.set(pick(b));
-  return out.copy(tmpA).lerp(tmpB, t);
+  return out.copy(parsed(pick(a))).lerp(parsed(pick(b)), t);
+}
+/** Key colours parsed once (D-223): `Color.set(string)` parsed two hex strings per call, six calls per frame. */
+const parsedKeys = new Map<string, Color>();
+function parsed(hex: string): Color {
+  let c = parsedKeys.get(hex);
+  if (!c) { c = new Color().set(hex); parsedKeys.set(hex, c); }
+  return c;
 }
 function lerpNum(f: number, pick: (k: Key) => number): number {
   let i = 0;
@@ -209,7 +214,7 @@ export class Lighting {
     this.sun.intensity = sunI;
     lerpKey(f, (k) => k.hemiSky, this.hemi.color);
     lerpKey(f, (k) => k.hemiGround, this.hemi.groundColor);
-    this.hemi.color.lerp(tmpA.set('#b8bab6').multiplyScalar(dayK), rain * 0.5);
+    this.hemi.color.lerp(tmpA.copy(parsed('#b8bab6')).multiplyScalar(dayK), rain * 0.5);
     this.hemi.intensity = hemiI * (1 + 0.1 * rain);
     e.light = Math.min(1, (hemiI * 0.6 + sunI * 0.15) / 1.2);
     this.fog.color.copy(e.fogColor);

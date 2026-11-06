@@ -645,7 +645,9 @@ export class WagonsView {
   }
 
   dispose(): void {
-    for (const c of this.group.children) (c as InstancedMesh).dispose();
+    // the instance buffers and the per-view geometries (horse pose attributes, cargo) go with the view (D-222);
+    // a geometry another view still draws is uploaded again on its next use
+    for (const c of this.group.children) { (c as InstancedMesh).dispose(); (c as InstancedMesh).geometry.dispose(); }
     this.horseMat.material.dispose();
     this.horseMat.depth.dispose();
   }

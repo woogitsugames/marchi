@@ -1,0 +1,14 @@
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":791,"maxChannelDiff":1,"errs":[]}
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 300000ms exceeded.
+    at shot (/home/user/marchi-research/tools/jam-diff.mjs:22:14)
+    at async file:///home/user/marchi-research/tools/jam-diff.mjs:34:11 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v22.23.4

@@ -234,9 +234,15 @@ export class VegetationView {
   }
 
   dispose(): void {
-    for (const l of this.near) for (const m of l) m.dispose();
-    for (const m of this.far) m.dispose();
+    // the tree group is the view's, shared by every world: leave nothing of this world in it (D-222; before, every
+    // world change left the previous world's trees drawn in the next one, e.g. the menu valley's in each mission)
+    for (const l of this.near) for (const m of l) { this.group.remove(m); m.dispose(); }
+    for (const m of this.far) { this.group.remove(m); m.dispose(); }
+    if (this.blobs) this.group.remove(this.blobs);
+    this.near = [];
+    this.far = [];
     this.blobs?.dispose();
+    this.blobs = null;
     this.blobGeo.dispose();
     this.blobMat.dispose();
   }

@@ -49,6 +49,7 @@ import { playtestStart } from '../game/playtest';
 import { TrialRecorder, armPlaytestGesture, playtestSheet } from './playtestSheet';
 import { isStall, isWagonWait } from './stallKinds';
 import { fmtInt, iso, buildingName } from './format';
+import { startupMark } from '../platform/marks';
 import type { IconId } from './icons';
 import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
 
@@ -132,6 +133,8 @@ export interface AppOptions {
   view: WorldView;
   params: URLSearchParams;
 }
+
+type SaveData = { saves: Awaited<ReturnType<typeof listSaves>> | null; profile: Awaited<ReturnType<typeof readProfile>> };
 
 export class App implements PanelNav {
   readonly view: WorldView;
@@ -334,12 +337,16 @@ export class App implements PanelNav {
       this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
     } else {
+      // the save list (IndexedDB) is read while the menu world is built, not after it (D-221)
+      this.savesEarly = this.readSaveData(true);
       await this.showMenu();
     }
+    startupMark('world');
     this.lastFrame = performance.now();
     requestAnimationFrame((t) => this.frame(t));
     if (this.trial) this.trial.record.readyAt = performance.now();
     (window as unknown as { __marchia: { ready: boolean } }).__marchia.ready = true;
+    startupMark('ready');
   }
 
   // ------------------------------------------------------------------ screens
@@ -352,9 +359,12 @@ export class App implements PanelNav {
     document.body.classList.add('mode-menu');
     document.body.classList.remove('mode-game');
     // live scene: mission 1 valley with a bridge already thrown over the river and wagons on it
+    startupMark('menu-start');
     const w = menuWorld();
     this.setWorld(w);
+    startupMark('menu-world');
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
+    startupMark('menu-sim');
     this.loop.speed = 1;
     this.view.setMenuMode(true);
     music.setMood('menu');
@@ -363,18 +373,38 @@ export class App implements PanelNav {
     // "Continue" is added when the save list arrives
     this.save = null;
     this.renderMenu();
+    startupMark('menu-dom');
     await this.refreshSaves(true);
+    startupMark('menu-saves');
   }
 
   /** "Continue" = the most recently played save of any kind (contract or any valley ledger). */
+  /** Startup (D-221): the first save-list read, started before the menu world is built; taken by refreshSaves. */
+  private savesEarly: Promise<SaveData> | null = null;
+
+  /** Saves (newest first; null if the store failed) and the profile, read the way the menu needs them. */
+  private readSaveData(adopt: boolean): Promise<SaveData> {
+    const p = (async (): Promise<SaveData> => {
+      let saves: SaveData['saves'] = null;
+      try {
+        if (adopt && !this.noSave) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
+        saves = await listSaves();
+      } catch { saves = null; }
+      return { saves, profile: await readProfile() };
+    })();
+    p.catch(() => undefined); // an early read may settle before it is awaited; refreshSaves still sees the rejection
+    return p;
+  }
+
   private async refreshSaves(adopt = false): Promise<void> {
     const token = ++this.menuToken;
+    const read = this.savesEarly ?? this.readSaveData(adopt);
+    this.savesEarly = null;
     let save: SaveInfo | null = null;
     const unfinished = new Map<string, SaveInfo>();
-    let best: Record<string, BestResult> = {};
-    try {
-      if (adopt && !this.noSave) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
-      const saves = await listSaves(); // newest first
+    const data = await read;
+    const saves = data.saves;
+    if (saves) {
       const info = (x: (typeof saves)[number]): SaveInfo => ({ missionId: x.missionId, tick: x.tick, slot: x.slot, savedAt: x.savedAt });
       const s = saves.find((x) => isGameSlot(x.slot));
       save = s ? info(s) : null;
@@ -382,8 +412,8 @@ export class App implements PanelNav {
         const m = contractSlotMission(x.slot);
         if (m && !unfinished.has(m)) unfinished.set(m, info(x));
       }
-    } catch { save = null; }
-    best = (await readProfile()).best;
+    }
+    const best: Record<string, BestResult> = data.profile.best;
     if (token !== this.menuToken || this.mode !== 'menu') return;
     const changed = JSON.stringify([save, [...unfinished], best]) !== JSON.stringify([this.save, [...this.unfinished], this.best]);
     this.save = save;
@@ -782,7 +812,10 @@ export class App implements PanelNav {
 
   // ------------------------------------------------------------------ frame & ticks
 
+  private firstFrameMarked = false;
+
   private frame(now: number): void {
+    if (!this.firstFrameMarked) { this.firstFrameMarked = true; queueMicrotask(() => startupMark('first-frame')); }
     // layout reads first (D-157): the occluder rects are read from the DOM the browser laid out for the last paint,
     // before this frame's HUD, pins and sheets write it — read after those writes they forced a synchronous layout
     const sheetDue = this.mode === 'game' && now - this.lastSheetUpdate > 250;

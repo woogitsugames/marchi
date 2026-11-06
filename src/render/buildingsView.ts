@@ -426,6 +426,11 @@ export class BuildingsView {
 
   dispose(): void {
     this.clear();
+    // yard workers' instanced batches outlive clear() (they persist across syncs), not the view (D-222)
+    for (const c of this.workerGroup.children) { const m = c as Mesh & { dispose?: () => void }; m.dispose?.(); m.geometry.dispose(); }
+    this.workerGroup.clear();
+    this.workerParts.clear();
+    this.bodyParts.clear();
   }
 }
 
