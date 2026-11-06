@@ -2237,7 +2237,7 @@ DECENT with the post (tool rule): shown 26 / 27 / 36 % of the 90–120 / 120–1
 producer), +2 farms 10 / 8 / 5 %, passive and small fleet 0 %. Missions unchanged (D-110 still missions only).
 (decided)
 
-**D-172 — A placement never cuts a diagonal road step (sim `validatePlace`).**
+**D-172 — A placement never cuts a diagonal road step (sim `validatePlace`) (decided — owner 2026-11-06).**
 Research valley-ranks-2-3 F2: the build ghost could put a building on the corner cell of a diagonal road step
 (`network.hasEdge` needs both corners free), silently cutting an earlier building off (seed 1301: a second farm by
 the castle cut the first). `validatePlace` now returns `BLOCKED` at that corner cell (`cutsDiagonalRoad`) when the
@@ -2465,3 +2465,24 @@ untouched, DECENT and every mission hash unchanged. Tests `tests/valley-grow.tes
 `docs/shots/valley-grow-{card,sheet,ghost}-412x915.jpg` (`tools/valley-grow-shots.mjs`, staged state).
 Owner question: ship the card (UI) instead of lowering renown thresholds (the research's balance alternative takes
 DECENT out of its test windows). (decided — owner 2026-11-06)
+
+**D-193 — Calm everywhere: every brass-pinned stall reads calm in its sheet (D-182 item a; decided — owner 2026-11-06).**
+Owner decision 2026-11-06 ~08:45: "calm everywhere". The `minor` stalls without a `calmWhy` — a pickup whose wagon is
+already on its way (`WAITING_PICKUP`), a full yard whose customer still takes the good (`outputCustomer`), an input
+the season slows (`seasonalSupplier`) — had brass pins and a calm HUD card (D-181/D-184) but a wine "Dlaczego stoi?"
+kicker, a clay stall time and the wine-barred full row in the sheet. New pure read `quietStall` (`src/ui/stalls.ts`):
+`calmWhy` ≠ null, or (not a shared-producer / held-span card) a `WAITING_PICKUP` whose wagon is not itself held
+(`isWagonWait`: bridge jam, ice, no route — then the root is a real wait and keeps its clay), or `calmStall`. The
+building sheet, the full row (`fullHtml`) and the capacity bar use it instead of `calmWhy`; the sheet kicker gets
+`.kicker.is-calm` (ink-soft; `Sheets.place` clears it when the sheet navigates to other content). A pickup wait gets
+a calm line under the chain: `fix.pickupDue` "Wóz 1 już jedzie po ładunek — będzie za 0:10." (`wagonEta.toDest` when
+the wagon's destination is this yard, else `fix.pickupOnWay` without the time; 17 languages, 15 agent translations
+for native review); not when the fleet cue shows, whose own hint already names the ETA (`fix.paceFleetEta`).
+"Kup wóz" stays only where the fleet card offers it (D-127/D-128/D-140): a calm sheet drops a `wagon` cure from its own
+chain (a full yard whose customer waits on busy wagons) and the sheet then consults the fleet cue as before; the HUD
+card headed by a `minor` stall no longer lights the rail's "Kup wóz" from `cureFor` either (the fleet card still
+does). A `WAITING_PICKUP` has no own cure, so the D-128 sheet "Kup wóz" for a long pickup wait still appears whenever
+the fleet gate holds (test). Codex fold unchanged (`codexCalm` stays on `calmWhy`: the WAITING_PICKUP entry already
+says "wait for the wagon"). UI only: `tools/balance-night6.ts --no-search` output identical to the base, sim hashes
+unchanged. Tests `tests/calm-sheet.test.ts`. Shots `docs/shots/day10a-{before,after}-{412x915,915x412}.jpg`
+(`tools/day10a-shots.mjs`: mission II at 0:45, the farm waiting for wagon 1).
