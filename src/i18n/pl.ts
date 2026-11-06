@@ -661,7 +661,7 @@ export const pl = {
   // best seals and time per contract in the mission menu (day 1, owner decision 13): localized
   'menu.bestAria': 'Najlepszy wynik: {n} z 3 pieczęci, czas {time}',
   // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (localized)
-  'fix.surplus': 'Nadwyżka: nikt teraz nie potrzebuje {goodGen}, poczeka na placu. Nowy wóz tego nie przyspieszy.',
+  'fix.surplus': 'Nadwyżka {goodGen} poczeka na placu — nikt jej teraz nie potrzebuje. Nowy wóz tego nie przyspieszy.',
   'cause.surplus': 'nadwyżka, nikt jej teraz nie potrzebuje',
   // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (localized)
   'fix.storeRoom': 'Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:',
@@ -701,7 +701,7 @@ export const pl = {
   'cause.paceFleet': 'pełno {goodGen} od {time}, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
   'end.act.wagon': 'Następnym razem: {who} — {time} czekania na wóz. Kup wóz wcześniej (−30).',
   'end.act.road': 'Następnym razem: {who} — {time} bez drogi. Połącz od razu; oko na karcie przestoju wskaże odcinek.',
-  'end.act.bridge': 'Następnym razem: {who} — {time} kolejki przy moście. Kamienny most albo druga przeprawa ją rozładuje.',
+  'end.act.bridge': 'Następnym razem: {who} — {time} kolejki przy moście. Kamienny most lub druga przeprawa rozładuje kolejkę.',
   'end.act.granary': 'Następnym razem: {who} — {time} bez miejsca na towar. Postaw spichlerz albo połącz odbiorcę.',
   'end.act.other': 'Następnym razem: {who} — {time} przestoju. Otwórz „Dlaczego stoi?” przy pierwszym zastoju.',
   'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
