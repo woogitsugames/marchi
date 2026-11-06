@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -40,7 +40,8 @@ export interface PanelNav {
   buildRoad(cells: number[], surface?: 1 | 2): void;
   /** Ghost road on the map for the gap finder (null clears it). */
   /** Ghost road on the map while a sheet is open; `pave`: an existing dirt stretch proposed for cobbles (D-132). */
-  setGhost(cells: number[] | null, pave?: boolean): void;
+  /** `frame`: one camera move to the ghost even when it is a plain road (D-245, the trading post's road). */
+  setGhost(cells: number[] | null, pave?: boolean, frame?: boolean): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
@@ -91,6 +92,8 @@ function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   if (pc.k === 'rank') return rankCureHtml(world, pc);
   if (pc.k === 'grow') return growCureHtml(pc);
+  // D-245: the post card's subject is the post itself; its sheet's gap finder holds the road (normally `fix` wins)
+  if (pc.k === 'post') { const s = gapSuggestion(world, pc.producer); return s ? fixHtml(world, pc.producer, s) : ''; }
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -274,6 +277,13 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
   }
   // D-174: a granary full of loads no market takes now (or a yard it refuses): no "Kup wóz", the plain reason
   if (marketSaturated(world, b)) {
+    // D-245: ...unless the open trading post across the river would take them: lead to its road (the fix below)
+    const post = b.type === 'warehouse' ? postWouldTake(world, b.id) : -1;
+    const link = post >= 0 ? gapSuggestion(world, post) : null;
+    if (link) {
+      const key: MessageKey = link.bridgeCells > 0 ? 'fix.marketFullPost' : 'fix.marketFullPostRoad';
+      return `<div class="s-hint calm-hint">${iconSvg('tradePost', 22)}<span${en(key)}>${esc(t(key))}</span></div>`;
+    }
     return `<div class="s-hint calm-hint">${iconSvg('coin', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
   }
   // D-212: a granary full of goods nothing wants now (mission XV's fish): no repair, no wagon
@@ -720,9 +730,12 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
       // a building the player just placed gets the link at once, before its first status update
       let target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);
+      // D-245: a saturated granary the unlinked trading post would empty: the post's road (with its bridge) is the fix
+      if (target < 0 && b.type === 'warehouse' && stalled) target = postWouldTake(world, id);
       if (target < 0 && b.placedTick >= 0 && world.state.tick - b.placedTick <= UNDO_TICKS && b.type !== 'stable' && gapSuggestion(world, id)) target = id;
       const fix = target >= 0 ? gapSuggestion(world, target) : null;
-      nav.setGhost(fix ? fix.cells : null);
+      // the road to the trading post crosses the river, mostly off screen: framed once, as the sett ghost (D-144/D-245)
+      nav.setGhost(fix ? fix.cells : null, false, !!fix && buildingById(world, target)?.type === 'tradePost');
       // just placed: the same undo as the floating button, here because the sheet covers it
       const u = lastUndoable(world);
       const undo = u && u.building === id

@@ -3,7 +3,7 @@
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
-export { granaryLoads, granaryUnwanted, marketTakesLoad } from './stallKinds';
+export { granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 
 /**

@@ -216,6 +216,8 @@ export class App implements PanelNav {
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
   /** The gap ghost is a dirt stretch to pave (the mud card), drawn as setts (D-132). */
   private ghostPave = false;
+  /** The gap ghost is framed once by the camera (D-144 sett ghosts; D-245 the trading post's road). */
+  private ghostFrame = false;
   private ghostKey = '';
   /** The sett ghost last framed by the camera (D-144): framed once per ghost, reset when the ghost goes. */
   private ghostFramed = '';
@@ -613,9 +615,10 @@ export class App implements PanelNav {
   }
 
   /** PanelNav: the gap finder's ghost road while its sheet is open. */
-  setGhost(cells: number[] | null, pave = false): void {
+  setGhost(cells: number[] | null, pave = false, frame = false): void {
     this.ghosts.gap = cells;
     this.ghostPave = !!cells && pave;
+    this.ghostFrame = !!cells && (pave || frame);
   }
 
   undoPlace(building: number): void {
@@ -638,7 +641,7 @@ export class App implements PanelNav {
     this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1, pave } : null);
     if (!c) this.ghostFramed = '';
     // a sett ghost that appears on an open sheet (the stall turned into a mud or span cure) is framed once too
-    else if (pave) this.frameGhost();
+    else if (this.ghosts.gap !== null && this.ghostFrame) this.frameGhost();
   }
 
   /**
@@ -649,7 +652,7 @@ export class App implements PanelNav {
    */
   private frameGhost(withCell = -1): void {
     const c = this.ghosts.gap;
-    if (!c?.length || !this.ghostPave) return;
+    if (!c?.length || !this.ghostFrame) return;
     const k = c.join(',');
     if (k === this.ghostFramed) return;
     this.ghostFramed = k;
@@ -1070,7 +1073,7 @@ export class App implements PanelNav {
       if (focus) this.stopFollow();
       this.sheets.open(buildingSheet(this, id));
       // a sheet that shows a sett ghost frames the ghost and the building's gate together (D-144); else the subject
-      if (this.ghosts.gap && this.ghostPave) { this.ghostFramed = ''; this.frameGhost(b.gate); }
+      if (this.ghosts.gap && this.ghostFrame) { this.ghostFramed = ''; this.frameGhost(b.gate); }
       else this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
     } else {
       const w = this.world.state.wagons.find((q) => q.id === id);

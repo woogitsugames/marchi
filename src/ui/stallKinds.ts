@@ -1,6 +1,6 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, reachable, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
+import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, postOpen, reachable, tradePostOf, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
 
@@ -116,6 +116,27 @@ export function granaryLoads(world: World, granaryId: number): 'wagon' | 'satura
     loads = true;
   }
   return loads ? 'saturated' : null;
+}
+
+/**
+ * D-245 (BACKLOG P2 from D-233): the trading post that would empty this saturated granary if a road reached it. The
+ * granary reads "rynek nasycony" (no reachable market takes any of its full loads), the post is open (rank 4) but its
+ * gate is not reachable from the granary's gate, and it keeps room under its in-flight limit for a good the granary
+ * holds a full load of. Returns the post's id, or -1. Pure read.
+ */
+export function postWouldTake(world: World, granaryId: number): number {
+  if (!postOpen(world)) return -1;
+  const post = tradePostOf(world);
+  const g = buildingById(world, granaryId);
+  if (!post || !g || g.type !== 'warehouse' || reachable(world, g.gate, post.gate)) return -1;
+  if (granaryLoads(world, granaryId) !== 'saturated') return -1;
+  for (const good of GOODS) {
+    if (good === 'stone' || MARKET.base[good] <= 0) continue;
+    const cap = capacityOf(good);
+    if (g.stock[good] - g.reservedOut[good] < cap) continue;
+    if (MARKET.inflightPerGood - post.incoming[good] >= cap) return post.id;
+  }
+  return -1;
 }
 
 /**
