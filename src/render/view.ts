@@ -326,6 +326,7 @@ class View implements WorldView {
     this.vegetation?.dispose();
     if (this.cover) { this.worldGroup.remove(this.cover.group); this.cover.dispose(); this.cover = null; }
     if (this.overlay) { this.overlay.texture.dispose(); this.overlay.siteTexture.dispose(); }
+    this.roads?.texture.dispose(); // the road mask of the old world (D-222: one texture per world change was left)
     this.terrain = null;
   }
 
