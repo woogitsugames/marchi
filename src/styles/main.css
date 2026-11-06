@@ -2579,6 +2579,14 @@ body.is-short .fix-dock .fix-note .s-hint, body.is-short .fix-dock .fix-why > sp
   font-size: 12.5px; line-height: 1.25; overflow-wrap: anywhere;
 }
 body.is-short .fix-dock .fix-why svg { width: 16px; height: 16px; }
+/* D-270: a long reason (the grow card, fix.growWhy/growWhyFlow: two sentences, ~150 characters in pl) clamped beside
+   the button lost its second half — the part that says why one more building helps. The columns swap their share
+   (the reason gets the wider one) and the reason wraps without a clamp; the body above keeps its room through
+   --dock-h (sheets.ts measures it), the button stays >= 48 px. */
+body.is-short .fix-dock.fix-wide:has(> :nth-child(2)) { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.45fr); }
+body.is-short .fix-dock.fix-wide .fix-btn > span { overflow-wrap: anywhere; hyphens: auto; }
+body.is-short .fix-dock.fix-wide > .fix-note { max-height: none; overflow: visible; }
+body.is-short .fix-dock.fix-wide .fix-note .s-hint { display: block; -webkit-line-clamp: unset; overflow: visible; font-size: 12px; line-height: 1.2; hyphens: auto; }
 /* D-162 (first-10-minutes-e N6): on every sheet the scrolling body ends above the dock instead of running under
    it — a link scrolled beneath a sticky "Kup wóz" ("Młyn wodny" in the full-yard hint) took a tap meant for it
    and spent 30 silver. The dock sits in the paper below the body (absolute, so the body's clip does not reach it);

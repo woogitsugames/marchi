@@ -82,11 +82,14 @@ function fixHtml(world: World, target: number, s: RoadSuggestion, why: MessageKe
  * and beside it on a short landscape sheet; a disabled button's reason ("Brakuje 10 srebra") likewise.
  * The dock must be a direct box child of the scrolling body: the sheet's parts are `display: contents`.
  */
-function fixSection(btn: string, hint: string, why: boolean): string {
+function fixSection(btn: string, hint: string, why: boolean, wide = false): string {
   const head = `<div class="section-h">${esc(t('fix.title'))}</div>`;
+  // wide (D-270): a long reason (the grow card's two sentences) takes its own full-width row under the button on a
+  // short landscape sheet and wraps there, instead of a three-line clamp beside the button
+  const cls = `fix fix-dock${wide ? ' fix-wide' : ''}`;
   return why
-    ? `${head}<div class="fix fix-dock">${btn}${hint}</div>`
-    : `${head}<div class="fix fix-dock">${btn}<div class="fix-note" dir="auto">${hint}</div></div>`;
+    ? `${head}<div class="${cls}">${btn}${hint}</div>`
+    : `${head}<div class="${cls}">${btn}<div class="fix-note" dir="auto">${hint}</div></div>`;
 }
 
 /**
@@ -147,7 +150,7 @@ function growCureHtml(pc: PaceGrow): string {
     ? t('fix.growWhyFlow', { flow: fmtInt(pc.flow), need: fmtInt(pc.flowNeed), rankName: rankName(pc.rank), name, goodGen })
     : t('fix.growWhy', { renown: fmtInt(pc.renown), need: fmtInt(pc.need), rankName: rankName(pc.rank), name, goodGen });
   const hint = `<div class="s-hint">${esc(why)}</div>`;
-  return fixSection(btn, hint, false);
+  return fixSection(btn, hint, false, true);
 }
 
 /**
