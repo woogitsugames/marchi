@@ -8,7 +8,7 @@ i `src/content/letters.ts` (dozwolone w 85/86/99). Brak sekretów, brak cudzych 
 
 Na końcu: `npm run typecheck` OK, `npm test` **549/549** (failed=0), `npm run build` OK, `i18n:coverage`
 683 klucze / 0 brakujących / 0 rozbieżnych placeholderów, `tools/smoke.cjs` SMOKE bad=0 (m1–m13 + sandbox),
-layout `--quick` — wynik w sekcji „Weryfikacja”.
+layout `--quick` jobs=102 failed=0.
 
 ## 73 — zdarzenia doliny rang 4–5 (tekst)
 - **Przyjęto:** 6 propozycji zamówień (posterunek, most po zimie, jarmark) PL/EN; towary istnieją w `GOODS`.
@@ -127,4 +127,8 @@ layout `--quick` — wynik w sekcji „Weryfikacja”.
 - W całości nic. Częściowo: `end.act.bridge` z 85. Niepełne: 95 (15 języków), 99 (odsłuch, UI).
 
 ## Weryfikacja
-LAYOUT_PLACEHOLDER
+- `npm run typecheck` OK; `npm test` SUMMARY passed=549 failed=0 (files=122).
+- `npm run build` OK; `npm run i18n:coverage`: 683 klucze, 0 pending, 0 brakujących, 0 błędnych placeholderów.
+- `vite preview :5194` + `tools/smoke.cjs`: SMOKE bad=0.
+- `npm run layout -- --quick`: LAYOUT jobs=102 failed=0 control=ok.
+- `npm run test:known-failing`: open=2 (seedy 255 i 91 z 93), nowPassing=0.
