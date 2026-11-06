@@ -70,8 +70,9 @@ export interface PaceFleet {
 /**
  * 'rank' (D-152) — the free valley, no contract: the next rank still lacks distinct goods sold, and nothing louder
  * needs the slot. The card names the next unbuilt producer of an unsold good the rank allows (farm; mill once a farm
- * stands; bakery once a mill stands; fisher; quarry; D-250: charcoal burner; malthouse; brewery once a malthouse stands). `producer` is the castle (the card's subject, its sheet holds the
- * cure: the build tool with `type` picked, the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
+ * stands; bakery once a mill stands; fisher; quarry; D-250: charcoal burner; malthouse; brewery once a malthouse
+ * stands). `producer` is the castle (the card's subject, its sheet holds the cure: the build tool with `type` picked,
+ * the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
  */
 export interface PaceRank {
   k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
