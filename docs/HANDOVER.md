@@ -9,8 +9,9 @@
   (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
 - W toku: deweloper `claude/w-rank` — karta rangi zna węglarza/słodownię/browar, gracz „karta” do rangi 5 (D-250..D-253);
   deweloper `claude/w-perf` — budowa świata menu i kompilacja shaderów (D-255..D-258).
-- Do decyzji właściciela nadal: punkt 4 z „Niedokończone” niżej (światła co 2. klatkę, drzewa zimą, progi XIV/XV, wyzwanie
-  kontraktu), pytania o samouczek (krok 5, „?” na mapie).
+- **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
+  liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
+  pomoc także z mapy („?” na karcie) — TAK. Otwarte nadal: progi XIV/XV i wyzwanie kontraktu (po playteście).
 
 # Handover — MARCHIA (stan 2026-11-06 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
