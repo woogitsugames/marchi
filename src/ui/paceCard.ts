@@ -70,8 +70,9 @@ export interface PaceFleet {
 /**
  * 'rank' (D-152) — the free valley, no contract: the next rank still lacks distinct goods sold, and nothing louder
  * needs the slot. The card names the next unbuilt producer of an unsold good the rank allows (farm; mill once a farm
- * stands; bakery once a mill stands; fisher; quarry). `producer` is the castle (the card's subject, its sheet holds the
- * cure: the build tool with `type` picked, the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
+ * stands; bakery once a mill stands; fisher; quarry; D-250: charcoal burner; malthouse; brewery once a malthouse
+ * stands). `producer` is the castle (the card's subject, its sheet holds the cure: the build tool with `type` picked,
+ * the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
  */
 export interface PaceRank {
   k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
@@ -149,6 +150,9 @@ export function fleetEnough(world: World): boolean {
  */
 const RANK_ORDER: readonly (readonly [BuildingType, BuildingType | null])[] = [
   ['farm', null], ['mill', 'farm'], ['bakery', 'mill'], ['fisher', null], ['quarry', null],
+  // D-250: ranks 3-4 (the goods of rank 5). The charcoal burner first: the cheapest, and it burns the wood the
+  // woodcutters pile up anyway; then the malthouse on the farms' grain; the brewery once a malthouse stands.
+  ['charcoalBurner', 'woodcutter'], ['malthouse', 'farm'], ['brewery', 'malthouse'],
 ];
 
 /** The free valley's rank card (D-152), or null. Shown also when silver is short (the sheet says how much). */
@@ -173,11 +177,14 @@ export function rankCard(world: World): PaceRank | null {
 /**
  * The grow card's chains (D-192): producers upstream first, and the rule that keeps each chain balanced — a raw
  * producer no sooner than its consumer (farm <= mill, woodcutter <= sawmill), a processor only behind a spare supplier
- * (mill < farm, bakery < mill, sawmill < woodcutter). The fisher is a chain of its own.
+ * (mill < farm, bakery < mill, sawmill < woodcutter). The fisher is a chain of its own. D-251: the rank-5 chains too —
+ * the charcoal burner on its own, malthouse <= brewery, brewery < malthouse.
  */
-const GROW_CHAINS: readonly (readonly BuildingType[])[] = [['farm', 'mill', 'bakery'], ['fisher'], ['woodcutter', 'sawmill']];
-const GROW_FEEDS: Partial<Record<BuildingType, BuildingType>> = { farm: 'mill', mill: 'bakery', woodcutter: 'sawmill' };
-const GROW_FED_BY: Partial<Record<BuildingType, BuildingType>> = { mill: 'farm', bakery: 'mill', sawmill: 'woodcutter' };
+const GROW_CHAINS: readonly (readonly BuildingType[])[] = [
+  ['farm', 'mill', 'bakery'], ['fisher'], ['woodcutter', 'sawmill'], ['charcoalBurner'], ['malthouse', 'brewery'],
+];
+const GROW_FEEDS: Partial<Record<BuildingType, BuildingType>> = { farm: 'mill', mill: 'bakery', woodcutter: 'sawmill', malthouse: 'brewery' };
+const GROW_FED_BY: Partial<Record<BuildingType, BuildingType>> = { mill: 'farm', bakery: 'mill', sawmill: 'woodcutter', brewery: 'malthouse' };
 /**
  * The chain's end good does not fetch a fair price any more (D-174): its saturation reached half the cap, or a full
  * granary holds a load of it that no market takes. More of the same would only fill the granaries.

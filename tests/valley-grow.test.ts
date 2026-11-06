@@ -101,3 +101,31 @@ test('valley grow card: never with a contract, never in a fresh valley', () => {
     assert(paceCard(w, null)?.k !== 'grow', `pace card is not the grow kind in ${id}`);
   }
 });
+
+// D-251: the rank-5 chains grow too — the charcoal burner on its own, the malthouse no sooner than a brewery, the
+// brewery only behind a spare malthouse. Staged at rank 4 with every good sold and the flow reached.
+test('valley grow card: charcoal burner and malthouse/brewery chains keep their ratios (D-251)', () => {
+  const w = createWorld('sandbox');
+  const st = w.state;
+  st.town.rank = 4;
+  st.town.bestFlow = 999;
+  st.coins = 5000;
+  for (const g of ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone', 'charcoal', 'malt', 'beer'] as const) st.ledger.sold[g] = 1;
+  const castle = st.buildings.find((b) => b.type === 'castle')!;
+  const place = (type: BuildingType): void => {
+    const s = buildSite(w, type, castle.id)!;
+    assert(!!s && applyCommand(w, { t: 'place', type, x: s.x, y: s.y, facing: s.facing }).ok, `${type} placed`);
+  };
+  const seen: string[] = [];
+  for (const t of ['farm', 'mill', 'bakery', 'fisher', 'charcoalBurner', 'malthouse'] as const) if (!count(w, t)) place(t);
+  for (let i = 0; i < 8; i++) {
+    const g = growCard(w);
+    if (!g) break;
+    if (g.type === 'malthouse') assert(count(w, 'malthouse') <= count(w, 'brewery'), 'malthouse <= brewery');
+    if (g.type === 'brewery') assert(count(w, 'brewery') < count(w, 'malthouse'), 'brewery < malthouse');
+    seen.push(g.type);
+    place(g.type);
+  }
+  assert(seen.includes('charcoalBurner'), `the charcoal burner grows (${seen.join(',')})`);
+  assert(seen.includes('brewery'), `the brewery grows behind the malthouse (${seen.join(',')})`);
+});
