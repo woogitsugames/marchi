@@ -625,6 +625,8 @@ export const pl = {
   'diag.copy': 'Kopiuj JSON',
   'diag.copied': 'Skopiowano',
   'diag.reset': 'Od nowa',
+  // ?fixture= playtest setups (D-185, moderator only): see PENDING_KEYS
+  'fixture.invalid': 'Nieprawidłowe przygotowanie „{id}”: {why}. Nie oceniaj tej próby (invalid_setup=1). Dotknij, aby zamknąć.',
   // rain forecast 30 s ahead (night 5): localized
   'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
   'hud.rainSoonDirt': 'Za pół minuty deszcz — grunt rozmięknie, wozy zwolnią',
@@ -735,6 +737,7 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  'fixture.invalid',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

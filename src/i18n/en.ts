@@ -622,6 +622,8 @@ export const en: FullDict = {
   'diag.copy': 'Copy JSON',
   'diag.copied': 'Copied',
   'diag.reset': 'Reset',
+  // ?fixture= playtest setups (D-185, moderator only): see PENDING_KEYS
+  'fixture.invalid': 'Invalid setup “{id}”: {why}. Do not score this trial (invalid_setup=1). Tap to close.',
   // rain forecast 30 s ahead (night 5): see PENDING_KEYS
   'hud.rainSoon': 'Rain in half a minute — dirt turns to mud, cobbles keep the pace',
   'hud.rainSoonDirt': 'Rain in half a minute — dirt turns to mud, wagons slow down',

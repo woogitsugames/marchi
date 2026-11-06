@@ -4,7 +4,7 @@ import { AudioEngine } from '../audio/audio';
 import { MusicPlayer } from '../audio/music';
 import { bindAudioEngine, captureAudioState, observeSim, type AudioSnapshot } from '../audio/bindings';
 import {
-  TICK_HZ, buildingById, canSurface, createWorld, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
+  TICK_HZ, applyCommand, buildingById, canSurface, createWorld, hashState, demolishIsFinal, grade, lineCells, net, stars, suggestLinkToStable, validateRoad, worldFromState,
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
   type BuildingType,
@@ -17,6 +17,7 @@ import {
 } from '../platform/save';
 import { onLangChange, t } from '../i18n/index';
 import { botPlan, menuWorld } from '../game/menuScene';
+import { FIXTURE_IDS, fixtureMission, isFixtureId, runFixture, type FixtureOutcome } from '../game/fixtures';
 import { h, isRtl } from './dom';
 import { Hud, rankPostLine, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
@@ -195,6 +196,11 @@ export class App implements PanelNav {
   private tutorial: Tutorial | null = null;
   /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
   private debugStart = false;
+  /**
+   * A playtest fixture page (?fixture=, D-185): nothing of this page session is written to the save slots or
+   * the profile (no autosave, no wiped contract save, no best result), whatever the participant taps.
+   */
+  private readonly noSave: boolean;
   /** The no-road-to-victory letter was shown in this game (D-48): once per game. */
   private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
@@ -209,6 +215,7 @@ export class App implements PanelNav {
     this.view = o.view;
     this.canvas = o.canvas;
     this.params = o.params;
+    this.noSave = o.params.has('fixture');
     const layer = (id: string): HTMLElement => h('div', { id });
     this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), tutorial: layer('tutorial'), menu: layer('menu'), overlay: layer('overlay') };
     o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.tutorial, this.layers.overlay);
@@ -304,7 +311,10 @@ export class App implements PanelNav {
 
   async start(): Promise<void> {
     const play = this.params.get('play');
-    if (isMissionKey(play)) {
+    const fixture = this.params.get('fixture');
+    if (fixture !== null) {
+      this.startFixture(fixture);
+    } else if (isMissionKey(play)) {
       this.debugStart = this.params.get('tut') !== '1';
       this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
@@ -346,7 +356,7 @@ export class App implements PanelNav {
     const unfinished = new Map<string, SaveInfo>();
     let best: Record<string, BestResult> = {};
     try {
-      if (adopt) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
+      if (adopt && !this.noSave) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
       const saves = await listSaves(); // newest first
       const info = (x: (typeof saves)[number]): SaveInfo => ({ missionId: x.missionId, tick: x.tick, slot: x.slot, savedAt: x.savedAt });
       const s = saves.find((x) => isGameSlot(x.slot));
@@ -373,12 +383,12 @@ export class App implements PanelNav {
       play: (slot) => void this.continueGame(slot),
       fresh: (slot) => {
         clearChronicle(slot);
-        void deleteSave(slot).catch(() => undefined);
+        void this.dropSave(slot).catch(() => undefined);
         this.newGame('sandbox', slot);
       },
       remove: async (slot) => {
         clearChronicle(slot);
-        await deleteSave(slot);
+        await this.dropSave(slot);
         void this.refreshSaves();
       },
     }));
@@ -391,7 +401,7 @@ export class App implements PanelNav {
       continueGame: () => void this.continueGame(),
       newGame: (m) => this.pickMission(m),
       startFresh: (m) => {
-        if (this.brokenSlot && this.brokenSlot !== contractSlot(m)) void deleteSave(this.brokenSlot).catch(() => undefined);
+        if (this.brokenSlot && this.brokenSlot !== contractSlot(m)) void this.dropSave(this.brokenSlot).catch(() => undefined);
         this.startFresh(m);
       },
       openValley: () => this.openValley(),
@@ -467,7 +477,7 @@ export class App implements PanelNav {
   private startFresh(m: MissionKey): void {
     const slot = slotFor(m);
     // the delete is queued before any autosave of the new game (IndexedDB runs them in order)
-    void deleteSave(slot).catch(() => undefined);
+    void this.dropSave(slot).catch(() => undefined);
     this.unfinished.delete(m);
     this.newGame(m);
   }
@@ -855,7 +865,13 @@ export class App implements PanelNav {
     showModal(this.layers.overlay, letter, '[data-a="again"]');
   }
 
+  /** deleteSave unless this is a fixture page (noSave). */
+  private dropSave(slot: string): Promise<void> {
+    return this.noSave ? Promise.resolve() : deleteSave(slot);
+  }
+
   private async autosave(): Promise<void> {
+    if (this.noSave) return;
     if (this.mode !== 'game' || this.world.state.mission.result !== 'running') return;
     this.lastSaveTick = this.world.state.tick;
     const slot = this.slot;
@@ -874,11 +890,11 @@ export class App implements PanelNav {
     this.hud?.setSpeed(0);
     this.sheets.closeAll();
     this.setTool('none');
-    void deleteSave(this.slot).catch(() => undefined);
+    void this.dropSave(this.slot).catch(() => undefined);
     const seals = stars(this.world);
     const m = this.world.state.mission;
     // best seals and time per contract (owner decision 13): kept in the profile, the contract save is gone now
-    if (m.contract && seals > 0) {
+    if (m.contract && seals > 0 && !this.noSave) {
       const id = m.id;
       void recordContractResult(id, seals, m.endTick).then((better) => {
         if (better) this.best = { ...this.best, [id]: { seals, ticks: m.endTick, at: Date.now() } };
@@ -1241,7 +1257,7 @@ export class App implements PanelNav {
       settings: () => this.openSettings(),
       restart: () => {
         if (isValleySlot(this.slot)) clearChronicle(this.slot);
-        void deleteSave(this.slot).catch(() => undefined);
+        void this.dropSave(this.slot).catch(() => undefined);
         this.newGame(this.missionId, this.slot);
       },
       chronicle: this.chronicle.active ? () => this.sheets.open(chronicleSheet(this.chronicle)) : undefined,
@@ -1348,17 +1364,18 @@ export class App implements PanelNav {
 
   // ------------------------------------------------------------------ debug (screenshots, bots)
 
-  private applyDebug(): void {
+  /** fixture: the world was played by a fixture script (no ?bot, no ?ff on top of it). */
+  private applyDebug(fixture = false): void {
     const p = this.params;
     const hudBefore = this.hud;
     this.hud = null; // no toasts for the scripted plan or while fast-forwarding
-    if (p.get('bot') === '1') {
+    if (p.get('bot') === '1' && !fixture) {
       const w = this.world;
       const plan: Command[] = botPlan(w);
       for (const c of plan) this.loop.enqueue(c);
       this.loop.flushCommands();
     }
-    const ff = Number(p.get('ff') ?? 0);
+    const ff = fixture ? 0 : Number(p.get('ff') ?? 0);
     if (ff > 0) {
       const target = Math.min(ff * TICK_HZ, 60 * 60 * TICK_HZ);
       this.lastSaveTick = Number.MAX_SAFE_INTEGER; // no autosaves of half-forwarded states
@@ -1384,8 +1401,70 @@ export class App implements PanelNav {
       const w = (want ? this.world.state.wagons.find((q) => q.status.k === want) : undefined) ?? moving[0];
       if (w) this.go('wagon', w.id, true);
     }
+    // exact ids (PROTOCOL §3, D-187): a moderator's check of the fixture's subject, never in the measured run
+    const openId = Number(p.get('openId') ?? NaN);
+    if (Number.isInteger(openId) && buildingById(this.world, openId)) this.go('building', openId, true);
+    const wagonId = Number(p.get('wagonId') ?? NaN);
+    if (Number.isInteger(wagonId) && this.world.state.wagons.some((q) => q.id === wagonId)) this.go('wagon', wagonId, true);
     if (p.get('collapsed') === '1') this.prefs.waybillCollapsed = true;
     if (p.get('market') === '1') this.openMarket();
+  }
+
+  /**
+   * ?fixture=<id> (PROTOCOL §3, D-185): plays the fixture's mission from tick 0 through this app's own loop
+   * (commands land in its journal like a player's), pauses there and validates the result. Debug pages only
+   * (?debug=1 or the Vite dev server). An invalid setup is logged and shown to the moderator, never hidden.
+   */
+  private startFixture(raw: string): void {
+    const handle = window as unknown as { __marchia: Record<string, unknown> };
+    const report = (o: FixtureOutcome | { id: string; ok: false; problem: string }): void => {
+      const hash = o.ok ? hashState(this.world.state) : null;
+      handle.__marchia.fixture = { ...o, hash };
+      if (o.ok) console.info('[fixture]', JSON.stringify({ ...o, hash }));
+      else {
+        console.error('[fixture] invalid setup', JSON.stringify(o));
+        this.fixtureNotice(t('fixture.invalid', { id: o.id, why: o.problem ?? '' }));
+      }
+    };
+    if (!(this.params.get('debug') === '1' || import.meta.env.DEV)) {
+      void this.showMenu();
+      report({ id: raw, ok: false, problem: 'needs debug=1' });
+      return;
+    }
+    if (!isFixtureId(raw)) {
+      void this.showMenu();
+      report({ id: raw, ok: false, problem: `unknown fixture (${FIXTURE_IDS.join(', ')})` });
+      return;
+    }
+    this.debugStart = true; // no opening letter, no tutorial
+    this.newGame(fixtureMission(raw));
+    const hudBefore = this.hud;
+    this.hud = null;
+    this.lastSaveTick = Number.MAX_SAFE_INTEGER;
+    this.deadEndShown = true; // the dead-end check stays quiet while the script plays
+    const outcome = runFixture(raw, {
+      world: () => this.world,
+      command: (cmd) => {
+        const r = applyCommand(this.world, cmd);
+        this.loop.journal.push({ tick: this.world.state.tick, cmd });
+        return r;
+      },
+      tick: () => this.loop.tickOnce(),
+    });
+    this.deadEndShown = false;
+    this.lastSaveTick = this.world.state.tick;
+    this.hud = hudBefore;
+    this.loop.speed = 0;
+    this.hud?.setSpeed(0);
+    this.applyDebug(true);
+    report(outcome);
+  }
+
+  /** The moderator's "invalid setup" line: stays until tapped (one gesture clears it). */
+  private fixtureNotice(text: string): void {
+    const el = h('button.fixture-invalid', { type: 'button', role: 'alert' }, text);
+    el.addEventListener('click', () => el.remove());
+    this.layers.overlay.append(el);
   }
 
   /** Two screen points whose straight drag drafts a road failing with TOO_STEEP (for screenshots/tests). */
