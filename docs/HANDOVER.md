@@ -13,16 +13,16 @@
 - Baza = `main` ≈ **36e505b + content10** (sprawdź `git log origin/main`): testy **559/0**, build, smoke I–XV + dolina,
   layout 102/0. Stan symulacji **v9** (posterunek handlowy). Misje **I–XV** w menu.
 - **APK działa** (sieć środowiska przepuszcza `dl.google.com`/`maven.google.com`): `npm run setup:android` raz w nowym
-  kontenerze, potem `npm run apk -- --skip-web` (Maven Central 429 → ponawiaj w pętli). Ostatnie APK: **6d43284** (~17:00
-  6 XI). Następne: po scaleniu samouczka budowania.
+  kontenerze, potem `npm run apk -- --skip-web` (Maven Central 429 → ponawiaj w pętli). Ostatnie APK: **b2625c6** (~20:00
+  6 XI).
 - Numeracja decyzji: zajęte do **D-249** (D-243/244, D-234, D-198/199, D-185..D-188 itd. — sprawdź `docs/DECISIONS-index.md`,
   odśwież `npx tsx tools/decisions-index.ts`). Następna bezpieczna: **D-250**. Przy dwóch agentach daj każdemu osobny zakres.
 - Cykl godzinny tej sesji `trig_01PAgKEUo171oE4A99BXL74i` — **wyłącz/usuń** i utwórz własny (prompt niżej).
 
 ## Niedokończone (dokończ najpierw)
-1. **Deweloper `claude/w-onboard`** (worktree saves): samouczek budowania (treść GPT 90, `docs/content/tutorial-build.md`)
-   + ekran pomocy (GPT 78, `docs/content/help.md`), D-235..D-239. Jeśli gałąź na GitHubie ma raport w ostatnim commicie —
-   przejrzyj, scal, layout, APK. Jeśli niedokończona: dokończ wg opisu w commitach.
+1. ~~`claude/w-onboard`~~ **scalone** (b2625c6, APK wysłane ~20:00): samouczek budowania w Wolnej dolinie (D-235,
+   `?tut=build`), ekran pomocy (D-236). Pytania właściciela: krok 5 (przestój) zwykle się nie pojawia — wywołać celowo?
+   pomoc także z mapy („?” na karcie)?
 2. **Agent `claude/w-postroad`** (worktree research): karta/arkusz prowadzi do drogi z mostem do posterunku, gdy rynek
    zamku nasycony a posterunek bez drogi (BACKLOG P2 z D-233), D-245..D-249. Jak wyżej.
 3. **GPT:** paczka 12 (`docs/orders/gpt6-orders-12.zip`, zlecenia 66–70) **nieoddana**; z paczki 13 nieoddane 71, 72,
