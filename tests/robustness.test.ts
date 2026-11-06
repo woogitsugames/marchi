@@ -62,7 +62,7 @@ for (const id of ['sandbox', 'm1', 'm4', 'm13']) {
   });
 }
 
-test('robustness: save -> load at 1/4, 1/2, 3/4 of every contract mission I-XIII (winning strategy) is bit-identical', () => {
+test('robustness: save -> load at 1/4, 1/2, 3/4 of every contract mission I-XV (winning strategy) is bit-identical', () => {
   for (const id of MISSION_IDS) {
     const r = verifyMission(id);
     eq(r.result, 'won', `${id} winning strategy`);

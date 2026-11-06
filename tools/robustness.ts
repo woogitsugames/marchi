@@ -21,6 +21,8 @@ import { plans } from './balance';
 import { STRATEGIES as S79 } from './bot-missions-7-9';
 import { STRATEGIES as S1012 } from './bot-missions-10-12';
 import { M13_STRATEGIES } from './bot-m13';
+import { M14_STRATEGIES, type SiteStrategy } from './bot-m14';
+import { M15_STRATEGIES } from './bot-m15';
 import { DECENT, type BotStep } from './bot-sandbox';
 
 /** A player: commands for this tick, before step() (may keep its own state in the closure). */
@@ -35,11 +37,14 @@ export function saveLoad(w: World): World {
   return deserialize(JSON.stringify(migrate(v.envelope).state));
 }
 
+const SITE: Record<'m14' | 'm15', readonly SiteStrategy[]> = { m14: M14_STRATEGIES, m15: M15_STRATEGIES };
+
 /** Number of authored strategies of a mission (index -1 = the last, the winning one). */
 export function strategyCount(id: string): number {
   if (plans[id]) return plans[id]!.length;
   if (id === 'm7' || id === 'm8' || id === 'm9') return S79[id].length;
   if (id === 'm10' || id === 'm11' || id === 'm12') return S1012[id].length;
+  if (id === 'm14' || id === 'm15') return SITE[id].length;
   return M13_STRATEGIES.length;
 }
 
@@ -78,6 +83,10 @@ export function missionDriver(id: string, k = -1): Driver {
       for (const [sec, n] of s.buys) if (w.state.tick === sec * TICK_HZ) for (let i = 0; i < n; i++) out.push({ t: 'buyWagon', stable });
       return out;
     };
+  }
+  if (id === 'm14' || id === 'm15') {
+    const s = at(SITE[id]);
+    return (w) => s.steps.filter(([sec]) => w.state.tick === sec * TICK_HZ).flatMap(([, cmds]) => cmds(w));
   }
   throw new Error('no driver for ' + id);
 }
@@ -161,7 +170,7 @@ export function verifyRun(name: string, make: () => World, driver: Driver, maxTi
   };
 }
 
-export const MISSION_IDS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13'];
+export const MISSION_IDS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15'];
 
 export function verifyMission(id: string, k = -1): RunReport {
   // length of the reference run first (cheap, no checks), to place saves at 1/4, 1/2, 3/4 (+ inside an ice window)
