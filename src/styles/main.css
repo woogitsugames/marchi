@@ -1456,7 +1456,7 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
   body.mode-menu:not(.is-flex) .menu-continue { width: auto; align-self: flex-start; min-height: 52px; padding-inline: 18px 24px; }
   body.mode-menu:not(.is-flex) .menu-list { columns: 2; column-gap: 22px; }
   body.mode-menu:not(.is-flex) .menu-list li { break-inside: avoid; }
-  body.mode-menu:not(.is-flex) .menu-item { font-size: 21px; min-height: 52px; padding: 5px 0; }
+  body.mode-menu:not(.is-flex) .menu-item:not(.menu-settings) { font-size: 21px; min-height: 52px; padding: 5px 0; }
 }
 /* Flex mode on the Fold: the middle column is narrow — card, actions and hint stack */
 body.is-flex.build-placing .build-shelf { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "actions" "hint"; }

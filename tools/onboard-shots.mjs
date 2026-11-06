@@ -9,7 +9,8 @@ const { chromium } = require('playwright');
 const args = process.argv.slice(2);
 const li = args.indexOf('--lang');
 const lang = li >= 0 ? args[li + 1] : 'pl';
-const rest = args.filter((a, i) => li < 0 || (i !== li && i !== li + 1));
+const HELP_ONLY = args.includes('--help-only');
+const rest = args.filter((a, i) => a !== '--help-only' && (li < 0 || (i !== li && i !== li + 1)));
 const base = rest[0] ?? 'http://127.0.0.1:5194/';
 const sizes = (rest.slice(1).length ? rest.slice(1) : ['412x915', '915x412']).map((s) => s.split('x').map(Number));
 const suffix = lang === 'pl' ? '' : `-${lang}`;
@@ -25,7 +26,8 @@ for (const [w, h] of sizes) {
   page.setDefaultNavigationTimeout(300000);
   page.on('pageerror', (e) => { bad++; console.log('PAGEERROR', e.message); });
   const tap = async (x, y) => { await page.touchscreen.tap(x, y); await page.waitForTimeout(450); };
-  const tapSel = async (sel) => { const b = await page.locator(sel).first().boundingBox(); if (!b) throw new Error('no ' + sel); await tap(b.x + b.width / 2, b.y + b.height / 2); };
+  // locator.tap waits for the element to be stable (sheets slide in) and scrolls it into view
+  const tapSel = async (sel) => { await page.locator(sel).first().tap({ timeout: 30000 }); await page.waitForTimeout(450); };
   const step = () => page.evaluate(() => window.__marchia.app.buildTut?.current ?? -1);
   // frames can take seconds under software GL: let the tutorial run three frames after the last change
   const frames = () => page.evaluate(() => new Promise((r) => { let n = 3; const f = () => (--n ? requestAnimationFrame(f) : r()); requestAnimationFrame(f); }));
@@ -45,6 +47,7 @@ for (const [w, h] of sizes) {
   await page.goto(base + `?debug=1&lang=${lang}&quality=low&play=sandbox&tut=build`);
   await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 300000 });
   await page.waitForTimeout(1500);
+  if (!HELP_ONLY) {
   await shot('s0');
   await tapSel('.tutorial .tut-act');
   await waitStep(1);
@@ -98,6 +101,7 @@ for (const [w, h] of sizes) {
   const pref = await page.evaluate(() => ({ tut: window.__marchia.app.buildTut === null, pref: JSON.parse(localStorage.getItem('marchia.prefs') || '{}').tutorialBuild }));
   console.log(`${w}x${h} end`, JSON.stringify(pref));
   if (!pref.tut || pref.pref !== 'done') bad++;
+  }
 
   // help from the pause menu
   await tapSel('.topbar .menu-btn');

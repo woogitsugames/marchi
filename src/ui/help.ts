@@ -28,7 +28,7 @@ export function helpSheet(): SheetContent {
       const rows = HELP_TOPICS.map(({ id, icon }) => {
         const on = id === openTopic;
         return `<section class="help-topic${on ? ' is-open' : ''}">
-          <button class="help-tog cf" data-topic="${id}" aria-expanded="${on}" aria-controls="help-${id}">
+          <button class="help-tog" data-topic="${id}" aria-expanded="${on}" aria-controls="help-${id}">
             <span class="help-ic">${iconSvg(icon, 26)}</span><span class="help-h" dir="auto">${esc(t(`help.${id}.h` as MessageKey))}</span><span class="codex-chev" aria-hidden="true"></span></button>
           <p class="help-p" id="help-${id}" dir="auto"${on ? '' : ' hidden'}>${esc(t(`help.${id}.p` as MessageKey))}</p></section>`;
       }).join('');
@@ -37,8 +37,8 @@ export function helpSheet(): SheetContent {
           const id = b.dataset.topic!;
           openTopic = openTopic === id ? '' : id;
           this.update(sheet);
-          // the opened answer under a short landscape sheet: bring it into view
-          if (openTopic) sheet.body.querySelector(`#help-${id}`)?.scrollIntoView({ block: 'nearest' });
+          // the opened topic (heading and answer) under a short landscape sheet: bring it into view
+          if (openTopic) sheet.body.querySelector(`#help-${id}`)?.closest('.help-topic')?.scrollIntoView({ block: 'nearest' });
         }));
       }
       return true;
