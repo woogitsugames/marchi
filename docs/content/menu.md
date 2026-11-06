@@ -18,7 +18,7 @@ I jest punktem wejścia; Wolna dolina jest alternatywą bez terminów, nie czę�
 | IX | Dwa warsztaty, jedno drewno | Two workshops share wood |
 | X | Drwal dla dwóch warsztatów | One cutter, two workshops |
 | XI | Daleka droga po słód | A long road for malt |
-| XII | Piwo na następną dostawę | Ale for the next delivery |
+| XII | Piwo na następną dostawę | Beer for the next delivery |
 | XIII | Jeden wóz dla marchii | One wagon for the march |
 | XIV — projekt | Węgiel blisko lasu | Charcoal near the forest |
 | XV — projekt | Skład bliżej zamku | Stores nearer the castle |
@@ -34,3 +34,5 @@ XIV i XV są w chwili opracowania prototypami poza `MISSIONS`; nie mają aktualn
 podtytułów do porównania. Komentarz XV opisuje chleb i deski, ale aktualne dane
 prototypu wskazują ziarno i drewno — propozycja unika nazw towarów do czasu
 uzgodnienia. Przed wdrożeniem sprawdzić najnowszą definicję obu misji i layout.
+
+Uwaga integracji: XII po angielsku „Beer” (towar w grze to `beer`, nie „ale”). IX i X w propozycji brzmią podobnie („dwa warsztaty”) — przy wdrożeniu rozróżnić (IX: spór tartaku i węglarza o drewno).
