@@ -10,7 +10,7 @@ The game requires no account, login or personal details. We do not collect or tr
 
 ## 2. Local game saves
 
-Game progress, map state, resources and save information are stored **only on your device**, using the app's **IndexedDB** database. We do not upload game saves to a server and do not provide an account-based sync or cloud-save service.
+Game progress, map state, resources and save information are stored locally on your device in the app's **IndexedDB** database; some preferences are stored in local browser storage. We do not upload game saves to a server and do not provide an account-based sync or cloud-save service.
 
 You can remove local saves by clearing the app's storage or deleting the app from the device. Simply offloading the app may leave its data intact. Backups made by your operating system, if any, are governed by your device settings and the operating-system provider's terms.
 
@@ -20,7 +20,9 @@ The game is free, including missions I–VI and Free Valley, with no ads or in-a
 
 ## 4. Sharing and security
 
-We do not share gameplay data with third parties because it never leaves the device. The game does not include third-party analytics, advertising or tracking services. Security of local saves also depends on your device and operating-system safeguards.
+The game does not automatically send gameplay data to the publisher or other parties. You may choose to share copied data, and the operating system may back up data according to its settings. The game does not include third-party analytics, advertising or tracking services. Security of local saves also depends on your device and operating-system safeguards.
+
+A hidden playtest mode lets a moderator enter a participant code and device note, store them locally and copy trial results to the clipboard; the diagnostic tool can also copy a report. Any subsequent sharing depends on the moderator and the services they use.
 
 ## 5. Voluntary contact
 

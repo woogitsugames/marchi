@@ -2,7 +2,7 @@
 
 **Stan założeń: 1 listopada 2026 r.** Propozycje do wprowadzenia w konsolach sklepów. Dotyczą wyłącznie wersji gry opisanej w zleceniu: lokalne zapisy IndexedDB, brak kont, serwera rozgrywki, reklam, analityki i śledzenia. **Nie są wynikiem audytu końcowych pakietów APK/AAB/IPA.**
 
-**Model v1.0 po D-21/D-29 (stan 2 listopada 2026):** cała gra jest darmowa: misje I–XII oraz Wolna dolina (trzy lokalne sloty zapisu; rangi Osada–Stolica; łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa). Brak reklam i zakupów w aplikacji. Kamień jest zużywany m.in. do bruku i kamiennych mostów. Stan rozgrywki pozostaje lokalny.
+**Model v1.0 po D-21/D-29 (stan 2 listopada 2026):** cała gra jest darmowa: misje I–XII oraz Wolna dolina (trzy lokalne sloty zapisu; rangi Osada–Stolica; łańcuchy ryb, kamienia, węgla drzewnego, słodu i piwa). Brak reklam i zakupów w aplikacji. Kamień jest zużywany m.in. do bruku i kamiennych mostów. Stan rozgrywki jest zapisywany lokalnie; możliwe są systemowe kopie zapasowe i ręczny eksport wyników testu.
 
 **Zakres gry:** 12 misji kontraktowych (I–XII): mosty, kra, transze, spichlerz, ryby, bruk, spór o drewno, węgiel drzewny, słód i piwo. Wolna dolina obejmuje trzy Księgi osad, rangi Osada–Stolica, pory roku, targ i dobrowolne zdarzenia (zamówienia królewskie, jarmarki sezonowe, wędrowny kupiec). Karta „Najgorszy zastój” i arkusz „Dlaczego stoi?” pokazują przyczynę przestoju jednym dotknięciem.
 
@@ -13,12 +13,12 @@
 | Czy aplikacja zbiera dane użytkownika? / Data collected | **Nie / No** | Stan gry jest przetwarzany i zapisany tylko na urządzeniu. |
 | Czy aplikacja udostępnia dane użytkownika innym podmiotom? / Data shared | **Nie / No** | Gra nie przesyła danych z rozgrywki ani identyfikatorów do odbiorców zewnętrznych. |
 | Jakie typy danych są zbierane? / Data types | **Żadne / None** | Nie zaznaczaj kategorii, o ile stan końcowej aplikacji odpowiada powyższym założeniom. |
-| Jakie typy danych są udostępniane? / Shared data types | **Żadne / None** | Brak transferu danych z gry. |
+| Jakie typy danych są udostępniane? / Shared data types | **Żadne / None** | Gra nie wysyła ich automatycznie; skopiowane wyniki mogą być udostępnione ręcznie, a system może tworzyć kopie. |
 | Cele, dane obowiązkowe lub opcjonalne, szyfrowanie w transmisji | **Nie dotyczy / Not applicable** | Brak danych zbieranych z urządzenia przez grę. |
 | Konto i żądanie usunięcia konta | **Brak kont** | Dane rozgrywki są lokalne; można je usunąć przez wyczyszczenie danych aplikacji lub jej usunięcie. |
 | Privacy Policy URL | **Wymagany publiczny adres HTTPS** | Opublikuj treść privacy-pl.md / privacy-en.md jako strony internetowe i dodaj odnośnik również w aplikacji. |
 
-**Tekst do kontroli spójności:** „Nie zbieramy ani nie udostępniamy danych użytkownika. Postępy gry pozostają lokalnie na urządzeniu.” / “No user data collected or shared. Game progress stays on the device.”
+**Tekst do kontroli spójności:** Gra nie wysyła automatycznie zapisów wydawcy; kopie systemowe i ręczne udostępnienie wyników mogą przenieść dane poza urządzenie.
 
 ## Apple App Store Connect — App Privacy
 
