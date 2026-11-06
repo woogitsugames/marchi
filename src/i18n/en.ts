@@ -436,7 +436,7 @@ export const en: FullDict = {
   'hud.stallsNext': 'Stalls: {n} — show the next one',
   'pin.worst': 'Worst stall — {name}',
   'pin.critical': 'Critical stall — {name}',
-  'pin.stood': '{name}, stalled {time}',
+  'pin.stood': '{name}, stalled for {time}',
   'contract.toSnow': '{time} to snow',
   'contract.toTranche': '{time} to delivery {n}',
   'tool.wagonShort': '{n} short',
