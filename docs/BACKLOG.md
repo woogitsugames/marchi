@@ -177,7 +177,11 @@ Numery linii z 2026-11-01. Pozycje 1–6: samouczek; 7–16: i18n/RTL; 17–23: 
 ### Sandbox (Sonnet)
 Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -> S6 -> S7 -> S8.
 
+- [ ] P3 — (D-210, D-212) Nowe klucze `menu.m14`, `menu.m14Sub`, `menu.m15`, `menu.m15Sub`, `status.STORAGE_FULL.unwanted`, `cause.unwanted`, `fix.unwanted` i listy kasztelana XIV–XV w 15 językach to tłumaczenia agenta — do przeglądu natywnego (**właściciel**: native speakerzy).
+- [ ] P2 — (D-211) Po playteście sprawdzić progi XIV/XV: XIV przy lesie zbudowanej o 1:40 daje 2★ (szum dyspozytora ±0,5 min); XV zła poprawka zwykle spóźnia drugi list (1★). Zrzuty 915×412 dla XIV/XV nie zrobione (tylko 412×915).
+- [ ] P3 — (D-212) Ekran porażki XV liczy przestój małego składu ryb (STORAGE_FULL od 0:00) do „trzech kosztów” — rada „Postaw spichlerz” jest tu słuszna, ale źródłem jest spokojny spichlerz. Rozważyć pomijanie spokojnych postojów w `topStallCauses`.
 ## Zrobione
+- [x] 2026-11-06 (`claude/w-m14-15`) Misje XIV „Węgiel z lasu” i XV „Skład pod zamkiem” w grze (D-210), progi zaostrzone (D-211), spokojny pełny spichlerz z niepotrzebnym towarem (D-212).
 - [x] 2026-11-06 (`claude/w-playtest`) Deterministyczne fixtury playtestu `?fixture=bridge-cut-in-transit|all-busy|bridge-jam|warehouse-full` (D-185..D-188): prawdziwa symulacja od startu misji, walidacja + widoczny komunikat „invalid setup”, brak zapisów, `openId`/`wagonId`; PROTOCOL §3 i CSV (`fixture_id`, `fixture_version`, `fixture_hash`) zaktualizowane; zrzuty `docs/shots/playtest-*.jpg`.
 - [x] 2026-11-06 (dzień 9l, `claude/w-day9l`) Spokojny nagłówek karty postoju „Postój” (D-184, D-182 b) i porządek w BACKLOG: zamknięte pozycje już rozwiązane decyzjami D-35..D-184 (przeniesione tutaj w oryginalnym brzmieniu):
   - [x] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02. — **zamknięte dzień 9l:** D-35/D-45: `src/render/wagonSpacing.ts` rysuje odstęp ≥ 5 m na każdej skierowanej krawędzi, wjazd/wyjazd z kolejki płynnie; sim bez zmian.

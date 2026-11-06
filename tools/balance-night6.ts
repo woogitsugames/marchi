@@ -53,14 +53,14 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m11: () => [],
   m12: (w) => [{ t: 'road', surface: 1, cells: col(w, M12_GRANARY_LINK.x, M12_GRANARY_LINK.y1, M12_GRANARY_LINK.y2) }],
   m13: () => [],
-  // research 2026-11-06 (not in the game): XIV's second brewery by the castle, XV's granary by the castle
+  // XIV's second charcoal burner by the forest, XV's granary by the castle (D-210)
   m14: (w) => [
     { t: 'place', type: 'charcoalBurner', ...M14_BURNER_SITE }, { t: 'road', surface: 1, cells: col(w, M14_BURNER_SITE.x + 1, 40, 41) },
   ],
   m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_GRANARY_SITE }, { t: 'road', surface: 1, cells: col(w, M15_GRANARY_SITE.x + 1, 40, 41) }],
 };
 
-/** The tempting wrong fix of the research missions XIV-XV: the same building at the wrong end of the road. */
+/** The tempting wrong fix of missions XIV-XV: the same building at the wrong end of the road. */
 export const WRONG: Record<string, (w: World) => Command[]> = {
   m14: (w) => [
     { t: 'place', type: 'charcoalBurner', ...M14_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M14_WRONG_SITE.x + 1, 39, 40) },

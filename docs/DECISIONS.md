@@ -2548,3 +2548,39 @@ snow flecks), by uniform values only (`Effects.update(…, snow)`).
 Cost (D-200..D-203, `tools/render5-materials.mjs`, sandbox 200 wagons, 60 m, one render): high 1975 → 1950 draws
 (−1.3 %), low 1700 → 1675 (−1.5 %); programs high 44 → 46, low 42 → 44 (the frost program and its instanced mirror,
 compiled by the pre-warm); night / winter-night / winter-day switches: 0 draw-time links, 0 new programs.
+
+**D-210 — Missions XIV "Węgiel z lasu" and XV "Skład pod zamkiem" in the game, appended after XIII (owner 2026-11-06).**
+Owner decision 2026-11-06 ~11:30 on the research `docs/research/2026-11-06-missions-14-15.md`: both missions go in at the
+end of the menu as XIV ("Wypal węgiel tam, gdzie drewno") and XV ("Zapas tam, gdzie będzie potrzebny"), names as in the
+report. `MISSIONS_14_15` (`src/sim/proposals/missions-14-15.ts`, data only) is registered in `src/sim/missions.ts`; the
+`register/unregisterMissions1415()` test hack is gone. `MENU_MISSIONS`/`ROMAN_MISSION` add XIV, XV; save slots follow
+the D-36 per-mission pattern unchanged (`contract-m14`, `contract-m15`). Castellan letters (opening, 1-3 seals, loss)
+and menu titles in 17 languages (15 agent translations, native review pending). Bots `tools/bot-m14.ts`,
+`tools/bot-m15.ts` (ladder 1/2/3, shared runner `runSiteBot`), pages `docs/missions/m14.md`, `m15.md`, golden hashes
+recorded for m14/m15 (`tests/valley-events-live.test.ts`; older entries unchanged), smoke, fuzz and the robustness
+save/load sweep cover both. Layout scenes and the moderator start list do not enumerate missions: unchanged. Shots
+`docs/shots/m14-{letter,lesson}-412x915.jpg`, `docs/shots/m15-{letter,lesson,calm}-412x915.jpg`
+(`tools/m14-15-shots.mjs`). (decided)
+
+**D-211 — XIV/XV thresholds: the wrong site with a wagon misses three seals by >= 20 s (owner 2026-11-06).**
+Owner: "wrong fix + 1 wagon" must miss 3★ by >= 20 s over the 0:00–2:00 build sweep, the lesson keeps >= 20 s, the
+reasonable player (balance-night6 LESSON) keeps >= 2★ at 10/30/60 s and 3★ at 10 s. XIV by thresholds alone: 3★ 8:36 ->
+**8:21** (`star3Min` 8.35); the castle-side burner with 0/1 wagon is 8.71–12.04 min over the sweep (>= 21 s late), the
+forest burner at 0:00 7.75 min (+36 s), eye 10/30/60 s 7.64/7.59/8.67 min = 3/3/2★. Cost: the forest burner in the sweep
+gives 2★ at 1:40 (8.46) and 2:00 (8.67) instead of only at 2:00 (dispatcher noise ±0.5 min). XV could not be fixed by
+thresholds (gap lesson -> wrong+1w only 41 s, and D-212 moves the eye player's granary from 0:02 to ~0:45), so data:
+second letter 36 -> **40 wood**, due 7:30 -> **8:30**, deadline 11 -> **12:00**, 3★ **7:24**, 2★ **8:36** (castle moved
+east and more silver were tried and were worse). Wrong site with 0/1 wagon 8.14–8.52 min (>= 44 s late, often a late
+letter = 1★), lesson at 0:00 6.35 min (+63 s), eye 10/30/60 s 6.90/6.86/6.86 = 3★; castle granary 3★ up to 1:50, 2★ at
+2:00. Tests `tests/missions-14-15.test.ts` (wrong k=0/1 at 0/40/80/120 s, lesson, eye). (decided)
+
+**D-212 — A full granary of goods nobody wants reads calm (owner 2026-11-06; generic rule).**
+Owner: a full granary holding goods no order or market wants now (XV's fish) reads calm, no repair or wagon cure,
+consistent with D-160/D-174/D-180/D-193. Pure read `granaryUnwanted` (`src/ui/stallKinds.ts`): `STORAGE_FULL` and every
+stored good has no unfilled contract need (any letter — the next letter's goods stay wanted), no consumer building on
+the map, no open market taking a load, and is not road stone. It feeds `calmStall` (brass pin, minor), `calmWhy`
+`'unwanted'` (card "pełny — tego towaru nikt teraz nie potrzebuje"), `statusKey` `status.STORAGE_FULL.unwanted`, the
+sheet's calm line `fix.unwanted`, and `cureFor` (no cure when the granary heads its own chain; a producer of a wanted
+good it refuses keeps the "another granary" cure — XV's woodcutters). 17 languages (15 agent translations). UI only.
+balance-night6 m1..m15 before/after: m1–m13 identical; XV's reasonable player builds one granary instead of two
+(coins at the end 13 -> 50), all 3★. (decided)

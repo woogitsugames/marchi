@@ -2,7 +2,7 @@
 // Usage: node tools/smoke.cjs [baseUrl=http://localhost:5193/]  (serve dist with `npx vite preview --port 5193`)
 const { chromium } = require('playwright');
 const base = process.argv[2] || 'http://localhost:5193/';
-const ids = ['', ...Array.from({ length: 13 }, (_, i) => 'm' + (i + 1)), 'sandbox'];
+const ids = ['', ...Array.from({ length: 15 }, (_, i) => 'm' + (i + 1)), 'sandbox'];
 (async () => {
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   let bad = 0;

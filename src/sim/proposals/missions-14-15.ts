@@ -1,9 +1,8 @@
-// Missions XIV-XV, research prototype (2026-11-06, docs/research/2026-11-06-missions-14-15.md).
-// Data only: no new simulation mechanics. NOT registered in MISSIONS (out of the menu, out of every test that walks
-// MISSIONS); tools and the research test call registerMissions1415() and unregisterMissions1415() around their runs.
+// Missions XIV "Węgiel z lasu" and XV "Skład pod zamkiem" (research 2026-11-06, docs/research/2026-11-06-missions-14-15.md;
+// in the game since D-210, owner 2026-11-06; thresholds D-211). Data only: no new simulation mechanics.
 // Both maps reuse the dry valley of missions III and X-XIII (mapId 'valley-m3'), no rain, no bridges.
+// Import MissionDef as a type to avoid the missions.ts <-> proposals module cycle.
 import type { MissionDef } from '../missions';
-import { MISSIONS } from '../missions';
 import { M3_VALLEY } from '../missions-proposed';
 
 export type Mission1415Id = 'm14' | 'm15';
@@ -12,14 +11,14 @@ export type Mission1415Id = 'm14' | 'm15';
 export const M14_BURNER_SITE = { x: 26, y: 42, facing: 2 } as const;
 /** XIV's wrong site: the second burner next to the first one, by the castle (the long road carries twice the wood). */
 export const M14_WRONG_SITE = { x: 76, y: 37, facing: 0 } as const;
-/** XV's lesson site: the granary by the castle, where the planks of the second letter will be wanted. */
+/** XV's lesson site: the granary by the castle, where the wood of the second letter will be wanted. */
 export const M15_GRANARY_SITE = { x: 64, y: 42, facing: 2 } as const;
-/** XV's wrong site: the granary by the sawmill (the planks are made in time, but wait on the far end of the road). */
+/** XV's wrong site: the granary by the woodcutters (the wood is cut in time, but waits on the far end of the road). */
 export const M15_WRONG_SITE = { x: 28, y: 42, facing: 2 } as const;
 
-export const PROPOSED_MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
+export const MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
   /**
-   * XIV "Węglarz przy lesie": a charcoal burner turns 2 wood into 1 charcoal. The woodcutters stand at the west end of
+   * XIV "Węgiel z lasu": a charcoal burner turns 2 wood into 1 charcoal. The woodcutters stand at the west end of
    * the valley, the only burner by the castle at the east end: every load of wood drives 45 cells to become half a
    * load of charcoal. One burner flat out is too slow for the order, so the pace card asks for a second one — and the
    * lesson is WHERE: by the forest the long road carries charcoal (half the loads, full wagons to the castle), next to
@@ -45,14 +44,15 @@ export const PROPOSED_MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
       [[86, 40], [86, 41]],
     ],
     contract: { charcoal: 30 },
-    deadlineMin: 14, star3Min: 8.6, star2Min: 10.5, rain: [],
+    deadlineMin: 14, star3Min: 8.35, star2Min: 10.5, rain: [],
   },
   /**
-   * XV "Skład pod zamkiem": the order comes in two letters. Bread first (the farm, mill and bakery stand by the
-   * castle), then planks with a short deadline — and the sawmill stands at the far west end, next to a small granary
-   * already full of seed... With nowhere to put its planks the sawmill stops during the first letter
-   * (OUTPUT_FULL -> STORAGE_FULL: the card asks for a granary). A granary lets it keep sawing; by the castle the planks
-   * already wait where the second letter wants them, by the sawmill they still have the whole valley to cross.
+   * XV "Skład pod zamkiem": the order comes in two letters, 30 grain first (the farm stands by the castle), then 40 wood
+   * with a short deadline — and the three woodcutters stand at the far west end, next to a small granary already full
+   * of fish nobody wants (a calm pin, D-212). With nowhere to put their wood the woodcutters stop during the first
+   * letter (OUTPUT_FULL.NO_DESTINATION -> the full granary: the card asks for another granary). A granary lets them keep
+   * cutting; by the castle the wood already waits where the second letter wants it, by the woodcutters it still has the
+   * whole valley to cross once the letter opens.
    */
   m15: {
     id: 'm15', mapId: 'valley-m3', seed: M3_VALLEY.seed,
@@ -77,23 +77,11 @@ export const PROPOSED_MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
       [[47, 37], [47, 40]],
       [[76, 40], [76, 41]],
     ],
-    contract: { grain: 30, wood: 36 },
+    contract: { grain: 30, wood: 40 },
     tranches: [
       { need: { grain: 30 }, dueMin: 5.5 },
-      { need: { wood: 36 }, dueMin: 7.5 },
+      { need: { wood: 40 }, dueMin: 8.5 },
     ],
-    deadlineMin: 11, star3Min: 7, star2Min: 8.5, rain: [],
+    deadlineMin: 12, star3Min: 7.4, star2Min: 8.6, rain: [],
   },
 };
-
-/** Put XIV and XV into MISSIONS (tools and the research test only; the game never calls this). */
-export function registerMissions1415(): void {
-  MISSIONS.m14 = PROPOSED_MISSIONS_14_15.m14;
-  MISSIONS.m15 = PROPOSED_MISSIONS_14_15.m15;
-}
-
-/** Take them out again, so later tests that walk MISSIONS see the game's list. */
-export function unregisterMissions1415(): void {
-  delete MISSIONS.m14;
-  delete MISSIONS.m15;
-}

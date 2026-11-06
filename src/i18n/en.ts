@@ -51,6 +51,7 @@ export const en: FullDict = {
   'status.WAGON_DUE': 'Wagon {wagon} comes for the {goodAcc} in {time}',
   'status.STORAGE_FULL': 'Granary is full',
   'status.STORAGE_FULL.saturated': 'Granary full — the market is saturated',
+  'status.STORAGE_FULL.unwanted': 'Granary full — nobody needs these goods now',
   'status.CONTRACT_DONE': 'Contract fulfilled',
 
   'wagon.IDLE': 'At the stable',
@@ -381,6 +382,10 @@ export const en: FullDict = {
   // mission XIII (night 6, D-102): see PENDING_KEYS
   'menu.m13': 'XIII. The first floor of the chain',
   'menu.m13Sub': 'One wagon for the whole march',
+  'menu.m14': 'XIV. Charcoal from the forest',
+  'menu.m14Sub': 'Burn charcoal where the wood is',
+  'menu.m15': 'XV. The store by the castle',
+  'menu.m15Sub': 'Stock where it will be needed',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Spring',
   'season.summer': 'Summer',
@@ -734,6 +739,8 @@ export const en: FullDict = {
   'cause.postNoRoad': 'waits for a road and a bridge',
   'cause.marketFull': 'full — the market takes no more of these goods now',
   'fix.marketFull': 'The market only takes what it can use — a new wagon would just wait. Sell another good or accept an order.',
+  'cause.unwanted': 'full — nobody needs these goods now',
+  'fix.unwanted': 'Neither the order nor any workshop takes what lies here — a new wagon would just wait. If a producer stands because of it, its goods need another granary.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Bottleneck',
   'neck.reason': 'on average {n} of {m} workshops wait',

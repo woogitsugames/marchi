@@ -35,9 +35,9 @@ test('docs/missions/m2.md quotes mission II as registered', () => {
   assert(missing.length === 0, `m2.md out of date with the code:\n${missing.join('\n')}`);
 });
 
-// Every mission page II-XIII: start silver and wagons, the deadline and both seal thresholds as the code has them
+// Every mission page II-XV: start silver and wagons, the deadline and both seal thresholds as the code has them
 // (pages write times as 8:45 / 08:45 or as minutes 8,45 / 8.45 — any of these spellings counts).
-test('docs/missions/m2-m13 quote start, deadline and seal thresholds as registered', () => {
+test('docs/missions/m2-m15 quote start, deadline and seal thresholds as registered', () => {
   const bad: string[] = [];
   const spell = (min: number): string[] => {
     const m = Math.floor(min), s = Math.round((min - m) * 60);
@@ -46,7 +46,7 @@ test('docs/missions/m2-m13 quote start, deadline and seal thresholds as register
     return [mmss, mmss.padStart(5, '0'), dec.replace('.', ','), dec, `${dec.replace('.', ',')}${dec.includes('.') ? '' : ',0'}`];
   };
   const has = (d: string, words: string[]) => words.some((w) => new RegExp(`(^|[^\\d:,.])${w.replace(/[.]/g, '\\.')}(?![\\d]|:\\d)`).test(d));
-  for (let i = 2; i <= 13; i++) {
+  for (let i = 2; i <= 15; i++) {
     const id = `m${i}`, m = MISSIONS[id]!;
     const d = read(`../docs/missions/${id}.md`);
     const start = /(\d+) srebra, \**(\d+) woz/.exec(d);
@@ -69,7 +69,7 @@ test('docs/missions/m2-m13 quote start, deadline and seal thresholds as register
     }
   }
   // single-letter contracts: the page names each quantity
-  for (const id of ['m2', 'm3', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13']) {
+  for (const id of ['m2', 'm3', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15']) {
     const m = MISSIONS[id]!, d = read(`../docs/missions/${id}.md`);
     for (const [g, n] of Object.entries(m.contract ?? {})) if (n && !new RegExp(`\\b${n}\\b`).test(d)) bad.push(`${id}: contract ${n} ${g} not quoted`);
   }

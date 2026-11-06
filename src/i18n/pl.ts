@@ -50,6 +50,7 @@ export const pl = {
   'status.WAGON_DUE': 'Wóz {wagon} przyjedzie po {goodAcc} za {time}',
   'status.STORAGE_FULL': 'Spichlerz pełny',
   'status.STORAGE_FULL.saturated': 'Spichlerz pełny — rynek nasycony',
+  'status.STORAGE_FULL.unwanted': 'Spichlerz pełny — tego towaru nikt teraz nie potrzebuje',
   'status.CONTRACT_DONE': 'Kontrakt wykonany',
 
   'wagon.IDLE': 'Stoi w stajni',
@@ -383,6 +384,10 @@ export const pl = {
   // mission XIII (night 6, D-102): localized
   'menu.m13': 'XIII. Pierwsze piętro łańcucha',
   'menu.m13Sub': 'Jeden wóz na całą marchię',
+  'menu.m14': 'XIV. Węgiel z lasu',
+  'menu.m14Sub': 'Wypal węgiel tam, gdzie drewno',
+  'menu.m15': 'XV. Skład pod zamkiem',
+  'menu.m15Sub': 'Zapas tam, gdzie będzie potrzebny',
   // free valley seasons (D-33): localized
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',
@@ -738,6 +743,8 @@ export const pl = {
   'cause.postNoRoad': 'czeka na drogę z mostem',
   'cause.marketFull': 'pełny — rynek nie weźmie teraz więcej tych towarów',
   'fix.marketFull': 'Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie.',
+  'cause.unwanted': 'pełny — tego towaru nikt teraz nie potrzebuje',
+  'fix.unwanted': 'Tego, co tu leży, nie bierze ani zamówienie, ani żaden warsztat — nowy wóz tylko by czekał. Jeśli przez to stoi producent, jego towar potrzebuje innego spichlerza.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',

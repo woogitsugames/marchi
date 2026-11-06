@@ -1,6 +1,6 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { GOODS, MARKET, TICK_HZ, capacityOf, isMarket, marketOpen, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
+import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
 
@@ -74,6 +74,8 @@ export function lossActionKey(status: string): MessageKey {
 export function statusKey(s: BuildingStatus, world?: World, id = -1): MessageKey {
   // a granary full of loads no market takes now (D-174) is calm: "Spichlerz pełny — rynek nasycony" (D-180)
   if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryLoads(world, id) === 'saturated') return 'status.STORAGE_FULL.saturated';
+  // a granary full of goods nobody wants now (D-212): calm "Spichlerz pełny — tego towaru nikt teraz nie potrzebuje"
+  if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryUnwanted(world, id)) return 'status.STORAGE_FULL.unwanted';
   if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && world && id >= 0 && outputSurplus(world, id) === 'SPARE') return 'status.OUTPUT_FULL.surplus';
   const cause = 'cause' in s ? s.cause : null;
   return (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;
@@ -111,4 +113,29 @@ export function granaryLoads(world: World, granaryId: number): 'wagon' | 'satura
     loads = true;
   }
   return loads ? 'saturated' : null;
+}
+
+/**
+ * D-212 (owner 2026-11-06): a full granary (STORAGE_FULL) holding only goods that nothing wants now — the contract has
+ * no unfilled need of them (any letter, not only the open one: the next letter's goods are still wanted), no building
+ * on the map takes them as an input, no open market takes a load of them, and no granary keeps them as road stone.
+ * Mission XV's small store full of fish is the case: the stall is real but nothing done to it helps the order, so it
+ * reads calm (no repair, no wagon) — consistent with D-160/D-174/D-180/D-193. A producer of a wanted good refused by
+ * such a granary still gets its own cure (another granary). Pure read.
+ */
+export function granaryUnwanted(world: World, granaryId: number): boolean {
+  const g = buildingById(world, granaryId);
+  if (!g || g.type !== 'warehouse' || g.status.k !== 'STORAGE_FULL') return false;
+  const st = world.state, k = st.mission.contract;
+  const castle = k ? buildingById(world, k.castle) : undefined;
+  let any = false;
+  for (const good of GOODS) {
+    if (g.stock[good] <= 0) continue;
+    any = true;
+    if (k && k.need[good] > (castle?.stock[good] ?? 0)) return false;
+    if (good === 'stone' && (st.mission.roadStone || marketOpen(world))) return false;
+    if (MARKET.base[good] > 0 && marketTakesLoad(world, good)) return false;
+    for (const c of st.buildings) if (c.type !== 'warehouse' && inputGoods(c.type).includes(good)) return false;
+  }
+  return any;
 }
