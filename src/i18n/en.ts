@@ -622,8 +622,21 @@ export const en: FullDict = {
   'diag.copy': 'Copy JSON',
   'diag.copied': 'Copied',
   'diag.reset': 'Reset',
-  // ?fixture= playtest setups (D-185, moderator only): see PENDING_KEYS
+  // ?fixture= notice (D-185) and the moderator's playtest screen (D-189; hidden, opened by a 3 s press on the menu title)
   'fixture.invalid': 'Invalid setup “{id}”: {why}. Do not score this trial (invalid_setup=1). Tap to close.',
+  'playtest.title': 'Playtest',
+  'playtest.kicker': 'Moderator only',
+  'playtest.participant': 'Participant code',
+  'playtest.device': 'Device (model, Android version)',
+  'playtest.starts': 'Starts — a fresh world, nothing written to the player’s saves',
+  'playtest.fixture': 'prepared state',
+  'playtest.last': 'This trial: {id}',
+  'playtest.lastNone': 'No trial on this page yet. Pick a start below.',
+  'playtest.copy': 'Copy results row',
+  'playtest.copied': 'Row copied to the clipboard.',
+  'playtest.copyFailed': 'Clipboard unavailable — select and copy the row below.',
+  'playtest.row': 'Results row (CSV)',
+  'playtest.exit': 'Leave playtest mode',
   // rain forecast 30 s ahead (night 5): see PENDING_KEYS
   'hud.rainSoon': 'Rain in half a minute — dirt turns to mud, cobbles keep the pace',
   'hud.rainSoonDirt': 'Rain in half a minute — dirt turns to mud, wagons slow down',

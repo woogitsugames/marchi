@@ -770,6 +770,58 @@ section.sheet:focus { outline: none; box-shadow: none; }
   z-index: 20;
 }
 
+/* moderator playtest screen (D-189, src/ui/playtestSheet.ts): a page of the steward's ledger, like the valley
+   ledgers — folio codes in the margin, ruled entries, the query in small print. Hidden: a 3 s press on the
+   menu title opens it, so the title must not select text or raise a context menu under a long press. */
+.menu-head .title { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.pt-codes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.pt-codes .btn { font-variant-numeric: tabular-nums; }
+.pt-dev {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 17px;
+  color: var(--ink);
+  background: var(--parchment);
+  border: var(--hair) solid var(--iron);
+  border-radius: 0;
+}
+.pt-dev:focus-visible { outline: 2px solid var(--clay); outline-offset: 1px; }
+.pt-starts-h {
+  margin: 4px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+}
+.pt-start .slot-no { font-size: 22px; color: var(--ink); padding-top: 4px; }
+.pt-start .slot-name { font-size: 20px; }
+.pt-start .slot-sub { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.pt-q { font-family: ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
+.pt-tag { font-size: 12px; font-weight: 700; color: var(--wine); border-bottom: 1px solid currentColor; }
+.pt-exit { width: 100%; margin-top: 16px; }
+.pt-none { margin: 0 0 16px; font-size: 15px; font-style: italic; color: var(--ink-soft); }
+.pt-trial { margin: 0 0 16px; padding: 10px 0 12px; border-block: var(--hair) solid var(--clay); }
+.pt-trial-h { display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; align-items: center; margin-bottom: 6px; }
+.pt-trial-h .slot-no { font-size: 22px; color: var(--clay); padding: 0; min-height: 0; }
+.pt-trial-name { font-family: var(--font-head); font-weight: 600; font-size: 22px; line-height: 1.1; }
+.pt-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 12px; margin: 0 0 10px; font-size: 13px; }
+.pt-fields > div { display: flex; justify-content: space-between; gap: 6px; min-width: 0; border-bottom: 1px dotted rgb(74 72 67 / .45); }
+.pt-fields dt { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-fields dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; text-align: end; }
+.pt-copy { width: 100%; }
+.pt-status { margin: 8px 0 0; font-size: 15px; font-weight: 700; color: var(--meadow); }
+.pt-status.is-fail { color: #6e3520; }
+.pt-row {
+  display: block; width: 100%; margin-top: 6px; padding: 6px 8px;
+  font: 12px/1.3 ui-monospace, monospace;
+  color: var(--ink); background: var(--parchment); border: 1px solid var(--iron); border-radius: 0; resize: vertical;
+}
+
 /* ================================================================ foldables & big screens
    Body classes come from src/ui/layout.ts: is-split (tools bottom-left, speed bottom-right),
    is-mini (Flip cover: watch mode), is-narrow (< 400 px, old Fold cover), is-flex (horizontal
