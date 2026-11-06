@@ -359,7 +359,7 @@ export function runScenario(sc: Scenario, opts: RunOptions = {}): { failure: Fai
   if (opts.rerun) {
     const r2 = runScenario({ ...sc, saveAt: -1 }, { ...opts, rerun: false, timing: false });
     if (r2.hash !== hash && !r2.failure) {
-      return { failure: { kind: 'rerundiverge', tick: sc.ticks, detail: `rerun hash ${r2.hash} != ${hash}` }, stats, hash };
+      return { failure: { kind: 'rerundiverge', tick: w.state.tick, detail: `rerun hash ${r2.hash} != ${hash}` }, stats, hash };
     }
   }
   return { failure: null, stats, hash };
@@ -371,18 +371,28 @@ export function runScenario(sc: Scenario, opts: RunOptions = {}): { failure: Fai
  * Delta-debugging style shrink: drop chunks of commands, then single commands, then cut ticks,
  * keeping the scenario only while it still fails with the same kind.
  */
+/**
+ * Cut a scenario to end right after a failure at absolute tick `failTick`. `sc.ticks` and `sc.saveAt`
+ * count from the start of the run, command ticks and failure ticks are absolute (a snapshot such as
+ * `valley-75` starts at `baseTick` > 0), so convert before comparing (D-231).
+ */
+export function cutAfterFailure(sc: Scenario, failTick: number, baseTick: number): Scenario {
+  const ticks = Math.min(sc.ticks, failTick - baseTick + 1);
+  const commands = sc.commands.filter((c) => c.tick < baseTick + ticks);
+  return { ...sc, ticks, commands, saveAt: sc.saveAt >= ticks ? -1 : sc.saveAt };
+}
+
 export function shrink(sc: Scenario, kind: FailureKind, opts: RunOptions = {}, log?: (s: string) => void): Scenario {
   const fails = (s: Scenario) => {
     const r = runScenario(s, { ...opts, rerun: kind === 'rerundiverge' });
     return r.failure && r.failure.kind === kind ? r.failure : null;
   };
+  const base = makeWorld(sc.mission, sc.coins).state.tick;
   let cur = { ...sc, commands: [...sc.commands] };
   let f = fails(cur);
   if (!f) return cur;
   // cut ticks to just after the failure
-  cur.ticks = Math.min(cur.ticks, f.tick + 1);
-  cur.commands = cur.commands.filter((c) => c.tick < cur.ticks);
-  if (cur.saveAt >= cur.ticks) cur.saveAt = -1;
+  cur = cutAfterFailure(cur, f.tick, base);
   let chunk = Math.max(1, cur.commands.length >> 1);
   while (chunk >= 1) {
     let changed = false;
@@ -390,8 +400,7 @@ export function shrink(sc: Scenario, kind: FailureKind, opts: RunOptions = {}, l
       const cand = { ...cur, commands: [...cur.commands.slice(0, i), ...cur.commands.slice(i + chunk)] };
       const cf = fails(cand);
       if (cf) {
-        cur = cand;
-        cur.ticks = Math.min(cur.ticks, cf.tick + 1);
+        cur = cutAfterFailure(cand, cf.tick, base);
         changed = true;
         log?.(`  shrink: ${cur.commands.length} commands, ${cur.ticks} ticks`);
       } else i += chunk;
@@ -405,6 +414,6 @@ export function shrink(sc: Scenario, kind: FailureKind, opts: RunOptions = {}, l
   }
   // smaller coin override is not needed for reproduction; keep it
   f = fails(cur);
-  if (f) cur.ticks = f.tick + 1;
+  if (f) cur = { ...cur, ticks: f.tick - base + 1 };
   return cur;
 }

@@ -66,7 +66,8 @@ function growPlan(): BotStep[] {
   return [
     ...DECENT.slice(0, i),
     put('second brewery', 'brewery', 42, 25),
-    put('third malthouse', 'malthouse', 38, 25),
+    // D-232: not at (38, 25) — that footprint covers (39, 25), the first cell of DECENT's road to the trading post
+    put('third malthouse', 'malthouse', 46, 25),
     { name: 'extend east road', cmds: (w) => [{ t: 'road', surface: 1, cells: Array.from({ length: 11 }, (_, k) => 24 * W(w) + 72 + k) }] },
     put('beer farm', 'farm', 75, 25),
     ...DECENT.slice(i),

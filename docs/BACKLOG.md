@@ -9,6 +9,8 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [ ] P2 — (D-233) Dolina od rangi 4: gdy spichlerze są pełne, zamek na limicie, a faktoria stoi bez drogi (`NO_ROAD`), karta pokazuje dziś spokojne „rynek nasycony” — nie mówi, że pomogłaby droga do faktorii przez rzekę. Rozważyć lekarstwo „droga do faktorii” (karta-10 w 90 min nigdy jej nie buduje). (źródło: claude, `tools/sandbox-first30.ts`)
+- [ ] P3 — `tests/seasons-fuzz.test.ts` ma limit czasu ściennego 25 s; samodzielnie trwa ~24,8 s, przy obciążonej maszynie raz przekroczył (2026-11-06, `claude/w-jamfix`) — podnieść limit albo mierzyć czas CPU.
 - [x] P3 — (zrobione, D-200..D-203, `claude/w-gfx10`) Grafika 10: robotnicy w kamieniołomie, u węglarza, w słodowni, w browarze i kupiec przy ladzie otwartej faktorii; nogi i tułowie w jednej partii na wariant stroju (mniej wywołań rysowania); słód w obręczowanych cebrzykach zamiast małych worków; faktoria/wieża zamku przebudowują się przy awansie rangi, nie przy następnej drodze; zimą szron na dachach i krótkie płatki zamiast deszczu. Zrzuty `docs/shots/gfx10-*`.
 - [ ] P3 — (D-203) Drzewa liściaste zimą zostają w jesiennych liściach (kierunek artystyczny „późna jesień”); przy szronie na ziemi i dachach rozważyć zimowy wariant korony (przerzedzone, brązowe) — decyzja **właściciela** (nowe zasoby/koszt shaderów).
 - [ ] P3 — (D-200) Kupiec przy ladzie nie reaguje na sprzedaż (stała pętla 7 s); rozważyć gest „waży/odbiera monetę”, gdy wóz rozładowuje się przy faktorii.
@@ -181,6 +183,7 @@ Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -
 - [ ] P2 — (D-211) Po playteście sprawdzić progi XIV/XV: XIV przy lesie zbudowanej o 1:40 daje 2★ (szum dyspozytora ±0,5 min); XV zła poprawka zwykle spóźnia drugi list (1★). Zrzuty 915×412 dla XIV/XV nie zrobione (tylko 412×915).
 - [ ] P3 — (D-212) Ekran porażki XV liczy przestój małego składu ryb (STORAGE_FULL od 0:00) do „trzech kosztów” — rada „Postaw spichlerz” jest tu słuszna, ale źródłem jest spokojny spichlerz. Rozważyć pomijanie spokojnych postojów w `topStallCauses`.
 ## Zrobione
+- [x] 2026-11-06 (`claude/w-jamfix`) Długi fuzz GPT (zlecenie 93): zakleszczenie `BRIDGE_JAM` po zburzeniu drogi — wóz bez trasy zjeżdża z mostu (D-230); `shrink` liczy ticki względem snapshotu (D-231); plan `grow` nie blokuje drogi do faktorii (D-232); „Kup wóz” przy spichlerzu tylko dla osiągalnego rynku — card-10 142 → 41 wozów (D-233).
 - [x] 2026-11-06 (`claude/w-m14-15`) Misje XIV „Węgiel z lasu” i XV „Skład pod zamkiem” w grze (D-210), progi zaostrzone (D-211), spokojny pełny spichlerz z niepotrzebnym towarem (D-212).
 - [x] 2026-11-06 (`claude/w-playtest`) Deterministyczne fixtury playtestu `?fixture=bridge-cut-in-transit|all-busy|bridge-jam|warehouse-full` (D-185..D-188): prawdziwa symulacja od startu misji, walidacja + widoczny komunikat „invalid setup”, brak zapisów, `openId`/`wagonId`; PROTOCOL §3 i CSV (`fixture_id`, `fixture_version`, `fixture_hash`) zaktualizowane; zrzuty `docs/shots/playtest-*.jpg`.
 - [x] 2026-11-06 (dzień 9l, `claude/w-day9l`) Spokojny nagłówek karty postoju „Postój” (D-184, D-182 b) i porządek w BACKLOG: zamknięte pozycje już rozwiązane decyzjami D-35..D-184 (przeniesione tutaj w oryginalnym brzmieniu):

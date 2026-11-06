@@ -195,3 +195,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-201 | — | Malt travels in hooped tubs, not small pale bags (goods by shape) | nieokreślony | inne |
 | D-202 | — | Building looks that change with the rank rebuild at the rank-up, not at the next road | nieokreślony | sim |
 | D-203 | — | Winter hoarfrost on the buildings, sleet flecks instead of rain streaks | nieokreślony | inne |
+| D-210 | 2026-11-06 | Missions XIV "Węgiel z lasu" and XV "Skład pod zamkiem" in the game, appended after XIII (owner 2026-11-06) | decided | inne |
+| D-211 | 2026-11-06 | XIV/XV thresholds: the wrong site with a wagon misses three seals by >= 20 s (owner 2026-11-06) | decided | sim |
+| D-212 | 2026-11-06 | A full granary of goods nobody wants reads calm (owner 2026-11-06; generic rule) | decided | inne |
+| D-230 | — | A wagon without a route never parks on a one-lane span (GPT long fuzz, order 93) | decided | sim |
+| D-231 | — | fuzz `shrink` counts duration relative to the snapshot start | decided | sim |
+| D-232 | — | valley-3h `grow` plan: third malthouse at (46, 25) | decided | inne |
+| D-233 | — | a granary's "Kup wóz" counts only markets reachable by road (UI, real cue loop) | decided | UI |
