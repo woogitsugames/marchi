@@ -24,6 +24,13 @@
   opisy sklepu → **paczka GPT 12** (`docs/orders/gpt6-orders-12.zip`, zlecenia 66–70), wyzwanie kontraktu po playteście.
 - **APK odblokowane** (sieć środowiska przepuszcza `dl.google.com`/`maven.google.com`): `npm run setup:android`, potem
   `npm run apk -- --skip-web` (Maven Central 429 → ponawiać). Ostatnie APK: **ddac168** (~11:00).
+- Po południu scalone: D-200..D-203 grafika (pracownicy w nowych warsztatach, słód w beczkach, szron, deszczośnieg),
+  D-210..D-212 **misje XIV „Węgiel z lasu” i XV „Skład pod zamkiem” w menu**, spokojny spichlerz z niepotrzebnym towarem,
+  D-213 nazwy „Posterunek handlowy” / „sława” + prawa do UI kit, integracja GPT paczka 13 (21 zleceń,
+  `docs/reviews/gpt-integration-13.md`), D-230..D-233 wóz bez trasy zjeżdża z przęsła (zakleszczenie z fuzza GPT).
+  APK: ddac168, b6b86d9, **6d43284** (~17:00). GPT: paczka 12 i zlecenia 71, 72, 79–84, 100 z paczki 13 nieoddane.
+- W toku: deweloper `claude/w-onboard` (samouczek budowania + ekran pomocy wg treści GPT 90/78), drugi agent
+  `claude/w-perf10` (wydajność telefonu). Potem: zdarzenia+kronika rang 4–5 (GPT 73/74), podtytuły menu (91).
 - Kierunek właściciela: grafika/animacje (deweloper `claude/w-gfx10`), misje XIV–XV (researcher `claude/research-m14`),
   potem wydajność telefonu i samouczek/onboarding.
 
