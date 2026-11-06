@@ -685,6 +685,8 @@ export const de: Dict = {
   "cause.paceRank": "Rang {rank} ({rankName}) fehlt eine Ware — baue: {name}",
   "cause.paceGrow": "Rang {rank} ({rankName}) fehlt nur noch Ansehen — baue noch eins: {name}",
   "fix.growWhy": "Ansehen {renown} von {need} für {rankName}; Waren und Fluss sind erreicht. Ansehen wächst mit dem Verkauf: ein weiteres Gebäude ({name}) liefert mehr {goodGen}, und der Markt zahlt noch einen guten Preis.",
+  "cause.paceGrowFlow": "Rang {rank} ({rankName}) fehlt Ertrag an Silber — baue noch eins: {name}",
+  "fix.growWhyFlow": "Ertrag {flow} von {need} Silber pro Minute für {rankName}; die Waren sind erreicht. Der Ertrag wächst mit dem Verkauf: ein weiteres Gebäude ({name}) liefert mehr {goodGen}, und der Markt zahlt noch einen guten Preis.",
   "fix.rank": "Bauen: {name}",
   "fix.rankWhy": "Verschiedene Waren verkauft: {sold} von {goods} für {rankName}. {good} kam noch nie auf den Markt — dieses Gebäude stellt es her.",
   "fix.paceFleetWhy": "Eine Minute lang stand kein Wagen frei. Die Prognose gibt {seals}; ein neuer Wagen holt die Ladung früher und zahlt sich vor dem Siegel aus.",

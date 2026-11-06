@@ -743,6 +743,9 @@ export const pl = {
   'cause.paceRank': 'Do rangi {rank} ({rankName}) brakuje towaru — postaw: {name}',
   'cause.paceGrow': 'Do rangi {rank} ({rankName}) brakuje już tylko sławy — postaw jeszcze: {name}',
   'fix.growWhy': 'Sława {renown} z {need} na rangę {rankName}; towary i przepływ już są. Sława rośnie ze sprzedaży: jeszcze jeden budynek ({name}) da więcej {goodGen}, a targ wciąż płaci za nie dobrą cenę.',
+  // D-264: the grow card when the next rank lacks silver flow (renown may be short too)
+  'cause.paceGrowFlow': 'Do rangi {rank} ({rankName}) brakuje przepływu srebra — postaw jeszcze: {name}',
+  'fix.growWhyFlow': 'Przepływ {flow} z {need} srebra na minutę na rangę {rankName}; towary już są. Przepływ rośnie ze sprzedaży: jeszcze jeden budynek ({name}) da więcej {goodGen}, a targ wciąż płaci za nie dobrą cenę.',
   'fix.rank': 'Postaw: {name}',
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
   'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',

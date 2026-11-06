@@ -685,6 +685,8 @@ export const pt_BR: Dict = {
   "cause.paceRank": "Nível {rank} ({rankName}): falta uma mercadoria — construa: {name}",
   "cause.paceGrow": "Nível {rank} ({rankName}): só falta renome — construa outro: {name}",
   "fix.growWhy": "Renome {renown} de {need} para {rankName}; as mercadorias e o fluxo já estão. O renome cresce com as vendas: outro prédio ({name}) dá mais {goodGen}, e o mercado ainda paga um bom preço.",
+  "cause.paceGrowFlow": "Nível {rank} ({rankName}): falta fluxo de prata — construa outro: {name}",
+  "fix.growWhyFlow": "Fluxo {flow} de {need} de prata por minuto para {rankName}; as mercadorias já estão. O fluxo cresce com as vendas: outro prédio ({name}) dá mais {goodGen}, e o mercado ainda paga um bom preço.",
   "fix.rank": "Construa: {name}",
   "fix.rankWhy": "Mercadorias diferentes vendidas: {sold} de {goods} para {rankName}. {good}: nunca chegou ao mercado — este prédio produz.",
   "fix.paceFleetWhy": "Por um minuto nenhuma carroça ficou livre. A previsão dá {seals}; uma carroça nova pega a carga antes e se paga antes do selo.",

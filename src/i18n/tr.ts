@@ -685,6 +685,8 @@ export const tr: Dict = {
   "cause.paceRank": "Rütbe {rank} ({rankName}) için bir mal eksik — kur: {name}",
   "cause.paceGrow": "Rütbe {rank} ({rankName}) için yalnızca ün eksik — bir tane daha kur: {name}",
   "fix.growWhy": "Ün {renown} / {need} ({rankName} için); mallar ve akış tamam. Ün satışla artar: bir bina daha ({name}) daha çok {goodGen} verir ve pazar hâlâ iyi fiyat öder.",
+  "cause.paceGrowFlow": "Rütbe {rank} ({rankName}) için gümüş akışı eksik — bir tane daha kur: {name}",
+  "fix.growWhyFlow": "Akış {flow} / dakikada {need} gümüş ({rankName} için); mallar tamam. Akış satışla artar: bir bina daha ({name}) daha çok {goodGen} verir ve pazar hâlâ iyi fiyat öder.",
   "fix.rank": "Kur: {name}",
   "fix.rankWhy": "Satılan farklı mallar: {sold}/{goods} ({rankName} için). {good}: pazara hiç gelmedi — bu bina onu üretir.",
   "fix.paceFleetWhy": "Bir dakika boyunca hiçbir araba boş kalmadı. Tahmin {seals} veriyor; yeni araba yükü daha erken alır ve mühürden önce kendini öder.",

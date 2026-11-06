@@ -132,7 +132,7 @@ function rankCureHtml(world: World, pc: PaceRank): string {
 }
 
 /**
- * The free valley's grow card on the castle's sheet (D-192): the next rank lacks only renown, so one more producer of
+ * The free valley's grow card on the castle's sheet (D-192): the next rank lacks renown (D-264: or flow), so one more producer of
  * a standing chain — the build tool opens with that type, the ghost by the castle. The card exists only while the
  * building is affordable with the reserve, so the button is never disabled for silver.
  */
@@ -141,7 +141,12 @@ function growCureHtml(pc: PaceGrow): string {
   const name = t(`building.${pc.type}` as MessageKey);
   const btn = `<button class="btn primary cf fix-btn" data-act="grow:${pc.type}" aria-disabled="false">${
     iconSvg('build', 26)}<span>${esc(t('fix.producer', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
-  const hint = `<div class="s-hint">${esc(t('fix.growWhy', { renown: fmtInt(pc.renown), need: fmtInt(pc.need), rankName: rankName(pc.rank), name, goodGen: t(`goodGen.${pc.good}` as MessageKey) }))}</div>`;
+  const goodGen = t(`goodGen.${pc.good}` as MessageKey);
+  // D-264: the flow variant names the silver per minute the next rank still lacks
+  const why = pc.short === 'flow'
+    ? t('fix.growWhyFlow', { flow: fmtInt(pc.flow), need: fmtInt(pc.flowNeed), rankName: rankName(pc.rank), name, goodGen })
+    : t('fix.growWhy', { renown: fmtInt(pc.renown), need: fmtInt(pc.need), rankName: rankName(pc.rank), name, goodGen });
+  const hint = `<div class="s-hint">${esc(why)}</div>`;
   return fixSection(btn, hint, false);
 }
 

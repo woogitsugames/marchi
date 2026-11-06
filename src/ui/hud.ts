@@ -603,7 +603,7 @@ export class Hud {
         : pc.k === 'rank'
         ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
         : pc.k === 'grow'
-        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.n}|${stalls.length}|${getLang()}`
+        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.n}|${pc.short}|${stalls.length}|${getLang()}`
         : pc.k === 'producer'
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
         : pc.k === 'fleet'
@@ -633,7 +633,9 @@ export class Hud {
       if (pc.k === 'rank' || pc.k === 'grow') {
         // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
         // ...or lacks only renown (D-192): name one more producer of a standing chain
-        const text = t(pc.k === 'rank' ? 'cause.paceRank' : 'cause.paceGrow', { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
+        // ...or (D-264) lacks silver flow: the same producer, the card names the flow
+        const key = pc.k === 'rank' ? 'cause.paceRank' : pc.short === 'flow' ? 'cause.paceGrowFlow' : 'cause.paceGrow';
+        const text = t(key, { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
         // the whole line is this one text: .sc-text's own dir="auto" takes its direction (an English fallback in ar)
         setHtml(this.stallText, esc(text));
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
