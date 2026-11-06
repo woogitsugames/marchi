@@ -82,17 +82,19 @@ for (const [w, h] of sizes) {
   }
   await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 4, null, { timeout: 90000 });
   if ((await step()) === 4) {
-  await shot('s4');
+  await shot((await step()) === 4 ? 's4' : 's4-skipped');
   // a tap on the hut: the ring's centre
   const ring = await page.evaluate(() => { const b = document.querySelector('.tut-ring.is-shown')?.getBoundingClientRect(); return b ? [b.left + b.width / 2, b.top + b.height / 2] : null; });
-  if (ring) await tap(ring[0], ring[1]);
+  if (ring && (await step()) === 4) await tap(ring[0], ring[1]);
   await page.waitForTimeout(1500);
   if ((await step()) === 4) await page.evaluate(() => { const a = window.__marchia.app; a.go('building', a.world.state.buildings.at(-1).id); });
   }
-  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 5, null, { timeout: 90000 });
+  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? 99) >= 5, null, { timeout: 90000 });
   if ((await step()) === 5) {
     await shot('s5');
-    await tapSel('.tut-ring.is-shown');
+    // the ring takes no taps: tap what it surrounds
+    const c = await page.evaluate(() => { const b = document.querySelector('.tut-ring.is-shown')?.getBoundingClientRect(); return b ? [b.left + b.width / 2, b.top + b.height / 2] : null; });
+    if (c && (await step()) === 5) await tap(c[0], c[1]);
   }
   await waitStep(6).catch(() => {});
   await shot('s6');

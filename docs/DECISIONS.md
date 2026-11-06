@@ -2647,7 +2647,11 @@ live World: the newest woodcutter not in the start baseline, `findPath` from its
 before or after the note); a hut placed early skips ahead, a removed hut (undo, demolish) goes back to step 1, a road
 removed at step 4 back to 3; ends by itself after 5 min active. The finished tool is put away (UI only, like mission
 I's end): the build shelf when step 3 begins (it covers the rail in portrait), the road tool when step 4 begins (else
-the tap on the hut would draw a road). Deviation from the doc: the game has no separate
+the tap on the hut would draw a road). One camera move per step, as in mission I: the hut (step 4) or its gate (step
+3 with the road tool) is brought into the free part of the map — in landscape the valley card lay over the hut. The
+note also avoids the valley news card (`.ev-card`, added to the shared placement obstacles; mission I never shows it).
+The landscape main menu's 21 px row size no longer applies to Settings (it kept its 17 px only in portrait), so Help
+and Settings match. Deviation from the doc: the game has no separate
 "Dlaczego stoi?" button — it is the card's kicker over the cause chain — so step 5 asks for the chain link or the
 codex fold ("Co to znaczy?"), and is skipped at once when the hut works. Tests: tests/tutorial-build.test.ts (step
 logic + a real valley: baseline, new hut, connection via the old woodcutter's road, demolish). 9 keys

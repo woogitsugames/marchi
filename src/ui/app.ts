@@ -1104,7 +1104,8 @@ export class App implements PanelNav {
     };
     add(this.sheets.top?.el, true);
     add(this.layers.hud.querySelector<HTMLElement>('.rail'));
-    add(this.layers.hud.querySelector<HTMLElement>('.waybill-wrap'));
+    // the contract's waybill, or in the free valley the town plaque (a second .waybill-wrap; the first stays hidden there)
+    for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.waybill-wrap')) add(el);
     // HUD v3 (D-43): top chips/speed bar and the worst-stall row also hide the map. The .topbar box itself is
     // empty (its pieces sit in the .hud-top grid), so its pieces are the obstacles (layout check, D-62).
     for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.topbar > .menu-btn, .topbar > .chips, .topbar > .speed')) add(el);
