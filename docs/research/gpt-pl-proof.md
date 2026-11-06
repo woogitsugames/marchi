@@ -3,7 +3,7 @@
 | Miejsce | Zmiana | Powód |
 | --- | --- | --- |
 | `fix.surplus` | Nadwyżka poczeka na placu; nikt jej nie potrzebuje | Usuwa niejednoznaczne odniesienie czasownika „poczeka”. |
-| `end.act.bridge` | „most lub druga przeprawa rozładują kolejkę” | Doprecyzowuje zaimek i zachowuje liczbę pojedynczą przy alternatywie. |
+| `end.act.bridge` | (wycofane przy integracji) | Proponowane „…rozładuje kolejkę” powtarza „kolejki” z tego samego zdania; „ją rozładuje” było poprawne. |
 | List VI, otwarcie | „spichlerz” zamiast „magazyn” | Spójna nazwa tego samego obiektu w jednym akapicie. |
 
 Przejrzano polski słownik oraz wersje PL listów I–XIII; zachowano istniejące

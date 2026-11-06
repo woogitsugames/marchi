@@ -701,7 +701,7 @@ export const pl = {
   'cause.paceFleet': 'pełno {goodGen} od {time}, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
   'end.act.wagon': 'Następnym razem: {who} — {time} czekania na wóz. Kup wóz wcześniej (−30).',
   'end.act.road': 'Następnym razem: {who} — {time} bez drogi. Połącz od razu; oko na karcie przestoju wskaże odcinek.',
-  'end.act.bridge': 'Następnym razem: {who} — {time} kolejki przy moście. Kamienny most lub druga przeprawa rozładuje kolejkę.',
+  'end.act.bridge': 'Następnym razem: {who} — {time} kolejki przy moście. Kamienny most albo druga przeprawa ją rozładuje.',
   'end.act.granary': 'Następnym razem: {who} — {time} bez miejsca na towar. Postaw spichlerz albo połącz odbiorcę.',
   'end.act.other': 'Następnym razem: {who} — {time} przestoju. Otwórz „Dlaczego stoi?” przy pierwszym zastoju.',
   'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
