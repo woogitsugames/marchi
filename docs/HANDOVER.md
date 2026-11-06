@@ -1,3 +1,17 @@
+# Handover — MARCHIA (stan 2026-11-06 ~21:15 Europe/Brussels) — sesja `session_01V6ZttXS1AFjiGAx6Mvg1nL`
+
+## Stan teraz (ta sesja)
+- Repo w kontenerze: **`/workspace/marchi`**; worktree agentów: `/workspace/marchi-rank` (`claude/w-rank`),
+  `/workspace/marchi-perf` (`claude/w-perf`), symlink `node_modules`. Preview bazy: `npx vite preview --port 5193`.
+- Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
+- Baza = `main` = **e22bbd5**: testy **566/0**, build OK, `setup:android` OK (SDK 36).
+- Niedokończone z poprzedniej sesji: `w-onboard`, `w-postroad` i oddane `gpt/*` (73–78, 85–99) — **już scalone**. GPT: paczka 12
+  (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
+- W toku: deweloper `claude/w-rank` — karta rangi zna węglarza/słodownię/browar, gracz „karta” do rangi 5 (D-250..D-253);
+  deweloper `claude/w-perf` — budowa świata menu i kompilacja shaderów (D-255..D-258).
+- Do decyzji właściciela nadal: punkt 4 z „Niedokończone” niżej (światła co 2. klatkę, drzewa zimą, progi XIV/XV, wyzwanie
+  kontraktu), pytania o samouczek (krok 5, „?” na mapie).
+
 # Handover — MARCHIA (stan 2026-11-06 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
 > Sesja `session_01Xqzfc3EMpVJFqLiHix1voE` kończy (limit 5-godzinny i tygodniowy). Prompt startowy: `marchi.md` w katalogu
