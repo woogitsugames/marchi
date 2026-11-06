@@ -1,4 +1,4 @@
-# Samouczek budowania w Wolnej dolinie / Free Valley building tutorial
+# Samouczek budowania w Wolnej dolinie / Free valley building tutorial
 
 **Propozycja UX, nie implementacja.** Drugi, opcjonalny samouczek rozpoczyna się
 w nowej Wolnej dolinie i uczy połączenia nowego budynku z istniejącą siecią oraz
@@ -13,9 +13,9 @@ podstawie rzeczywistego świata, nigdy z arbitralnych ID. Nie wydawać poleceń 
 
 | Krok | Notatka PL | Note EN | Co pokazać | Przejście |
 | --- | --- | --- | --- | --- |
-| 1 | Otwórz budowanie i wybierz drwalnię. Sprawdź jej koszt. | Open the build menu and select a woodcutter. Check its cost. | Obrys menu budowy, następnie wybór drwalni i koszt. | Aktywne narzędzie budowy drwalni; jeżeli już wybrane, przejdź dalej. |
+| 1 | Otwórz budowanie i wybierz chatę drwala. Sprawdź jej koszt. | Open the build menu and select a woodcutter's hut. Check its cost. | Obrys menu budowy, następnie wybór drwalni i koszt. | Aktywne narzędzie budowy drwalni; jeżeli już wybrane, przejdź dalej. |
 | 2 | Wybierz miejsce przy lesie. Podgląd pokaże, czy można tam budować. | Choose a place by the forest. The preview shows whether you can build there. | Podgląd położenia i standardowy powód odmowy. | Symulacja zaakceptowała budowę nowej drwalni; odrzucona próba nie zalicza kroku. |
-| 3 | Wybierz trakt. Połącz drogę przy drwalni z istniejącą siecią. | Select Track. Join the woodcutter's road to the existing network. | Obrys narzędzia i bramy nowej drwalni; aktualne drogi pozostają widoczne. | Istnieje przejezdna ścieżka od drwalni do połączonej części sieci; wcześniej zbudowana także się liczy. |
+| 3 | Wybierz narzędzie „Droga”. Połącz drogę przy drwalni z istniejącą siecią. | Select the Road tool. Join the woodcutter's road to the existing network. | Obrys narzędzia i bramy nowej drwalni; aktualne drogi pozostają widoczne. | Istnieje przejezdna ścieżka od drwalni do połączonej części sieci; wcześniej zbudowana także się liczy. |
 | 4 | Otwórz drwalnię i sprawdź, co robi. | Open the woodcutter and see what it is doing. | Obrys nowej drwalni; karta wyświetla bieżący stan. | Gracz otworzył kartę tej drwalni po jej zbudowaniu. |
 | 5 | Jeśli praca stoi, wybierz „Dlaczego stoi?” i sprawdź przyczynę. | If work has stalled, choose “Why is it stalled?” and check the cause. | Obrys dostępnego odnośnika; nie wymuszać konkretnej przyczyny. | Gracz otworzył diagnozę; jeżeli brak odnośnika lub budynek pracuje, pomiń krok. |
 | 6 | Droga i praca są widoczne w kartach. Wróć do doliny i rozwijaj ją po swojemu. | Roads and work can be inspected in their cards. Return to the valley and grow it your way. | Przycisk zamknięcia karty; nie obiecywać sprzedaży. | Gracz zamknął kartę lub czas wskazówki minął. |
@@ -32,3 +32,5 @@ podstawie rzeczywistego świata, nigdy z arbitralnych ID. Nie wydawać poleceń 
   obliczyć pozycję obrysu. Sterowanie i standardowe komunikaty pozostają dostępne.
 - Próby: poprawna i odrzucona budowa, połączenie alternatywną trasą, budowa przed
   wskazówką, praca bez przestoju, brak srebra, obrót i pominięcie.
+
+Uwaga integracji: w grze budynek nazywa się „Chata drwala” / „Woodcutter's hut” (`building.woodcutter`), a narzędzie drogi „Droga” / „Road” (`tool.road`); „drwalnia” w krokach 2–6 to skrót roboczy.
