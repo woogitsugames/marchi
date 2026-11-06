@@ -3,11 +3,13 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  BUILDINGS, GOODS, MAX_WAGONS, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  BUILDINGS, GOODS, MARKET, MAX_WAGONS, capacityOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
   edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
   type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
+import { granaryLoads } from './stallKinds';
+import { bottleneckCard } from './bottleneck';
 import { siteExists } from './site';
 
 let cache: { world: World; log: PaceLog; key: string; f: ContractForecast | null } | null = null;
@@ -75,7 +77,18 @@ export interface PaceRank {
   k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank;
+/**
+ * 'grow' (D-192, research valley-ranks-2-3 F1) — the free valley from rank 1: the next rank lacks only renown (the goods
+ * are sold, the flow is reached) and silver lies unspent. The card names one more producer of a chain that already
+ * stands, keeping the chain's ratios, while the chain's end good still fetches a fair price. `producer` is the castle
+ * (the card's subject; its sheet holds the cure: the build tool with `type` picked, the ghost by the castle). `good`:
+ * the chain's end good; `n`: how many of `type` stand now; `renown`/`need`: renown now / for `rank`.
+ */
+export interface PaceGrow {
+  k: 'grow'; producer: number; type: BuildingType; good: Good; n: number; rank: number; renown: number; need: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow;
 
 /** A stretch shorter than this, or a gain below this, is not worth a card. */
 const MUD_MIN_CELLS = 6;
@@ -94,7 +107,11 @@ export function paceCard(world: World, f: ContractForecast | null): PaceCard | n
   // the free valley (D-163): the rank card's producer comes before one more wagon once the fleet serves its yards
   const rank = rankCard(world);
   if (rank && fleetEnough(world)) return rank;
-  return fleetCard(world, f) ?? mud ?? rank;
+  const card = fleetCard(world, f) ?? mud ?? rank;
+  if (card) return card;
+  // D-192: the grow card comes last — after the fleet cue (a yard losing silver now) and after the bottleneck card
+  // (D-171: a measured shortage names the right producer; the grow card only keeps ratios)
+  return bottleneckCard(world) ? null : growCard(world);
 }
 
 /** Wagons per producing building from which the free valley's fleet counts as enough (D-163). */
@@ -136,6 +153,65 @@ export function rankCard(world: World): PaceRank | null {
     return { k: 'rank', producer: castle.id, type, good, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods };
   }
   return null;
+}
+
+/**
+ * The grow card's chains (D-192): producers upstream first, and the rule that keeps each chain balanced — a raw
+ * producer no sooner than its consumer (farm <= mill, woodcutter <= sawmill), a processor only behind a spare supplier
+ * (mill < farm, bakery < mill, sawmill < woodcutter). The fisher is a chain of its own.
+ */
+const GROW_CHAINS: readonly (readonly BuildingType[])[] = [['farm', 'mill', 'bakery'], ['fisher'], ['woodcutter', 'sawmill']];
+const GROW_FEEDS: Partial<Record<BuildingType, BuildingType>> = { farm: 'mill', mill: 'bakery', woodcutter: 'sawmill' };
+const GROW_FED_BY: Partial<Record<BuildingType, BuildingType>> = { mill: 'farm', bakery: 'mill', sawmill: 'woodcutter' };
+/**
+ * The chain's end good does not fetch a fair price any more (D-174): its saturation reached half the cap, or a full
+ * granary holds a load of it that no market takes. More of the same would only fill the granaries.
+ */
+function growSaturated(world: World, good: Good): boolean {
+  const st = world.state;
+  if (st.market.saturation[good] >= MARKET.cap / 2) return true;
+  return st.buildings.some((b) => b.type === 'warehouse' && b.status.k === 'STORAGE_FULL' &&
+    b.stock[good] >= capacityOf(good) && granaryLoads(world, b.id) === 'saturated');
+}
+
+/**
+ * The free valley's grow card (D-192), or null. Shown only when the building is affordable with the fleet's silver
+ * reserve left over (FLEET_FREE_KEEP): it spends silver that lies unused, never the last of it.
+ */
+export function growCard(world: World): PaceGrow | null {
+  const st = world.state;
+  if (st.mission.contract || st.mission.result !== 'running') return null;
+  const sb = sandboxStatus(world);
+  if (!sb.market || sb.rank < 1 || !sb.next) return null;
+  // only renown missing: the goods are sold and the flow reached (the rank card covers missing goods)
+  if (sb.goodsSold < sb.next.goods || sb.bestFlow < sb.next.flow || sb.renown >= sb.next.renown) return null;
+  const castle = st.buildings.find((b) => b.type === 'castle');
+  if (!castle) return null;
+  const cnt = new Map<BuildingType, number>();
+  for (const b of st.buildings) cnt.set(b.type, (cnt.get(b.type) ?? 0) + 1);
+  const n = (t: BuildingType): number => cnt.get(t) ?? 0;
+  let best: { type: BuildingType; good: Good } | null = null;
+  for (const chain of GROW_CHAINS) {
+    // an existing chain only; its end good is what its most downstream standing building makes
+    let last: BuildingType | null = null;
+    for (const t of chain) if (n(t) > 0) last = t;
+    if (!last) continue;
+    const good = outputGoods(last)[0];
+    if (!good || growSaturated(world, good)) continue;
+    for (const t of chain) {
+      if (!sb.unlocked.includes(t)) continue;
+      const feeds = GROW_FEEDS[t], fedBy = GROW_FED_BY[t];
+      if (feeds && n(feeds) > 0 && n(t) > n(feeds)) continue;
+      if (feeds && n(feeds) === 0 && n(t) > 0) continue;
+      if (fedBy && n(t) >= n(fedBy)) continue;
+      if (best && n(t) >= n(best.type)) continue;
+      // D-175: no site by the castle (the ghost would open red)
+      if (!siteExists(world, t, castle.id)) continue;
+      best = { type: t, good };
+    }
+  }
+  if (!best || st.coins < BUILDINGS[best.type].price + FLEET_FREE_KEEP) return null;
+  return { k: 'grow', producer: castle.id, type: best.type, good: best.good, n: n(best.type), rank: sb.next.rank, renown: sb.renown, need: sb.next.renown };
 }
 
 /** The mud card's cobbles cost no more silver than the player has (stone or rank may still refuse them). */

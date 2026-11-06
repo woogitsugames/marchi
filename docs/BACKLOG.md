@@ -9,6 +9,8 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [ ] P2 — (D-192, **decyzja właściciela**) Karta „rozbuduj” w wolnej dolinie (gałąź `claude/w-valley-grow`, przygotowana, niescalona): gdy następnej randze brakuje już tylko renomy, karta nazywa jeszcze jeden producent działającego łańcucha. card-* R2 23–28,5 / R3 39–55 min (dziś 30–32 / 65–72), DECENT i hasze bez zmian. Scalić albo odrzucić.
+- [ ] P3 — (D-192) 3 nowe klucze (`cause.paceGrow`, `fix.growWhy`, `seal.tempo.grow`) w 15 językach to tłumaczenia agenta — do przeglądu natywnego (**właściciel**: native speakerzy).
 - [ ] P2 — (D-188, **decyzja właściciela**) S6 `?fixture=warehouse-full`: prawdziwy pełny spichlerz w m1 wymaga odciętego zamku (karta „Najgorszy zastój” wskazuje zamek, 1:48 do śniegu). Zdecydować: liczyć S6 do głównego wskaźnika z celowanym pytaniem o spichlerz, traktować jako eksploracyjny, czy przenieść „pełny spichlerz” na m6 (S9) / dolinę (nasycony rynek, D-174).
 - [x] P3 — (zrobione, D-189) `fixture.invalid` przetłumaczony na 15 języków, `PENDING_KEYS` puste.
 - [x] P2 — (zrobione, D-189..D-191) Ukryty ekran „Próba badawcza” w APK: przytrzymanie tytułu w menu 3 s → starty T1, S1–S9 (S2/S3/S4/S6 jako fixtury), kod uczestnika, notatka urządzenia, „Kopiuj wiersz wyników” (kolumny `auto_*`). Bez zapisu (`pt=`).

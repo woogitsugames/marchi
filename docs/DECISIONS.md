@@ -2428,3 +2428,40 @@ monospace, the fixture tag a wine underline — no new kit pieces, no cards. `to
 on a build: 1.2 s press opens nothing, 3.3 s opens the screen, S4 reloads into `pt=S4&fixture=bridge-jam`, the copied
 row has the template's columns and the measured fields, and the save store stays empty
 (`docs/shots/playtest-picker-{menu,starts,copied}.jpg`). (decided)
+
+**D-192 — Free valley "rozbuduj": the grow card names one more producer when the next rank lacks only renown (proposed — awaits owner).**
+Research valley-ranks-2-3 F1 (`docs/research/2026-11-05-valley-ranks-2-3.md`, prototype `+grow`): a player who follows
+only the cards reached rank 2 at ~31 min and rank 3 at 65–72 min with 2 700–2 900 silver idle, because once the goods
+were sold no card ever asked him to grow a working chain. New pace-card kind `grow` (`src/ui/paceCard.ts` `growCard`):
+free valley, rank ≥ 1, the next rank's goods sold **and** flow reached, renown below; silver ≥ price + `FLEET_FREE_KEEP`
+(40, the fleet card's reserve: the card spends idle silver, never the last of it, so it is never shown disabled). It
+names one more producer of a chain that already stands — bread `farm → mill → bakery`, `fisher`, planks
+`woodcutter → sawmill` — keeping ratios (farm ≤ mill, mill < farm, bakery < mill, woodcutter ≤ sawmill, sawmill <
+woodcutter), fewest built first, ties upstream first; not when the chain's end good (what its most downstream standing
+building makes) is saturated — saturation ≥ half of `MARKET.cap` or a full granary holding a load of it no market takes
+(D-174 `granaryLoads` = `saturated`); a type without a site by the castle is skipped (D-175 `siteExists`). HUD: kicker
+"Droga do rangi" (as the rank card), "Do rangi 2 (…) brakuje już tylko renomy — postaw jeszcze: Drwal"; watch-mode seal
+"ranga: więcej {goodGen}"; the castle's sheet: "Postaw jeszcze: …" (`fix.producer`) + `fix.growWhy` (renown n of m,
+the market still pays a fair price); the button opens the build tool with the ghost by the castle (as D-152).
+**Priority:** last among the calm-slot cards — real stall → pace cards (fleet D-140, rank D-152/D-163) → bottleneck card
+(D-171) → grow → calm pins. Why: the fleet cue is a yard losing silver now; the rank card and the grow card never meet
+(goods missing vs goods met); the bottleneck card is a measured shortage that names the right producer, while the grow
+card only keeps ratios, so it yields (`paceCard` returns grow only when `bottleneckCard` is null).
+Measured (`tools/sandbox-first30.ts` card-10/30/60, seeds 1301–1304; before = base `c7ad33d` 90 min, after 60 min):
+
+| player | R2 before → after | R3 before → after | silver @R3 before → after | wagons @R3 before → after |
+|---|---|---|---|---|
+| card-10 | 30,3–31,8 → 23,2–24,1 | 64,7–71,9 → 38,8–40,0 | 2 724–2 807 → 1 411–1 584 | 12–13 → 30–35 |
+| card-30 | 30,5–31,4 → 23,8–24,9 | 66,1–71,1 → 39,5–42,0 | 2 774–2 901 → 1 813–2 070 | 11–13 → 23–28 |
+| card-60 | 31,3–32,4 → 26,6–28,5 | 65,9–71,7 → 46,6–54,6 | 2 754–2 892 → 2 369–2 561 | 10–12 → 15–18 |
+| DECENT | 20,2–20,7 (same) | 39,3–40,4 (same) | 1 891–1 924 (same) | 23–25 (same) |
+
+Impossible cures (`build?fail` / `grow?fail`): 0 before, 0 after; no-cure card seconds 0–1. Outlier card-60 seed 1303
+(R3 54,6): from minute 33 bread, planks and fish all sit at 18–23/24 saturation, so the card stays silent by design
+(more of the same would only fill granaries). card-10 lands on the window's lower edge (like the bot) and builds up to
+8 fishers (a one-building chain grows fastest under "fewest built first"; the fish price gates it). `tools/valley-ranks23.ts`:
+renown stays the binding requirement in every run, renown/min 1→2 ~40 → 46–63, 2→3 ~57 → 76–133. UI only: the sim is
+untouched, DECENT and every mission hash unchanged. Tests `tests/valley-grow.test.ts`. Shots
+`docs/shots/valley-grow-{card,sheet,ghost}-412x915.jpg` (`tools/valley-grow-shots.mjs`, staged state).
+Owner question: ship the card (UI) instead of lowering renown thresholds (the research's balance alternative takes
+DECENT out of its test windows). (proposed — awaits owner)

@@ -16,7 +16,7 @@ import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { calmWhy, codexCalm, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
-import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank } from './paceCard';
+import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -90,6 +90,7 @@ function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'mud') return mudCureHtml(world, pc);
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   if (pc.k === 'rank') return rankCureHtml(world, pc);
+  if (pc.k === 'grow') return growCureHtml(pc);
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -119,6 +120,20 @@ function rankCureHtml(world: World, pc: PaceRank): string {
     ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
     : `<div class="s-hint">${esc(t('fix.rankWhy', { sold: fmtInt(pc.sold), goods: fmtInt(pc.goods), rankName: rankName(pc.rank), good: goodName(pc.good) }))}</div>`;
   return fixSection(btn, hint, off);
+}
+
+/**
+ * The free valley's grow card on the castle's sheet (D-192): the next rank lacks only renown, so one more producer of
+ * a standing chain — the build tool opens with that type, the ghost by the castle. The card exists only while the
+ * building is affordable with the reserve, so the button is never disabled for silver.
+ */
+function growCureHtml(pc: PaceGrow): string {
+  const price = BUILDINGS[pc.type].price;
+  const name = t(`building.${pc.type}` as MessageKey);
+  const btn = `<button class="btn primary cf fix-btn" data-act="grow:${pc.type}" aria-disabled="false">${
+    iconSvg('build', 26)}<span>${esc(t('fix.producer', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+  const hint = `<div class="s-hint">${esc(t('fix.growWhy', { renown: fmtInt(pc.renown), need: fmtInt(pc.need), rankName: rankName(pc.rank), name, goodGen: t(`goodGen.${pc.good}` as MessageKey) }))}</div>`;
+  return fixSection(btn, hint, false);
 }
 
 /**
@@ -395,6 +410,11 @@ function wire(sheet: Sheet, nav: PanelNav): void {
       // the free valley's rank card (D-152), recomputed now: build that producer, the ghost by the castle
       const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
       if (pc && pc.k === 'rank' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
+    }
+    if (act === 'grow') {
+      // the free valley's grow card (D-192), recomputed now: one more producer, the ghost by the castle
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      if (pc && pc.k === 'grow' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
       const p = buildingById(nav.world, Number(arg));

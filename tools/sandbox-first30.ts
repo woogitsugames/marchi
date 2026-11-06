@@ -176,13 +176,15 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
   if (!ranked.length || ranked[0]!.minor) {
     const pc = paceCard(w, forecastFor(w, log));
     if (pc && game) {
-      const kind = 'card:' + pc.k + (pc.k === 'rank' || pc.k === 'fleet' ? ':' + pc.type : '');
+      const kind = 'card:' + pc.k + (pc.k === 'rank' || pc.k === 'fleet' || pc.k === 'grow' ? ':' + pc.type : '');
       const card = { ...base, kind, calm: true, crit: false, calmWhy: null };
       if (pc.k === 'fleet') { const res = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }); return { ...card, cure: 'wagon', act: res.ok ? 'wagon:card' : 'wagon?' + res.err.k }; }
       if (pc.k === 'rank') {
         if (st.coins < BUILDINGS[pc.type].price) return { ...card, cure: 'producer', act: 'producer?NO_COINS' };
         return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'build:' + pc.type : 'build?fail:' + pc.type };
       }
+      // D-192: the game's grow card (the card exists only when the building is affordable)
+      if (pc.k === 'grow') return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'grow:' + pc.type : 'grow?fail:' + pc.type };
       return { ...card, cure: null, act: '' };
     }
     if (game && growOpt && (!ranked.length || ranked[0]!.minor)) {
@@ -301,7 +303,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       const sb = sandboxStatus(w);
       const ranked = rankStalls(w);
       const pc = (!ranked.length || ranked[0]!.minor) ? paceCard(w, forecastFor(w, log)) : null;
-      const card = pc ? pc.k + (pc.k === 'rank' || pc.k === 'fleet' ? ':' + pc.type : '') : ranked.length ? (ranked[0]!.minor ? 'calm' : 'stall') : 'empty';
+      const card = pc ? pc.k + (pc.k === 'rank' || pc.k === 'fleet' || pc.k === 'grow' ? ':' + pc.type : '') : ranked.length ? (ranked[0]!.minor ? 'calm' : 'stall') : 'empty';
       r.trace.push({ m: t / TICK_HZ / 60, rank: sb.rank, renown: sb.renown, goods: sb.goodsSold, best: sb.bestFlow, flow: sb.flowNow, coins: w.state.coins, wagons: w.state.wagons.length, bld: w.state.buildings.length, card,
         wh: w.state.buildings.filter((q) => q.type === 'warehouse').map((q) => Object.entries(q.stock).filter(([, v]) => v > 0).map(([g, v]) => g + v).join('+') || '0').join(' '),
         sat: Object.entries(w.state.market.saturation).filter(([, v]) => v > 0).map(([g, v]) => g + v).join(' ') });
