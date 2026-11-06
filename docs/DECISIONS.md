@@ -2584,3 +2584,39 @@ sheet's calm line `fix.unwanted`, and `cureFor` (no cure when the granary heads 
 good it refuses keeps the "another granary" cure — XV's woodcutters). 17 languages (15 agent translations). UI only.
 balance-night6 m1..m15 before/after: m1–m13 identical; XV's reasonable player builds one granary instead of two
 (coins at the end 13 -> 50), all 3★. (decided)
+
+**D-230 — A wagon without a route never parks on a one-lane span (GPT long fuzz, order 93).**
+Fuzz seeds 255 (m2, demolish cell 2937 at tick 2065) and 91 (valley-75, 5 commands, demolish 2823): a road demolished
+beyond a wooden one-lane bridge cut the target of a wagon that was **on** the span (255: loaded planks to the castle;
+91: an empty wagon returning to a stable that became unreachable). `ensurePath` failed, the wagon stood still on the
+span with `NO_ROUTE`, and `bridgeBlocker` kept counting it as oncoming traffic: every wagon at the other bridgehead sat
+in `BRIDGE_JAM` forever (the whole economy across the river stopped). Not a reservation leak — the bridge has no
+reservation; the blocker is the physical occupant. Fix (`src/sim/wagons.ts`, `leaveSpan`): a wagon with no route (or a
+loaded wagon with no destination) whose node is on a span drives to the nearest bridgehead (fewest drivable hops along
+the span, deterministic BFS order) and waits there; it keeps `NO_ROUTE` (with its `since`) while doing so, so the queued
+wagon's chain reads `BRIDGE_JAM` → wagon N → `NO_ROUTE` (the cut road) for the few seconds it lasts. If the network
+changes meanwhile, the normal re-plan takes over. Golden hashes: none changed (`npm test` 550/0 before moving the
+repros) — no recorded golden run ever has a wagon lose its route while on a span. Repros moved from
+`tests/known-failing/` into `tests/bridge-span-noroute.test.ts` (both fail without the fix). (decided)
+
+**D-231 — fuzz `shrink` counts duration relative to the snapshot start.** `runScenario` runs `sc.ticks` ticks from the
+start state while command and failure ticks are absolute; for a snapshot (`valley-75` starts at tick 45000) `shrink`
+set `ticks = failure.tick + 1`, i.e. 45000 ticks too long, so an empty scenario "reproduced" a different late failure
+("0 cmds"). New pure helper `cutAfterFailure(sc, failTick, baseTick)` in `tools/fuzz-lib.ts` (used everywhere shrink
+cuts), `rerundiverge` now reports the absolute end tick too. Checked on the pre-D-230 sim: seed 91 shrinks to the same
+5 commands / 8602 ticks GPT found by hand. Test `tests/fuzz-shrink.test.ts`. (decided)
+
+**D-232 — valley-3h `grow` plan: third malthouse at (46, 25).** At (38, 25) its 2×2 footprint covered (39, 25), the
+first cell of DECENT's later "road to the trading post" (column x = 39, added with D-170), so the step ended `BLOCKED`
+at cell 2439 on every seed — a tool artifact, not a game bug. After the move: plan 63/63, violations 0, rank 5 at
+~111 min, earned ~33.4–33.9k (was ~28k without the post) on seeds 1301–1304. (decided)
+
+**D-233 — a granary's "Kup wóz" counts only markets reachable by road (UI, real cue loop).** sandbox-first30
+`card-10` (90 min) bought 142 wagons: from 73 min (rank 4, trading post open) every look showed eleven granaries
+`STORAGE_FULL` **critical** with cure "Kup wóz", pressed every 10 s. Cause: `granaryLoads` → `marketTakesLoad` saw the
+trading post with room for every good, but the card player never builds the river road, so the post is `NO_ROAD` and
+unreachable; the castle was at its in-flight limit. A real player pressing the card's button gets the same loop.
+`marketTakesLoad(world, good, from)` now skips markets not `reachable` (road component) from the granary's gate (also in
+`granaryUnwanted`). Pure read, no hash change. card-10: 142 → 41 wagons, earned 9891 → 9841 (noise), rank minutes
+unchanged; card-30/60 identical; balance-night6 `--no-search` identical to the base. The granaries now read calm
+"rynek nasycony"; what would actually help (a road to the post) is not named — BACKLOG P2. (decided)
