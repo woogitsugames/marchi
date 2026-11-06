@@ -11,6 +11,8 @@ export interface Prefs {
   effectsVolume: number;
   /** Mission I tutorial: offered on a new m1 game until finished or skipped (docs/tutorial/m1.md). */
   tutorialM1: 'new' | 'skipped' | 'done';
+  /** Free-valley build tutorial: offered once on a new valley until accepted and finished, or skipped (D-235). */
+  tutorialBuild: 'new' | 'skipped' | 'done';
   /** Single-key shortcuts (Space, 1 2 4, R C X B G H; a11y audit F5, D-119). null = not chosen yet: on when the
    *  device has any fine pointer (a mouse or trackpad, also one paired with a tablet), off on touch-only devices (a keyboard there is rare; Voice Access or an
    *  on-screen keyboard could fire them by accident). */
@@ -18,7 +20,7 @@ export interface Prefs {
 }
 
 const KEY = 'marchia.prefs';
-const DEFAULTS: Prefs = { quality: 'auto', leftHanded: false, waybillCollapsed: false, musicVolume: 0.8, effectsVolume: 1, tutorialM1: 'new', shortcuts: null };
+const DEFAULTS: Prefs = { quality: 'auto', leftHanded: false, waybillCollapsed: false, musicVolume: 0.8, effectsVolume: 1, tutorialM1: 'new', tutorialBuild: 'new', shortcuts: null };
 
 export function loadPrefs(): Prefs {
   try {
@@ -30,6 +32,7 @@ export function loadPrefs(): Prefs {
       p.musicVolume = vol(p.musicVolume, DEFAULTS.musicVolume);
       p.effectsVolume = vol(p.effectsVolume, DEFAULTS.effectsVolume);
       if (p.tutorialM1 !== 'skipped' && p.tutorialM1 !== 'done') p.tutorialM1 = 'new';
+      if (p.tutorialBuild !== 'skipped' && p.tutorialBuild !== 'done') p.tutorialBuild = 'new';
       if (typeof p.shortcuts !== 'boolean') p.shortcuts = null;
       return p;
     }

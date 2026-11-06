@@ -67,6 +67,15 @@ const openSettings = async (p) => {
 const SCENES = [
   { name: 'menu', q: '' },
   { name: 'settings', q: '', act: openSettings },
+  // D-236: the help sheet from the main menu, first topic open
+  { name: 'help', q: '', act: async (p) => {
+    for (let i = 0; i < 20; i++) {
+      await p.evaluate(() => document.querySelector('.menu-help')?.click());
+      if (await p.waitForSelector('.sheet .help', { timeout: 1500 }).then(() => true, () => false)) return;
+    }
+  } },
+  // D-235: the build tutorial's offer on a new valley
+  { name: 'tut-build', q: 'play=sandbox&tut=build&speed=0&slot=layout' },
   { name: 'hud', q: 'play=m1&bot=1&ff=150&speed=0' },
   { name: 'why', q: 'play=m1&ff=90&speed=0&open=bakery' },
   { name: 'wagon', q: 'play=m1&bot=1&ff=150&speed=0&wagon=1' },

@@ -31,10 +31,10 @@ export interface TutorialHost {
   finish(r: TutorialResult): void;
 }
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
+type Step = number;
 interface Subject { kind: 'building' | 'wagon'; id: number }
 type Dir = 'up' | 'down' | 'left' | 'right';
-interface Box { x: number; y: number; w: number; h: number }
+export interface Box { x: number; y: number; w: number; h: number }
 
 /** Hard limit of active time from the first note (m1.md rule 3). */
 const MAX_ACTIVE_MS = 110_000;
@@ -68,13 +68,17 @@ function onScreen(b: Box): Box {
   const x1 = Math.min(vw, b.x + b.w), y1 = Math.min(vh, b.y + b.h);
   return x1 - x0 > 24 && y1 - y0 > 24 ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : b;
 }
-function union(bs: Box[]): Box | null {
+export function union(bs: Box[]): Box | null {
   if (!bs.length) return null;
   const x0 = Math.min(...bs.map((b) => b.x)), y0 = Math.min(...bs.map((b) => b.y));
   const x1 = Math.max(...bs.map((b) => b.x + b.w)), y1 = Math.max(...bs.map((b) => b.y + b.h));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
-function visibleBox(el: Element | null): Box | null {
+/** A box grown on every side (the build ghost's gate pin stands for the footprint around it), or null. */
+function grownOrNull(b: Box | null, d: number): Box | null {
+  return b ? grow(b, d) : null;
+}
+export function visibleBox(el: Element | null): Box | null {
   if (!el) return null;
   const r = el.getBoundingClientRect();
   return r.width > 0 && r.height > 0 ? boxOf(r) : null;
@@ -132,40 +136,45 @@ const ARROW_SVG = `<svg width="64" height="24" viewBox="0 0 64 24" aria-hidden="
 
 export class Tutorial {
   readonly root: HTMLElement;
-  private noteWrap: HTMLElement;
-  private noteFrom: HTMLElement;
-  private noteText: HTMLElement;
-  private skipBtn: HTMLButtonElement;
-  private ring: HTMLElement;
-  private arrow: HTMLElement;
-  private step: Step = 1;
-  private stepAt = 0;
-  private active = 0;
-  private ended = false;
-  private subject: Subject | null = null;
-  private closeAt = -1;
-  private codaUntil = -1;
-  private conn = { ver: -1, n: -1, ok: false };
-  private ghost: { ver: number; cells: number[] | null } = { ver: -1, cells: null };
-  private textSig = '';
-  private ringSig = '';
-  private arrowSig = '';
-  private placeAt = 0;
+  protected noteWrap: HTMLElement;
+  protected noteFrom: HTMLElement;
+  protected noteText: HTMLElement;
+  protected skipBtn: HTMLButtonElement;
+  protected actBtn: HTMLButtonElement;
+  protected ring: HTMLElement;
+  protected arrow: HTMLElement;
+  protected step: Step = 1;
+  protected stepAt = 0;
+  protected active = 0;
+  protected ended = false;
+  protected subject: Subject | null = null;
+  protected closeAt = -1;
+  protected codaUntil = -1;
+  protected conn = { ver: -1, n: -1, ok: false };
+  protected ghost: { ver: number; cells: number[] | null } = { ver: -1, cells: null };
+  protected textSig = '';
+  protected ringSig = '';
+  protected arrowSig = '';
+  protected placeAt = 0;
   /** Step 5's crossing has been brought on screen (once per entry). */
-  private framed = false;
+  protected framed = false;
   /** Steps 2-3: the chain link has been scrolled into its card's view (once per entry). */
-  private scrolled = false;
-  private notePlaced: Box | null = null;
+  protected scrolled = false;
+  protected notePlaced: Box | null = null;
 
-  constructor(private host: TutorialHost) {
+  constructor(protected host: TutorialHost) {
     this.noteFrom = h('span.tut-from', { dir: 'auto' });
     // dir=auto: a key still missing in this language falls back to English and must keep its own direction
     this.noteText = h('p.tut-text', { 'aria-live': 'polite', dir: 'auto' });
     this.skipBtn = h('button.tut-skip', { type: 'button' });
     this.skipBtn.addEventListener('click', () => this.end('skipped'));
+    // an optional action under the text (the build tutorial's "Show me"); hidden in mission I
+    this.actBtn = h('button.btn.cf.tut-act', { type: 'button' });
+    this.actBtn.hidden = true;
+    this.actBtn.addEventListener('click', () => this.onAct());
     const note = h('div.tut-note', null,
       h('div.tut-head', null, h('i.tut-seal.kseal.on', { 'aria-hidden': 'true' }), this.noteFrom, this.skipBtn),
-      this.noteText);
+      this.noteText, this.actBtn);
     note.style.clipPath = deckle('bottom', 4127, 5, 22);
     this.noteWrap = h('div.tut-note-wrap', { role: 'note' }, note);
     this.ring = h('div.tut-ring');
@@ -205,9 +214,7 @@ export class Tutorial {
   update(dtMs: number): void {
     if (this.ended) return;
     const top = this.host.topKey();
-    const paused = document.visibilityState !== 'visible' || top === 'gamemenu' || top === 'settings' || document.body.classList.contains('is-clear');
-    this.root.classList.toggle('is-paused', paused);
-    if (paused) return;
+    if (this.pausedNow(top)) return;
     this.active += dtMs;
     const world = this.host.world;
     if (this.active > MAX_ACTIVE_MS || world.state.mission.result !== 'running') { this.end('done'); return; }
@@ -244,9 +251,28 @@ export class Tutorial {
     this.render();
   }
 
+  // ---------------------------------------------------------------- hooks (the build tutorial overrides them)
+
+  /** The note's sender, skip label, text and optional action button of the current step. */
+  protected noteKeys(): { from: MessageKey; skip: MessageKey; text: MessageKey; act?: MessageKey } {
+    return { from: 'tutorial.m1.from', skip: 'tutorial.m1.skip', text: `tutorial.m1.step${this.step}` as MessageKey };
+  }
+  /** The note's action button was pressed. */
+  protected onAct(): void { /* mission I has none */ }
+  /** Bring a target hidden inside a card into view (once per step). */
+  protected scrollsToTarget(): boolean { return this.step === 2 || this.step === 3; }
+  /** The tool rail must stay in reach (the note avoids it harder). */
+  protected railNeeded(): boolean { return this.step === 5; }
+  /** The game menu, settings, a cleared screen or a hidden page pause the tutorial (its clock and checks). */
+  protected pausedNow(top: string | null): boolean {
+    const paused = document.visibilityState !== 'visible' || top === 'gamemenu' || top === 'settings' || top === 'help' || document.body.classList.contains('is-clear');
+    this.root.classList.toggle('is-paused', paused);
+    return paused;
+  }
+
   // ---------------------------------------------------------------- state
 
-  private go(s: Step): void {
+  protected go(s: Step): void {
     this.step = s;
     this.stepAt = this.active;
     this.ringSig = this.arrowSig = '';
@@ -256,18 +282,18 @@ export class Tutorial {
   }
 
   /** Steps 2/3 done (or no longer applicable): the road hint, or straight to the re-check when a crossing exists. */
-  private afterChain(fromTap: boolean): void {
+  protected afterChain(fromTap: boolean): void {
     if (this.connected()) { this.go(6); return; }
     this.go(4);
     this.closeAt = performance.now() + (fromTap ? CLOSE_SHEET_DELAY_MS : 0);
   }
 
-  private castleKey(): string {
+  protected castleKey(): string {
     const c = this.host.world.state.mission.contract;
     return c ? `building:${c.castle}` : '';
   }
 
-  private ends(): { saw: number; castle: number } | null {
+  protected ends(): { saw: number; castle: number } | null {
     const st = this.host.world.state;
     const saw = st.buildings.find((b) => b.type === 'sawmill');
     const castle = st.mission.contract ? st.buildings.find((b) => b.id === st.mission.contract!.castle) : null;
@@ -275,7 +301,7 @@ export class Tutorial {
   }
 
   /** Sawmill gate and castle gate joined by passable road (re-checked when the network changes). */
-  private connected(): boolean {
+  protected connected(): boolean {
     const st = this.host.world.state;
     if (this.conn.ver !== st.netVersion || this.conn.n !== st.buildings.length) {
       const e = this.ends();
@@ -286,14 +312,14 @@ export class Tutorial {
 
   /** Step 5's ghost line: only the part to draw (new cells, one road cell at each end), an example
    *  crossing, not the only accepted one. The full sawmill-castle route ran off a phone screen. */
-  private crossing(): number[] | null {
+  protected crossing(): number[] | null {
     const st = this.host.world.state;
     if (this.ghost.ver !== st.netVersion) this.ghost = { ver: st.netVersion, cells: crossingSpan(this.host.world) };
     return this.ghost.cells;
   }
 
   /** Screen box of the ghost crossing (step 5): the note must not lie on the line to drag. */
-  private ghostBox(): Box | null {
+  protected ghostBox(): Box | null {
     if (this.step !== 5) return null;
     const cells = this.crossing();
     if (!cells) return null;
@@ -303,13 +329,13 @@ export class Tutorial {
 
   // ---------------------------------------------------------------- targets
 
-  private chainLink(): HTMLElement | null {
+  protected chainLink(): HTMLElement | null {
     // a short landscape sheet folds the middle links behind "+N" (D-111): the first link drawn is the root
     return [...document.querySelectorAll<HTMLElement>('#sheets .sheet:last-child .chain button[data-go]:not([disabled])')]
       .find((b) => b.getClientRects().length > 0) ?? null;
   }
 
-  private waybillTarget(): { box: Box | null; probe: Element | null } {
+  protected waybillTarget(): { box: Box | null; probe: Element | null } {
     const wrap = document.querySelector('.waybill-wrap');
     if (!wrap || (wrap as HTMLElement).hidden) return { box: null, probe: null };
     if (wrap.classList.contains('is-collapsed')) {
@@ -321,7 +347,7 @@ export class Tutorial {
   }
 
   /** The element is drawn under something else at its centre (e.g. the rail under a bottom sheet). */
-  private covered(el: Element | null): boolean {
+  protected covered(el: Element | null): boolean {
     if (!el) return true;
     const r = el.getBoundingClientRect();
     if (r.width <= 0) return true;
@@ -329,7 +355,7 @@ export class Tutorial {
     return !hit || !(el === hit || el.contains(hit) || hit.closest('.tutorial'));
   }
 
-  private target(): { box: Box | null; probe: Element | null } {
+  protected target(): { box: Box | null; probe: Element | null } {
     if (this.codaUntil >= 0) {
       const el = document.querySelector('#sheets .sheet:last-child .status-line, #sheets .sheet:last-child .chain');
       return { box: visibleBox(el), probe: el };
@@ -358,14 +384,17 @@ export class Tutorial {
 
   // ---------------------------------------------------------------- drawing
 
-  private render(): void {
+  protected render(): void {
     const coda = this.codaUntil >= 0;
     const sig = `${getLang()}|${this.step}|${coda}`;
     if (sig !== this.textSig) {
       this.textSig = sig;
-      this.noteFrom.textContent = t('tutorial.m1.from');
-      this.skipBtn.textContent = t('tutorial.m1.skip');
-      this.noteText.textContent = t(`tutorial.m1.step${this.step}` as MessageKey);
+      const k = this.noteKeys();
+      this.noteFrom.textContent = t(k.from);
+      this.skipBtn.textContent = t(k.skip);
+      this.noteText.textContent = t(k.text);
+      this.actBtn.hidden = !k.act;
+      if (k.act) this.actBtn.textContent = t(k.act);
       this.noteWrap.classList.toggle('is-gone', coda);
       this.noteWrap.classList.remove('is-new');
       void this.noteWrap.offsetWidth;
@@ -375,14 +404,15 @@ export class Tutorial {
     const tg = this.target();
     // a chain link below the fold of a short card (landscape, 412 px): bring it into view once per step,
     // else no ring is drawn and the note asks for something the player cannot see
-    if (!this.scrolled && (this.step === 2 || this.step === 3) && tg.probe instanceof HTMLElement && tg.probe.closest('#sheets') && this.covered(tg.probe)) {
+    if (!this.scrolled && this.scrollsToTarget() && tg.probe instanceof HTMLElement && tg.probe.closest('#sheets') && this.covered(tg.probe)) {
       this.scrolled = true;
       tg.probe.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
     // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
     // edge (the waybill counts in landscape) stays clear of them
     // kept on screen: the rail's first tool sits ~8 px from the edge, and the ring around it was cut (ringOff)
-    const box = tg.box && !this.covered(tg.probe) ? onScreen(grow(tg.box, 9)) : null;
+    // a target on the map (the build tutorial's hut and gate) has no element to probe: drawn as is
+    const box = tg.box && (tg.probe === null || !this.covered(tg.probe)) ? onScreen(grow(tg.box, 9)) : null;
     // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
     const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();
@@ -419,7 +449,7 @@ export class Tutorial {
     }
   }
 
-  private arrowDir(box: Box): Dir | null {
+  protected arrowDir(box: Box): Dir | null {
     const vw = window.innerWidth, vh = window.innerHeight;
     const L = ARROW_LEN + 8;
     const cand: { d: Dir; room: number; b: Box }[] = [
@@ -433,7 +463,7 @@ export class Tutorial {
     const note = this.notePlaced;
     // never across other controls (coins, speed, neighbouring tools) or the open card
     // (the waybill's ribbon and seal row too: in Flex the rows have the most room above, through the title)
-    const blockers = [...document.querySelectorAll('.topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
+    const blockers = [...document.querySelectorAll('.gate-pin:not([hidden]), .build-shelf:not([hidden]), .topbar .chip, .topbar .speed, .topbar .menu-btn, .rail .tool, .stall-row, #sheets .sheet, .waybill-wrap, .waybill .ribbon, .waybill .wb-head')]
       .map(visibleBox).filter((b): b is Box => !!b && !hits(grow(box, -8), b));
     const crease = bookCrease();
     if (crease) blockers.push(crease);
@@ -448,13 +478,13 @@ export class Tutorial {
 
   /** Put the note where it hides nothing the player needs: the widest free stretch of the top band,
    *  else under the waybill, else just above the sheet / rail. */
-  private placeNote(target: Box | null): void {
+  protected placeNote(target: Box | null): void {
     const vw = window.innerWidth, vh = window.innerHeight;
     const q = (s: string): Box | null => visibleBox(document.querySelector(s));
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
     const ghost = this.ghostBox();
-    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.seal-tempo'), q('.build-shelf:not([hidden])'), grownOrNull(q('.gate-pin:not([hidden])'), 34), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     // one layout read per width per placement: the free-slot scan below asks for the same widths often
@@ -501,13 +531,16 @@ export class Tutorial {
       // the rail weighs as much as the crossing in step 5: the step needs "Droga" in reach
       // the open card's head (title and close button) weighs as much: covering it leaves a card nobody can shut
       const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('#sheets .sheet:last-child .sheet-head'), 6],
-        [q('.rail-tools'), this.step === 5 ? 6 : 2], [q('.stall-row:not([hidden])'), 1]];
+        [q('.rail-tools'), this.railNeeded() ? 6 : 2], [q('.stall-row:not([hidden])'), 1],
+        // the build tutorial: the placement bar (Postaw) and the ghost's gate pin
+        [q('.build-shelf:not([hidden])'), 20], [q('.seal-tempo'), 4], [grownOrNull(q('.gate-pin:not([hidden])'), 20), 6]];
       const cost = (x: number, y: number): number => weigh.reduce((sum, [b, k]) => {
         if (!b) return sum;
         const ix = Math.min(b.x + b.w, x + w) - Math.max(b.x, x), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
         return sum + (ix > 0 && iy > 0 ? ix * iy * k : 0);
       }, 0);
-      const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8]
+      const shelf = q('.build-shelf:not([hidden])');
+      const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8, ...(shelf ? [shelf.y - hh - 10] : [])]
         .map((y) => Math.max(8, Math.min(vh - hh - 8, y)));
       // both sides: in landscape the right half is often clearer than the rail's corner
       const xs = [10, Math.max(10, vw - w - 10)];
@@ -521,7 +554,7 @@ export class Tutorial {
   }
 
   /** Space the arrow will most likely take (below a top target / above a bottom one). */
-  private arrowBoxGuess(target: Box | null): Box | null {
+  protected arrowBoxGuess(target: Box | null): Box | null {
     if (!target) return null;
     const vh = window.innerHeight;
     const cy = target.y + target.h / 2;

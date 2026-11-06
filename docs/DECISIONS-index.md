@@ -202,8 +202,13 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-220 | 2026-11-06 | Startup milestones as `marchia:*` User Timing marks; startup and memory probes (perf day 10, owner direction 2026-11-06) | decided | inne |
 | D-221 | — | Startup: the view chunk loads with the fonts, the shader noise bakes in O(n²), the save list is read while the menu world is built | decided | render |
 | D-222 | — | A world change disposes everything of the previous world: trees, wagon and worker batches, the road mask | decided | sim |
-| D-223 | — | Two per-frame allocators gone: one reused update range per instance attribute, light keys parsed once | decided | inne |
+| D-223 | 2026-11-06 | Two per-frame allocators gone: one reused update range per instance attribute, light keys parsed once | decided | inne |
 | D-230 | — | A wagon without a route never parks on a one-lane span (GPT long fuzz, order 93) | decided | sim |
 | D-231 | — | fuzz `shrink` counts duration relative to the snapshot start | decided | sim |
 | D-232 | — | valley-3h `grow` plan: third malthouse at (46, 25) | decided | inne |
 | D-233 | — | a granary's "Kup wóz" counts only markets reachable by road (UI, real cue loop) | decided | UI |
+| D-235 | 2026-11-06 | Build tutorial: a second, optional lesson on a new free valley (GPT order 90, owner 2026-11-06 ~14:30) | decided | inne |
+| D-236 | — | Help sheet from the pause menu and the main menu (GPT order 78) | decided | UI |
+| D-240 | — | Six rank 4–5 royal orders with story conditions; amounts and rewards from the existing generator | decided | sim |
+| D-241 | — | Seven chronicle entries for the late valley; `checkChronicle` takes the World for the live road graph | decided | sim |
+| D-242 | — | Shorter menu subtitles for I–V, VII, VIII, XI, XII, XIV and the free valley; VI, IX, X, XIII, XV kept | decided | UI |

@@ -325,6 +325,10 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 /* Settings: the parchment kit card (the .btn rules give the sprite), a gear-less menu glyph, body font */
 .menu-item.menu-settings { width: auto; min-height: 48px; padding: 0 18px 0 12px; gap: 8px; font-family: var(--font-body); font-size: 17px; font-weight: 600; }
 .menu-item.menu-settings .mi-gear { display: grid; place-items: center; width: 22px; height: 22px; }
+/* Help beside Settings (D-236): the same parchment card */
+.menu-foot-row { gap: 8px; flex-wrap: wrap; }
+.menu-help { display: inline-flex; align-items: center; min-height: 48px; padding: 0 18px 0 12px; gap: 8px; font-family: var(--font-body); font-size: 17px; font-weight: 600; }
+.menu-help .mi-gear { display: grid; place-items: center; width: 22px; height: 22px; }
 .menu-foot { margin-top: auto; font-size: 13px; color: var(--ink-soft); }
 .menu-foot .lang-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
@@ -1452,7 +1456,7 @@ body.is-flex .toasts { top: calc(var(--hinge-top) - 12px - var(--undo-h, 0px)); 
   body.mode-menu:not(.is-flex) .menu-continue { width: auto; align-self: flex-start; min-height: 52px; padding-inline: 18px 24px; }
   body.mode-menu:not(.is-flex) .menu-list { columns: 2; column-gap: 22px; }
   body.mode-menu:not(.is-flex) .menu-list li { break-inside: avoid; }
-  body.mode-menu:not(.is-flex) .menu-item { font-size: 21px; min-height: 52px; padding: 5px 0; }
+  body.mode-menu:not(.is-flex) .menu-item:not(.menu-settings) { font-size: 21px; min-height: 52px; padding: 5px 0; }
 }
 /* Flex mode on the Fold: the middle column is narrow — card, actions and hint stack */
 body.is-flex.build-placing .build-shelf { grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "actions" "hint"; }
@@ -2597,3 +2601,22 @@ body.mode-game.is-bigtext:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max
 body.is-side.is-landscape.is-bigtext .sheet-paper { padding: 14px 14px 22px; }
 body.is-side.is-landscape.is-bigtext .sheet-grip { height: 4px; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
+
+/* ================================================================ player help (src/ui/help.ts, D-236)
+   Six ruled folds, a woodcut glyph and the topic in the heading face; one answer open at a time. */
+.help-topic { border-top: 1px solid rgb(74 72 67 / .3); }
+.help-topic:first-child { border-top: 0; }
+.help-tog {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px;
+  padding-inline: 2px 6px; text-align: start; color: var(--ink);
+}
+.help-tog:active { color: var(--clay); }
+.help-ic { display: grid; place-items: center; flex: none; width: 30px; color: var(--ink); }
+.help-h { flex: 1; font-family: var(--font-head); font-weight: 600; font-size: 19px; line-height: 1.1; }
+.help-topic.is-open .help-h { color: #6e3520; }
+.help-topic.is-open .codex-chev { transform: rotate(225deg); margin-block-start: 4px; }
+[dir='rtl'] .help-topic.is-open .codex-chev { transform: rotate(-225deg); }
+.help-p { margin: 0 0 12px; padding-inline-start: 40px; font-size: 15px; line-height: 1.38; color: var(--ink); max-width: 62ch; text-wrap: pretty; }
+
+/* build tutorial (D-235): the offer's one action under the note's text */
+.tut-act { margin-top: 10px; min-height: 48px; padding: 0 18px; font-weight: 700; }

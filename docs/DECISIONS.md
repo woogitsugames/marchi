@@ -2699,3 +2699,45 @@ Taken where shorter and as clear (all 17 languages). Kept: VI ("hamuje" is weake
 (the proposals were vaguer and sounded alike), XIII ("dla marchii" loses "the whole march"), XV ("Skład bliżej zamku"
 gives away the lesson). EN valley: "Grow the valley, no deadlines" (shorter than the proposal). Translations of the new
 subtitles, order and chronicle keys are agent work — native review in BACKLOG. (decided)
+
+**D-235 — Build tutorial: a second, optional lesson on a new free valley (GPT order 90, owner 2026-11-06 ~14:30).**
+Follows docs/content/tutorial-build.md: the free valley, not mission VI (the doc targets "the first five minutes of a
+new valley", and the valley already has a woodcutter, sawmill, roads and a castle to join). Offered once per device
+on a **new** valley (`prefs.tutorialBuild`, like `tutorialM1`; a loaded ledger never offers it; `?tut=build` forces it
+without the opening letter): step 0 is the doc's "consent" — the note asks and carries "Pokaż"; "Pomiń" ends it with no
+change to the world. Then the doc's six notes: (1) build tool → woodcutter's hut → its cost (the ring walks rail →
+shelf card → price card), (2) move the preview by the forest, "Postaw" (ring on the ghost's own cost/refusal label),
+(3) join the hut to the network — the game itself opens a cut-off building's card with the gap finder ("Zbuduj drogę",
+D-100), so the ring goes on that button while the card shows it, else on the rail's Road button, then on the hut's gate
+on the map; the note names both ways, (4) open the hut (ring on the hut; passed at once when its card is already open,
+which is the usual case after the card's own road fix — we never close a card the player is reading), (5) only if it stalls: tap the first cause-chain link or "Co to znaczy?", (6) "return to the
+valley" (ring on the card's close; ends when the card is closed after 2.5 s, or after 12 s). Same engine as mission I:
+`BuildTutorial extends Tutorial` (the m1 class now exposes protected hooks — `noteKeys`, `onAct`, `target`,
+`scrollsToTarget`, `railNeeded`, `pausedNow` — m1 behaviour unchanged), parchment note, double rule, woodcut arrow; no
+scrim, never pauses, never issues a command; only "Pomiń"/"Pokaż" take taps; the game menu, settings, help and the
+cleared screen pause its clock. Steps are decided by `nextBuildStep` (src/ui/tutorialBuildSteps.ts, no DOM) from the
+live World: the newest woodcutter not in the start baseline, `findPath` from its gate to the castle (any route, built
+before or after the note); a hut placed early skips ahead, a removed hut (undo, demolish) goes back to step 1, a road
+removed at step 4 back to 3; ends by itself after 5 min active. The finished tool is put away (UI only, like mission
+I's end): the build shelf when step 3 begins (it covers the rail in portrait), the road tool when step 4 begins (else
+the tap on the hut would draw a road). One camera move per step, as in mission I: the hut (step 4) or its gate (step
+3 with the road tool) is brought into the free part of the map — in landscape the valley card lay over the hut. Framing now counts the free valley's town plaque (the second `.waybill-wrap`; `visibleScene` took only the first,
+hidden one, so every valley framing ignored the plaque). The note also avoids the valley news card, the seal pace
+line, the build shelf and the ghost's gate pin (shared placement obstacles; none of them is on screen in mission I's
+tutorial).
+The landscape main menu's 21 px row size no longer applies to Settings (it kept its 17 px only in portrait), so Help
+and Settings match. Deviation from the doc: the game has no separate
+"Dlaczego stoi?" button — it is the card's kicker over the cause chain — so step 5 asks for the chain link or the
+codex fold ("Co to znaczy?"), and is skipped at once when the hut works. Tests: tests/tutorial-build.test.ts (step
+logic + a real valley: baseline, new hut, connection via the old woodcutter's road, demolish). 9 keys
+`tutorial.build.*` in 17 languages (15 agent translations, BACKLOG). (decided)
+
+**D-236 — Help sheet from the pause menu and the main menu (GPT order 78).** docs/content/help.md as one sheet
+(`key: 'help'`, src/ui/help.ts): six topics — find the cause, seals, wagons, roads and cobbles, granaries, valley and
+ranks — each a 52 px ruled fold with a woodcut glyph from the game's own set (inspect, seal, wagon, dirt road,
+granary, castle) and the heading in the display face; one open at a time (the first visit opens "Znajdź przyczynę"),
+so a phone shows the list plus one answer. A "Pomoc" button in the pause menu (under Settings; the game stays paused,
+the sheet replaces the menu like Settings) and beside Settings in the main menu's foot row (not a `.menu-item`:
+Settings stays the last one for the tools). Closes like every sheet (close, swipe down, Back/Escape). Text from the
+doc, unchanged except "posterunek handlowy" (D-213). 14 keys (`menu.help`, `help.title`, `help.<topic>.h/.p`) in 17
+languages (15 agent translations, BACKLOG). (decided)
