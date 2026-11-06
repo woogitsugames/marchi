@@ -44,6 +44,11 @@
    wciąż biorącym towar, wejście spowolnione porą roku — pinezka mosiężna, ale w arkuszu czerwony tytuł. Uznać za
    spokojne (spójny wygląd) czy zostawić czerwone (bo „Kup wóz” czasem pomaga)? Rekomendacja: spokojne, z linią
    „wóz N już jedzie” zamiast czerwieni; „Kup wóz” zostaje tam, gdzie karta floty go podaje.
+1d. **Playtest S6 (pełny magazyn):** w misji I spichlerz nigdy sam się nie zapełnia przed terminem, więc fixtura
+   `warehouse-full` przecina drogę do zamku — karta pokazuje zamek (prawdziwy korzeń), spichlerz 60/60. Liczyć S6 z
+   pytaniem skierowanym na spichlerz, uznać za eksploracyjny, czy przenieść „pełny magazyn” do misji VI / doliny?
+   Rekomendacja: **przenieść do VI** (tam można postawić spichlerz, stan powstaje naturalnie). Fixtury S2/S3/S4/S6
+   gotowe (`?fixture=…&debug=1`, opis w `docs/playtest/PROTOCOL.md`).
 2. **Posterunek handlowy (D-170/D-171)** — obejrzeć zrzuty `docs/shots/trade-*.jpg` (model zamknięty/otwarty, kra na
    drewnianym moście, karta „Wąskie gardło”).
 3. **Przegląd tłumaczeń przez native speakerów** — lista niepewnych miejsc w raporcie D-155 (tytuł XIII, „marchia”,
