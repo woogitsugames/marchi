@@ -4,7 +4,7 @@ Stan: `b020c577debddb24cdacba06b11dbbf005f7c0d1`, 6 listopada 2026. Uruchomiono 
 
 Pierwszy program zakończył się kodem 1: cztery przebiegi strategii `grow` zgłaszają `road to the trading post: BLOCKED, cell 2439`. Pozostałe raportują zero naruszeń. Drugi zakończył się kodem 0.
 
-**Sprzedaż w posterunku: brak pomiaru.** Narzędzia zapisują wpływy z wędrownego kupca (`merchantSilver`), ale nie podają wartości sprzedaży w posterunku. Liczb tych nie należy utożsamiać. Tabela podaje stan monet i zarobione srebro osobno.
+**Sprzedaż w posterunku:** podstawowy program nie eksportuje jej w raporcie, więc dla strategii `decent` powtórzono cztery symulacje z tymczasowym odczytem końcowego `st.tradePost.sold`. Wynik to liczba jednostek towarów, nie srebro; sprzedaż wędrownego kupca (`merchantSilver`) jest odrębna.
 
 | Strategia | Seed | Ranga | Zarobione srebro | Monety na koniec | Wozy | Kupiec: srebro | Naruszenia |
 |---|---:|---:|---:|---:|---:|---:|---|
@@ -101,6 +101,17 @@ Pierwszy program zakończył się kodem 1: cztery przebiegi strategii `grow` zg�
 | orders-r0x | 1303 | 5 | 30104 | 28654 | 30 | 0 | — |
 | orders-r0x | 1304 | 5 | 28964 | 27514 | 30 | 0 | — |
 
+## Sprzedaż posterunku: strategia decent po 180 minutach
+
+| Seed | Drewno | Deski | Zboże | Mąka | Chleb | Ryby | Kamień | Węgiel | Słód | Piwo |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1301 | 216 | 654 | 210 | 234 | 780 | 588 | 480 | 282 | 276 | 594 |
+| 1302 | 246 | 672 | 180 | 234 | 828 | 600 | 492 | 288 | 330 | 612 |
+| 1303 | 264 | 666 | 222 | 198 | 786 | 588 | 492 | 276 | 300 | 594 |
+| 1304 | 252 | 642 | 150 | 264 | 822 | 612 | 496 | 282 | 306 | 606 |
+
+Odtworzenie: w tymczasowej kopii `tools/valley-3h.ts` dodać pole `postSold: { ...st.tradePost?.sold }` do obiektu zwracanego przez `runValley`, następnie uruchomić kopię z `decent --seeds 1301,1302,1303,1304 --json …`. Modyfikacja tylko odczytuje licznik symulacji i nie jest częścią repozytorium.
+
 ## Sterowanie według karty — 90 minut
 
 Wyniki poniżej przepisano z podsumowania drugiego narzędzia; wartości w nawiasach to minuty osiągnięcia rang 1–5, `-1` oznacza brak rangi.
@@ -117,4 +128,4 @@ decent             seed default rank 4 [6.8 / 20.3 / 40.4 / 74.2 / -1] earned 11
 - Dla `decent`, we wszystkich czterech seedach bot osiąga rangę 5 w ciągu trzech godzin; w wariancie 90-minutowym pozostaje na randze 4. Jest to wynik zaprogramowanej strategii, a nie estymata zachowania przeciętnego gracza.
 - Wszystkie cztery przebiegi `grow` nie zrealizowały planowanego odcinka drogi do posterunku. Trzeba sprawdzić konflikt planu budowy z komórką 2439 przed wyciąganiem wniosków o potencjale posterunku.
 - W 90-minutowym przebiegu `card-10` bot kończy ze 142 wozami, wobec 30 i 20 w `card-30` i `card-60`; należy zbadać powtarzane zakupy przed uznaniem tej strategii za reprezentatywną.
-- Narzędzie nie eksportuje sprzedaży posterunku. Uzupełnienie instrumentacji i ponowny pomiar są konieczne do pełnego wykonania zlecenia.
+- Tabela sprzedaży dotyczy tylko strategii `decent`; sprzedaży pozostałych strategii nie zmierzono.
