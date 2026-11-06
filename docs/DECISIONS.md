@@ -2663,3 +2663,39 @@ upload is the same `bufferSubData`. `Lighting.lerpKey` parsed two hex strings wi
 the rain hemi colour); the keys are parsed once into cached Colors. Mission XII 60 m high 3.68 → 3.35 MB/s allocated
 (−9 %), 160 m 2.71 → 2.34 (−14 %); XV −3…−7 %, valley 200 −2…−6 %; `lighting.ts` 181 → 56 KB/s. Pixels identical
 (jam-diff). (decided)
+
+## Late valley content (owner decisions 2026-11-06 ~14:30, GPT orders 73 / 74 / 91)
+
+**D-240 — Six rank 4–5 royal orders with story conditions; amounts and rewards from the existing generator.**
+`post_shelter` (wood, planks), `post_stores` (bread, fish), `ice_bridge_boards` (planks, wood), `fair_tables` (planks,
+beer) at rank 4; `ice_bridge_stone` (stone, charcoal), `fair_provisions` (bread, fish, beer) at rank 5. Quantities,
+silver and renown come from the same formula as the 36 earlier orders (no per-template numbers: the generator is the
+balance). Optional template fields add the story condition, checked before the draw (no extra RNG use): `post` — the
+trading post stands and is usable, i.e. road-connected to the castle (the merchant's `usable` predicate; GPT asked
+whether `post_*` needs an open post — yes, otherwise "at the post" is false); `seasons` — `ice_bridge_boards` in spring
+only ("after winter"), `ice_bridge_stone` in winter or spring (a season, not a claim that the bridge froze); `fair` —
+both fair orders only while a fair is announced or open. Tuned copy: `fair_tables` lost "before the merchants arrive"
+because it is drawn for the whole announced+open fair. valley-3h (`orders`, DECENT incl. the post road, seeds
+1301–1306, 240 min): all six offered and completed (post_shelter 5/5 in ~12 min like the other wood orders,
+post_stores 5/5 ~2 min, ice_bridge_stone 3/3 ~9.5 min, ice_bridge_boards, fair_tables, fair_provisions 1/1 each — the
+fair/spring ones are rare by design). Ranks 1–4 identical to the base for decent/orders/eager (seeds 1301–1303; rank 4
+at 71.9–74.9 min, inside the 70–90 window of `tests/chains.test.ts`); rank 5 moves by −2.7…+0.9 min (114.0–118.1),
+order income 3424–4981 silver vs 3683–4427 before. Valley hashes in tests unchanged; missions untouched. (decided)
+
+**D-241 — Seven chronicle entries for the late valley; `checkChronicle` takes the World for the live road graph.**
+`post_connected` (the trading post's gate reaches the castle gate on the live graph — `reachable`, so the World is an
+optional third argument; without it the entry never fires), `post_first_sale` / `post_three_goods` (from
+`tradePost.sold`, kept apart from the castle's `ledger.sold`), `frozen_bridge` (a wagon is held `BRIDGE_CLOSED` right
+now — winter alone does not count), `bridge_thaw` (new condition `after: frozen_bridge`, read from the caller's done IDs,
+so frost and thaw are never written in the same call, plus no ice window and no held wagon), `capital_rank` (rank 5),
+`flow_record` (`bestFlow` ≥ 200 silver/min, above the rank-5 requirement of 160; a threshold, not a running "record" —
+DECENT reaches it at ~78 min with or without the post road). `stronghold_rank_alt` is not a new entry (no duplicate
+rank entry): its Polish sentence replaced `stronghold_rank`'s ("Drogi i handel wyniosły…"). DECENT 180 min: post road
+73–74 min, first post sale ~75, three goods ~75, frost 108, thaw 110, capital 117. The chronicle test allows up to 40
+entries (was 30). (decided)
+
+**D-242 — Shorter menu subtitles for I–V, VII, VIII, XI, XII, XIV and the free valley; VI, IX, X, XIII, XV kept.**
+Taken where shorter and as clear (all 17 languages). Kept: VI ("hamuje" is weaker than the stall it names), IX and X
+(the proposals were vaguer and sounded alike), XIII ("dla marchii" loses "the whole march"), XV ("Skład bliżej zamku"
+gives away the lesson). EN valley: "Grow the valley, no deadlines" (shorter than the proposal). Translations of the new
+subtitles, order and chronicle keys are agent work — native review in BACKLOG. (decided)

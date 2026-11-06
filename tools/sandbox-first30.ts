@@ -297,7 +297,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
         else if (cureFor(w, top.id) || gapTarget(w, explainBuilding(w, top.id, 5, true)) >= 0) r.actSec++;
         else r.noCureSec++;
       }
-      for (const id of checkChronicle(w.state, chron)) { chron.push(id); r.chronicle.push({ t: t / TICK_HZ, id }); }
+      for (const id of checkChronicle(w.state, chron, w)) { chron.push(id); r.chronicle.push({ t: t / TICK_HZ, id }); }
     }
     if (t % (60 * TICK_HZ) === 0 && t > 0) {
       const sb = sandboxStatus(w);

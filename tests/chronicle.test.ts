@@ -3,14 +3,14 @@ import { readFileSync } from 'node:fs';
 import { applyCommand, createWorld } from '../src/sim/index';
 import { buildMission } from '../src/sim/missions';
 import { SEASON_TICKS } from '../src/sim/seasons';
-import { CHRONICLE, checkChronicle } from '../src/sim/proposals/chronicle';
+import { CHRONICLE, FLOW_RECORD, checkChronicle } from '../src/sim/proposals/chronicle';
 import { DECENT, runSandbox } from '../tools/bot-sandbox';
 import { assert, eq, test } from './harness';
 
 const eligible = (state: ReturnType<typeof buildMission>['state']): string[] => checkChronicle(state, []);
 
-test('chronicle: 20-30 unique, data-only entries; the starting sandbox awards nothing', () => {
-  assert(CHRONICLE.length >= 20 && CHRONICLE.length <= 30, '30 or fewer authored milestones');
+test('chronicle: 20-40 unique, data-only entries; the starting sandbox awards nothing', () => {
+  assert(CHRONICLE.length >= 20 && CHRONICLE.length <= 40, '40 or fewer authored milestones');
   eq(new Set(CHRONICLE.map((e) => e.id)).size, CHRONICLE.length, 'unique IDs');
   for (const entry of CHRONICLE) {
     eq(Object.keys(entry).sort().join(','), 'condition,id', 'no reward or mutable callback on ' + entry.id);
@@ -120,4 +120,61 @@ test('chronicle: a short sandbox bot session unlocks real deliveries, without ch
   assert(newlyDone.has('planks_at_market'), 'chronicle observed the real sale');
   assert(newlyDone.has('third_wagon'), 'the bot added a wagon before its first sale');
   assert(!newlyDone.has('stronghold_rank'), 'no late-rank reward during the opening session');
+});
+
+test('chronicle (D-241): trading-post sales are the post\'s own, apart from the castle market', () => {
+  const world = createWorld('sandbox');
+  const state = world.state;
+  assert(!!state.tradePost, 'the free valley has a trading post');
+  state.ledger.sold.planks = 50;
+  state.ledger.sold.wood = 50;
+  state.ledger.sold.grain = 50;
+  let ids = checkChronicle(state, [], world);
+  assert(!ids.includes('post_first_sale') && !ids.includes('post_three_goods'), 'castle sales are not post sales');
+  state.tradePost!.sold.planks = 1;
+  ids = checkChronicle(state, [], world);
+  assert(ids.includes('post_first_sale') && !ids.includes('post_three_goods'), 'first post sale');
+  state.tradePost!.sold.wood = 1;
+  state.tradePost!.sold.bread = 2;
+  assert(checkChronicle(state, [], world).includes('post_three_goods'), 'three kinds sold at the post');
+});
+
+test('chronicle (D-241): the post road is read from the live graph; without a World it never fires', () => {
+  const world = createWorld('sandbox');
+  assert(!checkChronicle(world.state, [], world).includes('post_connected'), 'a fresh valley has no road to the post');
+  let late = world;
+  const result = runSandbox(DECENT, 80, { checkEvery: 600, onTick(w) { late = w; } }); // the plan ends with the post road
+  eq(result.violations.length, 0, 'bot invariants');
+  assert(checkChronicle(late.state, [], late).includes('post_connected'), 'DECENT built the road to the post');
+  assert(!checkChronicle(late.state, []).includes('post_connected'), 'no World, no graph, no entry');
+});
+
+test('chronicle (D-241): ice needs a wagon held at a frozen span; the thaw needs the frost on record', () => {
+  const { state } = buildMission('sandbox');
+  const winter = 3 * SEASON_TICKS;
+  state.tick = winter;
+  let ids = checkChronicle(state, []);
+  assert(!ids.includes('frozen_bridge'), 'winter alone is not a frozen crossing');
+  assert(!ids.includes('bridge_thaw'), 'no thaw without a frost on record');
+  const wagon = state.wagons[0]!;
+  wagon.status = { k: 'BRIDGE_CLOSED', span: 0, until: winter + 100, since: winter };
+  ids = checkChronicle(state, []);
+  assert(ids.includes('frozen_bridge'), 'a wagon waits at the frozen span');
+  assert(!ids.includes('bridge_thaw'), 'frost and thaw never in the same call');
+  assert(!checkChronicle(state, ['frozen_bridge']).includes('bridge_thaw'), 'still frozen');
+  wagon.status = { k: 'IDLE' };
+  state.tick = 4 * SEASON_TICKS; // spring: no ice window
+  assert(checkChronicle(state, ['frozen_bridge']).includes('bridge_thaw'), 'the crossing reopened');
+});
+
+test('chronicle (D-241): rank 5 and the flow record above the rank-5 requirement', () => {
+  const { state } = buildMission('sandbox');
+  state.town.rank = 4;
+  state.town.bestFlow = FLOW_RECORD - 1;
+  let ids = checkChronicle(state, []);
+  assert(!ids.includes('capital_rank') && !ids.includes('flow_record'), 'not yet');
+  state.town.rank = 5;
+  state.town.bestFlow = FLOW_RECORD;
+  ids = checkChronicle(state, []);
+  assert(ids.includes('capital_rank') && ids.includes('flow_record'), 'rank 5 and the record');
 });

@@ -4,6 +4,10 @@ Wydzielone z `docs/content/events.md`: testy treści czytają tam każdy wiersz 
 szablon/wpis. Tutaj tylko propozycje do wdrożenia przez koordynatora.
 
 
+**Status: wdrożone (D-240, 2026-11-06)** — sześć szablonów jest w `ORDER_TEMPLATES` i w tabeli
+`docs/content/events.md`. Zmiana: `fair_tables` dostał tekst bez „przed przyjazdem kupców”, bo jest
+losowany przez cały zapowiedziany i trwający jarmark. Tabela niżej zostaje jako zapis propozycji.
+
 Propozycje tekstu i warunków; nie są jeszcze szablonami w symulacji. Ilości i nagrody
 ustali koordynator zgodnie z istniejącym generatorem. Zamówienia wymagają dostępnych
 łańcuchów wszystkich wymienionych towarów; nie implikują naprawy ani zmiany pogody.

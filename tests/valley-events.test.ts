@@ -300,3 +300,28 @@ test('events: all content template IDs have complete Polish and English rows', (
   }
   eq(ids.size, ORDER_TEMPLATES.length, 'every story has both languages');
 });
+
+test('events (D-240): late stories need their season, a fair or a road-connected trading post', () => {
+  const offered = (tick: number, fair: boolean, postUsable: boolean): Set<string> => {
+    const ids = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const st = advanced(5, seed);
+      addBuilding(st, 'tradePost');
+      st.tick = tick;
+      const events = { ...freshValleyEvents(), lastFairSeasonIndex: 999 };
+      if (fair) events.fair = { id: 'fair-x', good: 'beer', season: 'autumn', startTick: tick - 10, endTick: tick + 1000, pricePercent: 125 };
+      const r = proposeValleyEvents(st, events, (b) => postUsable || b.type !== 'tradePost');
+      for (const o of r.events.orders) ids.add(o.templateId);
+    }
+    return ids;
+  };
+  const late = ['post_shelter', 'post_stores', 'ice_bridge_boards', 'ice_bridge_stone', 'fair_tables', 'fair_provisions'];
+  const summer = offered(5 * SEASON_TICKS + 100, false, false);
+  for (const id of late) assert(!summer.has(id), id + ': not in summer, without a fair or a usable post');
+  assert(summer.has('royal_hunt'), 'the ordinary rank-5 stories still appear');
+  const spring = offered(4 * SEASON_TICKS + 100, true, true);
+  for (const id of late) assert(spring.has(id), id + ': offered in spring with a fair and a connected post');
+  const winter = offered(3 * SEASON_TICKS + 100, false, true);
+  assert(winter.has('ice_bridge_stone') && !winter.has('ice_bridge_boards'), 'stone in winter, boards only after it');
+  assert(winter.has('post_shelter') && !winter.has('fair_tables'), 'the post needs no fair; the fair stories do');
+});

@@ -4,6 +4,11 @@ Wydzielone z `docs/content/chronicle.md`: testy treści czytają tam każdy wier
 szablon/wpis. Tutaj tylko propozycje do wdrożenia przez koordynatora.
 
 
+**Status: wdrożone (D-241, 2026-11-06).** Siedem wpisów jest w `docs/content/chronicle.md` i w
+`src/sim/proposals/chronicle.ts`; `stronghold_rank_alt` nie jest osobnym wpisem — jego polskie zdanie
+zastąpiło zdanie istniejącego `stronghold_rank` (tytuł „Gród” bez zmian, jak inne rangi). Tabela niżej
+zostaje jako zapis propozycji.
+
 Teksty do wdrożenia przez koordynatora, nie istniejące jeszcze warunki ani klucze.
 Tytuł ≤32, zdanie ≤90 znaków. Warunki poniżej opisują wymagane fakty: przed
 wdrożeniem trzeba dodać odpowiednie dane i trwałe oznaczenie już pokazanych wpisów.

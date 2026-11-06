@@ -32,10 +32,17 @@ Wpisy dotyczą wyłącznie Wolnej doliny (`sandbox`). Każdy `id` odpowiada waru
 | `charcoal_at_market` | Węgiel z mielerza | Z nowej mielerni węgiel drzewny powędrował na targ. | Charcoal from the kiln | Charcoal from a new burner reached the merchants' stalls. |
 | `malt_at_market` | Słód z doliny | W nowej słodowni powstał słód, który doszedł do kupców. | Malt of the valley | A new malthouse made malt, and the merchants bought it. |
 | `wood_for_two_trades` | Drewno dla dwóch cechów | Deski i węgiel drzewny stanęły w kupieckich rachunkach obok siebie. | Wood for two trades | Planks and charcoal stood side by side in the merchants' accounts. |
-| `stronghold_rank` | Gród | Handel i drogi niosły dolinę do rangi grodu. | The stronghold | Trade and well-kept roads raised the valley to a stronghold. |
+| `stronghold_rank` | Gród | Drogi i handel wyniosły dolinę do rangi grodu. | The stronghold | Trade and well-kept roads raised the valley to a stronghold. |
 | `brewery_brews` | Pierwsze warzenie | W nowym browarze uwarzono piwo ze słodu dowiezionego wozem. | The first brewing | A new brewery made beer from malt carried in by wagon. |
 | `beer_at_market` | Piwo dla zamku | Pierwsze piwo znalazło nabywcę na zamkowym targu. | Beer for the castle | The first beer found a buyer at the castle market. |
 | `seven_trade_goods` | Siedem towarów | Siedem rodzajów dóbr zasiliło targ, gdy obrót nabrał tempa. | Seven kinds of goods | Seven kinds of goods reached market as the trade grew swift. |
+| `post_connected` | Droga do posterunku | Trakt połączył posterunek z siecią dróg doliny. | Road to the post | A track joined the trading post to the valley road network. |
+| `post_first_sale` | Pierwszy handel za rzeką | W księdze posterunku zapisano pierwszą sprzedaż. | First trade across the river | The post's ledger recorded its first sale. |
+| `post_three_goods` | Trzy towary za wodą | Trzy rodzaje towaru znalazły nabywców przy posterunku. | Three goods across the water | Three kinds of goods found buyers at the trading post. |
+| `frozen_bridge` | Lód na przeprawie | Mróz zamknął przeprawę, a wozy czekały na odwilż. | Ice on the crossing | Frost closed the crossing, and wagons waited for the thaw. |
+| `bridge_thaw` | Odwilż na trakcie | Po odwilży wozy znów ruszyły przez przeprawę. | Thaw on the road | After the thaw, wagons crossed the river again. |
+| `capital_rank` | Stolica doliny | Zapisano, że dolina dostąpiła rangi stolicy. | Capital of the valley | The ledger records the valley's rise to the rank of capital. |
+| `flow_record` | Rekord obrotu | Kupcy zapisali nowy rekord obrotu doliny. | A record of trade | Merchants recorded a new high for the valley's trade. |
 
 ## Zakres danych / Data limits
 
@@ -46,6 +53,12 @@ Wpisy dotyczą wyłącznie Wolnej doliny (`sandbox`). Każdy `id` odpowiada waru
   obecności towaru w nowym, nadal istniejącym magazynie. Rozebrana budowla nie jest dowodem.
 - `road` rozpoznaje bruk (surface 2), **nie** dowodzi budowy kamiennego mostu. `season`
   rozpoznaje bieżącą porę roku, **nie** dowodzi zimy bez przestojów.
+- Późna dolina (D-241, z `chronicle-late.md`): `postSold`/`postVariety` czytają sprzedaż
+  posterunku (`tradePost.sold`), osobno od zamkowego `sold`; `postRoad` sprawdza żywy graf dróg
+  (brama posterunku ↔ brama zamku, potrzebny `World`); `iceHeld` wymaga wozu czekającego przy
+  przęśle zamkniętym lodem (sama zima nie wystarcza); `bridge_thaw` wymaga zapisanego już
+  `frozen_bridge` (historia = zapisane ID, nie stan) i braku lodu; `flow_record` to próg
+  `bestFlow` ≥ 200 srebra/min (powyżej wymogu rangi 5: 160), nie „bieżący rekord”.
 - Nie nazywamy żadnego wpisu „100 desek w jednym roku” ani „zima bez zamkniętego mostu”:
   takie zdarzenia wymagają historii okresowej, której obecny stan nie zawiera.
 - Otrzymane identyfikatory powinny być przechowywane poza funkcją kontrolną, razem z

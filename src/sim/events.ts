@@ -13,7 +13,7 @@
  * only fair price hook.
  */
 import { GOODS, MARKET } from './defs';
-import { SEASON_TICKS, type Season } from './seasons';
+import { SEASON_TICKS, seasonAt, type Season } from './seasons';
 import { reachable, type World } from './network';
 import type { RngState } from './rng';
 import type { Building, BuildingType, Good, SimState } from './types';
@@ -110,6 +110,12 @@ interface OrderTemplate {
   id: string;
   minRank: number;
   goods: readonly Good[];
+  /** Offered only in these seasons (the story names the time of year; D-240). */
+  seasons?: readonly Season[];
+  /** Offered only while a fair is announced or open (D-240). */
+  fair?: true;
+  /** Offered only while the trading post stands and is usable, i.e. connected by road to the castle (D-240). */
+  post?: true;
 }
 
 /** IDs map 1:1 to bilingual historical copy in docs/content/events.md. */
@@ -151,6 +157,13 @@ export const ORDER_TEMPLATES = [
   { id: 'christmas_court', minRank: 4, goods: ['beer', 'flour'] },
   { id: 'cathedral_works', minRank: 5, goods: ['stone', 'planks', 'charcoal'] },
   { id: 'royal_hunt', minRank: 5, goods: ['beer', 'bread', 'fish'] },
+  // late valley (gpt 73, docs/content/events-late.md, D-240): the trading post, the bridge after winter, the fair
+  { id: 'post_shelter', minRank: 4, goods: ['wood', 'planks'], post: true },
+  { id: 'post_stores', minRank: 4, goods: ['bread', 'fish'], post: true },
+  { id: 'ice_bridge_boards', minRank: 4, goods: ['planks', 'wood'], seasons: ['spring'] },
+  { id: 'ice_bridge_stone', minRank: 5, goods: ['stone', 'charcoal'], seasons: ['winter', 'spring'] },
+  { id: 'fair_tables', minRank: 4, goods: ['planks', 'beer'], fair: true },
+  { id: 'fair_provisions', minRank: 5, goods: ['bread', 'fish', 'beer'], fair: true },
 ] as const satisfies readonly OrderTemplate[];
 
 /** Fixed seasonal pools; no fair is scheduled for a good this settlement cannot produce. */
@@ -220,11 +233,21 @@ function soldUnits(state: Pick<EventSnapshot, 'ledger'>): number {
   return total;
 }
 
-function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngState, goods: ReadonlySet<Good>): ValleyEventState {
+/** The template's own story condition (season, fair, trading post); none of them draws from the RNG. */
+function storyHolds(entry: OrderTemplate, state: EventSnapshot, events: ValleyEventState, usable: (b: Building) => boolean): boolean {
+  if (entry.seasons && !entry.seasons.includes(seasonAt(state.tick))) return false;
+  if (entry.fair && fairStage(events.fair, state.tick) === 'none') return false;
+  if (entry.post && !state.buildings.some((b) => b.type === 'tradePost' && usable(b))) return false;
+  return true;
+}
+
+function royalOrder(state: EventSnapshot, events: ValleyEventState, rng: RngState, goods: ReadonlySet<Good>,
+  usable: (b: Building) => boolean): ValleyEventState {
   if (events.orders.length >= MAX_ROYAL_ORDERS || state.tick < events.nextOrderTick ||
       soldUnits(state) < events.nextOrderAfterSoldUnits) return events;
-  const available = ORDER_TEMPLATES.filter((entry) =>
+  const available = ORDER_TEMPLATES.filter((entry: OrderTemplate) =>
     entry.minRank <= state.town.rank && entry.goods.every((good) => goods.has(good)) &&
+    storyHolds(entry, state, events, usable) &&
     entry.id !== events.lastRejectedTemplate &&
     !events.orders.some((order) => order.templateId === entry.id));
   if (available.length === 0) return events; // no draw without an attainable order
@@ -333,7 +356,7 @@ export function proposeValleyEvents(state: EventSnapshot, events: ValleyEventSta
   // Do not hold expired fair offers in the HUD; lastFairSeasonIndex prevents re-rolling them.
   if (next.fair !== null && state.tick >= next.fair.endTick) next = { ...next, fair: null };
   next = seasonalFair(state, next, rng, goods);
-  next = royalOrder(state, next, rng, goods);
+  next = royalOrder(state, next, rng, goods, usable);
   next = merchantOffer(state, next, rng, usable);
   return { events: next, rng };
 }
