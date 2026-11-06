@@ -407,7 +407,8 @@ export class Tutorial {
     // 9 px: the inner rule and its halo end 8.4 px in from the ring's edge, so text flush with the target's
     // edge (the waybill counts in landscape) stays clear of them
     // kept on screen: the rail's first tool sits ~8 px from the edge, and the ring around it was cut (ringOff)
-    const box = tg.box && !this.covered(tg.probe) ? onScreen(grow(tg.box, 9)) : null;
+    // a target on the map (the build tutorial's hut and gate) has no element to probe: drawn as is
+    const box = tg.box && (tg.probe === null || !this.covered(tg.probe)) ? onScreen(grow(tg.box, 9)) : null;
     // inside a card the double rule is enough: an arrow there would lie across the neighbouring links
     const inSheet = !!tg.probe?.closest('#sheets');
     const now = performance.now();

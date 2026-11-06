@@ -599,6 +599,7 @@ export class App implements PanelNav {
       showCells: (cells) => this.frameCells(cells),
       buildType: () => (this.tool === 'build' && this.build.placing ? this.build.type : null),
       buildOpen: () => this.tool === 'build' && this.build.isOpen,
+      toolAway: () => this.setTool('none'),
       finish: (r) => {
         this.prefs.tutorialBuild = r;
         savePrefs(this.prefs);

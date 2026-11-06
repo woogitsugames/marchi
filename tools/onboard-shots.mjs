@@ -27,8 +27,12 @@ for (const [w, h] of sizes) {
   const tap = async (x, y) => { await page.touchscreen.tap(x, y); await page.waitForTimeout(450); };
   const tapSel = async (sel) => { const b = await page.locator(sel).first().boundingBox(); if (!b) throw new Error('no ' + sel); await tap(b.x + b.width / 2, b.y + b.height / 2); };
   const step = () => page.evaluate(() => window.__marchia.app.buildTut?.current ?? -1);
+  // frames can take seconds under software GL: let the tutorial run three frames after the last change
+  const frames = () => page.evaluate(() => new Promise((r) => { let n = 3; const f = () => (--n ? requestAnimationFrame(f) : r()); requestAnimationFrame(f); }));
   const shot = async (id) => {
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(400);
+    await frames();
+    await page.waitForTimeout(300);
     const info = await page.evaluate(() => {
       const r = (e) => { if (!e) return null; const b = e.getBoundingClientRect(); return [b.left, b.top, b.right, b.bottom].map(Math.round); };
       return { step: window.__marchia.app.buildTut?.current ?? -1, note: r(document.querySelector('.tut-note-wrap')), ring: r(document.querySelector('.tut-ring.is-shown')), arrow: !!document.querySelector('.tut-arrow.is-shown'), text: document.querySelector('.tut-text')?.textContent };
@@ -36,7 +40,7 @@ for (const [w, h] of sizes) {
     console.log(`${w}x${h} ${id}`, JSON.stringify(info));
     await page.screenshot({ path: `docs/shots/onboard-${id}${suffix}-${w}x${h}.jpg`, type: 'jpeg', quality: 62, timeout: 300000 });
   };
-  const waitStep = (s) => page.waitForFunction((s) => (window.__marchia.app.buildTut?.current ?? -1) === s, s, { timeout: 15000 });
+  const waitStep = (s) => page.waitForFunction((s) => (window.__marchia.app.buildTut?.current ?? -1) === s, s, { timeout: 90000 });
 
   await page.goto(base + `?debug=1&lang=${lang}&quality=low&play=sandbox&tut=build`);
   await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 300000 });
@@ -49,10 +53,10 @@ for (const [w, h] of sizes) {
   await shot('s1b');
   await tapSel('.build-shelf [data-b="pick:woodcutter"]');
   await waitStep(2);
-  await page.evaluate(({ x, y }) => { const a = window.__marchia.app; a.build.moveTo(y * a.world.terrain.w + x); }, SITE);
+  await page.evaluate(({ x, y }) => { const a = window.__marchia.app; a.build.facing = 0; a.build.manualFacing = true; a.build.moveTo((y + 1) * a.world.terrain.w + x + 1); }, SITE);
   await shot('s2');
   await tapSel('.build-shelf [data-b="place"]');
-  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 3, null, { timeout: 15000 });
+  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 3, null, { timeout: 90000 });
   if ((await step()) === 3) {
     await shot('s3');
     await tapSel('.rail [data-tool="road"]');
@@ -72,7 +76,7 @@ for (const [w, h] of sizes) {
   const ring = await page.evaluate(() => { const b = document.querySelector('.tut-ring.is-shown')?.getBoundingClientRect(); return b ? [b.left + b.width / 2, b.top + b.height / 2] : null; });
   if (ring) await tap(ring[0], ring[1]);
   if ((await step()) === 4) await page.evaluate(() => { const a = window.__marchia.app; a.go('building', a.world.state.buildings.at(-1).id); });
-  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 5, null, { timeout: 15000 });
+  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 5, null, { timeout: 90000 });
   if ((await step()) === 5) {
     await shot('s5');
     await tapSel('.tut-ring.is-shown');

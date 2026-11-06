@@ -13,6 +13,8 @@ export interface BuildTutorialHost extends TutorialHost {
   buildType(): BuildingType | null;
   /** The build shelf is open. */
   buildOpen(): boolean;
+  /** Put the active tool away (the shelf after the hut stands, the road tool after the hut is joined). */
+  toolAway(): void;
 }
 
 /** The lesson ends by itself after this much active time (the doc's "first five minutes", never a limit to beat). */
@@ -45,7 +47,7 @@ export class BuildTutorial extends Tutorial {
     if (this.ended) return;
     const top = this.host.topKey();
     if (this.pausedNow(top)) return;
-    this.active += dtMs;
+    this.active += Math.max(0, dtMs);
     if (this.active > MAX_ACTIVE_MS || this.host.world.state.mission.result !== 'running') { this.end('done'); return; }
     if (this.step !== 0) {
       const o = this.observe(top);
@@ -54,6 +56,10 @@ export class BuildTutorial extends Tutorial {
       if (next !== this.step) {
         this.go(next);
         this.whyOpened = false;
+        // the shelf covers the rail in portrait once the hut stands, and a road tool left in hand would turn the
+        // tap on the hut into a road: put the finished tool away (UI only, as mission I does at its end)
+        const tool = this.host.tool();
+        if ((next === 3 && tool === 'build') || (next === 4 && (tool === 'road' || tool === 'cobble' || tool === 'build'))) this.bhost.toolAway();
       }
     }
     this.render();
