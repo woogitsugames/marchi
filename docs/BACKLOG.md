@@ -9,6 +9,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [ ] P3 — (D-235/D-236) 23 nowe klucze (`tutorial.build.*`, `menu.help`, `help.*`) w 15 językach to tłumaczenia agenta — do przeglądu natywnego (**właściciel**: native speakerzy); w szczególności nazwy „Wolna dolina”, „ranga”, „pieczęć” w tekstach pomocy.
+- [ ] P3 — (D-235) Samouczek budowania: krok 5 pojawia się tylko, gdy nowa chata drwala stoi; w typowej dolinie chata od razu pracuje, więc gracz zwykle widzi kroki 1–4 i 6. Do playtestu: czy to wystarcza, czy lekcja ma pokazać przestój celowo (np. chatę bez drogi przed krokiem 3).
+- [ ] P3 — (D-236) Pomoc: brak wejścia z samej mapy (tylko pauza i menu główne); do decyzji właściciela, czy dodać „?” na karcie przestoju.
 - [ ] P2 — (D-233) Dolina od rangi 4: gdy spichlerze są pełne, zamek na limicie, a faktoria stoi bez drogi (`NO_ROAD`), karta pokazuje dziś spokojne „rynek nasycony” — nie mówi, że pomogłaby droga do faktorii przez rzekę. Rozważyć lekarstwo „droga do faktorii” (karta-10 w 90 min nigdy jej nie buduje). (źródło: claude, `tools/sandbox-first30.ts`)
 - [ ] P3 — `tests/seasons-fuzz.test.ts` ma limit czasu ściennego 25 s; samodzielnie trwa ~24,8 s, przy obciążonej maszynie raz przekroczył (2026-11-06, `claude/w-jamfix`) — podnieść limit albo mierzyć czas CPU.
 - [x] P3 — (zrobione, D-200..D-203, `claude/w-gfx10`) Grafika 10: robotnicy w kamieniołomie, u węglarza, w słodowni, w browarze i kupiec przy ladzie otwartej faktorii; nogi i tułowie w jednej partii na wariant stroju (mniej wywołań rysowania); słód w obręczowanych cebrzykach zamiast małych worków; faktoria/wieża zamku przebudowują się przy awansie rangi, nie przy następnej drodze; zimą szron na dachach i krótkie płatki zamiast deszczu. Zrzuty `docs/shots/gfx10-*`.

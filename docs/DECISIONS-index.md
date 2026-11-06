@@ -203,3 +203,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-231 | — | fuzz `shrink` counts duration relative to the snapshot start | decided | sim |
 | D-232 | — | valley-3h `grow` plan: third malthouse at (46, 25) | decided | inne |
 | D-233 | — | a granary's "Kup wóz" counts only markets reachable by road (UI, real cue loop) | decided | UI |
+| D-235 | 2026-11-06 | Build tutorial: a second, optional lesson on a new free valley (GPT order 90, owner 2026-11-06 ~14:30) | decided | inne |
+| D-236 | — | Help sheet from the pause menu and the main menu (GPT order 78) | decided | UI |
