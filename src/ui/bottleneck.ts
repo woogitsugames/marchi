@@ -8,6 +8,7 @@ import {
   type Building, type BuildingType, type Good, type World,
 } from '../sim/index';
 import { inputWaitTicks, waitsForInput } from './stalls';
+import { chainEndGood, goodSaturated } from './saturation';
 
 export const NECK_WINDOW = 180; // samples, one per sim second
 export const NECK_SHOW_X100 = 150; // mean waiting consumers x100 to show
@@ -110,15 +111,30 @@ function nearestProducer(world: World, g: Good, to: Building): number {
   return best;
 }
 
+/** The chain a building of `type` works in ends in a good the markets no longer pay a fair price for (D-174, D-268). */
+function deadEnd(world: World, type: BuildingType, memo: Map<BuildingType, boolean>): boolean {
+  let v = memo.get(type);
+  if (v === undefined) {
+    const end = chainEndGood(world, type);
+    v = !!end && goodSaturated(world, end);
+    memo.set(type, v);
+  }
+  return v;
+}
+
 function computeCard(world: World, log: Log): BottleneckCard | null {
   if (log.n < NECK_WINDOW) { log.shown = null; return null; }
   const st = world.state;
+  const dead = new Map<BuildingType, boolean>();
   let best: { g: Good; mean: number; consumers: Building[]; cure: 'producer' | 'wagon'; type: BuildingType } | null = null;
   for (const g of GOODS) {
     const mean = Math.floor((log.sumW[g] * 100) / NECK_WINDOW);
     if (mean < (log.shown === g ? NECK_HIDE_X100 : NECK_SHOW_X100)) continue;
     const consumers = consumersOf(world, g);
     if (consumers.length < NECK_MIN_CONSUMERS) continue;
+    // D-268: every consumer's chain ends in a saturated good — more of the input would only fill the granaries;
+    // the slot falls through to the next card (the grow card names a chain that still sells)
+    if (consumers.every((b) => deadEnd(world, b.type, dead))) continue;
     const type = producerOf(g);
     if (!type || !canPlace(world, type).ok) continue;
     // further up the chain: half of the good's producers (on average) wait for their own input themselves

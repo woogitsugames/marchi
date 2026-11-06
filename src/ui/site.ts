@@ -1,6 +1,9 @@
 // Where the build ghost starts when a sheet's "Naprawa" opens the build tool (granary by a full yard, a second
 // producer by a shared one). Pure read of the sim (validatePlace); no DOM, so the headless balance tools use it too.
-import { BUILDINGS, cutsDiagonalRoad, gateCell, missionSiteHint, rankGated, suggestLinkForSite, validatePlace, type BuildingType, type World } from '../sim/index';
+import {
+  BUILDINGS, MAX_GRADE, cutsDiagonalRoad, gateCell, grade, missionSiteHint, net, rankGated, reachable, suggestLinkForSite, validatePlace,
+  type BuildingType, type World,
+} from '../sim/index';
 
 export interface Site { x: number; y: number; facing: number; /** The mission's authored site (D-107). */ hint: boolean }
 
@@ -65,13 +68,19 @@ function linkedNow(world: World, type: BuildingType, s: { x: number; y: number; 
   const foot: number[] = [];
   for (let y = s.y; y < s.y + def.h; y++) for (let x = s.x; x < s.x + def.w; x++) foot.push(y * W + x);
   const gx = gate % W, gy = (gate - gx) / W;
+  // D-269: the neighbouring road counts only as the network would drive it (network.hasEdge: no building on it, a
+  // diagonal step's corners free of every building, the grade) and only when it joins the stable's roads — an orphan
+  // stretch or a corner walled in by an older building left the brewery born cut off (card-10 seed 1304)
+  const occ = net(world).occupied, stable = world.state.buildings.find((b) => b.type === 'stable');
+  const free = (c: number): boolean => !foot.includes(c) && occ[c] === -1;
   for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
     const x = gx + dx, y = gy + dy;
     if ((!dx && !dy) || x < 0 || y < 0 || x >= W || y >= H) continue;
     const i = y * W + x;
-    if (!roads[i] || foot.includes(i)) continue;
-    // a diagonal step needs both corner cells free of the new footprint (the network's own rule for buildings)
-    if (dx && dy && (foot.includes(gy * W + x) || foot.includes(y * W + gx))) continue;
+    if (!roads[i] || !free(i)) continue;
+    if (dx && dy && (!free(gy * W + x) || !free(y * W + gx))) continue;
+    if (Math.abs(grade(world.terrain, gate, i)) > MAX_GRADE + 1e-9) continue;
+    if (stable && !reachable(world, stable.gate, i)) continue;
     return true;
   }
   return suggestLinkForSite(world, type, gate, foot) !== null;

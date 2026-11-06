@@ -1,7 +1,7 @@
 // "Wąskie gardło" (D-171, spec docs/specs/2026-11-04-valley-trade-post.md §3): the free valley's bottleneck card
 // from UI-side samples (one per sim second, 3-minute window). Synthetic statuses on a real valley; the state is
 // never written by the sampler.
-import { TICK_HZ, createWorld, inputGoods, stateHash, step, type Building, type BuildingStatus, type World } from '../src/sim/index';
+import { MARKET, TICK_HZ, createWorld, inputGoods, stateHash, step, type Building, type BuildingStatus, type World } from '../src/sim/index';
 import { place } from '../src/sim/commands';
 import {
   NECK_WINDOW, bottleneckCard, bottleneckFor, resetBottleneck, sampleBottleneck,
@@ -91,6 +91,30 @@ test('bottleneck: bakeries wait for flour because the mills wait for grain -> th
     mills[0]!.status = waitGrain; mills[1]!.status = waitGrain; mills[2]!.status = working;
   });
   eq(bottleneckCard(w)?.good, 'grain', 'grain, not flour (2 of 3 mills hungry)');
+});
+
+test('bottleneck: a chain that ends in a saturated good gets no card (D-268); the slot falls through', () => {
+  // mills by bakeries: the grain chain ends in bread; bread at half the cap -> more grain would only fill granaries
+  const { w, mills } = valley();
+  w.state.market.saturation.bread = MARKET.cap / 2;
+  seconds(w, NECK_WINDOW, () => { mills[0]!.status = waitGrain; mills[1]!.status = waitGrain; mills[2]!.status = working; });
+  eq(bottleneckCard(w), null, 'bread saturated: no grain card');
+  // just under half the cap the card is back (the same samples)
+  w.state.market.saturation.bread = MARKET.cap / 2 - 1;
+  w.state.tick += TICK_HZ;
+  for (const b of w.state.buildings) if (inputGoods(b.type).length) b.status = working;
+  mills[0]!.status = waitGrain; mills[1]!.status = waitGrain;
+  sampleBottleneck(w);
+  eq(bottleneckCard(w)?.good, 'grain', 'bread sells: grain card');
+  // without bakeries the mills' chain ends in flour: saturated bread no longer matters, saturated flour does
+  const v = valley();
+  v.w.state.buildings = v.w.state.buildings.filter((b) => b.type !== 'bakery');
+  v.w.state.market.saturation.bread = MARKET.cap;
+  seconds(v.w, NECK_WINDOW, () => { v.mills[0]!.status = waitGrain; v.mills[1]!.status = waitGrain; });
+  eq(bottleneckCard(v.w)?.good, 'grain', 'no bakery: flour is the end good, it sells');
+  v.w.state.market.saturation.flour = MARKET.cap;
+  seconds(v.w, 1, () => { v.mills[0]!.status = waitGrain; v.mills[1]!.status = waitGrain; });
+  eq(bottleneckCard(v.w), null, 'flour saturated: no card');
 });
 
 test('bottleneck: the fleet rule from rank 2 (every wagon on the road for 3 minutes); never below', () => {
