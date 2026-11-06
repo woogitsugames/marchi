@@ -461,10 +461,17 @@ export const BB_ELEV = 0.52;
  * Card extent per kind in the elevated view: width = model extent plus an empty margin (no mip
  * bleed between atlas columns); height in the bake camera's up direction, the trunk foot at 0.
  */
+const cardSizes = new Map<TreeKind, { W: number; y0: number; y1: number }>();
+
 function cardSize(kind: TreeKind): { W: number; y0: number; y1: number } {
+  // cached: the model is (D-260: a season re-bake asked for it 80 times, each a walk over every vertex)
+  let cs = cardSizes.get(kind);
+  if (cs) return cs;
   const { half, top } = treeExtent(kind);
   const c = Math.cos(BB_ELEV), s = Math.sin(BB_ELEV);
-  return { W: half * 2 * 1.16, y0: -0.25 * c - half * s * 1.08, y1: (top + 0.2) * c + half * s * 1.08 };
+  cs = { W: half * 2 * 1.16, y0: -0.25 * c - half * s * 1.08, y1: (top + 0.2) * c + half * s * 1.08 };
+  cardSizes.set(kind, cs);
+  return cs;
 }
 
 /**
@@ -706,11 +713,14 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     needles: bakeMaterial(needleTexture(), mode),
     solid: bakeMaterial(null, mode),
   }));
-  const groups = TREE_KINDS.map((kind) => {
+  const cam = new OrthographicCamera(-1, 1, 1, -1, 0.1, 120);
+  // one group of meshes per kind and pass, built once per bake (not per view)
+  const groups = [0, 1].map((mode) => TREE_KINDS.map((kind) => {
     const grp = new Group();
-    grp.userData.parts = treeParts(kind);
+    const m = mats[mode]!;
+    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
     return grp;
-  });
+  }));
   // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
   // correct when the card shader divides by alpha (no dark or olive fringe)
   renderer.setClearColor(0x000000, 0);
@@ -718,7 +728,6 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   [rtA, rtN].forEach((rt, mode) => {
     renderer.setRenderTarget(rt);
     renderer.clear();
-    const m = mats[mode]!;
     for (let v = 0; v < BB_VIEWS; v++) {
       const az = (v / BB_VIEWS) * Math.PI * 2;
       row.scissorTest = false;
@@ -727,13 +736,12 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
       renderer.clear();
       TREE_KINDS.forEach((kind, i) => {
         const { W, y0, y1 } = cardSize(kind);
-        const grp = groups[i]!;
-        grp.clear();
-        for (const p of grp.userData.parts as ModelPart[]) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
+        const grp = groups[mode]![i]!;
         scene.add(grp);
         // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk
         // foot at the origin
-        const cam = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+        cam.left = -W / 2; cam.right = W / 2; cam.top = y1; cam.bottom = y0;
+        cam.updateProjectionMatrix();
         const h = Math.cos(BB_ELEV) * 50;
         cam.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
         cam.lookAt(0, 0, 0);
