@@ -4,8 +4,9 @@
 import { findPath, type Building, type World } from '../sim/index';
 import { isStall } from './stallKinds';
 
-/** 0: the offer ("Show me" / "Skip"); 1: pick the hut; 2: place it; 3: road; 4: open its card; 5: why; 6: coda. */
-export type BuildStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+/** 0: the offer ("Show me" / "Skip"); 1: pick the hut; 2: place it; 7: watch the cut-off hut stall (D-259); 5: why
+ *  (first on the cut-off hut, else after the road if it stalls); 3: road; 4: open its card; 6: coda. */
+export type BuildStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /** What the UI sees this frame. */
 export interface BuildObs {
@@ -25,6 +26,8 @@ export interface BuildObs {
   whyShown: boolean;
   /** The player opened that diagnosis (expanded the explanation or followed a chain link). */
   whyOpened: boolean;
+  /** The diagnosis step was already passed once (read or passed over) — it is not asked again. */
+  whyDone: boolean;
   /** Active ms spent in the current step. */
   since: number;
 }
@@ -34,6 +37,9 @@ export const WHY_WAIT_MS = 1500;
 /** Step 6: the closing note stays at least this long once the card is closed, at most CODA_MAX_MS. */
 export const CODA_MIN_MS = 2500;
 export const CODA_MAX_MS = 12_000;
+/** Step 7: a cut-off hut fills its yard in 80 s of game time (20 s at ×4); past this much active time the road comes
+ *  first and the diagnosis waits for the card (a player who never speeds up still gets the lesson, later). */
+export const STALL_WAIT_MS = 90_000;
 
 /**
  * The next step (or 'done'). A correct action taken early is recognised by the state (a hut placed before its note,
@@ -42,20 +48,34 @@ export const CODA_MAX_MS = 12_000;
 export function nextBuildStep(step: BuildStep, o: BuildObs): BuildStep | 'done' {
   if (step === 0) return 0;
   if ((step === 3 || step === 4 || step === 5) && o.hut === null) return 1;
+  // The hut stands cut off (D-259, owner 2026-11-06: "trigger the stall on purpose"): it works until its yard is full,
+  // then stalls for real with "no road". The lesson lets that happen (step 7, the note points at ×4 — speed is not a
+  // sim command), reads the cause (step 5), and only then joins the road (step 3). Never asked twice.
+  if (step === 7 && o.hut === null) return 1;
+  const whyFirst = o.hut !== null && !o.connected && !o.whyDone && o.hutOpen && o.stalled;
   switch (step) {
     case 1:
-      if (o.hut !== null) return o.connected ? 4 : 3;
-      return o.picking ? 2 : 1;
     case 2:
-      if (o.hut !== null) return o.connected ? 4 : 3;
+      if (o.hut !== null) return o.connected ? 4 : whyFirst ? 5 : o.whyDone ? 3 : 7;
       return o.picking ? 2 : 1;
+    case 7:
+      if (o.connected) return 4;
+      if (whyFirst) return 5;
+      // stalled with its card closed: the road step reopens the way (its card shows "Zbuduj drogę")
+      if (o.stalled || o.since > STALL_WAIT_MS) return 3;
+      return 7;
     case 3:
-      return o.connected ? 4 : 3;
+      return o.connected ? 4 : whyFirst ? 5 : 3;
     case 4:
       if (!o.connected) return 3;
-      // the card just opened: step 5 decides on the next frames whether the hut stalls
-      return o.hutOpen ? 5 : 4;
+      // the card just opened: step 5 decides on the next frames whether the hut stalls (unless already read)
+      return o.hutOpen ? (o.whyDone ? 6 : 5) : 4;
     case 5:
+      if (!o.connected) {
+        // the cut-off hut: read the cause, then join it
+        if (o.whyOpened || !o.hutOpen || !o.stalled) return 3;
+        return !o.whyShown && o.since > WHY_WAIT_MS ? 3 : 5;
+      }
       // the doc's "if work has stalled": a hut at work (or one whose card shows no way in) skips the step
       if (o.whyOpened || !o.hutOpen || !o.stalled) return 6;
       return !o.whyShown && o.since > WHY_WAIT_MS ? 6 : 5;

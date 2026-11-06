@@ -61,6 +61,23 @@ for (const [w, h] of sizes) {
   await shot('s2');
   await tapSel('.build-shelf [data-b="place"]');
   await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 3, null, { timeout: 90000 });
+  // D-259: the cut-off hut works until its yard is full, then stalls for real ("no road"): ×4, read the cause, then the road
+  if ((await step()) === 7) {
+    await shot('s7');
+    await tapSel('.topbar .speed .seg:last-child');
+    await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) !== 7, null, { timeout: 180000 }).catch(async () => {
+      console.log('step 7 stuck', JSON.stringify(await page.evaluate(() => { const a = window.__marchia.app; const hut = a.world.state.buildings.at(-1); return { speed: a.loop?.speed ?? a.speed, pressed: document.querySelector('.topbar .speed .seg:last-child')?.getAttribute('aria-pressed'), status: hut.status, tick: a.world.state.tick, top: a.sheets.top?.content.key }; })));
+      bad++;
+    });
+    if ((await step()) === 5) await page.waitForTimeout(1600);
+  }
+  if ((await step()) === 5) {
+    await shot('s5road');
+    const c = await page.evaluate(() => { const b = document.querySelector('.tut-ring.is-shown')?.getBoundingClientRect(); return b ? [b.left + b.width / 2, b.top + b.height / 2] : null; });
+    if (c) await tap(c[0], c[1]);
+    await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) !== 5, null, { timeout: 90000 });
+    await shot('s5road-read');
+  }
   if ((await step()) === 3) {
     await shot('s3');
     // portrait: the card's own "Zbuduj drogę" (a real tap); landscape: the player closes the card and drags with the Road tool

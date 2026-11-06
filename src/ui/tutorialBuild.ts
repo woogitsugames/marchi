@@ -23,6 +23,8 @@ const MAX_ACTIVE_MS = 300_000;
 export class BuildTutorial extends Tutorial {
   private baseline: number[];
   private whyOpened = false;
+  /** Step 5 was passed once (D-259): the diagnosis is not asked again after the road. */
+  private whyDone = false;
 
   constructor(private bhost: BuildTutorialHost) {
     super(bhost);
@@ -54,12 +56,13 @@ export class BuildTutorial extends Tutorial {
       const next = nextBuildStep(this.step as BuildStep, o);
       if (next === 'done') { this.end('done'); return; }
       if (next !== this.step) {
+        if (this.step === 5) this.whyDone = true;
         this.go(next);
         this.whyOpened = false;
         // the shelf covers the rail in portrait once the hut stands, and a road tool left in hand would turn the
         // tap on the hut into a road: put the finished tool away (UI only, as mission I does at its end)
         const tool = this.host.tool();
-        if ((next === 3 && tool === 'build') || (next === 4 && (tool === 'road' || tool === 'cobble' || tool === 'build'))) this.bhost.toolAway();
+        if (((next === 3 || next === 5 || next === 7) && tool === 'build') || (next === 4 && (tool === 'road' || tool === 'cobble' || tool === 'build'))) this.bhost.toolAway();
       }
     }
     // the one camera move per step (as in mission I): the hut (step 4) or its gate (step 3, road tool in hand) into
@@ -86,6 +89,7 @@ export class BuildTutorial extends Tutorial {
       stalled: !!hut && hutStalled(hut),
       whyShown: !!this.whyTarget(),
       whyOpened: this.whyOpened,
+      whyDone: this.whyDone,
       since: this.active - this.stepAt,
     };
   }
@@ -96,7 +100,8 @@ export class BuildTutorial extends Tutorial {
     return {
       from: 'tutorial.build.from',
       skip: 'tutorial.m1.skip',
-      text: `tutorial.build.step${this.step}` as MessageKey,
+      // step 5 on the cut-off hut names its cause (D-259); after the road the doc's own "work has stalled"
+      text: this.step === 5 && !this.hutJoined() ? 'tutorial.build.step5road' : `tutorial.build.step${this.step}` as MessageKey,
       act: this.step === 0 ? 'tutorial.build.show' : undefined,
     };
   }
@@ -118,6 +123,11 @@ export class BuildTutorial extends Tutorial {
   private cellsBox(cells: number[], pad: number): Box | null {
     const pts = cells.map((c) => this.host.cellScreen(c)).filter((p): p is { x: number; y: number; visible: boolean } => !!p && p.visible);
     return union(pts.map((p) => ({ x: p.x - pad, y: p.y - pad, w: 2 * pad, h: 2 * pad })));
+  }
+
+  private hutJoined(): boolean {
+    const hut = newHut(this.host.world, this.baseline);
+    return !!hut && hutConnected(this.host.world, hut);
   }
 
   private hutCells(): number[] {
@@ -161,6 +171,9 @@ export class BuildTutorial extends Tutorial {
       }
       case 6:
         return el('#sheets .sheet:last-child .close');
+      case 7:
+        // ×4 (D-259): the yard fills in 20 s instead of 80; the player may also just wait
+        return el('.topbar .speed .seg:last-child');
       default:
         return { box: null, probe: null };
     }

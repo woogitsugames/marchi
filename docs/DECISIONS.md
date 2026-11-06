@@ -2797,3 +2797,18 @@ not paused. Menus, settings and help itself show no "?". Why the head and not th
 crowding the pace card on a phone. Test tests/help-map.test.ts; shots tools/help-map-shots.mjs →
 docs/shots/helpmap-*.jpg (412×915, 915×412, 904×1000). (decided)
 
+**D-259 — Build tutorial: the stall is triggered on purpose (owner 2026-11-06 ~21:20, "wywołać celowo").** D-235's
+step 5 ("only if it stalls") almost never showed: a joined woodcutter's hut works. A hut placed **before** its road
+works too (`WORKING`, its card says "Produkuje") until its yard is full, then stalls for real with `NO_ROAD` — 800
+ticks, 80 s of game time. So the lesson now lets that happen instead of hurrying to the road: after "Postaw" a new
+step 7 ("Chata pracuje, ale bez drogi drewno nie ma dokąd jechać. Przyspiesz do ×4 i patrz na jej podwórze.") rings
+×4 (speed is the loop's, not a sim command — the tutorial still never issues one; the player may also just wait);
+when the hut stalls with its card open (the game opened it with the gap finder), step 5 reads the cause with its own
+text `tutorial.build.step5road` ("Chata drwala stoi — nie ma drogi. Tak wygląda każdy przestój: …", ring on "Co to
+znaczy?"), then step 3 joins the road, step 4 is passed (the card is open) and the coda follows. The diagnosis is
+asked once (`whyDone`); if the card was closed while waiting, the road step comes first and reopening the card asks
+for the cause; after 90 s active without a stall (never sped up) the road comes first. A hut placed on a road keeps
+D-235's flow. Logic in `nextBuildStep` (no DOM), tests in tests/tutorial-build.test.ts (incl. a real valley: a
+cut-off hut stalls `NO_ROAD` within 900 ticks); shots `tools/onboard-shots.mjs` → `onboard-s7-*`, `onboard-s5road-*`.
+2 keys × 17 languages (15 agent translations, BACKLOG). (decided)
+

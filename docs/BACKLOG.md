@@ -9,6 +9,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [ ] P3 — (D-254, D-259) Przegląd tłumaczeń agenta: `tutorial.build.step5road`, `tutorial.build.step7` w 15 językach.
 - [ ] P2 — (D-245) Karta rangi (D-152) zna tylko farmę, młyn, piekarnię, rybaka i kamieniołom: gracze „tylko karta” stoją na 7/9 towarów i nie dochodzą do rangi 5 w 120 min, choć sława (17 000) jest już w zasięgu po drodze do posterunku. Rozważyć `RANK_ORDER` z węglarzem, słodownią i browarem (rangi 3–4). (źródło: claude, `tools/sandbox-first30.ts --minutes 120`)
 - [ ] P2 — (D-245) Playtest: czy gracz z pełnymi spichlerzami czyta kartę „Posterunek handlowy: kupi więcej niż nasycony zamek — doprowadź drogę z mostem” i buduje drogę; czy srebro, które i tak się piętrzy (card-10 ~14,6 tys. w 120 min), wymaga osobnej podpowiedzi.
 - [ ] P3 — (D-245) 5 nowych kluczy (`cause.pacePost`, `cause.pacePostRoad`, `seal.tempo.post`, `fix.marketFullPost`, `fix.marketFullPostRoad`) w 15 językach to tłumaczenia agenta — do przeglądu natywnego (**właściciel**: native speakerzy).
