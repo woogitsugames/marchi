@@ -190,9 +190,11 @@ export function workerParts(variant = 0, pose: HumanPose = 'stand'): ModelPart[]
 }
 
 /** Animated yard workers (render-only): rig parts that the buildings view poses every frame. */
-export type WorkerKind = 'chop' | 'sack' | 'peel' | 'sawTop' | 'sawPit' | 'hoe' | 'net';
+export type WorkerKind = 'chop' | 'sack' | 'peel' | 'sawTop' | 'sawPit' | 'hoe' | 'net' | 'mallet' | 'rake' | 'shovel' | 'paddle' | 'trader';
 /** All kinds, in the order their rig seeds were assigned (append only: a new kind must not reseed the old ones). */
-export const WORKER_KINDS: WorkerKind[] = ['chop', 'sack', 'peel', 'sawTop', 'sawPit', 'hoe', 'net'];
+export const WORKER_KINDS: WorkerKind[] = ['chop', 'sack', 'peel', 'sawTop', 'sawPit', 'hoe', 'net', 'mallet', 'rake', 'shovel', 'paddle', 'trader'];
+/** Length (s) of each kind's work cycle (the model preview samples moments of it). */
+export const WORKER_CYCLE: Record<WorkerKind, number> = { chop: 1.7, sack: 3.6, peel: 3.2, sawTop: 1.5, sawPit: 1.5, hoe: 2.6, net: 6, mallet: 1.3, rake: 4.2, shovel: 3.4, paddle: 2.8, trader: 7 };
 
 export interface WorkerRig {
   /** Legs and shoes, origin between the feet, facing +Z. */
@@ -212,6 +214,25 @@ export const WORKER_HIP_Y = 0.9;
 export const WORKER_SHOULDER_Y = 1.37 - WORKER_HIP_Y;
 
 const rigCache = new Map<string, WorkerRig>();
+const bodyCache = new Map<number, { legs: ModelPart[]; torso: ModelPart[] }>();
+
+/**
+ * Legs and torso of a clothing variant: the same for every kind (only the arms hold a tool), so the yard draws them
+ * in one instanced batch per variant, not per kind (D-200: the new yards add an arms batch each, not three draws).
+ */
+export function workerBody(variant: number): { legs: ModelPart[]; torso: ModelPart[] } {
+  const hit = bodyCache.get(variant);
+  if (hit) return hit;
+  const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
+  const seed = 60 + variant * 3;
+  const lb = new PartBuilder({ seed, ao: 0.2 });
+  addHuman(lb, new Matrix4(), style, 'work', 7, undefined, 'legs');
+  const tb = new PartBuilder({ seed: seed + 100, ao: 0.2 });
+  addHuman(tb, new Matrix4().makeTranslation(0, -WORKER_HIP_Y, 0), style, 'work', 7, undefined, 'torso');
+  const body = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()) };
+  bodyCache.set(variant, body);
+  return body;
+}
 
 /** The rig of a worker kind (cached; shared geometry). Arms rest forward in the 'work' pose. */
 export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
@@ -220,10 +241,6 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
   if (hit) return hit;
   const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
   const seed = 60 + variant * 3 + WORKER_KINDS.indexOf(kind);
-  const lb = new PartBuilder({ seed, ao: 0.2 });
-  addHuman(lb, new Matrix4(), style, 'work', 7, undefined, 'legs');
-  const tb = new PartBuilder({ seed: seed + 100, ao: 0.2 });
-  addHuman(tb, new Matrix4().makeTranslation(0, -WORKER_HIP_Y, 0), style, 'work', 7, undefined, 'torso');
   const ab = new PartBuilder({ seed: seed + 200, ao: 0.2 });
   addHuman(ab, new Matrix4().makeTranslation(0, -1.37, 0), style, 'work', 7, undefined, 'arms');
   // tools, in the shoulder frame: the hands meet ~0.19 m below and 0.45 m in front of the shoulder axis
@@ -250,6 +267,24 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     rod(ab, 'wood', v3(0, -0.2, 0.28), tip, 0.022, 0.016, 5, handle);
     ab.add('wood', new TorusGeometry(0.42, 0.018, 4, 14), { color: '#6f5a3e', m: trs(tip.x, tip.y - 0.03, tip.z + 0.4, Math.PI / 2), ao: 0, dirt: 0.2 });
     ab.add('cloth', new ConeGeometry(0.4, 0.55, 10, 2, true), { color: '#8a8270', m: trs(tip.x, tip.y - 0.31, tip.z + 0.4, Math.PI), vary: 0.05, noise: 0.25, ao: 0, dirt: 0.1, jitter: 0.03, jitterFreq: 6 });
+  } else if (kind === 'mallet') {
+    // stone splitter's sledge (quarry): a short ash haft, an iron head set across it with the face down, to drive
+    // the wedges into the groove of the block on the bench
+    rod(ab, 'wood', v3(0, -0.2, 0.34), v3(0, -0.13, 0.98), 0.02, 0.018, 5, handle);
+    ab.add('metal', new CylinderGeometry(0.06, 0.065, 0.24, 7), { color: '#4f4d48', m: trs(0, -0.15, 1.0), ao: 0, dirt: 0.1 });
+  } else if (kind === 'rake') {
+    // collier's rake (charcoal burner): a long pole with a wooden head and short tines, to pull earth over the vents
+    rod(ab, 'wood', v3(0, -0.12, 0.0), v3(0, -0.5, 1.55), 0.018, 0.016, 5, handle);
+    box(ab, 'wood', 0.56, 0.05, 0.06, trs(0, -0.52, 1.57), { color: '#5d4a36', ao: 0, dirt: 0.3 });
+    for (let i = 0; i < 6; i++) rod(ab, 'wood', v3(-0.24 + i * 0.096, -0.53, 1.57), v3(-0.24 + i * 0.096, -0.66, 1.6), 0.01, 0.008, 3, { ...handle, color: '#4f3f2f' });
+  } else if (kind === 'shovel') {
+    // maltster's wooden shovel (malthouse): a broad flat blade to turn the steeped grain
+    rod(ab, 'wood', v3(0, -0.2, 0.3), v3(0, -0.38, 1.15), 0.018, 0.016, 5, handle);
+    box(ab, 'wood', 0.3, 0.025, 0.36, trs(0, -0.42, 1.32, 0.21, 0, 0), { color: '#8a7454', ao: 0, dirt: 0.1 });
+  } else if (kind === 'paddle') {
+    // brewer's mash oar (brewery): a long haft reaching down into the tun, a flat blade at its foot
+    rod(ab, 'wood', v3(0, -0.2, 0.38), v3(0, -0.95, 1.0), 0.02, 0.018, 5, handle);
+    box(ab, 'wood', 0.16, 0.38, 0.025, trs(0, -1.1, 1.13, -0.69, 0, 0), { color: '#7d6a50', ao: 0, dirt: 0.1 });
   } else if (kind === 'sawPit') {
     // the pit man: no tool of his own, his hands meet the saw's lower box handle (drawn with the top sawyer)
   }
@@ -266,7 +301,8 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     for (const s of [-1, 1]) rod(kb, 'wood', v3(0.02 * s, -0.55, z), v3(0.02 * s, -0.4, z), 0.018, 0.018, 4, handle);
     tool = oneMesh(kb.build());
   }
-  const rig: WorkerRig = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()), arms: oneMesh(ab.build()), tool };
+  const body = workerBody(variant);
+  const rig: WorkerRig = { legs: body.legs, torso: body.torso, arms: oneMesh(ab.build()), tool };
   rigCache.set(key, rig);
   return rig;
 }
@@ -307,7 +343,9 @@ export interface WorkerPose {
 }
 
 /** Rest pose arm angle per kind: tools held so their ends stay clear of the ground. */
-const REST_ARM: Record<WorkerKind, number> = { chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15 };
+const REST_ARM: Record<WorkerKind, number> = {
+  chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15, mallet: 0.3, rake: 0.45, shovel: 0.5, paddle: 0.4, trader: 0.6,
+};
 
 /** The hoe stroke (s) and the step the farmer takes back along the furrow after each stroke (m). */
 export const HOE_CYCLE = 2.6;
@@ -359,6 +397,46 @@ export function workerPose(kind: WorkerKind, t: number, working: boolean, out: W
     const k = smooth01(p / 0.12) - smooth01((p - 0.62) / 0.12);
     out.bend = 6 * D + 8 * D * k;
     out.arm = -20 * D + 34 * D * k + 0.012 * Math.sin(t * 2.1) * k;
+    return;
+  }
+  if (kind === 'mallet') {
+    // 1.3 s: swing the sledge up over the shoulder, drive it down onto a wedge, a short rest on the stroke
+    const p = (t / 1.3) % 1;
+    const up = smooth01(p / 0.45), strike = smooth01((p - 0.5) / 0.1), settle = smooth01((p - 0.7) / 0.3);
+    out.arm = 30 * D - 130 * D * up + 130 * D * strike;
+    out.bend = 15 * D - 12 * D * up + 16 * D * strike - 4 * D * settle;
+    return;
+  }
+  if (kind === 'rake') {
+    // 4.2 s: reach up the mound with the rake, draw the earth down over a smoking vent
+    const p = (t / 4.2) % 1;
+    const k = smooth01(p / 0.4) - smooth01((p - 0.5) / 0.45);
+    out.bend = 10 * D + 12 * D * k;
+    out.arm = 22 * D - 26 * D * k;
+    return;
+  }
+  if (kind === 'shovel') {
+    // 3.4 s: dig the shovel into the steeped grain, lift it and turn it over, back down
+    const p = (t / 3.4) % 1;
+    const down = smooth01(p / 0.3) - smooth01((p - 0.45) / 0.2);
+    const lift = smooth01((p - 0.45) / 0.2) - smooth01((p - 0.8) / 0.2);
+    out.bend = 8 * D + 32 * D * down + 4 * D * lift;
+    out.arm = 18 * D + 28 * D * down - 45 * D * lift;
+    return;
+  }
+  if (kind === 'paddle') {
+    // 2.8 s: the mash stirred to and fro, the brewer leaning into each push
+    const s = Math.sin((t / 2.8) * Math.PI * 2);
+    out.bend = 12 * D + 8 * D * s;
+    out.arm = -14 * D * s;
+    return;
+  }
+  if (kind === 'trader') {
+    // 7 s: leaning on the counter, now and then a hand raised to show the wares or take a coin
+    const p = (t / 7) % 1;
+    const g = smooth01((p - 0.5) / 0.08) - smooth01((p - 0.72) / 0.1);
+    out.bend = 9 * D + 2 * D * Math.sin(t * 0.9);
+    out.arm = 34 * D - 55 * D * g;
     return;
   }
   if (kind === 'chop') {

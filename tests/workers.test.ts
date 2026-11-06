@@ -1,8 +1,8 @@
 // Animated yard workers (night 2: woodcutter, miller, baker; night 6: two sawyers, the farmer, the fisherman).
 // Render-only data: budget per figure, one mesh per rig piece, spots on the footprint, rest pose still.
-import { BUILDING_KINDS, buildingModel } from '../src/render/models/buildings';
+import { BUILDING_KINDS, POST_TRADER, buildingModel } from '../src/render/models/buildings';
 import { triangles } from '../src/render/models/kit';
-import { WORKER_KINDS, type WorkerPose, workerPose, workerRig } from '../src/render/models/people';
+import { WORKER_KINDS, type WorkerPose, workerBody, workerPose, workerRig } from '../src/render/models/people';
 import { assert, eq, test } from './harness';
 
 test('workers: every kind stays near ~1.1k triangles and draws in one call per rig piece', () => {
@@ -16,7 +16,10 @@ test('workers: every kind stays near ~1.1k triangles and draws in one call per r
 });
 
 test('workers: the new yards have their workers; spots stay on the footprint', () => {
-  const want: Record<string, string> = { sawmill: 'sawTop,sawPit', fisher: 'net', woodcutter: 'chop', mill: 'sack', bakery: 'peel' };
+  const want: Record<string, string> = {
+    sawmill: 'sawTop,sawPit', fisher: 'net', woodcutter: 'chop', mill: 'sack', bakery: 'peel',
+    quarry: 'mallet', charcoalBurner: 'rake', malthouse: 'shovel', brewery: 'paddle',
+  };
   for (const kind of BUILDING_KINDS) {
     const m = buildingModel(kind);
     const ws = m.workers ?? [];
@@ -27,6 +30,15 @@ test('workers: the new yards have their workers; spots stay on the footprint', (
     }
   }
   eq(buildingModel('farm').fieldWorker?.kind, 'hoe', 'the farmer goes out to the field');
+  eq(POST_TRADER.kind, 'trader', 'the open trading post has its trader');
+});
+
+test('workers: legs and torso are shared per clothing variant (one batch each, D-200)', () => {
+  for (const kind of WORKER_KINDS) {
+    const r = workerRig(kind, 2);
+    eq(r.legs, workerBody(2).legs, `${kind}: legs of variant 2`);
+    eq(r.torso, workerBody(2).torso, `${kind}: torso of variant 2`);
+  }
 });
 
 test('workers: at rest nobody moves the saw; both sawyers share one stroke', () => {

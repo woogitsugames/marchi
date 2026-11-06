@@ -381,7 +381,19 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   rod(b, 'wood', v3(-5.3, 0.5, 1.6), v3(-4.7, 0.95, 1.9), 0.025, 0.022, 4, { color: '#7a6448', ao: 0 });
   box(b, 'metal', 0.06, 0.06, 0.55, trs(-4.72, 0.97, 1.9, 0, 1.1, 0.3), { color: '#4a4744', ao: 0, dirt: 0 });
   fenceRun(b, v3(-6.0, 0, 0.3), v3(-6.0, 0, 3.6), 1.0);
-  return { gate: v3(0.6, 0, 4), yard: { at: v3(-3.75, 0, 2.6), yaw: Math.PI / 2 } };
+  // the splitter's block on the ground (D-200): a groove along the top with wedges, chips around it; the stone
+  // cutter stands at its end and drives the wedges with his sledge
+  stoneBlock(b, trs(-4.1, 0.28, 0.6, 0, 0.03), 1.3, 0.56, 0.78);
+  box(b, 'stone', 1.2, 0.03, 0.04, trs(-4.1, 0.565, 0.6, 0, 0.03), { color: '#2a2622', noise: 0, ao: 0, dirt: 0, vary: 0 });
+  for (let i = 0; i < 4; i++) box(b, 'metal', 0.06, 0.11, 0.08, trs(-4.55 + i * 0.3, 0.6, 0.6 - i * 0.009), { color: '#45423e', ao: 0, dirt: 0 });
+  for (let i = 0; i < 9; i++) {
+    const a = b.r(0, Math.PI * 2), r = b.r(0.55, 1.0), s = b.r(0.05, 0.1);
+    b.add('stone', new SphereGeometry(1, 4, 3), { ...stoneO(P.rubble), m: trs(-4.1 + Math.cos(a) * r, s * 0.3, 0.6 + Math.sin(a) * r * 0.7, b.r(0, 3), b.r(0, 3), 0, s, s * 0.7, s * 1.2) });
+  }
+  return {
+    gate: v3(0.6, 0, 4), yard: { at: v3(-3.75, 0, 2.6), yaw: Math.PI / 2 },
+    workers: [{ kind: 'mallet', at: v3(-2.85, 0, 0.6), yaw: -Math.PI / 2 }],
+  };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -483,7 +495,11 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
     ao: 0,
     dirt: 0,
   });
-  return { gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(2.1, 0, 3.05), yaw: Math.PI / 2 } };
+  return {
+    gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(2.1, 0, 3.05), yaw: Math.PI / 2 },
+    // the collier at the foot of the mound, raking earth up over the vents (D-200)
+    workers: [{ kind: 'rake', at: v3(mx - 1.0, 0, mz + 2.6), yaw: Math.atan2(1.0, -2.6) }],
+  };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -540,19 +556,22 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   });
   // soot staining on the roof just under the cowl
   b.add('wood', new CylinderGeometry(0.44, 0.8, 0.4, 4, 1, true), { color: '#2f2b27', m: trs(kx, vy - 0.15, cz, 0, 0, 0, kw / kd, 1, 1).multiply(trs(0, 0, 0, 0, Math.PI / 4)), ao: 0, dirt: 0 });
-  // yard: steeping cistern (water tub on a frame), sacks of grain and pale malt by the door
+  // yard: steeping cistern (water tub on a frame), a sack of grain by the door
   const tx = -2.55, tz = 1.75;
   box(b, 'wood', 1.9, 0.62, 0.95, trs(tx, 0.31, tz), { color: C.timber, ao: 0.3 }, 0.5);
   box(b, 'wood', 1.7, 0.03, 0.75, trs(tx, 0.6, tz), { color: '#3f4b4b', noise: 0.04, ao: 0, dirt: 0 });
   for (const s of [-1, 1]) box(b, 'wood', 2.0, 0.08, 0.1, trs(tx, 0.64, tz + s * 0.45), { color: C.timberLight, ao: 0 });
   for (const s of [-1, 1]) box(b, 'wood', 0.1, 0.08, 1.0, trs(tx + s * 0.97, 0.64, tz), { color: C.timberLight, ao: 0 });
-  // malt shovel leaning on the tub
-  rod(b, 'wood', v3(tx + 1.15, 0.05, tz + 0.62), v3(tx + 1.4, 1.45, tz + 0.18), 0.022, 0.022, 4, { color: '#7a6448' });
-  box(b, 'wood', 0.32, 0.4, 0.03, trs(tx + 1.13, 0.22, tz + 0.63, -0.1, 0, -0.18), { color: '#8a7454', ao: 0 });
+  // steeped grain heaped in the tub (the maltster turns it with his shovel, D-200)
+  b.add('cloth', new SphereGeometry(1, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a08a5c', m: trs(tx, 0.6, tz, 0, 0, 0, 0.8, 0.1, 0.34), noise: 0.2, noiseFreq: 12, ao: 0, dirt: 0 });
   const dx = (mx0 + mx1) / 2 + 0.7;
   sack(b, dx - 1.0, 0.85, 0.2);
-  // the pale malt bags by the door are the yard stock (the malthouse's malt, D-71)
-  return { gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz), yard: { at: v3(2.1, 0, 3.0), yaw: Math.PI / 2 } };
+  // the malt tubs by the door are the yard stock (the malthouse's malt, D-71, D-201)
+  return {
+    gate: v3(-0.8, 0, 4), smoke: v3(kx, vy + 1.2, cz), yard: { at: v3(2.1, 0, 3.0), yaw: Math.PI / 2 },
+    // the maltster at the end of the steeping tub with his wooden shovel (D-200)
+    workers: [{ kind: 'shovel', at: v3(tx + 1.45, 0, tz), yaw: -Math.PI / 2 }],
+  };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -638,5 +657,9 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   // trestle bench with a tankard-sized cask and a tun
   b.add('wood', new CylinderGeometry(0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
   b.add('plaster', new CylinderGeometry(0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
-  return { gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.5, 0, 2.7), yaw: Math.PI / 2 } };
+  return {
+    gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.5, 0, 2.7), yaw: Math.PI / 2 },
+    // the brewer stirring the tun in the yard with his mash oar, turned toward it from the front corner (D-200)
+    workers: [{ kind: 'paddle', at: v3(-5.0 - 0.78, 0, 1.5 + 0.78), yaw: Math.PI * 0.75 }],
+  };
 }

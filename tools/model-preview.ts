@@ -69,7 +69,7 @@ import { horsePose, POSE_SIZE } from '../src/render/gait';
 import { BUILDING_KINDS, buildingModel, CHAIN_KINDS, PROP_KINDS, propParts } from '../src/render/models/buildings';
 import { bakeTreeBillboards, billboardDepthMaterial, treeBillboard, treeParts, TREE_KINDS, TREE_SIZE, TREE_VARIANTS } from '../src/render/models/trees';
 import { bridgeParts } from '../src/render/models/bridges';
-import { WORKER_HIP_Y, WORKER_KINDS, WORKER_SHOULDER_Y, type WorkerPose, workerParts, workerPose, workerRig } from '../src/render/models/people';
+import { WORKER_CYCLE, WORKER_HIP_Y, WORKER_KINDS, WORKER_SHOULDER_Y, type WorkerPose, workerParts, workerPose, workerRig } from '../src/render/models/people';
 
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'overview';
@@ -366,7 +366,7 @@ const treeObjs = new Map<string, Object3D[]>();
 // at his log height so the saw hangs where it does in the sawmill yard.
 {
   const pose: WorkerPose = { bend: 0, arm: 0, lift: 0 };
-  const CYCLE: Record<string, number> = { chop: 1.7, sack: 3.6, peel: 3.2, sawTop: 1.5, sawPit: 1.5, hoe: 2.6, net: 6 };
+  const CYCLE: Record<string, number> = WORKER_CYCLE;
   WORKER_KINDS.forEach((kind, k) => {
     const rig = workerRig(kind, k % 4);
     [-1, 0.3, 0.6].forEach((frac, r) => {

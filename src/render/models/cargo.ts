@@ -286,27 +286,30 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
       return true;
     }
     case 'malt': {
-      // three small pale bags, tied at the neck, two lying and one propped on them
-      const bag = (mm: Matrix4) => {
-        const inv = mm.clone().invert();
-        const prof = [[0.001, 0], [0.15, 0.03], [0.17, 0.14], [0.11, 0.28], [0.04, 0.32], [0.07, 0.38], [0.001, 0.37]].map(([r, y]) => new Vector2(r, y));
-        b.add('cloth', new LatheGeometry(prof, 7), {
-          color: '#8f8467',
-          m: mm,
-          jitter: 0.012,
-          jitterFreq: 6,
-          renormal: true,
-          noise: 0.08,
-          ao: 0,
-          dirt: 0,
-          shade: (p, _n, c) => {
-            const q = p.clone().applyMatrix4(inv);
-            if (q.y > 0.29 && q.y < 0.34) c.set('#4f4232'); // twine
-          },
-        });
-      };
-      bag(m.clone().multiply(trs(-0.11, 0.15, -0.05, Math.PI / 2 - 0.1, 0, 0)));
-      bag(m.clone().multiply(trs(0.12, 0.15, 0.06, Math.PI / 2 - 0.1, Math.PI * 0.9, 0)));
+      // a squat open tub of staves with two dark hoops, heaped with amber kilned malt (D-201): a round low drum with a
+      // bright domed top reads apart from the upright grain sacks, the flat flour sacks and the bread baskets
+      const prof = [[0.001, 0.02], [0.22, 0.02], [0.23, 0], [0.27, 0.34], [0.25, 0.35], [0.22, 0.04]].map(([r, y]) => new Vector2(r, y));
+      b.add('wood', new LatheGeometry(prof, 10), {
+        color: '#6e5a42',
+        m,
+        noise: 0.14,
+        noiseFreq: 16,
+        ao: 0,
+        dirt: 0,
+      });
+      for (const [y, r] of [[0.07, 0.237], [0.27, 0.26]] as const) {
+        b.add('metal', new CylinderGeometry(r, r, 0.035, 10, 1, true), { color: '#34302c', m: m.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
+      }
+      b.add('cloth', new SphereGeometry(1, 9, 3, 0, Math.PI * 2, 0, Math.PI / 2), {
+        color: '#a8834a',
+        m: m.clone().multiply(trs(0, 0.32, 0, 0, b.r(0, 3), 0, 0.25, 0.13, 0.25)),
+        jitter: 0.012,
+        jitterFreq: 10,
+        noise: 0.3,
+        noiseFreq: 18,
+        ao: 0,
+        dirt: 0,
+      });
       return true;
     }
     case 'beer': {

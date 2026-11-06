@@ -963,6 +963,11 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
 
 /** The merchant's house front: the stall opening (shutters are separate parts, closed or open). */
 const POST_STALL = { x: -1.4, y: 1.75, z: -0.4, w: 4.2, h: 1.2 };
+/**
+ * The trader in the open stall (D-200): on the house floor (the 0.6 m plinth), half out of the dark recess over the
+ * counter, facing the yard. Drawn only while the post is open; his legs are not drawn (they would stand in the wall).
+ */
+export const POST_TRADER: WorkerSpot = { kind: 'trader', at: v3(POST_STALL.x + 0.4, 0.55, POST_STALL.z + 0.2), yaw: 0 };
 
 /**
  * A merchant's house with a wide stall window, the town scales under a lean-to (a steelyard on a chain — the

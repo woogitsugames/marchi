@@ -14,7 +14,7 @@ import {
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { castleLevel, postOpen, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
-import { buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
+import { POST_TRADER, buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
 import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
@@ -47,6 +47,10 @@ interface Worker {
   phase: number;
   /** Out on a field (re-placed when roads change), not in the building's own yard. */
   field?: boolean;
+  /** Works whatever the building's status (the trader at the open post's counter). */
+  always?: boolean;
+  /** Legs not drawn: they would stand inside a wall (the trader behind the counter). */
+  noLegs?: boolean;
   /**
    * The farmer's furrow (night 6b): he steps back along it after each stroke, between `lo` and `hi` metres from
    * the field cell's centre (x0, z0) along the axis (ax, az), and turns at the ends. `t`: seconds hoed so far.
@@ -57,10 +61,13 @@ interface Worker {
 /** A building whose worker goes out to the fields (the farm), kept to re-place him when the roads change. */
 interface FieldWorker { building: Building; spot: WorkerSpot; m: Matrix4; angle: number; baseY: number }
 
+/** Instanced batches of one kind: the arms (with the tool) are its own, legs and torso are its variant's (D-200). */
 interface WorkerParts { legs: Parts; torso: Parts; arms: Parts; tool: Parts | null }
 
 /** Rig variant (clothing) per worker kind: neighbours in one yard dress differently. */
-const RIG_VARIANT: Record<WorkerKind, number> = { chop: 2, sack: 3, peel: 0, sawTop: 1, sawPit: 0, hoe: 1, net: 2 };
+const RIG_VARIANT: Record<WorkerKind, number> = {
+  chop: 2, sack: 3, peel: 0, sawTop: 1, sawPit: 0, hoe: 1, net: 2, mallet: 3, rake: 2, shovel: 0, paddle: 1, trader: 3,
+};
 /** How far from a farm (cells, Chebyshev, from its footprint edge) the farmer walks out to a field. */
 const FIELD_REACH = 6;
 
@@ -150,6 +157,8 @@ export class BuildingsView {
   /** Output piles by the yards, drawn each frame from the stock with the wagons' cargo instances (D-71). */
   readonly yards: YardPile[] = [];
   private workerParts = new Map<WorkerKind, WorkerParts>();
+  /** Legs and torso batches per clothing variant, shared by every kind dressed in it. */
+  private bodyParts = new Map<number, { legs: Parts; torso: Parts }>();
   private readonly workerGroup = new Group();
   private time = 0;
   private signature = '';
@@ -162,10 +171,16 @@ export class BuildingsView {
   private partsFor(kind: WorkerKind): WorkerParts {
     let p = this.workerParts.get(kind);
     if (!p) {
-      const rig = workerRig(kind, RIG_VARIANT[kind]);
+      const v = RIG_VARIANT[kind];
+      const rig = workerRig(kind, v);
+      let body = this.bodyParts.get(v);
+      if (!body) {
+        body = { legs: new Parts(rig.legs, WORKER_CAP, this.workerGroup, `worker-v${v}-legs`), torso: new Parts(rig.torso, WORKER_CAP, this.workerGroup, `worker-v${v}-torso`) };
+        this.bodyParts.set(v, body);
+      }
       p = {
-        legs: new Parts(rig.legs, WORKER_CAP, this.workerGroup, `worker-${kind}-legs`),
-        torso: new Parts(rig.torso, WORKER_CAP, this.workerGroup, `worker-${kind}-torso`),
+        legs: body.legs,
+        torso: body.torso,
         arms: new Parts(rig.arms, WORKER_CAP, this.workerGroup, `worker-${kind}-arms`),
         tool: rig.tool ? new Parts(rig.tool, WORKER_CAP, this.workerGroup, `worker-${kind}-tool`) : null,
       };
@@ -198,6 +213,13 @@ export class BuildingsView {
       if (b.type === 'castle' && lvl >= 1) add(castleUpgradeParts(), m);
       // the trading post (D-170): shutters closed until rank 4, then the counter, the wares and the pennant
       if (b.type === 'tradePost') add(open ? tradePostOpenParts() : tradePostClosedParts(), m);
+      // ... and, open, the trader behind the counter (D-200): legs hidden in the wall, at work all day
+      if (b.type === 'tradePost' && open) {
+        const at = POST_TRADER.at.clone().applyMatrix4(m);
+        const base = new Matrix4().makeRotationY(angle + POST_TRADER.yaw).setPosition(at.x, baseY + POST_TRADER.at.y, at.z);
+        this.partsFor(POST_TRADER.kind);
+        this.workers.push({ buildingId: b.id, kind: POST_TRADER.kind, base, phase: (b.id * 0.618) % 1 * 7, always: true, noLegs: true });
+      }
       if (baseY - lo > 0.3) {
         // field-stone plinth under the main house, reaching into the ground on the low side
         const mb = modelBounds(model.parts);
@@ -358,11 +380,12 @@ export class BuildingsView {
 
   /** Yard workers: chop / carry / bake while the building is WORKING, stand at rest otherwise. */
   private updateWorkers(world: World, dt: number): void {
-    for (const p of this.workerParts.values()) { p.legs.begin(); p.torso.begin(); p.arms.begin(); p.tool?.begin(); }
+    for (const b of this.bodyParts.values()) { b.legs.begin(); b.torso.begin(); }
+    for (const p of this.workerParts.values()) { p.arms.begin(); p.tool?.begin(); }
     const bs = world.state.buildings;
     for (const w of this.workers) {
-      let working = false;
-      for (let i = 0; i < bs.length; i++) if (bs[i]!.id === w.buildingId) { working = bs[i]!.status.k === 'WORKING'; break; }
+      let working = !!w.always;
+      if (!working) for (let i = 0; i < bs.length; i++) if (bs[i]!.id === w.buildingId) { working = bs[i]!.status.k === 'WORKING'; break; }
       let base = w.base;
       const wk = w.walk;
       if (wk) {
@@ -378,15 +401,16 @@ export class BuildingsView {
         base = _wb;
       } else workerPose(w.kind, this.time + w.phase, working, _pose);
       const p = this.workerParts.get(w.kind)!;
-      if (p.legs.count >= WORKER_CAP) continue;
-      p.legs.push(base);
+      if (p.torso.count >= WORKER_CAP || p.arms.count >= WORKER_CAP) continue;
+      if (!w.noLegs) p.legs.push(base);
       _wt.copy(base).multiply(_t.makeTranslation(0, WORKER_HIP_Y, 0)).multiply(ROT.makeRotationX(_pose.bend));
       p.torso.push(_wt);
       _wa.copy(_wt).multiply(_t.makeTranslation(0, WORKER_SHOULDER_Y, 0)).multiply(ROT.makeRotationX(_pose.arm));
       p.arms.push(_wa);
       if (p.tool) p.tool.push(_wa.copy(base).multiply(_t.makeTranslation(0, _pose.lift, 0)));
     }
-    for (const p of this.workerParts.values()) { p.legs.end(); p.torso.end(); p.arms.end(); p.tool?.end(); }
+    for (const b of this.bodyParts.values()) { b.legs.end(); b.torso.end(); }
+    for (const p of this.workerParts.values()) { p.arms.end(); p.tool?.end(); }
   }
 
   private clear(): void {
