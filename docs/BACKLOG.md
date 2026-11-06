@@ -9,6 +9,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [ ] P2 — (D-188, **decyzja właściciela**) S6 `?fixture=warehouse-full`: prawdziwy pełny spichlerz w m1 wymaga odciętego zamku (karta „Najgorszy zastój” wskazuje zamek, 1:48 do śniegu). Zdecydować: liczyć S6 do głównego wskaźnika z celowanym pytaniem o spichlerz, traktować jako eksploracyjny, czy przenieść „pełny spichlerz” na m6 (S9) / dolinę (nasycony rynek, D-174).
+- [ ] P3 — (D-185) Nowy klucz `fixture.invalid` (komunikat prowadzącego) tylko pl/en, w `PENDING_KEYS` — pozostałe języki spadają na angielski; przetłumaczyć przy kolejnej rundzie.
+- [ ] P2 — (D-185) Fixtury w APK: parametry URL wymagają `chrome://inspect` (`location.replace('…?fixture=…&debug=1')`) — nadal brak debugowego ekranu wyboru fixtur / deep linku (PROTOCOL §2 p. 3). Jeśli WebView na telefonie badania nie daje się inspekcjonować, dodać ekran wyboru w buildzie debug.
 - [ ] P3 — (D-184) Nowy klucz `hud.calmStall` („Postój”) w 15 językach to tłumaczenie agenta — do przeglądu natywnego (**właściciel**: native speakerzy).
 - [x] P2 — (zrobione dzień 9i, D-172..D-175, `claude/w-day9i`; research valley-ranks-2-3 F2–F4) `validatePlace` odrzuca miejsce przecinające ukośny krok drogi (hasze misji bez zmian); odcięty producent dostaje lekarstwo „droga”; „Kup wóz” przy pełnym spichlerzu tylko, gdy rynek weźmie ładunek, inaczej spokojne „rynek nasycony”; karta rangi pomija budynek bez miejsca (seed 1304 kamieniołom).
 - [ ] P2 — (D-174) Spokojne „rynek nasycony” — zrzuty już są (`day9j-market-full-*`, `day9k-after-*`, D-178/D-180); zostaje **playtest**: sprawdzić w playteście, czy gracz rozumie, że ma sprzedać inny towar (bez karty F1 „rozbuduj” nic go nie prowadzi dalej).
@@ -166,6 +169,7 @@ Numery linii z 2026-11-01. Pozycje 1–6: samouczek; 7–16: i18n/RTL; 17–23: 
 Projekt: docs/design/sandbox.md (D-21). Kolejność S1 -> S2 -> S3 -> (S4, S5) -> S6 -> S7 -> S8.
 
 ## Zrobione
+- [x] 2026-11-06 (`claude/w-playtest`) Deterministyczne fixtury playtestu `?fixture=bridge-cut-in-transit|all-busy|bridge-jam|warehouse-full` (D-185..D-188): prawdziwa symulacja od startu misji, walidacja + widoczny komunikat „invalid setup”, brak zapisów, `openId`/`wagonId`; PROTOCOL §3 i CSV (`fixture_id`, `fixture_version`, `fixture_hash`) zaktualizowane; zrzuty `docs/shots/playtest-*.jpg`.
 - [x] 2026-11-06 (dzień 9l, `claude/w-day9l`) Spokojny nagłówek karty postoju „Postój” (D-184, D-182 b) i porządek w BACKLOG: zamknięte pozycje już rozwiązane decyzjami D-35..D-184 (przeniesione tutaj w oryginalnym brzmieniu):
   - [x] P3 — Wozy jadące w tę samą stronę nakładają się (brak odstępu w sim/render) — osobna sesja (src/render/wagonSpacing.ts); pierścień na moście zrobiony 2026-11-02. — **zamknięte dzień 9l:** D-35/D-45: `src/render/wagonSpacing.ts` rysuje odstęp ≥ 5 m na każdej skierowanej krawędzi, wjazd/wyjazd z kolejki płynnie; sim bez zmian.
   - [x] P3 — (dzień 9k, D-182 b) Karta postoju nad spokojnym postojem (gdy nie ma karty tempa) ma już zwykły panel, ale nagłówek wciąż „Najgorszy zastój” — osobny klucz (np. „Postój”), 17 języków. — **zamknięte dzień 9l:** D-184: klucz `hud.calmStall` („Postój”, en „Waiting”, 17 języków), zrzuty `docs/shots/day9l-after-*`.
