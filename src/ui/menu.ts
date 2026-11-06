@@ -42,6 +42,8 @@ export interface MenuActions {
   /** Free valley: the ledger (slot) picker. */
   openValley(): void;
   openSettings(): void;
+  /** Player help (D-236). */
+  openHelp?: () => void;
 }
 
 export interface SaveInfo { missionId: string; tick: number; slot: string; savedAt: number }
@@ -142,6 +144,13 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
   const settings = h('button.menu-item.btn.cf.menu-settings', null, h('span.mi-gear', { 'aria-hidden': 'true' }), h('span.mi-title', null, t('menu.settings')));
   setHtml(settings.firstElementChild as HTMLElement, iconSvg('menu', 22));
   settings.addEventListener('click', act.openSettings);
+  // Help beside Settings, before it (not a .menu-item: Settings stays the last one)
+  let help: HTMLElement | null = null;
+  if (act.openHelp) {
+    help = h('button.btn.cf.menu-help', null, h('span.mi-gear', { 'aria-hidden': 'true' }), h('span.mi-title', null, t('menu.help')));
+    setHtml(help.firstElementChild as HTMLElement, iconSvg('inspect', 22));
+    help.addEventListener('click', act.openHelp);
+  }
   const strip = h('div.menu-strip', null,
     h('div.menu-head', null,
       h('div.ribbon.menu-ribbon', null, h('h1.title', null, t('app.title'))),
@@ -152,7 +161,7 @@ export function buildMainMenu(act: MenuActions, save: SaveInfo | null, broken: M
   );
   // Settings sits under the scrolling list, inside the frame: always on screen (day 6: at 412x915 it was
   // the 14th row, below the fold)
-  return h('div.menu-wrap', null, h('div.menu-frame', null, strip, h('div.menu-foot-row', null, settings)));
+  return h('div.menu-wrap', null, h('div.menu-frame', null, strip, h('div.menu-foot-row', null, help, settings)));
 }
 
 export interface SettingsActions {
@@ -411,6 +420,8 @@ export function missionSaveSheet(act: MissionSaveActions, missionId: MissionKey,
 export interface GameMenuActions {
   resume(): void;
   settings(): void;
+  /** Player help (D-236). */
+  help?: () => void;
   restart(): void;
   toMenu(): void;
   /** Free valley: open the chronicle (D-57); absent in contracts. */
@@ -444,6 +455,7 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
       const html = `${note}<div class="sheet-actions" style="flex-direction:column">
         <button class="btn primary cf" data-a="resume">${esc(t('menu.resume'))}</button>
         <button class="btn cf" data-a="settings">${esc(t('menu.settings'))}</button>
+        ${act.help ? `<button class="btn cf" data-a="help">${esc(t('menu.help'))}</button>` : ''}
         ${act.chronicle ? `<button class="btn cf" data-a="chronicle">${iconSvg('seal', 24)}<span>${esc(t('chron.menu', { n: act.chronicleCount?.()[0] ?? 0, total: act.chronicleCount?.()[1] ?? 0 }))}</span></button>` : ''}
         ${restart}
         <button class="btn cf" data-a="menu">${esc(t('menu.toMenu'))}</button></div>`;
@@ -452,6 +464,7 @@ export function gameMenuSheet(act: GameMenuActions, world: World, slot: ValleySl
           const a = b.dataset.a;
           if (a === 'resume') act.resume();
           if (a === 'settings') act.settings();
+          if (a === 'help') act.help?.();
           if (a === 'chronicle') act.chronicle?.();
           if (a === 'ask' || a === 'keep') { asking = a === 'ask'; this.update(sheet); }
           if (a === 'restart') act.restart();

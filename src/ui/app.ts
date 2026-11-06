@@ -44,6 +44,7 @@ import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
 import { BuildTutorial } from './tutorialBuild';
+import { helpSheet } from './help';
 import { tutorialEndActions } from './tutorialEnd';
 import { DiagPanel } from './diagPanel';
 import { playtestStart } from '../game/playtest';
@@ -427,6 +428,7 @@ export class App implements PanelNav {
       },
       openValley: () => this.openValley(),
       openSettings: () => this.openSettings(),
+      openHelp: () => this.sheets.open(helpSheet()),
     }, broken ? null : this.save, broken, this.unfinished, this.best));
     // the moderator's playtest screen (D-189): a 3 s press on the title, nothing on screen hints at it
     const title = this.layers.menu.querySelector<HTMLElement>('.menu-head .title');
@@ -1317,6 +1319,7 @@ export class App implements PanelNav {
     const content = gameMenuSheet({
       resume: () => { this.sheets.closeTop(); },
       settings: () => this.openSettings(),
+      help: () => this.sheets.open(helpSheet()),
       restart: () => {
         if (isValleySlot(this.slot)) clearChronicle(this.slot);
         void this.dropSave(this.slot).catch(() => undefined);
