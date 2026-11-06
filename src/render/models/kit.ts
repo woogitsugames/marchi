@@ -192,16 +192,21 @@ export class PartBuilder {
   }
 
   add(mat: MatKey, src: BufferGeometry, o: AddOpts): this {
-    let g = src.index ? src.clone() : src.clone();
+    // a plain copy of the index and the attributes we merge (D-255): `src.clone()` first ran the primitive's own
+    // constructor with default parameters (a 32 x 16 sphere for every SphereGeometry piece), copied every attribute
+    // twice and kept the groups and bounds, all thrown away again
+    const g = new BufferGeometry();
+    if (src.index) g.setIndex(new BufferAttribute(src.index.array.slice(), 1));
+    for (const name of Object.keys(src.attributes)) {
+      if (name !== 'position' && name !== 'normal' && name !== 'uv') continue;
+      const a = src.attributes[name]!;
+      g.setAttribute(name, (a as BufferAttribute).isBufferAttribute ? new BufferAttribute(a.array.slice(), a.itemSize, a.normalized) : a.clone());
+    }
     if (!g.index) {
       const n = g.getAttribute('position').count;
       const idx = new Uint32Array(n);
       for (let i = 0; i < n; i++) idx[i] = i;
       g.setIndex(new BufferAttribute(idx, 1));
-    }
-    // keep only the attributes we merge
-    for (const name of Object.keys(g.attributes)) {
-      if (name !== 'position' && name !== 'normal' && name !== 'uv') g.deleteAttribute(name);
     }
     if (!g.getAttribute('normal')) g.computeVertexNormals();
     if (o.m) g.applyMatrix4(o.m);
