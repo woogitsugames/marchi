@@ -2634,8 +2634,10 @@ on a **new** valley (`prefs.tutorialBuild`, like `tutorialM1`; a loaded ledger n
 without the opening letter): step 0 is the doc's "consent" — the note asks and carries "Pokaż"; "Pomiń" ends it with no
 change to the world. Then the doc's six notes: (1) build tool → woodcutter's hut → its cost (the ring walks rail →
 shelf card → price card), (2) move the preview by the forest, "Postaw" (ring on the ghost's own cost/refusal label),
-(3) Road tool, join the hut to the network (ring on the rail button, then the hut's gate on the map), (4) open the hut
-(ring on the hut), (5) only if it stalls: tap the first cause-chain link or "Co to znaczy?", (6) "return to the
+(3) join the hut to the network — the game itself opens a cut-off building's card with the gap finder ("Zbuduj drogę",
+D-100), so the ring goes on that button while the card shows it, else on the rail's Road button, then on the hut's gate
+on the map; the note names both ways, (4) open the hut (ring on the hut; passed at once when its card is already open,
+which is the usual case after the card's own road fix — we never close a card the player is reading), (5) only if it stalls: tap the first cause-chain link or "Co to znaczy?", (6) "return to the
 valley" (ring on the card's close; ends when the card is closed after 2.5 s, or after 12 s). Same engine as mission I:
 `BuildTutorial extends Tutorial` (the m1 class now exposes protected hooks — `noteKeys`, `onAct`, `target`,
 `scrollsToTarget`, `railNeeded`, `pausedNow` — m1 behaviour unchanged), parchment note, double rule, woodcut arrow; no
@@ -2643,7 +2645,9 @@ scrim, never pauses, never issues a command; only "Pomiń"/"Pokaż" take taps; t
 cleared screen pause its clock. Steps are decided by `nextBuildStep` (src/ui/tutorialBuildSteps.ts, no DOM) from the
 live World: the newest woodcutter not in the start baseline, `findPath` from its gate to the castle (any route, built
 before or after the note); a hut placed early skips ahead, a removed hut (undo, demolish) goes back to step 1, a road
-removed at step 4 back to 3; ends by itself after 5 min active. Deviation from the doc: the game has no separate
+removed at step 4 back to 3; ends by itself after 5 min active. The finished tool is put away (UI only, like mission
+I's end): the build shelf when step 3 begins (it covers the rail in portrait), the road tool when step 4 begins (else
+the tap on the hut would draw a road). Deviation from the doc: the game has no separate
 "Dlaczego stoi?" button — it is the card's kicker over the cause chain — so step 5 asks for the chain link or the
 codex fold ("Co to znaczy?"), and is skipped at once when the hut works. Tests: tests/tutorial-build.test.ts (step
 logic + a real valley: baseline, new hut, connection via the old woodcutter's road, demolish). 9 keys

@@ -60,23 +60,32 @@ for (const [w, h] of sizes) {
   await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 3, null, { timeout: 90000 });
   if ((await step()) === 3) {
     await shot('s3');
-    await tapSel('.rail [data-tool="road"]');
-    await shot('s3b');
-    // the drag: the same track a player would draw from the hut's gate to the castle road
-    const gate = await page.evaluate((cells) => {
-      const a = window.__marchia.app; const hut = a.world.state.buildings.at(-1);
-      if (hut.gate === cells[0]) a.buildRoad(cells);
-      return hut.gate;
-    }, ROAD);
-    if (gate !== ROAD[0]) console.log('gate moved to', gate, '- road not drawn');
+    // portrait: the card's own "Zbuduj drogę" (a real tap); landscape: the player closes the card and drags with the Road tool
+    const fix = w < h && await page.evaluate(() => !!document.querySelector('#sheets .sheet:last-child .fix-btn'));
+    if (fix) await tapSel('#sheets .sheet:last-child .fix-btn');
+    else {
+      await tapSel('#sheets .sheet:last-child .close').catch(() => {});
+      await page.waitForTimeout(800);
+      await shot('s3a');
+      await tapSel('.rail [data-tool="road"]');
+      await shot('s3b');
+      const gate = await page.evaluate((cells) => {
+        const a = window.__marchia.app; const hut = a.world.state.buildings.at(-1);
+        if (hut.gate === cells[0]) a.buildRoad(cells);
+        return hut.gate;
+      }, ROAD);
+      if (gate !== ROAD[0]) console.log('gate moved to', gate, '- road not drawn');
+    }
   }
-  await waitStep(4);
-  await page.evaluate(() => window.__marchia.app.setTool('none'));
+  await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 4, null, { timeout: 90000 });
+  if ((await step()) === 4) {
   await shot('s4');
   // a tap on the hut: the ring's centre
   const ring = await page.evaluate(() => { const b = document.querySelector('.tut-ring.is-shown')?.getBoundingClientRect(); return b ? [b.left + b.width / 2, b.top + b.height / 2] : null; });
   if (ring) await tap(ring[0], ring[1]);
+  await page.waitForTimeout(1500);
   if ((await step()) === 4) await page.evaluate(() => { const a = window.__marchia.app; a.go('building', a.world.state.buildings.at(-1).id); });
+  }
   await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 5, null, { timeout: 90000 });
   if ((await step()) === 5) {
     await shot('s5');
@@ -85,7 +94,7 @@ for (const [w, h] of sizes) {
   await waitStep(6).catch(() => {});
   await shot('s6');
   await tapSel('#sheets .sheet:last-child .close').catch(() => {});
-  await page.waitForTimeout(3500);
+  await page.waitForFunction(() => window.__marchia.app.buildTut === null, null, { timeout: 90000 }).catch(() => {});
   const pref = await page.evaluate(() => ({ tut: window.__marchia.app.buildTut === null, pref: JSON.parse(localStorage.getItem('marchia.prefs') || '{}').tutorialBuild }));
   console.log(`${w}x${h} end`, JSON.stringify(pref));
   if (!pref.tut || pref.pref !== 'done') bad++;
