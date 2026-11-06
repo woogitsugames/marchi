@@ -527,3 +527,13 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 - **Typography:** bundled game typefaces Grenze Gotisch 700 and Alegreya Sans 700 (SIL OFL; the generator reads its own installed font package locally). No font binaries distributed as separate assets.
 - **Composition:** text overlays use the game's dark wood / parchment / wax palette; images remain actual WebGL gameplay, not game-art concept renderings. The feature graphic preserves gameplay footage under the brand title.
 - **Pre-release:** view every generated full-resolution image and thumbnail before uploading to either store; scripts reject missing real scenes instead of faking statuses or mechanics.
+
+## Graphics polish 10 — late-chain workers, malt tubs, winter frost (2026-11-06, D-200..D-203)
+
+- **Rights/provenance:** all procedural, written for Marchia in code (`src/render/models/people.ts`, `chains.ts`,
+  `buildings.ts`, `cargo.ts`, `materials.ts`, `fx.ts`); no imported meshes, textures or third-party art.
+- **New:** five yard-worker rigs (stone cutter with an iron sledge, collier with a rake, maltster with a wooden
+  shovel, brewer with a mash oar, trader at the counter) on the shared clothing variants; the quarry's splitter's
+  block with wedges and chips; steeped grain in the malthouse tub; the malt load unit (hooped tub heaped with amber
+  malt) replacing the small bags; hoarfrost on up-facing building faces in winter; sleet flecks in winter.
+- **Removed props:** the charcoal burner's leaning rake and the malthouse's leaning shovel (the workers carry them).
