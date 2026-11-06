@@ -2956,3 +2956,58 @@ The bottleneck-blind player (`--no-neck`) after: card-30 116,3 / 112,6 / 111,4 /
 seed 1303 is 3,9 min slower than "game before, fixed tool" (denser building by the castle) but faster than D-251.
 Left: card-60 still short on 3/4 seeds by 211–2 719 renown; the bottleneck card ignores its consumers' saturation
 (BACKLOG). (decided)
+
+## Bottleneck card and saturation, grow reason in landscape (BACKLOG P2 from D-264)
+
+**D-268 — The bottleneck card skips an input whose every consumer works in a chain ending in a saturated good.**
+BACKLOG P2 (D-264): in a crowded valley the "Wąskie gardło" card (D-171) kept naming grain and wood — the scripted
+card-10 player built woodcutters and farms whose charcoal, planks and bread already sold at the floor, so the new
+goods only filled granaries (card-10 seed 1303: 116 buildings, rank 5 at 108,8 min). Now `computeCard` drops a good
+when every consumer of it on the map has a saturated chain end: `chainEndGood(type)` follows the grow chain's feed
+(`GROW_FEEDS`: a mill by a standing bakery ends in bread, a mill alone in flour; the charcoal burner in charcoal) and
+`goodSaturated` is the grow card's own D-174 test (saturation ≥ ½ cap, or a full granary holding a load no market
+takes), moved to `src/ui/saturation.ts` so both cards share one rule. One consumer with a chain that still sells
+keeps the card (its producer feeds that consumer too). The slot then falls through as before: the grow card (D-192)
+names a chain that sells, or a good never sold (D-265). Why skip, not redirect: the grow card already redirects to
+the right chain with the same button, and a second redirecting rule inside the bottleneck card would have to repeat
+its ratios. UI only; mission hashes identical (`tools/mission-hashes.ts`, 45 strategies). Test
+`tests/bottleneck.test.ts` (bread saturated → no grain card; without bakeries flour is the end good). (decided)
+
+**D-269 — The valley site check (D-266) accepts a neighbouring road only as the network would drive it.**
+With D-268 card-10 seed 1304 built differently and then stalled at rank 4 (goods 8/9): the rank card named the
+brewery 256 times, each placement was born cut off and taken back. `siteLinked` had accepted a road cell diagonal to
+the gate whose corner cells were held by an older building (network `hasEdge` refuses that step) — it only checked
+the new footprint. Now a neighbouring road counts only when the network would use the step (no building on it, a
+diagonal's corners free of every building, the grade ≤ `MAX_GRADE`) and the road joins the stable's component (an
+orphan stretch does not); otherwise the gap finder's link decides, as before. UI only (`buildSite` asks only in the
+free valley); mission hashes identical. (decided)
+
+Measured with D-268 + D-269 (`npx tsx tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304 --only
+card-10,card-30,card-60,decent`), rank-5 minute (– = not reached; renown at 120 min):
+
+| player | before (D-267) | after |
+|---|---|---|
+| card-10 | 92,9 / 87,8 / 108,8 / 93,9 | **89,1 / 90,0 / 91,7 / 90,2** |
+| card-30 | 97,0 / 102,5 / 104,6 / 100,0 | **96,4 / 95,5 / 95,8 / 99,9** |
+| card-60 | – (16 387) / – (16 789) / – (14 281) / 116,6 | **119,9 / – (16 659) / – (13 822) / 118,2** |
+| decent | 117,6 / 116,7 / 117,0 / 115,6 | identical |
+
+card-10 mean 95,9 → 90,3 min (seed 1302 2,2 min slower), with fewer buildings (100/121/116/106 → 111/107/102/105);
+card-30 mean 101,0 → 96,9, faster on every seed, 60–70 buildings instead of 70–100; card-60 reaches rank 5 on 2/4
+seeds (was 1/4), seed 1304 1,6 min slower, seeds 1302/1303 130–460 renown lower at 120 min. With D-268 alone (no
+D-269) card-10 seed 1304 stayed at rank 4 — the site bug, not the card.
+
+**D-270 — On a short landscape sheet the grow card's reason wraps in the wider column instead of a three-line clamp.**
+In 915×412 (`body.is-short`) the docked fix stands beside its button (D-138: two columns 1,45 : 1, the reason clamped
+at three lines / 48 px), so `fix.growWhyFlow` ("Przepływ 100 z 120 srebra…; towary już są. Przepływ rośnie ze
+sprzedaży: …", ~150 characters in pl) ended in "Przepływ…" — the half that says why one more building helps was cut
+(`docs/shots/fame-sheet-915x412-before.jpg`). The grow card's fix section now carries `fix-wide` (`fixSection(…,
+wide)`, both `fix.growWhy` and `fix.growWhyFlow`): on a short sheet the columns become 1,15 : 1,45 (the reason gets
+the wider one), the reason wraps without a clamp (12 px, line-height 1,2, hyphens) and the button label may break a
+long compound ("Holzfäller-hütte"). Why not a full-width row under the button (tried first): the dock grew to ~105 px
+and pushed the castle's status line under the fade and "Naprawa" out of view; beside the button it is 94 px in pl
+(button 62 px, ≥ 48). Measured in the built game (staged as `tools/fame-shots.mjs`, 915×412 and Flip 360×380, pl /
+de / en / pseudo): the reason's scrollHeight = clientHeight (nothing clipped), button and label without overflow,
+the dock inside the sheet; pseudo (+40 %) takes 8 lines and the dock 123 px, the status line then sits under the
+fade but scrolls. Portrait and other fix notes unchanged (only the grow card is wide). Shots
+`docs/shots/fame-sheet-915x412{-before,}.jpg`, `fame-{hud,sheet}-{412x915,915x412}.jpg` re-shot. (decided)

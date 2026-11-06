@@ -8,7 +8,8 @@ import {
   type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
-import { granaryLoads, postWouldTake } from './stallKinds';
+import { postWouldTake } from './stallKinds';
+import { GROW_FEEDS, goodSaturated } from './saturation';
 import { bottleneckCard } from './bottleneck';
 import { siteExists } from './site';
 
@@ -215,18 +216,7 @@ function newProducer(world: World, castle: number, unlocked: readonly BuildingTy
 const GROW_CHAINS: readonly (readonly BuildingType[])[] = [
   ['farm', 'mill', 'bakery'], ['fisher'], ['woodcutter', 'sawmill'], ['charcoalBurner'], ['malthouse', 'brewery'],
 ];
-const GROW_FEEDS: Partial<Record<BuildingType, BuildingType>> = { farm: 'mill', mill: 'bakery', woodcutter: 'sawmill', malthouse: 'brewery' };
 const GROW_FED_BY: Partial<Record<BuildingType, BuildingType>> = { mill: 'farm', bakery: 'mill', sawmill: 'woodcutter', brewery: 'malthouse' };
-/**
- * The chain's end good does not fetch a fair price any more (D-174): its saturation reached half the cap, or a full
- * granary holds a load of it that no market takes. More of the same would only fill the granaries.
- */
-function growSaturated(world: World, good: Good): boolean {
-  const st = world.state;
-  if (st.market.saturation[good] >= MARKET.cap / 2) return true;
-  return st.buildings.some((b) => b.type === 'warehouse' && b.status.k === 'STORAGE_FULL' &&
-    b.stock[good] >= capacityOf(good) && granaryLoads(world, b.id) === 'saturated');
-}
 
 /**
  * The free valley's grow card (D-192), or null. Shown only when the building is affordable with the fleet's silver
@@ -252,7 +242,7 @@ export function growCard(world: World): PaceGrow | null {
     for (const t of chain) if (n(t) > 0) last = t;
     if (!last) continue;
     const good = outputGoods(last)[0];
-    if (!good || growSaturated(world, good)) continue;
+    if (!good || goodSaturated(world, good)) continue;
     for (const t of chain) {
       if (!sb.unlocked.includes(t)) continue;
       // D-267: a consumer the rank does not allow yet (the brewery before rank 4) leaves its supplier's good as the
