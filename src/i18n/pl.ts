@@ -436,7 +436,7 @@ export const pl = {
   'hud.worst': 'Najgorszy zastój',
   'hud.calmStall': 'Postój',
   'hud.worstShow': 'Pokaż: {name}',
-  'hud.stallsNext': 'Liczba przestojów: {n}. Pokaż kolejny',
+  'hud.stallsNext': 'Zastoje: {n} — pokaż kolejny',
   'pin.worst': 'Najgorszy zastój — {name}',
   'pin.critical': 'Krytyczny zastój — {name}',
   'pin.stood': '{name}, czas przestoju: {time}',
