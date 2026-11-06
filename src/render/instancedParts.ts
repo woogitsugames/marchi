@@ -26,21 +26,49 @@ export function markInstances(a: BufferAttribute, n: number): void {
 
 const ranges = new WeakMap<BufferAttribute, { start: number; count: number }>();
 
+/**
+ * Instanced copies of a model, one InstancedMesh per material part. `parts` may be a function: the model is then
+ * built and its meshes created on first use (`push`, `meshes` or `build`), not up front (D-256: the mid wagon rig,
+ * the far rig and the cargo of goods nobody carries yet cost ~50-90 ms before the menu was ready). Geometries made
+ * by `geo` belong to these parts and go with `dispose`; the model's own (cached, shared) geometries stay.
+ */
 export class Parts {
-  readonly meshes: InstancedMesh[];
   count = 0;
-  constructor(parts: ModelPart[], readonly cap: number, group: Group, name: string, mat?: (p: ModelPart) => Material, geo?: (g: BufferGeometry) => BufferGeometry) {
-    this.meshes = parts.map((p) => {
-      const m = new InstancedMesh(geo ? geo(p.geometry) : p.geometry, mat ? mat(p) : (instancedMaterial(p.material) as Material), cap);
+  private built: InstancedMesh[] | null = null;
+  private shadow = true;
+  private readonly owned: BufferGeometry[] = [];
+  constructor(
+    private readonly parts: ModelPart[] | (() => ModelPart[]),
+    readonly cap: number,
+    private readonly group: Group,
+    private readonly name: string,
+    private readonly mat?: (p: ModelPart) => Material,
+    private readonly geo?: (g: BufferGeometry) => BufferGeometry,
+    private readonly init?: (m: InstancedMesh) => void,
+  ) {
+    if (typeof parts !== 'function') this.build();
+  }
+  /** Created (and added to the group) yet. */
+  get ready(): boolean { return this.built !== null; }
+  get meshes(): InstancedMesh[] { return this.built ?? this.build(); }
+  build(): InstancedMesh[] {
+    if (this.built) return this.built;
+    const list = typeof this.parts === 'function' ? this.parts() : this.parts;
+    this.built = list.map((p) => {
+      let g = p.geometry;
+      if (this.geo) { g = this.geo(g); this.owned.push(g); }
+      const m = new InstancedMesh(g, this.mat ? this.mat(p) : (instancedMaterial(p.material) as Material), this.cap);
       m.count = 0;
       m.frustumCulled = false;
-      m.castShadow = true;
+      m.castShadow = this.shadow;
       m.receiveShadow = true;
-      m.name = name;
+      m.name = this.name;
       shareInstancedDepth(m);
-      group.add(m);
+      this.init?.(m);
+      this.group.add(m);
       return m;
     });
+    return this.built;
   }
   begin(): void { this.count = 0; }
   push(mat: Matrix4): number {
@@ -49,12 +77,22 @@ export class Parts {
     return i;
   }
   end(): void {
-    for (const m of this.meshes) {
+    if (!this.built) return; // nothing pushed since creation
+    for (const m of this.built) {
       m.count = this.count;
       m.visible = this.count > 0;
       markInstances(m.instanceMatrix, this.count);
     }
   }
-  setShadow(on: boolean): void { for (const m of this.meshes) m.castShadow = on; }
+  setShadow(on: boolean): void {
+    this.shadow = on;
+    if (this.built) for (const m of this.built) m.castShadow = on;
+  }
+  /** Instance buffers and the geometries made by `geo`; the model's shared geometries are kept (D-256). */
+  dispose(): void {
+    for (const m of this.built ?? []) { this.group.remove(m); m.dispose(); }
+    for (const g of this.owned) g.dispose();
+    this.owned.length = 0;
+    this.built = null;
+  }
 }
-

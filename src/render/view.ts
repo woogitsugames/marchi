@@ -142,6 +142,8 @@ class View implements WorldView {
   private menu = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
+  /** Frame parity for the time-of-day light refresh (D-257); 1 = the next frame refreshes. */
+  private lightTick = 0;
   private lastStats = { calls: 0, triangles: 0 };
   /** Shader pre-warm (research 2026-11-02): runs after the next rendered frame when set. */
   private warm: ShaderPrewarm | null = null;
@@ -289,6 +291,22 @@ class View implements WorldView {
     this.warmPending = true;
   }
 
+  /**
+   * Ask the driver to compile the programs of the scene as it stands (D-258), when it links in parallel
+   * (KHR_parallel_shader_compile); the app calls this right after the menu world is built, before the save list.
+   */
+  precompile(): void {
+    const r = this.renderer, warm = this.warm;
+    if (!r || !warm || !this.world) return;
+    try {
+      if (!warm.parallel) return;
+      startupMark('precompile'); // phase 'precompile' = the cost of the request itself
+      warm.request(this.scene, this.rig.camera);
+    } catch (e) {
+      console.warn('[view] precompile', e);
+    }
+  }
+
   /** Stand-in meshes, one per model material kind, sharing one small box (PartBuilder layout). */
   private kindMeshes(): Mesh[] {
     if (this.warmKinds) return this.warmKinds;
@@ -314,6 +332,7 @@ class View implements WorldView {
     if (!warm || !this.world) return;
     setTimeout(() => {
       if (!this.world || this.warm !== warm) return;
+      this.wagons?.buildPending(); // the lazily built wagon rigs and cargo (D-256), so the pre-warm covers them
       warm.run(this.scene, this.rig.camera, this.kindMeshes()).then((st) => { if (st) startupMark(`prewarm-${warm.runs}`); }).catch((e: unknown) => console.warn('[view] shader pre-warm', e));
     }, 0);
   }
@@ -401,10 +420,16 @@ class View implements WorldView {
     this.wet = snap ? wt : this.wet + (wt - this.wet) * Math.min(1, dt * (wt > this.wet ? 0.4 : 0.05));
     const winterT = seasons && seasonAt(w.state.tick) === 'winter' ? 1 : 0;
     this.winter = snap ? winterT : this.winter + (winterT - this.winter) * Math.min(1, dt * 0.25);
-    this.lighting.update(this.tod, this.rain);
+    // time-of-day lights every 2nd frame (D-257, owner 2026-11-06): they drift over game minutes, and each change
+    // re-sends the light uniforms (three's setValueV3f, the largest allocator left after D-223). Fresh at once after a
+    // world or quality change (snap), a stall or resume (long frame), and while the clock catches up a jump.
+    this.lightTick = (this.lightTick + 1) & 1;
+    if (snap || this.lightTick === 0 || dtMs > 100 || Math.abs(d) > 0.002) {
+      this.lighting.update(this.tod, this.rain);
+      foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
+      r.toneMappingExposure = this.lighting.env.exposure * 1.3;
+    }
     const env = this.lighting.env;
-    foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
-    r.toneMappingExposure = env.exposure * 1.3;
 
     this.updateMenuWagon();
     // wagons first (with last frame's camera) so a followed wagon's position is current
@@ -699,6 +724,7 @@ class View implements WorldView {
       this.resize(this.cssW, this.cssH, this.dpr);
       this.loadTextures();
       this.warmPending = true;
+      this.lightTick = 1; // the next frame refreshes the lights (D-257)
     };
     // Compile the programs the new tier needs (tree A2C/blend variants, low terrain) on clones
     // first, so the frame after the switch links nothing; the switch lands once they are ready.

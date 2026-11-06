@@ -76,6 +76,8 @@ export interface WorldView {
   mount(canvas: HTMLCanvasElement): void;
   /** Use a new world (new game / after load). Rebuilds terrain, roads, buildings. */
   setWorld(world: World): void;
+  /** Request the shader programs of the current scene off the main thread, where the driver can (absent = no-op). */
+  precompile?(): void;
   /** Render a frame. alpha = interpolation between the previous and current sim tick (0..1). */
   frame(alpha: number, dtMs: number): void;
   /** Call after every sim tick so the view can snapshot previous positions for interpolation. */

@@ -12,7 +12,6 @@ import {
   Frustum,
   Group,
   InstancedBufferAttribute,
-  InstancedMesh,
   Matrix4,
   type PerspectiveCamera,
   Sphere,
@@ -25,7 +24,7 @@ import { gaitBlend, gaitAt, horsePose, POSE_SIZE, strideOf } from './gait';
 import { CELL, type Heightfield } from './heightfield';
 import { CARGO_GOODS, type CargoGood, cargoFor, cargoSlots, cargoUnitParts, yardPileLocal } from './models/cargo';
 import { markInstances, Parts } from './instancedParts';
-import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
+import { addHorsePoseAttributes, createHorseMaterial, type HorseMaterials, WAGON, type WagonModel, wagonLod1, wagonModel, writeHorsePose } from './models/wagon';
 import type { RoadField, RoadPoint } from './roads';
 import { drawLagScratch, type ParkSlot, stableParking, wagonDrawLag } from './wagonSpacing';
 
@@ -188,32 +187,42 @@ export class WagonsView {
     const wm = wagonModel();
     this.body = new Parts(wm.body, cap, this.group, 'wagon-body');
     this.horseMat = createHorseMaterial();
+    // the near rig draws the menu's wagon at once; the mid and far rigs and the cargo of each good are built on
+    // first use, or after the first frame (`buildPending`, before the shader pre-warm walks the scene) (D-256)
     const rig = (detail: 'near' | 'mid'): AnimRig => {
-      const m = wagonModel(detail);
+      const m = (): WagonModel => wagonModel(detail);
+      const lazy = detail === 'mid';
       const poseAttrs: InstancedBufferAttribute[][] = [];
-      const horse = new Parts(m.horse, cap, this.group, `wagon-horse-${detail}`, () => this.horseMat.material, (g) => {
+      const horse = new Parts(lazy ? () => m().horse : m().horse, cap, this.group, `wagon-horse-${detail}`, () => this.horseMat.material, (g) => {
         const c = g.clone();
         poseAttrs.push(addHorsePoseAttributes(c, cap));
         return c;
-      });
-      for (const h of horse.meshes) h.customDepthMaterial = this.horseMat.depth;
+      }, (h) => { h.customDepthMaterial = this.horseMat.depth; });
       return {
-        wheelF: new Parts(m.wheelFront, cap * 2, this.group, `wagon-wheelF-${detail}`),
-        wheelR: new Parts(m.wheelRear, cap * 2, this.group, `wagon-wheelR-${detail}`),
+        wheelF: new Parts(lazy ? () => m().wheelFront : m().wheelFront, cap * 2, this.group, `wagon-wheelF-${detail}`),
+        wheelR: new Parts(lazy ? () => m().wheelRear : m().wheelRear, cap * 2, this.group, `wagon-wheelR-${detail}`),
         horse,
-        driver: new Parts(m.driver, cap, this.group, `wagon-driver-${detail}`),
+        driver: new Parts(lazy ? () => m().driver : m().driver, cap, this.group, `wagon-driver-${detail}`),
         poseAttrs,
       };
     };
     this.near = rig('near');
     this.mid = rig('mid');
-    this.lod1 = new Parts(wagonLod1(), cap, this.group, 'wagon-lod1');
+    this.lod1 = new Parts(wagonLod1, cap, this.group, 'wagon-lod1');
     this.framed = [this.body, this.lod1, ...this.animParts()];
     for (const g of CARGO_GOODS) {
-      this.cargo.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
-      this.cargoFar.set(g, new Parts(cargoUnitParts(g), cap * 6, this.group, `cargo-far-${g}`));
+      // one cached unit model per good, shared by the near and far instances (D-256: it was built twice per view)
+      this.cargo.set(g, new Parts(() => cargoUnitParts(g), cap * 6, this.group, `cargo-${g}`));
+      this.cargoFar.set(g, new Parts(() => cargoUnitParts(g), cap * 6, this.group, `cargo-far-${g}`));
       this.slots.set(g, cargoSlots(g));
     }
+  }
+
+  /** Build the parts not drawn yet (after the first frame), so the shader pre-warm sees every mesh. */
+  buildPending(): void {
+    for (const p of this.framed) p.build();
+    for (const p of this.cargo.values()) p.build();
+    for (const p of this.cargoFar.values()) p.build();
   }
 
   /**
@@ -645,9 +654,11 @@ export class WagonsView {
   }
 
   dispose(): void {
-    // the instance buffers and the per-view geometries (horse pose attributes, cargo) go with the view (D-222);
-    // a geometry another view still draws is uploaded again on its next use
-    for (const c of this.group.children) { (c as InstancedMesh).dispose(); (c as InstancedMesh).geometry.dispose(); }
+    // the instance buffers and the per-view geometries (horse copies with pose attributes) go with the view (D-222);
+    // the shared models (cached in models/) stay for the next view; the horse copies with their pose attributes go
+    for (const p of this.framed) p.dispose();
+    for (const p of this.cargo.values()) p.dispose();
+    for (const p of this.cargoFar.values()) p.dispose();
     this.horseMat.material.dispose();
     this.horseMat.depth.dispose();
   }

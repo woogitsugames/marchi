@@ -375,6 +375,8 @@ export class App implements PanelNav {
     startupMark('menu-start');
     const w = menuWorld();
     this.setWorld(w);
+    // the driver links the menu's programs while the menu sim runs and the save list loads (D-258)
+    this.view.precompile?.();
     startupMark('menu-world');
     for (let i = 0; i < 70 * TICK_HZ; i++) this.loop.tickOnce();
     startupMark('menu-sim');

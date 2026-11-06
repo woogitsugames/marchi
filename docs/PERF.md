@@ -156,3 +156,13 @@ Najwięcej zostaje w three.js (`setValueV3f` ~0,47 MB/s — światła pory dnia 
 
 Na telefonie do zmierzenia: kompilacja shaderów w pierwszej klatce (`?diag=1`, chrome://inspect → Performance,
 znaczniki `marchia:ready` / `marchia:first-frame`).
+
+## 2026-11-06 — dzień 11: budowa świata menu, światła co 2. klatkę (D-255..D-258)
+
+Raport: `docs/research/2026-11-06-perf-day10.md`, sekcja „After day 11”. Budowa świata menu (CPU) high 1001 → 724 ms,
+low 1019 → 781 ms; ready high 2263 → 1496, low 1887 → 1614 ms; pierwsza klatka 3247 → 2375 / 2659 → 2288 (mediany 6,
+SwiftShader pod obciążeniem). Geometrie modeli bit w bit. Modele z cache zostają w GPU między światami (+14 geometrii
+w misji, stałe). Światła pory dnia co 2. klatkę: alokacje XII 60 m 3,55 → 3,34 MB/s, XV −7 %.
+Na telefonie: `marchia:precompile` (D-258) pojawia się tylko z `KHR_parallel_shader_compile` — porównać `ready` →
+`first-frame` przed/po.
+

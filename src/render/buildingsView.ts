@@ -11,11 +11,10 @@ import {
   type Material,
   Vector3,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { castleLevel, postOpen, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { POST_TRADER, buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
-import { type ModelPart, PartBuilder } from './models/kit';
+import { mergeIndexed, type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
 import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
 import { Parts } from './instancedParts';
@@ -98,15 +97,8 @@ function modelBounds(parts: ModelPart[]): Box3 {
   return b;
 }
 
-const KEEP = new Set(['position', 'normal', 'uv', 'color']);
+const KEEP: ReadonlySet<string> = new Set(['position', 'normal', 'uv', 'color']);
 const _m = new Matrix4();
-
-function prep(g: BufferGeometry, m: Matrix4): BufferGeometry {
-  const c = g.clone();
-  for (const k of Object.keys(c.attributes)) if (!KEEP.has(k)) c.deleteAttribute(k);
-  if (!c.getAttribute('uv')) return c.applyMatrix4(m);
-  return c.applyMatrix4(m);
-}
 
 export interface FootprintTransform {
   /** Model space -> world. */
@@ -197,12 +189,15 @@ export class BuildingsView {
     if (sig === this.signature) return false;
     this.signature = sig;
     this.clear();
-    const byMat = new Map<MatKey, BufferGeometry[]>();
+    // per material: the model geometries and where each stands; merged with the transforms baked in one pass (no
+    // per-building clones, D-255)
+    const byMat = new Map<MatKey, { geos: BufferGeometry[]; mats: Matrix4[] }>();
     const add = (parts: ModelPart[], m: Matrix4) => {
       for (const p of parts) {
         let l = byMat.get(p.material);
-        if (!l) byMat.set(p.material, (l = []));
-        l.push(prep(p.geometry, m));
+        if (!l) byMat.set(p.material, (l = { geos: [], mats: [] }));
+        l.geos.push(p.geometry);
+        l.mats.push(m);
       }
     };
     for (const b of world.state.buildings) {
@@ -286,9 +281,7 @@ export class BuildingsView {
     }
     this.placeFieldWorkers(world);
     for (const [mat, list] of byMat) {
-      const g = mergeGeometries(list, false);
-      for (const l of list) l.dispose();
-      if (!g) continue;
+      const g = mergeIndexed(list.geos, list.mats, KEEP);
       g.computeBoundingSphere();
       const mesh = new Mesh(g, modelMaterial(mat) as Material);
       mesh.castShadow = true;
@@ -427,7 +420,9 @@ export class BuildingsView {
   dispose(): void {
     this.clear();
     // yard workers' instanced batches outlive clear() (they persist across syncs), not the view (D-222)
-    for (const c of this.workerGroup.children) { const m = c as Mesh & { dispose?: () => void }; m.dispose?.(); m.geometry.dispose(); }
+    // their rig geometries are the shared cached models (people.ts): kept for the next view (D-256)
+    for (const b of this.bodyParts.values()) { b.legs.dispose(); b.torso.dispose(); }
+    for (const p of this.workerParts.values()) { p.arms.dispose(); p.tool?.dispose(); }
     this.workerGroup.clear();
     this.workerParts.clear();
     this.bodyParts.clear();
