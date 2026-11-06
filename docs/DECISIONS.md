@@ -2899,3 +2899,60 @@ D-235's flow. Logic in `nextBuildStep` (no DOM), tests in tests/tutorial-build.t
 cut-off hut stalls `NO_ROAD` within 900 ticks); shots `tools/onboard-shots.mjs` → `onboard-s7-*`, `onboard-s5road-*`.
 2 keys × 17 languages (15 agent translations, BACKLOG). (decided)
 
+## Valley fame gap (BACKLOG P2 from D-251, research 2026-11-07-valley-fame-gap)
+
+**D-264 — The grow card also shows while the next rank lacks silver flow, and says so; the card players press the
+bottleneck card.** BACKLOG P2 (D-251): card-30/card-60 missed rank 5 in 120 min. Research (`tools/valley-fame-gap.ts`)
+found two things. (1) The calm slot after minute 40 is held 75–80 % of the time by the bottleneck card (D-171), not by
+"czeka na odbiór": `topSubjects` only counted `rankStalls()`, and the scripted card players never pressed that card's
+cure. They now do (its eye opens the waiting workshop's sheet: "Postaw: <producer>" by the nearest producer, or "Kup
+wóz"); `--no-neck` keeps the old player. A producer born with its gate boxed in is taken back instead of holding the
+slot with a critical no-road card (the tool's demolish used the gate cell, which the sim refuses with `IS_GATE`). With
+the tool fixed and the game unchanged, card-30 already reaches rank 5 on 4/4 seeds (100,8–109,9). (2) A rank held on
+flow alone had no card at all: `growCard` required the flow met ("only renown missing"); card-60 seed 1303 sat at rank 3
+for 66 min with renown 8 419/7 200, goods 7/7, flow 107/120 and an empty or calm slot. Now the grow card shows when the
+goods are met and renown **or** flow is short; `PaceGrow.short` is `'flow'` whenever the flow is short (the rarer gate),
+else `'renown'`, and the card/sheet text follow it: `cause.paceGrowFlow` "Do rangi {rank} ({rankName}) brakuje przepływu
+srebra — postaw jeszcze: {name}", `fix.growWhyFlow` "Przepływ {flow} z {need} srebra na minutę…" (17 languages). Why
+not a new card: more producers raise flow exactly as they raise renown; one card, same slot order (last, after the fleet
+cue and the bottleneck card), same button. Shots `docs/shots/fame-{hud,sheet}-{412x915,915x412}.jpg`
+(`tools/fame-shots.mjs`: valley at 1:00 staged at rank 3, renown 8 000, best flow 100/120). Test
+`tests/valley-fame.test.ts`, `tests/valley-grow.test.ts` (gate updated). (decided)
+
+**D-265 — When every standing chain is saturated, the grow card names a good never sold.** Bread, fish and planks
+saturate (≥ ½ cap) long before rank 5, and the D-174 check then closes every standing chain; the producers of charcoal,
+malt and beer — goods the valley never sold, paying the full price — were named only by the rank card, which is gone
+once the goods count is met. Now, when no chain qualifies, `growCard` falls back to the rank card's own order
+(`RANK_ORDER`: a producer of a good never sold, type not standing, input's maker standing, allowed by the rank). Same card
+and text ("postaw jeszcze: Węglarz"). Why the rank order: it already encodes cheapest-first and the input dependencies
+(D-250), so the two cards cannot disagree. (decided)
+
+**D-266 — In the free valley the build ghost prefers a site a road can reach; the rank and grow cards count only
+such sites, by the castle first.** Late in a busy valley (90+ buildings) `buildSite` returned the first valid site, which
+could have its gate walled in by neighbours: the rank card named the brewery, the building was born cut off, and
+card-10 seed 1304 stayed at rank 4 with goods 8/9 (257 failed placements). `buildSite` now, only when `rankGated`
+(the free valley), returns the first valid site that `siteLinked` accepts — a road cell next to the gate (diagonal steps
+must not cross the new footprint) or a link `suggestLinkForSite` would build — and falls back to the first valid site;
+`siteExists` (D-175) counts only linked sites there (memoized per network version and building count). The cards'
+ghost anchor (`anchorFor`, src/ui/paceCard.ts): the castle while it has a linked site; else a building of the same
+type, then its input's maker, then the stable — that building becomes the card's subject (its sheet holds the same
+cure). Missions keep the old ghost (mission hashes identical, 45 strategies). (decided)
+
+**D-267 — The malthouse grows on its own malt while the brewery is still locked.** The grow ratio rule (malthouse ≤
+brewery) blocked a second malthouse at rank 3, where malt is the chain's end good and often the only unsaturated one. A
+`GROW_FEEDS` consumer the rank does not allow yet no longer counts: the supplier grows on its own good until the
+consumer unlocks, then the D-251 ratio applies again. Measured together with D-264..D-266 (`tools/sandbox-first30.ts
+--minutes 120 --seeds 1301,1302,1303,1304 --only card-10,card-30,card-60,decent`), rank-5 minute (– = not reached;
+renown at 120 min):
+
+| player | D-251 (old tool) | game before, fixed tool | after |
+|---|---|---|---|
+| card-10 | 108,7 / 103,8 / 109,3 / 107,4 | 102,2 / 100,0 / 104,9 / – (R4, goods 8/9) | **92,9 / 87,8 / 108,8 / 93,9** |
+| card-30 | – (16 919) / 117,5 / – (16 660) / – (16 467) | 106,2 / 104,4 / 109,9 / 100,8 | **97,0 / 102,5 / 104,6 / 100,0** |
+| card-60 | – (11 486) / – (12 160) / – (R3, 8 349) / – (12 428) | – (15 820) / – (13 195) / – (R3, 8 419) / 117,3 | **– (16 387) / – (16 789) / – (14 281) / 116,6** |
+| decent | 117,6 / 116,7 / 117,0 / 115,6 | identical | identical |
+
+The bottleneck-blind player (`--no-neck`) after: card-30 116,3 / 112,6 / 111,4 / – (16 612) (D-251: 1/4). card-10
+seed 1303 is 3,9 min slower than "game before, fixed tool" (denser building by the castle) but faster than D-251.
+Left: card-60 still short on 3/4 seeds by 211–2 719 renown; the bottleneck card ignores its consumers' saturation
+(BACKLOG). (decided)

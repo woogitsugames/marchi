@@ -1,5 +1,5 @@
 // The grow card in the free valley (D-192, research valley-ranks-2-3 F1): from rank 1, when the next rank lacks only
-// renown, the calm slot names one more producer of a standing chain, keeping the chain's ratios, never for a saturated
+// renown (D-264: or flow), the calm slot names one more producer of a standing chain, keeping the chain's ratios, never for a saturated
 // end good, never a building the ghost has no site for. A player who follows only the cards places what it names.
 import { BUILDINGS, MARKET, MISSIONS, TICK_HZ, applyCommand, createWorld, stateHash, step, suggestLinkToStable, type BuildingType, type World } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
@@ -43,25 +43,28 @@ function follow(w: World, minutes: number, onGrow: (w: World) => void): string[]
   return placed;
 }
 
-test('valley grow card: only renown missing, ratios kept, fresh end good, a site, silver with the reserve', () => {
+test('valley grow card: renown or flow missing, ratios kept, fresh end good, a site, silver with the reserve', () => {
   const w = createWorld('sandbox');
   let checked = 0;
   const placed = follow(w, 45, (w) => {
     const g = growCard(w)!;
     const sb = sandboxStatus(w);
     assert(sb.rank >= 1 && !!sb.next, 'from rank 1');
-    assert(sb.goodsSold >= sb.next!.goods && sb.bestFlow >= sb.next!.flow, 'goods and flow met');
-    assert(sb.renown < sb.next!.renown, 'renown missing');
+    assert(sb.goodsSold >= sb.next!.goods, 'goods met');
+    // D-264: renown or flow short; the card says which (flow whenever it is short)
+    assert(sb.renown < sb.next!.renown || sb.bestFlow < sb.next!.flow, 'renown or flow missing');
+    eq(g.short, sb.bestFlow < sb.next!.flow ? 'flow' : 'renown', 'names what is short');
     eq(g.rank, sb.next!.rank, 'names the next rank');
     assert(w.state.coins >= BUILDINGS[g.type].price + FLEET_FREE_KEEP, 'affordable with the reserve');
-    assert(count(w, g.type) > 0 || g.type === 'mill' || g.type === 'bakery' || g.type === 'sawmill', 'a standing chain');
+    // a standing chain, or (D-265) a good never sold when every standing chain is saturated
+    assert(count(w, g.type) > 0 || g.type === 'mill' || g.type === 'bakery' || g.type === 'sawmill' || w.state.ledger.sold[g.good] === 0, 'a standing chain or a fresh good');
     if (g.type === 'farm') assert(count(w, 'farm') <= count(w, 'mill'), 'farm <= mill');
     if (g.type === 'mill') assert(count(w, 'mill') < count(w, 'farm'), 'mill < farm');
     if (g.type === 'bakery') assert(count(w, 'bakery') < count(w, 'mill'), 'bakery < mill');
     if (g.type === 'woodcutter') assert(count(w, 'woodcutter') <= count(w, 'sawmill'), 'woodcutter <= sawmill');
     if (g.type === 'sawmill') assert(count(w, 'sawmill') < count(w, 'woodcutter'), 'sawmill < woodcutter');
     assert(w.state.market.saturation[g.good] < MARKET.cap / 2, `${g.good} not saturated`);
-    assert(siteExists(w, g.type, g.producer), 'a site by the castle');
+    assert(siteExists(w, g.type, g.producer), 'a site by the card subject (the castle, D-266: or a neighbour)');
     eq(bottleneckCard(w), null, 'never over the bottleneck card');
     const hash = stateHash(w);
     growCard(w); paceCard(w, null);

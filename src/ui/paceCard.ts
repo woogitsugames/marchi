@@ -72,21 +72,28 @@ export interface PaceFleet {
  * needs the slot. The card names the next unbuilt producer of an unsold good the rank allows (farm; mill once a farm
  * stands; bakery once a mill stands; fisher; quarry; D-250: charcoal burner; malthouse; brewery once a malthouse
  * stands). `producer` is the castle (the card's subject, its sheet holds the cure: the build tool with `type` picked,
- * the ghost by the castle). `sold`/`goods`: distinct goods sold / needed.
+ * the ghost by the castle; D-266: in a valley built up around the castle, the building the ghost opens by instead).
+ * `sold`/`goods`: distinct goods sold / needed.
  */
 export interface PaceRank {
   k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
 }
 
 /**
- * 'grow' (D-192, research valley-ranks-2-3 F1) — the free valley from rank 1: the next rank lacks only renown (the goods
- * are sold, the flow is reached) and silver lies unspent. The card names one more producer of a chain that already
- * stands, keeping the chain's ratios, while the chain's end good still fetches a fair price. `producer` is the castle
- * (the card's subject; its sheet holds the cure: the build tool with `type` picked, the ghost by the castle). `good`:
+ * 'grow' (D-192, research valley-ranks-2-3 F1) — the free valley from rank 1: the next rank lacks renown or flow (D-264;
+ * the goods are sold) and silver lies unspent. The card names one more producer of a chain that already
+ * stands, keeping the chain's ratios, while the chain's end good still fetches a fair price (D-265: when every chain is
+ * saturated, a producer of a good never sold). `producer` is the castle (the card's subject; its sheet holds the cure:
+ * the build tool with `type` picked, the ghost by the castle; D-266: or the building the ghost opens by). `good`:
  * the chain's end good; `n`: how many of `type` stand now; `renown`/`need`: renown now / for `rank`.
  */
 export interface PaceGrow {
   k: 'grow'; producer: number; type: BuildingType; good: Good; n: number; rank: number; renown: number; need: number;
+  /**
+   * D-264: what the next rank still lacks — 'renown', or 'flow' (silver per minute; `flow`/`flowNeed`: best flow so
+   * far / for `rank`). Flow is named whenever it is short (the rarer gate; renown may be short too).
+   */
+  short: 'renown' | 'flow'; flow: number; flowNeed: number;
 }
 
 /**
@@ -163,13 +170,38 @@ export function rankCard(world: World): PaceRank | null {
   if (!sb.market || !sb.next || sb.goodsSold >= sb.next.goods) return null;
   const castle = st.buildings.find((b) => b.type === 'castle');
   if (!castle) return null;
+  const next = newProducer(world, castle.id, sb.unlocked);
+  return next ? { k: 'rank', ...next, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods } : null;
+}
+
+/**
+ * Where the ghost of `type` opens (D-266): by the castle while a site is left there (D-175); in a valley built up
+ * around the castle, by a standing building of the same type, then by its input's maker, then by the stable. The id
+ * of that building (the card's subject: its sheet holds the cure), or -1 when none has a site within the ghost's reach.
+ */
+function anchorFor(world: World, type: BuildingType, castle: number, maker: BuildingType | null): number {
+  if (siteExists(world, type, castle)) return castle;
+  const st = world.state;
+  for (const t of [type, maker, 'stable' as BuildingType]) {
+    if (!t) continue;
+    for (const b of st.buildings) if (b.type === t && siteExists(world, type, b.id)) return b.id;
+  }
+  return -1;
+}
+
+/**
+ * The next RANK_ORDER producer of a good never sold, whose type does not stand yet, whose input's maker stands and
+ * which the rank allows, with a site a road reaches (anchorFor; D-175: else the next one); null when there is none.
+ */
+function newProducer(world: World, castle: number, unlocked: readonly BuildingType[]): { type: BuildingType; good: Good; producer: number } | null {
+  const st = world.state;
   const has = (t: BuildingType): boolean => st.buildings.some((b) => b.type === t);
   for (const [type, needs] of RANK_ORDER) {
     const good = outputGoods(type)[0];
-    if (!good || st.ledger.sold[good] > 0 || has(type) || (needs && !has(needs)) || !sb.unlocked.includes(type)) continue;
-    // D-175: no site by the castle (the ghost would open red): name the next building instead
-    if (!siteExists(world, type, castle.id)) continue;
-    return { k: 'rank', producer: castle.id, type, good, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods };
+    if (!good || st.ledger.sold[good] > 0 || has(type) || (needs && !has(needs)) || !unlocked.includes(type)) continue;
+    const producer = anchorFor(world, type, castle, needs);
+    if (producer < 0) continue;
+    return { type, good, producer };
   }
   return null;
 }
@@ -205,14 +237,15 @@ export function growCard(world: World): PaceGrow | null {
   if (st.mission.contract || st.mission.result !== 'running') return null;
   const sb = sandboxStatus(world);
   if (!sb.market || sb.rank < 1 || !sb.next) return null;
-  // only renown missing: the goods are sold and the flow reached (the rank card covers missing goods)
-  if (sb.goodsSold < sb.next.goods || sb.bestFlow < sb.next.flow || sb.renown >= sb.next.renown) return null;
+  // the goods are sold (the rank card covers missing goods) and renown or flow is still short: both grow only with
+  // more producers (D-264: a valley held at rank 3 on flow alone showed nothing for 60+ min)
+  if (sb.goodsSold < sb.next.goods || (sb.renown >= sb.next.renown && sb.bestFlow >= sb.next.flow)) return null;
   const castle = st.buildings.find((b) => b.type === 'castle');
   if (!castle) return null;
   const cnt = new Map<BuildingType, number>();
   for (const b of st.buildings) cnt.set(b.type, (cnt.get(b.type) ?? 0) + 1);
   const n = (t: BuildingType): number => cnt.get(t) ?? 0;
-  let best: { type: BuildingType; good: Good } | null = null;
+  let best: { type: BuildingType; good: Good; producer: number } | null = null;
   for (const chain of GROW_CHAINS) {
     // an existing chain only; its end good is what its most downstream standing building makes
     let last: BuildingType | null = null;
@@ -222,18 +255,27 @@ export function growCard(world: World): PaceGrow | null {
     if (!good || growSaturated(world, good)) continue;
     for (const t of chain) {
       if (!sb.unlocked.includes(t)) continue;
-      const feeds = GROW_FEEDS[t], fedBy = GROW_FED_BY[t];
+      // D-267: a consumer the rank does not allow yet (the brewery before rank 4) leaves its supplier's good as the
+      // chain's end: the malthouse grows on its own malt until the brewery may stand
+      const feeds = GROW_FEEDS[t] && sb.unlocked.includes(GROW_FEEDS[t]!) ? GROW_FEEDS[t] : undefined, fedBy = GROW_FED_BY[t];
       if (feeds && n(feeds) > 0 && n(t) > n(feeds)) continue;
       if (feeds && n(feeds) === 0 && n(t) > 0) continue;
       if (fedBy && n(t) >= n(fedBy)) continue;
       if (best && n(t) >= n(best.type)) continue;
-      // D-175: no site by the castle (the ghost would open red)
-      if (!siteExists(world, t, castle.id)) continue;
-      best = { type: t, good };
+      // D-175: no site for the ghost (D-266: by the castle, else by its own kind, its supplier or the stable)
+      const producer = anchorFor(world, t, castle.id, fedBy ?? null);
+      if (producer < 0) continue;
+      best = { type: t, good, producer };
     }
   }
+  // D-265: every standing chain sells into a saturated market — a good the valley has never made fetches the full
+  // price (the rank card's next producer, though the goods count is met: charcoal, malt, beer)
+  if (!best) best = newProducer(world, castle.id, sb.unlocked);
   if (!best || st.coins < BUILDINGS[best.type].price + FLEET_FREE_KEEP) return null;
-  return { k: 'grow', producer: castle.id, type: best.type, good: best.good, n: n(best.type), rank: sb.next.rank, renown: sb.renown, need: sb.next.renown };
+  return {
+    k: 'grow', producer: best.producer, type: best.type, good: best.good, n: n(best.type), rank: sb.next.rank, renown: sb.renown, need: sb.next.renown,
+    short: sb.bestFlow < sb.next.flow ? 'flow' : 'renown', flow: sb.bestFlow, flowNeed: sb.next.flow,
+  };
 }
 
 let postLink: { world: World; key: string; s: RoadSuggestion | null } | null = null;

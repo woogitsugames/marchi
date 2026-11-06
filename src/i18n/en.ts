@@ -739,6 +739,8 @@ export const en: FullDict = {
   'cause.paceRank': 'Rank {rank} ({rankName}) lacks a good — build: {name}',
   'cause.paceGrow': 'Rank {rank} ({rankName}) lacks only renown now — build another: {name}',
   'fix.growWhy': 'Renown {renown} of the {need} {rankName} needs; the goods and the flow are there. Renown grows with sales: another {name} makes more {goodGen}, and the market still pays a fair price for it.',
+  'cause.paceGrowFlow': 'Rank {rank} ({rankName}) lacks silver flow — build another: {name}',
+  'fix.growWhyFlow': 'Flow {flow} of the {need} silver a minute {rankName} needs; the goods are there. Flow grows with sales: another {name} makes more {goodGen}, and the market still pays a fair price for it.',
   'fix.rank': 'Build: {name}',
   'fix.rankWhy': 'Distinct goods sold: {sold} of the {goods} {rankName} needs. No {good} has reached the market yet — this building makes it.',
   'fix.paceFleetWhy': 'No wagon stood free for a minute. The forecast gives {seals}; a new wagon collects the load sooner and pays off before the seal.',
