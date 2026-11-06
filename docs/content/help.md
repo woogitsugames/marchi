@@ -36,11 +36,11 @@ when none is free; it cannot repair a broken route or make room in a full market
 
 ## Drogi i bruk / Roads and cobbles
 
-**PL.** Wybierz trakt i przeciągnij po mapie, aby połączyć drogi i bramy budynków.
+**PL.** Wybierz narzędzie „Droga” i przeciągnij po mapie, aby połączyć drogi i bramy budynków.
 Sprawdź koszt i komunikat, jeśli budowa się nie powiedzie. Brukowanie wymaga
 kamienia. Przed zmianą drogi sprawdź, czy wozy mają przejezdną trasę.
 
-**EN.** Select Track and drag across the map to connect roads and building gates.
+**EN.** Select the Road tool and drag across the map to connect roads and building gates.
 Check the cost and any message if construction fails. Cobbles require stone.
 Before changing a road, check that wagons have a passable route.
 
@@ -61,7 +61,7 @@ rangi pokazuje warunki awansu; sprawdzaj ją, gdy chcesz rozbudować dolinę.
 Od rangi 4 dostępny jest posterunek za rzeką. Połącz go z drogami, aby wozy
 mogły tam handlować; ceny i miejsce na towary mogą się zmieniać.
 
-**EN.** In Free Valley, grow production and trade at your own pace. The rank
+**EN.** In the Free valley, grow production and trade at your own pace. The rank
 card shows what is needed to advance; consult it as you expand. From rank 4,
 a trading post is available across the river. Connect it to the road network
 so wagons can trade there; prices and space for goods can change.
