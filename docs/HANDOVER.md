@@ -1,3 +1,72 @@
+# Handover — MARCHIA (stan 2026-11-06 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
+
+> Sesja `session_01Xqzfc3EMpVJFqLiHix1voE` kończy (limit 5-godzinny i tygodniowy). Prompt startowy: `marchi.md` w katalogu
+> głównym repo. Niżej historia (sekcje „Dzień 2026-11-06”, „Noc 2026-11-05/06”, …) — czytaj po kontekst.
+
+## Stan teraz
+- Repo `woogitsugames/marchi`. Baza integracyjna **`claude/eager-cori-08wt8e`**; **`main` przesuwany fast-forward na bazę
+  po każdym zielonym scaleniu** (typecheck, test, build, smoke `node tools/smoke.cjs`, `npm run layout -- --quick`).
+- W kontenerze tej sesji repo było w `/home/user/marchi` (nie /workspace); worktree agentów: `/home/user/marchi-saves`,
+  `/home/user/marchi-research` (ręczne `git worktree add -B <gałąź> <dir> origin/claude/eager-cori-08wt8e` + symlink
+  `node_modules`). W worktree serwer dev Vite zwraca 403 (symlink) — do layoutu/a11y używaj `LAYOUT_URL`/`A11Y_URL`
+  wskazującego `npx vite preview --outDir <dist> --port <wolny>`.
+- Baza = `main` ≈ **36e505b + content10** (sprawdź `git log origin/main`): testy **559/0**, build, smoke I–XV + dolina,
+  layout 102/0. Stan symulacji **v9** (posterunek handlowy). Misje **I–XV** w menu.
+- **APK działa** (sieć środowiska przepuszcza `dl.google.com`/`maven.google.com`): `npm run setup:android` raz w nowym
+  kontenerze, potem `npm run apk -- --skip-web` (Maven Central 429 → ponawiaj w pętli). Ostatnie APK: **6d43284** (~17:00
+  6 XI). Następne: po scaleniu samouczka budowania.
+- Numeracja decyzji: zajęte do **D-249** (D-243/244, D-234, D-198/199, D-185..D-188 itd. — sprawdź `docs/DECISIONS-index.md`,
+  odśwież `npx tsx tools/decisions-index.ts`). Następna bezpieczna: **D-250**. Przy dwóch agentach daj każdemu osobny zakres.
+- Cykl godzinny tej sesji `trig_01PAgKEUo171oE4A99BXL74i` — **wyłącz/usuń** i utwórz własny (prompt niżej).
+
+## Niedokończone (dokończ najpierw)
+1. **Deweloper `claude/w-onboard`** (worktree saves): samouczek budowania (treść GPT 90, `docs/content/tutorial-build.md`)
+   + ekran pomocy (GPT 78, `docs/content/help.md`), D-235..D-239. Jeśli gałąź na GitHubie ma raport w ostatnim commicie —
+   przejrzyj, scal, layout, APK. Jeśli niedokończona: dokończ wg opisu w commitach.
+2. **Agent `claude/w-postroad`** (worktree research): karta/arkusz prowadzi do drogi z mostem do posterunku, gdy rynek
+   zamku nasycony a posterunek bez drogi (BACKLOG P2 z D-233), D-245..D-249. Jak wyżej.
+3. **GPT:** paczka 12 (`docs/orders/gpt6-orders-12.zip`, zlecenia 66–70) **nieoddana**; z paczki 13 nieoddane 71, 72,
+   79–84, 100. Oddane 73–78, 85–99 scalone (`docs/reviews/gpt-integration-13.md`). Gałęzie `gpt/*` przeglądaj wg wzoru
+   tego raportu (dozwolone ścieżki, testy zielone, treści-propozycje wdraża koordynator).
+4. **Do decyzji właściciela (klikalnie):** światła pory dnia co 2. klatkę (największy alokator, zmienia obraz, D-223
+   follow-up); gołe korony drzew zimą (D-203); progi XIV/XV po playteście (słaby punkt XIV: węglarz po 1:40 → 2★);
+   wyzwanie kontraktu (3. oś oceny) — po playteście.
+5. Właściciel: usunąć `/mono-before.txt`, `/bot-before.txt`, `/bots-before.txt` (artefakty agenta w katalogu głównym).
+
+## Zasady pracy (właściciel)
+- Rozmowa po polsku; kod/komentarze/commity po angielsku; `CLAUDE.md` najpierw. Teksty gracza tylko przez i18n — nowe
+  klucze od razu w pl/en **i 15 językach** (PENDING_KEYS jest pusty; tłumaczenia agentów oznaczaj w BACKLOG do przeglądu).
+- **Do 2 agentów Opus naraz** (deweloper + researcher/drugi deweloper); koordynator też koduje i scala. Agenci commitują
+  często (restarty kontenera/procesu zdarzają się kilka razy dziennie), nie pushują; koordynator scala, sprawdza, pushuje
+  bazę i `main`. Po restarcie: sprawdź worktree, wznów agentów przez SendMessage (`resume`), serwer preview 5193 uruchom
+  ponownie.
+- **Limit 5-godzinny:** agenci padają z 429 — wznów po resecie (godzina w komunikacie).
+- **CI ma limit minut** — nie zmieniaj workflowów; sprawdzaj lokalnie. Nie zamykaj PR-ów bez prośby.
+- Layout: nie puszczaj dwóch przebiegów naraz (wspólny plik raportu); pojedyncze `page.goto: Timeout` pod obciążeniem —
+  powtórz samo zadanie `--only '<scena>\|<widok>\|<język>'`.
+- APK w dzień (7–23 Brussels) co ~3 h przy istotnej zmianie, w nocy nic, jedno rano. Decyzje w dzień klikalnie
+  (AskUserQuestion) z rekomendacją; w nocy do „Decyzje na rano” tutaj.
+- Paczki dla GPT: `docs/orders/gpt6-NN/` + zip (wzór paczek 12/13: zasady wspólne, dozwolone ścieżki, „zlecenie bez
+  plików jest nieoddane”). Commity kończ `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` + `Claude-Session: <link>`.
+- **Aktualizuj ten plik na bieżąco i pushuj** (właściciel czyta go z GitHuba).
+
+## Prompt cyklu (create_trigger, „42 * * * *”)
+Godzinny cykl MARCHIA (praca ciągła, autonomiczna; do 2 agentów Opus naraz; koordynator też rozwija). Baza
+claude/eager-cori-08wt8e; po każdym zielonym scaleniu (typecheck, test, build, smoke, layout --quick) push bazy
+i fast-forward main. 1) Agent skończył/przerwany — scal, sprawdź, push, main; od razu kolejna paczka (HANDOVER
+„Niedokończone”, potem backlog: błędy > czytelność < 30 s > wydajność > grafika > treść). 2) gpt/* i claude/x-* —
+przejrzyj, scal, raport. 3) APK w dzień co ~3 h, w nocy nic, jedno rano. 4) Decyzje: dzień klikalnie, noc do HANDOVER
+„Decyzje na rano”. HANDOVER aktualny na GitHubie. Raport krótki po polsku.
+
+## Kierunki właściciela (6 XI) i co dalej
+Grafika i animacje (zrobione D-200..D-203; dalej: drzewa zimą po decyzji, kupiec reagujący na sprzedaż), nowe misje
+(XIV–XV zrobione; kolejne lekcje: „dwa zamki” wymaga rozszerzenia sim — najpierw research), wydajność telefonu (D-220..D-223;
+dalej: budowa świata menu ~1,4 s CPU, kompilacja shaderów w 1. klatce 1,0–1,3 s — wymaga pomiaru na Foldzie), samouczek
+i onboarding (w toku). Playtest wg `docs/playtest/PROTOCOL.md` gotowy (fixtury S2/S3/S4/S6, ekran moderatora: przytrzymaj
+tytuł „Marchia” 3 s).
+
+---
+
 # Handover — MARCHIA (stan 2026-11-05 ~23:50 Europe/Brussels) — sesja `session_01Xqzfc3EMpVJFqLiHix1voE`
 
 ## Stan teraz (ta sesja)
