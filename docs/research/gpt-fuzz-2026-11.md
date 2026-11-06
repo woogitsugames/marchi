@@ -13,9 +13,9 @@ W misji m2, przy 4000 monet, po zburzeniu komórki drogi 2937 w ticku 2065 wóz 
 
 ## Późna gra
 
-`node --import tsx tools/fuzz-late.ts --runs 100`: 100 przebiegów, jeden błąd `stuck`, kod wyjścia 1; 38 961 jednostek sprzedanych w posterunku i 24 667 wozoticków przy zamkniętym przez lód moście. Seed 91, snapshot valley-75: co najmniej dwa wozy pozostają w `BRIDGE_JAM` ponad 3000 ticków. Test `tests/known-failing/fuzz-late-stuck-91.test.ts` odtwarza go z oryginalnego seeda i potwierdzono go osobnym uruchomieniem.
+`node --import tsx tools/fuzz-late.ts --runs 100`: 100 przebiegów, jeden błąd `stuck`, kod wyjścia 1; 38 961 jednostek sprzedanych w posterunku i 24 667 wozoticków przy zamkniętym przez lód moście. Seed 91, snapshot valley-75: co najmniej dwa wozy pozostają w `BRIDGE_JAM` ponad 3000 ticków. Test `tests/known-failing/fuzz-late-stuck-91.test.ts` odtwarza go na pięciu poleceniach, zmniejszonych z oryginalnych 37; wynik potwierdzono osobnym uruchomieniem.
 
-**Błąd narzędzia minimalizującego:** `shrink` błędnie porównuje bezwzględne ticki poleceń snapshotu z długością scenariusza mierzoną względnie. Wypisane przez nie „0 cmds” nie odtwarza usterki — zweryfikowano to uruchomieniem pustego scenariusza. Dlatego test korzysta z oryginalnego seeda, a nie z wadliwego wyniku minimalizacji. Test ten nie jest jeszcze minimalny.
+**Błąd narzędzia minimalizującego:** `shrink` błędnie porównuje bezwzględne ticki poleceń snapshotu z długością scenariusza mierzoną względnie. Wypisane przez nie „0 cmds” nie odtwarza usterki — zweryfikowano to uruchomieniem pustego scenariusza. Dlatego zminimalizowano przypadek osobnym algorytmem uwzględniającym ticki bezwzględne; żadne z pięciu pozostałych poleceń nie mogło zostać usunięte bez utraty odtworzenia.
 
 ## Walidacja
 
