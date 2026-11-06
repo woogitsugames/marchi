@@ -220,4 +220,8 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-255 | — | Menu world build: models are merged without clones or JS index arrays, one shore sample per ground height (perf day 11, BACKLOG P1 D-221) | decided | UI |
 | D-256 | — | Lazy wagon rigs and cargo; shared cached models are not disposed with a view | decided | sim |
 | D-257 | 2026-11-06 | Time-of-day lights refresh every 2nd frame (owner decision 2026-11-06, BACKLOG P2 allocator) | decided | inne |
-| D-258 | — | With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built | decided | UI |
+| D-258 | 2026-11-07 | With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built | decided | UI |
+| D-264 | — | The grow card also shows while the next rank lacks silver flow, and says so; the card players press the bottleneck card | decided | UI |
+| D-265 | — | When every standing chain is saturated, the grow card names a good never sold | decided | UI |
+| D-266 | — | In the free valley the build ghost prefers a site a road can reach; the rank and grow cards count only such sites, by the castle first | decided | sim |
+| D-267 | — | The malthouse grows on its own malt while the brewery is still locked | decided | inne |
