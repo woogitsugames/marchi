@@ -214,3 +214,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-242 | — | Shorter menu subtitles for I–V, VII, VIII, XI, XII, XIV and the free valley; VI, IX, X, XIII, XV kept | decided | UI |
 | D-245 | — | A saturated granary leads to the unlinked trading post's road; the calm slot gets a "post" card | decided | UI |
 | D-246 | — | The trading post's road ghost is framed once like the sett ghost (D-144 extended), and the frame avoids the valley's plaque and event card | decided | UI |
+| D-254 | 2026-11-06 | Help from the map: a "?" on the game's own cards (owner 2026-11-06 ~21:20) | decided | inne |

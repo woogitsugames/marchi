@@ -18,7 +18,9 @@ export const HELP_TOPICS: readonly { id: string; icon: IconId }[] = [
 /** The topic left open between visits (per session; the first visit opens "Find the cause"). */
 let openTopic = 'cause';
 
-export function helpSheet(): SheetContent {
+/** Help opened on one topic (the "?" of a game card, D-254); without one the last open topic stays. */
+export function helpSheet(topic?: string): SheetContent {
+  if (topic && HELP_TOPICS.some((x) => x.id === topic)) openTopic = topic;
   return {
     key: 'help',
     update(sheet: Sheet) {

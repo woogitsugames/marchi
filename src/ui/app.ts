@@ -261,6 +261,7 @@ export class App implements PanelNav {
       this.hud?.announce(t('hud.stallFixed', { name: buildingName(this.world, id) }));
     };
     this.sheets = new Sheets(this.layers.sheets);
+    this.sheets.onHelp = (topic) => this.sheets.open(helpSheet(topic));
     this.sheets.onChange = () => { this.syncSelection(); document.body.classList.toggle('has-sheet', this.sheets.count > 0); this.syncSheetFold(); this.lastSheetUpdate = 0; };
 
     this.view.mount(this.canvas);

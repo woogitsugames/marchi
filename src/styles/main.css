@@ -408,6 +408,11 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
 .sheet-head h3 { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: 28px; line-height: 1.05; overflow-wrap: break-word; hyphens: auto; }
 .sheet-head .close { width: 48px; height: 48px; display: grid; place-items: center; color: var(--ink-soft); }
 .sheet-head .close:active { color: var(--ink); }
+/* "?" into help from a game card (D-254): the display face's own question mark, ruled like a seal stamp */
+.sheet-head .sh-help { width: 48px; height: 48px; display: grid; place-items: center; flex: none; color: var(--ink-soft);
+  font-family: var(--font-head); font-weight: 600; font-size: 26px; line-height: 1; }
+.sheet-head .sh-help[hidden] { display: none; }
+.sheet-head .sh-help:active { color: var(--ink); }
 .sheet-body {
   overflow-y: auto;
   overscroll-behavior: contain;

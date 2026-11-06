@@ -2786,3 +2786,14 @@ first move lands only roughly; once the camera reports `settled()` (glide over, 
 the same framing runs once more — a no-op when it already fits. Measured in 3D, staged state: 412×915 post centre from
 (−259, 2115) (off screen) to (147, 253) inside the free rect l 74 / t 116 / r 412 / b 329; 915×412 ghost and post
 between the plaque and the side sheet. Render only, hashes unchanged; layout `--quick` 102/0. (decided)
+
+**D-254 — Help from the map: a "?" on the game's own cards (owner 2026-11-06 ~21:20).** The building, wagon and
+market sheets carry a 48 px "?" in the head, beside the close button, in the display face (no icon from a pack, no
+new key: its accessible name is `menu.help`). It replaces the card with the help sheet (D-236) opened on the card's
+topic — building → "Znajdź przyczynę", wagon → "Wozy", market → "Dolina i rangi" (`HELP_TOPIC_OF_KIND`,
+src/ui/sheets.ts) — like a chain link replaces a card, so Back / close / swipe close it as one sheet and the game is
+not paused. Menus, settings and help itself show no "?". Why the head and not the worst-stall card: the question
+"what does this mean?" comes up while reading a card, and the head is the one place every card shares without
+crowding the pace card on a phone. Test tests/help-map.test.ts; shots tools/help-map-shots.mjs →
+docs/shots/helpmap-*.jpg (412×915, 915×412, 904×1000). (decided)
+

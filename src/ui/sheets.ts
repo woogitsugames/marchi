@@ -31,6 +31,13 @@ export interface Sheet {
 
 let sheetSeq = 0;
 
+/** The help topic (src/ui/help.ts) a game card's "?" opens (D-254); other sheets (menus, help itself) have none. */
+export const HELP_TOPIC_OF_KIND: Readonly<Record<string, string>> = {
+  building: 'cause',
+  wagon: 'wagons',
+  market: 'valley',
+};
+
 /** Height of the sheet's docked fix ("Naprawa", D-100) plus its fade, as --dock-h on the body: the body's
  *  scroll-padding keeps focused and scrolled-to content above it. Only written when it changes. */
 function writeDock(body: HTMLElement, px: number | null): void {
@@ -144,9 +151,17 @@ export class Sheets {
   open(content: SheetContent): Sheet {
     const sheet = this.place(content);
     // frame style hook (D-43): 'building', 'wagon', 'market' get the bright frame, menus the dim one
-    sheet.el.dataset.kind = content.key.split(':')[0];
+    const kind = content.key.split(':')[0];
+    sheet.el.dataset.kind = kind;
+    // help from the map (D-254): the game's own cards carry a "?" into the help sheet on their topic
+    const topic = this.onHelp ? HELP_TOPIC_OF_KIND[kind] : undefined;
+    const help = sheet.el.querySelector<HTMLElement>('.sh-help');
+    if (help) help.hidden = !topic;
     return sheet;
   }
+
+  /** Opens the help sheet on a topic (set by the app; without it no card shows "?"). */
+  onHelp?: (topic: string) => void;
 
   private place(content: SheetContent): Sheet {
     const top = this.top;
@@ -246,7 +261,8 @@ export class Sheets {
     const kicker = h('div.kicker');
     const title = h('h3', { id: `sheet-title-${++sheetSeq}` });
     const close = h('button.close', { 'aria-label': t('sheet.close'), html: iconSvg('close', 22) });
-    const head = h('div.sheet-head', null, icon, h('div.sh-text', null, kicker, title), close);
+    const help = h('button.sh-help', { 'aria-label': t('menu.help'), hidden: true }, '?');
+    const head = h('div.sheet-head', null, icon, h('div.sh-text', null, kicker, title), help, close);
     const body = h('div.sheet-body');
     const grip = h('div.sheet-grip');
     const inner = h('div.sp-in', null, grip, head, body);
@@ -257,6 +273,10 @@ export class Sheets {
     const sheet: Sheet = { el, icon, kicker, title, body, content, deferred: [] };
     close.addEventListener('click', () => {
       if (this.top === sheet) this.closeTop();
+    });
+    help.addEventListener('click', () => {
+      const topic = HELP_TOPIC_OF_KIND[sheet.el.dataset.kind ?? ''];
+      if (this.top === sheet && topic) this.onHelp?.(topic);
     });
     this.swipeToClose(sheet, grip, head, body);
     // a focused control never hides under the docked "Naprawa" (D-100; a11y audit F1, WCAG 2.4.11): the body's
