@@ -5,7 +5,7 @@ import { GameLoop } from '../src/game/loop';
 import { FIXTURE_IDS, FIXTURE_VERSION, checkFixture, fixtureMission, runFixture, simDriver, type FixtureId } from '../src/game/fixtures';
 import { applyCommand, checkInvariants, createWorld, hashState, unexplainedStalls, type World } from '../src/sim/index';
 import { deadEnd } from '../src/ui/deadEnd';
-import { calmWhy } from '../src/ui/stalls';
+import { calmWhy, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 /**
@@ -16,7 +16,7 @@ const DOCUMENTED: Record<FixtureId, { tick: number; kind: 'building' | 'wagon'; 
   'bridge-cut-in-transit': { tick: 394, kind: 'wagon', id: 12 },
   'all-busy': { tick: 1595, kind: 'building', id: 9 },
   'bridge-jam': { tick: 982, kind: 'wagon', id: 11 },
-  'warehouse-full': { tick: 6125, kind: 'building', id: 7 },
+  'warehouse-full': { tick: 1310, kind: 'building', id: 4 },
 };
 
 function build(id: FixtureId): { w: World; out: ReturnType<typeof runFixture> } {
@@ -96,18 +96,32 @@ test('fixture bridge-jam: a wagon queues at the wooden bridge behind a real bloc
   assert(w.state.tick - s.since >= 20, 'queued at least 2 s');
 });
 
-test('fixture warehouse-full: mission I granary STORAGE_FULL 60/60 with a true ledger', () => {
+test('fixture warehouse-full: mission VI small granary STORAGE_FULL 12/12 by itself, the worst-stall card names it', () => {
   const w = common('warehouse-full');
   const { out } = build('warehouse-full');
   const b = w.state.buildings.find((o) => o.id === out.focus!.id)!;
   eq(b.type, 'warehouse', 'subject');
+  eq(b.capOverride, 12, 'the small granary');
   eq(b.status.k, 'STORAGE_FULL', 'status');
-  const held = Object.values(b.stock).reduce((a, x) => a + x, 0) + Object.values(b.incoming).reduce((a, x) => a + x, 0);
-  assert(held >= 60, `holds ${held}/60`);
+  const stock = Object.values(b.stock).reduce((a, x) => a + x, 0);
+  eq(stock, 12, 'its own stock fills it');
   eq(calmWhy(w, b), null, 'a real stall, not a calm full');
-  // nothing was produced outside the recipes: the ledger matches stock + cargo (checkInvariants) and every
-  // produced unit came from a building that exists in mission I
-  assert(w.state.ledger.produced.planks > 0 && w.state.ledger.produced.bread > 0, 'planks and bread produced');
+  // D-197: no commands at all, no road cut: mission VI as dealt
+  eq(w.state.wagons.length, 10, 'the dealt fleet');
+  const W = w.terrain.w;
+  const fresh = createWorld('m6');
+  let changed = 0;
+  for (let c = 0; c < W * w.terrain.h; c++) if (fresh.state.roads[c] !== w.state.roads[c]) changed++;
+  eq(changed, 0, 'roads as dealt');
+  // the cause chain: the sawmill's full yard waits for this granary, and the HUD's worst-stall card is the granary
+  const saw = w.state.buildings.find((o) => o.type === 'sawmill')!;
+  eq(saw.status.k, 'OUTPUT_FULL', 'sawmill yard full');
+  eq((saw.status as { blockedBy: number }).blockedBy, b.id, 'sawmill blocked by the small granary');
+  const top = rankStalls(w)[0]!;
+  eq(top.id, b.id, 'worst-stall card');
+  assert(top.crit && !top.minor, 'a critical card');
+  // the first letter (24 bread by 06:00) is still open: the full store hurts now
+  eq(w.state.mission.contract!.tranches![0]!.doneTick, -1, 'first letter open');
 });
 
 test('fixture checks: a fresh mission fails every check (no false preflight)', () => {

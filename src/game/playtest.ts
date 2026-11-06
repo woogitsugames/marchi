@@ -27,7 +27,7 @@ export const PLAYTEST_STARTS: readonly PlaytestStart[] = [
   { id: 'S3', mission: 'm2', query: 'fixture=all-busy', fixture: 'all-busy' },
   { id: 'S4', mission: 'm2', query: 'fixture=bridge-jam', fixture: 'bridge-jam' },
   { id: 'S5', mission: 'm3', query: 'play=m3&ff=35&speed=1', fixture: null },
-  { id: 'S6', mission: 'm1', query: 'fixture=warehouse-full', fixture: 'warehouse-full' },
+  { id: 'S6', mission: 'm6', query: 'fixture=warehouse-full', fixture: 'warehouse-full' },
   { id: 'S7', mission: 'm4', query: 'play=m4&ff=200&speed=0', fixture: null },
   { id: 'S8', mission: 'm5', query: 'play=m5&ff=120&speed=0', fixture: null },
   { id: 'S9', mission: 'm6', query: 'play=m6&ff=180&speed=0', fixture: null },

@@ -11,12 +11,12 @@ import {
   unexplainedStalls, type Building, type Command, type CommandResult, type Wagon, type World,
 } from '../sim/index';
 import { storeCapOf } from '../sim/contract';
-import { bridgeA, stableId } from './menuScene';
+import { calmWhy, rankStalls } from '../ui/stalls';
 
 export const FIXTURE_IDS = ['bridge-cut-in-transit', 'all-busy', 'bridge-jam', 'warehouse-full'] as const;
 export type FixtureId = (typeof FIXTURE_IDS)[number];
 /** Bump when a script or a check changes: the moderator notes it with the results (PROTOCOL §3). */
-export const FIXTURE_VERSION = 1;
+export const FIXTURE_VERSION = 2;
 
 export function isFixtureId(x: string | null | undefined): x is FixtureId {
   return (FIXTURE_IDS as readonly string[]).includes(x ?? '');
@@ -27,7 +27,7 @@ export interface FixtureFocus { kind: 'building' | 'wagon'; id: number }
 
 export interface FixtureOutcome {
   id: FixtureId;
-  mission: 'm1' | 'm2';
+  mission: FixtureMission;
   version: number;
   /** The validation passed; otherwise `problem` says why (English, for the moderator's log). */
   ok: boolean;
@@ -48,8 +48,11 @@ export function simDriver(w: World): FixtureDriver {
   return { world: () => w, command: (c) => applyCommand(w, c), tick: () => step(w) };
 }
 
-export function fixtureMission(id: FixtureId): 'm1' | 'm2' {
-  return id === 'warehouse-full' ? 'm1' : 'm2';
+export type FixtureMission = 'm2' | 'm6';
+
+/** S6 moved from mission I to mission VI (D-197, owner 2026-11-06): its granary fills by itself there. */
+export function fixtureMission(id: FixtureId): FixtureMission {
+  return id === 'warehouse-full' ? 'm6' : 'm2';
 }
 
 /** The predicate must hold this many ticks in a row before the run stops (no one-tick flickers). */
@@ -118,25 +121,26 @@ function scripts(id: FixtureId): Script {
         maxTicks: 300 * TICK_HZ,
       };
     case 'warehouse-full':
-      // S6: mission I with the lesson's bridge and four more wagons, and the castle's spur road cut at
-      // (72, 50): planks, bread and spare flour have nowhere to go but the granary, which fills to 60/60
-      // (stock plus loads on their way in, as the card counts it) after about ten minutes of play.
-      // (Without a cut downstream mission I never fills it before the deadline: the castle takes the
-      // planks and bread, and the mill and bakery keep pace with the farm.)
-      return {
-        start: (w) => [bridgeA(w), ...Array.from({ length: 4 }, (): Command => ({ t: 'buyWagon', stable: stableId(w) })), castleCut(w)],
-        holds(w) {
-          const wh = w.state.buildings.find((b) => b.type === 'warehouse');
-          return wh && wh.status.k === 'STORAGE_FULL' ? { kind: 'building', id: wh.id } : null;
-        },
-        maxTicks: 700 * TICK_HZ,
-      };
+      // S6 (D-197): mission VI as dealt, no commands. Three farms out-grow the one mill and fill the small
+      // granary (capacity 12) with grain; the large one is not on the road yet. The run stops once the small
+      // granary's stock (not only loads on their way in) fills it, the sawmill's full yard waits for that
+      // granary, and the HUD's worst-stall card names it (critical, not a calm full). About 2:20 of play,
+      // before the first letter's bread is in: a full store is the root, no cut road or other building is.
+      return { start: () => [], holds: smallGranaryFull, maxTicks: 400 * TICK_HZ };
   }
 }
 
-/** Mission I: one cell of the castle's spur (x = 72 between y = 46 and 52). */
-function castleCut(w: World): Command {
-  return { t: 'demolish', cell: 50 * w.terrain.w + 72 };
+/** Mission VI's small granary (capOverride 12), if any. */
+function smallGranary(w: World): Building | undefined {
+  return w.state.buildings.find((b) => b.type === 'warehouse' && b.capOverride >= 0);
+}
+
+function smallGranaryFull(w: World): FixtureFocus | null {
+  const g = smallGranary(w);
+  if (!g || g.status.k !== 'STORAGE_FULL' || sumGoods(g.stock) < storeCapOf(g)) return null;
+  if (!w.state.buildings.some((b) => b.type === 'sawmill' && b.status.k === 'OUTPUT_FULL' && b.status.blockedBy === g.id)) return null;
+  const top = rankStalls(w)[0];
+  return top && top.id === g.id && top.crit && !top.minor ? { kind: 'building', id: g.id } : null;
 }
 
 function allBusy(w: World): FixtureFocus | null {
@@ -229,11 +233,14 @@ export function checkFixture(id: FixtureId, w: World, focus: FixtureFocus | null
       return null;
     }
     case 'warehouse-full': {
-      if (!b || b.type !== 'warehouse') return `building ${focus.id} is not the granary`;
+      if (!b || b.type !== 'warehouse') return `building ${focus.id} is not a granary`;
       if (b.status.k !== 'STORAGE_FULL') return `granary is ${b.status.k}, expected STORAGE_FULL`;
-      // the card's "60/60" counts stock and loads already on their way in (panels.ts, the sim's STORAGE_FULL)
-      const held = sumGoods(b.stock) + sumGoods(b.incoming);
-      if (held < storeCapOf(b)) return `granary holds ${held}/${storeCapOf(b)}`;
+      // a real full store: its own stock fills it (not only loads booked on their way in)
+      if (sumGoods(b.stock) < storeCapOf(b)) return `granary stock ${sumGoods(b.stock)}/${storeCapOf(b)}`;
+      if (calmWhy(w, b) !== null) return `granary is a calm full (${calmWhy(w, b)})`;
+      if (!st.buildings.some((q) => q.status.k === 'OUTPUT_FULL' && q.status.blockedBy === b.id)) return 'no producer waits for the granary';
+      const top = rankStalls(w)[0];
+      if (!top || top.id !== b.id || !top.crit) return `worst-stall card shows ${top ? top.id : 'nothing'}, expected the granary ${b.id}`;
       return null;
     }
   }

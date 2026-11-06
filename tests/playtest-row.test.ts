@@ -3,7 +3,7 @@
 // every moderator field empty; the starts must be the protocol's own queries.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { FIXTURE_IDS, FIXTURE_VERSION } from '../src/game/fixtures';
+import { FIXTURE_IDS, FIXTURE_VERSION, fixtureMission } from '../src/game/fixtures';
 import {
   PLAYTEST_STARTS, RESULTS_COLUMNS, cleanDeviceNote, csvCell, playtestQuery, resultsFields, resultsRow, type TrialRecord,
 } from '../src/game/playtest';
@@ -113,6 +113,7 @@ test('playtest starts: protocol queries, every fixture once, markers only on the
   for (const s of PLAYTEST_STARTS) {
     assert(protocol.includes(`?${s.query}`), `PROTOCOL.md mentions ?${s.query} (${s.id})`);
     if (!s.fixture) assert(s.query.includes(`play=${s.mission}`), `${s.id} plays ${s.mission}`);
+    else eq(s.mission, fixtureMission(s.fixture), `${s.id}: the start list names the fixture's mission`);
   }
   const q = new URLSearchParams(playtestQuery(PLAYTEST_STARTS.find((s) => s.id === 'S6')!, { lang: 'en', pid: 'P08', dev: 'Pixel 8' }));
   eq(q.get('fixture'), 'warehouse-full', 'fixture');
