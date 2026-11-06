@@ -31,7 +31,7 @@ export class ChronicleLog {
     this.done.clear();
     for (const id of saved) this.done.add(id);
     for (const id of read(slot)) this.done.add(id);
-    for (const id of checkChronicle(world.state, this.done)) this.done.add(id);
+    for (const id of checkChronicle(world.state, this.done, world)) this.done.add(id);
   }
 
   /** The recorded ids for the save envelope (CHRONICLE order, unknown ids from a newer build kept last). */
@@ -52,7 +52,7 @@ export class ChronicleLog {
   /** Newly reached entries since the last call (CHRONICLE order); recorded at once. */
   check(world: World): string[] {
     if (!this.slot) return [];
-    const fresh = checkChronicle(world.state, this.done);
+    const fresh = checkChronicle(world.state, this.done, world);
     if (!fresh.length) return fresh;
     for (const id of fresh) this.done.add(id);
     return fresh;

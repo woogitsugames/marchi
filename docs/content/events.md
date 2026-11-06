@@ -2,7 +2,7 @@
 
 **Status: wdrożone (D-54).** Tytuły zamówień i teksty karty są w i18n jako `events.*` (PL, EN, AR; PENDING_KEYS); pełne opisy zamówień są w i18n jako `events.order.d.<ID>` (PL, EN; noc 2026-11-03) i pokazują się w rozwiniętej, jeszcze nieprzyjętej ofercie. Europa Środkowa, ok. 1300–1400. Każde ID poniżej jest stabilnym kluczem ORDER_TEMPLATES z src/sim/events.ts. Liczby, ilości i nagrody pochodzą wyłącznie z wylosowanego zdarzenia, **nie** z narracji. Każda pozycja jest prośbą docierającą do zamku, a nie zadaniem z terminem. Bez elementów fantasy, prochu, nowożytnej techniki ani życia wewnętrznego mieszkańców.
 
-## Zamówienia królewskie — 36 wariantów
+## Zamówienia królewskie — 42 warianty
 
 | ID | Ranga min. | Towary | PL — tytuł i treść | EN — title and copy |
 | --- | ---: | --- | --- | --- |
@@ -42,6 +42,16 @@
 | `christmas_court` | 4 | beer, flour | Boże Narodzenie na dworze — Na święta dwór gromadzi piwo dla gości i mąkę na świąteczne kołacze. | Christmas at court — For the feast days the court gathers ale for its guests and flour for the festive loaves. |
 | `cathedral_works` | 5 | stone, planks, charcoal | Budowa katedry — Kapituła prosi o kamień na filary, deski na rusztowania i węgiel dla kowali przy hucie. | Cathedral works — The chapter asks for stone for the piers, planks for scaffolding and charcoal for the smiths. |
 | `royal_hunt` | 5 | beer, bread, fish | Królewskie łowy — Na postój królewskiego polowania w dolinie potrzeba piwa, chleba i ryb. | The royal hunt — The king's hunting party will rest in the valley; ale, bread and fish are needed. |
+| `post_shelter` | 4 | wood, planks | Zadaszenie posterunku — Kupcy proszą o drewno i deski na osłonę towarów przy posterunku. | Shelter at the post — Merchants ask for timber and planks to shelter goods at the trading post. |
+| `post_stores` | 4 | bread, fish | Zapasy za rzeką — Kupcy zbierają chleb i ryby dla woźniców zatrzymujących się przy posterunku. | Stores across the river — Merchants gather bread and fish for drivers stopping at the post. |
+| `ice_bridge_boards` | 4 | planks, wood | Deski po zimie — Po zimowej przeprawie cieśle proszą o deski i drewno do prac przy moście. | Boards after winter — After the winter crossing, carpenters ask for planks and timber for work on the bridge. |
+| `ice_bridge_stone` | 5 | stone, charcoal | Przyczółek przeprawy — Murarze zamawiają kamień, a kowal węgiel do pracy przy okuciach mostu. | Crossing abutment — Masons order stone and the smith needs charcoal for the bridge fittings. |
+| `fair_tables` | 4 | planks, beer | Stoły na jarmark — Na jarmark potrzeba desek na stoły kupców i piwa do gospody. | Fair tables — The fair needs planks for the traders' tables and ale for the inn. |
+| `fair_provisions` | 5 | bread, fish, beer | Goście jarmarku — Gospodarze targu proszą o chleb, ryby i piwo dla przyjezdnych. | Fair visitors — The market hosts ask for bread, fish and ale for their visitors. |
+
+Warunki fabularne (D-240): `post_*` tylko gdy posterunek handlowy ma drogę do zamku; `ice_bridge_boards`
+tylko wiosną, `ice_bridge_stone` zimą lub wiosną (pora roku, nie dowód zamarznięcia); `fair_*` tylko gdy
+jarmark jest zapowiedziany lub trwa. Ilości i nagrody — ten sam generator co pozostałe.
 
 Wymagania towarowe HUD wyświetla osobno, np. „Deski 8/12 · Ziarno 5/9”. Generator wymaga rangi **i kompletnego istniejącego łańcucha** dla każdego towaru. Dla każdej pozycji dostępne są polska i angielska narracja; to jedynie teksty, bez kodu wykonawczego.
 
