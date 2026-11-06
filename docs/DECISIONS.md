@@ -2545,3 +2545,6 @@ tops, the kiln mound) mix toward the terrain's frost colour by `smoothstep(0.4, 
 season change links nothing; the instanced users (wagons, cargo, yard piles, workers) skip it by `USE_INSTANCING` —
 moving loads are not frosted. Precipitation in winter: the same rain streaks fall slowly, short and pale (sleet and
 snow flecks), by uniform values only (`Effects.update(…, snow)`).
+Cost (D-200..D-203, `tools/render5-materials.mjs`, sandbox 200 wagons, 60 m, one render): high 1975 → 1950 draws
+(−1.3 %), low 1700 → 1675 (−1.5 %); programs high 44 → 46, low 42 → 44 (the frost program and its instanced mirror,
+compiled by the pre-warm); night / winter-night / winter-day switches: 0 draw-time links, 0 new programs.
