@@ -647,6 +647,8 @@ export const es: Dict = {
   "end.act.granary": "La próxima vez: {who} no tuvo adónde enviar su mercancía durante {time} — construye un granero o conecta al comprador.",
   "end.act.other": "La próxima vez: {who} estuvo parado {time} — abre «¿Por qué está parado?» en el primer atasco.",
   "fix.paceFleetEta": "{wagon} llega a la carga en {time}; un segundo carro la recogería antes.",
+  "fix.pickupDue": "{wagon} ya va a recoger la carga: llega en {time}.",
+  "fix.pickupOnWay": "{wagon} ya va a recoger la carga.",
   "hud.rankCard": "Camino al rango",
   "cause.paceRank": "Rango {rank} ({rankName}): falta una mercancía — construye: {name}",
   "cause.paceGrow": "Rango {rank} ({rankName}): solo falta renombre — construye otro: {name}",

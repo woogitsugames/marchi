@@ -647,6 +647,8 @@ export const ja: Dict = {
   "end.act.granary": "次回へ：{who}は{time}品物の送り先がなかった。穀物倉庫を建てるか取引先をつなごう。",
   "end.act.other": "次回へ：{who}は{time}止まった。最初の停滞で「なぜ止まっている？」を開こう。",
   "fix.paceFleetEta": "{wagon}が荷に着くまで{time}。2台目の荷車ならもっと早く受け取れる。",
+  "fix.pickupDue": "{wagon}はもう荷を取りに向かっています — あと{time}で到着。",
+  "fix.pickupOnWay": "{wagon}はもう荷を取りに向かっています。",
   "hud.rankCard": "位階への道",
   "cause.paceRank": "位階{rank}（{rankName}）には品物が足りない — 建設：{name}",
   "cause.paceGrow": "位階{rank}（{rankName}）に足りないのは名声だけ — もう一つ建設：{name}",

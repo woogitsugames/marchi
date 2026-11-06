@@ -2307,6 +2307,8 @@ body.is-side .sheet-paper > .sp-in { clip-path: none; }
 .sheet-head { padding-inline: 8px 0; padding-top: 4px; }
 .sheet-head h3 { color: var(--ink); }
 .sheet-head .kicker { color: var(--wine); font-weight: 700; }
+/* a calm stall's sheet (D-193): "Dlaczego stoi?" in ink, not wine — nothing to fix, it only waits */
+.sheet-head .kicker.is-calm { color: var(--ink-soft); }
 .sheet-body { padding-block: 0 8px; padding-inline: 8px; }
 .sheet .btn.primary, .letter .btn.primary { --frame: #4a1216; --fill: var(--wine); color: #f3e5c4; }
 .sheet .btn.primary:active, .letter .btn.primary:active { --fill: #5e181c; }

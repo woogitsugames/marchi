@@ -647,6 +647,8 @@ export const uk: Dict = {
   "end.act.granary": "Наступного разу: {who} — {time} без місця для товару. Збудуйте комору або з'єднайте одержувача.",
   "end.act.other": "Наступного разу: {who} — {time} простою. Відкрийте «Чому стоїть?» при першому простої.",
   "fix.paceFleetEta": "{wagon} доїде до вантажу за {time}; другий віз забере його раніше.",
+  "fix.pickupDue": "{wagon} вже їде по вантаж — буде за {time}.",
+  "fix.pickupOnWay": "{wagon} вже їде по вантаж.",
   "hud.rankCard": "Шлях до рангу",
   "cause.paceRank": "Рангу {rank} ({rankName}) бракує товару — збудуйте: {name}",
   "cause.paceGrow": "Рангу {rank} ({rankName}) бракує лише слави — збудуйте ще: {name}",

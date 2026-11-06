@@ -701,6 +701,8 @@ export const en: FullDict = {
   'end.act.granary': 'Next time: {who} had nowhere to send its goods for {time} — build a granary or link the customer.',
   'end.act.other': 'Next time: {who} stood {time} — open "Why is it stalled?" at the first stall.',
   'fix.paceFleetEta': '{wagon} reaches the load in {time}; a second wagon collects it sooner.',
+  'fix.pickupDue': '{wagon} is already on its way to collect — here in {time}.',
+  'fix.pickupOnWay': '{wagon} is already on its way to collect.',
   'hud.rankCard': 'Road to rank',
   'cause.paceRank': 'Rank {rank} ({rankName}) lacks a good — build: {name}',
   'cause.paceGrow': 'Rank {rank} ({rankName}) lacks only renown now — build another: {name}',

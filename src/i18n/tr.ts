@@ -647,6 +647,8 @@ export const tr: Dict = {
   "end.act.granary": "Bir dahaki sefere: {who} {time} malını gönderecek yer bulamadı — ambar kur ya da alıcıyı bağla.",
   "end.act.other": "Bir dahaki sefere: {who} {time} durdu — ilk duraklamada “Neden durdu?”yu aç.",
   "fix.paceFleetEta": "{wagon} yüke {time} sonra varır; ikinci bir araba onu daha erken alır.",
+  "fix.pickupDue": "{wagon} yükü almak için zaten yolda — {time} içinde burada.",
+  "fix.pickupOnWay": "{wagon} yükü almak için zaten yolda.",
   "hud.rankCard": "Rütbeye giden yol",
   "cause.paceRank": "Rütbe {rank} ({rankName}) için bir mal eksik — kur: {name}",
   "cause.paceGrow": "Rütbe {rank} ({rankName}) için yalnızca ün eksik — bir tane daha kur: {name}",

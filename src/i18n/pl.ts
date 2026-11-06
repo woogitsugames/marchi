@@ -705,6 +705,8 @@ export const pl = {
   'end.act.granary': 'Następnym razem: {who} — {time} bez miejsca na towar. Postaw spichlerz albo połącz odbiorcę.',
   'end.act.other': 'Następnym razem: {who} — {time} przestoju. Otwórz „Dlaczego stoi?” przy pierwszym zastoju.',
   'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
+  'fix.pickupDue': '{wagon} już jedzie po ładunek — będzie za {time}.',
+  'fix.pickupOnWay': '{wagon} już jedzie po ładunek.',
   'hud.rankCard': 'Droga do rangi',
   'cause.paceRank': 'Do rangi {rank} ({rankName}) brakuje towaru — postaw: {name}',
   'cause.paceGrow': 'Do rangi {rank} ({rankName}) brakuje już tylko renomy — postaw jeszcze: {name}',

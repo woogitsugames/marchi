@@ -165,6 +165,8 @@ export class Sheets {
       top.body.scrollTop = 0;
       top.body.innerHTML = '';
       (top.body as HTMLElement & { __html?: string }).__html = undefined;
+      // a calm kicker (D-193) belongs to the building sheet that set it
+      top.kicker.classList.remove('is-calm');
       content.update(top);
       syncDock(top, true);
       revealRoot(top);

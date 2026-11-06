@@ -647,6 +647,8 @@ export const hi: Dict = {
   "end.act.granary": "अगली बार: {who} के पास {time} माल भेजने की जगह नहीं थी — अनाज भंडार बनाएँ या खरीदार जोड़ें।",
   "end.act.other": "अगली बार: {who} {time} रुका — पहली रुकावट पर \"क्यों रुकी है?\" खोलें।",
   "fix.paceFleetEta": "{wagon} {time} में माल तक पहुँचेगी; दूसरी गाड़ी उसे जल्दी उठा लेगी।",
+  "fix.pickupDue": "{wagon} माल लेने के लिए पहले से रास्ते में है — {time} में पहुँचेगी।",
+  "fix.pickupOnWay": "{wagon} माल लेने के लिए पहले से रास्ते में है।",
   "hud.rankCard": "दर्जे की राह",
   "cause.paceRank": "दर्जा {rank} ({rankName}) के लिए एक माल कम — बनाएँ: {name}",
   "cause.paceGrow": "दर्जा {rank} ({rankName}) के लिए अब सिर्फ़ ख्याति कम — एक और बनाएँ: {name}",
