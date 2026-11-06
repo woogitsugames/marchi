@@ -484,7 +484,7 @@ export class Tutorial {
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
     const ghost = this.ghostBox();
-    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.build-shelf:not([hidden])'), grownOrNull(q('.gate-pin:not([hidden])'), 34), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.seal-tempo'), q('.build-shelf:not([hidden])'), grownOrNull(q('.gate-pin:not([hidden])'), 34), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     // one layout read per width per placement: the free-slot scan below asks for the same widths often
@@ -533,7 +533,7 @@ export class Tutorial {
       const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('#sheets .sheet:last-child .sheet-head'), 6],
         [q('.rail-tools'), this.railNeeded() ? 6 : 2], [q('.stall-row:not([hidden])'), 1],
         // the build tutorial: the placement bar (Postaw) and the ghost's gate pin
-        [q('.build-shelf:not([hidden])'), 20], [grownOrNull(q('.gate-pin:not([hidden])'), 20), 6]];
+        [q('.build-shelf:not([hidden])'), 20], [q('.seal-tempo'), 4], [grownOrNull(q('.gate-pin:not([hidden])'), 20), 6]];
       const cost = (x: number, y: number): number => weigh.reduce((sum, [b, k]) => {
         if (!b) return sum;
         const ix = Math.min(b.x + b.w, x + w) - Math.max(b.x, x), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
