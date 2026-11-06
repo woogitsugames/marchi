@@ -2392,3 +2392,39 @@ contract stands at 0/30 + 0/20 with 1:48 to snow, so a neutral question will lik
 (the true root of the pile-up). The old console fixture (60 grain written into a fresh m1) was cleaner to look at but
 false ledger-wise and carried its own confound (no bridge). Whether S6 counts toward the main metric is an owner
 decision (BACKLOG). (decided; S6 scoring: owner)
+
+**D-189 — A hidden moderator screen starts the playtest setups on the APK: a 3 s press on the menu title.**
+The APK has no address bar and `chrome://inspect` is not guaranteed on the study phone, so the protocol's starts
+(T1, S1–S9; S2/S3/S4/S6 as the D-185 fixtures) are a list on a sheet (`src/ui/playtestSheet.ts`). Gesture: one
+finger held **3 s** on the menu title (moves > 12 px, a second finger or lifting cancel it). Chosen over "7 taps on
+the version line" because the menu has no version line and a long hold on a non-interactive heading is never part
+of play; the title gets `user-select: none` + no context menu so the hold does not select text. No visual hint, no
+haptic. A start reloads the page with the protocol's own query + `lang` + `debug=1` + `pt=<scenario>`
+(`pid`/`dev` = participant code P01–P08 and a device note): every trial starts from a fresh page, exactly as the
+documented URL would. `pt` makes the page `noSave` like `fixture` (D-186), so URL starts (S1, S5, S7–S9, T1) also
+leave the participant's saves and profile untouched; plain `?play=` keeps autosaving. The screen is localized in all
+17 languages like every other debug surface (`?diag=1`), so the i18n gates stay without exceptions; `fixture.invalid`
+is translated and `PENDING_KEYS` is empty again. (decided)
+
+**D-190 — The game fills only what it measured; a results row with five `auto_*` columns.**
+"Copy results row" puts one CSV row into the clipboard (fallback: a selected read-only text field) in the order of
+`docs/playtest/results-template.csv`. Filled by the game: `participant_id` (P01–P08 only, never free text),
+`device` (note, one line ≤ 60 chars), `apk_commit` (git short sha via Vite `define __BUILD_SHA__`), `scenario_id`,
+`setup_url` (the protocol query, no `pt` markers), `setup_method` (`fixture|url`), `invalid_setup=1` only for a
+failed fixture validation, `taps`, `opened_why`, `opened_wagon`, `ff_seconds`, `speed_mode`, `fixture_id/version/hash`.
+Time to the first "Dlaczego stoi?" card and the first fix are not `time_s`/`action_correct` (those are the
+moderator's verbal T0→T1 and judgment), so they go into new columns appended to the template: `auto_first_touch_s`
+(page ready → participant's first touch = hand-over), `auto_why_open_s` (first touch → first card of a stalled
+building or waiting wagon), `auto_first_fix` (first command the sim accepted after the first touch: `road:dirt`,
+`road:cobble`, `place:<type>`, `demolish`, `buyWagon`, …), `auto_outcome` (mission result) and `auto_focus_status`
+(the fixture subject's status kind). Counting stops when the page leaves its first game (menu, "Again", next
+mission). Every other column stays empty. Cells are RFC 4180-quoted and a leading `= + - @` is defused.
+`tests/playtest-row.test.ts` pins the header, the fields and the protocol queries. (decided)
+
+**D-191 — Playtest screen in the steward's ledger style, checked by a browser script.**
+The sheet reuses the valley-ledger entry (`.slots`, folio code in the margin, ruled rows, 64 px targets), the
+segmented P01–P08 control (4×2, 48 px), a 48 px parchment input and the wine primary button; the query is small
+monospace, the fixture tag a wine underline — no new kit pieces, no cards. `tools/playtest-picker-shots.mjs` checks
+on a build: 1.2 s press opens nothing, 3.3 s opens the screen, S4 reloads into `pt=S4&fixture=bridge-jam`, the copied
+row has the template's columns and the measured fields, and the save store stays empty
+(`docs/shots/playtest-picker-{menu,starts,copied}.jpg`). (decided)

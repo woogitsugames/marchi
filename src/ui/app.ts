@@ -15,7 +15,7 @@ import {
   LEGACY_SLOT, adoptLegacySaves, contractSlot, contractSlotMission, deleteSave, isGameSlot, isValleySlot, listSaves, loadSave, readSlots, readProfile, recordContractResult,
   saveGame, slotFor,
 } from '../platform/save';
-import { onLangChange, t } from '../i18n/index';
+import { getLang, onLangChange, t } from '../i18n/index';
 import { botPlan, menuWorld } from '../game/menuScene';
 import { FIXTURE_IDS, fixtureMission, isFixtureId, runFixture, type FixtureOutcome } from '../game/fixtures';
 import { h, isRtl } from './dom';
@@ -45,6 +45,9 @@ import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
 import { tutorialEndActions } from './tutorialEnd';
 import { DiagPanel } from './diagPanel';
+import { playtestStart } from '../game/playtest';
+import { TrialRecorder, armPlaytestGesture, playtestSheet } from './playtestSheet';
+import { isStall, isWagonWait } from './stallKinds';
 import { fmtInt, iso, buildingName } from './format';
 import type { IconId } from './icons';
 import { DynamicResolution, detectTier, dprCap, isQualityPref, renderQuality, type QualityChoice, type QualityPref } from './tier';
@@ -201,6 +204,9 @@ export class App implements PanelNav {
    * the profile (no autosave, no wiped contract save, no best result), whatever the participant taps.
    */
   private readonly noSave: boolean;
+  /** A moderator's trial page (?pt=<scenario>, D-189/D-190): what the game measures for the results row. */
+  private readonly trial: TrialRecorder | null;
+  private trialEntered = false;
   /** The no-road-to-victory letter was shown in this game (D-48): once per game. */
   private deadEndShown = false;
   /** Ghost roads on the map: the gap finder (open sheet) wins over the tutorial's crossing. */
@@ -215,7 +221,16 @@ export class App implements PanelNav {
     this.view = o.view;
     this.canvas = o.canvas;
     this.params = o.params;
-    this.noSave = o.params.has('fixture');
+    // a playtest start (?pt=, D-189) is a no-save page like a fixture: the participant's saves stay untouched
+    this.noSave = o.params.has('fixture') || o.params.has('pt');
+    const pt = playtestStart(o.params.get('pt'));
+    this.trial = pt ? new TrialRecorder(pt, o.params, getLang(), typeof __BUILD_SHA__ === 'string' ? __BUILD_SHA__ : '') : null;
+    // every touch of the trial's game counts (capture: before any handler can stop it); the menu does not
+    if (this.trial) {
+      window.addEventListener('pointerdown', (e) => {
+        if (e.isPrimary && this.mode === 'game') this.trial?.touch(performance.now());
+      }, { capture: true });
+    }
     const layer = (id: string): HTMLElement => h('div', { id });
     this.layers = { markers: layer('markers'), hud: layer('hud'), sheets: layer('sheets'), tutorial: layer('tutorial'), menu: layer('menu'), overlay: layer('overlay') };
     o.ui.append(this.layers.markers, this.layers.hud, this.layers.menu, this.layers.sheets, this.layers.tutorial, this.layers.overlay);
@@ -323,12 +338,14 @@ export class App implements PanelNav {
     }
     this.lastFrame = performance.now();
     requestAnimationFrame((t) => this.frame(t));
+    if (this.trial) this.trial.record.readyAt = performance.now();
     (window as unknown as { __marchia: { ready: boolean } }).__marchia.ready = true;
   }
 
   // ------------------------------------------------------------------ screens
 
   private async showMenu(): Promise<void> {
+    this.endTrial();
     this.mode = 'menu';
     this.sheets.closeAll();
     this.clearGameUi();
@@ -407,6 +424,9 @@ export class App implements PanelNav {
       openValley: () => this.openValley(),
       openSettings: () => this.openSettings(),
     }, broken ? null : this.save, broken, this.unfinished, this.best));
+    // the moderator's playtest screen (D-189): a 3 s press on the title, nothing on screen hints at it
+    const title = this.layers.menu.querySelector<HTMLElement>('.menu-head .title');
+    if (title) armPlaytestGesture(title, () => this.openPlaytest());
   }
 
   /** A mission tapped in the menu: straight in, or first the ask sheet when it has an unfinished save (D-36). */
@@ -643,6 +663,9 @@ export class App implements PanelNav {
   /** `chronicle`: the valley chronicle ids of a loaded ledger's envelope (none for a new game). */
   private enterGame(w: World, chronicle: readonly string[] = []): void {
     this.stopTutorial();
+    // a trial page measures its first game only ("Again" or the next mission is not the set-up case)
+    if (this.trialEntered) this.endTrial();
+    this.trialEntered = true;
     this.mode = 'game';
     this.deadEndShown = false;
     this.sheets.closeAll();
@@ -785,6 +808,7 @@ export class App implements PanelNav {
       this.diagPanel.frame(key, raw, t1 - t0, performance.now() - t1, now);
     }
     if (this.mode === 'game') {
+      if (this.trial) this.trialCard(now);
       const ranked = this.ranking.get(this.world, this.loop.journal.length);
       // D-92: while the castellan's notes 1-5 teach the waybill and the crossing, the worst-stall card and
       // its alarm stay hidden (a third pointer beside the ring and the note); they appear, with the
@@ -930,6 +954,9 @@ export class App implements PanelNav {
 
   private onCommandResult(cmd: Command, r: CommandResult): void {
     if (cmd.t === 'place') this.build.settled();
+    if (r.ok && this.mode === 'game') {
+      this.trial?.command(cmd.t === 'road' ? `road:${cmd.surface === 2 ? 'cobble' : 'dirt'}` : cmd.t === 'place' ? `place:${cmd.type}` : cmd.t);
+    }
     if (this.mode !== 'game' || !this.hud) return;
     const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish'
       : cmd.t === 'sellWagon' || cmd.t === 'merchantSell' ? 'coin' : cmd.t === 'place' ? 'build'
@@ -1420,6 +1447,10 @@ export class App implements PanelNav {
     const report = (o: FixtureOutcome | { id: string; ok: false; problem: string }): void => {
       const hash = o.ok ? hashState(this.world.state) : null;
       handle.__marchia.fixture = { ...o, hash };
+      if (this.trial) {
+        this.trial.record.fixture = { ok: o.ok, hash };
+        this.trial.focus = 'focus' in o ? o.focus : null;
+      }
       if (o.ok) console.info('[fixture]', JSON.stringify({ ...o, hash }));
       else {
         console.error('[fixture] invalid setup', JSON.stringify(o));
@@ -1458,6 +1489,46 @@ export class App implements PanelNav {
     this.hud?.setSpeed(0);
     this.applyDebug(true);
     report(outcome);
+  }
+
+  /** The playtest screen (D-189): starts reload the page, so each trial begins from a fresh, no-save page. */
+  private openPlaytest(): void {
+    if (this.mode !== 'menu' || this.sheets.top?.content.key === 'playtest') return;
+    this.sheets.open(playtestSheet({
+      lang: () => getLang(),
+      trial: () => this.trial,
+      go: (query) => location.replace(location.pathname + query),
+      exit: () => location.replace(location.pathname),
+    }));
+  }
+
+  /** The trial page left its game: keep the outcome of that world and stop counting (D-190). */
+  private endTrial(): void {
+    const tr = this.trial;
+    if (!tr || tr.frozen || !this.trialEntered) return;
+    const s = this.world.state;
+    const f = tr.focus;
+    const status = !f ? '' : f.kind === 'wagon'
+      ? s.wagons.find((w) => w.id === f.id)?.status.k ?? ''
+      : buildingById(this.world, f.id)?.status.k ?? '';
+    tr.snapshot(s.mission.result, status);
+    tr.freeze();
+  }
+
+  /** The trial's card on screen (D-190): a stalled building's or a waiting wagon's card is "Why is it stalled?". */
+  private trialCard(now: number): void {
+    const tr = this.trial;
+    const key = this.sheets.top?.content.key;
+    if (!tr || tr.frozen || !key) return;
+    const [kind, raw] = key.split(':');
+    const id = Number(raw);
+    if (kind === 'building') {
+      const b = buildingById(this.world, id);
+      if (b) tr.card(now, 'building', isStall(b.status) || b.status.k === 'NO_INPUT');
+    } else if (kind === 'wagon') {
+      const w = this.world.state.wagons.find((q) => q.id === id);
+      if (w) tr.card(now, 'wagon', isWagonWait(w.status));
+    }
   }
 
   /** The moderator's "invalid setup" line: stays until tapped (one gesture clears it). */

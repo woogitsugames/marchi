@@ -625,8 +625,21 @@ export const pl = {
   'diag.copy': 'Kopiuj JSON',
   'diag.copied': 'Skopiowano',
   'diag.reset': 'Od nowa',
-  // ?fixture= playtest setups (D-185, moderator only): see PENDING_KEYS
+  // ?fixture= notice (D-185) and the moderator's playtest screen (D-189; hidden, opened by a 3 s press on the menu title)
   'fixture.invalid': 'Nieprawidłowe przygotowanie „{id}”: {why}. Nie oceniaj tej próby (invalid_setup=1). Dotknij, aby zamknąć.',
+  'playtest.title': 'Próba badawcza',
+  'playtest.kicker': 'Tylko dla prowadzącego',
+  'playtest.participant': 'Kod uczestnika',
+  'playtest.device': 'Urządzenie (model, wersja Androida)',
+  'playtest.starts': 'Starty — nowy świat, bez zapisu w księgach gracza',
+  'playtest.fixture': 'gotowy stan',
+  'playtest.last': 'Ta próba: {id}',
+  'playtest.lastNone': 'Na tej stronie nie było jeszcze próby. Wybierz start poniżej.',
+  'playtest.copy': 'Kopiuj wiersz wyników',
+  'playtest.copied': 'Wiersz skopiowany do schowka.',
+  'playtest.copyFailed': 'Schowek niedostępny — zaznacz i skopiuj wiersz poniżej.',
+  'playtest.row': 'Wiersz wyników (CSV)',
+  'playtest.exit': 'Zakończ tryb próby',
   // rain forecast 30 s ahead (night 5): localized
   'hud.rainSoon': 'Za pół minuty deszcz — grunt rozmięknie, bruk utrzyma tempo',
   'hud.rainSoonDirt': 'Za pół minuty deszcz — grunt rozmięknie, wozy zwolnią',
@@ -737,7 +750,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'fixture.invalid',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
