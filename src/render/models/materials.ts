@@ -346,17 +346,22 @@ const FROST_FRAG = `
 }
 `;
 
-function addFrost(m: MeshStandardMaterial, key: MatKey): void {
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.uFrost = frostUniform;
-    sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying float vFrostUp;')
-      .replace('#include <project_vertex>', '#include <project_vertex>\n' + FROST_VERT);
-    sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uFrost;\nvarying float vFrostUp;')
-      .replace('#include <color_fragment>', '#include <color_fragment>\n' + FROST_FRAG);
-  };
-  m.customProgramCacheKey = () => 'frost1-' + key;
+// one hook and one cache key for every frosted kind: the program text is the same, so the kinds keep sharing one
+// program (and one for the instanced mirrors) as before the frost; a per-kind key would add a program per kind
+function frostHook(sh: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }): void {
+  sh.uniforms.uFrost = frostUniform;
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying float vFrostUp;')
+    .replace('#include <project_vertex>', '#include <project_vertex>\n' + FROST_VERT);
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', '#include <common>\nuniform float uFrost;\nvarying float vFrostUp;')
+    .replace('#include <color_fragment>', '#include <color_fragment>\n' + FROST_FRAG);
+}
+const frostKey = (): string => 'frost1';
+
+function addFrost(m: MeshStandardMaterial): void {
+  m.onBeforeCompile = frostHook;
+  m.customProgramCacheKey = frostKey;
 }
 
 /**
@@ -432,7 +437,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
   if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
   if (key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'grass' || key === 'trunk') addFoliageLift(m, key);
-  if (FROST_KEYS.has(key)) addFrost(m, key);
+  if (FROST_KEYS.has(key)) addFrost(m);
   if (s.alphaLeaf) {
     m.map = leafTexture();
     m.alphaTest = 0.5;
