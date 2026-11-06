@@ -16,8 +16,8 @@ mkdirSync(outDir, { recursive: true });
 const [base = 'http://127.0.0.1:5201/', tag = 'after', only = '', qualS = 'low,high', sizeS = '412x915,915x412'] = process.argv.slice(2);
 
 // season ticks (TICK_HZ 10, 15 min seasons = 9000 ticks; spring 0, summer 9000, autumn 18000, winter 27000):
-// mid-winter day, late autumn (leaves falling), early spring (leaves coming back)
-const WINTER = 31392, LATE_AUTUMN = 26100, SPRING = 37800, AUTUMN = 22392;
+// mid-winter day, late autumn (bare 0.84, leaves falling), mid-spring (bare 0.5, leaves coming back), autumn (in leaf)
+const WINTER = 31392, LATE_AUTUMN = 26100, SPRING = 39150, AUTUMN = 22392;
 // scene: tick, dist (m), yaw, the target: the forest-edge cell nearest the castle
 const SCENES = {
   winter: { tick: WINTER, dist: 70 },

@@ -368,8 +368,8 @@ function bush(b: PartBuilder, v: number): void {
   const crownR = v3(1.75, 1.15, 1.75);
   const list = shell(r, crownC, crownR, 8 + v, 0.35, [0.7, 0.95], -0.3);
   list.push({ c: v3(0.15, 1.9, -0.1), r: 0.85 });
-  // bare winter shrub (D-260): a stem from the root into every clump, the fan of rods a hazel is in winter
-  for (const k of list) branchTo(b, [v3(k.c.x * 0.08, -0.1, k.c.z * 0.08)], k.c, 0.035, '#4a4038');
+  // (no extra scaffold for the shrub, D-261: its twig sprays and five stems carry the bare look, and shrubs are the
+  // most numerous near model — 6 triangles a clump would be the largest share of the added geometry)
   // hazel/blackthorn in November: dull olive and ochre with a few russet clumps
   const cols = v
     ? ['#646541', '#706b3c', '#5a5e3e', '#7b6a3c', '#7f5a3c']
