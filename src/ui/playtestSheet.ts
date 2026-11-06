@@ -112,7 +112,7 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
     key: 'playtest',
     update(sheet: Sheet) {
       sheetRef = sheet;
-      setHtml(sheet.icon, iconSvg('menu', 30));
+      setHtml(sheet.icon, iconSvg('inspect', 30));
       sheet.kicker.textContent = t('playtest.kicker');
       sheet.title.textContent = t('playtest.title');
       if (setHtml(sheet.body, html())) bind(sheet);
@@ -132,7 +132,7 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
     return `<div class="pt-trial">
       <div class="pt-trial-h"><span class="slot-no" aria-hidden="true">${esc(tr.start.id)}</span>
         <span class="pt-trial-name">${esc(t('playtest.last', { id: tr.start.id }))}</span></div>
-      <dl class="pt-fields num">${fields.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+      <dl class="pt-fields num">${fields.map(([k, v]) => `<div${v.length > 14 ? ' class="is-wide"' : ''}><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
       <button class="btn primary cf pt-copy" data-a="copy">${esc(t('playtest.copy'))}</button>${status}</div>`;
   }
 

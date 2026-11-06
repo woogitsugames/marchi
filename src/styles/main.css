@@ -798,8 +798,8 @@ section.sheet:focus { outline: none; box-shadow: none; }
   text-transform: lowercase;
   color: var(--ink-soft);
 }
-.pt-start .slot-no { font-size: 22px; color: var(--ink); padding-top: 4px; }
-.pt-start .slot-name { font-size: 20px; }
+.slot-new.pt-start .slot-no { font-size: 22px; color: var(--clay); padding-top: 4px; }
+.slot-new.pt-start .slot-name { font-size: 20px; color: var(--ink); }
 .pt-start .slot-sub { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .pt-q { font-family: ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
 .pt-tag { font-size: 12px; font-weight: 700; color: var(--wine); border-bottom: 1px solid currentColor; }
@@ -812,6 +812,7 @@ section.sheet:focus { outline: none; box-shadow: none; }
 .pt-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 12px; margin: 0 0 10px; font-size: 13px; }
 .pt-fields > div { display: flex; justify-content: space-between; gap: 6px; min-width: 0; border-bottom: 1px dotted rgb(74 72 67 / .45); }
 .pt-fields dt { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-fields > div.is-wide { grid-column: 1 / -1; }
 .pt-fields dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; text-align: end; }
 .pt-copy { width: 100%; }
 .pt-status { margin: 8px 0 0; font-size: 15px; font-weight: 700; color: var(--meadow); }
