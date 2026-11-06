@@ -226,3 +226,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-265 | — | When every standing chain is saturated, the grow card names a good never sold | decided | UI |
 | D-266 | — | In the free valley the build ghost prefers a site a road can reach; the rank and grow cards count only such sites, by the castle first | decided | sim |
 | D-267 | — | The malthouse grows on its own malt while the brewery is still locked | decided | inne |
+| D-268 | — | The bottleneck card skips an input whose every consumer works in a chain ending in a saturated good | decided | UI |
+| D-269 | — | The valley site check (D-266) accepts a neighbouring road only as the network would drive it | decided | sim |
+| D-270 | — | On a short landscape sheet the grow card's reason wraps in the wider column instead of a three-line clamp | decided | UI |
