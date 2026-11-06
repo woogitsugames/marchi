@@ -1,6 +1,6 @@
 # Playtest MARCHIA v2 — misje I–XII, Wolna dolina i HUD v3
 
-**Status:** protokół badań, **nie wynik sesji**. Źródła prawdy (2026-11-02): `src/ui/app.ts`, `src/ui/menu.ts`, `src/ui/hud.ts`, `src/ui/layout.ts`, `src/sim/missions*.ts`, `src/sim/proposals/missions-*.ts`, `src/sim/defs.ts` i `src/sim/seasons.ts` na gałęzi `claude/eager-cori-08wt8e`; zweryfikuj w docelowym APK. URL `ff` to przyspieszenie symulacji, a **nie** gwarancja określonego zastoju.
+**Status:** protokół badań, **nie wynik sesji**. Źródła prawdy (2026-11-02): `src/ui/app.ts`, `src/ui/menu.ts`, `src/ui/hud.ts`, `src/ui/layout.ts`, `src/sim/missions*.ts`, `src/sim/proposals/missions-*.ts`, `src/sim/defs.ts` i `src/sim/seasons.ts` na gałęzi `claude/eager-cori-08wt8e`; zweryfikuj w docelowym APK. URL `ff` to przyspieszenie symulacji, a **nie** gwarancja określonego zastoju; dla S2/S3/S4/S6 są zwalidowane fixtury `?fixture=` (D-185, §3).
 
 **5–8 uczestników, 30–40 minut na osobę**. Scenariusze rotują pomiędzy sesjami — nie da się rzetelnie sprawdzić wszystkich misji I–XII, Wolnej doliny, HUD, Fold/Flip i wydajności podczas jednej sesji. Pierwszy kontakt z samouczkiem i test diagnozy **bez** samouczka należą do odrębnych prób.
 
@@ -71,8 +71,10 @@ Prowadzący tworzy przed sesjami tabelkę `P01–P08 → ścieżka + planowane s
 | `slot=valley1|valley2|valley3` | Nowy sandbox zapisuje do wskazanej księgi; może ją nadpisać przez autosave |
 | `market=1`, `collapsed=1` | Kontrolne otwarcie targu / złożenie listu przewozowego, nie używaj w teście znalezienia elementu |
 | `quality=…`, `dynres=0` | Preferencja jakości i wyłączenie dynamicznej rozdzielczości — zanotuj przy P1 |
+| `fixture=bridge-cut-in-transit|all-busy|bridge-jam|warehouse-full` | **D-185, tylko z `debug=1`** (lub serwer Vite dev). Nowy świat misji, rozgrywany prawdziwą symulacją od ticku 0 skryptem komend, zatrzymany (pauza) w chwili potwierdzonego zastoju i **zwalidowany**. Ignoruje `play`, `ff` i `bot`. Cała strona **nie zapisuje niczego** do slotów zapisu ani profilu (autozapis, kasowanie, najlepszy wynik). Szczegóły i preflight: „Fixtury debugowe” w §3 |
+| `openId=<id budynku>`, `wagonId=<id wozu>` | D-187: otwierają kartę **dokładnie** tego budynku / wozu (bez fallbacku; nieistniejące ID = nic). Wyłącznie do kontroli prowadzącego, nigdy w mierzonej próbie |
 
-**Przykładowe URL dla prowadzącego:** `?play=m1&tut=1&speed=1&lang=pl&debug=1`, `?play=m7&ff=120&speed=0&lang=pl&debug=1`, `?play=m12&ff=180&speed=0&lang=pl&debug=1`, `?play=sandbox&slot=valley2&speed=0&lang=pl&debug=1`. `fixture=…` pozostaje **niezaimplementowaną propozycją**.
+**Przykładowe URL dla prowadzącego:** `?play=m1&tut=1&speed=1&lang=pl&debug=1`, `?play=m7&ff=120&speed=0&lang=pl&debug=1`, `?play=m12&ff=180&speed=0&lang=pl&debug=1`, `?play=sandbox&slot=valley2&speed=0&lang=pl&debug=1`, `?fixture=bridge-jam&lang=pl&debug=1` (S4).
 
 `open` i `wagon` używaj **wyłącznie do wstępnej kontroli wizualnej**: otwarty panel zdradza ścieżkę rozwiązania i unieważnia pomiar samodzielnego znalezienia „Dlaczego stoi?”. Aby wykonać próbę z panelem, przeładuj przypadek bez tych parametrów. `ff` nie gwarantuje żądanego **stanu semantycznego** — zawsze weryfikuj status, nie samą liczbę sekund.
 
@@ -98,7 +100,8 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 
 ### S2 — Jedyny most usunięty **w trakcie dostawy** (misja II; przygotowanie ręczne)
 
-- **Start:** `?play=m2&ff=70&speed=0`. Misja II ma **jedną** przeprawę po kolumnie `x=51`, od `y=30` do `42`, oraz aktywne przewozy w obie strony.
+- **Start (preferowany, D-185):** `?fixture=bridge-cut-in-transit&lang=pl&debug=1` — gotowy, zwalidowany stan (zob. „Fixtury debugowe” niżej); wtedy pomiń „Przygotowanie” poniżej. **Wznowienie czasu** po ok. 20 s anuluje zadanie odciętego wozu (`NO_ROUTE_CANCEL_TICKS`), więc stan zostaw na pauzie.
+- **Start ręczny (zapasowy):** `?play=m2&ff=70&speed=0`. Misja II ma **jedną** przeprawę po kolumnie `x=51`, od `y=30` do `42`, oraz aktywne przewozy w obie strony.
 - **Preflight przed cięciem:** co najmniej jeden wóz ma pracę (`job !== null`), która wymaga tej przeprawy; nie wystarczy przerwać pustą drogę przed uruchomieniem logistyki.
 - **Przygotowanie:** włącz „Rozbiórka” i usuń **jeden nieobsadzony przez wóz fragment mostu** (nie bramę budynku). Odczekaj 1–2 sekundy symulacji, zatrzymaj grę i sprawdź, czy to rzeczywiście blokuje trasę. Jeśli ręczne wskazanie fragmentu na telefonie jest za mało precyzyjne, dozwolony jest tylko następujący **moderatorski** wariant przez istniejącą kolejkę komend (to nie jest nowy parametr URL):
   ```js
@@ -120,15 +123,17 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 
 ### S3 — Wszystkie wozy zajęte (misja II; zależne od statusu)
 
-- **Start kandydujący:** `?play=m2&ff=90&speed=0` (ew. 60/120/150 s); bez `bot=1`.
-- **Preflight:** przynajmniej jeden potrzebujący surowca budynek ma dokładnie `status.k=NO_WAGON` i `status.cause=ALL_BUSY`, a przewozy faktycznie są aktywne. Sam fakt, że na ekranie jadą wozy, **nie wystarcza**. Gdy warunek się nie pojawia, przypadek nie jest przygotowany — patrz propozycja `fixture=all-busy`.
+- **Start (preferowany, D-185):** `?fixture=all-busy&lang=pl&debug=1` — Piekarnia (id 9) ma `NO_WAGON/ALL_BUSY` przy osiągalnej mące, wszystkie 7 wozów ma pracę.
+- **Start kandydujący (zapasowy):** `?play=m2&ff=90&speed=0` (ew. 60/120/150 s); bez `bot=1`. Uwaga: przy 90 s ten stan **nie** występuje; pierwszy raz pojawia się ok. 158,6 s.
+- **Preflight:** przynajmniej jeden potrzebujący surowca budynek ma dokładnie `status.k=NO_WAGON` i `status.cause=ALL_BUSY`, a przewozy faktycznie są aktywne. Sam fakt, że na ekranie jadą wozy, **nie wystarcza**. Gdy warunek się nie pojawia, przypadek nie jest przygotowany — użyj `fixture=all-busy`.
 - **Poprawna przyczyna:** produkt/dostawca jest osiągalny, ale nie ma wolnego wozu do podjęcia kolejnego zadania; to **nie** brak surowca.
 - **Co mierzyć:** czas, otwarcie „Dlaczego stoi?”, odnalezienie `NO_WAGON` i `ALL_BUSY`, przejście łańcucha, dotknięcia, wybór działania.
 - **Sukces:** diagnoza **<30 s**; wtórnie rozważa dokupienie wozu lub odciążenie floty (zakup możliwy przy odpowiedniej liczbie monet).
 
 ### S4 — Korek na drewnianym moście (misja II; obecne URL)
 
-- **Start kandydujący:** `?play=m2&ff=60&speed=0` (sprawdź też 45/90 s). Zaczyna się z 7 wozami i jednym drewnianym mostem przy `x=51`. Bot m2 obserwuje `BRIDGE_JAM` w toku symulacji, ale konkretny stan przy danym `ff` zawsze sprawdzaj.
+- **Start (preferowany, D-185):** `?fixture=bridge-jam&lang=pl&debug=1` — Wóz 1 (id 11) czeka przy moście na Wóz 4 jadący z naprzeciwka, od co najmniej 2 s.
+- **Start kandydujący (zapasowy):** `?play=m2&ff=60&speed=0` (sprawdź też 45/90 s; w obecnym buildzie pierwszy korek ok. 96 s). Zaczyna się z 7 wozami i jednym drewnianym mostem przy `x=51`. Bot m2 obserwuje `BRIDGE_JAM` w toku symulacji, ale konkretny stan przy danym `ff` zawsze sprawdzaj.
 - **Preflight:** przynajmniej jeden wóz ma **rzeczywisty** `status.k=BRIDGE_JAM`; `?wagon=jam` bez tego testu może otworzyć zwykły wóz (fallback). Warto także sprawdzić, czy w panelu widać łańcuch do blokującego wozu.
 - **Poprawna przyczyna:** jednopasmowy drewniany most ogranicza przepustowość / wóz czeka na przejazd z drugiej strony; nie brak połączenia.
 - **Co mierzyć:** czas, dotknięcia, karta wozu, otwarcie przyczyny, kliknięcie blokującego wozu, wskazanie wąskiego gardła.
@@ -144,7 +149,8 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 
 ### S6 — Pełny spichlerz (misja I; debug-fixtura operatora)
 
-- **Start:** `?play=m1&speed=0`. W m1 istnieje `warehouse`, pojemność **60** (`BUILDINGS.warehouse.storeCap`); w m2/m3 nie ma magazynu startowego. Obecne URL **nie mają** przełącznika „pełny magazyn”.
+- **Start (preferowany, D-185):** `?fixture=warehouse-full&lang=pl&debug=1` — prawdziwie zapełniony spichlerz z poprawną księgą; **przeczytaj ograniczenia** w „Fixtury debugowe” (odcięty zamek jest częścią tego stanu). Wtedy pomiń ręczne przygotowanie poniżej.
+- **Start ręczny (zapasowy, sztuczny):** `?play=m1&speed=0`. W m1 istnieje `warehouse`, pojemność **60** (`BUILDINGS.warehouse.storeCap`); w m2/m3 nie ma magazynu startowego. Obecne URL **nie mają** przełącznika „pełny magazyn”.
 - **Przygotowanie przez prowadzącego** w konsoli debugowego WebView, na świeżej m1 (bez `ff`), zanim tester zobaczy telefon:
   ```js
   const a = window.__marchia.app, s = a.world.state;
@@ -161,15 +167,36 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 - **Co mierzyć:** czas, dotknięcia, odnalezienie magazynu/karty „Dlaczego stoi?”, odczyt `60/60`, poprawna sugestia zwolnienia miejsca.
 - **Sukces:** diagnoza **<30 s**; wtórnie wskazuje konieczność opróżnienia/zwiększenia miejsca. **Nie wymagaj postawienia nowego magazynu w m1**: narzędzie budowy nie jest tam udostępnione. Wyjątkiem w misjach jest m6, gdzie `buildable: ['warehouse']` pozwala postawić spichlerz.
 
-### Propozycja brakujących, deterministycznych narzędzi debugowych — **NIEZAIMPLEMENTOWANE**
+### Fixtury debugowe — **ZAIMPLEMENTOWANE** (D-185…D-187, `FIXTURE_VERSION=1`)
 
-W osobnym zadaniu (nie w tym PR z dokumentacją) dodać wyłącznie w buildach debugowych, bez przechodzenia do zapisu produkcyjnego, z walidacją statusów po utworzeniu świata:
-- `?fixture=bridge-cut-in-transit`: m2 z aktywnym zadaniem przewozu po przecięciu mostu; wymuszone `NO_ROUTE`;
-- `?fixture=all-busy`: m2 z osiągalnym towarem i `NO_WAGON/ALL_BUSY`;
-- `?fixture=bridge-jam`: m2 z rzeczywistym `BRIDGE_JAM` (nie przypadkowym aktywnym wozem);
-- `?fixture=warehouse-full`: m1, `STORAGE_FULL`, rzeczywisty stan pojemności i poprawne wartości księgi.
+`?fixture=<id>&lang=pl&debug=1` startuje misję od ticku 0 z jej własnym seedem i rozgrywa **prawdziwą symulację** (`step()` + zwykłe komendy gracza, `src/game/fixtures.ts`) do chwili, gdy oczekiwany zastój trwa nieprzerwanie 1 s; potem gra stoi na **pauzie** (`speed` z URL może to zmienić — nie zmieniaj). Nic nie jest dopisywane ręcznie do stanu: towary, rezerwacje i statusy pochodzą z symulacji, więc księga i inwarianty są prawdziwe. Przebieg jest deterministyczny — ten sam tick, te same ID i ten sam hash stanu na każdym urządzeniu (sprawdzone headless i w Chromium). Po zbudowaniu stan jest **walidowany** (`checkFixture`: status, inwarianty, brak niewyjaśnionego zastoju, misja trwa).
 
-Rozważyć osobne `openId=<buildingId>`, `wagonId=<id>` zamiast zmieniać działanie istniejących `open`/`wagon`; nie używać ich w głównym pomiarze. Każda fixtura powinna mieć test inwariantów, seeda i wersję. **Bez fixtury lub pomyślnego przygotowania ręcznego S2/S3/S4/S6 nie mogą być ocenione na siłę**; zapisz nieudaną próbę przygotowania w notatkach, a nie jako błąd gracza.
+- **Brak `debug=1`**, nieznane ID albo nieudana walidacja → **widoczny czerwony komunikat** „Nieprawidłowe przygotowanie … Nie oceniaj tej próby (invalid_setup=1)” u góry ekranu (znika po dotknięciu) oraz `console.error('[fixture] invalid setup', …)`. Taka próba: `invalid_setup=1`, **bez oceny**.
+- **Zapisy:** strona z parametrem `fixture` nie zapisuje, nie kasuje i nie nadpisuje **żadnego** slotu ani profilu — także po przejściu do menu, „Jeszcze raz” lub zamknięciu aplikacji. Zapisy uczestnika z innych prób pozostają nietknięte.
+- `ff`, `bot` i `play` są przy fixturze ignorowane. `openId`/`wagonId` (D-187) służą wyłącznie do kontroli prowadzącego; mierzoną próbę zawsze ładuj **bez** nich.
+
+| Scenariusz | URL (dla uczestnika) | Misja, stop | Podmiot (dla `openId`/`wagonId`) | Co zawiera stan |
+| --- | --- | --- | --- | --- |
+| S2 | `?fixture=bridge-cut-in-transit&lang=pl&debug=1` | m2, 39,4 s | wóz id **12** („Wóz 2”, 6 drewna do Tartaku) | Gdy załadowany wóz zmierza do mostu `x=51`, skrypt rozbiera **jedną** wolną komórkę przęsła na jego trasie (komenda `demolish`); 2 s później wóz ma `NO_ROUTE` (drugi wóz, id 13, również). Karta „Najgorszy zastój” w tej chwili wskazuje **zamek** (czeka na deski od początku gry) — to prawdziwy, starszy zastój, nie błąd fixtury |
+| S3 | `?fixture=all-busy&lang=pl&debug=1` | m2, 159,5 s | budynek id **9** (Piekarnia) | Bez komend. 7 wozów, każdy z pracą; piekarnia `NO_WAGON/ALL_BUSY` (mąka), źródło osiągalne, flota nie stoi przy moście (`heldWagon=-1`, `busyOutOfReach=-1`). Druga piekarnia (id 10) ma ten sam status |
+| S4 | `?fixture=bridge-jam&lang=pl&debug=1` | m2, 98,2 s | wóz id **11** („Wóz 1”) | Bez komend. Wóz 1 z 4 zbożem czeka przy drewnianym moście na Wóz 4 jadący z naprzeciwka (jeden pas), od ≥2 s |
+| S6 | `?fixture=warehouse-full&lang=pl&debug=1` | m1, 612,5 s | budynek id **7** (Spichlerz) | Komendy na starcie: most z lekcji (`x=41`), 4 wozy, **rozbiórka 1 komórki drogi do zamku** `(72,50)`. Deski, chleb i nadmiar mąki trafiają do spichlerza, aż `STORAGE_FULL`. Patrz ograniczenia |
+
+**Ograniczenia, które prowadzący musi znać:**
+- **S6 nie jest „czystym” pełnym spichlerzem.** W misji I bez przecięcia czegoś za spichlerzem prawdziwa symulacja nie zapełnia go przed terminem (zamek bierze deski i chleb, młyn i piekarnia nadążają za polem). Fixtura odcina więc zamek. Skutek: karta „Najgorszy zastój” pokazuje **„Zamek: brak dojazdu do zapasów”**, kontrakt ma 0/30 i 0/20, a do śniegu zostaje **1:48** (z komunikatem „Zostały 2 minuty”). Karta spichlerza: wiersz przyczyny **„60/60 — brak miejsca na odbiór”** (zapas + ładunki w drodze, tak liczy symulacja), pasek „W spichlerzu: 35/60” z kreskowanym przychodem. Na neutralne pytanie uczestnik najpewniej wskaże odcięty zamek — **to poprawna przyczyna korzenia**. Dla S6 zapisuj osobno: `correct` = rozpoznaje brak miejsca w spichlerzu (z kartą lub mapą), `notes_no_pii` = czy wskazał także odcięty zamek. Decyzja, czy S6 w tej postaci liczyć do głównego wskaźnika, należy do właściciela (BACKLOG).
+- **S2:** wznowienie czasu na ponad ~20 s anuluje zadanie odciętego wozu; nie zostawiaj gry na ×1 przed oddaniem telefonu.
+- Wartości z tabeli (czas stopu, ID) są przypięte w `tests/playtest-fixtures.test.ts`. Zmiana symulacji, która je przesuwa, musi zaktualizować tę tabelę i podbić `FIXTURE_VERSION`; wyników z różnych wersji fixtur nie mieszaj.
+
+**Preflight fixtury** (konsola debugowego WebView, przed oddaniem telefonu; nic nie zmienia):
+```js
+const f = window.__marchia.fixture, s = window.__marchia.app.world.state;
+console.log(f.ok, f.problem, f.id, 'v' + f.version, f.tick, f.hash, f.focus, 'speed', window.__marchia.app.loop.speed);
+// oczekiwane: ok=true, problem=null, speed=0, tick i focus jak w tabeli; hash zapisz w fixture_hash
+console.log(s.mission.id, s.tick, f.focus.kind === 'wagon'
+  ? s.wagons.find(w => w.id === f.focus.id).status
+  : s.buildings.find(b => b.id === f.focus.id).status);
+```
+`window.__marchia.fixture` istnieje także bez pełnego uchwytu `app`. Jeżeli `ok !== true` albo widać czerwony komunikat: `invalid_setup=1`, przeładuj od zera; nie oceniaj próby. Kontrola wizualna: ten sam URL z `&wagonId=12` / `&openId=9` / `&wagonId=11` / `&openId=7` (zrzuty `docs/shots/playtest-*-card.jpg`), potem **przeładuj bez tych parametrów**. Automatyczna kontrola wszystkich fixtur na buildzie: `node tools/playtest-shots.mjs http://127.0.0.1:5194/` (ok, pauza, brak zapisów, komunikat dla błędnego ID).
 
 ## 3A. Rozszerzenie diagnostyczne: misje IV–VI (S7–S9)
 
@@ -409,7 +436,7 @@ Przy każdej próbie zapisz `cohort`, `prior_training` (`0|1`), `apk_commit`, `d
 
 Dla **każdej wykonanej próby** (`S1–S15`, warianty `S8_TRANCHE` / `S8_BUFFER`, `T1–T2`, `V1–V6`, `H1–H4`, `F0–F3`, `P1`) dodaj **jeden wiersz uczestnika × zadanie** do prywatnej kopii `docs/playtest/results-template.csv`. Nie twórz pustych wierszy dla zadań, których nie wykonano. Jeśli przygotowanie technicznie się nie powiodło, zachowaj wiersz z `invalid_setup=1` i **pustymi wynikami poznawczymi**, zamiast fałszować `correct=0`. Gdy tego samego uczestnika dotyczy kilka prób przygotowania, odnotuj to w `notes_no_pii` i nie licz tych prób jako niezależnych.
 
-**Kolumny bazowe (zachowane w tej samej kolejności co v1):** `participant_id` (anonimowy P01–P08), `segment` (`strategy|casual|non_gamer`), `device`, `android_version`, `apk_commit` (rzeczywisty SHA buildu), `scenario_id`, `order_index` (kolejność podjętych prób), `setup_url` (cały **faktyczny** query string), `setup_method` (`url|manual|devtools`), `preflight_ok`, `invalid_setup`, `time_s`, `correct`, `timeout`, `taps`, `opened_why`, `opened_wagon`, `followed_chain`, `chain_steps`, `action_correct`, `assistance`, `issue_codes`, `quote_anonymized` i `notes_no_pii`.
+**Kolumny bazowe (zachowane w tej samej kolejności co v1):** `participant_id` (anonimowy P01–P08), `segment` (`strategy|casual|non_gamer`), `device`, `android_version`, `apk_commit` (rzeczywisty SHA buildu), `scenario_id`, `order_index` (kolejność podjętych prób), `setup_url` (cały **faktyczny** query string), `setup_method` (`url|manual|devtools|fixture`), `preflight_ok`, `invalid_setup`, `time_s`, `correct`, `timeout`, `taps`, `opened_why`, `opened_wagon`, `followed_chain`, `chain_steps`, `action_correct`, `assistance`, `issue_codes`, `quote_anonymized` i `notes_no_pii`.
 
 **Format:** liczniki i wskaźniki `0|1` **tylko przy rzeczywiście wykonanemu pomiarze**; pusty = nie dotyczy / brak pomiaru, nie zero. Czas w sekundach, 0–60 dla diagnozy; dotknięcia i błędne gesty jako liczby całkowite >=0. `issue_codes` łącz pionową kreską `|`. Pola tekstowe z przecinkami, cudzysłowami lub końcami linii zapisuj prawidłowo w CSV (cudzysłowy podwajaj). W repozytorium jest **wyłącznie szablon**, nie rzeczywiste dane, nagrania, numery telefonów ani cytaty umożliwiające rozpoznanie osoby.
 
@@ -444,10 +471,11 @@ Starsze pola `cohort` (`baseline|onboarding|extended|fold`), `prior_training` (`
 | `pace_seen`, `pace_understood`, `road_stone_understood`, `ix_x_new_lesson`, `buffer_understood` | `1|0`, tylko jeśli temat rzeczywiście pokazano/badano; `ix_x_new_lesson` dopiero po **obu** IX/X |
 | `hud_find_s`, `hud_found`, `hud_cause_s`, `hud_show_used`, `alarm_count_understood`, `alarm_cycle_used`, `tool_cards_understood`, `cure_highlight_seen`, `wagon_shortfall_understood` | Czas znalezienia/korygowania przyczyny 0–60 s, flagi `1|0` przy ważnej próbie; znalezienie = `hud_found=1 && hud_find_s <30`, przy 1 zastoju `alarm_cycle_used` puste |
 | `rank_understood`, `season_understood`, `goods_identified` | `1|0` przy badanym pytaniu; liczba poprawnie rozpoznanych **spośród 10** towarów (`0..10`) |
+| `fixture_id`, `fixture_version`, `fixture_hash` | Tylko przy `setup_method=fixture`: ID z URL, `window.__marchia.fixture.version` i `.hash` z preflightu (D-185); przy innym przygotowaniu puste |
 | `misclicks`, `unintended_commands`, `clipped_ui` | Zliczone błędne dotknięcia, niezamierzone akcje i widoczne ucięcia tekstu/karty; 0, gdy obserwator **sprawdził** i nie było problemu |
 | `perceived_smoothness_x1`, `perceived_smoothness_x4`, `horse_step_x1_ok`, `horse_step_x4_ok`, `heat_before`, `heat_after`, `perf_fps_note` | Subiektywna płynność i temperatura **1–5**, krok konia `1|0`, ewentualnie zaobserwowany FPS/warunki renderowania jako tekst; niczego nie wpisuj bez obserwacji |
 
-**Ważne rozróżnienie:** `fold_state` to starszy skrót stanu, natomiast `screen_mode`/`layout_classes` podają konkretne warunki; `is-split` nie oznacza automatycznie wykrytego zawiasu. Przy S8 używaj `S8_TRANCHE` i `S8_BUFFER`, a w obu wpisz niezależny `preflight_ok`. W `setup_url` nie wymyślaj `fixture`. Ankieta pozostaje oddzielna od danych prób, połączona tylko anonimowym `participant_id`.
+**Ważne rozróżnienie:** `fold_state` to starszy skrót stanu, natomiast `screen_mode`/`layout_classes` podają konkretne warunki; `is-split` nie oznacza automatycznie wykrytego zawiasu. Przy S8 używaj `S8_TRANCHE` i `S8_BUFFER`, a w obu wpisz niezależny `preflight_ok`. W `setup_url` wpisuj `fixture=…` tylko wtedy, gdy faktycznie go użyto (`setup_method=fixture`). Ankieta pozostaje oddzielna od danych prób, połączona tylko anonimowym `participant_id`.
 
 ## 6. Analiza, mediany i decyzje o UI
 

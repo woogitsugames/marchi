@@ -2348,3 +2348,47 @@ en "Waiting", 15 more languages as agent translations, native review pending wit
 check is gone (pace and bottleneck signatures differ, so the kicker is always rewritten when the card changes kind).
 UI only, hashes unchanged. Shots `docs/shots/day9l-after-{412x915,915x412}.jpg` (`tools/day9l-shots.mjs`, mission
 III at 1:00: two calm stalls, no pace card). (decided)
+
+**D-185 — Playtest fixtures play the real sim to the stall, then pause and validate (`?fixture=`).**
+PROTOCOL §3 asked for deterministic, debug-only setups for S2/S3/S4/S6 instead of `ff` guesses and console state
+edits. `src/game/fixtures.ts` holds one script per fixture: the mission's own seed, commands applied at tick
+boundaries (the same `Command`s a player sends), `step()` until the scenario's predicate has held 1 s in a row,
+then `checkFixture()` (status, `checkInvariants`, `unexplainedStalls`, mission running, scenario-specific checks such
+as a reachable source for ALL_BUSY or an unreachable destination for NO_ROUTE). No state is written by hand, so the
+ledger is true by construction. The app runs the script through its own `GameLoop` (commands in the journal, ticks
+via `tickOnce`, HUD and dead-end letter quiet as during `ff`), pauses, and publishes `window.__marchia.fixture`
+(`ok`, `problem`, `version`, `tick`, `focus`, `hash`) even without the full debug handle. The stop is found by a
+predicate but is deterministic: the same tick and hash headless and in Chromium; `tests/playtest-fixtures.test.ts`
+pins tick + subject ids (the numbers the protocol quotes) and checks rerun, GameLoop path and journal replay give
+the same hash. `FIXTURE_VERSION` (1) goes into the results CSV (`fixture_id`, `fixture_version`, `fixture_hash`).
+Gate: `debug=1` or the Vite dev server, like the D-51 handle; without it, with an unknown id, or when validation
+fails, a red notice ("Nieprawidłowe przygotowanie … invalid_setup=1", one tap clears it, key `fixture.invalid`
+pending translation) and `console.error` — never a silent fallback to a different state. S2 uses the player's
+`demolish` on one free span cell on a loaded wagon's route (stop 39.4 s, wagon 12); S3 and S4 need no commands
+(mission II as dealt reaches ALL_BUSY at 159.5 s, bakery 9, and a real oncoming BRIDGE_JAM at 98.2 s, wagon 11).
+(decided)
+
+**D-186 — A fixture page never touches the save store.**
+Any URL with `fixture` makes the whole page session `noSave`: no autosave (interval, hidden page, chronicle), no
+`deleteSave` (end letter, restart, "start afresh", valley ledgers), no legacy-slot adoption, no best result in the
+profile — whatever the participant taps afterwards, including "Again" or the menu. One flag at the write points of
+`App` (`dropSave`, `autosave`, `recordContractResult`), not a separate store: the fixture is a disposable debug
+state, and the participant's real contract saves on the same phone stay as they were. `tools/playtest-shots.mjs`
+checks that the store is empty after `pagehide`. Plain `?play=` keeps its old behaviour (it still autosaves). (decided)
+
+**D-187 — `openId` / `wagonId` open an exact card; `open` / `wagon` unchanged.**
+The protocol's preflight needs the fixture's subject, and `open=type` / `wagon=jam` fall back to the first match or
+the first moving wagon. New params take an exact building / wagon id and do nothing when it does not exist (no
+fallback). Moderator only, never in a measured trial (the open card gives the answer away). (decided)
+
+**D-188 — S6 (`warehouse-full`) cuts the castle road: mission I cannot fill its granary otherwise.**
+Probed headless: with the lesson's bridge and 0–4 extra wagons the castle takes every plank and loaf it still lacks,
+the mill outruns the farm and the bakery's flour surplus is ~2.5/min, so the granary stays empty or below 10 units
+until the win or the 12-minute snow; removing the woodcutter makes it worse. The fixture therefore builds the bridge,
+buys 4 wagons and demolishes one cell of the castle's spur `(72, 50)`; planks, bread and spare flour then go to the
+granary, which reaches STORAGE_FULL (stock 35 + 25 on the way = 60, the sim's and the card's "60/60") at 612.5 s.
+Honest cost, written into PROTOCOL S6: the worst-stall card names the castle ("brak dojazdu do zapasów"), the
+contract stands at 0/30 + 0/20 with 1:48 to snow, so a neutral question will likely be answered with the cut castle
+(the true root of the pile-up). The old console fixture (60 grain written into a fresh m1) was cleaner to look at but
+false ledger-wise and carried its own confound (no bridge). Whether S6 counts toward the main metric is an owner
+decision (BACKLOG). (decided; S6 scoring: owner)
