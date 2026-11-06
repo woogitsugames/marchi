@@ -1,5 +1,6 @@
 // Generate a heuristic character-count report; visual layout still needs checking.
-// Run: npx tsx tools/i18n-length.ts
+// Run: npx tsx tools/i18n-length.ts          (CSV keeps only rows over 130 %, the repo-size gate is 1 MiB)
+//      npx tsx tools/i18n-length.ts --all    (every key x language; do not commit, ~1.4 MB)
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +26,7 @@ const ratio = (value: number, baseline: number) => baseline ? (value / baseline)
 const csv = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`;
 const lines = [['key', 'language', 'status', 'text', 'length_codepoints', 'en_length', 'pl_length', 'ratio_en', 'ratio_pl', 'over_130_percent'].join(',')];
 const flagged: string[] = [];
+const all = process.argv.includes('--all');
 for (const key of Object.keys(plDict).sort()) {
   const english = enDict[key] ?? '', polish = plDict[key] ?? '';
   for (const { code, dict } of languages) {
@@ -33,12 +35,12 @@ for (const key of Object.keys(plDict).sort()) {
     const n = length(value), e = length(english), p = length(polish);
     const risk = (e > 0 && n / e > 1.3) || (p > 0 && n / p > 1.3);
     const status = exists ? (value ? 'translated' : 'empty') : 'fallback-en';
-    lines.push([key, code, status, value, n, e, p, ratio(n,e), ratio(n,p), risk ? 'yes' : 'no'].map(csv).join(','));
+    if (all || risk) lines.push([key, code, status, value, n, e, p, ratio(n,e), ratio(n,p), risk ? 'yes' : 'no'].map(csv).join(','));
     if (risk) flagged.push(`${code}\t${key}\ten=${ratio(n,e)}\tpl=${ratio(n,p)}${exists ? '' : '\t(fallback)'}`);
   }
 }
 const output = join(root, 'docs/i18n/length-report.csv');
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, lines.join('\n') + '\n');
-console.log(`Wrote ${lines.length - 1} rows to ${output}; ${flagged.length} over 130%.`);
+console.log(`Wrote ${lines.length - 1} rows to ${output}; ${flagged.length} over 130%${all ? '' : ' (only those rows written)'}.`);
 console.log(flagged.join('\n'));
