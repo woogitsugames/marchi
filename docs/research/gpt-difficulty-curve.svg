@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="450" viewBox="0 0 850 450" role="img" aria-label="Zapas sekund do trzech gwiazdek w misjach I do XIII">
+<rect width="100%" height="100%" fill="white"/><text x="35" y="25" font-family="sans-serif" font-size="16">Zapas do 3★ (s); poniżej zera = przekroczenie progu</text>
+<line x1="50" x2="830" y1="225" y2="225" stroke="#333"/>
+<text x="8" y="367.0" font-family="sans-serif" font-size="11">-120</text><line x1="45" x2="830" y1="363.0" y2="363.0" stroke="#ddd"/>
+<text x="8" y="298.0" font-family="sans-serif" font-size="11">-60</text><line x1="45" x2="830" y1="294.0" y2="294.0" stroke="#ddd"/>
+<text x="8" y="229.0" font-family="sans-serif" font-size="11">0</text><line x1="45" x2="830" y1="225.0" y2="225.0" stroke="#ddd"/>
+<text x="8" y="160.0" font-family="sans-serif" font-size="11">60</text><line x1="45" x2="830" y1="156.0" y2="156.0" stroke="#ddd"/>
+<text x="67" y="420" font-family="sans-serif" font-size="10">M1</text>
+<rect x="60" y="225.0" width="9" height="10.35" fill="#147d64"/>
+<rect x="71" y="225.0" width="9" height="35.65" fill="#a15b00"/>
+<rect x="82" y="225.0" width="9" height="128.79999999999998" fill="#8e344d"/>
+<text x="125" y="420" font-family="sans-serif" font-size="10">M2</text>
+<rect x="118" y="200.85" width="9" height="24.15" fill="#147d64"/>
+<rect x="129" y="225.0" width="9" height="73.6" fill="#a15b00"/>
+<rect x="140" y="225.0" width="9" height="142.6" fill="#8e344d"/>
+<text x="183" y="420" font-family="sans-serif" font-size="10">M3</text>
+<rect x="176" y="225.0" width="9" height="4.6" fill="#147d64"/>
+<rect x="187" y="205.45" width="9" height="19.549999999999997" fill="#a15b00"/>
+<rect x="198" y="225.0" width="9" height="13.799999999999999" fill="#8e344d"/>
+<text x="241" y="420" font-family="sans-serif" font-size="10">M4</text>
+<rect x="234" y="133.0" width="9" height="92.0" fill="#147d64"/>
+<rect x="245" y="220.4" width="9" height="4.6" fill="#a15b00"/>
+<rect x="256" y="184.75" width="9" height="40.25" fill="#8e344d"/>
+<text x="299" y="420" font-family="sans-serif" font-size="10">M5</text>
+<rect x="292" y="191.65" width="9" height="33.349999999999994" fill="#147d64"/>
+<rect x="303" y="219.25" width="9" height="5.75" fill="#a15b00"/>
+<rect x="314" y="225.0" width="9" height="17.25" fill="#8e344d"/>
+<text x="357" y="420" font-family="sans-serif" font-size="10">M6</text>
+<rect x="350" y="215.8" width="9" height="9.2" fill="#147d64"/>
+<rect x="361" y="215.8" width="9" height="9.2" fill="#a15b00"/>
+<rect x="372" y="215.8" width="9" height="9.2" fill="#8e344d"/>
+<text x="415" y="420" font-family="sans-serif" font-size="10">M7</text>
+<rect x="408" y="225.0" width="9" height="39.099999999999994" fill="#147d64"/>
+<rect x="419" y="225.0" width="9" height="36.8" fill="#a15b00"/>
+<rect x="430" y="225.0" width="9" height="36.8" fill="#8e344d"/>
+<text x="473" y="420" font-family="sans-serif" font-size="10">M8</text>
+<rect x="466" y="183.6" width="9" height="41.4" fill="#147d64"/>
+<rect x="477" y="188.2" width="9" height="36.8" fill="#a15b00"/>
+<rect x="488" y="196.25" width="9" height="28.749999999999996" fill="#8e344d"/>
+<text x="531" y="420" font-family="sans-serif" font-size="10">M9</text>
+<rect x="524" y="129.55" width="9" height="95.44999999999999" fill="#147d64"/>
+<rect x="535" y="151.4" width="9" height="73.6" fill="#a15b00"/>
+<rect x="546" y="225.0" width="9" height="3.4499999999999997" fill="#8e344d"/>
+<text x="589" y="420" font-family="sans-serif" font-size="10">M10</text>
+<rect x="582" y="207.75" width="9" height="17.25" fill="#147d64"/>
+<rect x="593" y="213.5" width="9" height="11.5" fill="#a15b00"/>
+<rect x="604" y="212.35" width="9" height="12.649999999999999" fill="#8e344d"/>
+<text x="647" y="420" font-family="sans-serif" font-size="10">M11</text>
+<rect x="640" y="225.0" width="9" height="13.799999999999999" fill="#147d64"/>
+<rect x="651" y="225.0" width="9" height="46.0" fill="#a15b00"/>
+<rect x="662" y="225.0" width="9" height="46.0" fill="#8e344d"/>
+<text x="705" y="420" font-family="sans-serif" font-size="10">M12</text>
+<rect x="698" y="211.2" width="9" height="13.799999999999999" fill="#147d64"/>
+<rect x="709" y="193.95" width="9" height="31.049999999999997" fill="#a15b00"/>
+<rect x="720" y="191.65" width="9" height="33.349999999999994" fill="#8e344d"/>
+<text x="763" y="420" font-family="sans-serif" font-size="10">M13</text>
+<rect x="756" y="147.95" width="9" height="77.05" fill="#147d64"/>
+<rect x="767" y="223.85" width="9" height="1.15" fill="#a15b00"/>
+<rect x="778" y="225.0" width="9" height="63.24999999999999" fill="#8e344d"/>
+<rect x="500" y="32" width="12" height="12" fill="#147d64"/><text x="517" y="43" font-family="sans-serif" font-size="12">10 s</text>
+<rect x="595" y="32" width="12" height="12" fill="#a15b00"/><text x="612" y="43" font-family="sans-serif" font-size="12">30 s</text>
+<rect x="690" y="32" width="12" height="12" fill="#8e344d"/><text x="707" y="43" font-family="sans-serif" font-size="12">60 s</text>
+</svg>
