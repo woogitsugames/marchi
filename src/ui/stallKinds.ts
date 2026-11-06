@@ -1,6 +1,6 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
+import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, reachable, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
 
@@ -85,11 +85,14 @@ export function statusKey(s: BuildingStatus, world?: World, id = -1): MessageKey
  * D-174 (research valley-ranks-2-3, F3): will a market take one more wagon load of `good` now? Some market (the castle,
  * the trading post when open) keeps room for a load under its in-flight limit (MARKET.inflightPerGood, as the
  * dispatcher checks) and, at the castle, the price is above the floor. Otherwise another wagon would only wait.
+ * `from` (a road cell, e.g. a granary's gate): only markets reachable by road from it count (D-233: an unlinked
+ * trading post has room for every good, and the card kept offering "Kup wóz" for a granary nothing could empty).
  */
-export function marketTakesLoad(world: World, good: Good): boolean {
+export function marketTakesLoad(world: World, good: Good, from = -1): boolean {
   const cap = capacityOf(good), st = world.state;
   for (const m of st.buildings) {
     if (!isMarket(world, m) || MARKET.inflightPerGood - m.incoming[good] < cap) continue;
+    if (from >= 0 && !reachable(world, from, m.gate)) continue;
     if (m.type === 'castle' && pricePct(st.market.saturation[good]) <= MARKET.floorPct) continue;
     return true;
   }
@@ -109,7 +112,7 @@ export function granaryLoads(world: World, granaryId: number): 'wagon' | 'satura
   for (const good of GOODS) {
     if (good === 'stone' || MARKET.base[good] <= 0) continue; // granary stone is building material
     if (g.stock[good] - g.reservedOut[good] < capacityOf(good)) continue;
-    if (marketTakesLoad(world, good)) return 'wagon';
+    if (marketTakesLoad(world, good, g.gate)) return 'wagon';
     loads = true;
   }
   return loads ? 'saturated' : null;
@@ -134,7 +137,7 @@ export function granaryUnwanted(world: World, granaryId: number): boolean {
     any = true;
     if (k && k.need[good] > (castle?.stock[good] ?? 0)) return false;
     if (good === 'stone' && (st.mission.roadStone || marketOpen(world))) return false;
-    if (MARKET.base[good] > 0 && marketTakesLoad(world, good)) return false;
+    if (MARKET.base[good] > 0 && marketTakesLoad(world, good, g.gate)) return false;
     for (const c of st.buildings) if (c.type !== 'warehouse' && inputGoods(c.type).includes(good)) return false;
   }
   return any;

@@ -48,9 +48,9 @@ function stepWagon(world: World, w: Wagon): void {
   let budget = 1; // fraction of this tick still available for movement
   for (let guard = 0; guard < 4 && budget > 0; guard++) {
     if (w.next < 0) {
-      if (w.dest < 0) { strandedCargo(world, w); return; }
-      if (w.at === w.dest) { arrive(w); return; }
-      if (!ensurePath(world, w)) return;
+      if (w.dest < 0) { strandedCargo(world, w); if (w.dest >= 0 || !leaveSpan(world, w)) return; }
+      else if (w.at === w.dest) { arrive(w); return; }
+      else if (!ensurePath(world, w) && !leaveSpan(world, w)) return;
       const nxt = w.path[0]!;
       if (!hasEdge(world, w.at, nxt)) { w.pathVer = -1; if (!ensurePath(world, w)) return; }
       const n2 = w.path[0]!;
@@ -147,7 +147,43 @@ function enterEdge(world: World, w: Wagon, to: number): void {
   w.next = to;
   w.edgeT = 0;
   world.state.traffic[to] = (world.state.traffic[to] ?? 0) + 1;
-  movingStatus(w);
+  // a wagon clearing a one-lane span without a route keeps its NO_ROUTE cause (leaveSpan)
+  if (w.status.k !== 'NO_ROUTE') movingStatus(w);
+}
+
+/**
+ * D-230: a wagon left without a route (or without a destination) while standing on a one-lane
+ * wooden span must not park there: every wagon queued at the other bridgehead would wait for it
+ * forever (BRIDGE_JAM deadlock after a road demolition, fuzz seeds 255 / 91). It drives to the
+ * nearest bridgehead (fewest drivable hops along the span) and waits there with NO_ROUTE.
+ * Sets w.path to that exit and returns true; false when the wagon is not on a span or no exit exists.
+ */
+function leaveSpan(world: World, w: Wagon): boolean {
+  const c = net(world);
+  const sp = c.span[w.at]!;
+  if (sp < 0 || w.next >= 0) return false;
+  const W = world.terrain.w, H = world.terrain.h;
+  const prev = new Map<number, number>([[w.at, -1]]);
+  const q = [w.at];
+  for (let qi = 0; qi < q.length; qi++) {
+    const u = q[qi]!;
+    const ux = u % W, uy = (u - ux) / W;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const x = ux + dx, y = uy + dy;
+      if ((dx === 0 && dy === 0) || x < 0 || y < 0 || x >= W || y >= H) continue;
+      const v = y * W + x;
+      if (prev.has(v) || !hasEdge(world, u, v)) continue;
+      prev.set(v, u);
+      if (c.span[v] === sp) { q.push(v); continue; }
+      const path: number[] = [];
+      for (let k = v; k !== w.at; k = prev.get(k)!) path.push(k);
+      path.reverse();
+      w.path = path;
+      w.pathVer = world.state.netVersion;
+      return true;
+    }
+  }
+  return false;
 }
 
 function arriveNode(world: World, w: Wagon): void {
