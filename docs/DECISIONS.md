@@ -2584,3 +2584,9 @@ sheet's calm line `fix.unwanted`, and `cureFor` (no cure when the granary heads 
 good it refuses keeps the "another granary" cure — XV's woodcutters). 17 languages (15 agent translations). UI only.
 balance-night6 m1..m15 before/after: m1–m13 identical; XV's reasonable player builds one granary instead of two
 (coins at the end 13 -> 50), all 3★. (decided)
+
+**D-213 — Names: "Posterunek handlowy" and "sława"; UI kit rights confirmed (owner 2026-11-06 ~14:30).**
+The building across the river is "Posterunek handlowy" everywhere in Polish (was "Punkt handlowy" in the building name
+and its lines); the valley's renown is "sława" in Polish (was mixed "renoma"/"sława"). Other languages keep their
+current terms (GPT order 66/89 checks them against the glossary). The UI art kit (`public/assets/ui/kit/`) was made
+for Marchia; the owner holds all rights (docs/ASSETS.md updated). Text only. (decided)

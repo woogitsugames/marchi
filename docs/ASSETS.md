@@ -516,7 +516,7 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 
 `public/assets/ui/kit/seal-press.svg` (D-72): vector redraw of `seal-full` for the large seal-press cue, drawn for Marchia by Claude from the kit sprite's shapes and colours; licence as the game.
 
-`public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra. Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
+`public/assets/ui/kit/`: obrazy wygenerowane dla Marchii, licencja jak gra (właściciel potwierdził 2026-11-06: wykonane na potrzeby gry, wszystkie prawa właściciela). Przeznaczone do oceny przed integracją; wymiary, stany i marginesy 9-slice oraz podglądy są opisane w `docs/ui-kit.md`. Ikony widoczne na makietach pochodzą z istniejącego zestawu gry `src/ui/icons.ts`. Tłem makiet są obrazy referencyjne D dostarczone do zlecenia.
 
 
 ## Store artwork — order 61 (v2 live gameplay captures, 2026-11-02)
@@ -540,7 +540,7 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
 
 ## Per-file inventory — audit 96
 
-This inventory points to the evidence already recorded above. An inventory entry is not by itself a verification of rights; inspect the referenced provenance and the original licence before release. UI kit rights are recorded only as “licence as the game”; their legal terms and provenance should be clarified.
+This inventory points to the evidence already recorded above. An inventory entry is not by itself a verification of rights; inspect the referenced provenance and the original licence before release. UI kit rights: owner confirmed on 2026-11-06 that the kit was generated for Marchia (GPT / owner) and all rights belong to the owner.
 
 | File | Source and recorded rights |
 |---|---|
@@ -685,64 +685,64 @@ This inventory points to the evidence already recorded above. An inventory entry
 | `public/assets/textures/wood_planks/orm.jpg` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
 | `public/assets/textures/wood_planks/orm.ktx2` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
 | `public/assets/textures/wood_planks/orm_2048.ktx2` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
-| `public/assets/ui/kit/badge-red@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/badge-red@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/badge@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/badge@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-disabled@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-disabled@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-normal@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-normal@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-pressed@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/button-pressed@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-disabled@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-disabled@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-highlight@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-highlight@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-normal@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-normal@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-pressed@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/card-pressed@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/eta@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/eta@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/frame-sheet-dim@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/frame-sheet-dim@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/frame-sheet@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/frame-sheet@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/menu@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/menu@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel-alert@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel-alert@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel-dim@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel-dim@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/panel@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-alarm@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-alarm@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-brass@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-brass@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-red@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/pin-red@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/progress-fill@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/progress-fill@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/progress-track@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/progress-track@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/ribbon@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/ribbon@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-alert@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-alert@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-empty@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-empty@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-full@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-full@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/seal-press.svg` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/segment-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/segment-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/segment-bg@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/segment-bg@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/stat@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
-| `public/assets/ui/kit/stat@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/badge-red@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/badge-red@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/badge@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/badge@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-active@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-active@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-disabled@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-disabled@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-normal@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-normal@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-pressed@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/button-pressed@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-active@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-active@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-disabled@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-disabled@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-highlight@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-highlight@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-normal@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-normal@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-pressed@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/card-pressed@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/eta@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/eta@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet-dim@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet-dim@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/menu@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/menu@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel-alert@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel-alert@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel-dim@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel-dim@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/panel@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-alarm@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-alarm@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-brass@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-brass@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-red@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/pin-red@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/progress-fill@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/progress-fill@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/progress-track@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/progress-track@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/ribbon@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/ribbon@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-alert@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-alert@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-empty@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-empty@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-full@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-full@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/seal-press.svg` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/segment-active@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/segment-active@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/segment-bg@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/segment-bg@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/stat@2x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
+| `public/assets/ui/kit/stat@3x.png` | Generated for Marchia (owner confirmed 2026-11-06: made for the game, all rights the owner's); see UI art kit above |
