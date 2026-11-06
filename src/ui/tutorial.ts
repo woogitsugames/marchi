@@ -531,13 +531,16 @@ export class Tutorial {
       // the rail weighs as much as the crossing in step 5: the step needs "Droga" in reach
       // the open card's head (title and close button) weighs as much: covering it leaves a card nobody can shut
       const weigh: [Box | null, number][] = [[target, 20], [waybill, 6], [ghost, 6], [sheet, 1], [q('#sheets .sheet:last-child .sheet-head'), 6],
-        [q('.rail-tools'), this.railNeeded() ? 6 : 2], [q('.stall-row:not([hidden])'), 1]];
+        [q('.rail-tools'), this.railNeeded() ? 6 : 2], [q('.stall-row:not([hidden])'), 1],
+        // the build tutorial: the placement bar (Postaw) and the ghost's gate pin
+        [q('.build-shelf:not([hidden])'), 20], [grownOrNull(q('.gate-pin:not([hidden])'), 20), 6]];
       const cost = (x: number, y: number): number => weigh.reduce((sum, [b, k]) => {
         if (!b) return sum;
         const ix = Math.min(b.x + b.w, x + w) - Math.max(b.x, x), iy = Math.min(b.y + b.h, y + hh) - Math.max(b.y, y);
         return sum + (ix > 0 && iy > 0 ? ix * iy * k : 0);
       }, 0);
-      const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8]
+      const shelf = q('.build-shelf:not([hidden])');
+      const ys = [y0, waybill ? waybill.y + waybill.h + 10 : 12, floor - hh - 12, vh - hh - 8, ...(shelf ? [shelf.y - hh - 10] : [])]
         .map((y) => Math.max(8, Math.min(vh - hh - 8, y)));
       // both sides: in landscape the right half is often clearer than the rail's corner
       const xs = [10, Math.max(10, vw - w - 10)];
