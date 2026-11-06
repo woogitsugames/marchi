@@ -2,7 +2,7 @@
 import { createWorld, net } from '../src/sim/index';
 const w = createWorld(process.argv[2] ?? 'm1');
 const t = w.terrain, st = w.state, c = net(w);
-const sym: Record<string, string> = { woodcutter: 'W', sawmill: 'S', stable: 'H', farm: 'F', mill: 'M', bakery: 'B', warehouse: 'G', castle: 'C' };
+const sym: Record<string, string> = { woodcutter: 'W', sawmill: 'S', stable: 'H', farm: 'F', mill: 'M', bakery: 'B', warehouse: 'G', castle: 'C', charcoalBurner: 'K', fisher: 'P', malthouse: 'L', brewery: 'R', quarry: 'Q' };
 let out = '    ' + Array.from({ length: t.w }, (_, x) => (x % 10 === 0 ? String(x / 10) : ' ')).join('') + '\n';
 for (let y = 0; y < t.h; y++) {
   let row = String(y).padStart(3) + ' ';

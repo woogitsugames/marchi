@@ -1,4 +1,4 @@
-// Missions XIV-XV ladder (research 2026-11-06, docs/research/2026-11-06-missions-14-15.md), in the shape of
+// Missions XIV-XV ladder (research 2026-11-06, docs/research/2026-11-06-missions-14-15.md; D-210/D-211), in the shape of
 // tools/m8-ladder.ts: passive, wagons only k = 1..max, the lesson + k wagons, the wrong site + k wagons, and the
 // "reasonable player" (eye / eye+ every 10/30/60 s, scan, letter) from tools/balance-night6.ts.
 //   npx tsx tools/m14-ladder.ts [m14|m15] [--quick] [--map]
@@ -7,9 +7,6 @@ import { cureFor, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { LESSON, WRONG, eyePlayer, run, type Row } from './balance-night6';
 import { lessonPlayer, line } from './m8-ladder';
-import { registerMissions1415 } from '../src/sim/proposals/missions-14-15';
-
-registerMissions1415();
 
 export function ladder1415(id: string, quick = false): Row[] {
   const out: Row[] = [];

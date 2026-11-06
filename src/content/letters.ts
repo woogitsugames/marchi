@@ -1,10 +1,10 @@
-// Authored contract letters for missions I-XIII (VII-IX: docs/content/letters-7-9.md, X-XII:
-// docs/content/letters-10-12.md; XIII: docs/missions/m13.md, night 6); all
+// Authored contract letters for missions I-XV (VII-IX: docs/content/letters-7-9.md, X-XII:
+// docs/content/letters-10-12.md; XIII: docs/missions/m13.md, night 6; XIV-XV: docs/missions/m14.md, m15.md, D-210); all
 // player-facing copy is localized.
 // The letter counts are intentionally separate from simulation and UI logic.
 import { getLang, type Lang } from '../i18n/index';
 
-export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12' | 'm13';
+export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12' | 'm13' | 'm14' | 'm15';
 export type LetterPhase = 'opening' | 'won' | 'lost';
 export type SealCount = 1 | 2 | 3;
 
@@ -2029,6 +2029,316 @@ export const CONTRACT_LETTERS = {
         3: "गाड़ियाँ कभी नहीं रुकीं, कारख़ाने भंडार से चलते रहे। कारण जल्दी पढ़ने के लिए तीन मुहरें।\n— Wszebor",
       },
       lost: "समय बीत गया और माल अब भी भंडार में है। एक गाड़ी तीन कारख़ाने नहीं चला सकती — अस्तबल से गाड़ियाँ खरीदो।\n— Wszebor",
+    },
+  },
+  m14: {
+    pl: {
+      opening: "Kowal grodu potrzebuje 30 miar węgla drzewnego przed 14:00. Drwa rąbią na zachodzie i tam też dymi jedyna węglarnia, ale sama nie zdąży. Z dwóch drew wychodzi jedna miara węgla: wóz drewna to pół wozu węgla. Gdy postawisz drugą węglarnię, pomyśl, co ma jechać długim traktem — drewno czy już węgiel.\n— Wszebor",
+      won: {
+        1: "Węgiel dotarł, choć kowal długo czekał przy zimnym palenisku. Jedna pieczęć; druga węglarnia przy lesie skróciłaby robotę.\n— Wszebor",
+        2: "Węgiel dotarł przed terminem. Dwie pieczęcie; wypalony przy lesie, jedzie długim traktem w połowie ładunków.\n— Wszebor",
+        3: "Dwie węglarnie dymiły przy lesie, a traktem jechał sam węgiel, pełnymi wozami. Trzy pieczęcie za trafne miejsce.\n— Wszebor",
+      },
+      lost: "Termin minął, a kowal wciąż czeka. Jedna węglarnia nie nadąży — postaw drugą przy drwalach, by traktem jechał węgiel, nie drewno.\n— Wszebor",
+    },
+    en: {
+      opening: "The smith needs 30 measures of charcoal before 14:00. The logs are cut in the west, and the only charcoal burner smokes there too, but alone it is too slow. Two logs make one measure: a wagon of logs is half a wagon of charcoal. When you raise a second burner, think about what should travel the long road — the logs, or the charcoal.\n— Wszebor",
+      won: {
+        1: "The charcoal arrived, though the smith waited long at a cold hearth. One seal; a second burner by the woods would have sped the work.\n— Wszebor",
+        2: "The charcoal arrived before the deadline. Two seals; burned by the woods, it travels the long road in half the loads.\n— Wszebor",
+        3: "Two burners smoked by the woods and only charcoal travelled the road, in full wagons. Three seals for choosing the right place.\n— Wszebor",
+      },
+      lost: "The deadline passed and the smith still waits. One burner cannot keep up — raise a second by the woodcutters, so the road carries charcoal, not logs.\n— Wszebor",
+    },
+    de: {
+      opening: "Der Schmied braucht 30 Maß Holzkohle bis 14:00. Das Holz wird im Westen geschlagen, dort raucht auch die einzige Köhlerei, doch allein ist sie zu langsam. Aus zwei Hölzern wird ein Maß Kohle: ein Wagen Holz ist ein halber Wagen Kohle. Baust du eine zweite Köhlerei, bedenke, was den langen Weg fahren soll — das Holz oder schon die Kohle.\n— Wszebor",
+      won: {
+        1: "Die Kohle kam an, doch der Schmied wartete lange am kalten Herd. Ein Siegel; eine zweite Köhlerei am Wald hätte die Arbeit beschleunigt.\n— Wszebor",
+        2: "Die Kohle kam vor der Frist. Zwei Siegel; am Wald gebrannt, fährt sie den langen Weg in halb so vielen Ladungen.\n— Wszebor",
+        3: "Zwei Köhlereien rauchten am Wald, und über den Weg fuhr nur Kohle, in vollen Wagen. Drei Siegel für den richtigen Ort.\n— Wszebor",
+      },
+      lost: "Die Frist verstrich, der Schmied wartet noch. Eine Köhlerei schafft es nicht — baue die zweite bei den Holzfällern, damit Kohle fährt, nicht Holz.\n— Wszebor",
+    },
+    fr: {
+      opening: "Le forgeron veut 30 mesures de charbon de bois avant 14:00. Le bois est coupé à l'ouest, et l'unique charbonnière y fume aussi, mais seule elle est trop lente. Deux bûches font une mesure : un chariot de bois vaut un demi-chariot de charbon. Si tu bâtis une seconde charbonnière, demande-toi ce qui doit faire la longue route : le bois, ou déjà le charbon.\n— Wszebor",
+      won: {
+        1: "Le charbon est arrivé, mais le forgeron a longtemps attendu devant un foyer froid. Un sceau ; une seconde charbonnière près des bois aurait hâté l'ouvrage.\n— Wszebor",
+        2: "Le charbon est arrivé avant l'échéance. Deux sceaux ; cuit près des bois, il fait la longue route en moitié moins de charges.\n— Wszebor",
+        3: "Deux charbonnières fumaient près des bois et seul le charbon roulait sur la route, en chariots pleins. Trois sceaux pour le bon endroit.\n— Wszebor",
+      },
+      lost: "L'échéance est passée, le forgeron attend encore. Une charbonnière ne suffit pas : bâtis la seconde près des bûcherons, que la route porte du charbon.\n— Wszebor",
+    },
+    es: {
+      opening: "El herrero necesita 30 medidas de carbón vegetal antes de las 14:00. La madera se corta en el oeste y allí humea también la única carbonera, pero sola no llega. Dos troncos dan una medida: un carro de madera es medio carro de carbón. Si levantas una segunda carbonera, piensa qué debe recorrer el camino largo: la madera o ya el carbón.\n— Wszebor",
+      won: {
+        1: "Llegó el carbón, aunque el herrero esperó mucho junto a la fragua fría. Un sello; una segunda carbonera junto al bosque habría acelerado el trabajo.\n— Wszebor",
+        2: "El carbón llegó antes del plazo. Dos sellos; quemado junto al bosque, recorre el camino largo en la mitad de cargas.\n— Wszebor",
+        3: "Dos carboneras humeaban junto al bosque y por el camino solo iba carbón, en carros llenos. Tres sellos por elegir bien el lugar.\n— Wszebor",
+      },
+      lost: "Venció el plazo y el herrero aún espera. Una carbonera no basta: levanta la segunda junto a los leñadores, para que el camino lleve carbón, no madera.\n— Wszebor",
+    },
+    it: {
+      opening: "Il fabbro vuole 30 misure di carbone di legna entro le 14:00. La legna si taglia a ovest e lì fuma anche l'unica carbonaia, ma da sola non basta. Due tronchi fanno una misura: un carro di legna è mezzo carro di carbone. Se costruisci una seconda carbonaia, pensa a cosa deve percorrere la strada lunga: la legna o già il carbone.\n— Wszebor",
+      won: {
+        1: "Il carbone è arrivato, ma il fabbro ha atteso a lungo davanti alla forgia fredda. Un sigillo; una seconda carbonaia vicino al bosco avrebbe accelerato il lavoro.\n— Wszebor",
+        2: "Il carbone è arrivato prima della scadenza. Due sigilli; cotto vicino al bosco, fa la strada lunga in metà dei carichi.\n— Wszebor",
+        3: "Due carbonaie fumavano vicino al bosco e sulla strada viaggiava solo carbone, a carri pieni. Tre sigilli per il posto giusto.\n— Wszebor",
+      },
+      lost: "La scadenza è passata e il fabbro aspetta ancora. Una carbonaia non basta: costruisci la seconda presso i taglialegna, così la strada porta carbone, non legna.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "O ferreiro precisa de 30 medidas de carvão vegetal até 14:00. A madeira é cortada no oeste, e a única carvoaria fumega lá também, mas sozinha não dá conta. Duas toras dão uma medida: uma carroça de madeira é meia carroça de carvão. Ao erguer uma segunda carvoaria, pense no que deve percorrer a estrada longa: a madeira ou já o carvão.\n— Wszebor",
+      won: {
+        1: "O carvão chegou, mas o ferreiro esperou muito diante da forja fria. Um selo; uma segunda carvoaria junto à mata teria apressado o trabalho.\n— Wszebor",
+        2: "O carvão chegou antes do prazo. Dois selos; queimado junto à mata, ele faz a estrada longa na metade das cargas.\n— Wszebor",
+        3: "Duas carvoarias fumegavam junto à mata e pela estrada só passava carvão, em carroças cheias. Três selos pelo lugar certo.\n— Wszebor",
+      },
+      lost: "O prazo acabou e o ferreiro ainda espera. Uma carvoaria não dá conta: erga a segunda junto aos lenhadores, para a estrada levar carvão, não madeira.\n— Wszebor",
+    },
+    nl: {
+      opening: "De smid wil 30 maten houtskool vóór 14:00. Het hout wordt in het westen gekapt, en daar rookt ook de enige kolenbrander, maar alleen is hij te traag. Twee stammen geven één maat: een wagen hout is een halve wagen houtskool. Bouw je een tweede kolenbrander, bedenk dan wat de lange weg moet afleggen: het hout of al de houtskool.\n— Wszebor",
+      won: {
+        1: "De houtskool kwam aan, al wachtte de smid lang bij een koud vuur. Eén zegel; een tweede kolenbrander bij het bos had het werk versneld.\n— Wszebor",
+        2: "De houtskool kwam vóór de termijn. Twee zegels; bij het bos gebrand, gaat ze de lange weg in de helft van de vrachten.\n— Wszebor",
+        3: "Twee kolenbranders rookten bij het bos en over de weg ging alleen houtskool, in volle wagens. Drie zegels voor de juiste plek.\n— Wszebor",
+      },
+      lost: "De termijn verstreek en de smid wacht nog. Eén kolenbrander is te traag: bouw de tweede bij de houthakkers, dan rijdt er houtskool, geen hout.\n— Wszebor",
+    },
+    sv: {
+      opening: "Smeden behöver 30 mått träkol före 14:00. Veden huggs i väster, och där ryker också det enda kolbränneriet, men ensamt hinner det inte. Två stockar ger ett mått: en vagn ved är en halv vagn kol. När du bygger ett andra kolbränneri, tänk på vad som ska åka den långa vägen — veden eller redan kolet.\n— Wszebor",
+      won: {
+        1: "Kolet kom fram, men smeden väntade länge vid en kall ässja. Ett sigill; ett andra kolbränneri vid skogen hade skyndat på arbetet.\n— Wszebor",
+        2: "Kolet kom före fristen. Två sigill; bränt vid skogen åker det den långa vägen i halva antalet lass.\n— Wszebor",
+        3: "Två kolbrännerier rök vid skogen och på vägen for bara kol, i fulla vagnar. Tre sigill för rätt plats.\n— Wszebor",
+      },
+      lost: "Fristen gick ut och smeden väntar än. Ett kolbränneri hinner inte – bygg det andra vid huggarna, så att vägen bär kol, inte ved.\n— Wszebor",
+    },
+    tr: {
+      opening: "Demirci 14:00'tan önce 30 ölçü odun kömürü istiyor. Odun batıda kesiliyor, tek kömürcü de orada tütüyor, ama tek başına yetişemiyor. İki kütükten bir ölçü kömür çıkar: bir araba odun yarım araba kömürdür. İkinci kömürcüyü kurarken uzun yolda neyin gideceğini düşün: odun mu, yoksa artık kömür mü?\n— Wszebor",
+      won: {
+        1: "Kömür geldi, ama demirci soğuk ocağın başında uzun süre bekledi. Bir mühür; ormanın yanında ikinci bir kömürcü işi hızlandırırdı.\n— Wszebor",
+        2: "Kömür süreden önce geldi. İki mühür; ormanda yakılan kömür uzun yolu yarı yükle gider.\n— Wszebor",
+        3: "İki kömürcü ormanın yanında tüttü, yolda yalnızca kömür gitti, dolu arabalarla. Doğru yer için üç mühür.\n— Wszebor",
+      },
+      lost: "Süre doldu, demirci hâlâ bekliyor. Tek kömürcü yetişemez; ikincisini oduncuların yanına kur ki yolda odun değil kömür gitsin.\n— Wszebor",
+    },
+    ru: {
+      opening: "Кузнецу нужно 30 мер древесного угля до 14:00. Дрова рубят на западе, там же дымит единственный углежог, но один он не успеет. Из двух брёвен выходит мера угля: телега дров — это полтелеги угля. Ставя второго углежога, подумай, что должно ехать по длинной дороге — дрова или уже уголь.\n— Wszebor",
+      won: {
+        1: "Уголь доставлен, но кузнец долго ждал у холодного горна. Одна печать; второй углежог у леса ускорил бы работу.\n— Wszebor",
+        2: "Уголь прибыл до срока. Две печати; выжженный у леса, он едет по длинной дороге вдвое меньшим числом грузов.\n— Wszebor",
+        3: "Два углежога дымили у леса, а по дороге ехал только уголь, полными телегами. Три печати за верно выбранное место.\n— Wszebor",
+      },
+      lost: "Срок прошёл, кузнец всё ждёт. Один углежог не успевает — поставь второго у лесорубов, чтобы по дороге ехал уголь, а не дрова.\n— Wszebor",
+    },
+    uk: {
+      opening: "Ковалеві потрібно 30 мір деревного вугілля до 14:00. Дрова рубають на заході, там же димить єдиний вугляр, але сам він не встигне. З двох колод виходить міра вугілля: віз дров — це піввоза вугілля. Ставлячи другого вугляра, подумай, що має їхати довгим шляхом — дрова чи вже вугілля.\n— Wszebor",
+      won: {
+        1: "Вугілля прибуло, та коваль довго чекав біля холодного горна. Одна печатка; другий вугляр біля лісу пришвидшив би роботу.\n— Wszebor",
+        2: "Вугілля прибуло до строку. Дві печатки; випалене біля лісу, воно їде довгим шляхом удвічі меншою кількістю вантажів.\n— Wszebor",
+        3: "Два вугляри димили біля лісу, а шляхом їхало саме вугілля, повними возами. Три печатки за влучне місце.\n— Wszebor",
+      },
+      lost: "Строк минув, а коваль досі чекає. Один вугляр не встигає — постав другого біля лісорубів, щоб шляхом їхало вугілля, а не дрова.\n— Wszebor",
+    },
+    ja: {
+      opening: "鍛冶屋は14:00までに木炭30量を求めている。丸太は西で伐られ、ただ一つの炭焼き小屋もそこで煙を上げているが、一つでは間に合わない。丸太二本で木炭一量、丸太の荷車一台は木炭の荷車半分だ。二つ目の炭焼き小屋を建てるなら、長い街道を運ぶべきは丸太か、それとも木炭かを考えよ。\n— Wszebor",
+      won: {
+        1: "木炭は届いたが、鍛冶屋は冷えた炉の前で長く待った。印章一つ。森のそばに二つ目の炭焼き小屋があれば仕事は早まった。\n— Wszebor",
+        2: "木炭は期限前に届いた。印章二つ。森で焼けば、長い街道を半分の荷で運べる。\n— Wszebor",
+        3: "二つの炭焼き小屋が森のそばで煙を上げ、街道には木炭だけが満載の荷車で流れた。正しい場所を選んだ褒美に印章三つ。\n— Wszebor",
+      },
+      lost: "期限が過ぎ、鍛冶屋はまだ待っている。炭焼き小屋一つでは追いつかない。きこりのそばに二つ目を建て、街道で運ぶのを丸太でなく木炭にせよ。\n— Wszebor",
+    },
+    ko: {
+      opening: "대장장이가 14:00까지 숯 30단위를 원한다. 통나무는 서쪽에서 베고, 하나뿐인 숯가마도 거기서 연기를 피우지만 혼자서는 늦다. 통나무 둘이 숯 한 단위가 되니, 통나무 한 수레는 숯 반 수레다. 둘째 숯가마를 세울 때는 긴 길로 무엇을 실어 보낼지 생각하라. 통나무인가, 이미 숯인가.\n— Wszebor",
+      won: {
+        1: "숯은 왔지만 대장장이는 식은 화덕 앞에서 오래 기다렸다. 인장 하나. 숲 옆에 둘째 숯가마가 있었다면 일이 빨랐을 것이다.\n— Wszebor",
+        2: "숯이 기한 전에 도착했다. 인장 둘. 숲에서 구운 숯은 긴 길을 절반의 짐으로 간다.\n— Wszebor",
+        3: "숯가마 둘이 숲 옆에서 연기를 피웠고 길에는 숯만 가득 실린 수레가 다녔다. 올바른 자리를 고른 공으로 인장 셋.\n— Wszebor",
+      },
+      lost: "기한이 지났는데 대장장이는 아직 기다린다. 숯가마 하나로는 모자라다. 나무꾼 곁에 둘째를 세워 길로 통나무가 아닌 숯이 가게 하라.\n— Wszebor",
+    },
+    "zh-Hans": {
+      opening: "铁匠要在14:00前得到30份木炭。原木在西边砍伐，唯一的炭窑也在那里冒烟，但单靠它赶不及。两根原木烧成一份木炭：一车原木只抵半车木炭。再建第二座炭窑时，想想长路上该运什么——原木，还是已经烧好的木炭。\n— Wszebor",
+      won: {
+        1: "木炭送到了，但铁匠在冷炉边等了很久。一枚印章；林边再建一座炭窑，活计会快得多。\n— Wszebor",
+        2: "木炭在期限前送达。两枚印章；在林边烧成的炭，走长路只需一半车次。\n— Wszebor",
+        3: "两座炭窑在林边冒烟，路上只跑满载木炭的马车。选对了地方，授予三枚印章。\n— Wszebor",
+      },
+      lost: "期限已过，铁匠还在等。一座炭窑赶不上——在伐木工旁再建一座，让长路运木炭而不是原木。\n— Wszebor",
+    },
+    ar: {
+      opening: "يحتاج الحداد 30 مكيالًا من الفحم النباتي قبل 14:00. يُقطع الخشب في الغرب، وهناك أيضًا تدخن المفحمة الوحيدة، لكنها وحدها لا تلحق. من جذعين يخرج مكيال فحم: عربة خشب تساوي نصف عربة فحم. إذا بنيت مفحمة ثانية ففكّر: ماذا يجب أن يسير في الطريق الطويل، الخشب أم الفحم؟\n— Wszebor",
+      won: {
+        1: "وصل الفحم، لكن الحداد انتظر طويلًا عند كير بارد. ختم واحد؛ مفحمة ثانية قرب الغابة كانت ستعجّل العمل.\n— Wszebor",
+        2: "وصل الفحم قبل الموعد. ختمان؛ الفحم المحروق قرب الغابة يقطع الطريق الطويل بنصف الحمولات.\n— Wszebor",
+        3: "دخنت مفحمتان قرب الغابة ولم يسر في الطريق إلا الفحم بعربات ممتلئة. ثلاثة أختام لاختيار المكان الصحيح.\n— Wszebor",
+      },
+      lost: "مضى الموعد والحداد ما زال ينتظر. مفحمة واحدة لا تكفي؛ ابنِ الثانية قرب الحطابين ليحمل الطريق فحمًا لا خشبًا.\n— Wszebor",
+    },
+    hi: {
+      opening: "लोहार को 14:00 से पहले 30 माप लकड़ी का कोयला चाहिए। लट्ठे पश्चिम में कटते हैं, और अकेली कोयला भट्ठी भी वहीं धुआँ देती है, पर अकेले वह पूरा नहीं कर पाएगी। दो लट्ठों से एक माप कोयला बनता है: लट्ठों की एक गाड़ी कोयले की आधी गाड़ी है। दूसरी भट्ठी बनाते समय सोचो कि लंबी सड़क पर क्या जाए — लट्ठे या कोयला।\n— Wszebor",
+      won: {
+        1: "कोयला पहुँचा, पर लोहार ठंडी भट्ठी के पास देर तक रुका रहा। एक मुहर; जंगल के पास दूसरी भट्ठी काम तेज़ कर देती।\n— Wszebor",
+        2: "कोयला समय से पहले पहुँचा। दो मुहरें; जंगल के पास जला कोयला लंबी सड़क आधे बोझ में तय करता है।\n— Wszebor",
+        3: "दो भट्ठियाँ जंगल के पास धुआँ देती रहीं और सड़क पर बस कोयला भरी गाड़ियों में चला। सही जगह के लिए तीन मुहरें।\n— Wszebor",
+      },
+      lost: "समय बीत गया, लोहार अब भी इंतज़ार में है। एक भट्ठी पीछे रह जाती है — दूसरी लकड़हारों के पास बनाओ, ताकि सड़क पर लट्ठे नहीं, कोयला चले।\n— Wszebor",
+    },
+  },
+  m15: {
+    pl: {
+      opening: "Najpierw 30 miar zboża na zasiew do 5:30, potem bez zwłoki 40 sągów drewna na palisadę do 8:30; wszystko przed 12:00. Drwale siedzą na drugim końcu doliny, a ich mały skład pełen jest ryb, których nikt nie chce. Postaw spichlerz, by drwale nie stali — i niech drewno na drugi list czeka pod moją bramą, nie w lesie.\n— Wszebor",
+      won: {
+        1: "Zboże i drewno dotarły, ale palisada długo czekała. Jedna pieczęć; spichlerz pod zamkiem trzyma drewno tam, gdzie będzie potrzebne.\n— Wszebor",
+        2: "Oba listy spełnione przed terminem. Dwie pieczęcie; drewno czekające pod bramą skróciłoby drugi list.\n— Wszebor",
+        3: "Drewno czekało już pod bramą, gdy przyszedł drugi list. Trzy pieczęcie za zapas we właściwym miejscu.\n— Wszebor",
+      },
+      lost: "Termin minął, palisada nie stanęła. Drwale stali z pełnym placem — spichlerz pod zamkiem dałby im pracę, a drewnu krótką drogę.\n— Wszebor",
+    },
+    en: {
+      opening: "First 30 measures of seed grain by 5:30, then without delay 40 cords of logs for the palisade by 8:30; all before 12:00. The woodcutters sit at the far end of the valley, and their little store is full of fish nobody wants. Build a granary so they keep cutting — and let the logs for the second letter wait at my gate, not in the forest.\n— Wszebor",
+      won: {
+        1: "The grain and logs arrived, but the palisade waited long. One seal; a granary by the castle keeps the logs where they will be needed.\n— Wszebor",
+        2: "Both letters were met before the deadline. Two seals; logs waiting at the gate would have shortened the second letter.\n— Wszebor",
+        3: "The logs were already at the gate when the second letter came. Three seals for keeping the stock in the right place.\n— Wszebor",
+      },
+      lost: "The deadline passed and the palisade stands unbuilt. The woodcutters stood with full yards — a granary by the castle would have kept them cutting.\n— Wszebor",
+    },
+    de: {
+      opening: "Zuerst 30 Maß Saatgetreide bis 5:30, dann ohne Verzug 40 Klafter Holz für die Palisade bis 8:30; alles vor 12:00. Die Holzfäller sitzen am anderen Ende des Tals, und ihr kleines Lager ist voll Fisch, den niemand will. Baue einen Kornspeicher, damit sie weiterarbeiten — und lass das Holz für den zweiten Brief an meinem Tor warten, nicht im Wald.\n— Wszebor",
+      won: {
+        1: "Getreide und Holz kamen an, doch die Palisade wartete lange. Ein Siegel; ein Kornspeicher an der Burg hält das Holz dort, wo es gebraucht wird.\n— Wszebor",
+        2: "Beide Briefe vor der Frist erfüllt. Zwei Siegel; Holz, das am Tor wartet, hätte den zweiten Brief verkürzt.\n— Wszebor",
+        3: "Das Holz wartete schon am Tor, als der zweite Brief kam. Drei Siegel für den Vorrat am richtigen Ort.\n— Wszebor",
+      },
+      lost: "Die Frist verstrich, die Palisade steht nicht. Die Holzfäller standen mit vollem Platz — ein Kornspeicher an der Burg hätte sie arbeiten lassen.\n— Wszebor",
+    },
+    fr: {
+      opening: "D'abord 30 mesures de grain de semence avant 5:30, puis sans tarder 40 cordes de bûches pour la palissade avant 8:30 ; le tout avant 12:00. Les bûcherons sont au bout de la vallée, et leur petit entrepôt est plein de poisson dont personne ne veut. Bâtis un grenier pour qu'ils continuent — et que le bois de la seconde lettre attende à ma porte, pas en forêt.\n— Wszebor",
+      won: {
+        1: "Grain et bûches sont arrivés, mais la palissade a longtemps attendu. Un sceau ; un grenier près du château garde le bois là où il servira.\n— Wszebor",
+        2: "Les deux lettres ont été honorées avant l'échéance. Deux sceaux ; du bois qui attend à la porte aurait abrégé la seconde.\n— Wszebor",
+        3: "Le bois attendait déjà à la porte quand la seconde lettre est venue. Trois sceaux pour le stock au bon endroit.\n— Wszebor",
+      },
+      lost: "L'échéance est passée, la palissade n'est pas dressée. Les bûcherons avaient la cour pleine : un grenier près du château les aurait fait travailler.\n— Wszebor",
+    },
+    es: {
+      opening: "Primero 30 medidas de grano de siembra antes de las 5:30, luego sin demora 40 cargas de troncos para la empalizada antes de las 8:30; todo antes de las 12:00. Los leñadores están al otro extremo del valle y su pequeño almacén está lleno de pescado que nadie quiere. Construye un granero para que sigan cortando, y que la madera de la segunda carta espere en mi puerta, no en el bosque.\n— Wszebor",
+      won: {
+        1: "Llegaron el grano y los troncos, pero la empalizada esperó mucho. Un sello; un granero junto al castillo guarda la madera donde hará falta.\n— Wszebor",
+        2: "Ambas cartas cumplidas antes del plazo. Dos sellos; la madera esperando en la puerta habría acortado la segunda carta.\n— Wszebor",
+        3: "La madera ya esperaba en la puerta cuando llegó la segunda carta. Tres sellos por la reserva en el lugar justo.\n— Wszebor",
+      },
+      lost: "Venció el plazo y la empalizada no se alzó. Los leñadores tenían el patio lleno: un granero junto al castillo los habría tenido trabajando.\n— Wszebor",
+    },
+    it: {
+      opening: "Prima 30 misure di grano da semina entro le 5:30, poi senza indugio 40 cataste di tronchi per la palizzata entro le 8:30; tutto prima delle 12:00. I taglialegna stanno all'altro capo della valle e il loro piccolo deposito è pieno di pesce che nessuno vuole. Costruisci un granaio perché continuino a tagliare, e che il legname della seconda lettera aspetti alla mia porta, non nel bosco.\n— Wszebor",
+      won: {
+        1: "Grano e tronchi sono arrivati, ma la palizzata ha atteso a lungo. Un sigillo; un granaio presso il castello tiene il legname dove servirà.\n— Wszebor",
+        2: "Entrambe le lettere evase prima della scadenza. Due sigilli; il legname in attesa alla porta avrebbe accorciato la seconda.\n— Wszebor",
+        3: "Il legname aspettava già alla porta quando è giunta la seconda lettera. Tre sigilli per la scorta al posto giusto.\n— Wszebor",
+      },
+      lost: "La scadenza è passata e la palizzata non c'è. I taglialegna avevano il cortile pieno: un granaio presso il castello li avrebbe fatti lavorare.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "Primeiro 30 medidas de grão de semente até 5:30, depois sem demora 40 cargas de toras para a paliçada até 8:30; tudo antes de 12:00. Os lenhadores ficam no outro extremo do vale, e seu pequeno depósito está cheio de peixe que ninguém quer. Construa um celeiro para que continuem cortando — e que a madeira da segunda carta espere no meu portão, não na mata.\n— Wszebor",
+      won: {
+        1: "O grão e as toras chegaram, mas a paliçada esperou muito. Um selo; um celeiro junto ao castelo guarda a madeira onde ela será necessária.\n— Wszebor",
+        2: "As duas cartas foram cumpridas antes do prazo. Dois selos; madeira esperando no portão teria encurtado a segunda carta.\n— Wszebor",
+        3: "A madeira já esperava no portão quando chegou a segunda carta. Três selos pelo estoque no lugar certo.\n— Wszebor",
+      },
+      lost: "O prazo acabou e a paliçada não se ergueu. Os lenhadores ficaram com o pátio cheio — um celeiro junto ao castelo os teria mantido trabalhando.\n— Wszebor",
+    },
+    nl: {
+      opening: "Eerst 30 maten zaaigraan vóór 5:30, dan zonder uitstel 40 vrachten stammen voor de palissade vóór 8:30; alles vóór 12:00. De houthakkers zitten aan het andere eind van het dal, en hun kleine opslag ligt vol vis die niemand wil. Bouw een graanschuur zodat ze blijven hakken — en laat het hout voor de tweede brief bij mijn poort wachten, niet in het bos.\n— Wszebor",
+      won: {
+        1: "Graan en stammen kwamen aan, maar de palissade wachtte lang. Eén zegel; een graanschuur bij het kasteel houdt het hout waar het nodig is.\n— Wszebor",
+        2: "Beide brieven vóór de termijn vervuld. Twee zegels; hout dat bij de poort wacht, had de tweede brief verkort.\n— Wszebor",
+        3: "Het hout wachtte al bij de poort toen de tweede brief kwam. Drie zegels voor de voorraad op de juiste plek.\n— Wszebor",
+      },
+      lost: "De termijn verstreek en de palissade staat er niet. De houthakkers stonden met een vol erf — een graanschuur bij het kasteel had ze laten werken.\n— Wszebor",
+    },
+    sv: {
+      opening: "Först 30 mått utsäde före 5:30, sedan utan dröjsmål 40 lass stockar till palissaden före 8:30; allt före 12:00. Huggarna sitter i dalens andra ände, och deras lilla förråd är fullt av fisk som ingen vill ha. Bygg ett magasin så att de fortsätter hugga – och låt veden till det andra brevet vänta vid min port, inte i skogen.\n— Wszebor",
+      won: {
+        1: "Säden och stockarna kom fram, men palissaden väntade länge. Ett sigill; ett magasin vid borgen håller veden där den behövs.\n— Wszebor",
+        2: "Båda breven uppfyllda före fristen. Två sigill; ved som väntar vid porten hade kortat det andra brevet.\n— Wszebor",
+        3: "Veden väntade redan vid porten när det andra brevet kom. Tre sigill för förrådet på rätt plats.\n— Wszebor",
+      },
+      lost: "Fristen gick ut och palissaden står inte. Huggarna stod med full gård – ett magasin vid borgen hade hållit dem i arbete.\n— Wszebor",
+    },
+    tr: {
+      opening: "Önce 5:30'a kadar 30 ölçü tohumluk tahıl, sonra vakit kaybetmeden 8:30'a kadar çit için 40 yük kütük; hepsi 12:00'den önce. Oduncular vadinin öbür ucunda, küçük depoları da kimsenin istemediği balıkla dolu. Kesmeye devam etsinler diye bir ambar kur; ikinci mektubun odunu ormanda değil, kapımda beklesin.\n— Wszebor",
+      won: {
+        1: "Tahıl ve kütükler geldi, ama çit uzun süre bekledi. Bir mühür; kalenin yanındaki ambar odunu gerekeceği yerde tutar.\n— Wszebor",
+        2: "İki mektup da süreden önce karşılandı. İki mühür; kapıda bekleyen odun ikinci mektubu kısaltırdı.\n— Wszebor",
+        3: "İkinci mektup geldiğinde odun zaten kapıda bekliyordu. Stoku doğru yerde tuttuğun için üç mühür.\n— Wszebor",
+      },
+      lost: "Süre doldu, çit dikilmedi. Oduncular dolu avluyla durdu; kalenin yanında bir ambar onları çalışır tutardı.\n— Wszebor",
+    },
+    ru: {
+      opening: "Сначала 30 мер семенного зерна до 5:30, затем без промедления 40 возов брёвен на частокол до 8:30; всё до 12:00. Лесорубы сидят на другом конце долины, а их маленький склад полон рыбы, которая никому не нужна. Поставь амбар, чтобы они не стояли, — и пусть дрова для второго письма ждут у моих ворот, а не в лесу.\n— Wszebor",
+      won: {
+        1: "Зерно и брёвна доставлены, но частокол долго ждал. Одна печать; амбар у замка держит дрова там, где они понадобятся.\n— Wszebor",
+        2: "Оба письма выполнены до срока. Две печати; дрова, ждущие у ворот, сократили бы второе письмо.\n— Wszebor",
+        3: "Дрова уже ждали у ворот, когда пришло второе письмо. Три печати за запас в нужном месте.\n— Wszebor",
+      },
+      lost: "Срок прошёл, частокол не стоит. Лесорубы стояли с полным двором — амбар у замка не дал бы им простаивать.\n— Wszebor",
+    },
+    uk: {
+      opening: "Спершу 30 мір посівного зерна до 5:30, потім без зволікання 40 возів колод на частокіл до 8:30; усе до 12:00. Лісоруби сидять на другому кінці долини, а їхній малий склад повний риби, якої ніхто не хоче. Постав комору, щоб вони не стояли, — і хай дрова для другого листа чекають біля моєї брами, а не в лісі.\n— Wszebor",
+      won: {
+        1: "Зерно й колоди прибули, та частокіл довго чекав. Одна печатка; комора біля замку тримає дрова там, де вони знадобляться.\n— Wszebor",
+        2: "Обидва листи виконано до строку. Дві печатки; дрова, що чекають біля брами, скоротили б другий лист.\n— Wszebor",
+        3: "Дрова вже чекали біля брами, коли прийшов другий лист. Три печатки за запас у правильному місці.\n— Wszebor",
+      },
+      lost: "Строк минув, частоколу немає. Лісоруби стояли з повним двором — комора біля замку не дала б їм простоювати.\n— Wszebor",
+    },
+    ja: {
+      opening: "まず5:30までに種用の穀物30量、続けて間を置かず8:30までに柵用の丸太40荷。すべて12:00より前に。きこりは谷の向こう端におり、その小さな倉は誰も欲しがらない魚で満ちている。きこりが止まらぬよう穀物倉庫を建てよ。二通目の丸太は森でなく、我が門の前で待たせよ。\n— Wszebor",
+      won: {
+        1: "穀物と丸太は届いたが、柵は長く待たされた。印章一つ。城のそばの穀物倉庫なら、丸太を要る場所に置いておける。\n— Wszebor",
+        2: "二通とも期限前に果たされた。印章二つ。門の前で待つ丸太があれば二通目は早く済んだ。\n— Wszebor",
+        3: "二通目が来た時、丸太はもう門の前で待っていた。蓄えを正しい場所に置いた褒美に印章三つ。\n— Wszebor",
+      },
+      lost: "期限が過ぎ、柵は立っていない。きこりは置き場が満杯で止まっていた。城のそばに穀物倉庫があれば働き続けられた。\n— Wszebor",
+    },
+    ko: {
+      opening: "먼저 5:30까지 씨앗용 곡식 30단위, 이어서 지체 없이 8:30까지 울타리용 통나무 40짐. 모두 12:00 전에. 나무꾼들은 골짜기 반대편 끝에 있고, 그들의 작은 창고는 아무도 원치 않는 생선으로 가득하다. 나무꾼이 멈추지 않도록 곡물 창고를 지어라. 둘째 편지의 나무는 숲이 아니라 내 성문 앞에서 기다리게 하라.\n— Wszebor",
+      won: {
+        1: "곡식과 통나무는 왔지만 울타리는 오래 기다렸다. 인장 하나. 성 옆의 곡물 창고는 나무를 필요한 곳에 둔다.\n— Wszebor",
+        2: "두 편지 모두 기한 전에 채워졌다. 인장 둘. 성문 앞에서 기다리는 나무가 있었다면 둘째 편지가 짧아졌을 것이다.\n— Wszebor",
+        3: "둘째 편지가 왔을 때 나무는 이미 성문 앞에서 기다렸다. 비축을 제자리에 둔 공으로 인장 셋.\n— Wszebor",
+      },
+      lost: "기한이 지났고 울타리는 서지 못했다. 나무꾼들은 가득 찬 마당 앞에 멈춰 있었다. 성 옆의 곡물 창고가 그들을 계속 일하게 했을 것이다.\n— Wszebor",
+    },
+    "zh-Hans": {
+      opening: "先在5:30前送来30份种粮，随后不得耽搁，在8:30前送来40车原木修栅栏；一切都要在12:00前办完。伐木工在山谷另一头，他们的小货栈堆满了没人要的鱼。建一座粮仓，让伐木工别停工——第二封信要的木头，要在我城门下等着，而不是在林子里。\n— Wszebor",
+      won: {
+        1: "谷物和原木送到了，但栅栏等了很久。一枚印章；城边的粮仓能把木头放在要用的地方。\n— Wszebor",
+        2: "两封信都在期限前办妥。两枚印章；若木头早在城门下等着，第二封信会更快。\n— Wszebor",
+        3: "第二封信来时，木头已在城门下等候。存货放对了地方，授予三枚印章。\n— Wszebor",
+      },
+      lost: "期限已过，栅栏仍未立起。伐木工的场地堆满而停工——城边若有粮仓，他们本可一直干下去。\n— Wszebor",
+    },
+    ar: {
+      opening: "أولًا 30 مكيالًا من حبوب البذار قبل 5:30، ثم دون إبطاء 40 حملًا من الجذوع للسياج قبل 8:30؛ وكل ذلك قبل 12:00. الحطابون في الطرف الآخر من الوادي، ومخزنهم الصغير ممتلئ بسمك لا يريده أحد. ابنِ مخزنًا كي لا يتوقفوا، ودع خشب الرسالة الثانية ينتظر عند بابي، لا في الغابة.\n— Wszebor",
+      won: {
+        1: "وصلت الحبوب والجذوع، لكن السياج انتظر طويلًا. ختم واحد؛ مخزن قرب القلعة يحفظ الخشب حيث سيُحتاج.\n— Wszebor",
+        2: "أُنجزت الرسالتان قبل الموعد. ختمان؛ خشب ينتظر عند الباب كان سيقصّر الرسالة الثانية.\n— Wszebor",
+        3: "كان الخشب ينتظر عند الباب حين جاءت الرسالة الثانية. ثلاثة أختام لوضع المؤونة في مكانها الصحيح.\n— Wszebor",
+      },
+      lost: "مضى الموعد والسياج لم يُنصب. وقف الحطابون وساحاتهم ممتلئة؛ مخزن قرب القلعة كان سيُبقيهم يعملون.\n— Wszebor",
+    },
+    hi: {
+      opening: "पहले 5:30 तक बुआई के लिए 30 माप अनाज, फिर बिना देर 8:30 तक बाड़ के लिए 40 बोझ लट्ठे; सब 12:00 से पहले। लकड़हारे घाटी के दूसरे छोर पर हैं, और उनका छोटा गोदाम ऐसी मछली से भरा है जिसे कोई नहीं चाहता। भंडार बनाओ ताकि लकड़हारे न रुकें — और दूसरे पत्र की लकड़ी जंगल में नहीं, मेरे द्वार पर इंतज़ार करे।\n— Wszebor",
+      won: {
+        1: "अनाज और लट्ठे पहुँचे, पर बाड़ देर तक रुकी रही। एक मुहर; क़िले के पास का भंडार लकड़ी को वहीं रखता है जहाँ ज़रूरत होगी।\n— Wszebor",
+        2: "दोनों पत्र समय से पहले पूरे हुए। दो मुहरें; द्वार पर रखी लकड़ी दूसरे पत्र को छोटा कर देती।\n— Wszebor",
+        3: "दूसरा पत्र आया तो लकड़ी पहले से द्वार पर थी। भंडार सही जगह रखने के लिए तीन मुहरें।\n— Wszebor",
+      },
+      lost: "समय बीत गया, बाड़ नहीं बनी। लकड़हारे भरे आँगन के साथ खड़े रहे — क़िले के पास भंडार उन्हें काम में लगाए रखता।\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<Lang, ContractLetterSet>>;

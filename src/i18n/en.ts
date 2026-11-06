@@ -382,6 +382,10 @@ export const en: FullDict = {
   // mission XIII (night 6, D-102): see PENDING_KEYS
   'menu.m13': 'XIII. The first floor of the chain',
   'menu.m13Sub': 'One wagon for the whole march',
+  'menu.m14': 'XIV. Charcoal from the forest',
+  'menu.m14Sub': 'Burn charcoal where the wood is',
+  'menu.m15': 'XV. The store by the castle',
+  'menu.m15Sub': 'Stock where it will be needed',
   // free valley seasons (D-33): see PENDING_KEYS
   'season.spring': 'Spring',
   'season.summer': 'Summer',

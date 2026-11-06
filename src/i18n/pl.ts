@@ -384,6 +384,10 @@ export const pl = {
   // mission XIII (night 6, D-102): localized
   'menu.m13': 'XIII. Pierwsze piętro łańcucha',
   'menu.m13Sub': 'Jeden wóz na całą marchię',
+  'menu.m14': 'XIV. Węgiel z lasu',
+  'menu.m14Sub': 'Wypal węgiel tam, gdzie drewno',
+  'menu.m15': 'XV. Skład pod zamkiem',
+  'menu.m15Sub': 'Zapas tam, gdzie będzie potrzebny',
   // free valley seasons (D-33): localized
   'season.spring': 'Wiosna',
   'season.summer': 'Lato',

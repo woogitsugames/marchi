@@ -5,11 +5,12 @@ import { M13_EXTRA, M13_STRATEGIES, runM13 } from '../tools/bot-m13';
 import { readFileSync } from 'node:fs';
 import { assert, eq, test } from './harness';
 
-test('m13: registered, last in the menu, one wagon, the raw goods already in the granary', () => {
+test('m13: registered, appended after XII in the menu, one wagon, the raw goods already in the granary', () => {
   eq(MISSIONS.m13, M13_MISSION, 'registered');
   // the menu module needs the browser i18n loader: read its list as text
   const menu = readFileSync(new URL('../src/ui/menu.ts', import.meta.url), 'utf8');
-  assert(/MENU_MISSIONS = \[[^\]]*'m12', 'm13'\] as const/.test(menu) && /'XII', 'XIII'\]/.test(menu), 'appended as XIII (D-102)');
+  // XIV and XV follow it since D-210
+  assert(/MENU_MISSIONS = \[[^\]]*'m12', 'm13'[,\]]/.test(menu) && /'XII', 'XIII'[,\]]/.test(menu), 'appended as XIII (D-102)');
   eq(missionBuildable('m13').length, 0, 'nothing to build: the cure is wagons');
   const w = createWorld('m13');
   eq(w.state.mapId, 'valley-m3', 'existing valley map');

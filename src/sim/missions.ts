@@ -9,6 +9,7 @@ import { S2_MISSIONS } from './missions-s2';
 import { PROPOSED_MISSIONS_7_9 } from './proposals/missions-7-9';
 import { PROPOSED_MISSIONS_10_12 } from './proposals/missions-10-12';
 import { M13_MISSION } from './proposals/m13';
+import { MISSIONS_14_15 } from './proposals/missions-14-15';
 import { freshMarket, freshTown } from './town';
 import { freshTradePost, placeTradePost } from './tradePost';
 import type { World } from './network';
@@ -249,6 +250,8 @@ MISSIONS.m10 = PROPOSED_MISSIONS_10_12.m10;
 MISSIONS.m11 = PROPOSED_MISSIONS_10_12.m11;
 MISSIONS.m12 = PROPOSED_MISSIONS_10_12.m12;
 MISSIONS.m13 = M13_MISSION;
+MISSIONS.m14 = MISSIONS_14_15.m14;
+MISSIONS.m15 = MISSIONS_14_15.m15;
 MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 
