@@ -537,3 +537,212 @@ Staged native assets and reproducible v2/v3 preview: see `art/out/README.md`.
   block with wedges and chips; steeped grain in the malthouse tub; the malt load unit (hooped tub heaped with amber
   malt) replacing the small bags; hoarfrost on up-facing building faces in winter; sleet flecks in winter.
 - **Removed props:** the charcoal burner's leaning rake and the malthouse's leaning shovel (the workers carry them).
+
+## Per-file inventory — audit 96
+
+This inventory points to the evidence already recorded above. An inventory entry is not by itself a verification of rights; inspect the referenced provenance and the original licence before release. UI kit rights are recorded only as “licence as the game”; their legal terms and provenance should be clarified.
+
+| File | Source and recorded rights |
+|---|---|
+| `public/assets/audio/ambient/evening.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/evening.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/morning.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/morning.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/rain.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/rain.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/river.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/ambient/river.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/axe.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/axe.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/brewery-barrels.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/brewery-barrels.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/bridge-wood.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/bridge-wood.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/cart-cobble.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/cart-cobble.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/cart-dirt.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/cart-dirt.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/charcoal-fire.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/charcoal-fire.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/fisher-net.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/fisher-net.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/fisher-splash.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/fisher-splash.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/horse-snort.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/horse-snort.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-barrel.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-barrel.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-fish.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-fish.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-log.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-log.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-plank.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-plank.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-sack.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-sack.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-stone.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/load-stone.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/malt-bubbles.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/malt-bubbles.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/mill-wheel.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/mill-wheel.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/oven.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/oven.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/quarry-chisel.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/quarry-chisel.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/quarry-rock.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/quarry-rock.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/saw.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/saw.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-barrel.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-barrel.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-fish.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-fish.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-log.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-log.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-plank.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-plank.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-sack.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-sack.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-stone.m4a` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/unload-stone.ogg` | CC0 recording / derivative; individual source and hash: audio tables above and `docs/audio-provenance.json` |
+| `public/assets/audio/sfx/wax-seal.m4a` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/sfx/wax-seal.ogg` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/error.m4a` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/error.ogg` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/paper.m4a` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/paper.ogg` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/stall.m4a` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/stall.ogg` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/wood.m4a` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/audio/ui/wood.ogg` | Project procedural sound, CC0; see Original procedural effects above |
+| `public/assets/music/lost-frost-on-the-rooftops.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/menu-first-light.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/menu-hush-before-sunrise.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-bakers-hearth-glow.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-gleaning-at-dusk.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-granary-at-stonegate.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-harvest-lane.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-millpond-crossing.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-oven-hearth-morning.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-wheatfield-lane.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/play-wheatmill-path.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/rain-drizzle-on-the-square.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/rain-on-cobblestone.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/music/won-silver-pennant-fanfare.webm` | Suno / publisher score; publisher rights; see Music table and `docs/legal/music_provenance.json` |
+| `public/assets/textures/bark/normal.jpg` | Poly Haven set `bark`; CC0 1.0; see Textures table above |
+| `public/assets/textures/bark/normal.ktx2` | Poly Haven set `bark`; CC0 1.0; see Textures table above |
+| `public/assets/textures/bark/orm.jpg` | Poly Haven set `bark`; CC0 1.0; see Textures table above |
+| `public/assets/textures/bark/orm.ktx2` | Poly Haven set `bark`; CC0 1.0; see Textures table above |
+| `public/assets/textures/bark/orm_2048.ktx2` | Poly Haven set `bark`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/albedo_2048.ktx2` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/albedo_512.jpg` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/normal.ktx2` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/normal_512.jpg` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/orm_2048.ktx2` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/cobblestone/orm_512.jpg` | Poly Haven set `cobblestone`; CC0 1.0; see Textures table above |
+| `public/assets/textures/fieldstone_wall/normal.jpg` | Poly Haven set `fieldstone_wall`; CC0 1.0; see Textures table above |
+| `public/assets/textures/fieldstone_wall/normal.ktx2` | Poly Haven set `fieldstone_wall`; CC0 1.0; see Textures table above |
+| `public/assets/textures/fieldstone_wall/orm.jpg` | Poly Haven set `fieldstone_wall`; CC0 1.0; see Textures table above |
+| `public/assets/textures/fieldstone_wall/orm.ktx2` | Poly Haven set `fieldstone_wall`; CC0 1.0; see Textures table above |
+| `public/assets/textures/fieldstone_wall/orm_2048.ktx2` | Poly Haven set `fieldstone_wall`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/albedo_2048.ktx2` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/albedo_512.jpg` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/normal.ktx2` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/normal_512.jpg` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/orm_2048.ktx2` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/forest_floor/orm_512.jpg` | Poly Haven set `forest_floor`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/albedo_2048.ktx2` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/albedo_512.jpg` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/normal.ktx2` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/normal_512.jpg` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/orm_2048.ktx2` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/meadow/orm_512.jpg` | Poly Haven set `meadow`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/albedo_2048.ktx2` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/albedo_512.jpg` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/normal.ktx2` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/normal_512.jpg` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/orm_2048.ktx2` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/mud_track/orm_512.jpg` | Poly Haven set `mud_track`; CC0 1.0; see Textures table above |
+| `public/assets/textures/plaster_daub/normal.jpg` | Poly Haven set `plaster_daub`; CC0 1.0; see Textures table above |
+| `public/assets/textures/plaster_daub/normal.ktx2` | Poly Haven set `plaster_daub`; CC0 1.0; see Textures table above |
+| `public/assets/textures/plaster_daub/orm.jpg` | Poly Haven set `plaster_daub`; CC0 1.0; see Textures table above |
+| `public/assets/textures/plaster_daub/orm.ktx2` | Poly Haven set `plaster_daub`; CC0 1.0; see Textures table above |
+| `public/assets/textures/plaster_daub/orm_2048.ktx2` | Poly Haven set `plaster_daub`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/albedo_2048.ktx2` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/albedo_512.jpg` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/normal.ktx2` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/normal_512.jpg` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/orm_2048.ktx2` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/riverbank/orm_512.jpg` | Poly Haven set `riverbank`; CC0 1.0; see Textures table above |
+| `public/assets/textures/thatch/normal.jpg` | Poly Haven set `thatch`; CC0 1.0; see Textures table above |
+| `public/assets/textures/thatch/normal.ktx2` | Poly Haven set `thatch`; CC0 1.0; see Textures table above |
+| `public/assets/textures/thatch/orm.jpg` | Poly Haven set `thatch`; CC0 1.0; see Textures table above |
+| `public/assets/textures/thatch/orm.ktx2` | Poly Haven set `thatch`; CC0 1.0; see Textures table above |
+| `public/assets/textures/thatch/orm_2048.ktx2` | Poly Haven set `thatch`; CC0 1.0; see Textures table above |
+| `public/assets/textures/wood_planks/normal.jpg` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
+| `public/assets/textures/wood_planks/normal.ktx2` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
+| `public/assets/textures/wood_planks/orm.jpg` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
+| `public/assets/textures/wood_planks/orm.ktx2` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
+| `public/assets/textures/wood_planks/orm_2048.ktx2` | Poly Haven set `wood_planks`; CC0 1.0; see Textures table above |
+| `public/assets/ui/kit/badge-red@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/badge-red@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/badge@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/badge@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-disabled@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-disabled@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-normal@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-normal@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-pressed@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/button-pressed@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-disabled@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-disabled@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-highlight@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-highlight@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-normal@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-normal@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-pressed@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/card-pressed@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/eta@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/eta@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet-dim@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet-dim@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/frame-sheet@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/menu@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/menu@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel-alert@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel-alert@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel-dim@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel-dim@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/panel@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-alarm@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-alarm@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-brass@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-brass@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-red@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/pin-red@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/progress-fill@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/progress-fill@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/progress-track@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/progress-track@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/ribbon@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/ribbon@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-alert@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-alert@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-empty@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-empty@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-full@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-full@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/seal-press.svg` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/segment-active@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/segment-active@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/segment-bg@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/segment-bg@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/stat@2x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |
+| `public/assets/ui/kit/stat@3x.png` | Generated for Marchia; licence recorded as the game (terms to confirm); see UI art kit above |

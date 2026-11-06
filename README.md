@@ -2,28 +2,40 @@
 
 ![CI](https://github.com/woogitsugames/marchi/actions/workflows/ci.yml/badge.svg)
 
-Średniowieczna strategia ekonomiczno-logistyczna na telefony (Android + iOS). Osada rośnie dzięki drogom
-i fizycznemu przewożeniu towarów: każdy wóz wiezie widoczny ładunek, ma cel i czas dojazdu, a każdy przestój
-ma przyczynę, którą gracz sprawdza jednym dotknięciem. Krótkie kontrakty po 5–12 minut i tryb swobodny.
+A mobile-first medieval logistics strategy game for Android and iOS. Build roads and move physical goods by wagon; diagnose the cause when production or transport stalls. Play short missions or develop the Free valley.
 
-## Komendy
+[Polski](docs/README.pl.md) · [Design](docs/DESIGN.md) · [Project guide](CLAUDE.md)
+
+## Getting started
+
+Requires Node.js 20 or newer. From the repository root:
 
 ```bash
-npm ci
-npm run dev          # serwer deweloperski Vite
-npm test             # testy headless symulacji (linia SUMMARY na końcu)
-npm run typecheck
-npm run build
-npm run bot          # bot przechodzi misję 1
-npm run perf:sim     # koszt symulacji przy 50/100/200 wozach
-npm run setup:android && npm run apk   # debug APK do dist-apk/
+npm install
+npm run dev         # Vite development server
+npm test            # headless tests; see the SUMMARY line
+npm run typecheck   # application and simulation
+npm run build       # production web build
+npm run bot         # scripted bot plays mission I headless
+npm run perf:sim    # headless sim cost at 50/100/200 wagons
 ```
 
-Szczegóły: `CLAUDE.md`, projekt: `docs/DESIGN.md`, styl: `docs/ART_DIRECTION.md`, `docs/UI_STYLE.md`.
+For a debug Android APK, install JDK 21 and the Android SDK, then run `npm run setup:android` if the SDK is not already installed and `npm run apk`. The APK is placed in `dist-apk/`. See [CLAUDE.md](CLAUDE.md) for prerequisites and additional commands.
+
+## Repository
+
+- `src/sim/`: deterministic simulation and game rules.
+- `src/ui/`, `src/render/`, `src/i18n/`: interface, rendering and translations.
+- `src/platform/`, `android/`, `ios/`: persistence and mobile platforms.
+- `public/assets/`: game assets; provenance is recorded in [ASSETS.md](docs/ASSETS.md).
+- `tests/`, `tools/`: automated tests and development tools.
+- `docs/`: design, decisions and production documentation.
+
+Contributors should read [CLAUDE.md](CLAUDE.md) for architecture, asset and workflow rules. Game decisions are recorded in [DECISIONS.md](docs/DECISIONS.md); visual guidance is in [UI_STYLE.md](docs/UI_STYLE.md).
 
 ## GitHub Actions
 
-- **CI** (`.github/workflows/ci.yml`): push na `claude/**` i `gpt/**` oraz PR-y z/do tych gałęzi —
-  testy, typecheck, build, bot misji 1, perf symulacji w podsumowaniu joba.
-- **Debug APK** (`.github/workflows/apk.yml`): Actions → *Debug APK* → *Run workflow* (lub tag `v*`);
-  APK w *Artifacts* przez 14 dni. Wersja testowa, niepodpisana do wydania.
+- **CI** (`.github/workflows/ci.yml`): on pushes to `claude/**` and `gpt/**` and PRs from/to them — tests, typecheck,
+  build, mission I bot, sim perf in the job summary.
+- **Debug APK** (`.github/workflows/apk.yml`): Actions → *Debug APK* → *Run workflow* (or a `v*` tag); the APK is kept
+  in *Artifacts* for 14 days. A test build, not signed for release.

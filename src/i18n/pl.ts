@@ -441,10 +441,10 @@ export const pl = {
   'hud.worst': 'Najgorszy zastój',
   'hud.calmStall': 'Postój',
   'hud.worstShow': 'Pokaż: {name}',
-  'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
+  'hud.stallsNext': 'Zastoje: {n} — pokaż kolejny',
   'pin.worst': 'Najgorszy zastój — {name}',
   'pin.critical': 'Krytyczny zastój — {name}',
-  'pin.stood': '{name}, stoi {time}',
+  'pin.stood': '{name}, czas przestoju: {time}',
   'contract.toSnow': '{time} do śniegu',
   'contract.toTranche': '{time} do dostawy {n}',
   'tool.wagonShort': 'brak {n}',
@@ -666,7 +666,7 @@ export const pl = {
   // best seals and time per contract in the mission menu (day 1, owner decision 13): localized
   'menu.bestAria': 'Najlepszy wynik: {n} z 3 pieczęci, czas {time}',
   // diagnosis audit 2026-11-03, fix 1: a surplus nobody needs (localized)
-  'fix.surplus': 'Nadwyżka: nikt teraz nie potrzebuje {goodGen}, poczeka na placu. Nowy wóz tego nie przyspieszy.',
+  'fix.surplus': 'Nadwyżka {goodGen} poczeka na placu — nikt jej teraz nie potrzebuje. Nowy wóz tego nie przyspieszy.',
   'cause.surplus': 'nadwyżka, nikt jej teraz nie potrzebuje',
   // diagnosis audit 2026-11-03, fix 3: a full granary next to one with room (localized)
   'fix.storeRoom': 'Inny spichlerz ma jeszcze miejsce — nowy towar pojedzie tam:',

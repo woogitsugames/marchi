@@ -50,3 +50,5 @@ Wpisy dotyczą wyłącznie Wolnej doliny (`sandbox`). Każdy `id` odpowiada waru
   takie zdarzenia wymagają historii okresowej, której obecny stan nie zawiera.
 - Otrzymane identyfikatory powinny być przechowywane poza funkcją kontrolną, razem z
   zapisem gry lub w osobnym, wersjonowanym indeksie kroniki. Funkcja nie zmienia `SimState`.
+
+Propozycje dla rang 4–5 i posterunku (niewdrożone): `docs/content/chronicle-late.md`.

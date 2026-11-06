@@ -86,3 +86,5 @@ Jarmark wypada co trzeci 15-minutowy sezon symulacji; pierwsza zapowiedź jesien
 | events.empty | Brak nowych wieści. Wozy mogą jechać dalej. | No new messages. The wagons can keep moving. |
 
 Wartości {good}, {qty}, {price}, {delivered}, {required}, {silver}, {renown} podstawia HUD z danych zdarzeń i lokalizuje nazwy towarów. Bez tekstów typu „ostatnia szansa”, „zostało X sekund”, „porażka” i bez powiadomień push. Karta używa krótszych kluczy (`events.order.*`, `events.fair.*`, `events.merchant.*`); narracja tytułów 1:1 z tabeli.
+
+Propozycje dla rang 4–5 i posterunku (niewdrożone): `docs/content/events-late.md`.

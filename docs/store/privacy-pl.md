@@ -10,7 +10,7 @@ Gra nie wymaga konta, logowania ani podawania danych osobowych. Nie zbieramy ani
 
 ## 2. Lokalny zapis rozgrywki
 
-Postęp rozgrywki, stan mapy, zasoby i ustawienia zapisu są przechowywane **wyłącznie lokalnie na urządzeniu**, w bazie **IndexedDB** należącej do aplikacji. Nie wysyłamy zapisów na serwer i nie oferujemy synchronizacji z kontem ani chmurowego zapisu gry.
+Postęp rozgrywki, stan mapy, zasoby i ustawienia zapisu są przechowywane lokalnie na urządzeniu w bazie **IndexedDB** należącej do aplikacji; niektóre ustawienia są zapisywane w lokalnej pamięci przeglądarki. Nie wysyłamy zapisów na serwer i nie oferujemy synchronizacji z kontem ani chmurowego zapisu gry.
 
 Możesz usunąć lokalne zapisy przez wyczyszczenie danych aplikacji lub usunięcie aplikacji z urządzenia. Nie wystarczy jedynie odciążyć aplikacji, jeśli system zachowuje jej dane. Ewentualne kopie wykonywane przez system operacyjny podlegają ustawieniom urządzenia i zasadom jego dostawcy.
 
@@ -20,7 +20,9 @@ Cała gra, w tym misje I–VI i Wolna dolina, jest darmowa, bez reklam i zakupó
 
 ## 4. Udostępnianie i bezpieczeństwo
 
-Nie przekazujemy danych z rozgrywki podmiotom trzecim, ponieważ nie są one wysyłane poza urządzenie. Nie używamy zewnętrznych systemów analitycznych, reklamowych ani śledzących. Ochrona lokalnych zapisów zależy również od zabezpieczeń urządzenia i jego systemu operacyjnego.
+Gra nie przesyła automatycznie danych rozgrywki wydawcy ani innym podmiotom. Użytkownik może jednak samodzielnie przekazać skopiowane dane, a system może utworzyć ich kopię zapasową zgodnie ze swoimi ustawieniami. Nie używamy zewnętrznych systemów analitycznych, reklamowych ani śledzących. Ochrona lokalnych zapisów zależy również od zabezpieczeń urządzenia i jego systemu operacyjnego.
+
+Ukryty tryb testowy umożliwia prowadzącemu wpisanie kodu uczestnika i informacji o urządzeniu, zapisanie ich lokalnie oraz skopiowanie wyników próby do schowka; narzędzie diagnostyczne również pozwala skopiować raport. Dalsze przekazanie skopiowanych danych zależy od osoby prowadzącej test i użytych przez nią usług.
 
 ## 5. Dobrowolny kontakt
 
