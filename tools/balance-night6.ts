@@ -18,6 +18,8 @@ import {
 import { cureFor, gapTarget, paveSpanFor, rankStalls, sampleInputWaits, sharedOneProducer } from '../src/ui/stalls';
 import { M7_FISHER_SITE, M8_LANE, M9_WOODCUTTER_SITE } from '../src/sim/proposals/missions-7-9';
 import { M10_SECOND_WOODCUTTER, M12_GRANARY_LINK } from '../src/sim/proposals/missions-10-12';
+import { M14_BURNER_SITE, M14_WRONG_SITE, M15_GRANARY_SITE, M15_WRONG_SITE } from '../src/sim/proposals/missions-14-15';
+import { missionSiteHint } from '../src/sim/index';
 import { buildSite } from '../src/ui/site';
 import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { newPaceLog, samplePace, type PaceLog } from '../src/sim/index';
@@ -51,6 +53,19 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m11: () => [],
   m12: (w) => [{ t: 'road', surface: 1, cells: col(w, M12_GRANARY_LINK.x, M12_GRANARY_LINK.y1, M12_GRANARY_LINK.y2) }],
   m13: () => [],
+  // research 2026-11-06 (not in the game): XIV's second brewery by the castle, XV's granary by the castle
+  m14: (w) => [
+    { t: 'place', type: 'charcoalBurner', ...M14_BURNER_SITE }, { t: 'road', surface: 1, cells: col(w, M14_BURNER_SITE.x + 1, 40, 41) },
+  ],
+  m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_GRANARY_SITE }, { t: 'road', surface: 1, cells: col(w, M15_GRANARY_SITE.x + 1, 40, 41) }],
+};
+
+/** The tempting wrong fix of the research missions XIV-XV: the same building at the wrong end of the road. */
+export const WRONG: Record<string, (w: World) => Command[]> = {
+  m14: (w) => [
+    { t: 'place', type: 'charcoalBurner', ...M14_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M14_WRONG_SITE.x + 1, 39, 40) },
+  ],
+  m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M15_WRONG_SITE.x + 1, 40, 41) }],
 };
 
 export interface Row {
@@ -276,7 +291,9 @@ function tapOne(w: World, top: ReturnType<typeof rankStalls>[number], hints: boo
         const root = chain.length ? chain[chain.length - 1]! : null;
         const rb = root && root.kind === 'building' ? buildingById(w, root.id)! : b;
         const [x, y] = cellXY(w, rb.gate);
-        act = placeNear(w, 'warehouse', x, y) >= 0 ? 'granary' : 'granary?fail';
+        // a mission with an authored granary site (research XV) opens the ghost there, as the game's build tool does
+        const hinted = missionSiteHint(w.state.mission.id, 'warehouse') !== null;
+        act = (hinted ? placeAtGhost(w, 'warehouse', rb.id) : placeNear(w, 'warehouse', x, y)) >= 0 ? 'granary' : 'granary?fail';
       } else act = 'granary?hint-only';
     } else if (hints) {
       // text hints of the sheet: a held bridge (jam / ice) -> pave its span; one producer shared -> one more
@@ -372,7 +389,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const search = !args.includes('--no-search');
   const ids = args.filter((a, i) => /^m\d+$/.test(a) && (ji < 0 || i !== ji + 1));
   const all: Row[] = [];
-  for (const id of ids.length ? ids : Object.keys(LESSON)) {
+  for (const id of ids.length ? ids : Object.keys(LESSON).filter((k) => k in MISSIONS)) {
     const d = MISSIONS[id]!;
     console.log(`\n== ${id}  star3 ${d.star3Min} min, star2 ${d.star2Min} min, deadline ${d.deadlineMin} min, coins ${d.coins}, wagons ${d.wagons}`);
     for (const r of survey(id, search)) {
