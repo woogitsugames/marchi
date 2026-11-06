@@ -400,6 +400,7 @@ export const pt_BR: Dict = {
   "why.sharedOne": "Um fornecedor ({who}) para {n} destinatários — outro ajudaria.",
   "status.WAITING_UPSTREAM.supplierWaits": "Esperando {good} — o fornecedor também espera {supplierGood}",
   "hud.worst": "Maior paralisação",
+  "hud.calmStall": "Em espera",
   "hud.worstShow": "Mostrar: {name}",
   "hud.stallsNext": "Paradas: {n} — mostrar a próxima",
   "pin.worst": "Maior paralisação — {name}",

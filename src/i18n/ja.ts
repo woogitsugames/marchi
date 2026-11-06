@@ -400,6 +400,7 @@ export const ja: Dict = {
   "why.sharedOne": "供給元{who}は{n}か所に供給中。もう1つ必要です。",
   "status.WAITING_UPSTREAM.supplierWaits": "{good}待ち：供給元も{supplierGood}待ち",
   "hud.worst": "最大の停滞",
+  "hud.calmStall": "待機中",
   "hud.worstShow": "表示：{name}",
   "hud.stallsNext": "停滞{n}件・次を表示",
   "pin.worst": "最大の停滞 — {name}",

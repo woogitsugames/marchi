@@ -400,6 +400,7 @@ export const sv: Dict = {
   "why.sharedOne": "En leverantör ({who}) till {n} mottagare — en till skulle hjälpa.",
   "status.WAITING_UPSTREAM.supplierWaits": "Väntar på {good} — leverantören väntar själv på {supplierGood}",
   "hud.worst": "Värsta stoppet",
+  "hud.calmStall": "Väntar",
   "hud.worstShow": "Visa: {name}",
   "hud.stallsNext": "Stopp: {n} — visa nästa",
   "pin.worst": "Värsta stoppet — {name}",

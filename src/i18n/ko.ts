@@ -400,6 +400,7 @@ export const ko: Dict = {
   "why.sharedOne": "공급처 {who} 한 곳이 {n}곳에 공급합니다. 공급처가 하나 더 있으면 좋습니다.",
   "status.WAITING_UPSTREAM.supplierWaits": "{good} 대기 중 — 공급처도 {supplierGood} 대기 중",
   "hud.worst": "최악의 정체",
+  "hud.calmStall": "대기 중",
   "hud.worstShow": "표시: {name}",
   "hud.stallsNext": "정체 {n}건 — 다음 보기",
   "pin.worst": "최악의 정체 — {name}",

@@ -400,6 +400,7 @@ export const zh_Hans: Dict = {
   "why.sharedOne": "供应商{who}同时供应{n}个收货方，增加一个供应商会更好。",
   "status.WAITING_UPSTREAM.supplierWaits": "等待{good}——供应商自己也在等待{supplierGood}",
   "hud.worst": "最严重的停滞",
+  "hud.calmStall": "等待中",
   "hud.worstShow": "显示：{name}",
   "hud.stallsNext": "停滞{n}处——查看下一处",
   "pin.worst": "最严重的停滞——{name}",

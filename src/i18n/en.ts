@@ -432,6 +432,7 @@ export const en: FullDict = {
   'status.WAITING_UPSTREAM.supplierWaits': 'Waiting for {good} — the supplier is itself waiting for {supplierGood}',
   // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
   'hud.worst': 'Worst stall',
+  'hud.calmStall': 'Waiting',
   'hud.worstShow': 'Show: {name}',
   'hud.stallsNext': 'Stalls: {n} — show the next one',
   'pin.worst': 'Worst stall — {name}',

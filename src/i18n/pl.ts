@@ -435,6 +435,7 @@ export const pl = {
   'status.WAITING_UPSTREAM.supplierWaits': 'Czeka na {goodAcc} — dostawca sam czeka na {supplierGoodAcc}',
   // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: localized
   'hud.worst': 'Najgorszy zastój',
+  'hud.calmStall': 'Postój',
   'hud.worstShow': 'Pokaż: {name}',
   'hud.stallsNext': 'Pokaż kolejny zastój ({n})',
   'pin.worst': 'Najgorszy zastój — {name}',

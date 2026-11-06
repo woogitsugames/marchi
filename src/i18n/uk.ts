@@ -400,6 +400,7 @@ export const uk: Dict = {
   "why.sharedOne": "Один постачальник ({who}) на {n} одержувачів — другий допоміг би.",
   "status.WAITING_UPSTREAM.supplierWaits": "Очікує на {good} — постачальник сам очікує на {supplierGood}",
   "hud.worst": "Найгірший простій",
+  "hud.calmStall": "Очікування",
   "hud.worstShow": "Показати: {name}",
   "hud.stallsNext": "Простої: {n} — наступний",
   "pin.worst": "Найгірший простій — {name}",

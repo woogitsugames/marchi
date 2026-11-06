@@ -400,6 +400,7 @@ export const ru: Dict = {
   "why.sharedOne": "Один поставщик ({who}) на {n} получателей — второй бы помог.",
   "status.WAITING_UPSTREAM.supplierWaits": "Ждёт {good} — поставщик сам ждёт {supplierGood}",
   "hud.worst": "Самый тяжёлый простой",
+  "hud.calmStall": "Ожидание",
   "hud.worstShow": "Показать: {name}",
   "hud.stallsNext": "Простои: {n} — показать следующий",
   "pin.worst": "Самый тяжёлый простой — {name}",

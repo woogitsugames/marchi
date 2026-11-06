@@ -400,6 +400,7 @@ export const nl: Dict = {
   "why.sharedOne": "Eén leverancier ({who}) voor {n} afnemers — een tweede zou helpen.",
   "status.WAITING_UPSTREAM.supplierWaits": "Wacht op {good} — leverancier wacht zelf op {supplierGood}",
   "hud.worst": "Ergste stilstand",
+  "hud.calmStall": "Wacht",
   "hud.worstShow": "Toon: {name}",
   "hud.stallsNext": "Stilstanden: {n} — toon volgende",
   "pin.worst": "Ergste stilstand — {name}",

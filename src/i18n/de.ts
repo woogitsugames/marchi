@@ -400,6 +400,7 @@ export const de: Dict = {
   "why.sharedOne": "Ein Lieferant ({who}) für {n} Abnehmer – ein zweiter wäre hilfreich.",
   "status.WAITING_UPSTREAM.supplierWaits": "Warten auf {good} – der Lieferant wartet selbst auf {supplierGood}",
   "hud.worst": "Schlimmster Stillstand",
+  "hud.calmStall": "Wartet",
   "hud.worstShow": "Zeigen: {name}",
   "hud.stallsNext": "Stopps: {n} – nächsten zeigen",
   "pin.worst": "Schlimmster Stillstand — {name}",

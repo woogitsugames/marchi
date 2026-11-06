@@ -400,6 +400,7 @@ export const hi: Dict = {
   "why.sharedOne": "एक आपूर्तिकर्ता ({who}) के {n} ग्राहक हैं — दूसरा मदद करेगा।",
   "status.WAITING_UPSTREAM.supplierWaits": "{good} की प्रतीक्षा — आपूर्तिकर्ता खुद {supplierGood} की प्रतीक्षा में है",
   "hud.worst": "सबसे बड़ी रुकावट",
+  "hud.calmStall": "प्रतीक्षा",
   "hud.worstShow": "दिखाएँ: {name}",
   "hud.stallsNext": "रुकावटें: {n} — अगली दिखाएँ",
   "pin.worst": "सबसे बड़ी रुकावट — {name}",

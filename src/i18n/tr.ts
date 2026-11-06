@@ -400,6 +400,7 @@ export const tr: Dict = {
   "why.sharedOne": "Bir tedarikçi ({who}), {n} alıcıya yetmeye çalışıyor — ikincisi yardımcı olur.",
   "status.WAITING_UPSTREAM.supplierWaits": "{good} bekleniyor — tedarikçi de {supplierGood} bekliyor",
   "hud.worst": "En kötü duraklama",
+  "hud.calmStall": "Bekliyor",
   "hud.worstShow": "Göster: {name}",
   "hud.stallsNext": "Aksamalar: {n} — sonrakini göster",
   "pin.worst": "En kötü duraklama — {name}",

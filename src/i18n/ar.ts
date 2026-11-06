@@ -400,6 +400,7 @@ export const ar: Dict = {
   "why.sharedOne": "مورّد واحد ({who}) لـ {n} من المستلمين — مورّد ثانٍ سيساعد.",
   "status.WAITING_UPSTREAM.supplierWaits": "بانتظار {good} — والمورّد نفسه ينتظر {supplierGood}",
   "hud.worst": "أسوأ توقف",
+  "hud.calmStall": "انتظار",
   "hud.worstShow": "اعرض: {name}",
   "hud.stallsNext": "التوقفات: {n} — اعرض التالي",
   "pin.worst": "أسوأ توقف — {name}",
