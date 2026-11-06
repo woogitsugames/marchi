@@ -550,7 +550,9 @@ export class Hud {
       ? t('seal.tempo.producer', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
       : pc.k === 'rank'
         ? t('seal.tempo.rank', { goodAcc: t(`goodAcc.${pc.good}` as MessageKey) })
-        : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
+        : pc.k === 'grow'
+          ? t('seal.tempo.grow', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
+          : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
     setHtml(this.tempo, `<span class="st-line" dir="auto">${esc(text)}</span>`);
     this.tempo.setAttribute('aria-label', `${text}. ${t('hud.worstShow', { name: buildingName(world, pc.producer) })}`);
   }
@@ -594,9 +596,11 @@ export class Hud {
     if (calmOnly !== this.alarm.classList.contains('is-calm')) this.alarm.classList.toggle('is-calm', calmOnly);
     if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
-      this.cure = pc.k === 'producer' || pc.k === 'rank' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
+      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
       const sig = pc.k === 'rank'
         ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
+        : pc.k === 'grow'
+        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.n}|${stalls.length}|${getLang()}`
         : pc.k === 'producer'
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
         : pc.k === 'fleet'
@@ -610,11 +614,12 @@ export class Hud {
       this.stallRow.classList.remove('is-crit', 'is-calm');
       this.stallRow.classList.add('is-pace');
       // no order in the free valley: its fleet card serves the rank, not an order's pace (day 9h)
-      setText(this.stallKick, t(pc.k === 'rank' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
+      setText(this.stallKick, t(pc.k === 'rank' || pc.k === 'grow' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
       const name = buildingName(world, pc.producer);
-      if (pc.k === 'rank') {
+      if (pc.k === 'rank' || pc.k === 'grow') {
         // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
-        const text = t('cause.paceRank', { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
+        // ...or lacks only renown (D-192): name one more producer of a standing chain
+        const text = t(pc.k === 'rank' ? 'cause.paceRank' : 'cause.paceGrow', { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
         // the whole line is this one text: .sc-text's own dir="auto" takes its direction (an English fallback in ar)
         setHtml(this.stallText, esc(text));
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));

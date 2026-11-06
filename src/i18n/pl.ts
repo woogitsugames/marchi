@@ -686,6 +686,7 @@ export const pl = {
   'seal.tempo.mud': 'tempo: błoto spowalnia wozy',
   'seal.tempo.fleet': 'tempo: kup wóz',
   'seal.tempo.rank': 'ranga: sprzedaj {goodAcc}',
+  'seal.tempo.grow': 'ranga: więcej {goodGen}',
   // short landscape cause chain: the middle links folded behind one row (D-111; localized)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
   // day 8c: the pace card (a slow order, not a stall) — localized
@@ -706,6 +707,8 @@ export const pl = {
   'fix.paceFleetEta': '{wagon} dojedzie po ładunek za {time}; drugi wóz odbierze go wcześniej.',
   'hud.rankCard': 'Droga do rangi',
   'cause.paceRank': 'Do rangi {rank} ({rankName}) brakuje towaru — postaw: {name}',
+  'cause.paceGrow': 'Do rangi {rank} ({rankName}) brakuje już tylko renomy — postaw jeszcze: {name}',
+  'fix.growWhy': 'Renoma {renown} z {need} na rangę {rankName}; towary i przepływ już są. Renoma rośnie ze sprzedaży: jeszcze jeden budynek ({name}) da więcej {goodGen}, a targ wciąż płaci za nie dobrą cenę.',
   'fix.rank': 'Postaw: {name}',
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
   'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',

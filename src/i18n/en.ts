@@ -682,6 +682,7 @@ export const en: FullDict = {
   'seal.tempo.mud': 'pace: mud slows the wagons',
   'seal.tempo.fleet': 'pace: buy a wagon',
   'seal.tempo.rank': 'rank: sell {goodAcc}',
+  'seal.tempo.grow': 'rank: more {goodGen}',
   // short landscape cause chain: the middle links folded behind one row (D-111)
   'why.more': '{n, plural, one {+# link between} other {+# links between}}',
   // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
@@ -702,6 +703,8 @@ export const en: FullDict = {
   'fix.paceFleetEta': '{wagon} reaches the load in {time}; a second wagon collects it sooner.',
   'hud.rankCard': 'Road to rank',
   'cause.paceRank': 'Rank {rank} ({rankName}) lacks a good — build: {name}',
+  'cause.paceGrow': 'Rank {rank} ({rankName}) lacks only renown now — build another: {name}',
+  'fix.growWhy': 'Renown {renown} of the {need} {rankName} needs; the goods and the flow are there. Renown grows with sales: another {name} makes more {goodGen}, and the market still pays a fair price for it.',
   'fix.rank': 'Build: {name}',
   'fix.rankWhy': 'Distinct goods sold: {sold} of the {goods} {rankName} needs. No {good} has reached the market yet — this building makes it.',
   'fix.paceFleetWhy': 'No wagon stood free for a minute. The forecast gives {seals}; a new wagon collects the load sooner and pays off before the seal.',
