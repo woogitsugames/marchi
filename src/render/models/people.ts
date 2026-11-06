@@ -274,9 +274,9 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     ab.add('metal', new CylinderGeometry(0.06, 0.065, 0.24, 7), { color: '#4f4d48', m: trs(0, -0.15, 1.0), ao: 0, dirt: 0.1 });
   } else if (kind === 'rake') {
     // collier's rake (charcoal burner): a long pole with a wooden head and short tines, to pull earth over the vents
-    rod(ab, 'wood', v3(0, -0.12, 0.0), v3(0, -0.5, 1.55), 0.018, 0.016, 5, handle);
-    box(ab, 'wood', 0.56, 0.05, 0.06, trs(0, -0.52, 1.57), { color: '#5d4a36', ao: 0, dirt: 0.3 });
-    for (let i = 0; i < 6; i++) rod(ab, 'wood', v3(-0.24 + i * 0.096, -0.53, 1.57), v3(-0.24 + i * 0.096, -0.66, 1.6), 0.01, 0.008, 3, { ...handle, color: '#4f3f2f' });
+    rod(ab, 'wood', v3(0, -0.12, 0.0), v3(0, -0.42, 1.25), 0.018, 0.016, 5, handle);
+    box(ab, 'wood', 0.56, 0.05, 0.06, trs(0, -0.44, 1.27), { color: '#5d4a36', ao: 0, dirt: 0.3 });
+    for (let i = 0; i < 6; i++) rod(ab, 'wood', v3(-0.24 + i * 0.096, -0.45, 1.27), v3(-0.24 + i * 0.096, -0.58, 1.3), 0.01, 0.008, 3, { ...handle, color: '#4f3f2f' });
   } else if (kind === 'shovel') {
     // maltster's wooden shovel (malthouse): a broad flat blade to turn the steeped grain
     rod(ab, 'wood', v3(0, -0.2, 0.3), v3(0, -0.38, 1.15), 0.018, 0.016, 5, handle);
@@ -344,7 +344,7 @@ export interface WorkerPose {
 
 /** Rest pose arm angle per kind: tools held so their ends stay clear of the ground. */
 const REST_ARM: Record<WorkerKind, number> = {
-  chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15, mallet: 0.3, rake: 0.45, shovel: 0.5, paddle: 0.4, trader: 0.6,
+  chop: 0.35, sack: 0.35, peel: -0.05, sawTop: 0, sawPit: 0.35, hoe: 0.8, net: -0.15, mallet: 0.3, rake: -0.55, shovel: 0.5, paddle: 0.4, trader: 0.6,
 };
 
 /** The hoe stroke (s) and the step the farmer takes back along the furrow after each stroke (m). */
@@ -411,8 +411,9 @@ export function workerPose(kind: WorkerKind, t: number, working: boolean, out: W
     // 4.2 s: reach up the mound with the rake, draw the earth down over a smoking vent
     const p = (t / 4.2) % 1;
     const k = smooth01(p / 0.4) - smooth01((p - 0.5) / 0.45);
+    // the rake held low along the slope: the arms lift by the bend so the head rides on the earth, not in it
     out.bend = 10 * D + 12 * D * k;
-    out.arm = 22 * D - 26 * D * k;
+    out.arm = -out.bend + 12 * D - 8 * D * k;
     return;
   }
   if (kind === 'shovel') {

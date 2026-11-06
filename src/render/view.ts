@@ -19,7 +19,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import type { World } from '../sim/index';
-import { bridgeIceUntil, isRaining, net, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
+import { bridgeIceUntil, castleLevel, isRaining, net, postOpen, seasonAt, seasonal, thawing, timeOfDay } from '../sim/index';
 import type { Overlay, PickResult, PlacementGhost, Quality, RoadPreview, ScreenAnchor, WorldView } from './api';
 import { BridgesView } from './bridgesView';
 import { DeckGhost } from './deckGhost';
@@ -111,6 +111,8 @@ class View implements WorldView {
   private worldGroup = new Group();
   private treeGroup = new Group();
   private netVer = -1;
+  /** Castle level × 2 + trading post open: the building looks that change without a network change (D-202). */
+  private looksKey = -1;
   private quality: Quality = 'high';
   private cssW = 1;
   private cssH = 1;
@@ -331,6 +333,7 @@ class View implements WorldView {
     if (!w || !this.roads) return;
     if (w.state.netVersion === this.netVer) return;
     this.netVer = w.state.netVersion;
+    this.looksKey = castleLevel(w.state) * 2 + (postOpen(w) ? 1 : 0);
     net(w);
     this.roads.rebuild(w);
     this.bridges.rebuild(this.roads.bridges, this.hf!.waterLevel);
@@ -360,6 +363,10 @@ class View implements WorldView {
 
   afterTick(): void {
     if (!this.world || !this.wagons) return;
+    // a rank-up opens the trading post (shutters, wares, the trader) or adds the castle tower without touching the
+    // road network: rebuild then too, not at the player's next road (D-202)
+    const looks = castleLevel(this.world.state) * 2 + (postOpen(this.world) ? 1 : 0);
+    if (looks !== this.looksKey) { this.looksKey = looks; this.netVer = -1; }
     if (this.world.state.netVersion !== this.netVer) this.syncNetwork();
     this.wagons.afterTick(this.world, performance.now());
     // winter ice on the wooden spans (D-170): only a visibility flag per tick

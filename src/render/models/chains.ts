@@ -432,7 +432,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   b.add('plaster', new TorusGeometry(R + 0.35, 0.22, 3, 20), { color: '#5d574f', m: trs(mx, 0.0, mz, Math.PI / 2, 0, 0, 1, 1, 0.35), ao: 0.2, dirt: 0.3 });
   // a dark smoke hole on top
   b.add('plaster', new CylinderGeometry(0.2, 0.2, 0.05, 8), { color: '#141210', m: trs(mx, H - 0.02, mz), ao: 0, dirt: 0, noise: 0 });
-  // ladder leaning against the mound, and a long rake
+  // ladder leaning against the mound (the collier carries the rake, D-200)
   {
     const a = v3(mx + 1.2, 0, mz + 2.75), t = v3(mx + 0.55, 1.75, mz + 0.65);
     for (const s of [-1, 1]) rod(b, 'wood', a.clone().setX(a.x + s * 0.22), t.clone().setX(t.x + s * 0.2), 0.035, 0.03, 4, { color: '#76624a' });
@@ -441,8 +441,6 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
       const p = a.clone().lerp(t, f);
       rod(b, 'wood', p.clone().setX(p.x - 0.22), p.clone().setX(p.x + 0.22), 0.02, 0.02, 4, { color: '#76624a', ao: 0 });
     }
-    rod(b, 'wood', v3(mx - 2.2, 0, mz + 1.9), v3(mx - 1.2, 1.5, mz + 0.9), 0.025, 0.025, 4, { color: '#7a6448' });
-    box(b, 'wood', 0.55, 0.06, 0.06, trs(mx - 2.25, 0.05, mz + 1.95, 0, 0.78), { color: '#6a5843' });
   }
   // second stack being built: central chimney stakes and two courses of upright billets
   const sx = 2.25, sz = -2.4;
@@ -464,7 +462,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   }
   // burner's hut: cone of poles covered in bark and sod, a dark doorway toward the yard
   const hx = 2.35, hz = 1.0;
-  b.add('bark', new CylinderGeometry(0.08, 1.35, 2.5, 10, 3, true), {
+  b.add('bark', new CylinderGeometry(0.08, 1.35, 2.5, 16, 3, true), {
     color: '#4a3f33',
     m: trs(hx, 1.2, hz),
     jitter: 0.06,
@@ -498,7 +496,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   return {
     gate: v3(-0.2, 0, 4), smoke: v3(mx, H + 0.1, mz), yard: { at: v3(2.1, 0, 3.05), yaw: Math.PI / 2 },
     // the collier at the foot of the mound, raking earth up over the vents (D-200)
-    workers: [{ kind: 'rake', at: v3(mx - 1.0, 0, mz + 2.6), yaw: Math.atan2(1.0, -2.6) }],
+    workers: [{ kind: 'rake', at: v3(mx + 0.78, 0, mz + 3.1), yaw: Math.atan2(-0.78, -3.1) }],
   };
 }
 
@@ -563,7 +561,7 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   for (const s of [-1, 1]) box(b, 'wood', 2.0, 0.08, 0.1, trs(tx, 0.64, tz + s * 0.45), { color: C.timberLight, ao: 0 });
   for (const s of [-1, 1]) box(b, 'wood', 0.1, 0.08, 1.0, trs(tx + s * 0.97, 0.64, tz), { color: C.timberLight, ao: 0 });
   // steeped grain heaped in the tub (the maltster turns it with his shovel, D-200)
-  b.add('cloth', new SphereGeometry(1, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a08a5c', m: trs(tx, 0.6, tz, 0, 0, 0, 0.8, 0.1, 0.34), noise: 0.2, noiseFreq: 12, ao: 0, dirt: 0 });
+  b.add('cloth', new SphereGeometry(1, 16, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a08a5c', m: trs(tx, 0.6, tz, 0, 0, 0, 0.8, 0.1, 0.34), noise: 0.2, noiseFreq: 12, ao: 0, dirt: 0 });
   const dx = (mx0 + mx1) / 2 + 0.7;
   sack(b, dx - 1.0, 0.85, 0.2);
   // the malt tubs by the door are the yard stock (the malthouse's malt, D-71, D-201)
