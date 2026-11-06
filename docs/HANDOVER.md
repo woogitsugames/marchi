@@ -1,18 +1,23 @@
-# Handover — MARCHIA (stan 2026-11-06 ~21:15 Europe/Brussels) — sesja `session_01V6ZttXS1AFjiGAx6Mvg1nL`
+# Handover — MARCHIA (stan 2026-11-06 ~23:15 Europe/Brussels) — sesja `session_01V6ZttXS1AFjiGAx6Mvg1nL`
 
 ## Stan teraz (ta sesja)
-- Repo w kontenerze: **`/workspace/marchi`**; worktree agentów: `/workspace/marchi-rank` (`claude/w-rank`),
-  `/workspace/marchi-perf` (`claude/w-perf`), symlink `node_modules`. Preview bazy: `npx vite preview --port 5193`.
+- Repo w kontenerze: **`/workspace/marchi`**; worktree: `/workspace/marchi-<nazwa>` (gałąź `claude/w-<nazwa>`), symlink
+  `node_modules` — **nigdy `git add -A` w worktree** (symlink trafił raz do commita i podmienił `node_modules` bazy;
+  `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
-- Baza = `main` = **e22bbd5**: testy **566/0**, build OK, `setup:android` OK (SDK 36).
-- Niedokończone z poprzedniej sesji: `w-onboard`, `w-postroad` i oddane `gpt/*` (73–78, 85–99) — **już scalone**. GPT: paczka 12
-  (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
-- W toku: deweloper `claude/w-rank` — karta rangi zna węglarza/słodownię/browar, gracz „karta” do rangi 5 (D-250..D-253);
-  deweloper `claude/w-perf` — budowa świata menu i kompilacja shaderów (D-255..D-258).
+- Baza = `main` = **ff5c6da** (6 XI ~23:15): testy **573/0**, build, smoke 0, layout 114/0. `setup:android` OK.
+  Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
+- Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
+  „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
+  budowa świata menu −23…−28 % CPU (geometria bit w bit), leniwe LOD-y wozów, **światła co 2. klatkę** (decyzja właściciela),
+  `precompile` przy `KHR_parallel_shader_compile` (do zmierzenia na Foldzie).
+- W toku: koordynator `claude/w-tut5` — samouczek budowania: odcięta chata zapełnia podwórze i **naprawdę staje** („brak
+  drogi”, 80 s gry, krok 7 wskazuje ×4), potem diagnoza (krok 5), potem droga (D-259); agent `claude/w-winter` — gołe korony
+  zimą (D-260..D-263, zrzuty do akceptacji); agent `claude/w-fame` — luka sławy card-30/60 do rangi 5 (D-264..D-267).
+- GPT: paczka 12 (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
 - **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
   liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
   pomoc także z mapy („?” na karcie) — TAK. Otwarte nadal: progi XIV/XV i wyzwanie kontraktu (po playteście).
-- Zrobione: **D-254 „?” na kartach budynku/wozu/rynku** → pomoc na temacie karty (`claude/w-help`, scalone).
 - Kolejka (następny wolny agent): (a) samouczek budowania, krok „dlaczego stoi” wywołany celowo — chata postawiona przed
   drogą stoi naprawdę (`NO_ROAD`), więc krok przyczyny przed krokiem drogi (bez komend od samouczka; nowy tekst w 17
   językach); (b) gołe korony drzew liściastych zimą (D-203 follow-up) + zrzuty do akceptacji; (c) research „dwa zamki”.
