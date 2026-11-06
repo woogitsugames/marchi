@@ -2465,3 +2465,21 @@ untouched, DECENT and every mission hash unchanged. Tests `tests/valley-grow.tes
 `docs/shots/valley-grow-{card,sheet,ghost}-412x915.jpg` (`tools/valley-grow-shots.mjs`, staged state).
 Owner question: ship the card (UI) instead of lowering renown thresholds (the research's balance alternative takes
 DECENT out of its test windows). (decided — owner 2026-11-06)
+
+**D-197 — Playtest S6 "pełny magazyn" moves to mission VI; the `warehouse-full` fixture plays m6 with no commands (decided — owner 2026-11-06).**
+FIXTURE_VERSION 1 reached a full granary in mission I only by demolishing the castle's spur road, so the worst-stall
+card named the cut-off castle, not the granary (D-188). Owner decision 08:45: S6 belongs in mission VI, where the
+full granary is the lesson and `buildable: ['warehouse']` lets the player build a second one. The fixture now plays
+m6 as dealt from tick 0 — no command at all — and stops (paused) when, for 1 s in a row: the small granary
+(`capOverride` 12, id 4) is `STORAGE_FULL` with its **own stock** at 12/12 (not loads booked on their way in), the
+sawmill is `OUTPUT_FULL` with `blockedBy` = that granary, and `rankStalls` puts that granary first as a critical,
+non-calm stall (what the HUD's worst-stall card shows). Result: tick 1310 (131.0 s), focus building 4, hash
+`052fbbbd66b7d912`; also waiting on it: farms 7 and 8, woodcutter 1; the first letter (24 bread by 06:00) is open,
+castle 6/24. `checkFixture` checks the same (plus `calmWhy` null and a producer blocked by it), so it works on a
+hand-prepared world too. The card's Why sheet chains "Spichlerz pełny" → large granary id 5 "Brak drogi do bramy"
+with the "Zbuduj drogę: 2 srebra" cure — the sim's true root (no reachable room); success in PROTOCOL counts
+building a second granary or connecting the large one, not buying a wagon. Known: granaries 4 and 5 tie on stall
+time (both from tick 0) and the ranking's lower-id rule picks 4 — deterministic and pinned by the test. `fixtures.ts`
+now reads `rankStalls`/`calmWhy` from `src/ui/stalls.ts` (pure reads, no DOM). The moderator start list (D-189) shows
+S6 under mission VI; a test ties each fixture start's mission to `fixtureMission`. S6 overlaps S9 (same mission,
+same granary): PROTOCOL says not to give both to one participant. Shots `docs/shots/playtest-warehouse-full{,-card}.jpg`.

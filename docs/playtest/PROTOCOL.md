@@ -154,27 +154,20 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 - **Co mierzyć:** czas do poprawnego rozpoznania spowolnienia, dotknięcia, otwarcie wozu, przeczytanie pozycji „tempo”, proponowana zmiana nawierzchni.
 - **Sukces:** diagnoza **<30 s**. **Uwaga:** w sim nie istnieje `MUD_SLOW` jako `WagonStatus`; to spowolnienie, **nie przestój**. Raportuj S5 osobno, nie wliczaj do głównego wskaźnika „co stoi”.
 
-### S6 — Pełny spichlerz (misja I; debug-fixtura operatora)
+### S6 — Pełny spichlerz (misja VI; debug-fixtura operatora)
 
-- **Start (preferowany, D-185):** `?fixture=warehouse-full&lang=pl&debug=1` — prawdziwie zapełniony spichlerz z poprawną księgą; **przeczytaj ograniczenia** w „Fixtury debugowe” (odcięty zamek jest częścią tego stanu). Wtedy pomiń ręczne przygotowanie poniżej.
-- **Start ręczny (zapasowy, sztuczny):** `?play=m1&speed=0`. W m1 istnieje `warehouse`, pojemność **60** (`BUILDINGS.warehouse.storeCap`); w m2/m3 nie ma magazynu startowego. Obecne URL **nie mają** przełącznika „pełny magazyn”.
-- **Przygotowanie przez prowadzącego** w konsoli debugowego WebView, na świeżej m1 (bez `ff`), zanim tester zobaczy telefon:
-  ```js
-  const a = window.__marchia.app, s = a.world.state;
-  const wh = s.buildings.find(b => b.type === 'warehouse');
-  if (!wh || wh.stock.grain !== 0 || wh.incoming.grain !== 0) throw Error('Nieświeży stan');
-  wh.stock.grain = 60;
-  s.ledger.produced.grain += 60; // wyrównanie księgi dla ręcznie dodanego towaru
-  a.loop.tickOnce(); // przeliczenie statusów (speed nadal 0)
-  if (wh.status.k !== 'STORAGE_FULL') throw Error('Magazyn nie jest pełny; przerwij próbę');
-  ```
-  To **sztuczna fixtura poznawcza**, nie dowód, że normalna rozgrywka naturalnie zapełnia magazyn. Nie modyfikuj poziomu przez `save` i nie przenoś takiego stanu do innych zadań.
-- **Preflight:** karta magazynu pokazuje `60/60`, `STORAGE_FULL`; budynek można znaleźć na mapie. Jeżeli przestanie być pełny po wznowieniu czasu, przygotuj od nowa i pozostań na pauzie.
-- **Poprawna przyczyna:** brak miejsca w magazynie na dalszy odbiór towarów; nie brak woźnicy ani brak towaru.
-- **Co mierzyć:** czas, dotknięcia, odnalezienie magazynu/karty „Dlaczego stoi?”, odczyt `60/60`, poprawna sugestia zwolnienia miejsca.
-- **Sukces:** diagnoza **<30 s**; wtórnie wskazuje konieczność opróżnienia/zwiększenia miejsca. **Nie wymagaj postawienia nowego magazynu w m1**: narzędzie budowy nie jest tam udostępnione. Wyjątkiem w misjach jest m6, gdzie `buildable: ['warehouse']` pozwala postawić spichlerz.
+**Decyzja właściciela 2026-11-06 (D-197):** S6 przeniesiony z misji I do **misji VI** (`m6`), gdzie pełny spichlerz powstaje sam, a gracz **może budować spichlerz** (`buildable: ['warehouse']`). Wyników S6 z `FIXTURE_VERSION=1` (m1, odcięty zamek) nie łącz z wynikami wersji 2.
 
-### Fixtury debugowe — **ZAIMPLEMENTOWANE** (D-185…D-187, `FIXTURE_VERSION=1`)
+- **Start:** `?fixture=warehouse-full&lang=pl&debug=1` — m6 rozgrywana od ticku 0 **bez żadnej komendy** (bez cięcia dróg, bez kupowania wozów), zatrzymana na pauzie po **131,0 s** gry (tick 1310). Szczegóły w „Fixtury debugowe”. Ręcznego przygotowania (dopisywania towaru w konsoli) **nie stosuj**.
+- **Stan:** mały spichlerz koło pól (budynek id **4**, `capOverride=12`) ma **12/12 zboża we własnym zapasie** i `STORAGE_FULL`. Trzy gospodarstwa dają więcej zboża, niż przerobi jeden młyn, więc nadwyżka zapełnia spichlerz. Czekają na niego: tartak (id 3, `OUTPUT_FULL`, 12 desek, `blockedBy=4`), dwa gospodarstwa (id 7, 8) i drwal (id 1). Karta **„Najgorszy zastój”** wskazuje **ten spichlerz** (krytyczny, nie „spokojny”); drugi na pieczęci alarmu jest duży spichlerz (id 5, 60 miejsc) bez drogi (`NO_ROAD`). Pierwszy list (24 chleby do 06:00) jest otwarty; zamek ma 6 chlebów, 10 wozów jeździ.
+- **Co widzi uczestnik (zrzuty `docs/shots/playtest-warehouse-full*.jpg`):** karta „NAJGORSZY ZASTÓJ — **Spichlerz: spichlerz pełny**”, pieczęć alarmu z liczbą 5; tablica listu „Dostawa 1 do 6:00”, 6/24 chleba. Arkusz „Dlaczego stoi?” spichlerza 4: „Spichlerz pełny” **bo** „Spichlerz — PRZYCZYNA — Brak drogi do bramy” (duży spichlerz id 5), wiersz **„12/12 — brak miejsca na odbiór”**, „Nie mogą oddać towaru: Chata drwala, Tartak, Gospodarstwo” i przycisk **„Zbuduj drogę: 2 srebra”** (droga do dużego spichlerza). Gra prowadzi więc do korzenia „brak dostępnego miejsca”: pełny mały spichlerz, a duży stoi bez drogi. Oba budynki nazywają się „Spichlerz” — jeśli uczestnik się na tym myli, zanotuj `issue_codes=CAP12`.
+- **Preflight:** `f.ok === true`, `f.version === 2`, `f.focus` = budynek 4; karta spichlerza (`openId=4`, tylko kontrola) pokazuje `12/12` i brak miejsca na odbiór.
+- **Poprawna przyczyna:** mały spichlerz jest **pełny** (12/12) — nie ma gdzie odłożyć desek i zboża, więc tartak i gospodarstwa stoją. Nie: „za mało wozów”, „brak towaru”, „tartak się zepsuł”. Wskazanie, że **duży spichlerz nie ma drogi**, jest trafnym rozwinięciem tej samej przyczyny (brak dostępnego miejsca), nie błędem.
+- **Co mierzyć:** czas, dotknięcia, otwarcie karty spichlerza lub „Dlaczego stoi?”, odczyt `12/12`, czy przeszedł łańcuchem tartak → spichlerz (`followed_chain`).
+- **Sukces:** diagnoza **<30 s** (`correct=1` za brak miejsca w spichlerzu, z karty lub mapy). **Działanie wtórne (`action_correct=1`):** każde z trzech — **postawienie drugiego spichlerza** (w m6 dozwolone i jest jedną ze zmierzonych zwycięskich strategii), **połączenie dużego spichlerza drogą** albo jasny plan jednego z nich z uzasadnieniem „żeby było gdzie odkładać”. Kupno wozu **nie** jest poprawnym działaniem. Nie wymagaj ukończenia kontraktu.
+- **Nakładanie z S9:** S9 (`play=m6&ff=180`) to ta sama misja i ten sam spichlerz, ale bez gwarancji stanu i z innym pytaniem (porównanie pojemności 12 vs 60). U jednego uczestnika nie dawaj obu — S9 po S6 nie jest już niepodpowiadany; w kohorcie A używaj S6, S9 tylko w kohorcie misji IV–VI dla osób, które nie miały S6.
+
+### Fixtury debugowe — **ZAIMPLEMENTOWANE** (D-185…D-187, D-197, `FIXTURE_VERSION=2`)
 
 `?fixture=<id>&lang=pl&debug=1` startuje misję od ticku 0 z jej własnym seedem i rozgrywa **prawdziwą symulację** (`step()` + zwykłe komendy gracza, `src/game/fixtures.ts`) do chwili, gdy oczekiwany zastój trwa nieprzerwanie 1 s; potem gra stoi na **pauzie** (`speed` z URL może to zmienić — nie zmieniaj). Nic nie jest dopisywane ręcznie do stanu: towary, rezerwacje i statusy pochodzą z symulacji, więc księga i inwarianty są prawdziwe. Przebieg jest deterministyczny — ten sam tick, te same ID i ten sam hash stanu na każdym urządzeniu (sprawdzone headless i w Chromium). Po zbudowaniu stan jest **walidowany** (`checkFixture`: status, inwarianty, brak niewyjaśnionego zastoju, misja trwa).
 
@@ -187,10 +180,10 @@ Każde zadanie zaczyna się **jednakowym, niepodpowiadającym pytaniem**: „Co 
 | S2 | `?fixture=bridge-cut-in-transit&lang=pl&debug=1` | m2, 39,4 s | wóz id **12** („Wóz 2”, 6 drewna do Tartaku) | Gdy załadowany wóz zmierza do mostu `x=51`, skrypt rozbiera **jedną** wolną komórkę przęsła na jego trasie (komenda `demolish`); 2 s później wóz ma `NO_ROUTE` (drugi wóz, id 13, również). Karta „Najgorszy zastój” w tej chwili wskazuje **zamek** (czeka na deski od początku gry) — to prawdziwy, starszy zastój, nie błąd fixtury |
 | S3 | `?fixture=all-busy&lang=pl&debug=1` | m2, 159,5 s | budynek id **9** (Piekarnia) | Bez komend. 7 wozów, każdy z pracą; piekarnia `NO_WAGON/ALL_BUSY` (mąka), źródło osiągalne, flota nie stoi przy moście (`heldWagon=-1`, `busyOutOfReach=-1`). Druga piekarnia (id 10) ma ten sam status |
 | S4 | `?fixture=bridge-jam&lang=pl&debug=1` | m2, 98,2 s | wóz id **11** („Wóz 1”) | Bez komend. Wóz 1 z 4 zbożem czeka przy drewnianym moście na Wóz 4 jadący z naprzeciwka (jeden pas), od ≥2 s |
-| S6 | `?fixture=warehouse-full&lang=pl&debug=1` | m1, 612,5 s | budynek id **7** (Spichlerz) | Komendy na starcie: most z lekcji (`x=41`), 4 wozy, **rozbiórka 1 komórki drogi do zamku** `(72,50)`. Deski, chleb i nadmiar mąki trafiają do spichlerza, aż `STORAGE_FULL`. Patrz ograniczenia |
+| S6 | `?fixture=warehouse-full&lang=pl&debug=1` | m6, 131,0 s | budynek id **4** (mały spichlerz, 12 miejsc) | **Bez komend** (D-197). Spichlerz 12/12 zboża we własnym zapasie, `STORAGE_FULL`; tartak (id 3) `OUTPUT_FULL` → 4; karta „Najgorszy zastój” wskazuje spichlerz 4, drugi na pieczęci alarmu duży spichlerz id 5 (`NO_ROAD`). Pierwszy list otwarty |
 
 **Ograniczenia, które prowadzący musi znać:**
-- **S6 nie jest „czystym” pełnym spichlerzem.** W misji I bez przecięcia czegoś za spichlerzem prawdziwa symulacja nie zapełnia go przed terminem (zamek bierze deski i chleb, młyn i piekarnia nadążają za polem). Fixtura odcina więc zamek. Skutek: karta „Najgorszy zastój” pokazuje **„Zamek: brak dojazdu do zapasów”**, kontrakt ma 0/30 i 0/20, a do śniegu zostaje **1:48** (z komunikatem „Zostały 2 minuty”). Karta spichlerza: wiersz przyczyny **„60/60 — brak miejsca na odbiór”** (zapas + ładunki w drodze, tak liczy symulacja), pasek „W spichlerzu: 35/60” z kreskowanym przychodem. Na neutralne pytanie uczestnik najpewniej wskaże odcięty zamek — **to poprawna przyczyna korzenia**. Dla S6 zapisuj osobno: `correct` = rozpoznaje brak miejsca w spichlerzu (z kartą lub mapą), `notes_no_pii` = czy wskazał także odcięty zamek. Decyzja, czy S6 w tej postaci liczyć do głównego wskaźnika, należy do właściciela (BACKLOG).
+- **S6 (wersja 2):** karta „Najgorszy zastój” remisuje czasem zastoju z dużym spichlerzem bez drogi (id 5, oba stoją od startu); o kolejności decyduje niższe ID, deterministycznie — test pilnuje, że karta pokazuje spichlerz 4. Po wznowieniu czasu spichlerz może na chwilę odzyskać miejsce, a karta przejść na duży spichlerz; nie wznawiaj przed oddaniem telefonu.
 - **S2:** wznowienie czasu na ponad ~20 s anuluje zadanie odciętego wozu; nie zostawiaj gry na ×1 przed oddaniem telefonu.
 - Wartości z tabeli (czas stopu, ID) są przypięte w `tests/playtest-fixtures.test.ts`. Zmiana symulacji, która je przesuwa, musi zaktualizować tę tabelę i podbić `FIXTURE_VERSION`; wyników z różnych wersji fixtur nie mieszaj.
 
@@ -230,7 +223,7 @@ console.log(s.mission.id, s.tick, f.focus.kind === 'wagon'
 ### S9 — Mały spichlerz blokuje odpływ towaru (misja VI)
 
 - **URL kandydacki:** `?play=m6&ff=180&speed=0` (ewentualnie 120/240/300 s; wybierz tylko stan pozytywnie zweryfikowany).
-- **Fakty z kodu:** mały spichlerz koło pól ma `capOverride=12` (nie 20 ani 60). Duży magazyn przy tartaku ma standardowe **60** miejsc, lecz początkowo jest oddzielony od drogi. Misja VI **pozwala budować warehouse**; nie przenoś na nią zakazu budowania z S6/m1. Kontrakt: 24 chleby do 06:00, następnie 60 desek do 11:00.
+- **Fakty z kodu:** mały spichlerz koło pól ma `capOverride=12` (nie 20 ani 60). Duży magazyn przy tartaku ma standardowe **60** miejsc, lecz początkowo jest oddzielony od drogi. Misja VI **pozwala budować warehouse** (to samo co S6 od D-197). Kontrakt: 24 chleby do 06:00, następnie 60 desek do 11:00.
 - **Preflight:** `mission.id === 'm6'`; zlokalizuj magazyn o `capOverride === 12`; sprawdź jego zajętość łącznie z przychodzącymi rezerwacjami i faktyczny `STORAGE_FULL`. Do diagnozy łańcucha tartak → spichlerz wymagaj dodatkowo `OUTPUT_FULL` u tartaku oraz odpowiedniego `blockedBy`, jeżeli ten wątek jest przedmiotem pomiaru.
 - **Poprawna przyczyna:** mały spichlerz nie ma wolnego miejsca; nadwyżki zboża konkurują o pojemność, co może zablokować odbiór kolejnych towarów. Samo „za mało wozów” jest błędne.
 - **Działanie wtórne:** połączyć większy spichlerz z siecią lub postawić nowy magazyn (`buildable`); odnotuj, czy osoba **wie, dlaczego** to pomoże, bez wymogu ukończenia kontraktu.
