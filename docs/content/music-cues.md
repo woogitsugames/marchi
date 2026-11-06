@@ -10,7 +10,7 @@ normalizacji i wpisu pochodzenia według `docs/ASSETS.md` i `docs/legal/`.
 | Miejsce / cue | Nastrój | Tempo | Instrumenty | Długość | Pętla |
 | --- | --- | ---: | --- | ---: | --- |
 | Menu | spokojne zaproszenie | 72 BPM | lutnia, flet prosty, fidel | 60 s | tak |
-| Misja | skupienie, ruch | 96 BPM | lutnia, bęben obręczowy, fidel | 75 s | tak |
+| Misja | skupienie, ruch | 96 BPM | lutnia, bęben ramowy, fidel | 75 s | tak |
 | Zima | chłód i ostrożność | 66 BPM | fidel, flet prosty, cichy bęben ramowy | 60 s | tak |
 | List końcowy — wygrana | powściągliwe spełnienie | 76 BPM | lutnia, fidel, flet prosty | 20 s | nie |
 | List końcowy — przegrana | zaduma bez kary | 60 BPM | fidel, lutnia | 20 s | nie |
@@ -24,7 +24,7 @@ normalizacji i wpisu pochodzenia według `docs/ASSETS.md` i `docs/legal/`.
 - **EN:** Instrumental medieval valley atmosphere, 72 BPM. Lute, recorder and fiddle; calm, spare melody. Gentle beginning and ending suitable for looping, no voice.
 
 ### Misja / Mission
-- **PL:** Instrumentalny utwór do układania szlaków, 96 BPM. Lutnia, fidel i cichy bęben obręczowy, miarowy puls bez napięcia bitewnego. Pętla, bez głosu.
+- **PL:** Instrumentalny utwór do układania szlaków, 96 BPM. Lutnia, fidel i cichy bęben ramowy, miarowy puls bez napięcia bitewnego. Pętla, bez głosu.
 - **EN:** Instrumental route-building cue, 96 BPM. Lute, fiddle and quiet frame drum, steady pulse without battle tension. Loop, no voice.
 
 ### Zima / Winter
@@ -46,3 +46,9 @@ normalizacji i wpisu pochodzenia według `docs/ASSETS.md` i `docs/legal/`.
 ### Posterunek / Trading post
 - **PL:** Spokojny ruch przy posterunku handlowym, 90 BPM. Lutnia, flet prosty i lekka perkusja ręczna; powtarzalny motyw pozostawia miejsce na odgłosy handlu. Pętla, bez głosu.
 - **EN:** Calm activity at a trading post, 90 BPM. Lute, recorder and light hand percussion; a repeating motif leaves room for market sounds. Loop, no voice.
+
+## Uwaga integracji
+
+W grze są już utwory `public/assets/music/` dla menu (`menu-*`), misji (`play-*`), deszczu (`rain-*`),
+wygranej (`won-*`) i przegranej (`lost-*`) — zob. `docs/ASSETS.md`. Nowe zamówienia z tego arkusza to przede wszystkim
+**zima**, **dolina ranga 4–5** i **posterunek**; menu/misja/wygrana/przegrana tylko jako ewentualne warianty.
