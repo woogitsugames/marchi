@@ -106,9 +106,14 @@ export class VegetationView {
     this.apron = placeApron(hf);
   }
 
-  /** Bake (or re-bake at another cell size) the far-card atlases. */
-  bake(renderer: WebGLRenderer, cellPx: number): void {
-    bakeTreeBillboards(renderer, cellPx);
+  /** Bake (or re-bake at another cell size or bare level, D-260) the far-card atlases. */
+  bake(renderer: WebGLRenderer, cellPx: number, bare = 0): void {
+    bakeTreeBillboards(renderer, cellPx, bare);
+  }
+
+  /** Deciduous crowns 0 (in leaf) … 1 (bare) for the near trees and the ground-cover shrubs (D-260). */
+  setBare(bare: number): void {
+    treeUniforms.uBare.value = bare;
   }
 
   setShadows(on: boolean): void {
