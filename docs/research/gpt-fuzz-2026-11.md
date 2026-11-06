@@ -13,7 +13,9 @@ W misji m2, przy 4000 monet, po zburzeniu komórki drogi 2937 w ticku 2065 wóz 
 
 ## Późna gra
 
-Dodatkowe `node --import tsx tools/fuzz-late.ts --runs 100` zostało uruchomione i nadal trwało w chwili przygotowania raportu; wynik nie jest jeszcze znany. Ten fragment zlecenia pozostaje nieukończony.
+`node --import tsx tools/fuzz-late.ts --runs 100`: 100 przebiegów, jeden błąd `stuck`, kod wyjścia 1; 38 961 jednostek sprzedanych w posterunku i 24 667 wozoticków przy zamkniętym przez lód moście. Seed 91, snapshot valley-75: co najmniej dwa wozy pozostają w `BRIDGE_JAM` ponad 3000 ticków. Test `tests/known-failing/fuzz-late-stuck-91.test.ts` odtwarza go z oryginalnego seeda i potwierdzono go osobnym uruchomieniem.
+
+**Błąd narzędzia minimalizującego:** `shrink` błędnie porównuje bezwzględne ticki poleceń snapshotu z długością scenariusza mierzoną względnie. Wypisane przez nie „0 cmds” nie odtwarza usterki — zweryfikowano to uruchomieniem pustego scenariusza. Dlatego test korzysta z oryginalnego seeda, a nie z wadliwego wyniku minimalizacji. Test ten nie jest jeszcze minimalny.
 
 ## Walidacja
 
