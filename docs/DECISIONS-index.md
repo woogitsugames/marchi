@@ -221,3 +221,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-256 | — | Lazy wagon rigs and cargo; shared cached models are not disposed with a view | decided | sim |
 | D-257 | 2026-11-06 | Time-of-day lights refresh every 2nd frame (owner decision 2026-11-06, BACKLOG P2 allocator) | decided | inne |
 | D-258 | — | With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built | decided | UI |
+| D-260 | 2026-11-06 | Deciduous crowns go bare in winter, conifers stay green (owner decision 2026-11-06, follow-up of D-203) | decided | inne |
+| D-261 | — | The bare crown: a woodcut twig spray in the leaf texture, thin scaffold branches, a third of the cards open | decided | render |
+| D-262 | — | Shadows and far trees turn bare too: a leaf depth material, the far atlas re-baked in quarter steps | decided | inne |
+| D-263 | — | Cost of the bare winter trees and the acceptance shots | decided | inne |
