@@ -696,7 +696,7 @@ export const tr: Dict = {
   "tutorial.build.step0": "Yeni bir vadi. Bir binayı nasıl yerleştirip yollara bağlayacağını birkaç adımda göstereyim mi?",
   "tutorial.build.step1": "İnşa menüsünü aç ve bir oduncu kulübesi seç. Maliyetine bak.",
   "tutorial.build.step2": "Önizlemeyi ormanın yanında bir yere taşı. Oraya inşa edilip edilemeyeceğini gösterir. Sonra “Yerleştir”.",
-  "tutorial.build.step3": "“Yol” aracını seç. Oduncu kulübesini mevcut yol ağına bağla.",
+  "tutorial.build.step3": "Oduncu kulübesini mevcut yol ağına bağla: kartındaki düğmeyle ya da “Yol” aracıyla.",
   "tutorial.build.step4": "Oduncu kulübesini aç ve ne yaptığına bak.",
   "tutorial.build.step5": "İş durdu. Karttaki nedene ya da “Bu ne demek?” bağlantısına dokunup kontrol et.",
   "tutorial.build.step6": "Yolları ve işi kartlarında inceleyebilirsin. Vadiye dön ve onu kendi bildiğin gibi büyüt.",

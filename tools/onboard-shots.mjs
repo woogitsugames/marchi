@@ -53,7 +53,8 @@ for (const [w, h] of sizes) {
   await shot('s1b');
   await tapSel('.build-shelf [data-b="pick:woodcutter"]');
   await waitStep(2);
-  await page.evaluate(({ x, y }) => { const a = window.__marchia.app; a.build.facing = 0; a.build.manualFacing = true; a.build.moveTo((y + 1) * a.world.terrain.w + x + 1); }, SITE);
+  await page.evaluate(({ x, y }) => { const a = window.__marchia.app; a.build.facing = 0; a.build.manualFacing = true; const c = (y + 1) * a.world.terrain.w + x + 1; a.build.moveTo(c); a.frameCells([c]); }, SITE);
+  await page.waitForTimeout(1500);
   await shot('s2');
   await tapSel('.build-shelf [data-b="place"]');
   await page.waitForFunction(() => (window.__marchia.app.buildTut?.current ?? -1) >= 3, null, { timeout: 90000 });

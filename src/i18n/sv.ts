@@ -696,7 +696,7 @@ export const sv: Dict = {
   "tutorial.build.step0": "En ny dal. Ska jag visa i några steg hur du placerar en byggnad och ansluter den till vägarna?",
   "tutorial.build.step1": "Öppna byggmenyn och välj en huggarstuga. Kontrollera kostnaden.",
   "tutorial.build.step2": "Flytta förhandsvisningen till en plats vid skogen. Den visar om du kan bygga där. Sedan ”Placera”.",
-  "tutorial.build.step3": "Välj verktyget ”Väg”. Anslut huggarstugan till det befintliga vägnätet.",
+  "tutorial.build.step3": "Anslut huggarstugan till det befintliga vägnätet – med knappen på dess kort eller verktyget ”Väg”.",
   "tutorial.build.step4": "Öppna huggarstugan och se vad den gör.",
   "tutorial.build.step5": "Arbetet står still. Tryck på orsaken på kortet, eller på ”Vad betyder det?”, och kontrollera den.",
   "tutorial.build.step6": "Vägar och arbete kan granskas i sina kort. Gå tillbaka till dalen och bygg ut den på ditt sätt.",

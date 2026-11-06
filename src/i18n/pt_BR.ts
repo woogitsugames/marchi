@@ -696,7 +696,7 @@ export const pt_BR: Dict = {
   "tutorial.build.step0": "Um vale novo. Quer ver em poucos passos como colocar uma construção e ligá-la às estradas?",
   "tutorial.build.step1": "Abra o menu de construção e escolha uma cabana do lenhador. Veja o custo.",
   "tutorial.build.step2": "Mova a prévia para um lugar perto da floresta. Ela mostra se dá para construir ali. Depois, “Colocar”.",
-  "tutorial.build.step3": "Escolha a ferramenta “Estrada”. Ligue a cabana do lenhador à rede de estradas existente.",
+  "tutorial.build.step3": "Ligue a cabana do lenhador à rede de estradas existente — com o botão no cartão dela ou com a ferramenta “Estrada”.",
   "tutorial.build.step4": "Abra a cabana do lenhador e veja o que ela está fazendo.",
   "tutorial.build.step5": "O trabalho parou. Toque na causa no cartão, ou em “O que significa?”, e confira.",
   "tutorial.build.step6": "Estradas e trabalho podem ser conferidos nos cartões. Volte ao vale e faça-o crescer do seu jeito.",

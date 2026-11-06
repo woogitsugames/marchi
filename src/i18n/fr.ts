@@ -696,7 +696,7 @@ export const fr: Dict = {
   "tutorial.build.step0": "Une nouvelle vallée. Voulez-vous voir en quelques étapes comment poser un bâtiment et le relier aux routes ?",
   "tutorial.build.step1": "Ouvrez le menu de construction et choisissez une cabane du bûcheron. Vérifiez son coût.",
   "tutorial.build.step2": "Déplacez l’aperçu vers un endroit près de la forêt. Il indique si l’on peut y bâtir. Puis « Placer ».",
-  "tutorial.build.step3": "Choisissez l’outil « Route ». Reliez la cabane du bûcheron au réseau de routes existant.",
+  "tutorial.build.step3": "Reliez la cabane du bûcheron au réseau de routes existant : avec le bouton de sa fiche ou l’outil « Route ».",
   "tutorial.build.step4": "Ouvrez la cabane du bûcheron et regardez ce qu’elle fait.",
   "tutorial.build.step5": "Le travail est à l’arrêt. Touchez la cause sur la fiche, ou « Qu’est-ce que ça veut dire ? », et vérifiez-la.",
   "tutorial.build.step6": "Les routes et le travail se vérifient dans leurs fiches. Retournez à la vallée et développez-la à votre façon.",

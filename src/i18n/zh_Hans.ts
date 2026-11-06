@@ -696,7 +696,7 @@ export const zh_Hans: Dict = {
   "tutorial.build.step0": "新的山谷。要不要用几步演示如何放置建筑并把它接上道路？",
   "tutorial.build.step1": "打开建造菜单，选择伐木小屋。查看它的花费。",
   "tutorial.build.step2": "把预览移到森林旁的地方，它会显示那里能否建造。然后点“放置”。",
-  "tutorial.build.step3": "选择“道路”工具，把伐木小屋接入现有道路网。",
+  "tutorial.build.step3": "把伐木小屋接入现有道路网：用它卡片上的按钮，或用“道路”工具。",
   "tutorial.build.step4": "打开伐木小屋，看看它在做什么。",
   "tutorial.build.step5": "工作停滞了。点卡片上的原因或“这是什么意思？”查看。",
   "tutorial.build.step6": "道路和工作都能在各自的卡片里查看。回到山谷，按你的方式发展它。",

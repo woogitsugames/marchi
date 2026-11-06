@@ -753,7 +753,7 @@ export const en: FullDict = {
   'tutorial.build.step0': 'A new valley. Shall I show you, in a few steps, how to place a building and join it to the roads?',
   'tutorial.build.step1': 'Open the build menu and select a woodcutter\'s hut. Check its cost.',
   'tutorial.build.step2': 'Move the preview to a place by the forest. It shows whether you can build there. Then “Place”.',
-  'tutorial.build.step3': 'Select the Road tool. Join the woodcutter\'s hut to the existing road network.',
+  'tutorial.build.step3': 'Join the woodcutter\'s hut to the existing road network — with the button on its card or the Road tool.',
   'tutorial.build.step4': 'Open the woodcutter\'s hut and see what it is doing.',
   'tutorial.build.step5': 'Work has stalled. Tap the cause on the card, or “What does it mean?”, and check it.',
   'tutorial.build.step6': 'Roads and work can be inspected in their cards. Return to the valley and grow it your way.',

@@ -696,7 +696,7 @@ export const es: Dict = {
   "tutorial.build.step0": "Un valle nuevo. ¿Te muestro en pocos pasos cómo colocar un edificio y unirlo a los caminos?",
   "tutorial.build.step1": "Abre el menú de construcción y elige una cabaña del leñador. Mira su coste.",
   "tutorial.build.step2": "Mueve la vista previa a un lugar junto al bosque. Indica si se puede construir allí. Luego, «Colocar».",
-  "tutorial.build.step3": "Elige la herramienta «Camino». Une la cabaña del leñador a la red de caminos existente.",
+  "tutorial.build.step3": "Une la cabaña del leñador a la red de caminos existente: con el botón de su ficha o con la herramienta «Camino».",
   "tutorial.build.step4": "Abre la cabaña del leñador y mira qué está haciendo.",
   "tutorial.build.step5": "El trabajo está parado. Toca la causa en la ficha, o «¿Qué significa?», y revísala.",
   "tutorial.build.step6": "Los caminos y el trabajo se revisan en sus fichas. Vuelve al valle y hazlo crecer a tu manera.",

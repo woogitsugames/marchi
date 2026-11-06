@@ -757,7 +757,7 @@ export const pl = {
   'tutorial.build.step0': 'Nowa dolina. Pokazać w kilku krokach, jak postawić budynek i połączyć go z drogami?',
   'tutorial.build.step1': 'Otwórz budowanie i wybierz chatę drwala. Sprawdź jej koszt.',
   'tutorial.build.step2': 'Przesuń podgląd na miejsce przy lesie — pokaże, czy można tam budować. Potem „Postaw”.',
-  'tutorial.build.step3': 'Wybierz narzędzie „Droga”. Połącz drogę przy chacie drwala z istniejącą siecią.',
+  'tutorial.build.step3': 'Połącz chatę drwala z istniejącą siecią dróg — przyciskiem na jej karcie albo narzędziem „Droga”.',
   'tutorial.build.step4': 'Otwórz chatę drwala i sprawdź, co robi.',
   'tutorial.build.step5': 'Praca stoi. Dotknij przyczyny na karcie albo „Co to znaczy?” i sprawdź ją.',
   'tutorial.build.step6': 'Drogi i pracę sprawdzisz w ich kartach. Wróć do doliny i rozwijaj ją po swojemu.',

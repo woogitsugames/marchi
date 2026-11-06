@@ -696,7 +696,7 @@ export const de: Dict = {
   "tutorial.build.step0": "Ein neues Tal. Soll ich dir in wenigen Schritten zeigen, wie du ein Gebäude setzt und an die Wege anschließt?",
   "tutorial.build.step1": "Öffne das Baumenü und wähle eine Holzfällerhütte. Prüfe ihre Kosten.",
   "tutorial.build.step2": "Schiebe die Vorschau an einen Platz am Wald. Sie zeigt, ob du dort bauen kannst. Dann „Platzieren“.",
-  "tutorial.build.step3": "Wähle das Werkzeug „Weg“. Verbinde die Holzfällerhütte mit dem bestehenden Wegenetz.",
+  "tutorial.build.step3": "Verbinde die Holzfällerhütte mit dem bestehenden Wegenetz – mit der Schaltfläche auf ihrer Karte oder dem Werkzeug „Weg“.",
   "tutorial.build.step4": "Öffne die Holzfällerhütte und sieh nach, was sie tut.",
   "tutorial.build.step5": "Die Arbeit steht. Tippe auf die Ursache in der Karte oder auf „Was heißt das?“ und prüfe sie.",
   "tutorial.build.step6": "Wege und Arbeit lassen sich in ihren Karten prüfen. Kehre ins Tal zurück und baue es nach deiner Art aus.",

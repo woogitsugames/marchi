@@ -696,7 +696,7 @@ export const it: Dict = {
   "tutorial.build.step0": "Una nuova valle. Vuoi vedere in pochi passi come posare un edificio e collegarlo alle strade?",
   "tutorial.build.step1": "Apri il menu di costruzione e scegli una capanna del boscaiolo. Controlla il costo.",
   "tutorial.build.step2": "Sposta l’anteprima in un punto vicino al bosco. Mostra se lì si può costruire. Poi «Posiziona».",
-  "tutorial.build.step3": "Scegli lo strumento «Strada». Collega la capanna del boscaiolo alla rete stradale esistente.",
+  "tutorial.build.step3": "Collega la capanna del boscaiolo alla rete stradale esistente: con il pulsante sulla sua scheda o con lo strumento «Strada».",
   "tutorial.build.step4": "Apri la capanna del boscaiolo e guarda cosa sta facendo.",
   "tutorial.build.step5": "Il lavoro è fermo. Tocca la causa sulla scheda, o «Che cosa significa?», e controllala.",
   "tutorial.build.step6": "Strade e lavoro si controllano nelle loro schede. Torna alla valle e falla crescere a modo tuo.",

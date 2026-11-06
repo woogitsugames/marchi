@@ -696,7 +696,7 @@ export const ko: Dict = {
   "tutorial.build.step0": "새 계곡입니다. 건물을 놓고 길에 잇는 방법을 몇 단계로 보여 드릴까요?",
   "tutorial.build.step1": "건설 메뉴를 열고 나무꾼 오두막을 고르세요. 비용을 확인하세요.",
   "tutorial.build.step2": "미리보기를 숲 가까운 곳으로 옮기세요. 그곳에 지을 수 있는지 보여 줍니다. 그다음 \"배치\".",
-  "tutorial.build.step3": "\"길\" 도구를 고르세요. 나무꾼 오두막을 기존 길망에 이으세요.",
+  "tutorial.build.step3": "나무꾼 오두막을 기존 길망에 이으세요. 카드의 버튼이나 \"길\" 도구를 쓰면 됩니다.",
   "tutorial.build.step4": "나무꾼 오두막을 열고 무엇을 하는지 보세요.",
   "tutorial.build.step5": "작업이 멈췄습니다. 카드의 원인이나 \"무슨 뜻인가요?\"를 눌러 확인하세요.",
   "tutorial.build.step6": "길과 작업은 각자의 카드에서 확인할 수 있습니다. 계곡으로 돌아가 원하는 대로 키우세요.",

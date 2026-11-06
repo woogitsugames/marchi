@@ -696,7 +696,7 @@ export const nl: Dict = {
   "tutorial.build.step0": "Een nieuwe vallei. Zal ik in een paar stappen laten zien hoe je een gebouw plaatst en op de wegen aansluit?",
   "tutorial.build.step1": "Open het bouwmenu en kies een houthakkershut. Bekijk de kosten.",
   "tutorial.build.step2": "Schuif de voorvertoning naar een plek bij het bos. Die toont of je daar kunt bouwen. Dan „Plaatsen”.",
-  "tutorial.build.step3": "Kies het gereedschap „Weg”. Sluit de houthakkershut aan op het bestaande wegennet.",
+  "tutorial.build.step3": "Sluit de houthakkershut aan op het bestaande wegennet – met de knop op zijn kaart of het gereedschap „Weg”.",
   "tutorial.build.step4": "Open de houthakkershut en kijk wat hij doet.",
   "tutorial.build.step5": "Het werk staat stil. Tik op de oorzaak op de kaart, of op „Wat betekent dit?”, en bekijk die.",
   "tutorial.build.step6": "Wegen en werk bekijk je in hun kaarten. Ga terug naar de vallei en bouw die uit op jouw manier.",

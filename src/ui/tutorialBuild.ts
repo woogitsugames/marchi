@@ -138,6 +138,10 @@ export class BuildTutorial extends Tutorial {
         // the ghost's own label: cost, or the standard reason it cannot stand there
         return el('.ghost-tag');
       case 3: {
+        // the game opens a cut-off building's card with the gap finder ("Zbuduj drogę", D-100): that is the
+        // nearest way to join it, and the card covers the rail in portrait
+        const fix = document.querySelector('#sheets .sheet:last-child .fix-btn');
+        if (fix && fix.getClientRects().length > 0 && this.host.tool() !== 'road') return { box: visibleBox(fix), probe: fix };
         if (this.host.tool() !== 'road' && this.host.tool() !== 'cobble') return el('.rail [data-tool="road"]');
         const hut = newHut(this.host.world, this.baseline);
         // the hut's gate, where the road has to start (the pin on the map is the build ghost's, gone now)
