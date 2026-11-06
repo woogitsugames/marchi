@@ -76,7 +76,7 @@ if (q.has('prior')) {
   // prior=<mission>: show another world first, as the game does menu -> mission (D-222 restart leak check)
   view.setWorld(createWorld(q.get('prior') as Parameters<typeof createWorld>[0]));
   view.resize(window.innerWidth, window.innerHeight, window.devicePixelRatio || 1);
-  view.frame(0, 16);
+  view.frame(0, 0); // dt 0: no clock (wind, water) advanced by the prior frame
 }
 view.setWorld(world);
 if (q.get('overlay') === 'traffic') view.setOverlay('traffic');

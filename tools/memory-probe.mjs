@@ -43,7 +43,11 @@ const sample = async (label) => {
   const dom = await cdp.send('Memory.getDOMCounters');
   const s = await page.evaluate(() => {
     const app = window.__marchia.app, r = app.view.renderer;
+    // draw calls of two consecutive frames (the shadow map is redrawn every 2nd frame on low/high, D-150)
+    const M = window.__mp; let draws = 0;
+    for (let i = 0; i < 2; i++) { M.now = Math.max(M.now, app.lastFrame) + 1000 / 60; app.frame(M.now); draws += r.info.render.calls; }
     return {
+      draws2: draws,
       heapMB: +(performance.memory.usedJSHeapSize / 1048576).toFixed(2),
       geometries: r.info.memory.geometries, textures: r.info.memory.textures, programs: r.info.programs?.length ?? 0,
       mode: app.mode, mission: app.world.state.mission.id ?? app.missionId, tick: app.world.state.tick,
@@ -53,7 +57,7 @@ const sample = async (label) => {
     };
   });
   const row = { label, ...s, nodes: dom.nodes, docs: dom.documents, listeners: dom.jsEventListeners };
-  process.stderr.write(`${label}: heap ${row.heapMB} MB geo ${row.geometries} tex ${row.textures} prog ${row.programs} nodes ${row.nodes} listeners ${row.listeners} obj ${row.sceneChildren}\n`);
+  process.stderr.write(`${label}: draws/2f ${row.draws2} heap ${row.heapMB} MB geo ${row.geometries} tex ${row.textures} prog ${row.programs} nodes ${row.nodes} listeners ${row.listeners} obj ${row.sceneChildren}\n`);
   return row;
 };
 

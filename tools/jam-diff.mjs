@@ -19,7 +19,7 @@ async function shot(base, tag, qy = query) {
   page.on('pageerror', (e) => errs.push(`${tag}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errs.push(`${tag}: ${m.text()}`); });
   await page.goto(`${base.replace(/\/?$/, '/')}tools/view-harness.html?${qy}`);
-  await page.waitForFunction(() => window.__done === true, null, { timeout: 300000 });
+  await page.waitForFunction(() => window.__done === true, null, { timeout: Number(process.env.JAM_TIMEOUT ?? 300000) });
   const info = await page.evaluate(() => {
     const h = window.__harness;
     const snaps = [...h.view.wagons.snaps.values()];
