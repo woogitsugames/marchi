@@ -324,6 +324,42 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
 }
 
 /**
+ * Winter hoarfrost on the buildings (D-203): up-facing faces (roofs, wall tops, log and fence tops, the kiln mound)
+ * pale toward the same frost colour the terrain shader uses, so the roofs no longer stay summer-brown on a white valley.
+ * Only plain meshes (buildings, bridges, props): the instanced users (wagons, cargo, yard piles, workers) skip it.
+ * One shared uniform, set per frame by the view; the code is always in the program, so a season change links nothing.
+ */
+export const frostUniform = { value: 0 };
+const FROST_KEYS = new Set<MatKey>(['wood', 'bark', 'thatch', 'stone', 'plaster']);
+const FROST_VERT = `
+#ifdef USE_INSTANCING
+  vFrostUp = -1.0;
+#else
+  vFrostUp = normalize(mat3(modelMatrix) * objectNormal).y;
+#endif
+`;
+const FROST_FRAG = `
+{
+  float frostK = uFrost * smoothstep(0.4, 0.8, vFrostUp);
+  float frostL = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(frostL * 0.9 + 0.28, frostL * 0.92 + 0.29, frostL * 0.95 + 0.31), frostK);
+}
+`;
+
+function addFrost(m: MeshStandardMaterial, key: MatKey): void {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uFrost = frostUniform;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying float vFrostUp;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\n' + FROST_VERT);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uFrost;\nvarying float vFrostUp;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\n' + FROST_FRAG);
+  };
+  m.customProgramCacheKey = () => 'frost1-' + key;
+}
+
+/**
  * Quality switch for the tree materials: alpha-to-coverage on the full-detail cards (soft edges
  * through MSAA) and wind on high/ultra; plain alpha test and a still forest on low.
  */
@@ -396,6 +432,7 @@ export function modelMaterial(key: MatKey): MeshStandardMaterial {
   if (s.side === 'double') m.side = DoubleSide;
   m.name = `model-${key}`;
   if (key === 'needles' || key === 'leaves' || key === 'billboard' || key === 'grass' || key === 'trunk') addFoliageLift(m, key);
+  if (FROST_KEYS.has(key)) addFrost(m, key);
   if (s.alphaLeaf) {
     m.map = leafTexture();
     m.alphaTest = 0.5;

@@ -30,7 +30,7 @@ import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
 import { Lighting } from './lighting';
 import { PartBuilder } from './models/kit';
-import { applyTextures, foliageLift, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
+import { applyTextures, foliageLift, frostUniform, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
 import { treeAtlasBytes } from './models/trees';
@@ -427,6 +427,7 @@ class View implements WorldView {
     const tu = this.terrain.uniforms;
     tu.uWet!.value = this.wet;
     tu.uWinter!.value = this.winter;
+    frostUniform.value = this.winter * 0.6;
     (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
     tu.uMotion!.value = reducedMotion() ? 0 : 1;
@@ -459,7 +460,7 @@ class View implements WorldView {
       this.emitterTimer = 0.5;
       this.updateEmitters(false);
     }
-    this.fx.update(this.time, this.rain, this.rig.target, Math.min(140, 30 + dist * 0.5), env.light);
+    this.fx.update(this.time, this.rain, this.rig.target, Math.min(140, 30 + dist * 0.5), env.light, this.winter);
     this.updateSelectionRing();
 
     // far-tree atlases per tier (multi-view, D-58 amendment 2026-11-03): low and high 128 px cells

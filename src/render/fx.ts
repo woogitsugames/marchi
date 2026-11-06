@@ -73,6 +73,10 @@ void main() {
   vTip = tip;
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
 }`;
+const RAIN_VEL = new Vector3(2.2, -14, 1.2);
+const SNOW_VEL = new Vector3(0.7, -2.4, 0.5);
+const RAIN_COL = new Color('#8f9391');
+const SNOW_COL = new Color('#c3c6c4');
 const RAIN_FRAG = /* glsl */ `
 uniform vec3 uColor;
 uniform float uOpacity;
@@ -148,8 +152,8 @@ export class Effects {
         uTime: { value: 0 },
         uCenter: { value: new Vector3() },
         uBox: { value: 80 },
-        uVel: { value: new Vector3(2.2, -14, 1.2) },
-        uColor: { value: new Color('#8f9391') },
+        uVel: { value: RAIN_VEL.clone() },
+        uColor: { value: RAIN_COL.clone() },
         uOpacity: { value: 0 },
       },
       vertexShader: RAIN_VERT,
@@ -180,13 +184,19 @@ export class Effects {
     this.onAttr.needsUpdate = true;
   }
 
-  update(time: number, rain: number, center: Vector3, box: number, light: number): void {
+  /**
+   * `snow` 0..1 (the winter frost amount): the same streaks fall slowly, short and pale, as sleet and snow flecks
+   * instead of rain (D-203). Uniform values only, no program change.
+   */
+  update(time: number, rain: number, center: Vector3, box: number, light: number, snow = 0): void {
+    (this.rainMat.uniforms.uVel!.value as Vector3).lerpVectors(RAIN_VEL, SNOW_VEL, snow);
+    (this.rainMat.uniforms.uColor!.value as Color).lerpColors(RAIN_COL, SNOW_COL, snow);
     this.smokeMat.uniforms.uTime!.value = time;
     (this.smokeMat.uniforms.uColor!.value as Color).setRGB(0.16 * light + 0.02, 0.15 * light + 0.02, 0.14 * light + 0.02);
     this.rainMat.uniforms.uTime!.value = time;
     (this.rainMat.uniforms.uCenter!.value as Vector3).copy(center);
     this.rainMat.uniforms.uBox!.value = box;
-    this.rainMat.uniforms.uOpacity!.value = rain * 0.32 * (0.4 + 0.6 * light);
+    this.rainMat.uniforms.uOpacity!.value = rain * (0.32 + 0.16 * snow) * (0.4 + 0.6 * light);
     this.rain.visible = rain > 0.02;
   }
 

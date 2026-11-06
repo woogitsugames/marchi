@@ -33,8 +33,8 @@ const SCENES = {
   'post-worker': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 16, yaw: 0.4, worker: true, pre: 'w.state.town.rank = 4; w.state.market.open = true; for (let i = 0; i < 20; i++) a.loop.tickOnce();' },
   'post-closed': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 20, yaw: 0.3 },
   'post-open': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 20, yaw: 0.3, pre: 'w.state.town.rank = 4; w.state.market.open = true; for (let i = 0; i < 20; i++) a.loop.tickOnce();' },
-  'post-autumn': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 55, yaw: 0.9, tick: AUTUMN, pre: 'w.state.town.rank = 4; w.state.market.open = true;' },
-  'post-winter': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 55, yaw: 0.9, tick: WINTER, pre: 'w.state.town.rank = 4; w.state.market.open = true;' },
+  'post-autumn': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 55, yaw: 0.9, tick: AUTUMN, pre: 'w.state.town.rank = 4; w.state.market.open = true; for (let i = 0; i < 20; i++) a.loop.tickOnce(); a.loop.speed = 0;' },
+  'post-winter': { q: 'play=sandbox&ff=30', type: 'tradePost', dist: 55, yaw: 0.9, tick: WINTER, pre: 'w.state.town.rank = 4; w.state.market.open = true; for (let i = 0; i < 20; i++) a.loop.tickOnce(); a.loop.speed = 0;' },
   'm9-winter': { q: 'play=m9&ff=20', type: 'brewery', dist: 60, yaw: 0.5, tick: WINTER },
   'm8-winter': { q: 'play=m8&ff=20', type: 'quarry', dist: 60, yaw: 0.5, tick: WINTER },
   // the new goods on wagons at mid distance, next to the older sacks and baskets they could be confused with
@@ -89,12 +89,15 @@ for (const [name, sc] of Object.entries(SCENES)) {
       const c = a.view.buildings.info.get(b.id).centre;
       const wk = a.view.buildings.workers.filter((x) => x.buildingId === b.id);
       // the "-worker" close-ups aim at the worker, yaw from his facing; the others at the building's centre
-      if (sc.worker && wk.length) { const e = wk[0].base.elements; a.view.rig.set(e[12], e[14], sc.dist, (sc.worker === 'abs' ? 0 : Math.atan2(e[8], e[10])) + sc.yaw); }
-      else a.view.rig.set(c.x, c.z, sc.dist, sc.yaw);
+      if (sc.worker && wk.length) { const e = wk[0].base.elements; window.__gfxCam = [e[12], e[14], sc.dist, (sc.worker === 'abs' ? 0 : Math.atan2(e[8], e[10])) + sc.yaw]; }
+      else window.__gfxCam = [c.x, c.z, sc.dist, sc.yaw];
+      a.view.rig.set(...window.__gfxCam);
       const ws = wk.map((x) => x.kind).join('+');
       return { id: b.id, status: b.status.k, ticks: n, workers: ws };
     `), { ...sc, cmds: sc.cargo ? benchCmds : [] });
     await page.waitForTimeout(4000);
+    // a rank-up glides the camera to the castle: put it back where the scene wants it
+    if (await page.evaluate(() => { if (!window.__gfxCam) return false; window.__marchia.app.view.rig.set(...window.__gfxCam); return true; })) await page.waitForTimeout(1500);
     const f = resolve(outDir, `gfx10-${tag}-${name}-${quality}.jpg`);
     await page.screenshot({ path: f, type: 'jpeg', quality: 82, timeout: 600000 });
     // close crop: the middle 240x240 px of the frame
