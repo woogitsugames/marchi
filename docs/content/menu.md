@@ -1,5 +1,10 @@
 # Menu na zimno / First-time menu copy
 
+**Status: wdrożone częściowo (D-242, 2026-11-06).** W grze (PL/EN + 15 języków): I, II, III, IV, V, VII,
+VIII, XI, XII, XIV i Wolna dolina (EN: „Grow the valley, no deadlines” — krótsze od propozycji). Odrzucone,
+zostają obecne: VI („hamuje” słabsze niż „zatrzymuje”), IX i X (mniej jasne, brzmiały podobnie), XIII (bez „całą”
+traci sens), XV („Skład bliżej zamku” zdradza rozwiązanie lekcji XV).
+
 Propozycje do zatwierdzenia, bez zmian w grze. Dla I–XIII krótsze od obecnych
 `menu.m*Sub` w obu językach; zachowują temat, a nie zdradzają rozwiązania.
 I jest punktem wejścia; Wolna dolina jest alternatywą bez terminów, nie częścią kursu.

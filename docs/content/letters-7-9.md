@@ -8,7 +8,7 @@ nie automatyczne dodanie kluczy lokalizacji.
 
 **PL — Nazwa:** Ryby na post
 
-**PL — Podtytuł:** Rybak nad wodą, zamek za mostem. (menu: skrócone, by mieściło się w jednej linii przy 412 px)
+**PL — Podtytuł:** Rybak nad wodą, zamek za mostem. (od D-242 w menu: „Ryby zza rzeki”; menu: skrócone, by mieściło się w jednej linii przy 412 px)
 
 **PL — List kasztelana:**
 
@@ -34,7 +34,7 @@ nie automatyczne dodanie kluczy lokalizacji.
 
 **PL — Nazwa:** Bruk przed burzą
 
-**PL — Podtytuł:** Najpierw przywieź kamień na bruk. (menu: skrócone, by mieściło się w jednej linii przy 412 px)
+**PL — Podtytuł:** Najpierw przywieź kamień na bruk. (od D-242 w menu: „Kamień na bruk”; menu: skrócone, by mieściło się w jednej linii przy 412 px)
 
 **PL — List kasztelana:** (przeprojektowanie D-165, 2026-11-05; w grze: `src/content/letters.ts`)
 

@@ -70,7 +70,7 @@ XII: spichlerz przechowuje piwo). Pierwotne propozycje GPT (zlecenie 49) są w h
 
 **PL — Nazwa:** XI. Słód na zimę
 
-**PL — Podtytuł:** Daleka słodownia zajmuje wozy
+**PL — Podtytuł:** Daleka słodownia zajmuje wozy (od D-242 w menu: „Daleka droga po słód”)
 
 **PL — List otwierający:**
 
