@@ -119,6 +119,23 @@ function programs(r: WebGLRenderer): WebGLProgram[] {
   return r.info.programs ?? [];
 }
 
+/** Shadow depth stand-ins for `meshes`, one per distinct (depth material, instancing) pair. */
+function depthStandInsOf(meshes: readonly AnyMesh[]): Group {
+  const group = new Group();
+  const seen = new Set<string>();
+  for (const mesh of meshes) {
+    for (const m of materialsOf(mesh)) {
+      const d = depthMaterialOf(mesh, m);
+      if (!d) continue;
+      const key = `${d.uuid}|${mesh.isInstancedMesh ? 1 : 0}|${mesh.instanceColor ? 1 : 0}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      group.add(standIn(mesh, d));
+    }
+  }
+  return group;
+}
+
 const nextSlice = (ms = 0): Promise<void> => new Promise((res) => setTimeout(res, ms));
 
 type Prog = WebGLProgram & { isReady?: () => boolean; program?: unknown };
@@ -187,19 +204,7 @@ export class ShaderPrewarm {
     const release = this.swapClones.splice(0);
     const extraGroup = new Group();
     for (const m of extras) extraGroup.add(m);
-    // shadow depth stand-ins, one per distinct (material, instancing) pair
-    const depthGroup = new Group();
-    const seen = new Set<string>();
-    for (const mesh of [...meshesOf(scene), ...extras as AnyMesh[]]) {
-      for (const m of materialsOf(mesh)) {
-        const d = depthMaterialOf(mesh, m);
-        if (!d) continue;
-        const key = `${d.uuid}|${mesh.isInstancedMesh ? 1 : 0}|${mesh.instanceColor ? 1 : 0}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        depthGroup.add(standIn(mesh, d));
-      }
-    }
+    const depthGroup = depthStandInsOf([...meshesOf(scene), ...extras as AnyMesh[]]);
     // compile() only requests the programs (compileShader/linkProgram); with
     // KHR_parallel_shader_compile the driver links them while frames keep running
     r.compile(scene, camera);
@@ -213,6 +218,22 @@ export class ShaderPrewarm {
     this.runs++;
     this.last = { before, after: programs(r).length, ms: performance.now() - t0 };
     return this.last;
+  }
+
+  /**
+   * Only request the programs `scene` draws with now (colour and shadow depth pass), without waiting for the link or
+   * forcing the first use (D-258). With KHR_parallel_shader_compile the driver links them in its own threads, so
+   * asking right after a world is built (before the menu waits for the save list) takes the link out of the first
+   * frame. Callers check `parallel` first: without the extension the compile would block right here.
+   */
+  request(scene: Scene, camera: Camera): void {
+    this.renderer.compile(scene, camera);
+    this.compileDepth(depthStandInsOf(meshesOf(scene)), camera, scene);
+  }
+
+  /** The driver links programs off the main thread (KHR_parallel_shader_compile). */
+  get parallel(): boolean {
+    return this.renderer.extensions.has('KHR_parallel_shader_compile');
   }
 
   /**

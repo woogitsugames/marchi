@@ -291,6 +291,22 @@ class View implements WorldView {
     this.warmPending = true;
   }
 
+  /**
+   * Ask the driver to compile the programs of the scene as it stands (D-258), when it links in parallel
+   * (KHR_parallel_shader_compile); the app calls this right after the menu world is built, before the save list.
+   */
+  precompile(): void {
+    const r = this.renderer, warm = this.warm;
+    if (!r || !warm || !this.world) return;
+    try {
+      if (!warm.parallel) return;
+      startupMark('precompile'); // phase 'precompile' = the cost of the request itself
+      warm.request(this.scene, this.rig.camera);
+    } catch (e) {
+      console.warn('[view] precompile', e);
+    }
+  }
+
   /** Stand-in meshes, one per model material kind, sharing one small box (PartBuilder layout). */
   private kindMeshes(): Mesh[] {
     if (this.warmKinds) return this.warmKinds;
