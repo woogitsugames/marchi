@@ -5,14 +5,15 @@
   `node_modules` — **nigdy `git add -A` w worktree** (symlink trafił raz do commita i podmienił `node_modules` bazy;
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
-- Baza = `main` = **ff5c6da** (6 XI ~23:15): testy **573/0**, build, smoke 0, layout 114/0. `setup:android` OK.
+- Baza = `main` = **D-259 scalone** (6 XI ~23:50): testy **575/0**, build, smoke 0, layout 114/0. `setup:android` OK.
   Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
   budowa świata menu −23…−28 % CPU (geometria bit w bit), leniwe LOD-y wozów, **światła co 2. klatkę** (decyzja właściciela),
   `precompile` przy `KHR_parallel_shader_compile` (do zmierzenia na Foldzie).
-- W toku: koordynator `claude/w-tut5` — samouczek budowania: odcięta chata zapełnia podwórze i **naprawdę staje** („brak
-  drogi”, 80 s gry, krok 7 wskazuje ×4), potem diagnoza (krok 5), potem droga (D-259); agent `claude/w-winter` — gołe korony
+- Scalone ~23:50: **D-259** samouczek budowania — odcięta chata zapełnia podwórze i **naprawdę staje** („brak drogi”, 80 s
+  gry, krok 7 wskazuje ×4), potem diagnoza (krok 5), potem droga; zrzuty `onboard-s7-*`, `onboard-s5road-*`.
+- W toku: agent `claude/w-winter` — gołe korony
   zimą (D-260..D-263, zrzuty do akceptacji); agent `claude/w-fame` — luka sławy card-30/60 do rangi 5 (D-264..D-267).
 - GPT: paczka 12 (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
 - **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
