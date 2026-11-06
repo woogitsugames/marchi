@@ -12,10 +12,19 @@ import { instancedMaterial, shareInstancedDepth } from './models/materials';
  */
 export function markInstances(a: BufferAttribute, n: number): void {
   if (n <= 0) return;
+  // one reused range object per attribute (D-223): `addUpdateRange` allocated a fresh {start, count} per attribute
+  // per frame. three uploads the ranges and empties the list each render; with a single range it never merges
+  // (never writes to it), so the upload is the same bufferSubData as before.
+  let r = ranges.get(a);
+  if (!r) { r = { start: 0, count: 0 }; ranges.set(a, r); }
+  r.start = 0;
+  r.count = n * a.itemSize;
   a.clearUpdateRanges();
-  a.addUpdateRange(0, n * a.itemSize);
+  a.updateRanges.push(r);
   a.needsUpdate = true;
 }
+
+const ranges = new WeakMap<BufferAttribute, { start: number; count: number }>();
 
 export class Parts {
   readonly meshes: InstancedMesh[];

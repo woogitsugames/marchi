@@ -17,6 +17,7 @@
  *   preview=x0,y0,x1,y1  show a road preview (validated like the build tool)
  *   stress=1         harness-only: scatter all wagons over the road network with random cargo
  *   hud=0            hide the stats box
+ *   prior=m12        set (and draw) another mission's world before this one, like menu -> mission
  *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
  * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
  * window.__harness exposes { world, view, loop, internals, frames(), setQuality(q) } for scripted
@@ -71,6 +72,12 @@ const quality: Quality = (QUALITIES as readonly string[]).includes(qualityParam)
 view.mount(canvas);
 view.setQuality(quality);
 view.setMenuMode(q.get('menu') === '1');
+if (q.has('prior')) {
+  // prior=<mission>: show another world first, as the game does menu -> mission (D-222 restart leak check)
+  view.setWorld(createWorld(q.get('prior') as Parameters<typeof createWorld>[0]));
+  view.resize(window.innerWidth, window.innerHeight, window.devicePixelRatio || 1);
+  view.frame(0, 16);
+}
 view.setWorld(world);
 if (q.get('overlay') === 'traffic') view.setOverlay('traffic');
 

@@ -13,12 +13,12 @@ const [a, b, outDir, query = 'wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0
 mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const errs = [];
-async function shot(base, tag) {
+async function shot(base, tag, qy = query) {
   const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errs.push(`${tag}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errs.push(`${tag}: ${m.text()}`); });
-  await page.goto(`${base.replace(/\/?$/, '/')}tools/view-harness.html?${query}`);
+  await page.goto(`${base.replace(/\/?$/, '/')}tools/view-harness.html?${qy}`);
   await page.waitForFunction(() => window.__done === true, null, { timeout: 300000 });
   const info = await page.evaluate(() => {
     const h = window.__harness;
@@ -31,7 +31,7 @@ async function shot(base, tag) {
   return { png, info };
 }
 const A = await shot(a, 'a');
-const B = await shot(b, 'b');
+const B = await shot(b, 'b', process.env.QB ? `${query}&${process.env.QB}` : query); // QB: extra params for B only
 const ra = await sharp(A.png).raw().toBuffer({ resolveWithObject: true });
 const rb = await sharp(B.png).raw().toBuffer({ resolveWithObject: true });
 let diff = 0, maxd = 0;
