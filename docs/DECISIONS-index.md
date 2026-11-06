@@ -199,6 +199,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-211 | 2026-11-06 | XIV/XV thresholds: the wrong site with a wagon misses three seals by >= 20 s (owner 2026-11-06) | decided | sim |
 | D-212 | 2026-11-06 | A full granary of goods nobody wants reads calm (owner 2026-11-06; generic rule) | decided | inne |
 | D-213 | 2026-11-06 | Names: "Posterunek handlowy" and "sława"; UI kit rights confirmed (owner 2026-11-06 ~14:30) | decided | UI |
+| D-220 | 2026-11-06 | Startup milestones as `marchia:*` User Timing marks; startup and memory probes (perf day 10, owner direction 2026-11-06) | decided | inne |
+| D-221 | — | Startup: the view chunk loads with the fonts, the shader noise bakes in O(n²), the save list is read while the menu world is built | decided | render |
+| D-222 | — | A world change disposes everything of the previous world: trees, wagon and worker batches, the road mask | decided | sim |
+| D-223 | — | Two per-frame allocators gone: one reused update range per instance attribute, light keys parsed once | decided | inne |
 | D-230 | — | A wagon without a route never parks on a one-lane span (GPT long fuzz, order 93) | decided | sim |
 | D-231 | — | fuzz `shrink` counts duration relative to the snapshot start | decided | sim |
 | D-232 | — | valley-3h `grow` plan: third malthouse at (46, 25) | decided | inne |
