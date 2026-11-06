@@ -50,6 +50,7 @@ export const pl = {
   'status.WAGON_DUE': 'Wóz {wagon} przyjedzie po {goodAcc} za {time}',
   'status.STORAGE_FULL': 'Spichlerz pełny',
   'status.STORAGE_FULL.saturated': 'Spichlerz pełny — rynek nasycony',
+  'status.STORAGE_FULL.unwanted': 'Spichlerz pełny — tego towaru nikt teraz nie potrzebuje',
   'status.CONTRACT_DONE': 'Kontrakt wykonany',
 
   'wagon.IDLE': 'Stoi w stajni',
@@ -738,6 +739,8 @@ export const pl = {
   'cause.postNoRoad': 'czeka na drogę z mostem',
   'cause.marketFull': 'pełny — rynek nie weźmie teraz więcej tych towarów',
   'fix.marketFull': 'Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie.',
+  'cause.unwanted': 'pełny — tego towaru nikt teraz nie potrzebuje',
+  'fix.unwanted': 'Tego, co tu leży, nie bierze ani zamówienie, ani żaden warsztat — nowy wóz tylko by czekał. Jeśli przez to stoi producent, jego towar potrzebuje innego spichlerza.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',

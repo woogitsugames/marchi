@@ -2,8 +2,8 @@
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
-import { granaryLoads, isCritical, isStall, isWagonWait } from './stallKinds';
-export { granaryLoads, marketTakesLoad } from './stallKinds';
+import { granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
+export { granaryLoads, granaryUnwanted, marketTakesLoad } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 
 /**
@@ -62,7 +62,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
-    marketSaturated(world, b);
+    marketSaturated(world, b) || granaryUnwanted(world, b.id);
   calmCache.set(b.id, { key, calm });
   return calm;
 }
@@ -73,7 +73,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | 'unwanted' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
   if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
@@ -84,6 +84,8 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   if (stoneInStore(world, b.id) > 0) return 'stoneStored';
   // D-174: the markets take no more of what the granary holds; another wagon would only wait
   if (marketSaturated(world, b)) return 'marketFull';
+  // D-212: a granary full of goods nothing wants now (mission XV's fish)
+  if (granaryUnwanted(world, b.id)) return 'unwanted';
   return null;
 }
 
@@ -461,6 +463,9 @@ export function cureFor(world: World, id: number): Cure {
       else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) {
         const loads = granaryLoads(world, l.id);
         if (loads === 'saturated') break;
+        // D-212: its own goods are wanted by nobody — nothing to build for the granary itself; a producer of a
+        // wanted good it refuses (i > 0) still needs another granary
+        if (i === 0 && granaryUnwanted(world, l.id)) break;
         cure = loads === 'wagon' ? 'wagon' : 'granary';
       }
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
