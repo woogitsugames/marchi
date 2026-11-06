@@ -647,6 +647,8 @@ export const nl: Dict = {
   "end.act.granary": "Volgende keer: {who} kon {time} nergens heen met zijn waren — bouw een graanschuur of verbind de afnemer.",
   "end.act.other": "Volgende keer: {who} stond {time} stil — open bij de eerste stilstand ‘Waarom staat het stil?’.",
   "fix.paceFleetEta": "{wagon} bereikt de lading over {time}; een tweede wagen haalt haar eerder.",
+  "fix.pickupDue": "{wagon} is al onderweg om de lading op te halen — er over {time}.",
+  "fix.pickupOnWay": "{wagon} is al onderweg om de lading op te halen.",
   "hud.rankCard": "Weg naar rang",
   "cause.paceRank": "Rang {rank} ({rankName}) mist een waar — bouw: {name}",
   "cause.paceGrow": "Rang {rank} ({rankName}) mist alleen nog aanzien — bouw er nog een: {name}",

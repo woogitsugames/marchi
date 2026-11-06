@@ -647,6 +647,8 @@ export const zh_Hans: Dict = {
   "end.act.granary": "下次：{who}有{time}无处送货——建粮仓或连通买家。",
   "end.act.other": "下次：{who}停了{time}——第一次停滞时就打开“为何停滞？”。",
   "fix.paceFleetEta": "{wagon}将在{time}后到达货物处；第二辆货车能更早取走。",
+  "fix.pickupDue": "{wagon}已在前来取货的路上——{time}后到达。",
+  "fix.pickupOnWay": "{wagon}已在前来取货的路上。",
   "hud.rankCard": "晋级之路",
   "cause.paceRank": "等级{rank}（{rankName}）缺一种货物——建造：{name}",
   "cause.paceGrow": "等级{rank}（{rankName}）只差声望——再建一座：{name}",

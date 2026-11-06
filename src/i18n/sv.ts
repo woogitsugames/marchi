@@ -647,6 +647,8 @@ export const sv: Dict = {
   "end.act.granary": "Nästa gång: {who} hade ingenstans att skicka varorna i {time} — bygg ett magasin eller anslut köparen.",
   "end.act.other": "Nästa gång: {who} stod {time} — öppna ”Varför står det still?” vid första stoppet.",
   "fix.paceFleetEta": "{wagon} når lasten om {time}; en andra vagn hämtar den tidigare.",
+  "fix.pickupDue": "{wagon} är redan på väg för att hämta lasten – där om {time}.",
+  "fix.pickupOnWay": "{wagon} är redan på väg för att hämta lasten.",
   "hud.rankCard": "Väg till rang",
   "cause.paceRank": "Rang {rank} ({rankName}) saknar en vara — bygg: {name}",
   "cause.paceGrow": "Rang {rank} ({rankName}) saknar bara anseende — bygg en till: {name}",

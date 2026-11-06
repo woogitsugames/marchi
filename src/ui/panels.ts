@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { calmWhy, codexCalm, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { codexCalm, quietStall, cureFor, gapTarget, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -262,8 +262,16 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
  * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the
  * building itself; placed right under the count, above the codex fold, so it is read before the generic advice.
  */
-function calmHtml(world: World, b: Building, chain: ReasonLink[]): string {
+function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean): string {
   const en = (k: MessageKey): string => (translated(k) ? '' : ' lang="en" dir="ltr"');
+  // D-193: the pickup already on its way, with its arrival (the fleet cue's own hint names it when "Kup wóz" shows)
+  if (b.status.k === 'WAITING_PICKUP' && !fleet && quietStall(world, b)) {
+    const wagon = b.status.wagon;
+    const eta = wagonEta(world, wagon);
+    const key: MessageKey = eta && eta.destBuilding === b.id ? 'fix.pickupDue' : 'fix.pickupOnWay';
+    return `<div class="s-hint calm-hint">${iconSvg('wagon', 22)}<span${en(key)}>${
+      esc(t(key, { wagon: wagonName(world, wagon), time: eta ? clock(eta.toDest) : '' }))}</span></div>`;
+  }
   // D-174: a granary full of loads no market takes now (or a yard it refuses): no "Kup wóz", the plain reason
   if (marketSaturated(world, b)) {
     return `<div class="s-hint calm-hint">${iconSvg('coin', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
@@ -324,8 +332,9 @@ function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
   } else return '';
   const named = subject.id !== b.id
     ? `<button class="linkish" data-go="building:${subject.id}">${esc(buildingName(world, subject.id))}</button>` : '';
-  // a calm full (surplus, saturated market, room elsewhere — calmWhy): the plain panel, the count in ink (D-180)
-  const calm = calmWhy(world, subject) !== null;
+  // a calm full (surplus, saturated market, room elsewhere — calmWhy — or a customer that still takes it, D-193):
+  // the plain panel, the count in ink (D-180)
+  const calm = quietStall(world, subject);
   let html = `<div class="full-hint${calm ? ' is-calm' : ''}">${named ? `<div class="fh-who">${named}</div>` : ''}<div class="fh-count">${line}</div>`;
   if (subject.id === b.id) {
     // the effect: buildings whose cause chain runs through this one (a producer refused by a full granary), and
@@ -556,7 +565,7 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
     const small = b.capOverride >= 0 && b.capOverride < (def.storeCap ?? 0)
       ? `<div class="s-hint cap-small">${iconSvg('storage_full', 18)}<span>${tHtml('why.capSmall', { n: fmtInt(cap) })}</span></div>` : '';
     parts.push(`<div class="section-h"><span>${tHtml('why.holdsCount', { count: fmtRatio(held, cap) })}</span></div>
-      <div class="cap-bar${full ? ' is-full' : ''}${full && calmWhy(world, b) ? ' is-calm' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
+      <div class="cap-bar${full ? ' is-full' : ''}${full && quietStall(world, b) ? ' is-calm' : ''}" role="img" aria-label="${esc(`${held}/${cap}`)}"><i style="width:${pct.toFixed(1)}%"></i><b style="width:${promisedPct.toFixed(1)}%"></b></div>${small}
       <div class="goods">${GOODS.map((g) => chip(g, b.stock[g], null, inc(g))).join('')}</div>`);
     if (rankGated(world) || world.state.mission.roadStone) {
       // free valley (and missions that build with stone): granaries keep a stone reserve for cobbles and stone bridges
@@ -686,10 +695,12 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       wire(sheet, nav);
       if (pressed(sheet)) return true;
       const stalled = isStall(b.status) || b.status.k === 'NO_INPUT';
-      // a stall with nothing to fix (calmWhy) reads calm: ink title, no clay (D-180)
-      const calm = stalled && calmWhy(world, b) !== null;
+      // a stall with nothing to fix (calmWhy) reads calm: ink title, no clay (D-180); so does every other stall the
+      // HUD pins in brass — a pickup on its way, a customer that still takes it, a season (D-193)
+      const calm = stalled && quietStall(world, b);
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
+      sheet.kicker.classList.toggle('is-calm', calm);
       sheet.title.textContent = t(`building.${b.type}` as MessageKey);
       const chain = explainBuilding(world, id, 5, true);
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
@@ -722,23 +733,26 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
       const codex = stalled ? codexHtml(cl.kind, cl.status, codexCalm(world, cl)) : '';
-      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain) : '') + codex;
-      // three parts, each re-rendered only when its own HTML changes: the stall clock ticking in the chain no
-      // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
-      const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
-      setHtmlKeep(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
       // the pace card's producer (day 8c): its fix, unless this building has a stall with a cure of its own
       // (no forecast without a contract: the free valley still gets the fleet cue, D-140)
-      const paced = !fix && !(stalled && cureFor(world, b.id));
+      // a calm stall never gets "Kup wóz" from its chain (D-193): only the fleet cue below offers it (D-128)
+      const own = stalled ? cureFor(world, b.id) : null;
+      const ownCure = calm && own === 'wagon' ? null : own;
+      const paced = !fix && !ownCure;
       const fc = paced ? forecastFor(world, nav.pace) : null;
       const pc = paced ? paceCard(world, fc) : null;
       // a long pickup wait while the fleet is on the road gets "Kup wóz" on its own sheet too (D-128), not only
       // the yard the card names
       const pcHere = pc && pc.producer === b.id ? pc : paced ? fleetCueFor(world, fc, b) : null;
       // the muddy stretch shows on the map like the gap finder's road
+      const lead = pace + thinHtml(world, b.id) + sharedHtml(world, b.id) + (b.status.k === 'NO_INPUT' ? upSeason + top : top + upSeason) + fullHtml(world, b, chain) + (stalled ? calmHtml(world, b, chain, pcHere?.k === 'fleet') : '') + codex;
+      // three parts, each re-rendered only when its own HTML changes: the stall clock ticking in the chain no
+      // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
+      const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
+      setHtmlKeep(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
       if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
       // the stone-span cure ("Wyłóż most kamieniem"): the same sett ghost, on the wooden deck (D-134)
       else if (!fix && !pcHere && (stalled || carded) && cureFor(world, b.id) === 'pave') {
@@ -748,7 +762,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // the card said "wszystkie wozy zajęte" but a wagon took the job while the sheet opened (×4): the same cure,
       // with the wait it answers (first-10-e N8, D-161)
       const ago = !fix && !pcHere && !stalled && !carded && !nav.tutorialRunning?.() && !iceBeforeWagon(world) ? recentWagonWait(world, id) : -1;
-      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : stalled || carded ? cureHtml(world, b, chain)
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
         : ago >= 0 ? wagonCureHtml(world, t('fix.wagonLately')) : '');
       setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;

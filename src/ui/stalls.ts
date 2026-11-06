@@ -2,7 +2,7 @@
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
-import { granaryLoads, isCritical, isStall } from './stallKinds';
+import { granaryLoads, isCritical, isStall, isWagonWait } from './stallKinds';
 export { granaryLoads, marketTakesLoad } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 
@@ -85,6 +85,23 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   // D-174: the markets take no more of what the granary holds; another wagon would only wait
   if (marketSaturated(world, b)) return 'marketFull';
   return null;
+}
+
+/**
+ * The sheet's calm reading (D-193, owner 2026-11-06 "calm everywhere"): every stall the HUD pins in brass reads calm
+ * in its sheet too, not only the ones with a calmWhy — the pickup already on its way (WAITING_PICKUP, while its wagon
+ * is not itself held at a bridge or cut off), a full yard whose customer still takes the good, an input the season
+ * slows. A shared single producer or a held span is the critical card, never calm.
+ */
+export function quietStall(world: World, b: Building): boolean {
+  if (calmWhy(world, b) !== null) return true;
+  if (sharedOneCard(world, b) || heldSpanFor(world, b)) return false;
+  if (b.status.k === 'WAITING_PICKUP') {
+    const id = b.status.wagon;
+    const w = world.state.wagons.find((q) => q.id === id);
+    return !w || !isWagonWait(w.status);
+  }
+  return calmStall(world, b, JSON.stringify(b.status));
 }
 
 /**

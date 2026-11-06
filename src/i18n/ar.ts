@@ -647,6 +647,8 @@ export const ar: Dict = {
   "end.act.granary": "في المرة القادمة: {who} بلا مكان لبضاعته ⁨{time}⁩ — ابنِ مخزنًا أو صِل المشتري.",
   "end.act.other": "في المرة القادمة: {who} توقف ⁨{time}⁩ — افتح «لماذا توقف؟» عند أول توقف.",
   "fix.paceFleetEta": "{wagon} تصل إلى الحمولة بعد ⁨{time}⁩؛ عربة ثانية تأخذها أسرع.",
+  "fix.pickupDue": "{wagon} في طريقها بالفعل لأخذ الحمولة — تصل خلال {time}.",
+  "fix.pickupOnWay": "{wagon} في طريقها بالفعل لأخذ الحمولة.",
   "hud.rankCard": "الطريق إلى المرتبة",
   "cause.paceRank": "المرتبة ⁨{rank}⁩ ({rankName}) تنقصها بضاعة — ابنِ: {name}",
   "cause.paceGrow": "المرتبة ⁨{rank}⁩ ({rankName}) لا ينقصها إلا الصيت — ابنِ آخر: {name}",

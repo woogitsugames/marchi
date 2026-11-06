@@ -647,6 +647,8 @@ export const ru: Dict = {
   "end.act.granary": "В следующий раз: {who} — {time} без места для товара. Построй амбар или соедини получателя.",
   "end.act.other": "В следующий раз: {who} — {time} простоя. Открой «Почему стоит?» при первом простое.",
   "fix.paceFleetEta": "{wagon} доедет до груза через {time}; вторая повозка заберёт его раньше.",
+  "fix.pickupDue": "{wagon} уже едет за грузом — будет через {time}.",
+  "fix.pickupOnWay": "{wagon} уже едет за грузом.",
   "hud.rankCard": "Путь к рангу",
   "cause.paceRank": "Рангу {rank} ({rankName}) не хватает товара — построй: {name}",
   "cause.paceGrow": "Рангу {rank} ({rankName}) не хватает только славы — построй ещё: {name}",

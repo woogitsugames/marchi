@@ -647,6 +647,8 @@ export const pt_BR: Dict = {
   "end.act.granary": "Da próxima vez: {who} ficou {time} sem ter para onde mandar a mercadoria — construa um celeiro ou ligue o comprador.",
   "end.act.other": "Da próxima vez: {who} ficou parado {time} — abra “Por que parou?” na primeira paralisação.",
   "fix.paceFleetEta": "{wagon} chega à carga em {time}; uma segunda carroça a pegaria antes.",
+  "fix.pickupDue": "{wagon} já está a caminho para buscar a carga — chega em {time}.",
+  "fix.pickupOnWay": "{wagon} já está a caminho para buscar a carga.",
   "hud.rankCard": "Rumo ao nível",
   "cause.paceRank": "Nível {rank} ({rankName}): falta uma mercadoria — construa: {name}",
   "cause.paceGrow": "Nível {rank} ({rankName}): só falta renome — construa outro: {name}",

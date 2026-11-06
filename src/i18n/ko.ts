@@ -647,6 +647,8 @@ export const ko: Dict = {
   "end.act.granary": "다음에는: {who}이(가) {time} 동안 물건 보낼 곳이 없었습니다. 곡물 창고를 짓거나 수요처를 연결하세요.",
   "end.act.other": "다음에는: {who}이(가) {time} 멈췄습니다. 첫 정체 때 「왜 멈췄을까?」를 여세요.",
   "fix.paceFleetEta": "{wagon}이(가) {time} 후 짐에 도착합니다. 두 번째 수레라면 더 빨리 가져갑니다.",
+  "fix.pickupDue": "{wagon}이(가) 이미 짐을 가지러 오는 중입니다 — {time} 후 도착.",
+  "fix.pickupOnWay": "{wagon}이(가) 이미 짐을 가지러 오는 중입니다.",
   "hud.rankCard": "등급으로 가는 길",
   "cause.paceRank": "등급 {rank}({rankName})에 물건이 부족 — 건설: {name}",
   "cause.paceGrow": "등급 {rank}({rankName})에는 명성만 부족 — 하나 더 건설: {name}",

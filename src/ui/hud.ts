@@ -650,7 +650,9 @@ export class Hud {
     this.stallRow.classList.remove('is-pace');
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
-    this.cure = b ? cureFor(world, b.id) : null;
+    // a calm stall heading the card never lights the rail's wagon (D-193): only the fleet card offers one
+    const cure = b ? cureFor(world, b.id) : null;
+    this.cure = w?.minor && cure === 'wagon' ? null : cure;
     const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
