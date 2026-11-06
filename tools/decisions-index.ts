@@ -4,11 +4,12 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const source = readFileSync(`${root}/docs/DECISIONS.md`, 'utf8');
-const heading = /^\*\*D-(\d+)\s+[—–-]\s+([\s\S]*?)\*\*/gm;
+// Bold-paragraph headings (`**D-12 — Title.**`) and a few markdown headings (`## D-152 — Title`).
+const heading = /^(?:\*\*D-(\d+)\s+[—–-]\s+([\s\S]*?)\*\*|#{2,4} D-(\d+)\s+[—–-]\s+(.*)$)/gm;
 const matches = [...source.matchAll(heading)];
 const rows = matches.map((m, i) => {
-  const id = Number(m[1]);
-  const title = m[2]!.replace(/\s*\n\s*/g, ' ').replace(/\.$/, '').trim();
+  const id = Number(m[1] ?? m[3]);
+  const title = (m[2] ?? m[4])!.replace(/\s*\n\s*/g, ' ').replace(/\.$/, '').trim();
   const body = source.slice(m.index!, matches[i + 1]?.index ?? source.length);
   const dates = [...new Set([...body.matchAll(/\b20\d\d-\d\d-\d\d\b/g)].map(x => x[0]))];
   const date = dates.length === 1 ? dates[0]! : '—';

@@ -151,6 +151,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-149 | — | Rank card follow-ups: a card-following player test, the bottom sheet's dock clears the frame (day 9f; D-152) | decided | UI |
 | D-150 | 2026-11-05 | Shadow map refreshed every 2nd frame on low and high (owner 2026-11-05, option A; research shadow pass) | decided | render |
 | D-151 | 2026-11-05 | The free valley opens with the castellan's letter and on the castle (owner 2026-11-05; research sandbox-first-30) | decided | treść |
+| D-152 | 2026-11-05 | Free-valley rank card (2026-11-05) | nieokreślony | UI |
 | D-153 | — | The HUD rebuilds its cards once per state change, the waybill pill once per shown second (research frame-cost day 9 #3, HUD part) | decided | UI |
 | D-154 | 2026-11-05 | No program rebuilds left per render: one instanced depth material, a grass-tuft mirror (research rebuilds) | decided | render |
 | D-155 | 2026-11-05 | Watch mode (Flip cover): one "tempo" line under the folded seal, the full pace card on tap; i18n round day 9 (owner 2026-11-05 ~14:30) | decided | treść |
@@ -190,3 +191,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-192 | — | Free valley "rozbuduj": the grow card names one more producer when the next rank lacks only renown (decided — owner 2026-11-06) | decided | UI |
 | D-193 | 2026-11-06 | Calm everywhere: every brass-pinned stall reads calm in its sheet (D-182 item a; decided — owner 2026-11-06) | nieokreślony | UI |
 | D-197 | 2026-11-06 | Playtest S6 "pełny magazyn" moves to mission VI; the `warehouse-full` fixture plays m6 with no commands (decided — owner 2026-11-06) | decided | sim |
+| D-200 | 2026-11-06 | Workers at the late-chain yards and the open trading post; legs and torso batched per clothing variant (graphics polish 10, owner direction 2026-11-06) | nieokreślony | render |
+| D-201 | — | Malt travels in hooped tubs, not small pale bags (goods by shape) | nieokreślony | inne |
+| D-202 | — | Building looks that change with the rank rebuild at the rank-up, not at the next road | nieokreślony | sim |
+| D-203 | — | Winter hoarfrost on the buildings, sleet flecks instead of rain streaks | nieokreślony | inne |
