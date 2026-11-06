@@ -134,6 +134,8 @@ export interface AppOptions {
   params: URLSearchParams;
 }
 
+type SaveData = { saves: Awaited<ReturnType<typeof listSaves>> | null; profile: Awaited<ReturnType<typeof readProfile>> };
+
 export class App implements PanelNav {
   readonly view: WorldView;
   private canvas: HTMLCanvasElement;
@@ -326,7 +328,6 @@ export class App implements PanelNav {
   }
 
   async start(): Promise<void> {
-    let menu: Promise<void> | null = null;
     const play = this.params.get('play');
     const fixture = this.params.get('fixture');
     if (fixture !== null) {
@@ -336,21 +337,13 @@ export class App implements PanelNav {
       this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
     } else {
-      // the menu scene and its DOM are set synchronously; only the save list (IndexedDB) is awaited, so the
-      // first frame (and its shader links) runs while the saves load instead of after them (D-221). One frame only:
-      // the loop goes on once the list is in, so a slow first frame never delays the list's callback further.
-      menu = this.showMenu();
+      // the save list (IndexedDB) is read while the menu world is built, not after it (D-221)
+      this.savesEarly = this.readSaveData(true);
+      await this.showMenu();
     }
     startupMark('world');
     this.lastFrame = performance.now();
-    this.holdFrames = menu !== null;
     requestAnimationFrame((t) => this.frame(t));
-    if (menu) {
-      try { await menu; } finally {
-        this.holdFrames = false;
-        if (this.heldFrame) { this.heldFrame = false; requestAnimationFrame((t) => this.frame(t)); }
-      }
-    }
     if (this.trial) this.trial.record.readyAt = performance.now();
     (window as unknown as { __marchia: { ready: boolean } }).__marchia.ready = true;
     startupMark('ready');
@@ -386,14 +379,32 @@ export class App implements PanelNav {
   }
 
   /** "Continue" = the most recently played save of any kind (contract or any valley ledger). */
+  /** Startup (D-221): the first save-list read, started before the menu world is built; taken by refreshSaves. */
+  private savesEarly: Promise<SaveData> | null = null;
+
+  /** Saves (newest first; null if the store failed) and the profile, read the way the menu needs them. */
+  private readSaveData(adopt: boolean): Promise<SaveData> {
+    const p = (async (): Promise<SaveData> => {
+      let saves: SaveData['saves'] = null;
+      try {
+        if (adopt && !this.noSave) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
+        saves = await listSaves();
+      } catch { saves = null; }
+      return { saves, profile: await readProfile() };
+    })();
+    p.catch(() => undefined); // an early read may settle before it is awaited; refreshSaves still sees the rejection
+    return p;
+  }
+
   private async refreshSaves(adopt = false): Promise<void> {
     const token = ++this.menuToken;
+    const read = this.savesEarly ?? this.readSaveData(adopt);
+    this.savesEarly = null;
     let save: SaveInfo | null = null;
     const unfinished = new Map<string, SaveInfo>();
-    let best: Record<string, BestResult> = {};
-    try {
-      if (adopt && !this.noSave) await adoptLegacySaves().catch((e: unknown) => console.warn('legacy save not moved', e));
-      const saves = await listSaves(); // newest first
+    const data = await read;
+    const saves = data.saves;
+    if (saves) {
       const info = (x: (typeof saves)[number]): SaveInfo => ({ missionId: x.missionId, tick: x.tick, slot: x.slot, savedAt: x.savedAt });
       const s = saves.find((x) => isGameSlot(x.slot));
       save = s ? info(s) : null;
@@ -401,8 +412,8 @@ export class App implements PanelNav {
         const m = contractSlotMission(x.slot);
         if (m && !unfinished.has(m)) unfinished.set(m, info(x));
       }
-    } catch { save = null; }
-    best = (await readProfile()).best;
+    }
+    const best: Record<string, BestResult> = data.profile.best;
     if (token !== this.menuToken || this.mode !== 'menu') return;
     const changed = JSON.stringify([save, [...unfinished], best]) !== JSON.stringify([this.save, [...this.unfinished], this.best]);
     this.save = save;
@@ -802,9 +813,6 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ frame & ticks
 
   private firstFrameMarked = false;
-  /** Startup (D-221): the first menu frame is drawn while the save list loads; the next waits for the list. */
-  private holdFrames = false;
-  private heldFrame = false;
 
   private frame(now: number): void {
     if (!this.firstFrameMarked) { this.firstFrameMarked = true; queueMicrotask(() => startupMark('first-frame')); }
@@ -867,8 +875,7 @@ export class App implements PanelNav {
         `\n${this.effectiveQuality()}  dpr ${this.renderDpr().toFixed(2)}/${(window.devicePixelRatio || 1).toFixed(2)}  scale ${this.dynres.scale}` +
         `  ${this.layout?.cls ?? ''}${this.layout?.flex ? ' flex' : ''}`;
     }
-    if (this.holdFrames) this.heldFrame = true;
-    else requestAnimationFrame((t) => this.frame(t));
+    requestAnimationFrame((t) => this.frame(t));
   }
 
   private onTick(): void {
