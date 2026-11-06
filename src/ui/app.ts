@@ -326,6 +326,7 @@ export class App implements PanelNav {
   }
 
   async start(): Promise<void> {
+    let menu: Promise<void> | null = null;
     const play = this.params.get('play');
     const fixture = this.params.get('fixture');
     if (fixture !== null) {
@@ -335,11 +336,21 @@ export class App implements PanelNav {
       this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
     } else {
-      await this.showMenu();
+      // the menu scene and its DOM are set synchronously; only the save list (IndexedDB) is awaited, so the
+      // first frame (and its shader links) runs while the saves load instead of after them (D-221). One frame only:
+      // the loop goes on once the list is in, so a slow first frame never delays the list's callback further.
+      menu = this.showMenu();
     }
     startupMark('world');
     this.lastFrame = performance.now();
+    this.holdFrames = menu !== null;
     requestAnimationFrame((t) => this.frame(t));
+    if (menu) {
+      try { await menu; } finally {
+        this.holdFrames = false;
+        if (this.heldFrame) { this.heldFrame = false; requestAnimationFrame((t) => this.frame(t)); }
+      }
+    }
     if (this.trial) this.trial.record.readyAt = performance.now();
     (window as unknown as { __marchia: { ready: boolean } }).__marchia.ready = true;
     startupMark('ready');
@@ -791,6 +802,9 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ frame & ticks
 
   private firstFrameMarked = false;
+  /** Startup (D-221): the first menu frame is drawn while the save list loads; the next waits for the list. */
+  private holdFrames = false;
+  private heldFrame = false;
 
   private frame(now: number): void {
     if (!this.firstFrameMarked) { this.firstFrameMarked = true; queueMicrotask(() => startupMark('first-frame')); }
@@ -853,7 +867,8 @@ export class App implements PanelNav {
         `\n${this.effectiveQuality()}  dpr ${this.renderDpr().toFixed(2)}/${(window.devicePixelRatio || 1).toFixed(2)}  scale ${this.dynres.scale}` +
         `  ${this.layout?.cls ?? ''}${this.layout?.flex ? ' flex' : ''}`;
     }
-    requestAnimationFrame((t) => this.frame(t));
+    if (this.holdFrames) this.heldFrame = true;
+    else requestAnimationFrame((t) => this.frame(t));
   }
 
   private onTick(): void {
