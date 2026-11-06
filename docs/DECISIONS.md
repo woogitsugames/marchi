@@ -2786,3 +2786,54 @@ first move lands only roughly; once the camera reports `settled()` (glide over, 
 the same framing runs once more — a no-op when it already fits. Measured in 3D, staged state: 412×915 post centre from
 (−259, 2115) (off screen) to (147, 253) inside the free rect l 74 / t 116 / r 412 / b 329; 915×412 ghost and post
 between the plaque and the side sheet. Render only, hashes unchanged; layout `--quick` 102/0. (decided)
+
+**D-255 — Menu world build: models are merged without clones or JS index arrays, one shore sample per ground height
+(perf day 11, BACKLOG P1 D-221).** The ~1,0 s of main-thread CPU between `menu-start` and `menu-world` (SwiftShader
+desktop, quiet machine ~0,6 s) went mostly to `kit.ts`: `PartBuilder.add` cloned each primitive with `src.clone()`,
+which in three.js first runs the primitive's own constructor with default parameters (a 32 × 16 sphere for every
+`SphereGeometry` piece, a 32-segment cylinder for every rod) and copies each attribute twice; every piece also carried
+an all-zero `rig` array that was merged and deleted again; `mergeGeometries` builds the index as a JS array and converts
+it back (`setIndex(array)`); `BuildingsView.sync` cloned and transformed every part of every building before merging.
+Now `add` copies only index/position/normal/uv (plain typed-array slices), the `rig` attribute exists only on rigged
+pieces (`build()` zero-fills the others when a model has a rig), and `mergeIndexed(list, mats?, keep?)` merges with
+the per-building transform baked in one pass (same `Vector3.applyMatrix4` / `applyNormalMatrix` calls, same index
+width rule as three's `arrayNeedsUint32`). `Heightfield.height` evaluated `shoreDist` twice (in `base` and `detail`);
+now once. **Bit-identical**: SHA-256 of all 222 model geometries (buildings, props, wagons, cargo, 48 worker rigs, trees,
+bridges) and of the merged building / wagon meshes and 1,1 M height samples of four worlds unchanged;
+`tests/model-merge.test.ts` checks `mergeIndexed` against `mergeGeometries`. Cold build of all models (tsx) 1110–1254 →
+588–746 ms. Not done: the terrain grid (~110 ms, `hf.height` per vertex) and vegetation placement are per world and
+already lean; a cache of primitives by parameters was not needed once the clone was gone. (decided)
+
+**D-256 — Lazy wagon rigs and cargo; shared cached models are not disposed with a view.** `Parts` (instanced copies of a
+model) accepts a function: the mid wagon rig, the far rig (LOD1) and the cargo of each of the 10 goods (near and far)
+are built on first `push`, or after the first frame (`WagonsView.buildPending`, called right before the shader pre-warm
+walks the scene, so the pre-warm still sees every mesh). `cargoUnitParts` is cached (it was built twice per view, once
+for near and once for far cargo, and again on every world). `WagonsView` 125 → 64 ms of the menu build. `Parts.dispose`
+frees the instance buffers and only the geometries it made itself (`geo`: the horse copies with their pose
+attributes); the cached models (wagon, cargo, worker rigs) stay uploaded for the next world instead of being re-sent
+after every world change. Bounded: memory probe (high, 6 × menu → XII → menu) geometries in XII 62 → 76 and in the menu
+77 → 80, flat over all cycles; heap slope unchanged (+0,17 MB/cycle before and after); draws identical (XII 86, menu
+140 per 2 frames). Pixels: `jam-diff` 0 px (low 30 wagons 90 frames; high 40 wagons 60 m; high moving clock with the
+D-257 lights reverted). (decided)
+
+**D-257 — Time-of-day lights refresh every 2nd frame (owner decision 2026-11-06, BACKLOG P2 allocator).**
+`Lighting.update` (sun/hemisphere colour and intensity, fog colour, sky uniforms) and the derived foliage lift and tone
+mapping exposure run on even frames only; the clock smoothing still runs every frame. Fresh at once on a world change
+and on entering/leaving the menu (`snapEnv`), after a quality switch, after a long frame (> 100 ms: stall, resume from
+background) and while the clock catches up a jump (|Δ| > 0,002 of a day: forced time, fast-forward). The lights move
+over game minutes, so the one-frame lag is invisible; on unchanged frames three.js sends no light uniforms
+(`setValueV3f`). Allocations (`frame9-cost`, high, run 1 / 2): XII 60 m 3,55 / 3,52 → 3,34 / 3,41 MB/s (three.js
+render 1144 → 981 KB/s), XV 60 m 2,94 / 2,92 → 2,72 / 2,70, 160 m −2…−4 %. Pixels: identical with a fixed time of day;
+with the clock running (`jam-diff` case g, 40 frames) 13 430 px of 376 980 differ, 96 % of them by 1 level, max 12 — all
+on shadow edges (the sun direction, and with it the shadow-map refresh, lags one frame). (decided)
+
+**D-258 — With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built.**
+`App.showMenu` calls `view.precompile()` after `setWorld`, before the 70 s menu sim and the save list:
+`ShaderPrewarm.request` compiles the scene's colour programs and their shadow depth variants (the same stand-ins as
+the full pre-warm) without waiting or forcing the first use; the driver links them while the main thread runs the
+menu sim and waits for IndexedDB, so the first frame finds them linked. Guarded: only when the renderer has the
+extension (`ShaderPrewarm.parallel`); otherwise nothing happens (a compile there would block before `ready`). Mark
+`marchia:precompile` (its phase = the cost of the request). SwiftShader does not expose the extension, so the probes
+here show no change; to be measured on the Fold (`ready` → `first-frame`, `?diag=1`). Low risk: the same
+`renderer.compile` path as the existing pre-warm; the full pre-warm still runs after the first frame. (decided, to
+measure on device)
