@@ -16,7 +16,8 @@ import {
   unexplainedStalls, newPaceLog, samplePace, type BuildingType, type Command, type PaceLog, type World,
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
-import { calmWhy, cureFor, gapTarget, rankStalls, sampleInputWaits } from '../src/ui/stalls';
+import { linkedToStable } from '../src/sim/tradePost';
+import { calmWhy, cureFor, gapTarget, postWouldTake, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
 import { checkChronicle } from '../src/sim/proposals/chronicle';
@@ -89,6 +90,8 @@ export interface Result {
   emptySec: number; calmSec: number; actSec: number; noCureSec: number;
   topSubjects: Record<string, number>;
   trace: Trace[];
+  /** D-245: game minute the trading post's gate first reaches a stable by road (-1 never) */
+  postMin: number;
 }
 
 /**
@@ -185,6 +188,13 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
       }
       // D-192: the game's grow card (the card exists only when the building is affordable)
       if (pc.k === 'grow') return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'grow:' + pc.type : 'grow?fail:' + pc.type };
+      // D-245: the trading-post card — its sheet's gap finder road (with the bridge), one tap
+      if (pc.k === 'post') {
+        const sug = suggestLinkToStable(w, pc.producer);
+        if (!sug) return { ...card, cure: 'road', act: 'post?none' };
+        const res = applyCommand(w, { t: 'road', surface: 1, cells: sug.cells });
+        return { ...card, cure: 'road', act: res.ok ? 'post:road' : 'post?' + res.err.k };
+      }
       return { ...card, cure: null, act: '' };
     }
     if (game && growOpt && (!ranked.length || ranked[0]!.minor)) {
@@ -227,7 +237,9 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
   const s = b.status as { k: string; cause?: string };
   const kind = `${b.type}:${s.k}${s.cause ? '.' + s.cause : ''}`;
   const chain = explainBuilding(w, b.id, 5, true);
-  const target = gapTarget(w, chain.length ? chain : [{ kind: 'building', id: b.id, status: b.status }]);
+  let target = gapTarget(w, chain.length ? chain : [{ kind: 'building', id: b.id, status: b.status }]);
+  // D-245: a saturated granary's sheet offers the unlinked trading post's road (as the game's buildingSheet)
+  if (target < 0 && b.type === 'warehouse') target = postWouldTake(w, b.id);
   let cure: string | null = null, act = '';
   if (target >= 0) {
     cure = 'road';
@@ -253,7 +265,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
   const r: Result = {
     name, seed: seed === undefined ? 'default' : String(seed), minutes, rank: 0, rankMin: [], earned: 0, coins: 0, wagons: 0, buildings: 0,
     actions: {}, looks: [], done: [], paceWrong: 0, fleetWrong: 0, ordersOffered: 0, ordersDone: 0, merchants: 0, chronicle: [],
-    violations: [], trace: [], next: '', emptySec: 0, calmSec: 0, actSec: 0, noCureSec: 0, topSubjects: {},
+    violations: [], trace: [], next: '', emptySec: 0, calmSec: 0, actSec: 0, noCureSec: 0, topSubjects: {}, postMin: -1,
   };
   const seenOrders = new Set<string>(), seenMerch = new Set<string>();
   const chron: string[] = [];
@@ -296,6 +308,10 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
         if (ranked[0]!.minor) r.calmSec++;
         else if (cureFor(w, top.id) || gapTarget(w, explainBuilding(w, top.id, 5, true)) >= 0) r.actSec++;
         else r.noCureSec++;
+      }
+      if (r.postMin < 0) {
+        const post = w.state.buildings.find((q) => q.type === 'tradePost');
+        if (post && linkedToStable(w, post)) r.postMin = +(t / TICK_HZ / 60).toFixed(1);
       }
       for (const id of checkChronicle(w.state, chron, w)) { chron.push(id); r.chronicle.push({ t: t / TICK_HZ, id }); }
     }
@@ -342,6 +358,7 @@ function summary(r: Result): string {
   const top = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${v}x ${k}`).join('\n      ');
   const subj = Object.entries(r.topSubjects).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => `${k} ${v}s`).join(' | ');
   return `${r.name.padEnd(18)} seed ${r.seed.padEnd(7)} rank ${r.rank} [${r.rankMin.slice(1).join(' / ')}] earned ${r.earned} coins ${r.coins} wagons ${r.wagons} bld ${r.buildings} ` +
+    `post ${r.postMin} coins@60/75/90/105/120 ${[60, 75, 90, 105, 120].map((m) => r.trace.find((x) => x.m === m)?.coins ?? '-').join('/')} ` +
     `orders ${r.ordersOffered}/${r.ordersDone} merch ${r.merchants} chron ${r.chronicle.length} paceWrong ${r.paceWrong} fleetWrong ${r.fleetWrong} ${JSON.stringify(r.actions)}\n` +
     `    next: ${r.next}\n    slot/s: empty ${r.emptySec} calm ${r.calmSec} actionable ${r.actSec} no-cure ${r.noCureSec}\n    subjects: ${subj}\n` +
     (looks.length ? `    looks (${looks.length}):\n      ${top}\n` : '') +

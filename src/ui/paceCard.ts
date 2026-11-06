@@ -4,11 +4,11 @@
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
   BUILDINGS, GOODS, MARKET, MAX_WAGONS, capacityOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
-  edgeLength, findPath, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
-  type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type World,
+  edgeLength, findPath, suggestLinkToStable, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
+  type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
-import { granaryLoads } from './stallKinds';
+import { granaryLoads, postWouldTake } from './stallKinds';
 import { bottleneckCard } from './bottleneck';
 import { siteExists } from './site';
 
@@ -88,7 +88,18 @@ export interface PaceGrow {
   k: 'grow'; producer: number; type: BuildingType; good: Good; n: number; rank: number; renown: number; need: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow;
+/**
+ * 'post' (D-245, BACKLOG P2 from D-233) — the free valley from rank 4: full granaries read "rynek nasycony" (the castle
+ * takes no more of their loads) while the trading post across the river, open and paying 125 %, would take them but no
+ * road reaches it (NO_ROAD). The card names the post (the card's subject: its sheet holds the gap finder's road with
+ * the bridge, one tap to build). `good`: a good the post would take; `granaries`: how many full granaries wait on it;
+ * `bridge`/`cost`: the gap finder's link.
+ */
+export interface PacePost {
+  k: 'post'; producer: number; good: Good; granaries: number; bridge: boolean; cost: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow | PacePost;
 
 /** A stretch shorter than this, or a gain below this, is not worth a card. */
 const MUD_MIN_CELLS = 6;
@@ -107,6 +118,10 @@ export function paceCard(world: World, f: ContractForecast | null): PaceCard | n
   // the free valley (D-163): the rank card's producer comes before one more wagon once the fleet serves its yards
   const rank = rankCard(world);
   if (rank && fleetEnough(world)) return rank;
+  // D-245: the road to the trading post comes before one more wagon — with the markets in reach saturated, a wagon
+  // only carries loads into full granaries; the post opens a new market once, and the card is gone for good after
+  const post = postCard(world);
+  if (post) return post;
   const card = fleetCard(world, f) ?? mud ?? rank;
   if (card) return card;
   // D-192: the grow card comes last — after the fleet cue (a yard losing silver now) and after the bottleneck card
@@ -212,6 +227,33 @@ export function growCard(world: World): PaceGrow | null {
   }
   if (!best || st.coins < BUILDINGS[best.type].price + FLEET_FREE_KEEP) return null;
   return { k: 'grow', producer: castle.id, type: best.type, good: best.good, n: n(best.type), rank: sb.next.rank, renown: sb.renown, need: sb.next.renown };
+}
+
+let postLink: { world: World; key: string; s: RoadSuggestion | null } | null = null;
+
+/**
+ * The free valley's trading-post card (D-245), or null: some full granary (STORAGE_FULL) reads "rynek nasycony" and
+ * the open post, unreachable by road, would take one of its loads (postWouldTake), and the gap finder has a link.
+ * Shown also when silver is short (the post's sheet says how much, as the rank card's). Pure read; the link search is
+ * cached per network version.
+ */
+export function postCard(world: World): PacePost | null {
+  const st = world.state;
+  if (st.mission.contract || st.mission.result !== 'running') return null;
+  let post = -1, n = 0, good: Good | null = null;
+  for (const b of st.buildings) {
+    if (b.type !== 'warehouse' || b.status.k !== 'STORAGE_FULL') continue;
+    const p = postWouldTake(world, b.id);
+    if (p < 0) continue;
+    post = p; n++;
+    if (!good) good = GOODS.find((g) => g !== 'stone' && MARKET.base[g] > 0 && b.stock[g] - b.reservedOut[g] >= capacityOf(g)) ?? null;
+  }
+  if (post < 0 || !good) return null;
+  const key = `${post}|${st.netVersion}|${st.buildings.length}`;
+  if (postLink?.world !== world || postLink.key !== key) postLink = { world, key, s: suggestLinkToStable(world, post) };
+  const s = postLink.s;
+  if (!s) return null;
+  return { k: 'post', producer: post, good, granaries: n, bridge: s.bridgeCells > 0, cost: s.cost };
 }
 
 /** The mud card's cobbles cost no more silver than the player has (stone or rank may still refuse them). */

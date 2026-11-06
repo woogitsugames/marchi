@@ -254,6 +254,8 @@ function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string
   if (pc.k === 'rank') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'rank:' + pc.type : 'rank?fail';
   // grow (D-192, free valley only): the same, one more producer of a standing chain
   if (pc.k === 'grow') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'grow:' + pc.type : 'grow?fail';
+  // post (D-245, free valley only): never in a mission
+  if (pc.k === 'post') return '';
   // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
   if (!pc.risk) return '';
   const r = applyCommand(w, { t: 'road', surface: 2, cells: pc.cells });

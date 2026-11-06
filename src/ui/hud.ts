@@ -552,6 +552,7 @@ export class Hud {
         ? t('seal.tempo.rank', { goodAcc: t(`goodAcc.${pc.good}` as MessageKey) })
         : pc.k === 'grow'
           ? t('seal.tempo.grow', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
+          : pc.k === 'post' ? t('seal.tempo.post')
           : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
     setHtml(this.tempo, `<span class="st-line" dir="auto">${esc(text)}</span>`);
     this.tempo.setAttribute('aria-label', `${text}. ${t('hud.worstShow', { name: buildingName(world, pc.producer) })}`);
@@ -596,8 +597,10 @@ export class Hud {
     if (calmOnly !== this.alarm.classList.contains('is-calm')) this.alarm.classList.toggle('is-calm', calmOnly);
     if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
-      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.risk ? 'pave' : null;
-      const sig = pc.k === 'rank'
+      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.k === 'post' ? 'road' : pc.risk ? 'pave' : null;
+      const sig = pc.k === 'post'
+        ? `pace|${pc.k}|${pc.producer}|${pc.bridge}|${stalls.length}|${getLang()}`
+        : pc.k === 'rank'
         ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
         : pc.k === 'grow'
         ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.n}|${stalls.length}|${getLang()}`
@@ -614,8 +617,19 @@ export class Hud {
       this.stallRow.classList.remove('is-crit', 'is-calm');
       this.stallRow.classList.add('is-pace');
       // no order in the free valley: its fleet card serves the rank, not an order's pace (day 9h)
-      setText(this.stallKick, t(pc.k === 'rank' || pc.k === 'grow' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
+      setText(this.stallKick, t(pc.k === 'rank' || pc.k === 'grow' || pc.k === 'post' || (pc.k === 'fleet' && pc.seals < 0) ? 'hud.rankCard' : 'hud.pace'));
       const name = buildingName(world, pc.producer);
+      if (pc.k === 'post') {
+        // D-245: the castle is saturated, the open trading post has no road — name the post and the road (bridge)
+        const text = t(pc.bridge ? 'cause.pacePost' : 'cause.pacePostRoad');
+        setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(text)}</span>`);
+        this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
+        const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
+        if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+        setText(this.alarmBadge, fmtInt(stalls.length));
+        this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+        return;
+      }
       if (pc.k === 'rank' || pc.k === 'grow') {
         // the free valley's next rank lacks a good sold (D-152): name the producer that brings one
         // ...or lacks only renown (D-192): name one more producer of a standing chain

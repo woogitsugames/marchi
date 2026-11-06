@@ -14,7 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
-import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, producerCure, recentWagonWait } from './stalls';
+import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -40,7 +40,11 @@ export interface PanelNav {
   buildRoad(cells: number[], surface?: 1 | 2): void;
   /** Ghost road on the map for the gap finder (null clears it). */
   /** Ghost road on the map while a sheet is open; `pave`: an existing dirt stretch proposed for cobbles (D-132). */
-  setGhost(cells: number[] | null, pave?: boolean): void;
+  /**
+   * `frameAt` >= 0: one camera move to the ghost even when it is a plain road, keeping this cell (the far building's
+   * centre) in view too (D-245, the trading post's road across the river).
+   */
+  setGhost(cells: number[] | null, pave?: boolean, frameAt?: number): void;
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
@@ -57,14 +61,17 @@ export function gapSuggestion(world: World, target: number): RoadSuggestion | nu
   return gapCache.s;
 }
 
-function fixHtml(world: World, target: number, s: RoadSuggestion): string {
+function fixHtml(world: World, target: number, s: RoadSuggestion, why: MessageKey | null = null): string {
   const short = s.cost - world.state.coins;
   const label = tHtml(s.bridgeCells > 0 ? 'fix.bridge' : 'fix.road', { n: fmtInt(s.cost) });
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="fix:${target}" aria-disabled="${short > 0}">${
     iconSvg('road_dirt', 26)}<span>${label}</span></button>`;
   const hint = short > 0
     ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
-    : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
+    : why
+      // D-245: the reason docks with the button (as the pace cures, D-138): a short side sheet scrolls the lead away
+      ? `<div class="s-hint">${iconSvg('tradePost', 18)}<span dir="auto">${esc(t(why))}</span></div>`
+      : `<div class="s-hint">${esc(t('fix.shown'))}</div>`;
   return fixSection(btn, hint, short > 0);
 }
 
@@ -91,6 +98,8 @@ function paceCureHtml(world: World, pc: PaceCard): string {
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   if (pc.k === 'rank') return rankCureHtml(world, pc);
   if (pc.k === 'grow') return growCureHtml(pc);
+  // D-245: the post card's subject is the post itself; its sheet's gap finder holds the road (normally `fix` wins)
+  if (pc.k === 'post') { const s = gapSuggestion(world, pc.producer); return s ? fixHtml(world, pc.producer, s) : ''; }
   const gate = canPlace(world, pc.type);
   const price = BUILDINGS[pc.type].price;
   const short = price - world.state.coins;
@@ -257,6 +266,17 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
 }
 
 /**
+ * D-245: a saturated granary the unlinked trading post would empty — the reason that goes with the post's road
+ * ("Zamek nie weźmie teraz więcej. Posterunek handlowy za rzeką kupi więcej — doprowadź drogę z mostem."), or null.
+ */
+function postWhy(world: World, b: Building): MessageKey | null {
+  if (b.type !== 'warehouse' || !marketSaturated(world, b)) return null;
+  const post = postWouldTake(world, b.id);
+  const link = post >= 0 ? gapSuggestion(world, post) : null;
+  return link ? (link.bridgeCells > 0 ? 'fix.marketFullPost' : 'fix.marketFullPostRoad') : null;
+}
+
+/**
  * A stall with nothing to fix, said plainly instead of a cure that would not work (audit 2026-11-03): a full
  * yard nobody needs right now (fix 1: no "Kup wóz"), a full granary while another one has room (fix 3, with one
  * tap to it), the rest of a good whose order is complete (fix 6: no granary hint). Only when the chain stops at the
@@ -274,6 +294,9 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
   }
   // D-174: a granary full of loads no market takes now (or a yard it refuses): no "Kup wóz", the plain reason
   if (marketSaturated(world, b)) {
+    // D-245: ...unless the open trading post across the river would take them: lead to its road (the fix below)
+    // (the reason docks with the fix button, postWhy)
+    if (postWhy(world, b)) return '';
     return `<div class="s-hint calm-hint">${iconSvg('coin', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
   }
   // D-212: a granary full of goods nothing wants now (mission XV's fish): no repair, no wagon
@@ -720,9 +743,13 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // gap finder: the root is a missing road -> cheapest road / bridge from the stable, one tap to build;
       // a building the player just placed gets the link at once, before its first status update
       let target = gapTarget(world, chain.length ? chain : [{ kind: 'building', id, status: b.status }]);
+      // D-245: a saturated granary the unlinked trading post would empty: the post's road (with its bridge) is the fix
+      if (target < 0 && b.type === 'warehouse' && stalled) target = postWouldTake(world, id);
       if (target < 0 && b.placedTick >= 0 && world.state.tick - b.placedTick <= UNDO_TICKS && b.type !== 'stable' && gapSuggestion(world, id)) target = id;
       const fix = target >= 0 ? gapSuggestion(world, target) : null;
-      nav.setGhost(fix ? fix.cells : null);
+      // the road to the trading post crosses the river, mostly off screen: framed once, as the sett ghost (D-144/D-245)
+      const far = fix ? buildingById(world, target) : undefined;
+      nav.setGhost(fix ? fix.cells : null, false, far?.type === 'tradePost' ? (far.y + (far.h >> 1)) * world.terrain.w + far.x + (far.w >> 1) : -1);
       // just placed: the same undo as the floating button, here because the sheet covers it
       const u = lastUndoable(world);
       const undo = u && u.building === id
@@ -766,7 +793,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // the card said "wszystkie wozy zajęte" but a wagon took the job while the sheet opened (×4): the same cure,
       // with the wait it answers (first-10-e N8, D-161)
       const ago = !fix && !pcHere && !stalled && !carded && !nav.tutorialRunning?.() && !iceBeforeWagon(world) ? recentWagonWait(world, id) : -1;
-      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : pcHere ? paceCureHtml(world, pcHere) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix, postWhy(world, b)) : pcHere ? paceCureHtml(world, pcHere) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
         : ago >= 0 ? wagonCureHtml(world, t('fix.wagonLately')) : '');
       setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;

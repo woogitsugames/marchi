@@ -2741,3 +2741,48 @@ the sheet replaces the menu like Settings) and beside Settings in the main menu'
 Settings stays the last one for the tools). Closes like every sheet (close, swipe down, Back/Escape). Text from the
 doc, unchanged except "posterunek handlowy" (D-213). 14 keys (`menu.help`, `help.title`, `help.<topic>.h/.p`) in 17
 languages (15 agent translations, BACKLOG). (decided)
+
+## Trading post road card (BACKLOG P2 from D-233)
+
+**D-245 — A saturated granary leads to the unlinked trading post's road; the calm slot gets a "post" card.**
+From rank 4, a full granary (`STORAGE_FULL`) reads calm "rynek nasycony" (D-174/D-233) while the open trading post,
+not reachable from the granary's gate, keeps room in flight for one of its full loads: `postWouldTake(world, granary)`
+(`src/ui/stallKinds.ts`, pure read) returns the post. Then (1) the granary's sheet takes the post as its gap-finder
+target: "Zbuduj drogę i most: N srebra" with the D-132-style road ghost, and the reason docks with the button
+("Posterunek handlowy za rzeką kupi więcej.", D-138 style — a short landscape side sheet scrolls the lead away);
+(2) a new pace card `k: 'post'` (`postCard`, link search cached per network version) names the post itself —
+"Posterunek handlowy: kupi więcej niż nasycony zamek — doprowadź drogę z mostem" (`…drogę` when a bridge already
+stands), kicker "Droga do rangi", road tool marked as the cure, watch-mode tempo "droga do posterunku"; its eye opens
+the post's sheet, which already offers the same road (D-170). Shown also when silver is short (the sheet says how
+much, as the rank card). **Priority:** a real stall → producer / payable mud (contracts only) → the rank card when the
+fleet is enough (D-163) → **post** → fleet cue → mud → rank → bottleneck (D-171) → grow (D-192). Why: with every
+reachable market saturated, one more wagon (fleet cue) only carries loads into full granaries and one more producer
+(bottleneck, grow) only fills them faster; the post opens a second market at 125 % once and the card is gone for good
+after one tap. The rank card stays ahead because a missing good is the next rank's hard gate and costs one building.
+Never in a mission (`contract` → null). Measured (`tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304
+--only card-10,card-30,card-60`, the tool now logs `postMin` and presses the post card / the granary's road):
+post linked — card-10 never → 72,8 / 69,7 / 72,7 min (seeds 1301–1303; rank 4 at 72,7 / 69,6 / 72,5), card-30 seed
+1303 never → 77,5 (rank 4 at 77,3), card-30 1302 72,5 → 71,5; all others identical (card-60 and card-30 1301 linked
+the road from the post's own NO_ROAD pin already; seed 1304 never reaches rank 4 in 120 min). Earned (= renown) at
+120 min: card-10 14 113 / 14 675 / 13 893 → **16 932 / 17 625 / 16 744** (+20 %), card-30 1303 12 814 → 14 951; wagons
+card-10 49 / 47 / 56 → 46 / 43 / 48. Rank 5 is reached by no card player before or after (goods 7/9: the rank card
+names no charcoal burner / malthouse / brewery — BACKLOG); renown is no longer what holds them (17 000 needed). Silver
+left unspent grows with income (card-10 coins at 120 min 11 664 → 14 639; at 90 min 7 737 → 8 821): the card players
+spend only on cards, the post card costs ~50 silver once. balance-night6 `--no-search`: identical output (missions
+untouched). UI read only, no hash change. Tests `tests/post-road-card.test.ts`. Shots `docs/shots/postroad-{hud,post,
+granary}-{412x915,915x412}.jpg` (staged: valley at 1:00 lifted to rank 4, granary of wood at the floor price;
+`tools/postroad-shots.mjs`). (decided)
+
+**D-246 — The trading post's road ghost is framed once like the sett ghost (D-144 extended), and the frame avoids the
+valley's plaque and event card.** `setGhost(cells, pave, frameAt)`: a plain road ghost is framed when the sheet asks
+(`frameAt` = the post's centre cell, kept in view with the ghost — the gate alone left the building under the sheet).
+Fixes on the way: `visibleScene` measured only the first `.waybill-wrap` — in the free valley that is the hidden
+contract waybill, so the rank plaque was never an obstacle (the ghost landed under it in landscape); every
+`.waybill-wrap` and the event card (`.ev-card`) now count. `CameraRig.focusCell` may move the orbit target off the map
+by its own screen shift (`slack`, the last focus's shift; pan/zoom keep it): the post stands on the map's south edge
+and the portrait free area is above a tall sheet, so the clamp pushed the post under the sheet. A far ghost (the
+castle-to-post road starts on screen and ends ~2 000 px below it) is measured through a steep perspective, so the
+first move lands only roughly; once the camera reports `settled()` (glide over, zoom and position eased; at most 3 s)
+the same framing runs once more — a no-op when it already fits. Measured in 3D, staged state: 412×915 post centre from
+(−259, 2115) (off screen) to (147, 253) inside the free rect l 74 / t 116 / r 412 / b 329; 915×412 ghost and post
+between the plaque and the side sheet. Render only, hashes unchanged; layout `--quick` 102/0. (decided)

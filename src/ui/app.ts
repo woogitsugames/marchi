@@ -138,6 +138,9 @@ export interface AppOptions {
 
 type SaveData = { saves: Awaited<ReturnType<typeof listSaves>> | null; profile: Awaited<ReturnType<typeof readProfile>> };
 
+/** At most this long the ghost's framing waits for the camera to settle before its one correction (D-245). */
+const GHOST_SETTLE_MS = 3000;
+
 export class App implements PanelNav {
   readonly view: WorldView;
   private canvas: HTMLCanvasElement;
@@ -220,6 +223,10 @@ export class App implements PanelNav {
   private ghosts: { gap: number[] | null; tut: number[] | null } = { gap: null, tut: null };
   /** The gap ghost is a dirt stretch to pave (the mud card), drawn as setts (D-132). */
   private ghostPave = false;
+  /** The gap ghost is framed once by the camera (D-144 sett ghosts; D-245 the trading post's road). */
+  private ghostFrame = false;
+  /** A cell framed with the ghost (D-245: the trading post's centre), -1 none. */
+  private ghostFrameAt = -1;
   private ghostKey = '';
   /** The sett ghost last framed by the camera (D-144): framed once per ghost, reset when the ghost goes. */
   private ghostFramed = '';
@@ -649,9 +656,11 @@ export class App implements PanelNav {
   }
 
   /** PanelNav: the gap finder's ghost road while its sheet is open. */
-  setGhost(cells: number[] | null, pave = false): void {
+  setGhost(cells: number[] | null, pave = false, frameAt = -1): void {
     this.ghosts.gap = cells;
     this.ghostPave = !!cells && pave;
+    this.ghostFrame = !!cells && (pave || frameAt >= 0);
+    this.ghostFrameAt = cells ? frameAt : -1;
   }
 
   undoPlace(building: number): void {
@@ -674,23 +683,36 @@ export class App implements PanelNav {
     this.view.setRoadPreview(c ? { cells: c, valid: true, badCell: -1, pave } : null);
     if (!c) this.ghostFramed = '';
     // a sett ghost that appears on an open sheet (the stall turned into a mud or span cure) is framed once too
-    else if (pave) this.frameGhost();
+    else if (this.ghosts.gap !== null && this.ghostFrame) this.frameGhost();
   }
 
   /**
    * The sett ghost of a mud stretch or a stone span (D-132/D-134) in the part of the map the sheet leaves free
    * (D-144, owner 2026-11-05): ONE camera move when it is off screen or under the sheet, as the tutorial frames its
    * crossing (D-107); a cut under reduced motion (focusCell). `with` adds the sheet's subject (its gate) so both
-   * stay in view. Once per ghost: panning away afterwards is the player's choice.
+   * stay in view. Once per ghost: panning away afterwards is the player's choice. D-245: the trading post's road
+   * (a plain dirt ghost across the river) is framed the same way, with the post itself (`ghostFrameAt`).
    */
   private frameGhost(withCell = -1): void {
     const c = this.ghosts.gap;
-    if (!c?.length || !this.ghostPave) return;
+    if (!c?.length || !this.ghostFrame) return;
     const k = c.join(',');
     if (k === this.ghostFramed) return;
     this.ghostFramed = k;
     // a 49-cell stretch can be longer than the free map beside a side sheet: zoom out up to 3x for it
-    this.frameCells(withCell >= 0 ? [...c, withCell] : c, 3);
+    const extra = [withCell, this.ghostFrameAt].filter((x) => x >= 0);
+    const cells = extra.length ? [...c, ...extra] : c;
+    this.frameCells(cells, 3);
+    // D-245: a ghost reaching far off screen (the trading post's road from the castle) is measured through a steep
+    // perspective, so the move lands only roughly; once the camera has eased to it, the same framing corrects it
+    // (a no-op when it already fits). Still this one ghost's framing: nothing moves once it is shown.
+    const w = this.world, until = performance.now() + GHOST_SETTLE_MS;
+    const check = (): void => {
+      if (this.world !== w || this.ghostFramed !== k || this.ghosts.gap?.join(',') !== k) return;
+      if (this.view.camera.settled?.() === false && performance.now() < until) { requestAnimationFrame(check); return; }
+      this.frameCells(cells, 3);
+    };
+    requestAnimationFrame(check);
   }
 
   /** slot: a valley ledger from the picker; default = the main menu's "Continue" save. */
@@ -1107,7 +1129,7 @@ export class App implements PanelNav {
       if (focus) this.stopFollow();
       this.sheets.open(buildingSheet(this, id));
       // a sheet that shows a sett ghost frames the ghost and the building's gate together (D-144); else the subject
-      if (this.ghosts.gap && this.ghostPave) { this.ghostFramed = ''; this.frameGhost(b.gate); }
+      if (this.ghosts.gap && this.ghostFrame) { this.ghostFramed = ''; this.frameGhost(b.gate); }
       else this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
     } else {
       const w = this.world.state.wagons.find((q) => q.id === id);
@@ -1137,8 +1159,10 @@ export class App implements PanelNav {
     };
     add(this.sheets.top?.el, true);
     add(this.layers.hud.querySelector<HTMLElement>('.rail'));
-    // the contract's waybill, or in the free valley the town plaque (a second .waybill-wrap; the first stays hidden there)
+    // the contract's waybill or the free valley's rank plaque (both .waybill-wrap; the hidden one has no box, D-245)
     for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.waybill-wrap')) add(el);
+    // the free valley's event card ("Wieści z doliny") sits over the map's top-left corner too
+    add(this.layers.hud.querySelector<HTMLElement>('.ev-card'));
     // HUD v3 (D-43): top chips/speed bar and the worst-stall row also hide the map. The .topbar box itself is
     // empty (its pieces sit in the .hud-top grid), so its pieces are the obstacles (layout check, D-62).
     for (const el of this.layers.hud.querySelectorAll<HTMLElement>('.topbar > .menu-btn, .topbar > .chips, .topbar > .speed')) add(el);

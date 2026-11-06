@@ -67,6 +67,8 @@ export interface CameraControl {
   focusCell(cell: number, screenOffset?: ScreenOffset): void;
   /** Follow a wagon until cleared (null), kept at the canvas centre + screenOffset. */
   follow(wagonId: number | null, screenOffset?: ScreenOffset): void;
+  /** No glide running and the eased position/zoom have reached their goals (D-245); absent = always settled. */
+  settled?(): boolean;
 }
 
 export interface WorldView {

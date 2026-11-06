@@ -718,6 +718,7 @@ export const pl = {
   'seal.tempo.fleet': 'tempo: kup wóz',
   'seal.tempo.rank': 'ranga: sprzedaj {goodAcc}',
   'seal.tempo.grow': 'ranga: więcej {goodGen}',
+  'seal.tempo.post': 'droga do posterunku',
   // short landscape cause chain: the middle links folded behind one row (D-111; localized)
   'why.more': '{n, plural, one {+# ogniwo pośrednie} few {+# ogniwa pośrednie} many {+# ogniw pośrednich} other {+# ogniwa pośredniego}}',
   // day 8c: the pace card (a slow order, not a stall) — localized
@@ -767,8 +768,12 @@ export const pl = {
   'post.marketLine': 'Posterunek handlowy za rzeką płaci {pct} ceny, z własnym nasyceniem.',
   'post.show': 'Pokaż posterunek handlowy',
   'cause.postNoRoad': 'czeka na drogę z mostem',
+  'cause.pacePost': 'kupi więcej niż nasycony zamek — doprowadź drogę z mostem',
+  'cause.pacePostRoad': 'kupi więcej niż nasycony zamek — doprowadź do niego drogę',
   'cause.marketFull': 'pełny — rynek nie weźmie teraz więcej tych towarów',
   'fix.marketFull': 'Rynek bierze tyle, ile zje — nowy wóz tylko by czekał. Sprzedaj inny towar albo przyjmij zamówienie.',
+  'fix.marketFullPost': 'Posterunek handlowy za rzeką kupi więcej.',
+  'fix.marketFullPostRoad': 'Posterunek handlowy kupi więcej.',
   'cause.unwanted': 'pełny — tego towaru nikt teraz nie potrzebuje',
   'fix.unwanted': 'Tego, co tu leży, nie bierze ani zamówienie, ani żaden warsztat — nowy wóz tylko by czekał. Jeśli przez to stoi producent, jego towar potrzebuje innego spichlerza.',
   // free valley bottleneck card (D-171)

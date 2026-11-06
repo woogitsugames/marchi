@@ -714,6 +714,7 @@ export const en: FullDict = {
   'seal.tempo.fleet': 'pace: buy a wagon',
   'seal.tempo.rank': 'rank: sell {goodAcc}',
   'seal.tempo.grow': 'rank: more {goodGen}',
+  'seal.tempo.post': 'road to the trading post',
   // short landscape cause chain: the middle links folded behind one row (D-111)
   'why.more': '{n, plural, one {+# link between} other {+# links between}}',
   // day 8c: the pace card (a slow order, not a stall) — see PENDING_KEYS
@@ -763,8 +764,12 @@ export const en: FullDict = {
   'post.marketLine': 'The trading post across the river pays {pct}, with its own saturation.',
   'post.show': 'Show the trading post',
   'cause.postNoRoad': 'waits for a road and a bridge',
+  'cause.pacePost': 'buys more than the saturated castle — build a road with a bridge',
+  'cause.pacePostRoad': 'buys more than the saturated castle — build a road to it',
   'cause.marketFull': 'full — the market takes no more of these goods now',
   'fix.marketFull': 'The market only takes what it can use — a new wagon would just wait. Sell another good or accept an order.',
+  'fix.marketFullPost': 'The trading post across the river buys more.',
+  'fix.marketFullPostRoad': 'The trading post buys more.',
   'cause.unwanted': 'full — nobody needs these goods now',
   'fix.unwanted': 'Neither the order nor any workshop takes what lies here — a new wagon would just wait. If a producer stands because of it, its goods need another granary.',
   // free valley bottleneck card (D-171)
