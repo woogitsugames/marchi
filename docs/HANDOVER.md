@@ -17,8 +17,19 @@
   towarów, duch w dolinie na miejscu osiągalnym drogą, słodownia rośnie przed browarem. card-30 ranga 5 na 4/4 ziaren
   (97–105 min), card-60 1/4; misje i DECENT bez zmian. Research `docs/research/2026-11-07-valley-fame-gap.md`.
 - W toku: agent `claude/w-neck` — „Wąskie gardło” pomija nasycone łańcuchy + zawijanie linii `fix.growWhyFlow` w poziomie
-  (D-268..D-271); agent `claude/w-winter` — gołe korony
-  zimą (D-260..D-263, zrzuty do akceptacji);
+  (D-268..D-271); researcher `claude/research-castles` — misja „dwa zamki” (raport `docs/research/2026-11-07-two-castles.md`).
+- **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
+  liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
+  alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
+  `docs/shots/winter-trees-{before,after}-*` (np. `after-winter-high-915x412`, `after-winter-near-high-412x915`).
+
+### Decyzje na rano (7 XI)
+1. **Drzewa zimą (`claude/w-winter`)**: scalić? (rekomendacja: **tak** — wygląda naturalnie, iglaste odróżniają się od
+   gołych; na „low” lekki dithering gałązek). Wiosną liście wracają w kolorach późnej jesieni — osobny odcień wiosenny?
+   (rekomendacja: tak, mała paczka po scaleniu).
+2. **card-60 (gracz raz na minutę)** nadal bez rangi 5 na 3/4 ziaren: karta łącząca kroki (słodownia + browar jednym
+   przyciskiem)? (rekomendacja: poczekać na playtest — card-10/30 już dochodzą).
+3. **Misja „dwa zamki”** — pytania z raportu researchera (gdy gotowy).
 - GPT: paczka 12 (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
 - **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
   liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
