@@ -13,13 +13,14 @@
 // null without a contract), events and chronicle entries per minute.
 import {
   BUILDINGS, MARKET, MAX_WAGONS, RANKS, validatePlace, type Good, TICK_HZ, WAGON_PRICE, applyCommand, isHeld, buildingById, checkInvariants, createWorld, explainBuilding, lineCells, step, suggestLinkToStable,
-  unexplainedStalls, newPaceLog, samplePace, type BuildingType, type Command, type PaceLog, type World,
+  unexplainedStalls, newPaceLog, findPath, samplePace, type BuildingType, type Command, type PaceLog, type World,
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
 import { linkedToStable } from '../src/sim/tradePost';
 import { calmWhy, cureFor, gapTarget, postWouldTake, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
+import { bottleneckCard } from '../src/ui/bottleneck';
 import { checkChronicle } from '../src/sim/proposals/chronicle';
 import { DECENT, type BotStep } from './bot-sandbox';
 import { writeFileSync } from 'node:fs';
@@ -42,7 +43,7 @@ export const MIN: BotStep[] = [
   { name: 'fisher by the river', rank: 2, cmds: () => [put('fisher', 44, 32, 2)] },
 ];
 
-interface Opts {
+export interface Opts {
   plan: readonly BotStep[] | null; eye: number; events: boolean;
   /**
    * Prototype (not in the game): a free-valley fleet cue. When the card shows a calm pickup wait (or nothing) and a
@@ -71,6 +72,8 @@ interface Opts {
    * woodcutter, sawmill) at the ghost by the castle.
    */
   sbGrow?: { keep: number };
+  /** Research hook (valley-fame-gap): called once per game second, after the look, read only. */
+  onSecond?: (w: World, log: PaceLog) => void;
 }
 
 export interface Look {
@@ -99,6 +102,8 @@ export interface Result {
  * road (network.ts: a diagonal edge needs both corner cells free of buildings). `safeSites` makes the ghost skip them.
  */
 let safeSites = false;
+/** D-264: the card players also press the bottleneck card's cure (--no-neck: the D-251 player, blind to it). */
+let neckCards = true;
 function cutsDiagonal(w: World, type: BuildingType, x0: number, y0: number): boolean {
   const W = w.terrain.w, def = BUILDINGS[type], roads = w.state.roads;
   const inFoot = (x: number, y: number): boolean => x >= x0 && x < x0 + def.w && y >= y0 && y < y0 + def.h;
@@ -131,8 +136,12 @@ function placeAtGhost(w: World, type: BuildingType, near: number): boolean {
   if (!applyCommand(w, put(type, s.x, s.y, s.facing)).ok) return false;
   const b = w.state.buildings[before]!;
   const link = suggestLinkToStable(w, b.id);
-  if (!link || !link.cells.length || applyCommand(w, { t: 'road', surface: 1, cells: link.cells }).ok) return true;
-  applyCommand(w, { t: 'demolish', cell: b.gate });
+  if (link && link.cells.length) applyCommand(w, { t: 'road', surface: 1, cells: link.cells });
+  // D-264: a site no wagon can reach (its gate boxed in by neighbours, no link to build) — the player sees the fresh
+  // building cut off at once and takes it back instead of reading its critical "no road" card for the rest of the game
+  if (findPath(w, w.state.buildings.find((q) => q.type === 'stable')!.gate, b.gate, false)) return true;
+  // (the footprint's cell: a gate cell is a road and refuses with IS_GATE)
+  applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) });
   return false;
 }
 
@@ -197,6 +206,20 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
       }
       return { ...card, cure: null, act: '' };
     }
+    // D-264: the bottleneck card (D-171) is the calm slot's last claim in the HUD (after the pace card); its eye opens
+    // the waiting workshop's sheet: "Postaw: …" by the nearest producer, or "Kup wóz" for a wagon-short good / the fleet
+    if (game && !pc && neckCards) {
+      const n = bottleneckCard(w);
+      if (n) {
+        const card = { ...base, kind: 'neck:' + (n.good ?? 'fleet'), calm: true, crit: false, calmWhy: null };
+        if (n.kind === 'good' && n.cure === 'producer' && n.build) {
+          if (st.coins < BUILDINGS[n.build].price) return { ...card, cure: 'producer', act: 'neck?NO_COINS' };
+          return { ...card, cure: 'producer', act: placeAtGhost(w, n.build, n.near >= 0 ? n.near : n.focus) ? 'neck:' + n.build : 'neck?fail:' + n.build };
+        }
+        const res = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) });
+        return { ...card, cure: 'wagon', act: res.ok ? 'neck:wagon' : 'neck?' + res.err.k };
+      }
+    }
     if (game && growOpt && (!ranked.length || ranked[0]!.minor)) {
       const g = growPick(w, growOpt.keep);
       if (g) return { ...base, kind: 'sbGrow:' + g, calm: true, crit: false, calmWhy: null, cure: 'producer',
@@ -244,7 +267,10 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
   if (target >= 0) {
     cure = 'road';
     const sug = suggestLinkToStable(w, target);
-    if (!sug) act = 'road?none';
+    // D-264: a producer cut off with no road to offer (its gate boxed in by later neighbours): the card names it
+    // critical and offers nothing, so the player takes it back rather than read that card for the rest of the game
+    if (!sug && b.status.k === 'NO_ROAD' && BUILDINGS[b.type].recipe && b.type !== 'tradePost') act = applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) }).ok ? 'demolish' : 'road?none';
+    else if (!sug) act = 'road?none';
     else { const res = applyCommand(w, { t: 'road', surface: 1, cells: sug.cells }); act = res.ok ? 'road' : 'road?' + res.err.k; }
   } else {
     cure = cureFor(w, b.id);
@@ -333,6 +359,7 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       r.looks.push(l);
       if (l.act && !l.act.includes('?')) r.actions[l.act] = (r.actions[l.act] ?? 0) + 1;
     }
+    if (o.onSecond && t % TICK_HZ === 0) o.onSecond(w, log);
     step(w);
     sampleInputWaits(w);
     samplePace(log, w);
@@ -373,6 +400,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const seeds = (arg('--seeds') ?? 'default').split(',').map((s) => (s === 'default' ? undefined : Number(s)));
   const only = arg('--only');
   safeSites = args.includes('--safe-sites');
+  neckCards = !args.includes('--no-neck');
   // research valley-ranks-2-3: rank threshold overrides, e.g. --ranks 2:renown=700,3:renown=2000
   for (const part of (arg('--ranks') ?? '').split(',').filter(Boolean)) {
     const [rk, kv] = part.split(':'); const [key, val] = kv!.split('=');
