@@ -395,7 +395,6 @@ export const en: FullDict = {
   'season.effect.winter-farm': 'Winter: farms produce about 40% less.',
   'season.effect.winter-fisher': 'Winter: fishers produce about 50% less.',
   'season.effect.summer-farm': 'Summer: farms produce about 20% more.',
-  'season.effect.autumn-fair': 'Autumn fair: beer sells for 25% more.',
   'season.effect.spring-thaw': 'Thaw: dirt roads slower (×0.55).',
   'season.upstream': '{why} Slower supply, not a stall.',
   'season.iceWinter': 'Winter ice recedes on its own; the bridge is not damaged.',
@@ -432,6 +431,7 @@ export const en: FullDict = {
   'status.WAITING_UPSTREAM.supplierWaits': 'Waiting for {good} — the supplier is itself waiting for {supplierGood}',
   // HUD v3 (D-43): worst stall card, alarm seal, snow pill, wagon shortfall: see PENDING_KEYS
   'hud.worst': 'Worst stall',
+  'hud.calmStall': 'Waiting',
   'hud.worstShow': 'Show: {name}',
   'hud.stallsNext': 'Stalls: {n} — show the next one',
   'pin.worst': 'Worst stall — {name}',

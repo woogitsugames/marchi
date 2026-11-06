@@ -643,7 +643,6 @@ export class Hud {
     }
     if (this.neck) { this.updateNeck(this.neck, stalls); return; }
     this.stallRow.classList.remove('is-pace');
-    setText(this.stallKick, t('hud.worst'));
     const w = stalls[0];
     const b = w ? buildingById(world, w.id) : null;
     this.cure = b ? cureFor(world, b.id) : null;
@@ -673,6 +672,8 @@ export class Hud {
     this.stallRow.classList.toggle('is-crit', w.crit);
     // a calm stall heading the list (no pace card for it): the plain panel, as the pace card (D-181)
     this.stallRow.classList.toggle('is-calm', w.minor);
+    // ...and a calm kicker: nothing to fix, it only waits (D-184)
+    setText(this.stallKick, t(w.minor ? 'hud.calmStall' : 'hud.worst'));
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
     setHtml(this.alarmIcon, buildingStatusIcon(b.status, 34, b.type));
     setText(this.alarmBadge, fmtInt(stalls.length));

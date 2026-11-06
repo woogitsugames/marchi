@@ -2339,3 +2339,12 @@ customer still takes it (`outputCustomer`), an input a season slows — keep the
 full row in the sheet, although their pin is brass; (b) the stall card's kicker still says "Najgorszy zastój" over a
 calm stall (needs a key, e.g. "Postój"); (c) a wagon held by seasonal ice keeps the clay status line (a stone bridge
 is a real cure); (d) the codex fold already reads its calm variant (D-98), nothing to do. (decided)
+
+**D-184 — A calm stall heading the stall card gets a calm kicker (D-182 item b).**
+D-181 gave the card headed by a `minor` stall the pace card's plain panel, but the kicker above it still said
+"Najgorszy zastój" — an alarm word over a yard that only waits for pickup. New key `hud.calmStall` (pl "Postój",
+en "Waiting", 15 more languages as agent translations, native review pending with the rest); the kicker follows
+`w.minor` in the same branch that toggles `.is-calm`, and the unconditional `hud.worst` reset before the signature
+check is gone (pace and bottleneck signatures differ, so the kicker is always rewritten when the card changes kind).
+UI only, hashes unchanged. Shots `docs/shots/day9l-after-{412x915,915x412}.jpg` (`tools/day9l-shots.mjs`, mission
+III at 1:00: two calm stalls, no pace card). (decided)
