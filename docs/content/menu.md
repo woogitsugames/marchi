@@ -16,7 +16,7 @@ I jest punktem wejścia; Wolna dolina jest alternatywą bez terminów, nie czę�
 | VII | Ryby zza rzeki | Fish from across the river |
 | VIII | Kamień na bruk | Stone for the road |
 | IX | Dwa warsztaty, jedno drewno | Two workshops share wood |
-| X | Drwal dla dwóch warsztatów | One woodcutter, two workshops |
+| X | Drwal dla dwóch warsztatów | One cutter, two workshops |
 | XI | Daleka droga po słód | A long road for malt |
 | XII | Piwo na następną dostawę | Ale for the next delivery |
 | XIII | Jeden wóz dla marchii | One wagon for the march |
