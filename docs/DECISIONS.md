@@ -2429,7 +2429,7 @@ on a build: 1.2 s press opens nothing, 3.3 s opens the screen, S4 reloads into `
 row has the template's columns and the measured fields, and the save store stays empty
 (`docs/shots/playtest-picker-{menu,starts,copied}.jpg`). (decided)
 
-**D-192 — Free valley "rozbuduj": the grow card names one more producer when the next rank lacks only renown (proposed — awaits owner).**
+**D-192 — Free valley "rozbuduj": the grow card names one more producer when the next rank lacks only renown (decided — owner 2026-11-06).**
 Research valley-ranks-2-3 F1 (`docs/research/2026-11-05-valley-ranks-2-3.md`, prototype `+grow`): a player who follows
 only the cards reached rank 2 at ~31 min and rank 3 at 65–72 min with 2 700–2 900 silver idle, because once the goods
 were sold no card ever asked him to grow a working chain. New pace-card kind `grow` (`src/ui/paceCard.ts` `growCard`):
@@ -2464,4 +2464,4 @@ renown stays the binding requirement in every run, renown/min 1→2 ~40 → 46�
 untouched, DECENT and every mission hash unchanged. Tests `tests/valley-grow.test.ts`. Shots
 `docs/shots/valley-grow-{card,sheet,ghost}-412x915.jpg` (`tools/valley-grow-shots.mjs`, staged state).
 Owner question: ship the card (UI) instead of lowering renown thresholds (the research's balance alternative takes
-DECENT out of its test windows). (proposed — awaits owner)
+DECENT out of its test windows). (decided — owner 2026-11-06)
