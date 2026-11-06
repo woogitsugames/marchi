@@ -368,7 +368,6 @@ export const de: Dict = {
   "season.effect.winter-farm": "Winter: Höfe arbeiten rund 40 % langsamer.",
   "season.effect.winter-fisher": "Winter: Fischer arbeiten rund 50 % langsamer.",
   "season.effect.summer-farm": "Sommer: Höfe erzeugen rund 20 % mehr.",
-  "season.effect.autumn-fair": "Herbstmarkt: Bierpreis +25 %.",
   "season.effect.spring-thaw": "Tauwetter: Feldwege langsamer (×0,55).",
   "season.upstream": "{why} Die Lieferung ist nur langsamer, nicht gestoppt.",
   "season.iceWinter": "Wintereis taut von selbst; die Brücke ist unbeschädigt.",

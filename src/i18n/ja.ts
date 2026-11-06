@@ -368,7 +368,6 @@ export const ja: Dict = {
   "season.effect.winter-farm": "冬：農場の稼働速度が約40%低下。",
   "season.effect.winter-fisher": "冬：漁師の作業速度が約50%低下。",
   "season.effect.summer-farm": "夏：農場の生産量が約20%増加。",
-  "season.effect.autumn-fair": "秋の市：ビール価格が25%上昇。",
   "season.effect.spring-thaw": "雪解け：未舗装路の速度低下（×0.55）。",
   "season.upstream": "{why} 配送が遅いだけで、停止ではない。",
   "season.iceWinter": "冬の氷は自然に解ける。橋は損傷していない。",

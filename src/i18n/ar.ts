@@ -368,7 +368,6 @@ export const ar: Dict = {
   "season.effect.winter-farm": "الشتاء: المزارع تعمل أبطأ بنحو 40%.",
   "season.effect.winter-fisher": "الشتاء: الصيادون يعملون أبطأ بنحو 50%.",
   "season.effect.summer-farm": "الصيف: المزارع تنتج أكثر بنحو 20%.",
-  "season.effect.autumn-fair": "سوق الخريف: يرتفع سعر الجعة 25%.",
   "season.effect.spring-thaw": "ذوبان الثلج: الطرق الترابية أبطأ (×0.55).",
   "season.upstream": "⁨{why}⁩ التوصيل أبطأ، لكنه لم يتوقف.",
   "season.iceWinter": "جليد الشتاء يزول وحده؛ الجسر غير متضرر.",

@@ -368,7 +368,6 @@ export const hi: Dict = {
   "season.effect.winter-farm": "सर्दी: खेतों का काम लगभग 40% धीमा।",
   "season.effect.winter-fisher": "सर्दी: मछुआरों का काम लगभग 50% धीमा।",
   "season.effect.summer-farm": "गर्मी: खेतों का उत्पादन लगभग 20% अधिक।",
-  "season.effect.autumn-fair": "पतझड़ का मेला: बीयर का दाम 25% अधिक।",
   "season.effect.spring-thaw": "बर्फ पिघलना: कच्चे रास्ते धीमे (×0.55)।",
   "season.upstream": "{why} आपूर्ति बस धीमी है, रुकी नहीं।",
   "season.iceWinter": "सर्दी की बर्फ खुद पिघलेगी; पुल क्षतिग्रस्त नहीं है।",

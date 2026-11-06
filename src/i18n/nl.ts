@@ -368,7 +368,6 @@ export const nl: Dict = {
   "season.effect.winter-farm": "Winter: boerderijen werken zo'n 40% trager.",
   "season.effect.winter-fisher": "Winter: vissers werken zo'n 50% trager.",
   "season.effect.summer-farm": "Zomer: boerderijen leveren zo'n 20% meer op.",
-  "season.effect.autumn-fair": "Herfstmarkt: bierprijs +25%.",
   "season.effect.spring-thaw": "Dooi: onverharde wegen trager (×0,55).",
   "season.upstream": "{why} Langzamere levering, geen stilstand.",
   "season.iceWinter": "Het winterijs smelt vanzelf; de brug is niet beschadigd.",

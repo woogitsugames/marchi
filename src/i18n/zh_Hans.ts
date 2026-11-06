@@ -368,7 +368,6 @@ export const zh_Hans: Dict = {
   "season.effect.winter-farm": "冬季：农场运作速度约降低40%。",
   "season.effect.winter-fisher": "冬季：渔夫作业速度约降低50%。",
   "season.effect.summer-farm": "夏季：农场产量约增加20%。",
-  "season.effect.autumn-fair": "秋季集市：啤酒价格上涨25%。",
   "season.effect.spring-thaw": "解冻期：土路减速（×0.55）。",
   "season.upstream": "{why}只是送货变慢，并非停工。",
   "season.iceWinter": "冬冰会自行消退，桥梁并未损坏。",

@@ -368,7 +368,6 @@ export const ko: Dict = {
   "season.effect.winter-farm": "겨울: 농장 작업 속도 약 40% 감소.",
   "season.effect.winter-fisher": "겨울: 어부 작업 속도 약 50% 감소.",
   "season.effect.summer-farm": "여름: 농장 생산량 약 20% 증가.",
-  "season.effect.autumn-fair": "가을 장터: 맥주 가격 25% 상승.",
   "season.effect.spring-thaw": "해빙기: 흙길 속도 저하(×0.55).",
   "season.upstream": "{why} 공급이 느려질 뿐, 중단된 것은 아닙니다.",
   "season.iceWinter": "겨울 얼음은 저절로 녹습니다. 다리는 손상되지 않았습니다.",

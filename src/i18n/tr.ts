@@ -368,7 +368,6 @@ export const tr: Dict = {
   "season.effect.winter-farm": "Kış: çiftlikler yaklaşık %40 daha yavaş çalışır.",
   "season.effect.winter-fisher": "Kış: balıkçılar yaklaşık %50 daha yavaş çalışır.",
   "season.effect.summer-farm": "Yaz: çiftlikler yaklaşık %20 daha fazla üretir.",
-  "season.effect.autumn-fair": "Sonbahar panayırı: bira fiyatı %25 artar.",
   "season.effect.spring-thaw": "Erime: toprak yollar yavaşlar (×0,55).",
   "season.upstream": "{why} Teslimat yavaş, iş durmadı.",
   "season.iceWinter": "Kış buzu kendiliğinden erir; köprü hasarlı değildir.",

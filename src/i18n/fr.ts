@@ -368,7 +368,6 @@ export const fr: Dict = {
   "season.effect.winter-farm": "Hiver : les fermes travaillent environ 40 % plus lentement.",
   "season.effect.winter-fisher": "Hiver : les pêcheurs travaillent environ 50 % plus lentement.",
   "season.effect.summer-farm": "Été : les fermes produisent environ 20 % de plus.",
-  "season.effect.autumn-fair": "Foire d'automne : prix de la bière +25 %.",
   "season.effect.spring-thaw": "Dégel : chemins de terre ralentis (×0,55).",
   "season.upstream": "{why} Livraison ralentie, pas d'arrêt.",
   "season.iceWinter": "La glace hivernale fondra d'elle-même ; le pont est intact.",

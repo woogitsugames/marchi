@@ -368,7 +368,6 @@ export const sv: Dict = {
   "season.effect.winter-farm": "Vinter: gårdar arbetar cirka 40 % långsammare.",
   "season.effect.winter-fisher": "Vinter: fiskare arbetar cirka 50 % långsammare.",
   "season.effect.summer-farm": "Sommar: gårdar producerar cirka 20 % mer.",
-  "season.effect.autumn-fair": "Höstmarknad: ölpriset +25 %.",
   "season.effect.spring-thaw": "Tjällossning: jordvägar långsammare (×0,55).",
   "season.upstream": "{why} Bara långsammare leverans, inget stopp.",
   "season.iceWinter": "Vinterisen smälter av sig själv; bron är inte skadad.",

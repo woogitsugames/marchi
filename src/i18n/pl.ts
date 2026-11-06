@@ -397,7 +397,6 @@ export const pl = {
   'season.effect.winter-farm': 'Zima: gospodarstwa pracują około 40% wolniej.',
   'season.effect.winter-fisher': 'Zima: rybacy pracują około 50% wolniej.',
   'season.effect.summer-farm': 'Lato: gospodarstwa produkują około 20% więcej.',
-  'season.effect.autumn-fair': 'Jesienny jarmark: cena piwa +25%.',
   'season.effect.spring-thaw': 'Roztopy: gruntowe drogi wolniejsze (×0,55).',
   'season.upstream': '{why} To wolniejsza dostawa, nie przestój.',
   'season.iceWinter': 'Zimowa kra ustąpi sama; most nie jest zniszczony.',
