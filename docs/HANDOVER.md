@@ -23,8 +23,10 @@
 1. ~~`claude/w-onboard`~~ **scalone** (b2625c6, APK wysłane ~20:00): samouczek budowania w Wolnej dolinie (D-235,
    `?tut=build`), ekran pomocy (D-236). Pytania właściciela: krok 5 (przestój) zwykle się nie pojawia — wywołać celowo?
    pomoc także z mapy („?” na karcie)?
-2. **Agent `claude/w-postroad`** (worktree research): karta/arkusz prowadzi do drogi z mostem do posterunku, gdy rynek
-   zamku nasycony a posterunek bez drogi (BACKLOG P2 z D-233), D-245..D-249. Jak wyżej.
+2. ~~`claude/w-postroad`~~ **scalone** (D-245/D-246): karta „Posterunek handlowy kupi więcej — doprowadź drogę z mostem”,
+   arkusz spichlerza z drogą do posterunku, poprawki kadrowania kamery (tablica rangi i „Wieści z doliny” liczą się
+   jako zasłona). **Nowe P2 z pomiaru:** gracz „karta” nie dochodzi do rangi 5 (7 z 9 towarów — karta rangi nie nazywa
+   węglarza/słodowni/browaru); niewydane srebro rośnie. Agentów w toku: **brak** (sesja zakończona ~21:00 6 XI).
 3. **GPT:** paczka 12 (`docs/orders/gpt6-orders-12.zip`, zlecenia 66–70) **nieoddana**; z paczki 13 nieoddane 71, 72,
    79–84, 100. Oddane 73–78, 85–99 scalone (`docs/reviews/gpt-integration-13.md`). Gałęzie `gpt/*` przeglądaj wg wzoru
    tego raportu (dozwolone ścieżki, testy zielone, treści-propozycje wdraża koordynator).
