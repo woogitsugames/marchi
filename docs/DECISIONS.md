@@ -2786,3 +2786,39 @@ first move lands only roughly; once the camera reports `settled()` (glide over, 
 the same framing runs once more — a no-op when it already fits. Measured in 3D, staged state: 412×915 post centre from
 (−259, 2115) (off screen) to (147, 253) inside the free rect l 74 / t 116 / r 412 / b 329; 915×412 ghost and post
 between the plaque and the side sheet. Render only, hashes unchanged; layout `--quick` 102/0. (decided)
+
+**D-250 — The valley's rank card also names the charcoal burner, the malthouse and the brewery (ranks 3–4).** BACKLOG P2
+(D-245): `RANK_ORDER` (`src/ui/paceCard.ts`) knew only farm, mill, bakery, fisher and quarry, so a card-only player
+sold 7 of the 10 goods and stood at "goods 7/9" for rank 5 (Stolica) with renown already near 17 000. The order is now
+farm → mill (farm stands) → bakery (mill stands) → fisher → quarry → **charcoal burner** (a woodcutter stands) →
+**malthouse** (a farm stands) → **brewery** (a malthouse stands). Why this order: the charcoal burner is the cheapest
+(35) and burns the wood the woodcutters pile up anyway (their yards wait for pickup most of the late game); the malthouse
+uses the farms' grain; the brewery needs malt, so it comes once a malthouse stands (it may still be named before the
+first malt is sold — 60 silver while 10 000+ lie unspent, and beer at base 9 is the dearest good). The rule is unchanged:
+only while the next rank still lacks distinct goods sold, only a building the rank allows, never a sold good or a type
+already standing, only with a site by the castle (D-175); same card text, sheet button "Postaw: …" and ghost by the
+castle as the other entries (no new keys). In practice the card names them at rank 4 (rank 5 needs 9 goods), or at rank
+3 when the player sold only 6 goods (seed 1304: before stuck at rank 3 with 6/7 goods all 120 min). UI read only.
+Tests `tests/valley-rank.test.ts` (order, brewery after the malthouse, gone once the goods are sold, each placed at its
+ghost). Shots `docs/shots/rank5-{hud,sheet,ghost}-{412x915,915x412}.jpg` (staged: valley at 1:00 lifted to rank 4, the
+seven goods sold; `tools/rank5-shots.mjs`). (decided)
+
+**D-251 — The grow card (D-192) grows the rank-5 chains too.** `GROW_CHAINS` gains `['charcoalBurner']` and
+`['malthouse', 'brewery']` with the same ratio rule (malthouse ≤ brewery, brewery < malthouse); the D-174 saturation
+check closes a chain whose end good is cheap. Why: once rank 5 lacks only renown, the fresh goods (charcoal 4, beer 9)
+fetch more than a fourth farm or sawmill, and the chain counts are low, so "fewest built first" picks them. Measured
+together with D-250 (`tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304 --only card-10,card-30,card-60,
+decent`), rank-5 minute (– = not reached; renown at 120 min in brackets):
+
+| player | before (seeds 1301/1302/1303/1304) | after |
+|---|---|---|
+| card-10 | – / – / – / – (16 932 / 17 625 / 16 744 / 13 608; goods 7/9, 7/9, 7/9, 6/7 at rank 3) | **108,7 / 103,8 / 109,3 / 107,4** |
+| card-30 | – / – / – / – (15 202 / 15 767 / 14 951 / 12 188) | – / **117,5** / – / – (16 919 / – / 16 660 / 16 467; goods 9/9) |
+| card-60 | – / – / – / – (10 758 / 11 281 / 8 349 / 10 452) | – (11 486 / 12 160 / 8 349 / 12 428; goods 9/9 except 1303) |
+| decent | 117,6 / 116,7 / 117,0 / 115,6 | identical |
+
+D-250 alone gave card-10 111,8 / 106,0 / 112,8 / 107,8; D-251 adds 0,4–3,5 min. Goods are no longer what holds any card
+player (9/9 everywhere rank 4 is reached); card-30 misses rank 5 by 81–533 renown, card-60 by ~5 000 — renown/fleet, not
+the card's knowledge (the slot is held by calm pickup waits 5 000+ s per run, silver piles up unspent: BACKLOG).
+card-60 seed 1303 stays at rank 3 on flow (107/120) before and after. Mission hashes (`tools/mission-hashes.ts`, 45
+strategies) identical; UI read only. Test `tests/valley-grow.test.ts` (ratios of the new chains). (decided)
