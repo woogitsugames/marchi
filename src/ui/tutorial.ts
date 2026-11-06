@@ -74,6 +74,10 @@ export function union(bs: Box[]): Box | null {
   const x1 = Math.max(...bs.map((b) => b.x + b.w)), y1 = Math.max(...bs.map((b) => b.y + b.h));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
+/** A box grown on every side (the build ghost's gate pin stands for the footprint around it), or null. */
+function grownOrNull(b: Box | null, d: number): Box | null {
+  return b ? grow(b, d) : null;
+}
 export function visibleBox(el: Element | null): Box | null {
   if (!el) return null;
   const r = el.getBoundingClientRect();
@@ -480,7 +484,7 @@ export class Tutorial {
     const waybill = q('.waybill-wrap:not([hidden])');
     const sheet = q('#sheets .sheet:last-child');
     const ghost = this.ghostBox();
-    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.build-shelf:not([hidden])'), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
+    const obstacles = [waybill, sheet, bookCrease(), q('.notice-wrap'), q('.ev-card'), q('.build-shelf:not([hidden])'), grownOrNull(q('.gate-pin:not([hidden])'), 34), q('.rail-tools'), q('.stall-row:not([hidden])'), q('.topbar .chips'), q('.topbar .speed'), q('.topbar .menu-btn'), q('.topbar .rail-hint'), target ? grow(target, 6) : null,
       this.arrowBoxGuess(target), ghost].filter((b): b is Box => !!b);
     const y0 = waybill ? waybill.y : 12;
     // one layout read per width per placement: the free-slot scan below asks for the same widths often
