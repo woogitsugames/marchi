@@ -43,6 +43,7 @@ import { ChronicleLog, chronicleSheet, chronicleTitle, clearChronicle } from './
 import { RoadDraft, errorText } from './roadTool';
 import { Sheets } from './sheets';
 import { Tutorial } from './tutorial';
+import { BuildTutorial } from './tutorialBuild';
 import { tutorialEndActions } from './tutorialEnd';
 import { DiagPanel } from './diagPanel';
 import { playtestStart } from '../game/playtest';
@@ -197,6 +198,8 @@ export class App implements PanelNav {
   private foldSig = '';
   private foldCheckAt = 0;
   private tutorial: Tutorial | null = null;
+  /** The free-valley build tutorial (D-235), offered once on a new valley. */
+  private buildTut: BuildTutorial | null = null;
   /** Started from ?play= (screenshots, bots): no tutorial unless ?tut=1. */
   private debugStart = false;
   /**
@@ -330,6 +333,7 @@ export class App implements PanelNav {
     if (fixture !== null) {
       this.startFixture(fixture);
     } else if (isMissionKey(play)) {
+      // ?tut=1: mission I's tutorial after the opening letter; ?tut=build: the valley build tutorial at once
       this.debugStart = this.params.get('tut') !== '1';
       this.newGame(play, this.params.get('slot') ?? undefined); // ?slot=valley2: which ledger a debug valley writes to
       this.applyDebug();
@@ -536,17 +540,21 @@ export class App implements PanelNav {
     if (!this.world.state.mission.contract) this.frameCastleSoon();
     const forced = this.params.get('tut') === '1';
     const tutorial = id === 'm1' && (forced || (!this.debugStart && this.prefs.tutorialM1 === 'new'));
+    // a new valley only (a loaded ledger never offers it), once per device until finished or skipped (D-235)
+    const buildTut = id === 'sandbox' && (this.params.get('tut') === 'build' || (!this.debugStart && this.prefs.tutorialBuild === 'new'));
     const opening = letter && !this.debugStart ? buildOpeningLetter(id, () => {
       // the game waits paused under the letter; the tutorial (mission I) starts once it is read
       this.loop.speed = 1;
       this.hud?.setSpeed(1);
       if (tutorial) this.startTutorial();
+      if (buildTut) this.startBuildTutorial();
     }) : null;
     if (opening) {
       this.loop.speed = 0;
       this.hud?.setSpeed(0);
       showModal(this.layers.overlay, opening, '[data-a="start"]');
     } else if (tutorial) this.startTutorial();
+    else if (buildTut) this.startBuildTutorial();
   }
 
   // ------------------------------------------------------------------ tutorial (mission I)
@@ -576,10 +584,35 @@ export class App implements PanelNav {
     this.layers.tutorial.append(tut.root);
   }
 
+  private startBuildTutorial(): void {
+    this.buildTut?.dispose();
+    const app = this;
+    const tut = new BuildTutorial({
+      get world() { return app.world; },
+      topKey: () => this.sheets.top?.content.key ?? null,
+      tool: () => this.tool,
+      closeSheets: () => this.sheets.closeAll(),
+      setGhost: () => { /* no ghost road: the player picks the route */ },
+      cellScreen: (cell) => this.view.cellToScreen?.(cell) ?? null,
+      showCells: (cells) => this.frameCells(cells),
+      buildType: () => (this.tool === 'build' && this.build.placing ? this.build.type : null),
+      buildOpen: () => this.tool === 'build' && this.build.isOpen,
+      finish: (r) => {
+        this.prefs.tutorialBuild = r;
+        savePrefs(this.prefs);
+        if (this.buildTut === tut) this.buildTut = null;
+      },
+    });
+    this.buildTut = tut;
+    this.layers.tutorial.append(tut.root);
+  }
+
   private stopTutorial(): void {
     this.tutorial?.dispose();
     this.tutorial = null;
     this.ghosts.tut = null;
+    this.buildTut?.dispose();
+    this.buildTut = null;
   }
 
   /** PanelNav: the gap finder's ghost road while its sheet is open. */
@@ -827,6 +860,7 @@ export class App implements PanelNav {
       const slow = this.speedHint.check(this.world, this.loop.speed, stalls);
       if (slow >= 0) this.hud?.toast(t('hud.speedHint', { name: buildingName(this.world, slow) }), 'info', 'speed1', 4200);
       this.tutorial?.update(dt);
+      this.buildTut?.update(dt);
       this.build.frame();
       this.applyGhost();
       // the docks' heights come from a ResizeObserver (D-157): no layout read here
@@ -1048,6 +1082,7 @@ export class App implements PanelNav {
     }
     this.select({ kind, id });
     this.tutorial?.onOpen(kind, id, prevTop);
+    this.buildTut?.onOpen(kind, id, prevTop);
   }
 
   /**
