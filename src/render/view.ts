@@ -314,6 +314,7 @@ class View implements WorldView {
     if (!warm || !this.world) return;
     setTimeout(() => {
       if (!this.world || this.warm !== warm) return;
+      this.wagons?.buildPending(); // the lazily built wagon rigs and cargo (D-256), so the pre-warm covers them
       warm.run(this.scene, this.rig.camera, this.kindMeshes()).then((st) => { if (st) startupMark(`prewarm-${warm.runs}`); }).catch((e: unknown) => console.warn('[view] shader pre-warm', e));
     }, 0);
   }

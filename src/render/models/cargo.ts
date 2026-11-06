@@ -369,9 +369,15 @@ export function cargoParts(good: CargoGood, qty: number): ModelPart[] {
   return parts;
 }
 
-/** One unit at the origin (slot transforms come from `cargoSlots`), for per-unit instancing. */
+const unitCache = new Map<CargoGood, ModelPart[]>();
+
+/** One unit at the origin (slot transforms come from `cargoSlots`), for per-unit instancing. Cached; do not dispose. */
 export function cargoUnitParts(good: CargoGood): ModelPart[] {
+  const hit = unitCache.get(good);
+  if (hit) return hit;
   const b = new PartBuilder({ seed: 201 + CARGO_GOODS.indexOf(good), ao: 0, dirt: 0 });
   addUnit(b, good, new Matrix4());
-  return b.build();
+  const parts = b.build();
+  unitCache.set(good, parts);
+  return parts;
 }
