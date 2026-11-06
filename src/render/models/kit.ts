@@ -23,7 +23,6 @@ import {
   Quaternion,
   Vector3,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { MatKey } from './materials';
 
 /** Metres per UV unit for the box-projected UVs. */
@@ -215,14 +214,12 @@ export class PartBuilder {
     if (o.jitter) {
       const f = o.jitterFreq ?? 2.5;
       const a = o.jitter;
+      const pa = pos.array as Float32Array;
       for (let i = 0; i < count; i++) {
-        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
-        pos.setXYZ(
-          i,
-          x + fnoise(x * f, y * f, z * f, seed + 1) * a,
-          y + fnoise(x * f + 31.7, y * f, z * f, seed + 2) * a,
-          z + fnoise(x * f, y * f + 57.1, z * f, seed + 3) * a,
-        );
+        const x = pa[i * 3]!, y = pa[i * 3 + 1]!, z = pa[i * 3 + 2]!;
+        pa[i * 3] = x + fnoise(x * f, y * f, z * f, seed + 1) * a;
+        pa[i * 3 + 1] = y + fnoise(x * f + 31.7, y * f, z * f, seed + 2) * a;
+        pa[i * 3 + 2] = z + fnoise(x * f, y * f + 57.1, z * f, seed + 3) * a;
       }
       if (o.renormal) g.computeVertexNormals();
     }
@@ -239,9 +236,11 @@ export class PartBuilder {
     const c = new Color();
     const p = new Vector3();
     const n = new Vector3();
+    // plain array reads (same values as getX/getY/getZ: the attributes are not normalized)
+    const pa = pos.array as Float32Array, na = nor.array as Float32Array;
     for (let i = 0; i < count; i++) {
-      p.set(pos.getX(i), pos.getY(i), pos.getZ(i));
-      n.set(nor.getX(i), nor.getY(i), nor.getZ(i));
+      p.set(pa[i * 3]!, pa[i * 3 + 1]!, pa[i * 3 + 2]!);
+      n.set(na[i * 3]!, na[i * 3 + 1]!, na[i * 3 + 2]!);
       c.copy(base);
       if (o.shade) o.shade(p, n, c);
       const k = pieceK * (1 + fnoise(p.x * nf, p.y * nf, p.z * nf, seed + 9) * noiseA);
@@ -260,10 +259,14 @@ export class PartBuilder {
     if (!o.keepUv) boxUv(g);
     else if (!g.getAttribute('uv')) boxUv(g);
 
-    if (o.rig) this.hasRig = true;
-    const rg = new Float32Array(count * 4);
-    if (o.rig) for (let i = 0; i < count; i++) rg.set(o.rig(p.set(pos.getX(i), pos.getY(i), pos.getZ(i))), i * 4);
-    g.setAttribute('rig', new BufferAttribute(rg, 4));
+    // the skinning attribute only for rigged pieces; build() gives the others zeros when the model has a rig
+    // (D-255: an all-zero array per piece was merged and then deleted for every unrigged model)
+    if (o.rig) {
+      this.hasRig = true;
+      const rg = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) rg.set(o.rig(p.set(pa[i * 3]!, pa[i * 3 + 1]!, pa[i * 3 + 2]!)), i * 4);
+      g.setAttribute('rig', new BufferAttribute(rg, 4));
+    }
 
     let list = this.groups.get(mat);
     if (!list) this.groups.set(mat, (list = []));
@@ -275,9 +278,8 @@ export class PartBuilder {
   build(): ModelPart[] {
     const out: ModelPart[] = [];
     for (const [material, list] of this.groups) {
-      const merged = mergeGeometries(list, false);
-      if (!merged) throw new Error(`merge failed for ${material}`);
-      if (!this.hasRig) merged.deleteAttribute('rig');
+      if (this.hasRig) for (const g of list) if (!g.getAttribute('rig')) g.setAttribute('rig', new BufferAttribute(new Float32Array(g.getAttribute('position').count * 4), 4));
+      const merged = mergeIndexed(list);
       merged.computeBoundingBox();
       merged.computeBoundingSphere();
       out.push({ geometry: merged, material });
@@ -286,15 +288,74 @@ export class PartBuilder {
   }
 }
 
+const _mv = new Vector3();
+const _nm = new Matrix3();
+
+/**
+ * Merge indexed geometries with the same attributes into one, optionally baking a transform per geometry and
+ * keeping only some attributes. The result is bit-identical to three's `mergeGeometries(list, false)` of
+ * `list[i].clone().applyMatrix4(mats[i])` (the same Vector3 operations, the same index width rule), without the
+ * clones, the JS index array and its conversion back to a typed array (D-255: the largest part of the model
+ * merge cost before the menu was ready).
+ */
+export function mergeIndexed(list: BufferGeometry[], mats?: Matrix4[], keep?: ReadonlySet<string>): BufferGeometry {
+  const first = list[0]!;
+  const names = Object.keys(first.attributes).filter((k) => !keep || keep.has(k));
+  let verts = 0, idx = 0;
+  for (const g of list) {
+    if (!g.index) throw new Error('mergeIndexed: every geometry must be indexed');
+    verts += g.getAttribute('position').count;
+    idx += g.index.count;
+  }
+  const out = new BufferGeometry();
+  // three's setIndex(array) picks Uint32 when any index is >= 65535 (arrayNeedsUint32); the largest is verts - 1
+  const index = verts - 1 >= 65535 ? new Uint32Array(idx) : new Uint16Array(idx);
+  let io = 0, vo = 0;
+  for (const g of list) {
+    const ia = g.index!.array;
+    for (let j = 0; j < ia.length; j++) index[io++] = ia[j]! + vo;
+    vo += g.getAttribute('position').count;
+  }
+  out.setIndex(new BufferAttribute(index, 1));
+  for (const name of names) {
+    const a0 = first.getAttribute(name) as BufferAttribute;
+    const size = a0.itemSize;
+    const Arr = a0.array.constructor as Float32ArrayConstructor;
+    const arr = new Arr(verts * size);
+    let o = 0;
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i]!.getAttribute(name) as BufferAttribute;
+      const src = a.array as Float32Array;
+      const m = mats?.[i];
+      if (m && name === 'position') {
+        for (let k = 0; k < a.count; k++) {
+          _mv.set(src[k * 3]!, src[k * 3 + 1]!, src[k * 3 + 2]!).applyMatrix4(m);
+          arr[o + k * 3] = _mv.x; arr[o + k * 3 + 1] = _mv.y; arr[o + k * 3 + 2] = _mv.z;
+        }
+      } else if (m && name === 'normal') {
+        _nm.getNormalMatrix(m);
+        for (let k = 0; k < a.count; k++) {
+          _mv.set(src[k * 3]!, src[k * 3 + 1]!, src[k * 3 + 2]!).applyNormalMatrix(_nm);
+          arr[o + k * 3] = _mv.x; arr[o + k * 3 + 1] = _mv.y; arr[o + k * 3 + 2] = _mv.z;
+        }
+      } else arr.set(src, o);
+      o += a.count * size;
+    }
+    out.setAttribute(name, new BufferAttribute(arr, size, a0.normalized));
+  }
+  return out;
+}
+
 /** Box-projected UVs in model space (dominant normal axis). */
 export function boxUv(g: BufferGeometry): void {
   const pos = g.getAttribute('position');
   const nor = g.getAttribute('normal');
   const uv = new Float32Array(pos.count * 2);
   const s = 1 / UV_METRES;
+  const pa = pos.array as Float32Array, na = nor.array as Float32Array;
   for (let i = 0; i < pos.count; i++) {
-    const ax = Math.abs(nor.getX(i)), ay = Math.abs(nor.getY(i)), az = Math.abs(nor.getZ(i));
-    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const ax = Math.abs(na[i * 3]!), ay = Math.abs(na[i * 3 + 1]!), az = Math.abs(na[i * 3 + 2]!);
+    const x = pa[i * 3]!, y = pa[i * 3 + 1]!, z = pa[i * 3 + 2]!;
     let u: number, v: number;
     if (ay >= ax && ay >= az) { u = x; v = z; }
     else if (ax >= az) { u = z; v = y; }
@@ -321,8 +382,7 @@ export function mergeParts(...lists: ModelPart[][]): ModelPart[] {
       for (const k of Object.keys(c.attributes)) if (!names.has(k)) c.deleteAttribute(k);
       return c;
     });
-    const m = geos.length === 1 ? unified[0] : mergeGeometries(unified, false);
-    if (!m) throw new Error(`mergeParts failed for ${material}`);
+    const m = geos.length === 1 ? unified[0]! : mergeIndexed(unified);
     m.computeBoundingBox();
     m.computeBoundingSphere();
     out.push({ geometry: m, material });

@@ -93,8 +93,12 @@ export class Heightfield {
 
   /** Smooth base surface (no noise). x, z in metres. */
   base(x: number, z: number): number {
+    return this.baseAt(x, z, this.shoreDist(x, z));
+  }
+
+  /** `base` with the shore distance at (x, z) already known. */
+  private baseAt(x: number, z: number, s: number): number {
     const raw = this.raw(x, z);
-    const s = this.shoreDist(x, z);
     if (s >= 8) return raw;
     const WL = this.waterLevel;
     // bank: gentle rise out of the water; bed: shelving down to ~1.3 m in mid-channel
@@ -129,7 +133,11 @@ export class Heightfield {
 
   /** Detail displacement amplitude falls off near water (keeps the shoreline calm). */
   detail(x: number, z: number): number {
-    const amp = smooth(3, 9.5, this.shoreDist(x, z));
+    return this.detailAt(x, z, this.shoreDist(x, z));
+  }
+
+  private detailAt(x: number, z: number, s: number): number {
+    const amp = smooth(3, 9.5, s);
     if (amp <= 0) return 0;
     const n = (vnoise(x / 9, z / 9, 0.5, 71) - 0.5) * 0.34 + (vnoise(x / 2.6, z / 2.6, 3.5, 72) - 0.5) * 0.09;
     return n * amp;
@@ -137,7 +145,9 @@ export class Heightfield {
 
   /** Rendered ground height at (x, z) metres. */
   height(x: number, z: number): number {
-    return this.base(x, z) + this.detail(x, z);
+    // one shore-distance sample for both terms (D-255: it was evaluated twice per height; same value)
+    const s = this.shoreDist(x, z);
+    return this.baseAt(x, z, s) + this.detailAt(x, z, s);
   }
 
   /** Approximate surface normal (finite differences of `height`), written into out[0..2]. */
