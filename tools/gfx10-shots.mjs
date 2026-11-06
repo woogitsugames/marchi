@@ -80,7 +80,8 @@ for (const [name, sc] of Object.entries(SCENES)) {
         for (let i = 0; i < 8; i++) a.loop.tickOnce();
         a.loop.speed = 0;
         const c = pick[3];
-        a.view.rig.set(((c % W) + 1.5) * 4, (Math.floor(c / W) + 0.5) * 4, sc.dist, sc.yaw);
+        window.__gfxCam = [((c % W) + 1.5) * 4, (Math.floor(c / W) + 0.5) * 4, sc.dist, sc.yaw];
+        a.view.rig.set(...window.__gfxCam);
         return { wagons: ws.map((v) => v.cargoGood + '@' + v.at).join(' ') };
       }
       const b = w.state.buildings.find((x) => x.type === sc.type);
