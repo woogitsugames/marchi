@@ -93,3 +93,44 @@ test('valley rank card: a player following it places farm, mill and bakery at th
   }
   eq(placed.join(','), 'farm,mill,bakery', `the card led through farm, mill, bakery by ${Math.round(w.state.tick / TICK_HZ / 60)} min`);
 });
+
+// D-250 (BACKLOG P2 D-245): from rank 3 the card also names the rank-5 goods' producers — charcoal burner, malthouse,
+// brewery (once a malthouse stands) — each at a valid ghost by the castle, and goes away once the goods are sold.
+test('valley rank card: names charcoal burner, malthouse, brewery for rank 5 (D-250)', () => {
+  const w = createWorld('sandbox');
+  const st = w.state;
+  st.town.rank = 4;
+  st.coins = 5000;
+  for (const g of ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone'] as const) st.ledger.sold[g] = 1;
+  const castle = st.buildings.find((b) => b.type === 'castle')!;
+  const place = (type: 'farm' | 'charcoalBurner' | 'malthouse' | 'brewery'): void => {
+    const s = buildSite(w, type, castle.id);
+    assert(!!s, `a ghost site for ${type}`);
+    const r = applyCommand(w, { t: 'place', type, x: s!.x, y: s!.y, facing: s!.facing });
+    assert(r.ok, `${type} placed at the ghost (${r.ok ? '' : r.err.k})`);
+  };
+  const order: string[] = [];
+  const h0 = stateHash(w);
+  const first = rankCard(w);
+  eq(stateHash(w), h0, 'read-only');
+  if (!st.buildings.some((b) => b.type === 'farm')) place('farm');
+  for (let i = 0; i < 4; i++) {
+    const rc = rankCard(w);
+    if (!rc) break;
+    eq(rc.rank, 5, 'aims at rank 5');
+    eq(rc.goods, 9, 'rank 5 needs 9 goods');
+    order.push(rc.type);
+    place(rc.type as never);
+  }
+  eq(first?.type, 'charcoalBurner', 'the charcoal burner first');
+  eq(order.join(','), 'charcoalBurner,malthouse,brewery', 'then the malthouse, then the brewery');
+  eq(rankCard(w), null, 'nothing left to name');
+  // the brewery waits for a malthouse; once two of the three goods are sold the card is gone
+  const w2 = createWorld('sandbox');
+  w2.state.town.rank = 4;
+  for (const g of ['wood', 'planks', 'grain', 'flour', 'bread', 'fish', 'stone', 'charcoal'] as const) w2.state.ledger.sold[g] = 1;
+  const rc2 = rankCard(w2);
+  assert(!rc2 || rc2.type !== 'brewery', 'no brewery before a malthouse');
+  w2.state.ledger.sold.malt = 1;
+  eq(rankCard(w2), null, 'goods met: no rank card');
+});
