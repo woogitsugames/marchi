@@ -15,7 +15,7 @@ export const M14_WRONG_SITE = { x: 76, y: 37, facing: 0 } as const;
 /** XV's lesson site: the granary by the castle, where the planks of the second letter will be wanted. */
 export const M15_GRANARY_SITE = { x: 64, y: 42, facing: 2 } as const;
 /** XV's wrong site: the granary by the sawmill (the planks are made in time, but wait on the far end of the road). */
-export const M15_WRONG_SITE = { x: 24, y: 42, facing: 2 } as const;
+export const M15_WRONG_SITE = { x: 28, y: 42, facing: 2 } as const;
 
 export const PROPOSED_MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
   /**
@@ -49,37 +49,38 @@ export const PROPOSED_MISSIONS_14_15: Record<Mission1415Id, MissionDef> = {
   },
   /**
    * XV "Skład pod zamkiem": the order comes in two letters. Bread first (the farm, mill and bakery stand by the
-   * castle), then planks with a short deadline — and the sawmill stands at the far west end. With nowhere to put its
-   * planks the sawmill stops during the first letter (OUTPUT_FULL, no destination). A granary lets it keep sawing;
-   * by the castle the planks are already where the second letter wants them.
+   * castle), then planks with a short deadline — and the sawmill stands at the far west end, next to a small granary
+   * already full of seed... With nowhere to put its planks the sawmill stops during the first letter
+   * (OUTPUT_FULL -> STORAGE_FULL: the card asks for a granary). A granary lets it keep sawing; by the castle the planks
+   * already wait where the second letter wants them, by the sawmill they still have the whole valley to cross.
    */
   m15: {
     id: 'm15', mapId: 'valley-m3', seed: M3_VALLEY.seed,
-    coins: 120, wagons: 4, buildable: ['warehouse'],
+    coins: 80, wagons: 5, buildable: ['warehouse'],
     siteHints: [{ type: 'warehouse', ...M15_GRANARY_SITE }],
     buildings: [
-      { type: 'woodcutter', x: 14, y: 28, facing: 0, stock: { wood: 4 } },
-      { type: 'sawmill', x: 20, y: 37, facing: 0, stock: { wood: 8 } },
-      { type: 'farm', x: 56, y: 48, facing: 2, stock: { grain: 6 } },
-      { type: 'mill', x: 52, y: 43, facing: 2, stock: { flour: 2 } },
-      { type: 'bakery', x: 58, y: 37, facing: 0, stock: { bread: 4 } },
+      { type: 'woodcutter', x: 13, y: 37, facing: 0, stock: { wood: 4 } },
+      { type: 'woodcutter', x: 17, y: 37, facing: 0, stock: { wood: 4 } },
+      { type: 'woodcutter', x: 21, y: 37, facing: 0, stock: { wood: 4 } },
+      { type: 'warehouse', x: 24, y: 42, facing: 2, cap: 12, stock: { fish: 12 } },
+      { type: 'farm', x: 56, y: 48, facing: 2, stock: { grain: 4 } },
       { type: 'stable', x: 46, y: 35, facing: 0 },
       { type: 'castle', x: 74, y: 42, facing: 2 },
     ],
     roads: [
-      [[15, 40], [80, 40]],
-      [[15, 30], [15, 40]],
-      [[21, 39], [21, 40]],
+      [[14, 40], [80, 40]],
+      [[14, 39], [14, 40]],
+      [[18, 39], [18, 40]],
+      [[22, 39], [22, 40]],
+      [[25, 40], [25, 41]],
       [[57, 40], [57, 47]],
-      [[53, 40], [53, 42]],
-      [[59, 39], [59, 40]],
       [[47, 37], [47, 40]],
       [[76, 40], [76, 41]],
     ],
-    contract: { bread: 24, planks: 48 },
+    contract: { grain: 30, wood: 36 },
     tranches: [
-      { need: { bread: 24 }, dueMin: 5 },
-      { need: { planks: 48 }, dueMin: 7 },
+      { need: { grain: 30 }, dueMin: 5.5 },
+      { need: { wood: 36 }, dueMin: 7.5 },
     ],
     deadlineMin: 11, star3Min: 7, star2Min: 8.5, rain: [],
   },

@@ -2,7 +2,9 @@
 // tools/m8-ladder.ts: passive, wagons only k = 1..max, the lesson + k wagons, the wrong site + k wagons, and the
 // "reasonable player" (eye / eye+ every 10/30/60 s, scan, letter) from tools/balance-night6.ts.
 //   npx tsx tools/m14-ladder.ts [m14|m15] [--quick] [--map]
-import { MISSIONS, createWorld, net, type Command, type World } from '../src/sim/index';
+import { MISSIONS, TICK_HZ, createWorld, net, newPaceLog, samplePace, step, type Command, type World } from '../src/sim/index';
+import { cureFor, rankStalls, sampleInputWaits } from '../src/ui/stalls';
+import { forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { LESSON, WRONG, eyePlayer, run, type Row } from './balance-night6';
 import { lessonPlayer, line } from './m8-ladder';
 import { registerMissions1415 } from '../src/sim/proposals/missions-14-15';
@@ -46,7 +48,7 @@ export function ladder1415(id: string, quick = false): Row[] {
 
 function ascii(w: World): string {
   const t = w.terrain, st = w.state, c = net(w);
-  const sym: Record<string, string> = { charcoalBurner: 'K', woodcutter: 'W', sawmill: 'S', stable: 'H', farm: 'F', mill: 'M', bakery: 'B', warehouse: 'G', castle: 'C', malthouse: 'L', brewery: 'R' };
+  const sym: Record<string, string> = { fisher: 'P', charcoalBurner: 'K', woodcutter: 'W', sawmill: 'S', stable: 'H', farm: 'F', mill: 'M', bakery: 'B', warehouse: 'G', castle: 'C', malthouse: 'L', brewery: 'R' };
   let out = '';
   for (let y = 25; y < 60; y++) {
     let row = String(y).padStart(3) + ' ';
@@ -63,7 +65,7 @@ function ascii(w: World): string {
   return out;
 }
 
-if (import.meta.url === `file://${process.argv[1]}` && !process.argv.includes('--sweep')) {
+if (import.meta.url === `file://${process.argv[1]}` && !process.argv.includes('--sweep') && !process.argv.includes('--cards')) {
   const ids = process.argv.slice(2).filter((a) => /^m\d+$/.test(a));
   for (const id of ids.length ? ids : ['m14', 'm15']) {
     const d = MISSIONS[id]!;
@@ -103,4 +105,26 @@ if (import.meta.url === `file://${process.argv[1]}` && process.argv.includes('--
     console.log(`${id} lesson 0:00..2:00 step 10 s`); for (const l of sweep(id, LESSON)) console.log('  ' + l);
     console.log(`${id} wrong  0:00..2:00 step 10 s`); for (const l of sweep(id, WRONG)) console.log('  ' + l);
   }
+}
+
+/** What the HUD shows during the first `secs` seconds of doing nothing: the worst stall pin (with its cure) and the pace card. */
+export function cards(id: string, secs = 200): string[] {
+  const w = createWorld(id), log = newPaceLog(), out: string[] = [];
+  let lastS = '', lastP = '';
+  while (w.state.tick < secs * TICK_HZ) {
+    step(w); sampleInputWaits(w); samplePace(log, w); sampleFleet(w);
+    if (w.state.tick % TICK_HZ) continue;
+    const r = rankStalls(w)[0], b = r ? w.state.buildings.find((q) => q.id === r.id)! : null;
+    const st = b ? `${b.type}:${b.status.k}${'cause' in b.status ? '.' + b.status.cause : ''}${r!.minor ? '(calm)' : ''} cure=${cureFor(w, b.id)}` : '-';
+    const pc = paceCard(w, forecastFor(w, log));
+    const ps = pc ? `${pc.k}${'type' in pc ? ' ' + pc.type : ''}` : '-';
+    if (st !== lastS) { out.push(`${w.state.tick / TICK_HZ}s stall ${st}`); lastS = st; }
+    if (ps !== lastP) { out.push(`${w.state.tick / TICK_HZ}s pace ${ps}`); lastP = ps; }
+  }
+  return out;
+}
+
+if (import.meta.url === `file://${process.argv[1]}` && process.argv.includes('--cards')) {
+  const ids = process.argv.slice(2).filter((a) => /^m\d+$/.test(a));
+  for (const id of ids.length ? ids : ['m14', 'm15']) { console.log(id); for (const l of cards(id)) console.log('  ' + l); }
 }
