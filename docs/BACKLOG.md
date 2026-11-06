@@ -9,6 +9,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 (brak)
 
 ## Do zrobienia
+- [x] P3 — (zrobione, D-200..D-203, `claude/w-gfx10`) Grafika 10: robotnicy w kamieniołomie, u węglarza, w słodowni, w browarze i kupiec przy ladzie otwartej faktorii; nogi i tułowie w jednej partii na wariant stroju (mniej wywołań rysowania); słód w obręczowanych cebrzykach zamiast małych worków; faktoria/wieża zamku przebudowują się przy awansie rangi, nie przy następnej drodze; zimą szron na dachach i krótkie płatki zamiast deszczu. Zrzuty `docs/shots/gfx10-*`.
+- [ ] P3 — (D-203) Drzewa liściaste zimą zostają w jesiennych liściach (kierunek artystyczny „późna jesień”); przy szronie na ziemi i dachach rozważyć zimowy wariant korony (przerzedzone, brązowe) — decyzja **właściciela** (nowe zasoby/koszt shaderów).
+- [ ] P3 — (D-200) Kupiec przy ladzie nie reaguje na sprzedaż (stała pętla 7 s); rozważyć gest „waży/odbiera monetę”, gdy wóz rozładowuje się przy faktorii.
 - [ ] P2 — (D-192, **decyzja właściciela**) Karta „rozbuduj” w wolnej dolinie (gałąź `claude/w-valley-grow`, przygotowana, niescalona): gdy następnej randze brakuje już tylko renomy, karta nazywa jeszcze jeden producent działającego łańcucha. card-* R2 23–28,5 / R3 39–55 min (dziś 30–32 / 65–72), DECENT i hasze bez zmian. Scalić albo odrzucić.
 - [ ] P3 — (D-192) 3 nowe klucze (`cause.paceGrow`, `fix.growWhy`, `seal.tempo.grow`) w 15 językach to tłumaczenia agenta — do przeglądu natywnego (**właściciel**: native speakerzy).
 - [x] P2 — (zrobione, D-197, decyzja właściciela 2026-11-06) S6 `?fixture=warehouse-full` przeniesiony na m6: prawdziwy `STORAGE_FULL` małego spichlerza (12/12) bez żadnej komendy, karta „Najgorszy zastój” wskazuje spichlerz, `FIXTURE_VERSION=2`. Wyników v1 (m1) nie łączyć.

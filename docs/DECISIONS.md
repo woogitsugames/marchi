@@ -2504,3 +2504,44 @@ the fleet gate holds (test). Codex fold unchanged (`codexCalm` stays on `calmWhy
 says "wait for the wagon"). UI only: `tools/balance-night6.ts --no-search` output identical to the base, sim hashes
 unchanged. Tests `tests/calm-sheet.test.ts`. Shots `docs/shots/day10a-{before,after}-{412x915,915x412}.jpg`
 (`tools/day10a-shots.mjs`: mission II at 0:45, the farm waiting for wagon 1).
+
+**D-200 — Workers at the late-chain yards and the open trading post; legs and torso batched per clothing variant (graphics polish 10, owner direction 2026-11-06).**
+The quarry, charcoal burner, malthouse and brewery had no one in the yard, the open trading post an empty counter.
+Five new rig kinds in the D-101 pattern (instanced legs / torso / arms, posed per frame, at rest while the building is
+not WORKING): `mallet` — a stone cutter at a new splitter's block on the quarry floor (groove, four wedges, chips),
+driving the wedges with a short iron sledge (1.3 s); `rake` — the collier at the foot of the kiln mound, by the ladder,
+drawing earth over the vents (4.2 s; the leaning rake prop went, he carries it); `shovel` — the maltster at the end of
+the steeping tub turning the grain (3.4 s; the tub now shows a heap of steeped grain, the leaning shovel prop went);
+`paddle` — the brewer stirring the yard tun with a mash oar (2.8 s); `trader` — behind the open stall's counter,
+legs not drawn (they would stand in the wall), leaning on the counter with a hand raised now and then (7 s), drawn
+only while `postOpen` (no worker behind closed shutters). Cost rule: legs and torso no longer depend on the kind —
+`workerBody(variant)` builds them once per clothing variant and `BuildingsView` keeps one instanced batch per variant
+(the arms with the tool stay per kind). A yard with a new kind adds one draw (its arms) instead of three; the bench
+sandbox (sawmill, mill, bakery: four kinds in three variants) drops from 13 to 11 worker draws. Worker cycles are
+exported (`WORKER_CYCLE`) for the model preview. Test `tests/workers.test.ts` (each new yard's worker, the trader
+spot, shared body batches). Shots `docs/shots/gfx10-{before,after}-*` (`tools/gfx10-shots.mjs`).
+
+**D-201 — Malt travels in hooped tubs, not small pale bags (goods by shape).**
+At game distance the malt load (twelve small pale bags) read as the grain sacks or the flour sacks — same pale lumps.
+A unit of malt is now a squat open tub of staves with two dark hoops, heaped with amber kilned malt: a low round drum
+with a bright dome, apart from the upright grain sacks, flat flour sacks, bread baskets, fish creels (tall, tails),
+charcoal (black upright sacks), barrels lying (beer) and grey blocks (stone). Same slots, same unit count; the yard
+pile at the malthouse uses the same unit. Shots `gfx10-{before,after}-cargo-*` (the eight confusable loads side by
+side on the bench road).
+
+**D-202 — Building looks that change with the rank rebuild at the rank-up, not at the next road.**
+`BuildingsView.sync` ran only on a network change; its signature already held the castle level and `postOpen`, but a
+rank-up that opens the trading post (rank 4) or adds the castle tower (rank 5) touches no road, so the shutters stayed
+closed (and now the trader would stay away) until the player next built something. `WorldView.afterTick` compares a
+small integer (castle level × 2 + post open) with the value seen at the last sync and forces the network sync when it
+changes (a rank-up: a handful of times per game; no per-tick allocation).
+
+**D-203 — Winter hoarfrost on the buildings, sleet flecks instead of rain streaks.**
+In winter the terrain shader frosts the valley pale (no snow cover, no new assets), but every roof stayed
+summer-brown: the white valley with brown roofs read as a rendering mistake. The plain-mesh materials of the buildings
+(`wood`, `bark`, `thatch`, `stone`, `plaster`) get the same frost: up-facing faces (roofs, wall tops, fence and log
+tops, the kiln mound) mix toward the terrain's frost colour by `smoothstep(0.4, 0.8, worldNormal.y)` × `frostUniform`
+(view: winter × 0.6, eased with the terrain's winter). The code is always in the programs (one shared uniform), so a
+season change links nothing; the instanced users (wagons, cargo, yard piles, workers) skip it by `USE_INSTANCING` —
+moving loads are not frosted. Precipitation in winter: the same rain streaks fall slowly, short and pale (sleet and
+snow flecks), by uniform values only (`Effects.update(…, snow)`).
