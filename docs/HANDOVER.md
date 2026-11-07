@@ -84,8 +84,10 @@
   porażki pomija spokojne postoje w „trzech kosztach” (próbkowanie UI raz na sekundę gry): XV/VI/XII po spichlerzu radzą
   „wóz”, IV pokazuje lód na moście, X sporny tartak; 225 odczytów, żadna misja nie straciła sensownej przyczyny.
   Testy 621/0, smoke 0, layout 138/0. `main` = baza.
-- W toku (noc, od ~22:45): agent `claude/w-simperf` — koszt symulacji na tick przy 50/100/200 wozach bez zmiany haszy
-  (D-336..D-338). APK rano z katalogiem modeli.
+- Scalone ~23:30: **D-336..D-338** tańszy tick symulacji (pamięć odległości dyspozytora między tickami, Dijkstra na listach
+  sąsiadów, dolna granica w regule A): 50/100/200 wozów 0,108/0,222/0,234 → 0,056/0,058/0,067 ms/tick, p99 ~1,6 → ~0,6 ms;
+  hasze misji bajt w bajt (sprawdzone też przez koordynatora), bot 7,94 min 3★ jak przedtem. Testy 623/0, smoke 0, layout 138/0.
+- W toku: nic. Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
