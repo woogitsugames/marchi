@@ -6,7 +6,7 @@
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
 - Baza = `main` = **D-284..D-286 scalone** (7 XI ~04:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
-  Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
+  Ostatnie APK: **7c080b5** (7 XI ~06:50, wysłane).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
   budowa świata menu −23…−28 % CPU (geometria bit w bit), leniwe LOD-y wozów, **światła co 2. klatkę** (decyzja właściciela),
