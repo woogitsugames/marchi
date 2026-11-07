@@ -31,6 +31,9 @@
   po arabsku i zrzuty samouczka de/pseudo — powtarzane przez koordynatora.
 - **Decyzje właściciela 7 XI ~09:45:** drzewa zimą — scalić (**scalone**, D-260..D-263); misja XVI „Dwa zamki” — **tak,
   wariant A** (wszystkie rekomendacje raportu); card-60 — czekać na playtest.
+- **Decyzje właściciela 7 XI ~12:00:** D-128 (misja I bez „Kup wóz” w oknie samouczka) — zostaje, po playteście; wiosenny
+  odcień koron — **tak** (kolejka); 4K do pobrania — przed wydaniem; przeniesienie XIII — po playteście.
+- Kolejka: wiosenny odcień koron (zrzuty do akceptacji) — następny wolny agent.
 - W toku: agent `claude/w-m16` — misja XVI „Dwa zamki” (D-288..D-295, 2–3 sesje, etapami: sim+komenda → UI/diagnoza →
   treści/i18n → drabina/zrzuty);
   agent `claude/w-a11y` — kontrast ETA na pasku, pierścień fokusu pinezki krytycznej, podpowiedź przy tekście 200 %.
