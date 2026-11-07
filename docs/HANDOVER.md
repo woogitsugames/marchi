@@ -32,8 +32,10 @@
 - **Decyzje właściciela 7 XI ~09:45:** drzewa zimą — scalić (**scalone**, D-260..D-263); misja XVI „Dwa zamki” — **tak,
   wariant A** (wszystkie rekomendacje raportu); card-60 — czekać na playtest.
 - W toku: agent `claude/w-m16` — misja XVI „Dwa zamki” (D-288..D-295, 2–3 sesje, etapami: sim+komenda → UI/diagnoza →
-  treści/i18n → drabina/zrzuty); agent `claude/w-view` — chunki terenu poza kadrem po 1. klatce, bez zbędnego
-  `vegetation.update` (D-296..D-299).
+  treści/i18n → drabina/zrzuty);
+  agent `claude/w-a11y` — kontrast ETA na pasku, pierścień fokusu pinezki krytycznej, podpowiedź przy tekście 200 %.
+- Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
+  `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
