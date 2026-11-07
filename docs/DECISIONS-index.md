@@ -276,3 +276,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-325 | — | The bake holds the main thread for nothing: programs requested at mount, mips built once, no early bake | decided | inne |
 | D-326 | — | One ArrayCamera pass per atlas row | decided | inne |
 | D-327 | — | Albedo and normal atlases from one pass (two render targets) | decided | render |
+| D-331 | — | The model catalogue is baked at build time and decoded at startup | decided | inne |
+| D-332 | — | The catalogue is preloaded by the HTML and installed just before the first world | decided | inne |
+| D-333 | — | Not done: an IndexedDB cache of built models, building only the first frame's kinds | decided | inne |

@@ -1,0 +1,32 @@
+ 19:53:35 up  3:11,  0 user,  load average: 10.74, 9.13, 9.85
+r0 v0 ready=1391.4 ms=452.2 vm=322.4 bk=undefined ff=2178
+r0 v1 ready=1149.3 ms=364.1 vm=417.1 bk=553.1 ff=2133.4
+r0 v2 ready=948.4 ms=327.6 vm=303 bk=390.8 ff=1618.8
+r1 v0 ready=1004.8 ms=332.6 vm=361.4 bk=undefined ff=1817.9
+r1 v1 ready=859.4 ms=224.7 vm=323.3 bk=417.7 ff=1773.9
+r1 v2 ready=981.3 ms=368.0 vm=271.6 bk=389.8 ff=1801.1
+r2 v0 ready=838.7 ms=317.2 vm=222.4 bk=undefined ff=1566.2
+r2 v1 ready=703.9 ms=171.9 vm=261.3 bk=348.9 ff=1517.3
+r2 v2 ready=1275.4 ms=526.7 vm=381.5 bk=481.7 ff=2116
+r3 v0 ready=936.6 ms=364.9 vm=256.1 bk=undefined ff=1750.8
+r3 v1 ready=977.1 ms=308.8 vm=319.8 bk=429.8 ff=2144.3
+r3 v2 ready=1024.8 ms=425.8 vm=249.2 bk=341.2 ff=1891.2
+r4 v0 ready=1068.4 ms=384.3 vm=287.9 bk=undefined ff=1945.6
+r4 v1 ready=861.5 ms=212.5 vm=279.5 bk=387.7 ff=1621.1
+r4 v2 ready=959.6 ms=338.2 vm=304.6 bk=394.9 ff=1720.9
+r5 v0 ready=998 ms=371.3 vm=310.1 bk=undefined ff=1964.1
+r5 v1 ready=911.5 ms=242.6 vm=292 bk=389.8 ff=1757.3
+r5 v2 ready=1244 ms=524.8 vm=355.1 bk=489.9 ff=2110.8
+r6 v0 ready=1025.4 ms=384.2 vm=337.8 bk=undefined ff=1945.3
+r6 v1 ready=833.3 ms=260.1 vm=248.6 bk=372.7 ff=1571
+r6 v2 ready=1093 ms=361.6 vm=366.7 bk=462 ff=1954.1
+r7 v0 ready=886 ms=342.3 vm=251.9 bk=undefined ff=1725.7
+r7 v1 ready=749.6 ms=228.3 vm=267.2 bk=366.3 ff=1617.6
+r7 v2 ready=965 ms=294.5 vm=274.8 bk=385.4 ff=1798.6
+r8 v0 ready=825 ms=293.1 vm=229.4 bk=undefined ff=1549.3
+r8 v1 ready=683.3 ms=206.3 vm=237.6 bk=315.9 ff=1414.3
+r8 v2 ready=774 ms=332.9 vm=209.8 bk=297.5 ff=1454.1
+{"variant":"http://localhost:5263/","n":9,"thr":1,"med":{"ready":998,"menu-world - menu-start":364.9,"view-module":287.9,"first-frame":1817.9,"ready->ff":814.2,"app":400.7}}
+{"variant":"http://localhost:5264/","n":9,"thr":1,"med":{"ready":859.4,"menu-world - menu-start":228.3,"view-module":279.5,"first-frame":1621.1,"ready->ff":845.8,"app":387.2}}
+{"variant":"http://localhost:5264/?baked=0","n":9,"thr":1,"med":{"ready":981.3,"menu-world - menu-start":361.6,"view-module":303,"first-frame":1801.1,"ready->ff":833.6,"app":390.6}}
+ 19:57:10 up  3:14,  0 user,  load average: 8.58, 9.35, 9.83
