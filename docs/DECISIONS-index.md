@@ -259,3 +259,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-307 | — | The haul card: the fleet cannot keep the shared producer at work (two castles only) | decided | UI |
 | D-308 | — | XVI ladder after D-306/D-307: the reasonable player earns three seals | decided | inne |
 | D-309 | — | XVI content after D-307: two keys in 17 languages, shots | decided | treść |
+| D-313 | — | Two castles: the forecast models the chain (producers and fleet) instead of reading the measured pace | decided | inne |
+| D-314 | — | The haul card aims at a seal the forecast reaches by less than 30 s | decided | UI |
+| D-315 | — | The haul sheet prints the forecast finish again | decided | UI |
+| D-316 | — | XVI ladder after D-313/D-314; I–XV unchanged | decided | inne |

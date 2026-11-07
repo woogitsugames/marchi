@@ -3416,3 +3416,69 @@ with one castle (XI). Shots (`tools/m16-shots.mjs`, `haul` and `haulsheet`: east
 `docs/shots/m16-haulsheet-*.jpg` (the sawmill's sheet with "Kup wóz"); inspected against the forbidden list — the
 calm brass pace card and the existing sheet, no new visual element. The D-293 shots of the castle card still show the
 old "gotowe ok." times (D-306 moved them by the wait for a wagon). (decided)
+
+## Mission XVI: a forecast honest from the first minute (BACKLOG P3 from D-290 and D-306/D-308)
+
+**D-313 — Two castles: the forecast models the chain (producers and fleet) instead of reading the measured pace.**
+Why both forecasts were wrong early: the whole-order forecast (`contractForecast`, two castles, D-306) divided what
+was left by the long-run production pace, which in the first minutes still carries the start-up — the sawmill making
+nothing while the wagons fetch the first wood (WAITING_DELIVERY 0:50–1:20) — and later the sawmill's waits for a
+wagon (3:10–3:50): east first, a run ending at 7:15, it said 10:00 at 1:30 (+164 s) and 7:58 at 4:00 (+43 s). The
+per-castle forecast (`castleForecast`, D-290) took the sawmill's capacity (12 planks a minute) for its first two minutes,
+while the wagons bring ~7: at the even split the card said "late by 0:33–0:50" for a castle 1:58 late, then jumped to
+the measured pace at 2:00 (+94 s). Now, only with two castle orders (one castle takes the unchanged path: I–XV read
+exactly what they read before), both use one model of the chain, `chainTicks` (`src/sim/forecast.ts`): the later of
+(a) the producers making what is still to make at `CHAIN_SHARE` of their capacity (bounded by what their inputs' makers
+can feed) plus the last drive and the wait for a wagon (D-306), and (b) the fleet finishing its current jobs (each
+wagon's time to deliver, plus the empty drive back from a castle) and then a round trip of every leg for each unit a
+castle still owes — the castle leg from the nearest producer and, per unit, the input legs of its recipe
+(`unitHaulTicks`; on XVI 24.4 s of wagon time per plank to the east castle, 19.1 s to the north one) — shared by the
+wagons at `CHAIN_SHARE`. `CHAIN_SHARE` = 0.85 is the share of full work a shared long haul keeps (the producer waits
+for input or a wagon, a wagon drives to a load not ready yet, the dispatcher sends wood while planks wait), measured on
+XVI: 0.83–0.87 all keep the error within ±37 s; 1.0 is 38–66 s early, a 0.85 fleet with a 1.0 sawmill 38–66 s early.
+The castle forecast serves the same pool as before (this castle alone when first, the first castle's rest before it,
+both rests at the even split) through `chainTicks`; its `measured` flag is gone (nothing read it). The measured pace
+stays on the goods (`perMin`, the haul card's "robi 6 z 12"). Blending the model into the measured long run over 3–15
+minutes was tried and is worse (up to +59 s: the long run's start-up lingers). The whole-order forecast keeps its
+one-minute gate (ready from 1:10). Error against the run played on passively from each 10 s sample
+(`tools/m16-forecast-error.ts`, 10 strategies incl. the reasonable player 10/30/60 s), before → after: whole order
+from 1:10 worst +164…+192 s → −36…+27 s (east first: 1:10 8:05 → 6:50, 1:30 10:00 → 6:58, 2:00 8:08 → 7:03, 3:00
+6:59 → 7:09, 4:00 7:58 → 7:37, 5:00 7:19 → 7:27, actual 7:15); east castle from 0:10 worst −63…+104 s → −49…+48 s
+(even split, actual 6:58: 0:10 6:14 → 7:02, 1:00 6:24 → 7:05, 2:00 8:33 → 7:17); north castle −111 → −66 s (the even
+split still assumes both castles finish together; the north one is never late on 9:00). Cost per recompute (only when
+a pace sample lands or a castle's goods change, cached as before): whole order 0.09 → 0.20 ms, both castles 0.13 →
+0.47 ms (desktop Node). Read-only and outside the state. (decided)
+
+**D-314 — The haul card aims at a seal the forecast reaches by less than 30 s.**
+With the forecast honest, the D-307 gate (a better seal than the forecast earns) hid the card on XVI: east first, the
+forecast says 6:50–6:58 at 1:10–1:40 (three seals by 7:05) for a run that ends at 7:15 (two). Before, the start-up
+pessimism (10:00) had shown the card by accident. The forecast's error bound is now known, so the haul card
+(`haulAim`, `src/ui/paceCard.ts`, two castles only) also aims at the seal the forecast earns when its finish lies within
+`HAUL_MARGIN_TICKS` = 30 s of that seal's time: "Na 3 pieczęcie do 7:05 towar musi ruszać szybciej" stays true. The
+fleet card's gate takes the aim as a parameter (default the forecast's `aim`: the fleet card and every one-castle
+mission unchanged). The card's seal row shows what the forecast earns, as before. (decided)
+
+**D-315 — The haul sheet prints the forecast finish again.**
+While the haul card shows, the whole-order forecast is at most 19 s early and never late (east first: 17–19 s; eye
+players 17–19 s; east first + wagon at 0:30: 7 s; `haul` column of `tools/m16-forecast-error.ts`), so the sheet opens
+with "Przy tym tempie całe zamówienie będzie gotowe ok. 7:00." (new key `fix.paceHaulAt`, `{finish}` = the forecast's
+finish on the mission clock; "ok." = around) before the D-307 reason and the seal in reach. pl/en authored, 15 agent
+translations (Arabic with the clock isolated as in `fix.paceHaulWhy`), for native review in BACKLOG. Shots
+(`tools/m16-shots.mjs`, this worktree's build on port 5212 — 5202 was held by another session's preview): all 18
+`docs/shots/m16-*` refreshed — `haulsheet` shows the new line;
+`castle`/`switch`/`card` show the D-313 castle forecast (the even split: "spóźni się o ~2:00" instead of 0:33–0:50).
+(decided)
+
+**D-316 — XVI ladder after D-313/D-314; I–XV unchanged.**
+`tools/m14-ladder.ts m16`: every scripted row unchanged (passive 7:40 1★, wagons-1/2 7:08/6:31 1★/2★, lesson+0/1/2w
+7:15/6:43/6:32 2★/3★/3★, wrong+0/1/2w 7:31/7:11/6:41 1★/1★/2★, lesson@30/60 s 7:15 2★, @120 s 7:56 1★). Reasonable
+player before → after: eye / eye+ 10 s 6:27 3★ → 6:27 3★ (switch 0:10, wagons 1:30 and 2:40, unchanged); 30 s 6:43 3★ →
+6:15 3★ (switch 0:30, wagons 1:30 and 3:00); 60 s 6:34 3★ → 6:29 3★ (switch 1:00, wagons 2:00 and 3:00); scan 30 s and
+letter + eye+ 30 s 6:43 → 6:15 3★. The second wagon is the D-314 margin (the forecast after the first wagon says ~6:45,
+within 30 s of 7:05); XVI has no other use for silver. Robustness (`EYE_PHASE` 3/5/7 s): 10 s 6:32/6:27/6:27 3★, 30 s
+6:37 3★, 60 s 7:19 2★ → 6:16 3★ — the BACKLOG item "eye 60 s with a phase shift ends at 7:19" is gone (the card now
+offers the wagon at 2:00, before the dispatcher's chaotic window). Other missions: `tools/balance-night6.ts
+--no-search --json` 148 rows of I–XV identical before and after; `tools/mission-hashes.ts` 71 rows identical. Tests
+(`tests/two-castles.test.ts`): error bounds over time for all 10 strategies (whole order ≤ 40 s from 1:10, ≤ 25 s
+while the haul card shows, east castle ≤ 50 s and north ≤ 70 s from 0:10; at the even split the east card says late by
+≥ 1:30 and within 30 s of the truth through 1:50). (decided)
