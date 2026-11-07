@@ -11,6 +11,7 @@
  */
 import { ExtrudeGeometry, Shape } from 'three';
 import { type ModelPart, PartBuilder, trs, v3 } from './kit';
+import { bakedOr } from './baked';
 import { beam, box, type Opts, rod } from './shapes';
 
 export type BridgeKind = 'wood' | 'stone';
@@ -209,10 +210,12 @@ const endCache = new Map<BridgeKind, ModelPart[]>();
 export function bridgeEndParts(kind: BridgeKind): ModelPart[] {
   const hit = endCache.get(kind);
   if (hit) return hit;
-  const b = new PartBuilder({ seed: kind === 'wood' ? 711 : 712, ao: 0, dirt: 0 });
-  if (kind === 'wood') woodEnd(b);
-  else stoneEnd(b);
-  const parts = b.build();
+  const parts = bakedOr(`bridgeEnd:${kind}`, () => {
+    const b = new PartBuilder({ seed: kind === 'wood' ? 711 : 712, ao: 0, dirt: 0 });
+    if (kind === 'wood') woodEnd(b);
+    else stoneEnd(b);
+    return b.build();
+  });
   endCache.set(kind, parts);
   return parts;
 }
@@ -242,10 +245,12 @@ const cache = new Map<BridgeKind, ModelPart[]>();
 export function bridgeParts(kind: BridgeKind): ModelPart[] {
   const hit = cache.get(kind);
   if (hit) return hit;
-  const b = new PartBuilder({ seed: kind === 'wood' ? 701 : 702, ao: 0, dirt: 0 });
-  if (kind === 'wood') woodSegment(b);
-  else stoneSegment(b);
-  const parts = b.build();
+  const parts = bakedOr(`bridge:${kind}`, () => {
+    const b = new PartBuilder({ seed: kind === 'wood' ? 701 : 702, ao: 0, dirt: 0 });
+    if (kind === 'wood') woodSegment(b);
+    else stoneSegment(b);
+    return b.build();
+  });
   cache.set(kind, parts);
   return parts;
 }

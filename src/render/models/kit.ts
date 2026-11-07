@@ -634,7 +634,8 @@ export function boxUv(g: BufferGeometry): void {
   g.setAttribute('uv', new BufferAttribute(boxUvArray(g.getAttribute('position').array as Float32Array, g.getAttribute('normal').array as Float32Array), 2));
 }
 
-function boxUvArray(pa: Float32Array, na: Float32Array): Float32Array {
+/** The box-projected UVs of points with normals (also the prebaked catalogue's decoder, D-331). */
+export function boxUvArray(pa: Float32Array, na: Float32Array): Float32Array {
   const count = pa.length / 3;
   const uv = new Float32Array(count * 2);
   const s = 1 / UV_METRES;

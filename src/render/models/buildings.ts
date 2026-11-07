@@ -24,6 +24,7 @@ import {
   Vector3,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, prim, smoothstep, trs, v3 } from './kit';
+import { bakedOr } from './baked';
 import { brewery, charcoalBurner, fisher, malthouse, quarry } from './chains';
 import { addHuman, HUMAN_STYLES, type WorkerKind } from './people';
 import {
@@ -1025,6 +1026,11 @@ let postOpenCache: ModelPart[] | null = null;
 /** The trading post before rank 4: both shutters closed in the stall opening (same frame as tradePost()). */
 export function tradePostClosedParts(): ModelPart[] {
   if (postClosedCache) return postClosedCache;
+  postClosedCache = bakedOr('tradePostClosed', tradePostClosedBuild);
+  return postClosedCache;
+}
+
+function tradePostClosedBuild(): ModelPart[] {
   const b = new PartBuilder({ seed: 983, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
   const st = POST_STALL;
   for (const dy of [-st.h / 4, st.h / 4]) {
@@ -1032,8 +1038,7 @@ export function tradePostClosedParts(): ModelPart[] {
     for (const dx of [-st.w / 3, st.w / 3]) box(b, 'metal', 0.5, 0.06, 0.02, trs(st.x + dx, st.y + dy, st.z + 0.15), { color: '#33302c' });
   }
   box(b, 'wood', 0.12, st.h + 0.1, 0.08, trs(st.x, st.y, st.z + 0.15), { color: C.timber }); // the bar
-  postClosedCache = b.build();
-  return postClosedCache;
+  return b.build();
 }
 
 /**
@@ -1042,6 +1047,11 @@ export function tradePostClosedParts(): ModelPart[] {
  */
 export function tradePostOpenParts(): ModelPart[] {
   if (postOpenCache) return postOpenCache;
+  postOpenCache = bakedOr('tradePostOpen', tradePostOpenBuild);
+  return postOpenCache;
+}
+
+function tradePostOpenBuild(): ModelPart[] {
   const b = new PartBuilder({ seed: 991, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
   const st = POST_STALL;
   const front = st.z + 0.06;
@@ -1062,8 +1072,7 @@ export function tradePostOpenParts(): ModelPart[] {
   // pennant on a 5 m pole by the scales
   rod(b, 'wood', v3(6.9, -0.1, 4.9), v3(6.9, 5.0, 4.9), 0.05, 0.04, 5, { color: C.timber, ao: 0 });
   box(b, 'cloth', 1.2, 0.45, 0.03, trs(6.9 - 0.62, 4.7, 4.9), { color: C.clay, ao: 0, dirt: 0 });
-  postOpenCache = b.build();
-  return postOpenCache;
+  return b.build();
 }
 
 // -------------------------------------------------------------------------------------------
@@ -1104,21 +1113,23 @@ export function buildingModel(kind: BuildingKind): BuildingModel {
     cache.set(kind, fb);
     return fb;
   }
-  const b = new PartBuilder({ seed: 300 + BUILDING_KINDS.indexOf(kind) * 11, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
-  const extra = BUILDERS[kind](b);
-  const cells = BUILDING_CELLS[kind];
-  const model: BuildingModel = {
-    kind,
-    cells,
-    parts: b.build(),
-    gate: extra.gate ?? v3(0, 0, (cells[1] * 4) / 2),
-    wheel: extra.wheel,
-    smoke: extra.smoke,
-    workers: extra.workers,
-    fieldWorker: extra.fieldWorker,
-    yard: extra.yard,
-    piles: extra.piles,
-  };
+  const model = bakedOr(`building:${kind}`, (): BuildingModel => {
+    const b = new PartBuilder({ seed: 300 + BUILDING_KINDS.indexOf(kind) * 11, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
+    const extra = BUILDERS[kind](b);
+    const cells = BUILDING_CELLS[kind];
+    return {
+      kind,
+      cells,
+      parts: b.build(),
+      gate: extra.gate ?? v3(0, 0, (cells[1] * 4) / 2),
+      wheel: extra.wheel,
+      smoke: extra.smoke,
+      workers: extra.workers,
+      fieldWorker: extra.fieldWorker,
+      yard: extra.yard,
+      piles: extra.piles,
+    };
+  });
   cache.set(kind, model);
   return model;
 }
@@ -1131,6 +1142,11 @@ let castleUpgradeCache: ModelPart[] | null = null;
  */
 export function castleUpgradeParts(): ModelPart[] {
   if (castleUpgradeCache) return castleUpgradeCache;
+  castleUpgradeCache = bakedOr('castleUpgrade', castleUpgradeBuild);
+  return castleUpgradeCache;
+}
+
+function castleUpgradeBuild(): ModelPart[] {
   const b = new PartBuilder({ seed: 977, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
   const tx = 6.4, tz = -6.4, r = 2.0, th = 12.5;
   b.add('stone', prim(CylinderGeometry, r, r * 1.08, th, 14, 6, false), { ...stoneO(), m: trs(tx, th / 2, tz), jitter: 0.04 });
@@ -1150,8 +1166,7 @@ export function castleUpgradeParts(): ModelPart[] {
   // pennant pole and cloth (the castle's warm accent)
   rod(b, 'wood', v3(tx, th + 4.2, tz), v3(tx, th + 6.6, tz), 0.05, 0.04, 5, { color: C.timber, ao: 0 });
   box(b, 'cloth', 1.4, 0.55, 0.03, trs(tx + 0.72, th + 6.25, tz), { color: C.clay, ao: 0, dirt: 0 });
-  castleUpgradeCache = b.build();
-  return castleUpgradeCache;
+  return b.build();
 }
 
 const propCache = new Map<PropKind, ModelPart[]>();
@@ -1160,6 +1175,12 @@ const propCache = new Map<PropKind, ModelPart[]>();
 export function propParts(kind: PropKind): ModelPart[] {
   const hit = propCache.get(kind);
   if (hit) return hit;
+  const parts = bakedOr(`prop:${kind}`, () => propBuild(kind));
+  propCache.set(kind, parts);
+  return parts;
+}
+
+function propBuild(kind: PropKind): ModelPart[] {
   const b = new PartBuilder({ seed: 500 + PROP_KINDS.indexOf(kind), ao: 0.35 });
   switch (kind) {
     case 'fence':
@@ -1175,8 +1196,6 @@ export function propParts(kind: PropKind): ModelPart[] {
       crateGeom(b, trs(0, 0.3, 0));
       break;
   }
-  const parts = b.build();
-  propCache.set(kind, parts);
-  return parts;
+  return b.build();
 }
 

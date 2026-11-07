@@ -26,6 +26,7 @@ import {
 } from 'three';
 import { HORSE_LEGS } from '../gait';
 import { type ModelPart, PartBuilder, prim, smoothstep, trs, v3 } from './kit';
+import { bakedOr } from './baked';
 import { modelMaterial } from './materials';
 import { addHuman, HUMAN_STYLES } from './people';
 import { beam, box, loftGeometry, rod, sec, type Opts } from './shapes';
@@ -418,6 +419,12 @@ const HANDS = v3(0, WAGON.seatY + 0.3, WAGON.seatZ + 0.46);
 export function wagonModel(detail: 'near' | 'mid' = 'near'): WagonModel {
   const hit = cached.get(detail);
   if (hit) return hit;
+  const m = bakedOr(`wagon:${detail}`, () => wagonBuild(detail));
+  cached.set(detail, m);
+  return m;
+}
+
+function wagonBuild(detail: 'near' | 'mid'): WagonModel {
   const near = detail === 'near';
   let bodyParts: ModelPart[];
   if (near) {
@@ -436,7 +443,7 @@ export function wagonModel(detail: 'near' | 'mid' = 'near'): WagonModel {
   buildHorse(horse, WAGON.horseZ, lod);
   const driver = new PartBuilder({ seed: 7, ao: 0.1, dirt: 0.1 });
   addHuman(driver, trs(0, WAGON.seatY, WAGON.seatZ), HUMAN_STYLES[0], 'sit', near ? 7 : 4, HANDS);
-  const m: WagonModel = {
+  return {
     body: bodyParts,
     wheelFront: wf.build(),
     wheelRear: wr.build(),
@@ -444,8 +451,6 @@ export function wagonModel(detail: 'near' | 'mid' = 'near'): WagonModel {
     driver: driver.build(),
     wheels: WAGON.wheels,
   };
-  cached.set(detail, m);
-  return m;
 }
 
 let lod1: ModelPart[] | null = null;
@@ -453,6 +458,11 @@ let lod1: ModelPart[] | null = null;
 /** Far-zoom rig: one merged static mesh per material (~600 triangles). */
 export function wagonLod1(): ModelPart[] {
   if (lod1) return lod1;
+  lod1 = bakedOr('wagonLod1', wagonLod1Build);
+  return lod1;
+}
+
+function wagonLod1Build(): ModelPart[] {
   const b = new PartBuilder({ seed: 8, ao: 0.2 });
   const top = WAGON.bedTopY;
   box(b, 'wood', 1.4, 0.12, 3.3, trs(0, top - 0.06, 0), wood(BOARD));
@@ -470,8 +480,7 @@ export function wagonLod1(): ModelPart[] {
   b.add('cloth', prim(CylinderGeometry, 0.15, 0.2, 0.62, 6), { ...d, m: trs(0, top + 0.72, 1.33) });
   b.add('cloth', prim(SphereGeometry, 0.12, 5, 3), { ...d, color: HUMAN_STYLES[0].hood, m: trs(0, top + 1.18, 1.34) });
   b.add('cloth', prim(CylinderGeometry, 0.07, 0.07, 0.5, 4, 1, true), { ...d, m: trs(0, top + 0.42, 1.6, Math.PI / 2, 0, 0, 2.2, 1, 1) });
-  lod1 = b.build();
-  return lod1;
+  return b.build();
 }
 
 // -------------------------------------------------------------------------------------------

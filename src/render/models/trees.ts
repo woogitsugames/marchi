@@ -42,6 +42,7 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
+import { bakedOr } from './baked';
 import { leafTexture, modelMaterial, needleTexture, treeUniforms, TWIG_GLSL } from './materials';
 import { rod } from './shapes';
 import { TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './treeKinds';
@@ -386,11 +387,14 @@ export function treeParts(kind: TreeKind, variant = 0): ModelPart[] {
   const key = `${kind}:${variant}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const b = new PartBuilder({ seed: 600 + TREE_KINDS.indexOf(kind) + variant * 37, ao: 0.3, aoHeight: 1.5 });
-  BUILD[kind](b, variant);
-  // trunks get their own material: bark maps plus the tree shader (LOD dither, sway)
-  const parts = b.build().map((p): ModelPart => ({ geometry: p.geometry, material: p.material === 'bark' ? 'trunk' : p.material }));
-  for (const p of parts) addTreeAttr(p.geometry, kind, 0, p.material === 'leaves' ? 600 + TREE_KINDS.indexOf(kind) * 7 + variant : 0);
+  const parts = bakedOr(`tree:${key}`, () => {
+    const b = new PartBuilder({ seed: 600 + TREE_KINDS.indexOf(kind) + variant * 37, ao: 0.3, aoHeight: 1.5 });
+    BUILD[kind](b, variant);
+    // trunks get their own material: bark maps plus the tree shader (LOD dither, sway)
+    const ps = b.build().map((p): ModelPart => ({ geometry: p.geometry, material: p.material === 'bark' ? 'trunk' : p.material }));
+    for (const p of ps) addTreeAttr(p.geometry, kind, 0, p.material === 'leaves' ? 600 + TREE_KINDS.indexOf(kind) * 7 + variant : 0);
+    return ps;
+  });
   cache.set(key, parts);
   return parts;
 }
@@ -474,6 +478,12 @@ function cardSize(kind: TreeKind): { W: number; y0: number; y1: number } {
 export function treeBillboard(kind: TreeKind): ModelPart[] {
   const hit = bbCache.get(kind);
   if (hit) return hit;
+  const parts = bakedOr(`billboard:${kind}`, () => billboardBuild(kind));
+  bbCache.set(kind, parts);
+  return parts;
+}
+
+function billboardBuild(kind: TreeKind): ModelPart[] {
   const { W, y0, y1 } = cardSize(kind);
   const col = TREE_KINDS.indexOf(kind);
   const pos: number[] = [], nor: number[] = [], uv: number[] = [], color: number[] = [], idx: number[] = [];
@@ -500,9 +510,7 @@ export function treeBillboard(kind: TreeKind): ModelPart[] {
   g.setIndex(idx);
   addTreeAttr(g, kind, -y0);
   g.computeBoundingSphere();
-  const parts: ModelPart[] = [{ geometry: g, material: 'billboard' }];
-  bbCache.set(kind, parts);
-  return parts;
+  return [{ geometry: g, material: 'billboard' }];
 }
 
 let bbDepth: MeshDepthMaterial | null = null;

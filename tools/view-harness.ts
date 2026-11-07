@@ -20,6 +20,7 @@
  *   world=m7         another mission's world as built (default: m1 with the bot's bridge and four wagons)
  *   prior=m12        set (and draw) another mission's world before this one, like menu -> mission
  *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
+ *   baked=1          models decoded from the prebaked catalogue (D-331; the dev server bakes it per request)
  * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
  * window.__harness exposes { world, view, loop, internals, frames(), setQuality(q) } for scripted
  * screenshots; setQuality(q) switches the tier and resolves when its textures are bound.
@@ -27,7 +28,7 @@
 import { GameLoop, type Speed } from '../src/game/loop';
 import { applyCommand, createWorld, lineCells, step, TICK_HZ, validateRoad, type Command } from '../src/sim/index';
 import { QUALITIES, type Quality } from '../src/render/api';
-import { createWorldView, viewInternals } from '../src/render/view';
+import { createWorldView, installBakedModels, viewInternals } from '../src/render/view';
 import { bridgeA, stableId } from './bot';
 
 const q = new URLSearchParams(location.search);
@@ -66,6 +67,7 @@ if (q.get('rain') === '1') world.state.rain = [{ start: 0, end: 1e9 }];
 const ff = num('t', 0);
 for (let i = 0; i < ff * TICK_HZ; i++) step(world);
 
+if (q.get('baked') === '1') installBakedModels(await (await fetch('/__baked-models.bin')).arrayBuffer());
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 const view = createWorldView();
 const internals = viewInternals(view);
