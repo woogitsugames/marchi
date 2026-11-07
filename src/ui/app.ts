@@ -23,7 +23,7 @@ import { Hud, rankPostLine, type Tool } from './hud';
 import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
-import { StallRanking, sampleInputWaits } from './stalls';
+import { StallRanking, sampleCalmCosts, sampleInputWaits } from './stalls';
 import { sampleFleet } from './paceCard';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
@@ -944,6 +944,7 @@ export class App implements PanelNav {
     this.view.afterTick();
     samplePace(this.pace, this.world);
     sampleInputWaits(this.world);
+    sampleCalmCosts(this.world); // the loss letter's three costs leave out the calm seconds (D-335)
     sampleFleet(this.world); // the pace card's fleet kind reads the last minute (D-127)
     if (this.prevAudio && audio.ready) {
       const l = this.view.audioListener?.() ?? { x: 0, z: 0, yaw: 0 };

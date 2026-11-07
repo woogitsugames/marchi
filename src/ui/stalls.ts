@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -87,6 +87,81 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   // D-212: a granary full of goods nothing wants now (mission XV's fish)
   if (granaryUnwanted(world, b.id)) return 'unwanted';
   return null;
+}
+
+/**
+ * Calm seconds per ledger root (D-335): once per sim second, every root the ledger charged since the last look is
+ * judged — a building still in the charged status that reads calm with nothing to do about it (`calmWhy`: a granary
+ * full of goods nobody wants, a spare yard, a full granary next to one with room, ...) adds those seconds to `calm`.
+ * `seen` counts every charged second the sampler watched, so a game loaded mid-way knows which part it did not see.
+ * Called every tick from App.onTick, next to sampleInputWaits. Pure read of the sim.
+ */
+interface CalmLog { tick: number; prev: Record<string, number>; seen: Record<string, number>; calm: Record<string, number> }
+const calmLogs = new WeakMap<World, CalmLog>();
+export function sampleCalmCosts(world: World): void {
+  const st = world.state;
+  if (st.tick % TICK_HZ !== 0) return;
+  let log = calmLogs.get(world);
+  // a new world, or a loaded one (tick went back): start over, taking the ledger as found — those seconds were not watched
+  const fresh = !log || st.tick < log.tick;
+  if (!log || fresh) { log = { tick: st.tick, prev: {}, seen: {}, calm: {} }; calmLogs.set(world, log); }
+  else if (st.tick === log.tick) return;
+  log.tick = st.tick;
+  const ledger = st.ledger.stallSeconds;
+  for (const key in ledger) {
+    const now = ledger[key]!, grew = now - (log.prev[key] ?? 0);
+    log.prev[key] = now;
+    if (fresh || grew <= 0) continue;
+    log.seen[key] = (log.seen[key] ?? 0) + grew;
+    if (calmRoot(world, key)) log.calm[key] = (log.calm[key] ?? 0) + grew;
+  }
+}
+
+/** The statuses accountStalls (sim.ts) never charges; everything else, held past its grace, is a stall there. */
+const LEDGER_NOT_STALL = new Set(['WORKING', 'IDLE', 'CONTRACT_DONE', 'WAITING_DELIVERY', 'WAITING_UPSTREAM', 'WAGON_DUE']);
+const LEDGER_GRACE_TICKS = 2 * TICK_HZ;
+
+/**
+ * A ledger key ('building:7:STORAGE_FULL') that is a calm second now: its building still stands in that status, reads
+ * calm with nothing to do about it, and no other building whose stall is not calm hangs on it. XV's fish store is calm
+ * alone from 0:02, but from ~0:44 the woodcutters it refuses are charged to it too — those seconds stay a cost, and the
+ * letter keeps "build a granary" (D-212's advice) with the time the woodcutters really stood.
+ */
+function calmRoot(world: World, key: string): boolean {
+  const [kind, id, status] = key.split(':');
+  if (kind !== 'building') return false;
+  const root = buildingById(world, Number(id));
+  if (!root) return false;
+  const s = root.status as { k: string; cause?: string };
+  if ((s.cause ? `${s.k}.${s.cause}` : s.k) !== status || calmWhy(world, root) === null) return false;
+  for (const d of world.state.buildings) {
+    if (d.id === root.id || LEDGER_NOT_STALL.has(d.status.k) || d.stalledTicks < LEDGER_GRACE_TICKS) continue;
+    if (calmWhy(world, d) !== null) continue;
+    if (explainBuilding(world, d.id).some((l) => l.kind === 'building' && l.id === root.id)) return false;
+  }
+  return true;
+}
+
+/**
+ * The loss letter's "three costs" (D-335, BACKLOG P3 from D-212): the ledger's root causes by seconds lost, minus the
+ * seconds they read calm with nothing to do about them (sampleCalmCosts); seconds the sampler did not watch (a game
+ * loaded mid-way, a headless run) are judged by the root's reading now. Wagons and spans are never calm. The pickup
+ * on its way and the season stay costs: too few wagons is a real cause. Pure read.
+ */
+export function lossCauses(world: World, n = 3, minSeconds = 5): ReturnType<typeof topStallCauses> {
+  const log = calmLogs.get(world);
+  const rows: [string, number][] = [];
+  for (const [key, seconds] of Object.entries(world.state.ledger.stallSeconds)) {
+    const seen = Math.min(seconds, log?.seen[key] ?? 0);
+    const calm = (log?.calm[key] ?? 0) + (seconds > seen && calmRoot(world, key) ? seconds - seen : 0);
+    if (seconds - calm >= minSeconds) rows.push([key, seconds - calm]);
+  }
+  // the ledger's own order (topStallCauses): most seconds first, ties by key
+  rows.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+  return rows.slice(0, n).map(([key, seconds]) => {
+    const [kind, id, status] = key.split(':');
+    return { kind: kind!, id: Number(id), status: status!, seconds };
+  });
 }
 
 /**

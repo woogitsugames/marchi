@@ -282,3 +282,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-331 | — | The model catalogue is baked at build time and decoded at startup | decided | inne |
 | D-332 | — | The catalogue is preloaded by the HTML and installed just before the first world | decided | inne |
 | D-333 | — | Not done: an IndexedDB cache of built models, building only the first frame's kinds | decided | inne |
+| D-334 | 2026-11-07 | RTL: the pennant icons turn with the script; an audit of which icons mirror (QA 2026-11-07, BACKLOG P3) | decided | inne |
+| D-335 | — | The loss letter's three costs leave out calm seconds (BACKLOG P3 from D-212) | decided | treść |

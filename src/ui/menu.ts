@@ -1,10 +1,11 @@
 // Main menu strip over the live scene, the settings sheet, the in-game menu sheet and the
 // end-of-mission sealed letter.
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
-import { GOODS, MISSIONS, contractsOf, topStallCauses, type World } from '../sim/index';
+import { GOODS, MISSIONS, contractsOf, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
 import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
 import { lossActionKey } from './stallKinds';
+import { lossCauses } from './stalls';
 import { saveErrorMessageKey } from '../platform/saveGate';
 import { VALLEY_SLOTS, type SlotSummary, type ValleySlot } from '../platform/save';
 import { iconSvg } from './icons';
@@ -504,7 +505,7 @@ function causeReason(status: string): string {
 function lossActionHtml(world: World): string {
   // a missing road among the three costs comes first: no wagon helps where none can drive (a lost I without the
   // crossing listed the farm's "full yard, no wagon" above the mill's "no wagon can reach")
-  const three = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
+  const three = lossCauses(world, 3);
   const top = three.find((c) => lossActionKey(c.status) === 'end.act.road') ?? three[0];
   if (!top) return '';
   const text = t(lossActionKey(top.status), { who: causeSubject(world, top.kind, top.id), time: clock(top.seconds) });
@@ -513,7 +514,7 @@ function lossActionHtml(world: World): string {
 
 /** The three root causes that cost the most time, as a short ledger (subject — reason ...... m:ss). */
 function causesHtml(world: World): string {
-  const top = topStallCauses(world, 3).filter((c) => c.seconds >= 5);
+  const top = lossCauses(world, 3);
   const rows = top.length
     ? top.map((c) => `<li><span class="lg-what"><b>${esc(causeSubject(world, c.kind, c.id))}</b> <span dir="auto">${esc(causeReason(c.status))}</span></span>` +
       `<span class="lg-dots" aria-hidden="true"></span>${bdi(clock(c.seconds), 'lg-time num')}</li>`).join('')

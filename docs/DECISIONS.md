@@ -3772,3 +3772,38 @@ menu's first frame holds 1–2 of its 8 building kinds, which cuts the cold buil
 (all 5 kinds in every first frame, D-325) and the near wagon stay, the deferred kinds then build cold right after the
 first frame (~60 ms of jank while the menu camera pans) and off-screen buildings cast shadows into the frame. Both are
 moot with D-331 (decoding a building kind is ~1 ms). (decided)
+
+**D-334 — RTL: the pennant icons turn with the script; an audit of which icons mirror (QA 2026-11-07, BACKLOG P3).**
+Arabic showed the "first" pennant (waybill row tag, the castle sheet's split line and its "Ten zamek pierwszy" switch,
+the toast) flying right, against the script. Rule (as in the platform guidelines): an icon mirrors under `dir=rtl` when
+its drawing points along the reading direction; pictures of things, physical turns and time do not. `RTL_MIRROR` in
+`src/ui/icons.ts` = `first` and `no_route` (its destination pennant flies the same way at the end of the broken way);
+`iconSvg`/`struckIconSvg` give those SVGs `class="ico-rtl"`, and `:root[dir='rtl'] svg.ico-rtl { scale: -1 1 }` mirrors
+them (the `scale` property composes with the `:active` translate transforms on buttons). Already handled at their call
+sites and left so: `back`/`undo` (`.rtl-flip`), the back arrow as "go to" (`.fwd`, which relies on the unflipped glyph),
+the CSS chevrons (`.codex-chev`, `.ev-chev`), the alert hairlines. Never mirrored: goods and buildings (shape is their
+identity, D-18), `wagon`/`no_wagon`/`buy_wagon` (a cart; the 3D wagons keep their real heading), `rotate` (a clockwise
+turn of the building), `speed1/2/4` (playback speed, like media controls), `contested` (a fork as on the ground),
+weather, coin, seal, eye, the map and numerals. Shots `docs/shots/m16-{card,castle,switch}-{412x915,915x412}-ar.jpg`
+and the castle sheet before/after (class dropped in the page) `docs/shots/rtl-first-{before,after}-{412x915,915x412}-ar.jpg`. UI only. (decided)
+
+**D-335 — The loss letter's three costs leave out calm seconds (BACKLOG P3 from D-212).** XV's letter named the small
+fish store (`STORAGE_FULL` from 0:02) among the three costs: the ledger (`ledger.stallSeconds`, sim) charges a root every
+second whether or not it reads calm. The sim stays as it is (hashes); the UI counts the calm part. `sampleCalmCosts`
+(`src/ui/stalls.ts`, called every tick from `App.onTick` next to `sampleInputWaits`) looks once per sim second at every
+ledger root the sim charged since the last look and books those seconds as calm when the root's building still stands in
+the charged status, reads `calmWhy` (nothing to do about it: unwanted goods, a spare yard, a full granary next to one with
+room, a filled order, stored road stone, a saturated market, the trading post's road) and no other building whose stall
+is not calm hangs on it (its `explainBuilding` chain). The last rule keeps XV's store a cost from ~0:44, when the
+woodcutters it refuses stand — the letter keeps D-212's "build a granary" with the time they really lost (passive at the
+2-seal mark: 514 → 293 s). `lossCauses` (both the ledger list and the action line in `menu.ts`) subtracts the calm
+seconds, drops what falls under 5 s and keeps the ledger's order; seconds the sampler did not watch (a game loaded
+mid-way) are judged by the root's reading at the end. Wagons and spans are never calm; the pickup on its way and the
+season stay costs (too few wagons is a real cause). Survey (`m1..m16` × passive, 1/2 wagons, lesson at 0:00 and 2:00,
+the wrong site, eye 60 s; the ledger at half the deadline, at the 3- and 2-seal marks and at a real loss — most runs win
+late — 225 ledgers): three costs changed in 71, the action line in 23, all from a calm root: IV's surplus farm
+("wagon") gives way to the iced bridge ("bridge"; IV's lesson is the stone bridge); X's burner with its order filled ("granary") to the
+contested sawmill (X's lesson); V/XII players who connected late now read "road"; VI, XII and XV players who already
+built a granary no longer read "build a granary" for a store next to one with room (→ "wagon"); XV without a granary keeps
+"granary". m2, m3, m7, m11, m13, m14, m16 unchanged; I changes only its third line. Test `tests/loss-causes-calm.test.ts`.
+`tools/mission-hashes.ts` identical (71 rows). (decided)
