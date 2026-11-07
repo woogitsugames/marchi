@@ -55,3 +55,16 @@ test('road cell counts read as each language counts', async () => {
     for (const n of NUMS) assert(fmt(lang, dict['road.cells']!, n).includes(new Intl.NumberFormat(`${lang}-u-nu-latn`).format(n)), `${lang} ${n}: number missing`);
   }
 });
+
+test('i18n plural: "the only wagon" is said for exactly one wagon, not for 21 in Russian / Ukrainian (QA 7 XI)', async () => {
+  for (const [lang, d] of await dicts()) {
+    if (lang !== 'ru' && lang !== 'uk') continue;
+    const rules = new Intl.PluralRules(lang);
+    for (const key of ['cause.paceFleet', 'cause.paceHaul']) {
+      const one = pluralize(d[key]!, { n: 1 }, lang, rules, false);
+      const many = pluralize(d[key]!, { n: 21 }, lang, rules, false);
+      assert(/единствен|єдин/.test(one), `${lang} ${key} n=1: ${one}`);
+      assert(!/единствен|єдин/.test(many) && many.includes('21'), `${lang} ${key} n=21: ${many}`);
+    }
+  }
+});

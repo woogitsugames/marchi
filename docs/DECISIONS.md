@@ -3671,6 +3671,8 @@ showed (scratchpad, flat map):
    under the dock — caught by the layout check, D-146). Shots `docs/shots/qa17-chip-{before,after}-412x915-{de,zh}.jpg`.
 3. The haul sheet's two sentences were joined with a space, so Chinese and Japanese showed a gap after "。".
    `sentences(...)` in `src/ui/format.ts` joins with nothing for ja / zh-Hans, a space otherwise (Korean spaces).
+4. Russian and Ukrainian said "the only wagon is on the road" for 21, 31 … wagons too (the CLDR `one` category):
+   `cause.paceFleet` and `cause.paceHaul` use `=1` there; test in `tests/i18n-plural.test.ts`.
 Checked and left: RTL (ar) sheet and card read in order, the period of "XVI." sits left of the numeral as Arabic
 bidi puts it; long words (de, ru, uk) wrap whole; no console errors; nothing on the forbidden list. Sim untouched.
 (decided)
