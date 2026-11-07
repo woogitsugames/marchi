@@ -622,6 +622,7 @@ export const zh_Hans: Dict = {
   "playtest.device": "设备（型号、Android 版本）",
   "playtest.starts": "开始——全新世界，不会写入玩家的存档",
   "playtest.fixture": "已备好的状态",
+  "playtest.decision": "决策，无停滞",
   "playtest.last": "本次尝试：{id}",
   "playtest.lastNone": "本页还没有尝试。请在下方选择一个开始。",
   "playtest.copy": "复制结果行",
@@ -749,6 +750,8 @@ export const zh_Hans: Dict = {
   "help.granaries.p": "粮仓为继续运送的货物提供存放。把它接入道路网。粮仓已满可能意味着收货方没有空间，或货车跟不上。在再建一座或购买货车之前，先沿原因链查看。",
   "help.valley.h": "山谷与等级",
   "help.valley.p": "在自由山谷中，按自己的节奏发展生产和贸易。等级卡片显示晋升所需条件；扩建时请查看。从等级4起，河对岸的贸易站可用。把它接上道路，货车才能在那里交易；价格和货物的存放空间可能变化。",
+  "help.castles.h": "多座城堡",
+  "help.castles.p": "每座城堡都有自己的期限。没有城堡优先时，马车把货物平均分配，较早的期限可能错过。城堡卡片上的“此城堡优先”按钮会让载着成品的马车先去那里——只作用于最后一段路程，生产不会加快。卡片还会显示现在哪座城堡在收货，以及有几辆马车正驶向它。尽早决定。",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "距期限{time}",
   "castle.name.east": "东城堡",

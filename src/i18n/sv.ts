@@ -622,6 +622,7 @@ export const sv: Dict = {
   "playtest.device": "Enhet (modell, Android-version)",
   "playtest.starts": "Starter – ny värld, inget skrivs till spelarens sparade spel",
   "playtest.fixture": "förberett läge",
+  "playtest.decision": "beslut, inget stopp",
   "playtest.last": "Detta försök: {id}",
   "playtest.lastNone": "Inget försök på den här sidan ännu. Välj en start nedan.",
   "playtest.copy": "Kopiera resultatrad",
@@ -749,6 +750,8 @@ export const sv: Dict = {
   "help.granaries.p": "Ett magasin förvarar varor inför resten av resan. Anslut det till vägnätet. Ett fullt magasin kan betyda att mottagarna saknar plats eller att vagnarna inte hinner med. Följ orsakskedjan innan du bygger ett till eller köper en vagn.",
   "help.valley.h": "Dal och rang",
   "help.valley.p": "I den Fria dalen bygger du ut produktion och handel i din egen takt. Rangkortet visar vad som krävs för att stiga; titta på det när du bygger ut. Från rang 4 finns en handelsplats på andra sidan floden. Anslut den till vägarna så att vagnar kan handla där; priser och plats för varor kan ändras.",
+  "help.castles.h": "Flera slott",
+  "help.castles.p": "Varje slott har sin egen tidsfrist. Så länge inget slott går först delar vagnarna varorna lika, så den tidigare fristen kan missas. Knappen ”Detta slott först” på slottets kort skickar vagnar med färdiga varor dit först – bara på sista sträckan; produktionen går inte fortare. Kortet visar också vilket slott som får varorna nu och hur många vagnar som är på väg dit. Bestäm tidigt.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} till fristen",
   "castle.name.east": "Östra slottet",

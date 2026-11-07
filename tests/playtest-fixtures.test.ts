@@ -2,8 +2,10 @@
 // mission start: one test per fixture checks the status the protocol's preflight needs, the invariants, and that
 // the run is the same every time (stop tick + state hash), also through the app's GameLoop path.
 import { GameLoop } from '../src/game/loop';
-import { FIXTURE_IDS, FIXTURE_VERSION, checkFixture, fixtureMission, runFixture, simDriver, type FixtureId } from '../src/game/fixtures';
-import { applyCommand, checkInvariants, createWorld, hashState, unexplainedStalls, type World } from '../src/sim/index';
+import {
+  FIXTURE_IDS, FIXTURE_VERSION, TWO_CASTLES_SWITCH_BY_TICK, checkFixture, fixtureMission, runFixture, simDriver, type FixtureId,
+} from '../src/game/fixtures';
+import { applyCommand, castleForecast, checkInvariants, createWorld, hashState, newPaceLog, step, unexplainedStalls, type World } from '../src/sim/index';
 import { deadEnd } from '../src/ui/deadEnd';
 import { calmWhy, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
@@ -17,6 +19,7 @@ const DOCUMENTED: Record<FixtureId, { tick: number; kind: 'building' | 'wagon'; 
   'all-busy': { tick: 1595, kind: 'building', id: 9 },
   'bridge-jam': { tick: 982, kind: 'wagon', id: 11 },
   'warehouse-full': { tick: 1310, kind: 'building', id: 4 },
+  'two-castles': { tick: 10, kind: 'building', id: 5 },
 };
 
 function build(id: FixtureId): { w: World; out: ReturnType<typeof runFixture> } {
@@ -122,6 +125,31 @@ test('fixture warehouse-full: mission VI small granary STORAGE_FULL 12/12 by its
   assert(top.crit && !top.minor, 'a critical card');
   // the first letter (24 bread by 06:00) is still open: the full store hurts now
   eq(w.state.mission.contract!.tranches![0]!.doneTick, -1, 'first letter open');
+});
+
+test('fixture two-castles (S16): mission XVI at 0:01, no castle first, the east castle late at the even split', () => {
+  const w = common('two-castles');
+  const { out } = build('two-castles');
+  const m = w.state.mission;
+  eq(out.focus!.id, m.contract!.castle, 'subject is the east castle (main contract)');
+  eq(m.firstCastle, undefined, 'no castle first');
+  eq(m.extraContracts!.length, 1, 'two castle orders');
+  eq(w.state.wagons.length, 4, 'the dealt fleet');
+  const fc = castleForecast(w, newPaceLog(), out.focus!.id)!;
+  eq(fc.share, 'even', 'even split');
+  assert(fc.finishTick > fc.dueTick, `east late at the even split (${fc.finishTick} > ${fc.dueTick})`);
+  assert(fc.firstTick >= 0 && fc.firstTick <= fc.dueTick, `first would be on time (${fc.firstTick})`);
+  assert(out.tick < TWO_CASTLES_SWITCH_BY_TICK, 'inside the switch window');
+  // PROTOCOL S16's lever: the switch set now saves the east letter; never set, the letter is missed (docs/missions/m16.md)
+  const run = (first: boolean): boolean => {
+    const r = build('two-castles').w;
+    if (first) eq(applyCommand(r, { t: 'castleFirst', castle: r.state.mission.contract!.castle }).ok, true, 'switch accepted');
+    const tr = r.state.mission.contract!.tranches[0]!;
+    while (r.state.mission.result === 'running' && tr.doneTick < 0 && r.state.tick <= tr.deadlineTick) step(r);
+    return tr.doneTick >= 0 && !tr.missed;
+  };
+  eq(run(true), true, 'east first: letter on time');
+  eq(run(false), false, 'even split: letter missed');
 });
 
 test('fixture checks: a fresh mission fails every check (no false preflight)', () => {

@@ -3859,3 +3859,28 @@ review pass runs in parallel). The status entry for WAGON_DUE is aligned to the 
 check moved into "how to check"); docs/content/stall-codex.md gains a "Wpisy sytuacyjne" section, kept in sync by
 tests/stall-codex.test.ts. Test tests/codex-situations.test.ts (17 dictionaries complete, ≤ 220 characters; each
 situation picked in a real or staged state, read-only). UI only, mission hashes identical. (decided)
+
+**D-343 — Playtest scene S16 "Two castles" (mission XVI): a decision fixture, its own CSV columns and hypothesis H6
+(order 103, taken over from GPT).** The order named the scene "S10", but PROTOCOL §3E already uses S10–S15 for missions
+VII–XII and `scenario_id` is the aggregation key, so two different scenes would merge in the per-scene table; the scene
+is **S16** (mission XVI), its columns `s16_*`, its hypothesis H6 (BACKLOG, next after H1–H5). It is not a stall but a
+decision, so the fixture `two-castles` (`src/game/fixtures.ts`, mission m16) plays the mission as dealt with no command
+and stops at the first tick where, for 1 s, the east castle (main contract, building 5) is late at the even split while
+"this castle first" would bring it in on time — tick 10 (0:01), forecast 6:52 vs 5:00, first 3:56 (`castleForecast`,
+D-290/D-313); `checkFixture` also requires two orders, none done, no castle first and a tick inside the 1:30 switch
+window. The moderator screen lists it as start S16 tagged "prepared state" + "decision, no stall"
+(`playtest.decision`, 17 languages). The results row keeps its column order and appends five columns at the end:
+`s16_castle_named`, `s16_switch_named` (moderator) and `s16_first_set_s`, `s16_first_castle`, `s16_east_result` (game:
+the first accepted castleFirst after the first touch, in seconds of play, its castle, the east letter on exit), filled
+only for S16. `tools/playtest-aggregate.ts` prints an S16 block: H6 passes when `correct=1`, unassisted, `time_s<30`
+AND the east castle was set first before 1:30 of play. Fixture version stays 2 (no existing script or check changed).
+UI and tooling only, mission hashes identical. (decided)
+
+**D-344 — Seventh help topic "Several castles", opened by the "?" of a two-castle castle card (order 104, taken over
+from GPT).** Text in docs/content/help.md (PL/EN, same length class as the six others: deadline per castle, even
+split by default, "This castle first" acts on the last leg only, the card says who gets the goods now, decide early),
+keys `help.castles.h/.p` in all 17 languages using each dictionary's own `castle.first` label and quotation marks. Icon:
+the existing woodcut `first` pennant (no new pack icon). Placed after "Granaries", before "Valley and ranks". The "?"
+mapping stays by sheet kind (`HELP_TOPIC_OF_KIND`, D-254); `SheetContent` gains an optional `helpTopic()` that wins
+over it, and only the building card uses it: a castle holding one of two castle orders while the mission runs
+(`twoCastleOrder`) opens "castles", every other building card still "cause". Tests: tests/help-map.test.ts. (decided)

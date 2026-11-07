@@ -1052,6 +1052,10 @@ export class App implements PanelNav {
     if (cmd.t === 'place') this.build.settled();
     if (r.ok && this.mode === 'game') {
       this.trial?.command(cmd.t === 'road' ? `road:${cmd.surface === 2 ? 'cobble' : 'dirt'}` : cmd.t === 'place' ? `place:${cmd.type}` : cmd.t);
+      // S16 (D-343): which castle the participant set first, and when in play (the main contract is the east castle)
+      if (cmd.t === 'castleFirst' && cmd.castle >= 0) {
+        this.trial?.castleFirst(this.world.state.mission.contract?.castle === cmd.castle ? 'east' : 'north', this.world.state.tick);
+      }
     }
     if (this.mode !== 'game' || !this.hud) return;
     const icon: IconId = cmd.t === 'road' ? (cmd.surface === 2 ? 'road_cobble' : 'road_dirt') : cmd.t === 'demolish' ? 'demolish'
@@ -1627,6 +1631,9 @@ export class App implements PanelNav {
       ? s.wagons.find((w) => w.id === f.id)?.status.k ?? ''
       : buildingById(this.world, f.id)?.status.k ?? '';
     tr.snapshot(s.mission.result, status);
+    // S16 (D-343): the east castle's own letter (the main contract's one tranche in mission XVI)
+    const east = s.mission.extraContracts ? s.mission.contract?.tranches[0] : undefined;
+    if (east) tr.record.eastResult = east.doneTick >= 0 ? (east.missed ? 'late' : 'on_time') : s.tick > east.deadlineTick ? 'late' : 'open';
     tr.freeze();
   }
 

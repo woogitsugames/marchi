@@ -661,6 +661,7 @@ export const en: FullDict = {
   'playtest.device': 'Device (model, Android version)',
   'playtest.starts': 'Starts — a fresh world, nothing written to the player’s saves',
   'playtest.fixture': 'prepared state',
+  'playtest.decision': 'decision, no stall',
   'playtest.last': 'This trial: {id}',
   'playtest.lastNone': 'No trial on this page yet. Pick a start below.',
   'playtest.copy': 'Copy results row',
@@ -806,6 +807,8 @@ export const en: FullDict = {
   'help.granaries.p': 'A granary stores goods for their onward journey. Connect it to the road network. A full granary may mean that destinations lack room or wagons cannot keep up. Follow the cause chain before building another or buying a wagon.',
   'help.valley.h': 'Valley and ranks',
   'help.valley.p': 'In the Free valley, grow production and trade at your own pace. The rank card shows what is needed to advance; consult it as you expand. From rank 4, a trading post is available across the river. Connect it to the road network so wagons can trade there; prices and space for goods can change.',
+  'help.castles.h': 'Several castles',
+  'help.castles.p': 'Each castle has its own deadline. While no castle goes first, wagons share the goods evenly, so the earlier deadline may be missed. The “This castle first” button on a castle’s card sends wagons with finished goods there first — on the last leg only; production does not speed up. The card also says which castle is getting the goods now and how many wagons are on the way to it. Decide early.',
   // two castles, mission XVI (D-288..D-291)
   'contract.toCastle': '{time} to deadline',
   'castle.name.east': 'East Castle',

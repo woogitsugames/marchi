@@ -755,6 +755,11 @@ function iceHtml(world: World, chain: ReasonLink[]): string {
 export function buildingSheet(nav: PanelNav, id: number): SheetContent {
   return {
     key: 'building:' + id,
+    // "?" on a castle holding one of two castle orders opens "Several castles" (D-344); every other card "Find the cause"
+    helpTopic() {
+      const b = buildingById(nav.world, id);
+      return b && twoCastleOrder(nav.world, b) ? 'castles' : undefined;
+    },
     update(sheet) {
       const world = nav.world;
       const b = buildingById(world, id);

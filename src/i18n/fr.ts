@@ -622,6 +622,7 @@ export const fr: Dict = {
   "playtest.device": "Appareil (modèle, version d’Android)",
   "playtest.starts": "Départs — monde neuf, rien n’est écrit dans les sauvegardes du joueur",
   "playtest.fixture": "état préparé",
+  "playtest.decision": "décision, sans arrêt",
   "playtest.last": "Cet essai : {id}",
   "playtest.lastNone": "Pas encore d’essai ici. Choisissez un départ ci-dessous.",
   "playtest.copy": "Copier les résultats",
@@ -749,6 +750,8 @@ export const fr: Dict = {
   "help.granaries.p": "Un grenier garde les marchandises pour la suite de leur voyage. Reliez-le au réseau de routes. Un grenier plein peut signifier que les destinataires manquent de place ou que les chariots ne suivent pas. Suivez la chaîne des causes avant d’en bâtir un autre ou d’acheter un chariot.",
   "help.valley.h": "Vallée et rangs",
   "help.valley.p": "Dans la Vallée libre, développez production et commerce à votre rythme. La fiche de rang indique ce qu’il faut pour monter ; consultez-la en vous agrandissant. Dès le rang 4, un comptoir est disponible de l’autre côté de la rivière. Reliez-le aux routes pour que les chariots y commercent ; les prix et la place pour les marchandises peuvent changer.",
+  "help.castles.h": "Plusieurs châteaux",
+  "help.castles.p": "Chaque château a sa propre échéance. Tant qu’aucun château ne passe d’abord, les chariots partagent les marchandises à parts égales : l’échéance la plus proche peut être manquée. Le bouton « Ce château d’abord » sur la fiche du château y envoie d’abord les chariots de marchandises prêtes, sur le dernier tronçon seulement ; la production n’accélère pas. La fiche indique aussi quel château reçoit les marchandises en ce moment et combien de chariots s’y rendent. Décidez tôt.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} avant l’échéance",
   "castle.name.east": "Château de l’Est",

@@ -622,6 +622,7 @@ export const es: Dict = {
   "playtest.device": "Dispositivo (modelo, versión de Android)",
   "playtest.starts": "Inicios: mundo nuevo, no se escribe nada en las partidas del jugador",
   "playtest.fixture": "estado preparado",
+  "playtest.decision": "decisión, sin parada",
   "playtest.last": "Esta prueba: {id}",
   "playtest.lastNone": "Aún no hay pruebas en esta página. Elige un inicio abajo.",
   "playtest.copy": "Copiar resultados",
@@ -749,6 +750,8 @@ export const es: Dict = {
   "help.granaries.p": "Un granero guarda mercancía para seguir su viaje. Únelo a la red de caminos. Un granero lleno puede significar que los destinos no tienen sitio o que los carros no dan abasto. Sigue la cadena de causas antes de construir otro o comprar un carro.",
   "help.valley.h": "Valle y rangos",
   "help.valley.p": "En el Valle libre, haz crecer la producción y el comercio a tu ritmo. La ficha de rango muestra lo que hace falta para ascender; consúltala al ampliar. Desde el rango 4 hay un puesto comercial al otro lado del río. Únelo a los caminos para que los carros comercien allí; los precios y el espacio para mercancías pueden cambiar.",
+  "help.castles.h": "Varios castillos",
+  "help.castles.p": "Cada castillo tiene su propio plazo. Mientras ningún castillo va primero, los carros reparten la mercancía por igual, así que el plazo más temprano puede perderse. El botón «Este castillo primero» de la ficha del castillo envía allí primero los carros con mercancía lista, solo en el último tramo; la producción no se acelera. La ficha también dice qué castillo recibe ahora la mercancía y cuántos carros van hacia él. Decide pronto.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} hasta el plazo",
   "castle.name.east": "Castillo del Este",

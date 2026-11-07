@@ -107,7 +107,7 @@ test('playtest row: CSV escaping and formula defusing', () => {
 
 test('playtest starts: protocol queries, every fixture once, markers only on the page URL', () => {
   const ids = PLAYTEST_STARTS.map((s) => s.id);
-  for (const id of ['T1', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9']) assert(ids.includes(id), `start ${id}`);
+  for (const id of ['T1', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S16']) assert(ids.includes(id), `start ${id}`);
   eq(new Set(ids).size, ids.length, 'unique ids');
   for (const f of FIXTURE_IDS) eq(PLAYTEST_STARTS.filter((s) => s.fixture === f).length, 1, `fixture ${f}`);
   for (const s of PLAYTEST_STARTS) {
@@ -123,4 +123,21 @@ test('playtest starts: protocol queries, every fixture once, markers only on the
   eq(q.get('pid'), 'P08', 'pid');
   eq(q.get('dev'), 'Pixel 8', 'dev');
   assert(!new URLSearchParams(playtestQuery(PLAYTEST_STARTS[0]!, { lang: 'pl', pid: 'x', dev: '' })).has('pid'), 'no free-text pid');
+});
+
+test('playtest row: S16 two castles fills its game columns, other scenarios leave them empty', () => {
+  const s16 = row({ ...base, scenario: 'S16', focusStatus: 'IDLE', castleFirst: { castle: 'east', tick: 425 }, eastResult: 'on_time' });
+  eq(s16.setup_url, '?fixture=two-castles&lang=pl&debug=1', 'S16 setup');
+  eq(s16.fixture_id, 'two-castles', 'fixture id');
+  eq(s16.speed_mode, '0', 'paused');
+  eq(s16.s16_first_set_s, '42.5', 'sim seconds of the first switch');
+  eq(s16.s16_first_castle, 'east', 'castle');
+  eq(s16.s16_east_result, 'on_time', 'east result');
+  eq(s16.s16_castle_named + s16.s16_switch_named, '', 'moderator-coded S16 columns stay empty');
+  const none = row({ ...base, scenario: 'S16', castleFirst: null, eastResult: 'open' });
+  eq(none.s16_first_set_s + none.s16_first_castle, '', 'never switched');
+  eq(none.s16_east_result, 'open', 'letter open');
+  const s4 = row({ ...base, castleFirst: { castle: 'north', tick: 10 }, eastResult: 'late' });
+  eq(s4.s16_first_set_s + s4.s16_first_castle + s4.s16_east_result, '', 'only S16 rows fill them');
+  assert(PLAYTEST_STARTS.find((s) => s.id === 'S16')!.decision === true, 'S16 is tagged a decision task');
 });

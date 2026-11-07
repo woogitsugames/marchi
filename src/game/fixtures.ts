@@ -7,13 +7,13 @@
 // shown to the moderator as "invalid setup" (the protocol says such a case is not scored).
 // Game code, not tools: the app imports it (D-51). Pure sim reads and commands only (no DOM).
 import {
-  TICK_HZ, applyCommand, busyOutOfReach, buildingById, checkInvariants, heldWagon, reachable, step, sumGoods,
-  unexplainedStalls, type Building, type Command, type CommandResult, type Wagon, type World,
+  TICK_HZ, applyCommand, busyOutOfReach, buildingById, castleForecast, checkInvariants, heldWagon, newPaceLog, reachable,
+  step, sumGoods, unexplainedStalls, type Building, type Command, type CommandResult, type Wagon, type World,
 } from '../sim/index';
-import { storeCapOf } from '../sim/contract';
+import { contractsOf, storeCapOf } from '../sim/contract';
 import { calmWhy, rankStalls } from '../ui/stalls';
 
-export const FIXTURE_IDS = ['bridge-cut-in-transit', 'all-busy', 'bridge-jam', 'warehouse-full'] as const;
+export const FIXTURE_IDS = ['bridge-cut-in-transit', 'all-busy', 'bridge-jam', 'warehouse-full', 'two-castles'] as const;
 export type FixtureId = (typeof FIXTURE_IDS)[number];
 /** Bump when a script or a check changes: the moderator notes it with the results (PROTOCOL §3). */
 export const FIXTURE_VERSION = 2;
@@ -48,12 +48,17 @@ export function simDriver(w: World): FixtureDriver {
   return { world: () => w, command: (c) => applyCommand(w, c), tick: () => step(w) };
 }
 
-export type FixtureMission = 'm2' | 'm6';
+export type FixtureMission = 'm2' | 'm6' | 'm16';
 
-/** S6 moved from mission I to mission VI (D-197, owner 2026-11-06): its granary fills by itself there. */
+/** S6 moved from mission I to mission VI (D-197, owner 2026-11-06): its granary fills by itself there. S16 "Two
+ *  castles" plays mission XVI (D-343). */
 export function fixtureMission(id: FixtureId): FixtureMission {
-  return id === 'warehouse-full' ? 'm6' : 'm2';
+  return id === 'warehouse-full' ? 'm6' : id === 'two-castles' ? 'm16' : 'm2';
 }
+
+/** S16's switch window (PROTOCOL S16, docs/missions/m16.md): "this castle first" set by 1:30 still saves the east
+ *  castle's 5:00 letter; from about 1:40 it no longer does. */
+export const TWO_CASTLES_SWITCH_BY_TICK = 90 * TICK_HZ;
 
 /** The predicate must hold this many ticks in a row before the run stops (no one-tick flickers). */
 const HOLD_TICKS = TICK_HZ;
@@ -127,7 +132,21 @@ function scripts(id: FixtureId): Script {
       // granary, and the HUD's worst-stall card names it (critical, not a calm full). About 2:20 of play,
       // before the first letter's bread is in: a full store is the root, no cut road or other building is.
       return { start: () => [], holds: smallGranaryFull, maxTicks: 400 * TICK_HZ };
+    case 'two-castles':
+      // S16 (D-343): mission XVI as dealt, no commands, stopped in its first second. Not a stall but a decision: no
+      // castle is first, so the planks are shared evenly and the east castle's forecast misses its 5:00 letter, while
+      // "this castle first" would still bring it in on time. The subject is the east castle (its card holds the switch).
+      return { start: () => [], holds: eastCastleDecision, maxTicks: 30 * TICK_HZ };
   }
+}
+
+/** Mission XVI's east castle (the main contract) when the even split makes it late and "first" would save it. */
+function eastCastleDecision(w: World): FixtureFocus | null {
+  const m = w.state.mission;
+  if (!m.contract || !m.extraContracts || m.firstCastle !== undefined) return null;
+  const fc = castleForecast(w, newPaceLog(), m.contract.castle);
+  if (!fc || fc.done || fc.share !== 'even' || fc.finishTick < 0 || fc.firstTick < 0) return null;
+  return fc.finishTick > fc.dueTick && fc.firstTick <= fc.dueTick ? { kind: 'building', id: m.contract.castle } : null;
 }
 
 /** Mission VI's small granary (capOverride 12), if any. */
@@ -241,6 +260,19 @@ export function checkFixture(id: FixtureId, w: World, focus: FixtureFocus | null
       if (!st.buildings.some((q) => q.status.k === 'OUTPUT_FULL' && q.status.blockedBy === b.id)) return 'no producer waits for the granary';
       const top = rankStalls(w)[0];
       if (!top || top.id !== b.id || !top.crit) return `worst-stall card shows ${top ? top.id : 'nothing'}, expected the granary ${b.id}`;
+      return null;
+    }
+    case 'two-castles': {
+      const orders = contractsOf(st.mission);
+      if (orders.length !== 2) return `${orders.length} castle orders, expected 2`;
+      if (!b || b.type !== 'castle' || b.id !== st.mission.contract!.castle) return `building ${focus.id} is not the east castle`;
+      if (st.mission.firstCastle !== undefined) return `castle ${st.mission.firstCastle} is already first`;
+      if (st.tick >= TWO_CASTLES_SWITCH_BY_TICK) return `stopped at ${st.tick}, past the switch window`;
+      if (orders.some((c) => c.tranches.some((x) => x.doneTick >= 0))) return 'a castle order is already complete';
+      const fc = castleForecast(w, newPaceLog(), b.id);
+      if (!fc || fc.share !== 'even') return 'the east castle is not on the even split';
+      if (fc.finishTick <= fc.dueTick) return 'the east castle is on time at the even split';
+      if (fc.firstTick < 0 || fc.firstTick > fc.dueTick) return '"this castle first" would not save the east castle';
       return null;
     }
   }

@@ -622,6 +622,7 @@ export const pt_BR: Dict = {
   "playtest.device": "Aparelho (modelo, versão do Android)",
   "playtest.starts": "Inícios — mundo novo, nada é gravado nos jogos salvos do jogador",
   "playtest.fixture": "estado preparado",
+  "playtest.decision": "decisão, sem parada",
   "playtest.last": "Esta tentativa: {id}",
   "playtest.lastNone": "Ainda sem tentativas aqui. Escolha um início abaixo.",
   "playtest.copy": "Copiar resultados",
@@ -749,6 +750,8 @@ export const pt_BR: Dict = {
   "help.granaries.p": "Um celeiro guarda mercadorias para o resto da viagem. Ligue-o à rede de estradas. Um celeiro cheio pode significar que os destinos estão sem espaço ou que as carroças não dão conta. Siga a cadeia de causas antes de construir outro ou comprar uma carroça.",
   "help.valley.h": "Vale e níveis",
   "help.valley.p": "No Vale livre, faça a produção e o comércio crescerem no seu ritmo. O cartão de nível mostra o que é preciso para subir; consulte-o ao expandir. A partir do nível 4, há um entreposto do outro lado do rio. Ligue-o às estradas para que as carroças negociem lá; preços e espaço para mercadorias podem mudar.",
+  "help.castles.h": "Vários castelos",
+  "help.castles.p": "Cada castelo tem seu próprio prazo. Enquanto nenhum castelo vem primeiro, as carroças dividem a mercadoria igualmente, e o prazo mais cedo pode ser perdido. O botão “Este castelo primeiro” no cartão do castelo manda para lá primeiro as carroças com mercadoria pronta — só no último trecho; a produção não acelera. O cartão também diz qual castelo está recebendo a mercadoria agora e quantas carroças vão até ele. Decida cedo.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} até o prazo",
   "castle.name.east": "Castelo Leste",

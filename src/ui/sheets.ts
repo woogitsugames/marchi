@@ -14,6 +14,9 @@ export interface SheetContent {
   /** When another content replaces this one inside the same sheet (pause menu -> settings),
    *  run onClose only when the sheet itself finally closes. Default: run it on replace. */
   closeWithSheet?: boolean;
+  /** The help topic of this card's "?" when it differs from its kind's topic (the map below): a castle holding one of
+   *  two castle orders opens "Several castles" (D-344). Read when the sheet opens and when "?" is pressed. */
+  helpTopic?(): string | undefined;
 }
 
 export interface Sheet {
@@ -171,7 +174,7 @@ export class Sheets {
     const kind = content.key.split(':')[0];
     sheet.el.dataset.kind = kind;
     // help from the map (D-254): the game's own cards carry a "?" into the help sheet on their topic
-    const topic = this.onHelp ? HELP_TOPIC_OF_KIND[kind] : undefined;
+    const topic = this.onHelp ? content.helpTopic?.() ?? HELP_TOPIC_OF_KIND[kind] : undefined;
     const help = sheet.el.querySelector<HTMLElement>('.sh-help');
     if (help) help.hidden = !topic;
     return sheet;
@@ -296,7 +299,7 @@ export class Sheets {
       if (this.top === sheet) this.closeTop();
     });
     help.addEventListener('click', () => {
-      const topic = HELP_TOPIC_OF_KIND[sheet.el.dataset.kind ?? ''];
+      const topic = sheet.content.helpTopic?.() ?? HELP_TOPIC_OF_KIND[sheet.el.dataset.kind ?? ''];
       if (this.top === sheet && topic) this.onHelp?.(topic);
     });
     this.swipeToClose(sheet, grip, head, body);

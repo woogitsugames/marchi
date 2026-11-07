@@ -288,3 +288,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-337 | — | Dijkstra walks cached neighbour lists | decided | inne |
 | D-338 | — | Fewer searches in rule A, and small per-tick savings; behaviour unchanged | decided | inne |
 | D-339 | — | Situational entries of the stall codex, in all 17 languages (orders 72 + 102, taken over from GPT) | decided | inne |
+| D-343 | — | Playtest scene S16 "Two castles" (mission XVI): a decision fixture, its own CSV columns and hypothesis H6 (order 103, taken over from GPT) | decided | sim |
+| D-344 | — | Seventh help topic "Several castles", opened by the "?" of a two-castle castle card (order 104, taken over from GPT) | decided | UI |

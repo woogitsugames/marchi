@@ -622,6 +622,7 @@ export const nl: Dict = {
   "playtest.device": "Apparaat (model, Android-versie)",
   "playtest.starts": "Starts — nieuwe wereld, er wordt niets in de opslag van de speler geschreven",
   "playtest.fixture": "voorbereide toestand",
+  "playtest.decision": "beslissing, geen stilstand",
   "playtest.last": "Deze poging: {id}",
   "playtest.lastNone": "Nog geen poging op deze pagina. Kies hieronder een start.",
   "playtest.copy": "Resultaten kopiëren",
@@ -749,6 +750,8 @@ export const nl: Dict = {
   "help.granaries.p": "Een graanschuur bewaart goederen voor de verdere reis. Sluit hem aan op het wegennet. Een volle schuur kan betekenen dat de afnemers geen ruimte hebben of dat de wagens het niet bijhouden. Volg de oorzakenketen voordat je er nog een bouwt of een wagen koopt.",
   "help.valley.h": "Vallei en rangen",
   "help.valley.p": "In de Vrije vallei laat je productie en handel in je eigen tempo groeien. De rangkaart toont wat nodig is om te stijgen; bekijk die als je uitbreidt. Vanaf rang 4 is er een handelspost aan de overkant van de rivier. Sluit die aan op de wegen zodat wagens er handel kunnen drijven; prijzen en ruimte voor goederen kunnen veranderen.",
+  "help.castles.h": "Meerdere kastelen",
+  "help.castles.p": "Elk kasteel heeft zijn eigen termijn. Zolang geen kasteel eerst gaat, verdelen de wagens de waren gelijk, zodat de vroegste termijn verloren kan gaan. De knop „Dit kasteel eerst” op de kasteelkaart stuurt wagens met kant-en-klare waren eerst daarheen – alleen op het laatste stuk; de productie gaat niet sneller. De kaart toont ook welk kasteel nu de waren krijgt en hoeveel wagens erheen rijden. Beslis vroeg.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} tot de termijn",
   "castle.name.east": "Oostkasteel",
