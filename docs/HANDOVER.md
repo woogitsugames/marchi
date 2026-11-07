@@ -96,8 +96,12 @@
   agentami Claude. Nieoddane: 66, 67, 68, 69, 70, 71, 72, 79, 80, 81, 82, 83, 84, 100, 101–105. Plan fal (po 2 agentów):
   1) **scalone ~00:30:** 66+105 i18n de/es/fr/it/nl/pt_BR/sv/tr (207 kluczy/język, 317 zmian, `docs/reviews/i18n-66-105-latin.md`)
   ‖ 67+71+101 listy (VIII/XIII bez zdradzania rozwiązania, XVI na nowo w 17 językach, XIV–XV przegląd, list doliny; `docs/reviews/letters-*`);
-  2) **w toku od ~00:35:** 66+105 i18n ru/uk/ja/ko/zh_Hans/ar/hi + 100 RTL (`claude/w-i18n2`) ‖ 72+102 księga przestojów (`claude/w-codex`); 3) 103 playtest S10 + 104 pomoc ‖ 81 audyt
-  kształtów towarów + 68 ikony; 4) 82/83/84 audyty (częściowo zrobione QA 7 XI) ‖ 70 opisy sklepu; 5) 69/79/80 dźwięki CC0.
+  2) **scalone ~01:45:** 66+105 i18n ru/uk/ja/ko/zh_Hans/ar/hi (132 zmiany, `docs/reviews/i18n-66-105-other.md`) + 100 RTL
+  (`docs/research/gpt-rtl-ar.md`, 7 uwag do kodu UI) ‖ 72+102 księga przestojów: 8 wpisów sytuacyjnych w 17 językach (D-339);
+  70 opisy sklepu — koordynator (17 języków, App Store pl/en);
+  3) **w toku od ~01:50:** poprawki RTL w UI (7 uwag) + 81 audyt kształtów towarów (`claude/w-rtlui`) ‖ 103 S10 + 104 pomoc
+  „Kilka zamków” wdrożone (`claude/w-s10help`);
+  4) 68 ikony ‖ 82/83/84 audyty (częściowo zrobione QA 7 XI); 5) 69/79/80 dźwięki CC0.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
