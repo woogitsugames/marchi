@@ -622,6 +622,7 @@ export const tr: Dict = {
   "playtest.device": "Cihaz (model, Android sürümü)",
   "playtest.starts": "Başlangıçlar — yeni dünya, oyuncunun kayıtlarına hiçbir şey yazılmaz",
   "playtest.fixture": "hazır durum",
+  "playtest.decision": "karar, duruş yok",
   "playtest.last": "Bu deneme: {id}",
   "playtest.lastNone": "Bu sayfada henüz deneme yok. Aşağıdan bir başlangıç seçin.",
   "playtest.copy": "Sonuçları kopyala",
@@ -749,6 +750,8 @@ export const tr: Dict = {
   "help.granaries.p": "Tahıl ambarı malları yolculuğun devamı için saklar. Onu yol ağına bağlayın. Dolu bir ambar, alıcılarda yer olmadığını ya da arabaların yetişemediğini gösterebilir. Yenisini inşa etmeden ya da araba almadan önce nedenler zincirini izleyin.",
   "help.valley.h": "Vadi ve rütbeler",
   "help.valley.p": "Serbest vadide üretimi ve ticareti kendi hızınızda büyütün. Rütbe kartı yükselmek için gerekenleri gösterir; genişlerken ona bakın. Rütbe 4’ten itibaren nehrin karşısında bir ticaret durağı açılır. Arabaların orada ticaret yapabilmesi için onu yollara bağlayın; fiyatlar ve mallar için yer değişebilir.",
+  "help.castles.h": "Birden çok kale",
+  "help.castles.p": "Her kalenin kendi teslim süresi vardır. Hiçbir kaleye öncelik verilmedikçe arabalar malı eşit paylaştırır; bu yüzden erken süre kaçabilir. Kale kartındaki “Önce bu kale” düğmesi, hazır malı taşıyan arabaları önce oraya gönderir — yalnızca son kesimde; üretim hızlanmaz. Kart ayrıca malı şu an hangi kalenin aldığını ve oraya kaç arabanın gittiğini gösterir. Erken karar verin.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "Süre bitimine {time}",
   "castle.name.east": "Doğu Kalesi",

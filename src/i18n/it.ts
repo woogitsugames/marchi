@@ -622,6 +622,7 @@ export const it: Dict = {
   "playtest.device": "Dispositivo (modello, versione di Android)",
   "playtest.starts": "Avvii: mondo nuovo, nulla viene scritto nei salvataggi del giocatore",
   "playtest.fixture": "stato preparato",
+  "playtest.decision": "decisione, nessun fermo",
   "playtest.last": "Questa prova: {id}",
   "playtest.lastNone": "Nessuna prova qui finora. Scegli un avvio qui sotto.",
   "playtest.copy": "Copia risultati",
@@ -749,6 +750,8 @@ export const it: Dict = {
   "help.granaries.p": "Un granaio custodisce le merci per il resto del viaggio. Collegalo alla rete stradale. Un granaio pieno può voler dire che i destinatari non hanno spazio o che i carri non tengono il passo. Segui la catena delle cause prima di costruirne un altro o comprare un carro.",
   "help.valley.h": "Valle e ranghi",
   "help.valley.p": "Nella Valle libera fai crescere produzione e commercio al tuo ritmo. La scheda del rango mostra cosa serve per salire; consultala mentre ti espandi. Dal rango 4 è disponibile un emporio oltre il fiume. Collegalo alle strade perché i carri possano commerciarvi; prezzi e spazio per le merci possono cambiare.",
+  "help.castles.h": "Più castelli",
+  "help.castles.p": "Ogni castello ha la sua scadenza. Finché nessun castello è primo, i carri dividono la merce in parti uguali, quindi la scadenza più vicina può saltare. Il pulsante «Prima questo castello» sulla scheda del castello manda lì per primi i carri con la merce pronta, solo nell’ultimo tratto; la produzione non accelera. La scheda dice anche quale castello riceve ora la merce e quanti carri sono diretti lì. Decidi presto.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} alla scadenza",
   "castle.name.east": "Castello Est",

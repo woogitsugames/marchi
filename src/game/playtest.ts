@@ -4,6 +4,7 @@
 // fixture no-save mode, D-185). At the end of a trial the screen copies one CSV row in the column order of
 // docs/playtest/results-template.csv: only the fields the game measured itself are filled, everything the
 // moderator observes or codes stays empty. Pure strings, no DOM: tests/playtest-row.test.ts runs it headless.
+import { TICK_HZ } from '../sim/defs';
 import { FIXTURE_VERSION, type FixtureId } from './fixtures';
 
 /** One start on the playtest screen: PROTOCOL's scenario id and its query (without lang/debug). */
@@ -14,11 +15,14 @@ export interface PlaytestStart {
   /** The protocol's query, exactly as PROTOCOL.md writes it (tests check that). */
   query: string;
   fixture: FixtureId | null;
+  /** A decision task, not a stall diagnosis (S16, D-343): the screen tags it so `correct` is scored as PROTOCOL says. */
+  decision?: boolean;
 }
 
 /**
  * PROTOCOL §3/§3A/§3B starts: the four validated fixtures for S2/S3/S4/S6, the URL starts for S1, S5, S7..S9
  * and the first-run tutorial T1 (`tut=1`, which must come first for its participant). T2 uses S1's start.
+ * S16 "Two castles" (§3H, D-343): mission XVI from its first second, a decision fixture (no stall).
  */
 export const PLAYTEST_STARTS: readonly PlaytestStart[] = [
   { id: 'T1', mission: 'm1', query: 'play=m1&tut=1&speed=1', fixture: null },
@@ -31,6 +35,7 @@ export const PLAYTEST_STARTS: readonly PlaytestStart[] = [
   { id: 'S7', mission: 'm4', query: 'play=m4&ff=200&speed=0', fixture: null },
   { id: 'S8', mission: 'm5', query: 'play=m5&ff=120&speed=0', fixture: null },
   { id: 'S9', mission: 'm6', query: 'play=m6&ff=180&speed=0', fixture: null },
+  { id: 'S16', mission: 'm16', query: 'fixture=two-castles', fixture: 'two-castles', decision: true },
 ];
 
 export function playtestStart(id: string | null): PlaytestStart | null {
@@ -81,6 +86,8 @@ export const RESULTS_COLUMNS = [
   'fixture_version', 'fixture_hash',
   // measured by the game itself (D-190, PROTOCOL §5A): never typed by the moderator
   'auto_first_touch_s', 'auto_why_open_s', 'auto_first_fix', 'auto_outcome', 'auto_focus_status',
+  // S16 "Two castles" (PROTOCOL §3H, D-343): the moderator codes the first two, the game fills the last three
+  's16_castle_named', 's16_switch_named', 's16_first_set_s', 's16_first_castle', 's16_east_result',
 ] as const;
 export type ResultsColumn = (typeof RESULTS_COLUMNS)[number];
 
@@ -107,6 +114,21 @@ export interface TrialRecord {
   outcome: string;
   /** The fixture subject's status kind when the row is copied ('' without a subject). */
   focusStatus: string;
+  /** Two castles (S16): the participant's first accepted "this castle first", by castle and sim tick. */
+  castleFirst?: { castle: 'east' | 'north'; tick: number } | null;
+  /** Two castles (S16): the east castle's letter when the row is copied: on_time, late or open. */
+  eastResult?: '' | 'on_time' | 'late' | 'open';
+}
+
+/** S16's three game-measured fields; empty for every other scenario. */
+function twoCastleFields(r: TrialRecord): Partial<Record<ResultsColumn, string>> {
+  if (r.scenario !== 'S16') return {};
+  const f = r.castleFirst ?? null;
+  return {
+    s16_first_set_s: f ? (f.tick / TICK_HZ).toFixed(1) : '',
+    s16_first_castle: f ? f.castle : '',
+    s16_east_result: r.eastResult ?? '',
+  };
 }
 
 const secs = (ms: number): string => (Math.round(ms / 100) / 10).toFixed(1);
@@ -139,6 +161,7 @@ export function resultsFields(r: TrialRecord): Partial<Record<ResultsColumn, str
     auto_first_fix: r.firstFix ?? '',
     auto_outcome: r.outcome,
     auto_focus_status: r.focusStatus,
+    ...twoCastleFields(r),
   };
 }
 

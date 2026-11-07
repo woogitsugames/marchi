@@ -622,6 +622,7 @@ export const ko: Dict = {
   "playtest.device": "기기(모델, Android 버전)",
   "playtest.starts": "시작 — 새 세계, 플레이어 저장에는 아무것도 기록하지 않음",
   "playtest.fixture": "준비된 상태",
+  "playtest.decision": "결정, 멈춤 없음",
   "playtest.last": "이번 시도: {id}",
   "playtest.lastNone": "이 페이지에서는 아직 시도가 없습니다. 아래에서 시작을 고르세요.",
   "playtest.copy": "결과 행 복사",
@@ -749,6 +750,8 @@ export const ko: Dict = {
   "help.granaries.p": "곡물 창고는 다음 길을 떠날 물건을 보관합니다. 길망에 이으세요. 창고가 가득 찼다면 받는 곳에 자리가 없거나 수레가 따라가지 못한다는 뜻일 수 있습니다. 창고를 더 짓거나 수레를 사기 전에 원인 연쇄를 따라가 보세요.",
   "help.valley.h": "계곡과 등급",
   "help.valley.p": "자유 계곡에서는 생산과 교역을 자기 속도로 키우세요. 등급 카드는 승급에 필요한 것을 보여 주니 확장할 때 살펴보세요. 등급 4부터 강 건너 교역소를 쓸 수 있습니다. 수레가 그곳에서 교역하도록 길에 이으세요. 가격과 물건 둘 자리는 바뀔 수 있습니다.",
+  "help.castles.h": "여러 성",
+  "help.castles.p": "성마다 기한이 따로 있습니다. 우선인 성이 없는 동안 수레는 물건을 똑같이 나누므로 이른 기한을 놓칠 수 있습니다. 성 카드의 \"이 성 우선\" 버튼을 누르면 완성된 물건을 실은 수레가 먼저 그 성으로 갑니다. 마지막 구간에만 적용되며 생산은 빨라지지 않습니다. 카드는 지금 어느 성이 물건을 받고 있고 수레 몇 대가 그쪽으로 가는지도 알려 줍니다. 일찍 정하세요.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "기한까지 {time}",
   "castle.name.east": "동쪽 성",

@@ -40,6 +40,30 @@ export function aggregate(rows:Row[]) {
     const under=correct.filter(r=>num(r.time_s)!==null && num(r.time_s)!<30 && r.timeout!=='1').length;
     return {scenario,cohort,training,n_valid:valid.length,n_invalid_preflight:g.invalid,n_correct:correct.length,n_under_30:under,percent_under_30:valid.length?under/valid.length*100:null,median_time_capped_s:median(valid.map(time)),median_correct_s:median(correct.map(time)),median_taps:median(valid.map(r=>num(r.taps)))};
   });
-  return {scenarios,problems:[...problems].map(([code,count])=>({code,count})).sort((a,b)=>b.count-a.count||a.code.localeCompare(b.code))};
+  const s16=[...groups].filter(([key])=>(JSON.parse(key) as string[])[0]==='S16').flatMap(([,g])=>g.valid);
+  return {scenarios,twoCastles:twoCastles(s16),problems:[...problems].map(([code,count])=>({code,count})).sort((a,b)=>b.count-a.count||a.code.localeCompare(b.code))};
 }
-if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href){if(!process.argv[2]) throw new Error('Usage: npx tsx tools/playtest-aggregate.ts results.csv');const out=aggregate(parseCsv(readFileSync(process.argv[2],'utf8'))); console.log('Per scenario / cohort / prior training (S5 remains separate):'); console.table(out.scenarios); console.log('TOP observed issue codes (valid first trials):'); console.table(out.problems);}
+/**
+ * S16 "Two castles" (PROTOCOL §3H, hypothesis H6, D-343): valid first trials only. H6 passes when the participant names
+ * the cause unaided under 30 s (correct=1, assistance=0, time_s<30) AND the game saw the east castle set first before
+ * 1:30 of play (s16_first_castle=east, s16_first_set_s<90). Columns missing from an older CSV count as empty.
+ */
+export function twoCastles(valid:Row[]) {
+  if(!valid.length) return null;
+  const setS=(r:Row)=>num(r.s16_first_set_s);
+  const eastInTime=(r:Row)=>r.s16_first_castle==='east' && setS(r)!==null && setS(r)!<90;
+  const diag=(r:Row)=>r.correct==='1' && r.assistance==='0' && r.timeout!=='1' && num(r.time_s)!==null && num(r.time_s)!<30;
+  const pass=valid.filter(r=>diag(r)&&eastInTime(r)).length;
+  return {
+    n_valid:valid.length,
+    n_named_east:valid.filter(r=>r.s16_castle_named==='east').length,
+    n_named_switch:valid.filter(r=>r.s16_switch_named==='1').length,
+    n_switch_east_by_90s:valid.filter(eastInTime).length,
+    n_switch_north:valid.filter(r=>r.s16_first_castle==='north').length,
+    n_east_on_time:valid.filter(r=>r.s16_east_result==='on_time').length,
+    n_h6_pass:pass,
+    percent_h6_pass:pass/valid.length*100,
+    median_first_set_s:median(valid.map(setS)),
+  };
+}
+if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href){if(!process.argv[2]) throw new Error('Usage: npx tsx tools/playtest-aggregate.ts results.csv');const out=aggregate(parseCsv(readFileSync(process.argv[2],'utf8'))); console.log('Per scenario / cohort / prior training (S5 remains separate):'); console.table(out.scenarios); if(out.twoCastles){console.log('S16 Two castles (H6: correct <30 s AND east castle first before 1:30 of play):'); console.table([out.twoCastles]);} console.log('TOP observed issue codes (valid first trials):'); console.table(out.problems);}

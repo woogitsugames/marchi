@@ -622,6 +622,7 @@ export const de: Dict = {
   "playtest.device": "Gerät (Modell, Android-Version)",
   "playtest.starts": "Starts – neue Welt, nichts wird in die Spielstände geschrieben",
   "playtest.fixture": "vorbereiteter Zustand",
+  "playtest.decision": "Entscheidung, kein Stillstand",
   "playtest.last": "Dieser Versuch: {id}",
   "playtest.lastNone": "Noch kein Versuch auf dieser Seite. Wähle unten einen Start.",
   "playtest.copy": "Ergebniszeile kopieren",
@@ -749,6 +750,8 @@ export const de: Dict = {
   "help.granaries.p": "Ein Kornspeicher lagert Waren für den Weitertransport. Verbinde ihn mit dem Wegenetz. Ein voller Speicher kann heißen, dass die Abnehmer keinen Platz haben oder die Wagen nicht nachkommen. Folge der Ursachenkette, bevor du einen weiteren baust oder einen Wagen kaufst.",
   "help.valley.h": "Tal und Ränge",
   "help.valley.p": "Im Freien Tal baust du Produktion und Handel in deinem Tempo aus. Die Rangkarte zeigt, was für den Aufstieg nötig ist; sieh sie dir beim Ausbau an. Ab Rang 4 gibt es einen Handelsposten jenseits des Flusses. Verbinde ihn mit den Wegen, damit Wagen dort handeln können; Preise und Platz für Waren können sich ändern.",
+  "help.castles.h": "Mehrere Burgen",
+  "help.castles.p": "Jede Burg hat ihre eigene Frist. Solange keine Burg zuerst dran ist, teilen die Wagen die Ware gleich auf, sodass die frühere Frist verpasst werden kann. Der Knopf „Diese Burg zuerst“ auf der Burgkarte schickt Wagen mit fertiger Ware zuerst dorthin – nur auf der letzten Strecke; die Produktion wird nicht schneller. Die Karte zeigt auch, welche Burg gerade die Ware bekommt und wie viele Wagen zu ihr unterwegs sind. Entscheide früh.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
   "contract.toCastle": "{time} bis zur Frist",
   "castle.name.east": "Ostburg",

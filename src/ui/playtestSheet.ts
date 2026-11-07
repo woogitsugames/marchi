@@ -82,6 +82,12 @@ export class TrialRecorder {
     this.record.firstFix = what;
   }
 
+  /** Two castles (S16, D-343): the first accepted "this castle first" after the first touch, at its sim tick. */
+  castleFirst(castle: 'east' | 'north', tick: number): void {
+    if (this.frozen || this.record.firstTouchAt === null || this.record.castleFirst) return;
+    this.record.castleFirst = { castle, tick };
+  }
+
   /** Mission result and the fixture subject's status, read while the trial's world is still loaded. */
   snapshot(outcome: string, focusStatus: string): void {
     if (this.frozen) return;
@@ -137,7 +143,8 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
   }
 
   function startHtml(s: PlaytestStart): string {
-    const tag = s.fixture ? `<span class="pt-tag">${esc(t('playtest.fixture'))}</span>` : '';
+    const tag = (s.fixture ? `<span class="pt-tag">${esc(t('playtest.fixture'))}</span>` : '')
+      + (s.decision ? `<span class="pt-tag">${esc(t('playtest.decision'))}</span>` : '');
     return `<li class="slot-row is-empty"><button class="slot-new pt-start" data-a="go" data-id="${esc(s.id)}"
         aria-label="${esc(`${s.id}: ${missionTitle(s.mission)}`)}">
       <span class="slot-no" aria-hidden="true">${esc(s.id)}</span>

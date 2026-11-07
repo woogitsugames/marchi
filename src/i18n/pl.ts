@@ -664,6 +664,7 @@ export const pl = {
   'playtest.device': 'Urządzenie (model, wersja Androida)',
   'playtest.starts': 'Starty — nowy świat, bez zapisu w księgach gracza',
   'playtest.fixture': 'gotowy stan',
+  'playtest.decision': 'decyzja, bez zastoju',
   'playtest.last': 'Ta próba: {id}',
   'playtest.lastNone': 'Na tej stronie nie było jeszcze próby. Wybierz start poniżej.',
   'playtest.copy': 'Kopiuj wiersz wyników',
@@ -811,6 +812,8 @@ export const pl = {
   'help.granaries.p': 'Spichlerz przechowuje towar na dalszą drogę. Połącz go z siecią dróg. Pełny spichlerz może oznaczać, że odbiorcy nie mają miejsca lub wozy nie nadążają. Otwórz łańcuch przyczyn, zanim zbudujesz kolejny lub kupisz wóz.',
   'help.valley.h': 'Dolina i rangi',
   'help.valley.p': 'W Wolnej dolinie rozwijaj produkcję i handel we własnym tempie. Karta rangi pokazuje warunki awansu; sprawdzaj ją, gdy chcesz rozbudować dolinę. Od rangi 4 dostępny jest posterunek handlowy za rzeką. Połącz go z drogami, aby wozy mogły tam handlować; ceny i miejsce na towary mogą się zmieniać.',
+  'help.castles.h': 'Kilka zamków',
+  'help.castles.p': 'Każdy zamek ma własny termin. Dopóki żaden nie jest pierwszy, wozy dzielą towar po równo, więc wcześniejszy termin może przepaść. Przycisk „Ten zamek pierwszy” na karcie zamku kieruje tam najpierw wozy z gotowym towarem — tylko na ostatnim odcinku; produkcja nie przyspieszy. Karta mówi też, który zamek dostaje teraz towar i ile wozów do niego jedzie. Zdecyduj wcześnie.',
   // two castles, mission XVI (D-288..D-291)
   'contract.toCastle': '{time} do terminu',
   'castle.name.east': 'Zamek Wschodni',
