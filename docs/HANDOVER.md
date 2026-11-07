@@ -43,7 +43,9 @@
   karta „przewóz” (tartak robi mniej niż potrafi, wszystkie wozy w trasie → „Kup wóz”). Rozsądny gracz 3★ przy 10/30/60 s;
   I–XV bez zmian (148 wierszy bilansu i 71 haszy identyczne). Słabe miejsce: oko z przesunięciem fazy 60 s → 2★ (BACKLOG).
   Paczka GPT 14 wysłana (listy XVI, kodeks zamków, playtest S10, temat pomocy). Weryfikacja: testy 600/0, smoke 0, layout 126/0.
-- W toku: nic; następny APK ~16:40.
+- W toku (od ~14:25): agent `claude/w-perfworld` — szybsza budowa świata (siatka terenu, roślinność; D-310..D-312, bez zmian
+  obrazu); agent `claude/w-fc16early` — uczciwa prognoza XVI od ~1:00 (całość za pesymistyczna, zamek za optymistyczny;
+  D-313..D-316). Następny APK ~16:40.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
