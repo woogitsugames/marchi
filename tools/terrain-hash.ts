@@ -2,8 +2,12 @@
 // worlds the way View.setWorld / syncNetwork do (Heightfield, RoadField, TerrainView, WaterView, VegetationView,
 // GroundCover reeds) and prints a SHA-256 of every terrain geometry attribute, water depth, tree list and tree
 // instance matrices, plus the time of each step (median of N cold-ish runs in one process).
-// Usage: npx tsx tools/terrain-hash.ts [reps=5] [worlds=menu,m2,m7,m12,sandbox,...] (mission[:seed])
+// Usage (tsx cannot load the texture modules' import.meta.env, so bundle it first):
+//   npx esbuild tools/terrain-hash.ts --bundle --platform=node --format=esm --outfile=/tmp/th.mjs \
+//     --define:import.meta.env.BASE_URL='"/"' --define:import.meta.env.DEV=false
+//   [THREAD_CPU=1] node /tmp/th.mjs [reps=5] [worlds=menu,m2,m7,m12,sandbox,...] (mission[:seed])
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { Group, Mesh, Vector3 } from 'three';
 import { createWorld, type World } from '../src/sim/index';
 import { menuWorld } from '../src/game/menuScene';
@@ -36,37 +40,40 @@ const med = (a: number[]) => [...a].sort((x, y) => x - y)[a.length >> 1]!;
 noiseTexture(); // built before `menu-start` in the app (boot), not part of the world build
 // tree models are cached per process (kit.ts cost, measured by the model probes): time only the placement
 for (const k of TREE_KINDS) { treeBillboard(k); for (let v = 0; v < TREE_VARIANTS; v++) treeParts(k, v); }
+// THREAD_CPU=1: time = the main thread's own CPU time (Linux schedstat, ns), not wall time — on a loaded machine the
+// wall clock mostly measures how long other processes held the core
+const clock = process.env.THREAD_CPU ? () => Number(readFileSync('/proc/thread-self/schedstat', 'utf8').split(' ')[0]) / 1e6 : () => performance.now();
 const times: Record<string, Record<string, number[]>> = {};
 const hashes: Record<string, Record<string, string>> = {};
 for (let r = 0; r < reps; r++) {
   for (const [name, mk] of Object.entries(worlds)) {
     const w = mk();
     const T = (times[name] ??= {});
-    const lap = (k: string, t0: number) => { (T[k] ??= []).push(performance.now() - t0); };
-    let t0 = performance.now();
+    const lap = (k: string, t0: number) => { (T[k] ??= []).push(clock() - t0); };
+    let t0 = clock();
     const hf = new Heightfield(w.terrain);
     lap('heightfield', t0);
     const roads = new RoadField(hf.w, hf.h);
     const overlay = new OverlayData(hf.w, hf.h);
-    t0 = performance.now();
+    t0 = clock();
     const terrain = new TerrainView(hf, roads, overlay);
     lap('terrain', t0);
-    t0 = performance.now();
+    t0 = clock();
     const water = new WaterView(hf);
     lap('water', t0);
-    t0 = performance.now();
+    t0 = clock();
     const veg = new VegetationView(hf, new Group());
     lap('veg-apron', t0);
     const cover = new GroundCover(hf);
     roads.rebuild(w);
     terrain.updateGround(w);
-    t0 = performance.now();
+    t0 = clock();
     veg.rebuild(w, roads);
     lap('veg-place', t0);
-    t0 = performance.now();
+    t0 = clock();
     veg.update(new Vector3(hf.sizeX * 0.5, 80, hf.sizeZ * 0.6), true);
     lap('veg-update', t0);
-    t0 = performance.now();
+    t0 = clock();
     cover.rebuild(w, roads);
     lap('reeds', t0);
     if (r === 0) {
