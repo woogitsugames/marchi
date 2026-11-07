@@ -776,4 +776,6 @@ export const pt_BR: Dict = {
   "castle.letterLate": "Atrasado: {name} ({time}, prazo {due})",
   "menu.m16": "XVI. Dois castelos",
   "menu.m16Sub": "Quem vem primeiro chega no prazo",
+  "cause.paceHaul": "faz {rate} de {cap} {goodGen} por minuto, {n, plural, one {a única carroça está na estrada} other {as # carroças na estrada}} — compre uma",
+  "fix.paceHaulWhy": "Por um minuto nenhuma carroça ficou livre, e as carroças não dão conta de recolher {goodGen}. Para {aim} até {by} a mercadoria precisa sair antes; uma carroça nova se paga a tempo.",
 };

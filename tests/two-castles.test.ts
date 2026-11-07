@@ -12,7 +12,7 @@ import { gateState, makeEnvelope, parseSave } from '../src/platform/saveGate';
 import { migrate } from '../src/platform/save';
 import { M16_EXTRA, M16_STRATEGIES, castlesOf, runM16 } from '../tools/bot-m16';
 import { castleForecast, castleRival, newPaceLog, samplePace } from '../src/sim/index';
-import { castleCard, paceCard } from '../src/ui/paceCard';
+import { castleCard, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { eyePlayer, run } from '../tools/balance-night6';
 import { readFileSync } from 'node:fs';
 import { assert, eq, test } from './harness';
@@ -226,12 +226,55 @@ test('m16: the castle card names the early castle at 0:00 and leaves once it goe
   eq(castleRival(createWorld('m15'), createWorld('m15').state.mission.contract!.castle), null, 'no rival with one castle');
 });
 
-test('m16: the reasonable player (eye, 10/30/60 s) finds the switch from the castle card and keeps both letters', () => {
+test('m16: the reasonable player (eye, 10/30/60 s) finds the switch from the castle card, then the wagon, and keeps both letters', () => {
   for (const s of [10, 30, 60]) {
     const a: Record<string, number> = {}, seen: Record<string, number> = {};
     const r = run('m16', 'eye', eyePlayer(s, true, a, seen), a, seen);
     eq(a.castleFirst, 1, `eye ${s}s: one tap on the switch`);
     eq(r.late, 0, `eye ${s}s: no castle late`);
-    assert(r.seals >= 2, `eye ${s}s: at least two seals`);
+    // D-307: after the switch the haul card offers the wagon the third seal needs
+    assert((a['wagon:haul'] ?? 0) >= 1, `eye ${s}s: the haul card sold a wagon`);
+    eq(r.seals, 3, `eye ${s}s: three seals`);
+  }
+});
+
+test('m16: the whole-order forecast is honest after the switch (D-306) and the haul card offers the wagon in time (D-307)', () => {
+  // east first, four wagons: the order ends at 7:15 (two seals); the forecast is never more than 25 s early (the old one
+  // said 6:17 at 3:20, 58 s early), and the haul card shows by 1:40, when a wagon still lifts the third seal
+  const w = createWorld('m16');
+  const log = newPaceLog();
+  const [east] = castlesOf(w);
+  applyCommand(w, { t: 'castleFirst', castle: east });
+  let haulAt = -1;
+  const fins: number[] = [];
+  while (w.state.mission.result === 'running') {
+    step(w); samplePace(log, w); sampleFleet(w);
+    if (w.state.tick % (10 * TICK_HZ)) continue;
+    const f = forecastFor(w, log);
+    if (w.state.tick <= min(5) && f && f.ready) fins.push(f.finishTick);
+    const pc = paceCard(w, f, log);
+    if (pc?.k === 'haul' && haulAt < 0) {
+      haulAt = w.state.tick;
+      eq(pc.producer, w.state.buildings.find((b) => b.type === 'sawmill')!.id, 'the sawmill is the subject');
+      assert(pc.rate < pc.cap && pc.byTick === w.state.mission.contract!.star3Tick && pc.aim === 3, 'rate below capacity, three seals by 7:05');
+    }
+  }
+  eq(stars(w), 2, 'switch alone: two seals');
+  const early = Math.max(...fins.map((t) => w.state.mission.endTick - t));
+  assert(fins.length > 20 && early <= 25 * TICK_HZ, `forecast at most 25 s early until 5:00 (was ${early / TICK_HZ} s)`);
+  assert(haulAt > 0 && haulAt <= min(1 + 40 / 60), `haul card by 1:40 (at ${haulAt / TICK_HZ} s)`);
+  // without the switch the castle card keeps the slot: no wagon cue that skips the lesson
+  const v = createWorld('m16');
+  const lv = newPaceLog();
+  while (v.state.tick < min(4)) {
+    step(v); samplePace(lv, v); sampleFleet(v);
+    if (v.state.tick % (10 * TICK_HZ) === 0) assert(paceCard(v, forecastFor(v, lv), lv)?.k !== 'haul', 'no haul card while the east castle is late at the even split');
+  }
+  // one castle: the haul card never shows (mission XI, a fleet mission)
+  const o = createWorld('m11');
+  const lo = newPaceLog();
+  while (o.state.mission.result === 'running' && o.state.tick < min(8)) {
+    step(o); samplePace(lo, o); sampleFleet(o);
+    if (o.state.tick % (10 * TICK_HZ) === 0) assert(paceCard(o, forecastFor(o, lo), lo)?.k !== 'haul', 'no haul card with one castle');
   }
 });

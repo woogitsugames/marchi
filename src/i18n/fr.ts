@@ -776,4 +776,6 @@ export const fr: Dict = {
   "castle.letterLate": "En retard : {name} ({time}, échéance {due})",
   "menu.m16": "XVI. Deux châteaux",
   "menu.m16Sub": "Premier servi, premier à temps",
+  "cause.paceHaul": "fait {rate} sur {cap} {goodGen} par minute, {n, plural, one {le seul chariot est en route} other {les # chariots sont en route}} — achetez-en un",
+  "fix.paceHaulWhy": "Aucun chariot n'a été libre pendant une minute et les chariots n'arrivent pas à enlever les {goodGen}. Pour {aim} avant {by}, la marchandise doit partir plus tôt ; un nouveau chariot se rembourse à temps.",
 };

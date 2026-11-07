@@ -554,7 +554,7 @@ export class Hud {
           ? t('seal.tempo.grow', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
           : pc.k === 'post' ? t('seal.tempo.post')
           : pc.k === 'castle' ? t('seal.tempo.castle')
-          : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
+          : t(pc.k === 'fleet' || pc.k === 'haul' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
     setHtml(this.tempo, `<span class="st-line" dir="auto">${esc(text)}</span>`);
     this.tempo.setAttribute('aria-label', `${text}. ${t('hud.worstShow', { name: buildingName(world, pc.producer) })}`);
   }
@@ -598,7 +598,7 @@ export class Hud {
     if (calmOnly !== this.alarm.classList.contains('is-calm')) this.alarm.classList.toggle('is-calm', calmOnly);
     if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
-      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.k === 'post' ? 'road'
+      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' || pc.k === 'haul' ? 'wagon' : pc.k === 'post' ? 'road'
         : pc.k === 'castle' ? null : pc.risk ? 'pave' : null;
       const sig = pc.k === 'castle'
         // two castles (D-290): the lateness in 10 s steps, so the live region is not told a new text every second
@@ -613,6 +613,9 @@ export class Hud {
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
         : pc.k === 'fleet'
           ? `pace|${pc.k}|${pc.producer}|${pc.good}|${pc.wagons}|${Math.floor(pc.waitTicks / (10 * TICK_HZ))}|${stalls.length}|${getLang()}`
+        : pc.k === 'haul'
+          // two castles (D-307): the rate in tenths, so the live region hears a new text only when the numbers change
+          ? `pace|${pc.k}|${pc.producer}|${pc.good}|${pc.wagons}|${Math.round(pc.rate * 10)}|${Math.round(pc.cap * 10)}|${stalls.length}|${getLang()}`
           : `pace|${pc.k}|${pc.producer}|${pc.pct}|${pc.cells.length}|${pc.risk}|${stalls.length}|${getLang()}`;
       if (sig === this.stallSig) return;
       this.stallSig = sig;
@@ -669,6 +672,8 @@ export class Hud {
       // live region is not told a new text every second, as the pins' names, D-121)
       const text = pc.k === 'producer'
         ? t('cause.paceProducer', { n: fmtInt(pc.n), rate: fmtDec(pc.rate, 1), need: fmtDec(pc.need, 1), seals: t('why.pace.seals', { n: pc.seals }) })
+        : pc.k === 'haul'
+          ? t('cause.paceHaul', { goodGen: t(`goodGen.${pc.good}` as MessageKey), rate: fmtDec(pc.rate, 1), cap: fmtDec(pc.cap, 1), n: pc.wagons })
         : pc.k === 'fleet'
           ? t('cause.paceFleet', { goodGen: t(`goodGen.${pc.good}` as MessageKey), time: ticksClock(Math.floor(pc.waitTicks / (10 * TICK_HZ)) * 10 * TICK_HZ), n: pc.wagons })
           : t('cause.paceMud', { n: fmtInt(pc.cells.length), pct: fmtPercent(pc.pct / 100) });

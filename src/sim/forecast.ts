@@ -97,6 +97,14 @@ function tripTicks(world: World, from: number, to: number): number {
   return Math.round(pathTime(world, from, p, true) * TICK_HZ) + LOAD_TICKS + UNLOAD_TICKS;
 }
 
+/**
+ * Two castles (D-306): the wait of a load at the producer for a wagon of a fleet busy on the castle leg — one round
+ * trip over the fleet (a wagon frees up that often). Mission XVI: the last planks stood 20-40 s at the sawmill.
+ */
+export function wagonWait(world: World, trip: number): number {
+  return Math.round(2 * trip / Math.max(1, world.state.wagons.length));
+}
+
 /** Ticks until the last wagon now bringing `g` to `castle` has unloaded (−1 if one has no route). */
 function lastDelivery(world: World, castle: number, g: Good): number {
   let last = 0;
@@ -189,13 +197,29 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
   const n = log.ticks.length;
   const span = n > 1 ? log.ticks[n - 1]! - log.ticks[0]! : 0;
   const enough = span >= PACE_MIN_TICKS;
+  const two = castles.length > 1;
   const perMinOf = (gi: number): number => {
     if (!enough) return -1;
     const now = log.produced[n - 1]![gi]!;
     let v = (now - log.produced[0]![gi]!) * 60 * TICK_HZ / span;
     const longSpan = log.ticks[n - 1]! - log.firstTick;
-    if (longSpan > span) v = Math.max(v, (now - log.first[gi]!) * 60 * TICK_HZ / longSpan);
+    if (longSpan > span) {
+      // two castles (D-306): the long run alone. The window peaks when the shared producer catches up after a wait
+      // for wagons (mission XVI: 11-12 planks a minute at 3:20 against 9 in the long run) and said "three seals"
+      // for a minute that ended in two
+      const lr = (now - log.first[gi]!) * 60 * TICK_HZ / longSpan;
+      v = two ? lr : Math.max(v, lr);
+    }
     return v;
+  };
+  // two castles: the last unit goes to the castle served last — the one not first while it is still short, else
+  // (even split: both fill together) the farthest castle still short
+  const lastCastles = (g: Good): typeof castles => {
+    if (!two) return castles;
+    const short = castles.filter((q) => { const k = contractsOf(st.mission).find((o) => o.castle === q.id)!; return k.need[g] - q.stock[g] > 0; });
+    const first = st.mission.firstCastle;
+    const after = first !== undefined ? short.filter((q) => q.id !== first) : [];
+    return after.length ? after : short.length ? short : castles;
   };
   const goods: GoodPace[] = [];
   const lags: number[] = [], shorts: number[] = [];
@@ -212,9 +236,22 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
       if (producer < 0) { producer = p.id; producerType = p.type; }
       spare += p.stock[g] - p.reservedOut[g];
       cap += (r.outputs[g] ?? 0) * 60 * TICK_HZ / cycleTicks(world, p.type, r.ticks);
-      for (const q of castles) {
+      if (!two) for (const q of castles) {
         const trip = tripTicks(world, p.gate, q.gate);
         if (trip >= 0 && (lag < 0 || trip < lag)) lag = trip;
+      }
+    }
+    // two castles: the nearest producer's drive to each castle served last, the longest of those
+    if (two) {
+      for (const q of lastCastles(g)) {
+        let near = -1;
+        for (const p of st.buildings) {
+          if (!outputGoods(p.type).includes(g)) continue;
+          const trip = tripTicks(world, p.gate, q.gate);
+          if (trip >= 0 && (near < 0 || trip < near)) near = trip;
+        }
+        if (near < 0) { lag = -1; break; }
+        lag = Math.max(lag, near + wagonWait(world, near));
       }
     }
     const short = need - stockOf(g);
@@ -362,6 +399,8 @@ export function castleForecast(world: World, log: PaceLog, castleId: number): Ca
     }
     const arrive = lastDelivery(world, castleId, g);
     if (lag < 0 || pace <= 0 || arrive < 0) return { ...base, share, done, finishTick: -1, firstTick: -1, measured };
+    // D-306: the last load waits for a wagon of the busy fleet before its drive
+    lag += wagonWait(world, lag);
     const eta = (p: number): number => (own <= 0 ? arrive : Math.max(arrive, Math.round(Math.max(0, p - spare) * 60 * TICK_HZ / pace) + lag));
     worst = Math.max(worst, eta(pool));
     worstFirst = Math.max(worstFirst, eta(own));

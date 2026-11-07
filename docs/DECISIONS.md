@@ -3357,3 +3357,62 @@ text size, where three lines fit 48 px anyway. The audit waits for `body.is-bigt
 fixed-height ancestor (the hint was cut by `.fix-note`, not by its own box). Audit hud/why/wagon/castle × pl/ar ×
 412×915/915×412, before → after: low contrast 3 → 2, clipped at 200 % 2 → 0, focus without ring 0 → 0 (the old check:
 2 → 0). The remaining two are `wagon-915x412` pl "Dostawa za" / `dd.eta` sampled over the map, unchanged. (decided)
+## Mission XVI: an honest two-castle forecast and the wagon cue (BACKLOG P2 from D-292)
+
+**D-306 — The two-castle whole-order forecast: long-run pace, the castle served last, the wait for a wagon.**
+Why the forecast was early (east first, four wagons, the run ends at 7:15): `contractForecast` read the whole order
+of both castles (D-290) but (1) took the better of the two-minute window and the long run — when the sawmill catches up
+after waiting for wagons the window reads 11–12 planks a minute against 9 in the long run (3:10–3:30); (2) drove the
+last unit to the *nearest* castle (min over producers × castles), though D-290 meant the farthest, and with a castle
+first the last unit goes to the other one; (3) left out the load's wait for a wagon — on XVI's long castle leg the last
+planks stand 20–40 s at the sawmill. It said 6:17 at 3:20 (58 s early) and "three seals" from 2:30 to 3:40. Now, only
+with two castle orders (one castle takes the unchanged path, so I–XV read exactly what they read before): the long-run
+pace alone; the lag is the nearest producer's drive to each castle served last (not first while it is still short,
+else every castle still short; the longest of those) plus `wagonWait` = one round trip over the fleet
+(2 × drive / wagons, `src/sim/forecast.ts`); the same wait is added to `castleForecast`'s drive (the castle card's
+"gotowe ok." for east first at 0:00: 3:12 → 3:43; the run makes 4:47 — the per-castle forecast keeps the producers'
+capacity until its window is full, D-290, because the decision is worth most at 0:00). Measured on the switch-only run
+(10 s samples, 1:10–5:00): at most 21 s early (was 58 s); with one wagon bought at 0:30 at most 7 s early (was 47 s).
+Still pessimistic in the first minutes (1:30: 10:00 for 7:15 — the long run carries the start-up wait for wood, as
+before). Read-only, in `src/sim/` but never in the state: `tools/mission-hashes.ts` (71 rows) identical before and
+after; I–XV balance rows (`tools/balance-night6.ts --no-search`, 148 rows) identical as JSON. (decided)
+
+**D-307 — The haul card: the fleet cannot keep the shared producer at work (two castles only).**
+The fleet card (D-127) needs a yard waiting 20 s for pickup. On XVI that wait first shows at 3:10–3:40 (sawmill
+WAITING_PICKUP after the output fills); a wagon bought then no longer helps (7:15), and the forecast said three seals
+there anyway. A wagon pays off when bought by ~1:40 (east first + wagon at 0:00–1:40: 6:44–6:47; later the dispatch is
+chaotic: 2:10 → 7:08, 2:30 → 6:27, 3:30 → 7:15). From 1:30 the evidence is there, only not in a yard: no wagon stood
+free for the last minute and the sawmill makes 6–9 planks a minute of the 12 it could, while two woodcutters could feed
+it flat out. New pace kind `haul` (`src/ui/paceCard.ts`, `haulCard`): a two-castle mission, the fleet card's gate (a
+better seal in reach with 210 s to spare, a wagon buyable, none idle, the fleet on the road the whole last minute, no
+ice), the bottleneck good's producers below `HAUL_RATE_SHARE` = 90 % of their capacity, and their inputs' makers able
+to feed that capacity (else more makers, not wagons, would help). It comes after the castle switch card (the free fix
+and the lesson go first: while the early castle is late at the even split or behind the wrong castle, no wagon cue —
+the ladder's "wagon without the switch" stays at 1–2★) and after the fleet card. Card: "Tartak: robi 6 z 12 desek na
+minutę, wszystkie 4 wozy w trasie — kup wóz" (`cause.paceHaul`); the seal reads "tempo: kup wóz"; the rail's wagon
+lights as the cure; the sawmill's sheet: "Kup wóz −30" and "Przez minutę żaden wóz nie stał wolny, a wozy nie nadążają
+odbierać desek. Na 3 pieczęcie do 7:05 towar musi ruszać szybciej; nowy wóz zdąży się zwrócić." (`fix.paceHaulWhy`,
+own full-width row on a short landscape sheet, D-270). The sheet names the seal in reach and its time, not the
+forecast's finish (the early pessimism of D-306). UI only: no sim change, no hash change. (decided)
+
+**D-308 — XVI ladder after D-306/D-307: the reasonable player earns three seals.**
+`tools/m14-ladder.ts m16`: every scripted row unchanged (nothing 7:40 1★; east first @0:00/0:30/1:00 7:15 2★, @2:00
+7:56 1★; north first 7:31 1★; +1 wagon without the switch 7:08 1★; +2 wagons without it 6:31 2★; east first + 1 / 2
+wagons 6:43 / 6:32 3★). Reasonable player before → after: eye / eye+ 10 s 7:15 2★ → 6:27 3★ (switch 0:10, wagons 1:30
+and 2:40), 30 s 7:15 2★ → 6:43 3★ (switch 0:30, wagon 1:30), 60 s 7:15 2★ → 6:34 3★ (switch 1:00, wagon 2:00);
+scan 30 s and letter + eye+ 30 s 2★ → 3★ (6:43). Robustness (`EYE_PHASE` 3/5/7 s): 10 s and 30 s stay 3★ (6:27–6:37);
+60 s drops to 2★ (7:19: the wagon lands at 2:03–2:07, inside the dispatcher's chaotic window, later than 7:15 of the
+switch alone) — XVI's sensitivity to a wagon's minute, not a false cue. Other missions: I–XV balance rows identical. The
+second wagon of the 10 s player is the same card after the first wagon: the forecast still misses three seals at 2:40
+and the fleet is busy again; it lands at 6:27 (better, not worse). (decided)
+
+**D-309 — XVI content after D-307: two keys in 17 languages, shots.**
+`cause.paceHaul` and `fix.paceHaulWhy` (pl/en authored; 15 agent translations, for native review in BACKLOG; the plural
+of the wagon count follows each language's `cause.paceFleet`). Tests (`tests/two-castles.test.ts`): the reasonable
+player 10/30/60 s buys a wagon from the haul card and earns three seals; east first alone: the forecast at most 25 s
+early until 5:00 and the haul card by 1:40 with the sawmill as subject; no haul card at the even split (castle card) or
+with one castle (XI). Shots (`tools/m16-shots.mjs`, `haul` and `haulsheet`: east first at 0:00, 1:30, 412 × 915 and
+915 × 412): `docs/shots/m16-haul-*.jpg` (the card on the HUD, the waybill "pierwszy / na czas") and
+`docs/shots/m16-haulsheet-*.jpg` (the sawmill's sheet with "Kup wóz"); inspected against the forbidden list — the
+calm brass pace card and the existing sheet, no new visual element. The D-293 shots of the castle card still show the
+old "gotowe ok." times (D-306 moved them by the wait for a wagon). (decided)
