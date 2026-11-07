@@ -2194,7 +2194,9 @@ body.is-flex .rail { z-index: 1; }
    round shapes instead of a square box — the eye's wax disc, and the pin's head (its 40 px circle; the tip stays
    bare). The pin's ring is drawn on the head itself, so it scales with a minor / wagon pin */
 .stall-eye:focus-visible { border-radius: 50%; }
-.bubble:focus-visible { outline: none; box-shadow: none; }
+/* the outline stays, transparent: invisible here (the ring is the head's, below), but forced-colors / high-contrast
+   mode drops box-shadows and paints outlines in a system colour, so a keyboard user there still sees the focus */
+.bubble:focus-visible { outline: 2px solid transparent; outline-offset: -2px; box-shadow: none; }
 .bubble:focus-visible .bb::before {
   content: ''; position: absolute; inset-block-start: 0; inset-inline-start: 0; width: 40px; height: 40px; border-radius: 50%;
   box-shadow: 0 0 0 2px var(--focus-pale), 0 0 0 4px var(--focus-ink), 0 0 0 6px var(--focus-pale); pointer-events: none;
@@ -2206,7 +2208,8 @@ body.is-flex .rail { z-index: 1; }
   position: absolute; left: 0; top: 0;
   display: flex; align-items: center; gap: 6px;
   min-height: 34px; padding-block: 3px; padding-inline: 12px 14px;
-  font-size: 16px; font-weight: 700; color: #eef0ee; white-space: nowrap;
+  /* near-white like the snow pill (D-122): #eef0ee on the kit's slate plaque read 4.46:1 (a11y ar, 7 XI) */
+  font-size: 16px; font-weight: 700; color: #fbfbf8; white-space: nowrap;
   opacity: 0; transition: opacity 150ms var(--ease);
 }
 .eta-tag .eta-ic { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #e7e9e4; color: var(--slate); }
@@ -2636,6 +2639,15 @@ body.mode-game.is-side.is-landscape.is-bigtext .sheet {
 body.mode-game.is-bigtext:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: calc(100% - var(--bar-b) - 8px); }
 body.is-side.is-landscape.is-bigtext .sheet-paper { padding: 14px 14px 22px; }
 body.is-side.is-landscape.is-bigtext .sheet-grip { height: 4px; }
+/* the docked fix's hint beside the button (D-138) kept its 48 px box and three-line clamp at 200 % text, so
+   "Brakujący odcinek zaznaczono na mapie." lost its lower half (a11y ar, 7 XI). With large text the note wraps in
+   full and the dock grows; the body above gives way through --dock-h (sheets.ts measures it), as for D-270 */
+body.is-short.is-bigtext .fix-dock > .fix-note, body.is-short.is-bigtext .fix-dock > .fix-why { max-height: none; overflow: visible; }
+body.is-short.is-bigtext .fix-dock .fix-note .s-hint, body.is-short.is-bigtext .fix-dock .fix-why > span {
+  -webkit-line-clamp: unset; overflow: visible; hyphens: auto;
+}
+body.is-short.is-bigtext .fix-dock .fix-note .s-hint { display: flex; }
+body.is-short.is-bigtext .fix-dock .fix-why > span { display: block; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
 
 /* ================================================================ player help (src/ui/help.ts, D-236)

@@ -176,7 +176,15 @@ function scaleIssues() {
     if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || el.closest('[hidden]')) continue;
     const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
     const clipX = (cs.overflowX !== 'visible' || cs.textOverflow === 'ellipsis') && el.scrollWidth > el.clientWidth + 2;
-    const clipY = cs.overflowY === 'hidden' && el.scrollHeight > el.clientHeight + 2;
+    let clipY = cs.overflowY === 'hidden' && el.scrollHeight > el.clientHeight + 2;
+    // clipped by a fixed-height box above it (the docked fix note's 48 px, D-138), up to the nearest scroller
+    if (own && !clipY) {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        const c = getComputedStyle(p);
+        if (/(auto|scroll)/.test(c.overflowY)) break;
+        if (c.overflowY === 'hidden' || c.overflowY === 'clip') { if (r.bottom > p.getBoundingClientRect().bottom + 2) clipY = true; break; }
+      }
+    }
     const interactive = el.matches('button, [role="button"], a[href], input, select');
     let scroller = false;
     for (let p = el.parentElement; p; p = p.parentElement) { const c = getComputedStyle(p); if (/(auto|scroll)/.test(c.overflowY + c.overflowX) && (p.scrollHeight > p.clientHeight + 1 || p.scrollWidth > p.clientWidth + 1)) { scroller = true; break; } }
@@ -195,7 +203,15 @@ function focusInfo() {
   if (!el || el === document.body) return { tag: 'body' };
   const cs = getComputedStyle(el);
   const r = el.getBoundingClientRect();
-  const ring = (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) || (cs.boxShadow !== 'none' && /focus|0px 0px 0px/.test(cs.boxShadow + ''));
+  const shadowRing = (bs) => bs !== 'none' && /focus|0px 0px 0px/.test(bs + '');
+  // a transparent outline is the forced-colors fallback (it paints only in high-contrast mode), not a visible ring
+  const outlineRing = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0 && !/^(transparent|rgba\(.*,\s*0\))$/.test(cs.outlineColor);
+  // a ring drawn on a shape inside the control (the map pin's round head, D-147: `.bubble:focus-visible .bb::before`)
+  const innerRing = [...el.querySelectorAll('*')].slice(0, 20).some((d) => ['::before', '::after'].some((ps) => {
+    const pc = getComputedStyle(d, ps);
+    return pc.content !== 'none' && pc.content !== 'normal' && shadowRing(pc.boxShadow) && /246, 233, 200|29, 24, 19/.test(pc.boxShadow);
+  }));
+  const ring = outlineRing || shadowRing(cs.boxShadow) || innerRing;
   return {
     tag: el.tagName.toLowerCase(), cls: [...el.classList].slice(0, 3).join('.'),
     name: (el.getAttribute('aria-label') ?? el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40),
@@ -321,6 +337,10 @@ try {
             entry.focus = stops;
           } else {
             await page.evaluate(scaleText);
+            // the app answers large text with body.is-bigtext (layout.ts watchTextScale, a ResizeObserver; D-120): on a
+            // device textZoom is set before the sheet opens, so read the layout only once the class is in (a loaded
+            // machine took > 300 ms and reported the pre-bigtext dock as clipped)
+            await page.waitForFunction(() => document.body.classList.contains('is-bigtext'), null, { timeout: 5000 }).catch(() => {});
             await page.waitForTimeout(300);
             entry.scale = await page.evaluate(scaleIssues);
             await page.screenshot({ path: `${out}/${tag}-text200.jpg`, type: 'jpeg', quality: 55, timeout: 180000 });
