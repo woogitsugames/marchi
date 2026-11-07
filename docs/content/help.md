@@ -54,6 +54,20 @@ nadążają. Otwórz łańcuch przyczyn, zanim zbudujesz kolejny lub kupisz wóz
 network. A full granary may mean that destinations lack room or wagons cannot
 keep up. Follow the cause chain before building another or buying a wagon.
 
+## Kilka zamków / Several castles
+
+**PL.** Każdy zamek ma własny termin. Dopóki żaden nie jest pierwszy, wozy dzielą
+towar po równo, więc wcześniejszy termin może przepaść. Przycisk „Ten zamek
+pierwszy” na karcie zamku kieruje tam najpierw wozy z gotowym towarem — tylko na
+ostatnim odcinku; produkcja nie przyspieszy. Karta mówi też, który zamek dostaje
+teraz towar i ile wozów do niego jedzie. Zdecyduj wcześnie.
+
+**EN.** Each castle has its own deadline. While no castle goes first, wagons share
+the goods evenly, so the earlier deadline may be missed. The “This castle first”
+button on a castle’s card sends wagons with finished goods there first — on the
+last leg only; production does not speed up. The card also says which castle is
+getting the goods now and how many wagons are on the way to it. Decide early.
+
 ## Dolina i rangi / Valley and ranks
 
 **PL.** W Wolnej dolinie rozwijaj produkcję i handel we własnym tempie. Karta

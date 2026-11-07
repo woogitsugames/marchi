@@ -1,4 +1,4 @@
-// Player help (docs/content/help.md, D-236): six short topics on one sheet, each a woodcut-headed fold; one open at a
+// Player help (docs/content/help.md, D-236; seventh topic D-344): seven short topics on one sheet, each a woodcut-headed fold; one open at a
 // time so a phone shows a heading list plus one answer. Reached from the pause menu and the main menu; it closes like
 // every sheet (the close button, a swipe down, Back / Escape).
 import { t, type MessageKey } from '../i18n/index';
@@ -12,6 +12,8 @@ export const HELP_TOPICS: readonly { id: string; icon: IconId }[] = [
   { id: 'wagons', icon: 'wagon' },
   { id: 'roads', icon: 'road_dirt' },
   { id: 'granaries', icon: 'warehouse' },
+  // two castles (mission XVI, D-344): the castle's pennant of the "this castle first" switch
+  { id: 'castles', icon: 'first' },
   { id: 'valley', icon: 'castle' },
 ];
 
