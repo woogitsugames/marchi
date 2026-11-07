@@ -2,6 +2,8 @@
 // waybill (0:20), the east castle's card with the rival line and the "Ten zamek pierwszy" switch (2:30, even split),
 // and the same card after one tap on the switch; D-307: with the east castle first from 0:00, the haul card "Kup wóz" on
 // the HUD at 1:30 and the sawmill's sheet it opens.
+// Each shot logs the state's castle counts next to what is on screen and reports a mismatch as an error (D-317: the folded waybill
+// is not read as if it were shown).
 // Usage: [ONLY=regex] node tools/m16-shots.mjs [baseUrl] [WxH ...]  (server: npm run build; npx vite preview --port 5231 --strictPort)
 // -> docs/shots/m16-<what>-<w>x<h>.jpg
 import { createRequire } from 'node:module';
@@ -70,12 +72,36 @@ for (const [w, h] of sizes) {
       if (await btn.count()) { await btn.first().click(); await page.waitForTimeout(1200); }
       else errors.push(`${s.what} ${tag}: no switch on the castle card`);
     }
-    const info = await page.evaluate(() => ({
-      letter: document.querySelector('.letter')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 160) ?? null,
-      card: document.querySelector('.stall-card')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
-      waybill: document.querySelector('.wb-castles')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
-      sheet: document.querySelector('#sheets .sheet:last-child')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 400) ?? null,
-    }));
+    // One UI frame after the last step, so every panel has seen the paused state (the HUD redraws inside the frame).
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    // What the player sees: in portrait an open sheet folds the waybill to its seal (D-62) and the folded parchment
+    // is display:none and not redrawn until it unfolds (D-153), so its DOM text is not read then; the seal's fill is.
+    const info = await page.evaluate(() => {
+      const A = window.__marchia.app, st = A.world.state, m = st.mission;
+      const orders = m.contract ? [m.contract, ...(m.extraContracts ?? [])] : [];
+      const stockOf = (k) => st.buildings.find((b) => b.id === k.castle)?.stock ?? {};
+      const castles = orders.map((k) => Object.keys(k.need).filter((g) => k.need[g] > 0)
+        .map((g) => `${Math.min(stockOf(k)[g] ?? 0, k.need[g])}/${k.need[g]}`).join(' '));
+      let got = 0, total = 0;
+      for (const k of orders) for (const g of Object.keys(k.need)) if (k.need[g] > 0) { total += k.need[g]; got += Math.min(stockOf(k)[g] ?? 0, k.need[g]); }
+      const wrap = document.querySelector('.waybill-wrap');
+      const folded = !!wrap?.classList.contains('is-collapsed');
+      const wb = document.querySelector('.wb-castles');
+      const fill = document.querySelector('.waybill-wrap .so-fill')?.style.clipPath.match(/inset\(([\d.]+)%/)?.[1];
+      return {
+        tick: st.tick, castles,
+        letter: document.querySelector('.letter')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 160) ?? null,
+        card: document.querySelector('.stall-card')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+        waybill: wrap?.hidden ? null : folded
+          ? { seal: document.querySelector('.waybill-wrap .seal-only')?.textContent?.replace(/\s+/g, ' ').trim(), fillPct: fill ? 100 - Number(fill) : null, wantPct: (100 * got) / Math.max(1, total) }
+          : wb?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+        waybillCounts: !folded && wb ? [...wb.querySelectorAll('.wb-tr')].map((li) => [...li.querySelectorAll('.count')].map((c) => c.textContent).join(' ')) : null,
+        sheet: document.querySelector('#sheets .sheet:last-child')?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 400) ?? null,
+      };
+    });
+    // the shown counts must be the state's (rows of delivered castles carry no counts)
+    if (info.waybillCounts && info.waybillCounts.some((c, i) => c && c !== info.castles[i])) errors.push(`${s.what} ${tag}: waybill ${info.waybillCounts} != state ${info.castles}`);
+    if (info.waybill?.fillPct != null && Math.abs(info.waybill.fillPct - info.waybill.wantPct) > 0.5) errors.push(`${s.what} ${tag}: seal fill ${info.waybill.fillPct}% != ${info.waybill.wantPct}%`);
     console.log(s.what, tag, JSON.stringify(info));
     await page.screenshot({ path: `docs/shots/m16-${s.what}-${tag}.jpg`, type: 'jpeg', quality: 70, timeout: 120000 });
     await ctx.close();
