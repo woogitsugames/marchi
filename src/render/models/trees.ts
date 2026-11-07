@@ -562,6 +562,9 @@ let atlasCell = 0;
 /** Bare factor the atlas pair holds (D-260); the bake materials read it from `bakeBare`. */
 let atlasBare = -1;
 const bakeBare = { value: 0 };
+/** Spring green level the atlas pair holds (D-303); the bake materials read it from `bakeSpring`. */
+let atlasSpring = -1;
+const bakeSpring = { value: 0 };
 
 // Bake shaders: albedo (vertex colour × card texture) and object-space normals, both cut by the
 // card alpha. Object space = card space for a camera on +Z (x right, y up, z toward the viewer).
@@ -569,6 +572,7 @@ const BAKE_VERT = /* glsl */ `
 attribute vec3 color;
 attribute vec3 aTree;
 uniform float bare;
+uniform float spring;
 uniform float leafUv;
 varying vec3 vN;
 varying vec3 vC;
@@ -584,7 +588,7 @@ void main() {
   if (leafUv > 0.5) {
     float sel = twigSel(aTree.z, bare);
     vUv = twigUv(uv, sel, aTree.z);
-    vC = mix(color, TWIG_COL, sel);
+    vC = mix(springLeaf(color, spring, aTree.z), TWIG_COL, sel);
     vTwig = sel;
   }
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -624,8 +628,8 @@ function bakeMaterial(map: Texture | null, mode: number, leaf = false): ShaderMa
     alphaToCoverage: leaf,
     vertexShader: BAKE_VERT,
     fragmentShader: BAKE_FRAG,
-    // `bare` is shared by every bake material (one value per bake)
-    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode }, leafUv: { value: leaf ? 1 : 0 }, bare: bakeBare },
+    // `bare` and `spring` are shared by every bake material (one value per bake)
+    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode }, leafUv: { value: leaf ? 1 : 0 }, bare: bakeBare, spring: bakeSpring },
     side: DoubleSide,
   });
 }
@@ -671,8 +675,8 @@ export function treeAtlasBytes(): number {
   return bytes * (atlasN ? 2 : 1);
 }
 
-export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare = 0): WebGLRenderTarget {
-  if (atlas && atlasCell === cellPx && atlasBare === bare) return atlas;
+export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare = 0, spring = 0): WebGLRenderTarget {
+  if (atlas && atlasCell === cellPx && atlasBare === bare && atlasSpring === spring) return atlas;
   const rowW = cellPx * ATLAS_COLS, rowH = cellPx * 2;
   const mk = () => {
     const rt = new WebGLRenderTarget(rowW, rowH * BB_VIEWS);
@@ -691,6 +695,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   const rtA = reuse ? atlas! : mk();
   const rtN = reuse ? atlasN! : mk();
   bakeBare.value = bare;
+  bakeSpring.value = spring;
   const row = new WebGLRenderTarget(rowW, rowH, { samples: 4 });
   row.texture.generateMipmaps = false;
   row.texture.minFilter = NearestFilter;
@@ -786,5 +791,6 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   atlasN = rtN;
   atlasCell = cellPx;
   atlasBare = bare;
+  atlasSpring = spring;
   return rtA;
 }

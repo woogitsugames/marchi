@@ -2,7 +2,7 @@
 // broadleaf kinds have leaf cards (conifers stay green), and each leaf card carries one hash for its 4 corners.
 import { SEASON_TICKS } from '../src/sim/index';
 import { treeParts, TREE_KINDS, TREE_VARIANTS } from '../src/render/models/trees';
-import { bareAt, bareBakeLevel } from '../src/render/leafFall';
+import { bareAt, bareBakeLevel, springAt } from '../src/render/leafFall';
 import { assert, eq, test } from './harness';
 
 test('winter trees: bare factor 0 in summer, 1 in winter, leaf fall and spring leaves without a jump', () => {
@@ -26,6 +26,26 @@ test('winter trees: bare factor 0 in summer, 1 in winter, leaf fall and spring l
   eq(bareBakeLevel(0.1), 0, 'atlas level rounds down');
   eq(bareBakeLevel(0.9), 1, 'atlas level rounds up');
   eq(bareBakeLevel(0.5), 0.5, 'quarter steps');
+});
+
+test('spring trees: young green rises with the leaves, fades in early summer, 0 in autumn and winter (D-303)', () => {
+  const S = SEASON_TICKS;
+  eq(springAt(0), 0, 'spring starts bare, no green');
+  eq(springAt(S * 0.8), 1, 'late spring fully green');
+  eq(springAt(S + S * 0.5), 0, 'mid summer back to the normal palette');
+  eq(springAt(2 * S + 10), 0, 'autumn');
+  eq(springAt(3 * S + 10), 0, 'winter');
+  // a returning leaf card is already young green: the rise mirrors the bare factor exactly
+  for (let t = 0; t < S; t += 37) assert(Math.abs(springAt(t) - (1 - bareAt(t))) < 1e-9, `spring rise = leaf return at ${t}`);
+  // ... so their quarter-step atlas levels change together (no extra re-bake in spring)
+  for (let t = 0; t < S; t += 37) eq(bareBakeLevel(springAt(t)), 1 - bareBakeLevel(bareAt(t)), `same bake step at ${t}`);
+  let prev = springAt(0), maxStep = 0;
+  for (let t = 50; t < 4 * S; t += 50) {
+    const v = springAt(t);
+    maxStep = Math.max(maxStep, Math.abs(v - prev));
+    prev = v;
+  }
+  assert(maxStep < 0.03, `spring factor steps ${maxStep} per 5 s of game time`);
 });
 
 test('winter trees: leaf cards only on broadleaf kinds, one hash per card in (0, 1)', () => {
