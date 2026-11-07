@@ -1,0 +1,37 @@
+# perf day 15 (D-320..D-322): tools/jam-diff.mjs, 412x915, harness dev servers: before = 5f62eb3, after = claude/w-kitperf. Each result follows its "# A|B" line.
+# A|B = before|after
+{"query":"menu=1&frames=1&hud=0&quality=high","a":{"wagons":6,"moving":0,"opp":0,"tick":0},"b":{"wagons":6,"moving":0,"opp":0,"tick":0},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"menu=1&frames=3&hud=0&quality=low","a":{"wagons":6,"moving":0,"opp":0,"tick":1},"b":{"wagons":6,"moving":0,"opp":0,"tick":1},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"menu=1&frames=30&hud=0&quality=high","a":{"wagons":6,"moving":2,"opp":0,"tick":10},"b":{"wagons":6,"moving":2,"opp":0,"tick":10},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"wagons=20&t=60&speed=4&frames=1&cam=48,36,240,-0.4&tod=0.4&hud=0&quality=high","a":{"wagons":20,"moving":2,"opp":0,"tick":601},"b":{"wagons":20,"moving":2,"opp":0,"tick":601},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"wagons=40&t=90&speed=4&frames=40&cam=41.5,35,60,-0.75&tod=0.4&hud=0&quality=high","a":{"wagons":40,"moving":5,"opp":0,"tick":953},"b":{"wagons":40,"moving":5,"opp":0,"tick":953},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m2&t=30&speed=4&frames=10&tod=0.4&hud=0&quality=high","a":{"wagons":7,"moving":2,"opp":0,"tick":313},"b":{"wagons":7,"moving":2,"opp":0,"tick":313},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m2&frames=1&cam=48,36,240,-0.4&tod=0.4&hud=0&quality=high","a":{"wagons":7,"moving":0,"opp":0,"tick":0},"b":{"wagons":7,"moving":0,"opp":0,"tick":0},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m7&t=30&speed=4&frames=10&tod=0.4&hud=0&quality=high","a":{"wagons":4,"moving":0,"opp":0,"tick":313},"b":{"wagons":4,"moving":0,"opp":0,"tick":313},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m12&frames=1&cam=60,40,260,-0.4&tod=0.4&hud=0&quality=high","a":{"wagons":12,"moving":0,"opp":0,"tick":0},"b":{"wagons":12,"moving":0,"opp":0,"tick":0},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m16&t=30&speed=4&frames=10&tod=0.4&hud=0&quality=low","a":{"wagons":4,"moving":4,"opp":0,"tick":313},"b":{"wagons":4,"moving":4,"opp":0,"tick":313},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"prior=m12&wagons=10&t=30&speed=4&frames=5&hud=0&quality=high","a":{"wagons":10,"moving":2,"opp":0,"tick":306},"b":{"wagons":10,"moving":2,"opp":0,"tick":306},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"prior=m1&wagons=10&t=30&speed=4&frames=5&hud=0&quality=high","a":{"wagons":10,"moving":2,"opp":0,"tick":306},"b":{"wagons":10,"moving":2,"opp":0,"tick":306},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m2&prior=m7&frames=5&tod=0.4&hud=0&quality=high","a":{"wagons":7,"moving":0,"opp":0,"tick":1},"b":{"wagons":7,"moving":0,"opp":0,"tick":1},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"world=m7&prior=m2&frames=5&cam=48,36,240,-0.4&tod=0.4&hud=0&quality=high","a":{"wagons":4,"moving":0,"opp":0,"tick":1},"b":{"wagons":4,"moving":0,"opp":0,"tick":1},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"menu=1&frames=1&hud=0&quality=low","a":{"wagons":6,"moving":0,"opp":0,"tick":0},"b":{"wagons":6,"moving":0,"opp":0,"tick":0},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"menu=1&frames=3&hud=0&quality=high","a":{"wagons":6,"moving":0,"opp":0,"tick":1},"b":{"wagons":6,"moving":0,"opp":0,"tick":1},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+# A|B = before|after
+{"query":"menu=1&frames=30&hud=0&quality=low","a":{"wagons":6,"moving":2,"opp":0,"tick":10},"b":{"wagons":6,"moving":2,"opp":0,"tick":10},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}

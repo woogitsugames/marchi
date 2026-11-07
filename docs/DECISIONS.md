@@ -3541,3 +3541,53 @@ offers the wagon at 2:00, before the dispatcher's chaotic window). Other mission
 (`tests/two-castles.test.ts`): error bounds over time for all 10 strategies (whole order ≤ 40 s from 1:10, ≤ 25 s
 while the haul card shows, east castle ≤ 50 s and north ≤ 70 s from 0:10; at the even split the east card says late by
 ≥ 1:30 and within 30 s of the truth through 1:50). (decided)
+
+## Menu world build: the procedural models (perf day 15, BACKLOG P3 from D-312)
+
+**D-320 — Primitives are shared read-only templates (`prim`).** Profile first (node `tools/model-probe.ts`, a cold
+process per run building what the menu builds before `ready`: 10 tree models, 5 far cards, the menu's 8 building kinds,
+the near wagon and the far wagon; browser function-level profile of the startup): the menu's models make 1 977
+`PartBuilder.add` calls on only 360 distinct primitives (1 356 boxes of 218 shapes, 551 cylinders of 115), and three
+builds every one through JS arrays converted to typed arrays (`three: other (shapes.ts)` ~32 ms of `menu-start`, the
+largest garbage source). `prim(Ctor, ...args)` in `kit.ts` builds one template per constructor and argument list
+(key `args.join(',')`); every `b.add(mat, new Box|Cylinder|Sphere|TorusGeometry(...))` in the models, the bridge ice
+and the field stones now passes `prim(...)` (92 sites, plus three `const g = new ...` in `shapes.ts` that were never
+written). `add` only reads its source, so sharing is safe; the test checks a template is unchanged after use.
+Lathe/Extrude (Vector2 or Shape arguments) and geometries the models edit before `add` stay `new`. (decided)
+
+**D-321 — `PartBuilder.add`/`build` on plain arrays.** A piece is now `{ index: Uint32Array, count, attrs }`, not a
+BufferGeometry (no uuid, attribute objects, index slice per primitive); position and normal are copied and transformed
+in one pass with the exact double operations of `Vector3.applyMatrix4` and `applyNormalMatrix` (normal matrix, then
+`1 / (length || 1)`); the vertex colour runs in scalars (`Color.copy / multiplyScalar / lerp` written out), with the
+`shade` callbacks still getting a Color and two Vector3; colour strings are parsed once (`baseColor` cache); renormal is
+three's indexed `computeVertexNormals` + `normalizeNormals` on the arrays (all three corners read before any write,
+accumulation through the float32 array, as three); `build` merges with width-specific index loops (one loop writing
+both Uint16 and Uint32 ran on generic element access) and `computeBounds` gives three's box (Math.min/max), centre and
+radius in two plain loops. The rare source without plain float normals keeps the old three path. Bit for bit:
+`tests/part-builder-identity.test.ts` keeps the pre-D-320 builder as the reference and compares attributes, index and
+bounds (Object.is) on boxes, segmented boxes, cylinders, spheres, lathe, torus, a non-indexed custom geometry, leaf cards
+with kept uvs, shades that `set` a CSS string, renormal, a rigged model and a >65 535-vertex piece (fails with the
+dim-face factor changed by 1e-7); `tools/model-probe.ts HASH=1` hashes every part of the whole catalogue (all building
+kinds, props, castle upgrade, trading post, cargo, bridges, both wagon rigs, trees, far cards): identical. (decided)
+
+**D-322 — Noise once per shared vertex; per-vertex waste out of the shades; bridges merged like buildings.** Jitter and
+the colour noise are pure functions of the position, and half the vertices of the menu's buildings share a position
+with another (a box's 24 corners are 8 points; cylinder seams and caps): `firstAt` (open addressing over the float bits,
+scratch arrays) finds the first vertex at each spot, the others copy its jittered position and noise factor (kept as a
+double). The shade colour's `set('#…')` copies the cached parse (shades set literals per vertex, each a setStyle parse
+and sRGB conversion); `logGeom` works its end-grain axis out once per log, not per vertex, and the bakery flue builds its
+stone shade once (it made `stoneO()` per vertex). `BridgesView.rebuild` merges spans with `mergeIndexed(geos, mats,
+KEEP)` (as D-255's buildings) instead of clone + deleteAttribute + applyMatrix4 + mergeGeometries; bridge meshes hashed
+before/after on 9 mixed cells: identical, attribute order included. Measured, not done: a trie instead of the joined
+key (slower), own typed-array BoxGeometry (~5 ms cold, not worth a second box). What the rest is: cold code — the same
+building models built again warm in the same process take ~35 ms instead of ~90–130 ms cold; the builders themselves
+(`house`, `castle`, `box`, `trs`) run once each. Cost: node (`tools/model-probe.ts`, cold, thread CPU, median of 10
+interleaved, `docs/research/startup15-data/node-model-probe.txt`) menu models 167 → 125 ms (buildings 124 → 92, trees
+31 → 26, wagon 13 → 8). Browser (SwiftShader, 412×915, high, 3 × 3 startup runs interleaved, load 5–8 from other
+sessions): model buckets of `menu-start` (`kit.ts` + `three: other (kit.ts)` + `three: other (shapes.ts)`) 137 → 105 ms,
+whole `menu-start` CPU 415 → 336 ms median (spread 250–470, noisy); function-level profile (12 runs each, inclusive)
+`buildingModel` + `treeParts` + `wagonModel` + `workerRig` + bridges 170 → 145 ms, `buildingsView.sync` 131 → 113.
+Identity: pixels `docs/research/perf15-diff/jam-diff.txt` — 18 harness scenes (day 14's 15 plus menu frames 1/3/30
+in the other quality: menu 1/3/30 high and low, missions I, II, VII, XII, XVI, priors) before (`5f62eb3`) vs after: 0 px; `tools/mission-hashes.ts` identical
+(71 rows, sim untouched). Left: `bakeTreeBillboards` (~50 ms, GPU bake in SwiftShader), the ground memo, cold builders.
+(decided)
