@@ -3011,3 +3011,56 @@ de / en / pseudo): the reason's scrollHeight = clientHeight (nothing clipped), b
 the dock inside the sheet; pseudo (+40 %) takes 8 lines and the dock 123 px, the status line then sits under the
 fade but scrolls. Portrait and other fix notes unchanged (only the grow card is wide). Shots
 `docs/shots/fame-sheet-915x412{-before,}.jpg`, `fame-{hud,sheet}-{412x915,915x412}.jpg` re-shot. (decided)
+
+## Menu world build: terrain and vegetation (perf day 12, BACKLOG P3 from D-255)
+
+**D-280 — Heightfield skips the blurred water-mask interpolation where every tap is 0.** `shoreDist` evaluated a
+16-tap Catmull-Rom of the blurred water mask for every height sample, although inland (most of the map) all taps are
+exactly 0 and the result only feeds `m < 0.004` → 12. `Heightfield` now keeps one byte per `cellField` cell index
+(`far`, -1 ≤ ix < w, -1 ≤ iz < h): 1 when its 4 × 4 clamped taps are all 0; `shoreDist` computes the same index and
+returns 12 at once. Same answer by construction (the sum of zeros is ±0, < 0.004). This speeds every `height` call —
+terrain mesh, water strip, tree placement, reeds, wagons and picking per frame. The pure grid code moved from
+`terrain.ts` to `terrainGrid.ts` (no texture loaders), so `tests/ground-identity.test.ts` can build and compare it.
+(decided)
+
+**D-281 — Leaner ground build, bit for bit.** `vnoise` hashes its 8 lattice corners from 7 `Math.imul` products
+(was 32; the int32 products sum exactly in a double, so `mix3` gets the same input as `hash3`) — this also speeds the
+models (`kit.ts` noise). `Heightfield.raw` clamps its taps once per row and column (was 16 `corner()` calls, 32
+clamps). Terrain chunk bounds are computed straight over the position array with three's own operations
+(`Box3.expandByPoint`'s min/max, centre (min + max) · 0.5, the largest squared distance, sqrt) instead of a `Vector3`
+per vertex in two passes. The apron and the water strip ask `hf.base` once per clamped border point (`apronGrid`,
+`ApronRow`; a whole apron row or column clamps to one point; the water strip runs 280 m into the apron on both
+sides). The water strip is built in two passes straight into typed arrays (no `number[]` pushes; index width by
+three's `setIndex(array)` rule), the reeds sample the height once per candidate. Proof: `tools/terrain-hash.ts`
+(SHA-256 of all terrain attributes/index/bounds, 300 000 scattered `height`/`base`/`detail` samples, the water strip,
+tree lists, tree instance matrices and reed matrices) identical on 14 worlds (menu, I–IV, VII, X, XII–XV, free valley
+seeds default / 7 / 1234); `tests/ground-identity.test.ts` compares `vnoise`/`hash3`/`fnoise` (150 000 inputs up to
+1e13), `raw` and `shoreDist` (60 000 points on 4 grounds, also past the map edges), the 10 terrain grids (3 grounds)
+and the water strip (17 grounds) with copies of the replaced code. Cost with D-280 (startup probes, 3 × 3 runs
+interleaved, load 11–14): menu-world CPU high 781 → 676 ms, low 762 → 729 ms; node, cold menu ground, thread CPU,
+median of 21: terrain + water + trees + reeds 143,6 → 129,6 ms (terrain 55 → 49, water 26 → 21). Pixels: `jam-diff`
+0 px (research 2026-11-06-perf-day10, "After day 12"). (decided)
+
+**D-282 — Terrain grids, water strip and apron trees are kept for the last two grounds.** They depend only on the
+terrain's size, water level, corners and water cells (all `Heightfield` reads). `groundMemo(kind, terrain, build)`
+(`src/render/groundCache.ts`) keeps the last two results per kind and hands one back when a world has the same
+ground, compared value for value (`Object.is` on corners, not a hash). Two, not one: the sim already caches terrain
+per map id (menu, mission I and the default free valley share one object, which `setWorld` never rebuilds), so the
+win is menu → mission → menu → next mission, where the menu ground and the mission ground alternate; missions
+II/IV/VII and III/X/XII–XV also share grounds under different map ids. Users treat the arrays as read-only (one
+`BufferGeometry` per view over the shared arrays; bounds cloned). World change, warm (node, median of 9): terrain
+29–30 → 0,3 ms, water strip 14–24 → 0,3 ms, apron trees 2,5 → 0 ms. Cost: up to ~4,5 MB of JS arrays for the other
+ground (GPU buffers are still freed with each view). The vegetation hunk is one line in the constructor (`this.apron =
+groundMemo(...)`), apart from the `claude/w-winter` changes to `bake`/`setBare`. (decided)
+
+**D-283 — Not kept: one-pass grid evaluator, "certainly dry" water skip; deferred chunks wait for `view.ts`.**
+Measured and dropped (cold menu build, node, interleaved runs): a `Heightfield.heightGrid` that inlines the whole
+height (per-column/per-row weights and noise lattices, one loop) gave the same numbers but was 10–20 % slower cold —
+Turbofan needs 14–20 ms to compile the big loop while it runs unoptimised, and it deopts on the first river vertex;
+the small functions it replaced are optimised and inlined within a few thousand calls. A water-strip pre-pass that
+skips points whose cell lower bound clears the water level (rigorous: Catmull-Rom negative weights ≤ 0,28125, detail ≥
+-0,215) saved ~25 000 height samples but its three extra passes over 80 000 points cost more cold. Not done because it
+needs `view.ts` (changed on `claude/w-winter`): building the terrain chunks outside the menu camera's frustum after the
+first frame (portrait: 2 of 6 chunks and the west apron piece; three uploads attributes before `onBeforeRender`, so a
+self-contained lazy chunk is not possible), and the forced `vegetation.update` in `syncNetwork` that runs before the
+menu camera is placed (~10 ms, redone in the first frame). Both go to BACKLOG for after the winter merge. (decided)

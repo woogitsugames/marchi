@@ -229,3 +229,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-268 | — | The bottleneck card skips an input whose every consumer works in a chain ending in a saturated good | decided | UI |
 | D-269 | — | The valley site check (D-266) accepts a neighbouring road only as the network would drive it | decided | sim |
 | D-270 | — | On a short landscape sheet the grow card's reason wraps in the wider column instead of a three-line clamp | decided | UI |
+| D-280 | — | Heightfield skips the blurred water-mask interpolation where every tap is 0 | decided | inne |
+| D-281 | 2026-11-06 | Leaner ground build, bit for bit | decided | inne |
+| D-282 | — | Terrain grids, water strip and apron trees are kept for the last two grounds | decided | render |
+| D-283 | — | Not kept: one-pass grid evaluator, "certainly dry" water skip; deferred chunks wait for `view.ts` | decided | inne |

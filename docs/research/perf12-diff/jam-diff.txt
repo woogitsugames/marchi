@@ -1,0 +1,3 @@
+{"query":"wagons=30&t=90&speed=4&frames=90&cam=41.5,35,75,-0.75&tod=0.4&hud=0&quality=low","a":{"wagons":30,"moving":4,"opp":0,"tick":1020},"b":{"wagons":30,"moving":4,"opp":0,"tick":1020},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+{"query":"wagons=40&t=90&speed=4&frames=40&cam=41.5,35,60,-0.75&tod=0.4&hud=0&quality=high","a":{"wagons":40,"moving":5,"opp":0,"tick":953},"b":{"wagons":40,"moving":5,"opp":0,"tick":953},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
+{"query":"wagons=20&t=60&speed=4&frames=30&cam=48,36,240,-0.4&tod=0.4&hud=0&quality=high","a":{"wagons":20,"moving":4,"opp":0,"tick":640},"b":{"wagons":20,"moving":4,"opp":0,"tick":640},"pixels":376980,"diffPixels":0,"maxChannelDiff":0,"errs":[]}
