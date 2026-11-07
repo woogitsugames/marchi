@@ -63,6 +63,10 @@
   - 20:25 `qwen_review` diffu D-325..D-327 (300 linii): 1. „mipy odwrócone” — fałszywy alarm (mip z poziomu 0 raz na atlas
     jest celowy, atlasy bit w bit); 2. MSAA + MRT (`samples: 4, count: 2`) — trafna uwaga do sprawdzenia na urządzeniu
     (WebGL2 to wspiera, ale sterowniki bywają różne) → BACKLOG; odpowiedź ucięta. ~11 tys. tokenów po stronie Qwena.
+  - 21:40 `repo_search`/klasyfikacja „zdań łączonych spacją” — niepotrzebne: grep znalazł 1 miejsce, poprawione ręcznie.
+  - 21:50 `qwen_code` (zrzut w layout-check nie może psuć zmierzonego zadania): logika trafna, ale zgubiony warunek `!css`
+    i rozjechane wcięcia → poprawione ręcznie. ~5 tys. tokenów Qwena; mój koszt: opis zadania + przegląd ≈ tyle co sam kod.
+    Wniosek wstępny: przy jednoliniowych zmianach nie opłaca się; sensowne dla większych, dobrze opisanych plików/testów.
 - Scalone ~18:40: **D-323/D-324** kupiec przy ladzie faktorii: po sprzedaży gest 3 s (sięga po monetę, waży, wrzuca do skrzyni),
   wykrycie z `tradePost.recent` (tylko odczyt), te same wywołania rysowania. Testy 611/0, smoke 0, layout 126/0.
 - Scalone ~21:00: **D-325..D-327** billboardy drzew (programy przy starcie, ArrayCamera na wiersz, albedo+normalne w jednym

@@ -382,7 +382,16 @@ async function run(browser, url, v, lang, sc, css) {
     await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => 0))));
     await page.waitForTimeout(300);
     const m = await page.evaluate(measure);
-    if (SHOTS && !css) { mkdirSync(SHOTS, { recursive: true }); await page.screenshot({ path: `${SHOTS}/${sc.name}-${v.id}-${lang}.png`, timeout: 180000 }); }
+    if (SHOTS && !css) {
+      // a screenshot timeout under load must not turn an already-measured job into an error
+      try {
+        mkdirSync(SHOTS, { recursive: true });
+        await page.screenshot({ path: `${SHOTS}/${sc.name}-${v.id}-${lang}.png`, timeout: 180000 });
+      } catch (e) {
+        m.shotError = String(e.message).split('\n')[0];
+        console.error(`layout-check: screenshot failed for ${tag}: ${m.shotError}`);
+      }
+    }
     return { tag, ...m, console: errors };
   } catch (e) {
     return { tag, error: String(e.message).split('\n')[0], console: errors };
