@@ -210,9 +210,15 @@ function refStrip(hf: Heightfield): BufferGeometry {
   return g;
 }
 
+const moreGrounds = (): [string, Terrain][] => [
+  ...grounds(),
+  ...[1, 2, 3, 4, 5, 6, 31, 977].map((sd): [string, Terrain] => [`sandbox:${sd}`, createWorld('sandbox', sd).terrain]),
+  ...['m5', 'm6', 'm8', 'm9', 'm11'].map((m): [string, Terrain] => [m, createWorld(m).terrain]),
+];
+
 test('ground identity: the water strip equals the number[] reference', () => {
   clearGroundMemo();
-  for (const [name, t] of grounds()) {
+  for (const [name, t] of moreGrounds()) {
     const hf = new Heightfield(t);
     const w = new WaterView(hf);
     sameGeometry(w.mesh.geometry, refStrip(hf), `${name} water`);
