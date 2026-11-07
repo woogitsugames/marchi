@@ -3011,3 +3011,29 @@ de / en / pseudo): the reason's scrollHeight = clientHeight (nothing clipped), b
 the dock inside the sheet; pseudo (+40 %) takes 8 lines and the dock 123 px, the status line then sits under the
 fade but scrolls. Portrait and other fix notes unchanged (only the grow card is wide). Shots
 `docs/shots/fame-sheet-915x412{-before,}.jpg`, `fame-{hud,sheet}-{412x915,915x412}.jpg` re-shot. (decided)
+
+**D-276 — The valley's `jsEventListeners` growth is lazy sweeping, not a leak: no code change.** Day 10 saw the
+counter grow ~150 per 30 min of valley play at constant heap and nodes (BACKLOG P2). Reproduced on the built preview
+with `tools/listeners-probe.mjs` (valley3, bench roads + 100 wagons, the real autosave every 30 s of game time; every
+`addEventListener`/`removeEventListener` tracked by target type as connected / detached / collected, every `on*`
+setter of IndexedDB requests, transactions and audio sources counted with a weak handle to its object). Each sample
+reads `Memory.getDOMCounters` raw, after `HeapProfiler.collectGarbage` ×2 (what day 10 read), and "settled" (a further
+3 s + GC + 1 s + GC). No sheets, 90 min: raw 94 → 246 / 249 / 237, after GC 231 / 213 / 204, **settled 94 → 105 / 105 /
+105**; `addEventListener` +12 in total (11 marker pins: the pool grows to its size once, day 10), 62 autosave transactions per
+30 min × 3 handlers (`oncomplete`/`onerror`/`onabort`, `run()` in `src/platform/save.ts`) = the rest; every transaction
+object was collected (on*-objects alive: 2 = the open request and the connection). Two sheets opened and closed per
+minute (building, wagon, market, pause menu, help), 90 min: 2 582 adds, 540 removes, the other 2 000 on sheet nodes
+that were all collected, detached-but-alive listeners 3 throughout (two music `<audio>` elements and one button,
+constant), nodes 473 → 438–470, raw up to 874, **settled 94 → 99 / 99 / 103**. Start → XII → menu ×6: 78 → 79,
+flat. With audio unlocked (`audio=1`) ended `AudioBufferSourceNode`s (each with `onended`) are collected too. Blink
+counts a listener down only when its owner is swept, which happens after V8's GC, lazily — a counter read right after a
+forced GC still includes the last ~30 min of autosaves. Why no code change: nothing is retained (the settled count is
+flat, every target is collected), and trimming `run()` to fewer handlers would change which error a failed save rejects
+with (the `error` event fires before `tr.error` is set) for no memory gain. The opening letter's window `keydown`
+(`src/ui/menu.ts`) is removed only by `close()`; leaving the game with the letter open is not reachable (modal), so it
+stays. (decided)
+
+**D-277 — Memory probes read a settled listener count.** `tools/memory-probe.mjs` adds `listenersSettled` (wait +
+GC twice after the existing reading) beside `listeners`, so the next perf day does not read autosave churn as a leak;
+`tools/listeners-probe.mjs <base> [blocks] [minutes] [sheetsPerMinute] [audio]` attributes the count by target type and
+`on*` owner (D-276). Tools only; no game code. (decided)

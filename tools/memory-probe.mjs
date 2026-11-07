@@ -56,8 +56,15 @@ const sample = async (label) => {
       sceneChildren: (() => { let n = 0; app.view.scene.traverse(() => { n++; }); return n; })(),
     };
   });
-  const row = { label, ...s, nodes: dom.nodes, docs: dom.documents, listeners: dom.jsEventListeners };
-  process.stderr.write(`${label}: draws/2f ${row.draws2} heap ${row.heapMB} MB geo ${row.geometries} tex ${row.textures} prog ${row.programs} nodes ${row.nodes} listeners ${row.listeners} obj ${row.sceneChildren}\n`);
+  // Blink counts a listener down only when its owner is swept, which runs lazily after the GC: a second reading
+  // after a wait and two more GCs is the settled count (day 11b, D-276; `listeners` alone grew with every autosave)
+  await page.waitForTimeout(3000);
+  await cdp.send('HeapProfiler.collectGarbage');
+  await page.waitForTimeout(1000);
+  await cdp.send('HeapProfiler.collectGarbage');
+  const settled = (await cdp.send('Memory.getDOMCounters')).jsEventListeners;
+  const row = { label, ...s, nodes: dom.nodes, docs: dom.documents, listeners: dom.jsEventListeners, listenersSettled: settled };
+  process.stderr.write(`${label}: draws/2f ${row.draws2} heap ${row.heapMB} MB geo ${row.geometries} tex ${row.textures} prog ${row.programs} nodes ${row.nodes} listeners ${row.listeners} (settled ${row.listenersSettled}) obj ${row.sceneChildren}\n`);
   return row;
 };
 
