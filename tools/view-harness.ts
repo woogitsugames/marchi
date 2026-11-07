@@ -17,6 +17,7 @@
  *   preview=x0,y0,x1,y1  show a road preview (validated like the build tool)
  *   stress=1         harness-only: scatter all wagons over the road network with random cargo
  *   hud=0            hide the stats box
+ *   world=m7         another mission's world as built (default: m1 with the bot's bridge and four wagons)
  *   prior=m12        set (and draw) another mission's world before this one, like menu -> mission
  *   frames=N         render N frames (fixed 1/30 s steps) then stop — for slow software-GL screenshots
  * Mouse: wheel = zoom at cursor, left drag = pan, right drag = rotate, click = pick.
@@ -32,9 +33,11 @@ import { bridgeA, stableId } from './bot';
 const q = new URLSearchParams(location.search);
 const num = (k: string, d: number) => (q.has(k) ? Number(q.get(k)) : d);
 
-const world = createWorld('m1');
-const plan: Command[] = [bridgeA(world)];
-for (let i = 0; i < 4; i++) plan.push({ t: 'buyWagon', stable: stableId(world) });
+// world=<mission>: another mission's world as built (default m1 with the bot's bridge and four wagons)
+const worldId = (q.get('world') ?? 'm1') as Parameters<typeof createWorld>[0];
+const world = createWorld(worldId);
+const plan: Command[] = worldId === 'm1' ? [bridgeA(world)] : [];
+if (worldId === 'm1') for (let i = 0; i < 4; i++) plan.push({ t: 'buyWagon', stable: stableId(world) });
 for (const c of plan) {
   const r = applyCommand(world, c);
   if (!r.ok) console.warn('harness command failed', c, r.err);
