@@ -19,7 +19,7 @@
  */
 import { Box3, BoxGeometry, Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
 import { creel, fishGeom } from './chains';
-import { type ModelPart, PartBuilder, trs } from './kit';
+import { type ModelPart, PartBuilder, prim, trs } from './kit';
 import { box, logGeom } from './shapes';
 import { WAGON } from './wagon';
 
@@ -189,7 +189,7 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
         },
       });
       // tied corner ear
-      b.add('cloth', new SphereGeometry(0.05, 5, 3), { color: '#9f9783', m: m.clone().multiply(trs(0.2, 0.03, 0.5, 0, 0, 0, 1, 0.7, 1.4)), ao: 0, dirt: 0 });
+      b.add('cloth', prim(SphereGeometry, 0.05, 5, 3), { color: '#9f9783', m: m.clone().multiply(trs(0.2, 0.03, 0.5, 0, 0, 0, 1, 0.7, 1.4)), ao: 0, dirt: 0 });
       break;
     }
     case 'bread': {
@@ -207,7 +207,7 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
       });
       const loaves: [number, number, number, number][] = [[-0.1, 0.22, 0.07, 0.16], [0.12, 0.22, -0.05, 0.15], [0.02, 0.3, 0.0, 0.14]];
       for (const [x, y, z, r] of loaves) {
-        b.add('cloth', new SphereGeometry(1, 6, 3, 0, Math.PI * 2, 0, Math.PI * 0.55), {
+        b.add('cloth', prim(SphereGeometry, 1, 6, 3, 0, Math.PI * 2, 0, Math.PI * 0.55), {
           color: '#a67a3d',
           m: m.clone().multiply(trs(x, y, z, b.r(-0.25, 0.25), b.r(0, 3), b.r(-0.25, 0.25), r, r * 0.72, r * 1.2)),
           ao: 0,
@@ -241,7 +241,7 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
     }
     case 'stone': {
       const w = 0.56 + b.r(-0.05, 0.03), h = 0.5 + b.r(-0.04, 0.04), d = 0.66 + b.r(-0.06, 0.06);
-      b.add('stone', new BoxGeometry(w, h, d, 2, 2, 2), {
+      b.add('stone', prim(BoxGeometry, w, h, d, 2, 2, 2), {
         color: '#5f5e59',
         m: m.clone().multiply(trs(0, h / 2, 0, b.r(-0.04, 0.04), 0, b.r(-0.04, 0.04))),
         jitter: 0.075,
@@ -273,7 +273,7 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
         ao: 0,
         dirt: 0,
       });
-      b.add('stone', new SphereGeometry(1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
+      b.add('stone', prim(SphereGeometry, 1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
         color: '#1f1d1c',
         m: m.clone().multiply(trs(0, h - 0.04, 0, 0, b.r(0, 3), 0, 0.2, 0.12, 0.2)),
         jitter: 0.03,
@@ -298,9 +298,9 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
         dirt: 0,
       });
       for (const [y, r] of [[0.07, 0.237], [0.27, 0.26]] as const) {
-        b.add('metal', new CylinderGeometry(r, r, 0.035, 10, 1, true), { color: '#34302c', m: m.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
+        b.add('metal', prim(CylinderGeometry, r, r, 0.035, 10, 1, true), { color: '#34302c', m: m.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
       }
-      b.add('cloth', new SphereGeometry(1, 9, 3, 0, Math.PI * 2, 0, Math.PI / 2), {
+      b.add('cloth', prim(SphereGeometry, 1, 9, 3, 0, Math.PI * 2, 0, Math.PI / 2), {
         color: '#a8834a',
         m: m.clone().multiply(trs(0, 0.32, 0, 0, b.r(0, 3), 0, 0.25, 0.13, 0.25)),
         jitter: 0.012,
@@ -338,7 +338,7 @@ function addChainUnit(b: PartBuilder, good: CargoGood, m: Matrix4): boolean {
       };
       for (const f of [0.12, 0.27, 0.73, 0.88]) {
         const y = f * 0.83 * 0.95, r = rAt(y) + 0.006;
-        b.add('metal', new CylinderGeometry(r, r, 0.035, 12, 1, true), { color: '#34302c', m: mm.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
+        b.add('metal', prim(CylinderGeometry, r, r, 0.035, 12, 1, true), { color: '#34302c', m: mm.clone().multiply(trs(0, y, 0)), ao: 0, dirt: 0 });
       }
       return true;
     }

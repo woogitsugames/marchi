@@ -180,3 +180,14 @@ SwiftShader, 9 przebiegów na wersję naprzemiennie, load 6–8) 463 → 418 ms;
 zimny proces, CPU wątku, mediana 21): świat menu 189 → 179 ms, menu → misja I (to samo podłoże, tylko synchronizacja sieci)
 34,3 → 20,1 ms, menu → misja II 77,3 → 72,7 ms. Każda zmiana sieci w misji: trzcina 0 ms, plan drzew z cache.
 Identyczne: 15 scen harnessu 0 px (`perf14-diff/`), `tools/terrain-hash.ts` (15 światów), `tools/mission-hashes.ts`.
+
+## 2026-11-07 — dzień 15: modele budynków i drzew (`kit.ts`, D-320..D-322)
+
+Dane: `docs/research/startup15-data/`. Profil: menu robi 1 977 prymitywów z 360 różnych kształtów, połowa wierzchołków
+budynków dzieli pozycję z innym; reszta to zimny kod (te same modele drugi raz w tym samym procesie ~35 ms zamiast
+~90–130). Zmiany: wspólne szablony prymitywów (`prim`), kawałki jako gołe tablice z transformacją, kolorem, renormal i
+granicami w pętlach (bit w bit jak three), szum raz na wspólny wierzchołek, kolory cieni parsowane raz, mosty przez
+`mergeIndexed`. Node (`tools/model-probe.ts`, zimny proces, CPU wątku, mediana 10): modele menu 167 → 125 ms (budynki
+124 → 92). Przeglądarka (`menu-start`, 9 przebiegów naprzemiennie, load 5–8): kubełki modeli 137 → 105 ms, całe
+`menu-start` 415 → 336 ms (szum 250–470). Identyczne: 18 scen harnessu 0 px (`perf15-diff/`, menu 1/3/30 high i low), `model-probe HASH=1`
+(cały katalog), `tests/part-builder-identity.test.ts`, `tools/mission-hashes.ts`.

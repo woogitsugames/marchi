@@ -14,7 +14,7 @@ import {
 import { castleLevel, postOpen, type Building, type World } from '../sim/index';
 import { CELL, type Heightfield } from './heightfield';
 import { POST_TRADER, buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
-import { mergeIndexed, type ModelPart, PartBuilder } from './models/kit';
+import { mergeIndexed, type ModelPart, PartBuilder, prim } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
 import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
 import { Parts } from './instancedParts';
@@ -222,7 +222,7 @@ export class BuildingsView {
         const pcx = (mb.max.x + mb.min.x) * 0.5, pcz = (mb.max.z + mb.min.z) * 0.5;
         const pb = new PartBuilder({ seed: b.id, ao: 0, dirt: 0.6, dirtHeight: 0.5 });
         const depth = baseY - lo + 0.5;
-        pb.add('stone', new BoxGeometry(pw, depth, pd), {
+        pb.add('stone', prim(BoxGeometry, pw, depth, pd), {
           color: '#625d53',
           m: new Matrix4().makeTranslation(0, -depth / 2 + 0.05, 0),
           noise: 0.12,

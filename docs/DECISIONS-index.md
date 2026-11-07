@@ -268,3 +268,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-316 | — | XVI ladder after D-313/D-314; I–XV unchanged | decided | inne |
 | D-317 | — | The XVI "stale waybill" was the shot tool reading the folded parchment; the UI is consistent | decided | UI |
 | D-318 | — | One rounding for a castle's lateness: the castle sheet also rounds up to 10 s | decided | UI |
+| D-320 | — | Primitives are shared read-only templates (`prim`) | decided | inne |
+| D-321 | — | `PartBuilder.add`/`build` on plain arrays | decided | inne |
+| D-322 | — | Noise once per shared vertex; per-vertex waste out of the shades; bridges merged like buildings | decided | inne |
