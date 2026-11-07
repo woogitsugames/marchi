@@ -5,7 +5,7 @@
   `node_modules` — **nigdy `git add -A` w worktree** (symlink trafił raz do commita i podmienił `node_modules` bazy;
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
-- Baza = **D-280..D-283 scalone** (7 XI ~03:00): testy **585/0**, build, smoke 0 (`main` po layoucie). `setup:android` OK.
+- Baza = `main` = **D-280..D-283 scalone** (7 XI ~03:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
   Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
