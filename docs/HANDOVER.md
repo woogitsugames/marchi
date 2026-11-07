@@ -80,8 +80,11 @@
   `vite build` (`models-*.bin`, 6,0 MB, 2,4 MB gzip; APK ~51,6 → ~54 MB), dekodowany przy starcie zamiast zimnego budowania:
   `ready` −14 % (1×) / −15 % (CPU 4×), `first-frame` −200 / −590 ms; 0 px na 20 scenach; bez pliku (`?baked=0`, dev, testy,
   błąd pobierania) budowa jak dawniej. Plik generowany przy buildzie, nie w repo. **Rano zmierzyć na Foldzie** start i rozmiar.
-- W toku (noc): agent `claude/w-night1` — odbicie ikon kierunkowych po arabsku, ekran porażki XV bez spokojnych postojów
-  (D-334..D-336).
+- Scalone ~23:00: **D-334** proporczyk „pierwszy” i `no_route` odbite po arabsku (audyt ikon kierunkowych); **D-335** list
+  porażki pomija spokojne postoje w „trzech kosztach” (próbkowanie UI raz na sekundę gry): XV/VI/XII po spichlerzu radzą
+  „wóz”, IV pokazuje lód na moście, X sporny tartak; 225 odczytów, żadna misja nie straciła sensownej przyczyny.
+  Testy 621/0, smoke 0, layout 138/0. `main` = baza.
+- W toku: nic (noc — oszczędzam limit na ranek). APK rano z katalogiem modeli.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
