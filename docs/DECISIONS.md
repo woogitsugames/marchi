@@ -3584,7 +3584,9 @@ a gesture); an old sale revealed by a load or a jump, or a save of another game 
 wagons selling within one frame play one gesture; a sale during a gesture restarts it. The gesture clock is the
 view's real frame time like the idle loop (×4 does not hurry the trader; a pause cannot produce a sale). No sim
 state, no command, sim hashes unchanged (`tools/mission-hashes.ts`). Cost: one array read and a few multiplies per
-frame for the one trader; draw count identical by construction (no mesh added). Tests `tests/trader-sale.test.ts`
+frame for the one trader (~60 ns in node with the idle pose); draw count identical by construction (no mesh
+added) — `tools/frame-cost.mjs` sandbox, low, 50 wagons, 15 s, SwiftShader, twice each: 47 calls before and after,
+render 7.4 / 8.4 ms before, 8.7 / 7.5 ms after (run-to-run noise). Tests `tests/trader-sale.test.ts`
 (the cue as a pure function, live trade at the post: gestures ≤ sales, hash identical with and without reading,
 the gesture shape and its smoothness). Shots `docs/shots/merchant-{before,after}-<size>-seq.jpg` (idle, reach,
 weigh, drop) and the full frames at "weigh" (`tools/merchant-shots.mjs`).
