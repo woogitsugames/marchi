@@ -1,0 +1,26 @@
+ 19:49:46 up  3:07,  0 user,  load average: 6.62, 8.04, 9.85
+r0 v0 ready=2507.4 ms=1067.8 vm=526.3 bk=undefined ff=3752.6
+r0 v1 ready=2113.2 ms=416.4 vm=825.5 bk=636.1 ff=3060.6
+r0 v2 ready=1951.8 ms=441.4 vm=694.8 bk=1007.7 ff=3037.8
+r1 v0 ready=2273.7 ms=801.7 vm=642.1 bk=undefined ff=3194.2
+r1 v1 ready=2006.1 ms=597.0 vm=516.7 bk=415.1 ff=2920.4
+r1 v2 ready=1963.3 ms=454.5 vm=661.2 bk=984 ff=3072.3
+r2 v0 ready=2345.8 ms=879.4 vm=675.4 bk=undefined ff=3455.9
+r2 v1 ready=2178.6 ms=666.9 vm=773.6 bk=627.4 ff=3740
+r2 v2 ready=1901.4 ms=453.2 vm=650.9 bk=924 ff=2975.2
+r3 v0 ready=2369 ms=906.4 vm=586.8 bk=undefined ff=3825.9
+r3 v1 ready=2198 ms=440.2 vm=786 bk=663.5 ff=3394.9
+r3 v2 ready=2259 ms=471.9 vm=823.1 bk=1216.2 ff=3470.2
+r4 v0 ready=2604.3 ms=894.7 vm=701.3 bk=undefined ff=3995
+r4 v1 ready=2478.3 ms=690.8 vm=729.7 bk=592.4 ff=3671.4
+r4 v2 ready=2139.6 ms=476.5 vm=665.3 bk=1014 ff=3164.5
+r5 v0 ready=2498.8 ms=931.7 vm=704.8 bk=undefined ff=3543.1
+r5 v1 ready=2538.1 ms=681.1 vm=746.8 bk=561.9 ff=3851.2
+r5 v2 ready=2177.1 ms=482.4 vm=618.6 bk=979.7 ff=3362.9
+r6 v0 ready=2673.6 ms=992.8 vm=653.6 bk=undefined ff=3874.2
+r6 v1 ready=2350.9 ms=514.5 vm=801.4 bk=609.5 ff=3349.6
+r6 v2 ready=2131.7 ms=486.4 vm=782.7 bk=1080.2 ff=3321.5
+{"variant":"http://localhost:5263/","n":7,"thr":4,"med":{"ready":2498.8,"menu-world - menu-start":906.4,"view-module":653.6,"first-frame":3752.6,"ready->ff":1200.6,"app":926.5}}
+{"variant":"http://localhost:5262/","n":7,"thr":4,"med":{"ready":2198,"menu-world - menu-start":597,"view-module":773.6,"first-frame":3394.9,"ready->ff":1193.1,"app":1076.2}}
+{"variant":"http://localhost:5264/","n":7,"thr":4,"med":{"ready":2131.7,"menu-world - menu-start":471.9,"view-module":665.3,"first-frame":3164.5,"ready->ff":1109,"app":1005.6}}
+ 19:53:35 up  3:11,  0 user,  load average: 10.74, 9.13, 9.85

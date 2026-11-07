@@ -870,6 +870,9 @@ class View implements WorldView {
   }
 }
 
+/** Prebaked model catalogue (D-331), installed by main.ts before the view is made. */
+export { installBakedModels } from './models/baked';
+
 export function createWorldView(): WorldView {
   return new View();
 }

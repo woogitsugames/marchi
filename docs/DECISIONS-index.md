@@ -279,3 +279,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-328 | — | QA of 7 XI: `prim` templates only for shapes that repeat; the slope plinth is a one-off box | decided | inne |
 | D-329 | — | QA of 7 XI: the haul card and the castle rows in every language; three small UI fixes; the layout check measures the haul card | decided | UI |
 | D-330 | — | Bridge ice uses one-off geometries; a test guards `prim` against world-dependent sizes | decided | sim |
+| D-331 | — | The model catalogue is baked at build time and decoded at startup | decided | inne |
+| D-332 | — | The catalogue is preloaded by the HTML and installed just before the first world | decided | inne |
+| D-333 | — | Not done: an IndexedDB cache of built models, building only the first frame's kinds | decided | inne |

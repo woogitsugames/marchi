@@ -210,3 +210,20 @@ Wyniki (SwiftShader, 412×915, high, naprzemiennie, load 15–20): CPU bake'a w 
 Identyczne: atlasy (poziomy 0, 3, 6, pięć zestawów rozmiar/łysienie/wiosna) — hash; 20 scen harnessu 0 px
 (`perf16-diff/`: menu 1/3/30 high i low, misje I, II, VII, XII, XVI, poprzednie światy, plus menu i II w ultra);
 50 programów po pre-warmie jak przed; `tools/mission-hashes.ts` bez zmian.
+
+## 2026-11-07 — dzień 17: gotowy katalog modeli zamiast zimnej budowy (D-331..D-333)
+
+Dane i sondy: `docs/research/startup17-data/` (README z liczbami wszystkich trzech wariantów). Zmierzone trzy drogi:
+(a) katalog wypiekany przy `vite build` — wdrożony; (b) cache w IndexedDB — odczyt 6 MB 16 ms (59 ms przy CPU 4×) na
+głównym wątku, pierwsze uruchomienie bez zmian, więc nigdy szybciej niż (a); (c) tylko rodzaje z pierwszej klatki —
+menu pokazuje 1–2 z 8 rodzajów budynków, w node −60 ms budynków, ale drzewa i wóz zostają, reszta buduje się na zimno
+zaraz po pierwszej klatce, a budynki poza kadrem rzucają cień w kadr. Wdrożone (a): `tools/bake-models.ts` buduje 66
+modeli katalogu (`src/render/models/catalogue.ts`) do jednego pliku (6,04 MB, 2,37 MB gzip, APK +~4,6 %; uv z rzutu
+pudełkowego liczone przy dekodowaniu), plugin Vite emituje go jako zasób z hashem, HTML go wstępnie pobiera, `main.ts`
+instaluje go tuż przed `app.start()` (zawsze już był: 0,3–2,6 ms po znaczniku `app`), funkcje modeli dekodują przez
+`bakedOr`. Bez pliku (dev, testy, `?baked=0`) — budowa jak dotąd. Node: modele menu 113–129 ms → ~3 ms instalacji +
+4–10 ms dekodowania. Przeglądarka (SwiftShader, 412×915, high, świeża przeglądarka na przebieg, naprzemiennie, load
+7–11): `ready` 998 → 859 ms (1×, mediana 9) i 2 499 → 2 132 ms (CPU 4×, mediana 7; −15 %); `menu-start`→`menu-world`
+365 → 228 / 906 → 472 ms; `first-frame` 1 818 → 1 621 / 3 753 → 3 165 ms. Zmiana świata (menu → I, II) w szumie.
+Identyczne: 20 scen harnessu 0 px (`perf17-diff/`, `baked=1` kontra przed), bajty katalogu (`tests/models-baked.test.ts`:
+dwa świeże procesy, dekodowanie + kodowanie, porównanie pole po polu), `model-probe HASH=1`, `tools/mission-hashes.ts`.

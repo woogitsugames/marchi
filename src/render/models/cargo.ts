@@ -20,6 +20,7 @@
 import { Box3, BoxGeometry, Color, CylinderGeometry, LatheGeometry, Matrix4, SphereGeometry, Vector2 } from 'three';
 import { creel, fishGeom } from './chains';
 import { type ModelPart, PartBuilder, prim, trs } from './kit';
+import { bakedOr } from './baked';
 import { box, logGeom } from './shapes';
 import { WAGON } from './wagon';
 
@@ -375,9 +376,11 @@ const unitCache = new Map<CargoGood, ModelPart[]>();
 export function cargoUnitParts(good: CargoGood): ModelPart[] {
   const hit = unitCache.get(good);
   if (hit) return hit;
-  const b = new PartBuilder({ seed: 201 + CARGO_GOODS.indexOf(good), ao: 0, dirt: 0 });
-  addUnit(b, good, new Matrix4());
-  const parts = b.build();
+  const parts = bakedOr(`cargoUnit:${good}`, () => {
+    const b = new PartBuilder({ seed: 201 + CARGO_GOODS.indexOf(good), ao: 0, dirt: 0 });
+    addUnit(b, good, new Matrix4());
+    return b.build();
+  });
   unitCache.set(good, parts);
   return parts;
 }

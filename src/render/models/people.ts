@@ -7,6 +7,7 @@
 import { type BufferGeometry, ConeGeometry, CylinderGeometry, Matrix4, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type ModelPart, PartBuilder, prim, trs, v3 } from './kit';
+import { bakedOr } from './baked';
 import { box, lathe, rod, type Opts } from './shapes';
 
 export interface HumanStyle {
@@ -196,6 +197,11 @@ export const WORKER_KINDS: WorkerKind[] = ['chop', 'sack', 'peel', 'sawTop', 'sa
 /** Length (s) of each kind's work cycle (the model preview samples moments of it). */
 export const WORKER_CYCLE: Record<WorkerKind, number> = { chop: 1.7, sack: 3.6, peel: 3.2, sawTop: 1.5, sawPit: 1.5, hoe: 2.6, net: 6, mallet: 1.3, rake: 4.2, shovel: 3.4, paddle: 2.8, trader: 7 };
 
+/** Rig variant (clothing) per worker kind: neighbours in one yard dress differently. */
+export const RIG_VARIANT: Record<WorkerKind, number> = {
+  chop: 2, sack: 3, peel: 0, sawTop: 1, sawPit: 0, hoe: 1, net: 2, mallet: 3, rake: 2, shovel: 0, paddle: 1, trader: 3,
+};
+
 export interface WorkerRig {
   /** Legs and shoes, origin between the feet, facing +Z. */
   legs: ModelPart[];
@@ -223,15 +229,19 @@ const bodyCache = new Map<number, { legs: ModelPart[]; torso: ModelPart[] }>();
 export function workerBody(variant: number): { legs: ModelPart[]; torso: ModelPart[] } {
   const hit = bodyCache.get(variant);
   if (hit) return hit;
+  const body = bakedOr(`workerBody:${variant}`, () => workerBodyBuild(variant));
+  bodyCache.set(variant, body);
+  return body;
+}
+
+function workerBodyBuild(variant: number): { legs: ModelPart[]; torso: ModelPart[] } {
   const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
   const seed = 60 + variant * 3;
   const lb = new PartBuilder({ seed, ao: 0.2 });
   addHuman(lb, new Matrix4(), style, 'work', 7, undefined, 'legs');
   const tb = new PartBuilder({ seed: seed + 100, ao: 0.2 });
   addHuman(tb, new Matrix4().makeTranslation(0, -WORKER_HIP_Y, 0), style, 'work', 7, undefined, 'torso');
-  const body = { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()) };
-  bodyCache.set(variant, body);
-  return body;
+  return { legs: oneMesh(lb.build()), torso: oneMesh(tb.build()) };
 }
 
 /** The rig of a worker kind (cached; shared geometry). Arms rest forward in the 'work' pose. */
@@ -239,6 +249,12 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
   const key = `${kind}:${variant}`;
   const hit = rigCache.get(key);
   if (hit) return hit;
+  const rig = bakedOr(`workerRig:${key}`, () => workerRigBuild(kind, variant));
+  rigCache.set(key, rig);
+  return rig;
+}
+
+function workerRigBuild(kind: WorkerKind, variant: number): WorkerRig {
   const style = HUMAN_STYLES[variant % HUMAN_STYLES.length]!;
   const seed = 60 + variant * 3 + WORKER_KINDS.indexOf(kind);
   const ab = new PartBuilder({ seed: seed + 200, ao: 0.2 });
@@ -302,9 +318,7 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     tool = oneMesh(kb.build());
   }
   const body = workerBody(variant);
-  const rig: WorkerRig = { legs: body.legs, torso: body.torso, arms: oneMesh(ab.build()), tool };
-  rigCache.set(key, rig);
-  return rig;
+  return { legs: body.legs, torso: body.torso, arms: oneMesh(ab.build()), tool };
 }
 
 const RIG_ATTRS = ['position', 'normal', 'color'];

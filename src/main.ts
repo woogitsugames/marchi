@@ -21,11 +21,21 @@ import type { CreateWorldView, WorldView } from './render/api';
 import { App } from './ui/app';
 import { createFlatView } from './ui/flatView';
 import { startupMark } from './platform/marks';
+import bakedModelsUrl from 'virtual:baked-models';
 
 // The three.js view is written separately; the glob keeps the build working when it is absent.
 const renderModules = import.meta.glob<ViewModule>('./render/view.ts');
 
-type ViewModule = { createWorldView?: CreateWorldView };
+type ViewModule = { createWorldView?: CreateWorldView; installBakedModels?: (buf: ArrayBuffer | null) => number };
+
+/**
+ * Fetch the prebaked model catalogue (D-331) while the view chunk and the fonts load; null without one (dev server,
+ * ?view=flat, ?baked=0, a failed fetch): the models are then built as before.
+ */
+function loadBakedModels(params: URLSearchParams): Promise<ArrayBuffer | null> {
+  if (!bakedModelsUrl || params.get('view') === 'flat' || params.get('baked') === '0') return Promise.resolve(null);
+  return fetch(bakedModelsUrl).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+}
 
 /** Start fetching and evaluating the three.js view chunk (null for ?view=flat or when it is absent). */
 function loadViewModule(params: URLSearchParams): Promise<ViewModule> | null {
@@ -36,13 +46,15 @@ function loadViewModule(params: URLSearchParams): Promise<ViewModule> | null {
   return p;
 }
 
-async function pickView(loading: Promise<ViewModule> | null): Promise<{ view: WorldView; kind: 'three' | 'flat' }> {
+type PickedView = { view: WorldView; kind: 'three' | 'flat'; install?: (buf: ArrayBuffer | null) => number };
+
+async function pickView(loading: Promise<ViewModule> | null): Promise<PickedView> {
   if (loading) {
     try {
       const mod = await loading;
       if (mod.createWorldView) {
         const view = mod.createWorldView();
-        return { view, kind: 'three' };
+        return { view, kind: 'three', install: mod.installBakedModels };
       }
     } catch (e) {
       console.warn('three.js view failed to load, using the flat view', e);
@@ -74,6 +86,7 @@ async function boot(): Promise<void> {
   onLangChange(label);
   // the view chunk (three.js, models) loads while the fonts and the dictionary do, not after them (D-221)
   const viewModule = loadViewModule(params);
+  const bakedModels = loadBakedModels(params);
   // the dictionary, the document title and the canvas label are ready before the first frame (with the fonts)
   const langReady = setLang(lang).then(label);
   // Fonts first so the first frame of the menu is set in the right faces.
@@ -115,6 +128,12 @@ async function boot(): Promise<void> {
   startupMark('app');
   // screenshot/perf scripts drive the camera through this handle (debug only, never read by the game)
   if (params.get('perf') === '1') (window as unknown as { __marchiaView?: WorldView }).__marchiaView = picked.view;
+  // the prebaked models (D-331) are needed from the first world on: the fetch had the view's mount to finish in
+  if (picked.install) {
+    const buf = await bakedModels;
+    try { picked.install(buf); } catch (e) { console.warn('baked models not used', e); }
+    startupMark('baked-models');
+  }
   await app.start();
 }
 

@@ -16,7 +16,7 @@ import { CELL, type Heightfield } from './heightfield';
 import { POST_TRADER, buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { mergeIndexed, type ModelPart, PartBuilder } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
-import { HOE_STEP, TRADER_SALE, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, traderSalePose, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
+import { HOE_STEP, RIG_VARIANT, TRADER_SALE, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, traderSalePose, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
 import { freshPostSale, lastPostSaleTick } from './postSale';
 import { Parts } from './instancedParts';
 
@@ -64,10 +64,6 @@ interface FieldWorker { building: Building; spot: WorkerSpot; m: Matrix4; angle:
 /** Instanced batches of one kind: the arms (with the tool) are its own, legs and torso are its variant's (D-200). */
 interface WorkerParts { legs: Parts; torso: Parts; arms: Parts; tool: Parts | null }
 
-/** Rig variant (clothing) per worker kind: neighbours in one yard dress differently. */
-const RIG_VARIANT: Record<WorkerKind, number> = {
-  chop: 2, sack: 3, peel: 0, sawTop: 1, sawPit: 0, hoe: 1, net: 2, mallet: 3, rake: 2, shovel: 0, paddle: 1, trader: 3,
-};
 /** How far from a farm (cells, Chebyshev, from its footprint edge) the farmer walks out to a field. */
 const FIELD_REACH = 6;
 

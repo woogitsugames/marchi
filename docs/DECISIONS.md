@@ -3727,3 +3727,48 @@ geometry; the PartBuilder copies it, so the one-off is garbage). `primCount()` i
 `tests/prim-guard.test.ts` builds the whole model catalogue twice (count must not change) and fails if any world-driven
 module directly under `src/render/` calls `prim`. The model catalogue itself is a fixed set, so its templates are
 bounded. (decided)
+## Menu world build: cold model builds (perf day 17, BACKLOG P3 from D-322)
+
+**D-331 — The model catalogue is baked at build time and decoded at startup.** The procedural models built before
+`ready` (10 tree models, 5 far cards, the menu's 8 building kinds, wagon rigs, yard workers) cost ~115–130 ms cold in
+node and ~140 ms of `menu-start` in the browser (day 15), most of it cold code: built a second time they take a third.
+Now `tools/bake-models.ts` runs every call of `src/render/models/catalogue.ts` (66 models: all building kinds and their
+extras, trees, far cards, wagon near/mid/far, the 12 worker rigs, cargo units, bridge pieces) under `recordModels` and
+writes one binary file: a JSON head (each model as plain data — parts, Vector3s, numbers incl. -0/NaN, undefined fields
+— with geometries by index) and a data block of the geometries' own typed arrays (index, attributes in insertion order,
+bounds as doubles, userData). A geometry shared between models (near/mid wagon body, worker legs/torso) is stored once
+and decodes to one object. A uv that is exactly `boxUvArray(position, normal)` (97 % of the uv bytes) is not stored but
+recomputed by the same function (7,0 → 6,0 MB). Each model function wraps its build in `bakedOr(key, build)`: with a
+catalogue installed and the key in it, the stored value is decoded (typed-array views into the file); otherwise it
+builds as before (dev server, tests, tools, `?baked=0`, a failed fetch, a model not listed). Anything the format cannot
+hold (groups, morph targets, draw range, interleaved or non-default attributes, a class instance) is refused at bake
+time. The file is not committed: the Vite plugin `baked-models` bakes it in a fresh node process at every `vite build`
+and emits it as a hashed asset (`virtual:baked-models` = its URL), so it cannot go stale, the repo does not grow by
+~2,4 MB per model change and parallel branches have no binary to conflict on. `tests/models-baked.test.ts`: two fresh
+processes bake the same bytes (the build's file is the code's), decode + re-encode gives the same bytes, and decoded
+models equal built ones field by field (Object.is on every number and array element, shared geometry stays shared).
+Size: 6 038 632 B, 2,37 MB gzip — the APK grows ~4,6 % (51,6 → ~54 MB); resident memory +~3 MB at the menu (the file
+stays whole; the models later worlds decode are views into it). Engine note: the file is made by node's V8; Android's
+WebView is V8 too (same `Math.sin/cos`), an iOS WebView (JavaScriptCore) now gets V8's last-ulp results instead of its
+own — models only, never the sim. (decided)
+
+**D-332 — The catalogue is preloaded by the HTML and installed just before the first world.** The first cut fetched it
+from `main.ts` and waited for it before making the view: at 4× CPU the 6 MB response came ~250 ms after the view chunk
+and delayed the mount. Now the build adds `<link rel="preload" as="fetch" crossorigin>` for the asset (the fetch starts
+while the HTML is parsed; `main.ts`'s `fetch` takes the preloaded response) and `boot()` awaits it only after the view
+and the App are made, right before `app.start()` (no model is built before `setWorld`). In every measured run it was
+already there (installed 0,3–2,6 ms after the `app` mark at 4×). The view harness decodes with `?baked=1` from
+`/__baked-models.bin`, which the dev server bakes per request (the game on the dev server builds, so model edits show at
+once). Result (SwiftShader, 412×915, high, fresh browser per run, interleaved, before = `9ae57b7`): `ready` 998 → 859 ms
+at 1× (−14 %), 2 499 → 2 132 ms at 4× CPU (−15 %); `menu-start`→`menu-world` 365 → 228 / 906 → 472 ms; `first-frame`
+1 818 → 1 621 / 3 753 → 3 165 ms. Pixels: 20 harness scenes 0 px (`docs/research/perf17-diff/`); sim untouched
+(`tools/mission-hashes.ts` identical, 71 rows). Data: `docs/research/startup17-data/`. (decided)
+
+**D-333 — Not done: an IndexedDB cache of built models, building only the first frame's kinds.** (b) IndexedDB keyed by
+the model code version: the first launch stays cold (and must also write 6 MB); later launches read the buffer in 16 ms
+(59 ms at 4×) on the main thread — not faster than the preloaded asset, whose fetch runs off the main thread and
+overlaps the chunk load — plus a version key, a write path and eviction. (c) Only the kinds in the first frame: the
+menu's first frame holds 1–2 of its 8 building kinds, which cuts the cold buildings ~92 → ~31 ms in node, but trees
+(all 5 kinds in every first frame, D-325) and the near wagon stay, the deferred kinds then build cold right after the
+first frame (~60 ms of jank while the menu camera pans) and off-screen buildings cast shadows into the frame. Both are
+moot with D-331 (decoding a building kind is ~1 ms). (decided)
