@@ -153,7 +153,7 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
       <div class="setting"><span class="s-label" id="pt-pid-l">${esc(t('playtest.participant'))}</span>
         <div class="seg pt-codes" role="group" aria-labelledby="pt-pid-l">${codes}</div></div>
       <div class="setting"><label class="s-label" for="pt-dev">${esc(t('playtest.device'))}</label>
-        <input class="pt-dev" id="pt-dev" type="text" maxlength="60" autocomplete="off" spellcheck="false"></div>
+        <input class="pt-dev" id="pt-dev" type="text" dir="auto" maxlength="60" autocomplete="off" spellcheck="false"></div>
       <div class="pt-starts-h">${esc(t('playtest.starts'))}</div>
       <ol class="slots pt-starts">${PLAYTEST_STARTS.map(startHtml).join('')}</ol>
       <button class="btn paper cf pt-exit" data-a="exit">${esc(t('playtest.exit'))}</button>`;

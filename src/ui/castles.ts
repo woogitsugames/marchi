@@ -4,7 +4,7 @@
 import { castleRival, contractsOf, type Building, type PaceLog, type World } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
-import { buildingName, capFirst, lateTicks10, tHtml, ticksClock } from './format';
+import { bdi, buildingName, capFirst, lateTicks10, tHtml, ticksClock } from './format';
 import { iconSvg } from './icons';
 import { castleForecastFor } from './paceCard';
 
@@ -16,7 +16,7 @@ export function twoCastleOrder(world: World, b: Building): boolean {
 
 /** A rival castle's name as a link in a translated line (the \u0001 placeholder trick of sharedHtml). */
 function linked(html: string, world: World, id: number): string {
-  return html.split(`<bdi class="num">\u0001</bdi>`).join(`<button class="linkish" data-go="building:${id}">${esc(buildingName(world, id))}</button>`);
+  return html.split(bdi('\u0001')).join(`<button class="linkish" data-go="building:${id}">${esc(buildingName(world, id))}</button>`);
 }
 
 /**

@@ -57,9 +57,17 @@ export function iso(s: string | number): string {
   return isRtl() ? `\u2068${s}\u2069` : String(s);
 }
 
-/** <bdi> around a number/time for HTML: keeps "3:05" and "12/30" in reading order inside Arabic text. */
+/** No letter in it: a number, time, price, ratio or percent ("−30", "+2", "3:05", "12/30", "90%"). */
+const NO_LETTER = /^[^\p{L}]*$/u;
+
+/**
+ * <bdi> around a number/time for HTML: keeps "3:05" and "12/30" in reading order inside Arabic text. Content with
+ * no letter is isolated as left-to-right (`dir="ltr"`): a bare <bdi> is dir=auto, and with no strong character it
+ * takes the parent's RTL direction, so "−30" showed as "30−" (D-340). Names keep dir=auto.
+ */
 export function bdi(s: string | number, cls = 'num'): string {
-  return `<bdi class="${cls}">${esc(String(s))}</bdi>`;
+  const v = String(s);
+  return `<bdi class="${cls}"${NO_LETTER.test(v) ? ' dir="ltr"' : ''}>${esc(v)}</bdi>`;
 }
 
 /**
