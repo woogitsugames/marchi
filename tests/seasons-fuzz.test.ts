@@ -79,7 +79,9 @@ function runYear(seed: number, replay?: readonly Command[]): {
 }
 
 test('seasons fuzz: five seeds, 36,000 ticks each, per-tick conservation/stalls, 10 min limit, replay hashes', () => {
-  const start = performance.now();
+  // CPU time, not wall time: a loaded machine (parallel agents, layout runs) stretched wall
+  // time past the limit while the fuzz itself did not get slower.
+  const start = process.cpuUsage();
   for (const seed of SEEDS) {
     const first = runYear(seed);
     assert(first.commands.length >= 30, 'seed ' + seed + ': commands generated');
@@ -88,7 +90,7 @@ test('seasons fuzz: five seeds, 36,000 ticks each, per-tick conservation/stalls,
     eq(second.hash, first.hash, 'seed ' + seed + ': deterministic full-year replay');
     eq(second.accepted, first.accepted, 'seed ' + seed + ': command acceptance is deterministic');
   }
-  const ms = performance.now() - start;
+  const ms = process.cpuUsage(start).user / 1000;
   assert(ms <= 25_000, 'full-year fuzz took ' + ms.toFixed(0) +
-    ' ms (>25,000 ms); shorten the stress configuration and document the reduced coverage');
+    ' ms CPU (>25,000 ms); shorten the stress configuration and document the reduced coverage');
 });
