@@ -76,8 +76,12 @@
   (`sentences()`), ru/uk „jedyny wóz” tylko dla 1. Pamięć: 30 zmian świata — sterta płaska po 1. rundzie.
   Koordynator: **D-330** lód mostów też bez `prim` (losowy promień kry = wyciek) + test `prim-guard`; zimowy efekt sezonu
   przez `sentences()`. Testy 614/0, smoke 0, layout 138/0.
-- W toku: agent `claude/w-geomcache` — zimne budowanie modeli: prebake/IndexedDB/odroczenie, wdrożenie tylko przy wyraźnym
-  zysku (D-331..D-333).
+- Scalone ~22:30 (**decyzja właściciela: scal, sprawdzi w porannym APK**): **D-331..D-333** katalog modeli wypiekany przy
+  `vite build` (`models-*.bin`, 6,0 MB, 2,4 MB gzip; APK ~51,6 → ~54 MB), dekodowany przy starcie zamiast zimnego budowania:
+  `ready` −14 % (1×) / −15 % (CPU 4×), `first-frame` −200 / −590 ms; 0 px na 20 scenach; bez pliku (`?baked=0`, dev, testy,
+  błąd pobierania) budowa jak dawniej. Plik generowany przy buildzie, nie w repo. **Rano zmierzyć na Foldzie** start i rozmiar.
+- W toku (noc): agent `claude/w-night1` — odbicie ikon kierunkowych po arabsku, ekran porażki XV bez spokojnych postojów
+  (D-334..D-336).
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
