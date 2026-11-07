@@ -776,4 +776,6 @@ export const de: Dict = {
   "castle.letterLate": "Zu spät: {name} ({time}, Frist {due})",
   "menu.m16": "XVI. Zwei Burgen",
   "menu.m16Sub": "Wer zuerst kommt, ist pünktlich",
+  "cause.paceHaul": "macht {rate} von {cap} {goodGen} pro Minute, {n, plural, one {der einzige Wagen fährt} other {alle # Wagen fahren}} — Wagen kaufen",
+  "fix.paceHaulWhy": "Eine Minute lang stand kein Wagen frei, und die Wagen kommen mit dem Abholen der {goodGen} nicht nach. Beide Burgen fertig ≈{time} — {seals}; {aim} bis {by}. Ein neuer Wagen zahlt sich rechtzeitig aus.",
 };

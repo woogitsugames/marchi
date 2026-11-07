@@ -3,7 +3,7 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  BUILDINGS, GOODS, MARKET, MAX_WAGONS, capacityOf, castleForecast, contractsOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  BUILDINGS, GOODS, MARKET, cycleTicks, MAX_WAGONS, capacityOf, castleForecast, contractsOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
   edgeLength, findPath, suggestLinkToStable, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
   type Building, type BuildingType, type CastleForecast, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -122,7 +122,20 @@ export interface PaceCastle {
   k: 'castle'; producer: number; rival: number; good: Good; share: 'even' | 'after'; lateTicks: number; firstTick: number; dueTick: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow | PacePost | PaceCastle;
+/**
+ * 'haul' (two castles, mission XVI, D-307) — the fleet cannot keep the shared producer of the castles' good at work:
+ * every wagon has been on the road for the last minute, none idles, the producer makes `rate` a minute of the `cap`
+ * it could (its inputs could feed that much), and the whole order is forecast at `finishTick`, past the next seal's
+ * `byTick` with time left for a new wagon to pay off. On a long castle leg the yard's pickup wait (the fleet card's
+ * evidence) only shows minutes later, in bursts, when a wagon no longer pays off. `producer` is that producer (the
+ * card's subject; its sheet offers "Kup wóz"), `seals` what the forecast earns, `aim` the seals in reach.
+ */
+export interface PaceHaul {
+  k: 'haul'; good: Good; producer: number; type: BuildingType; wagons: number; rate: number; cap: number;
+  finishTick: number; byTick: number; seals: number; aim: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow | PacePost | PaceCastle | PaceHaul;
 
 let castleCache: { world: World; log: PaceLog; key: string; f: Map<number, CastleForecast | null> } | null = null;
 
@@ -187,7 +200,7 @@ export function paceCard(world: World, f: ContractForecast | null, log: PaceLog 
   // only carries loads into full granaries; the post opens a new market once, and the card is gone for good after
   const post = postCard(world);
   if (post) return post;
-  const card = fleetCard(world, f) ?? mud ?? rank;
+  const card = fleetCard(world, f) ?? haulCard(world, f) ?? mud ?? rank;
   if (card) return card;
   // D-192: the grow card comes last — after the fleet cue (a yard losing silver now) and after the bottleneck card
   // (D-171: a measured shortage names the right producer; the grow card only keeps ratios)
@@ -469,6 +482,40 @@ function fleetCard(world: World, f: ContractForecast | null): PaceFleet | null {
 export function fleetCueFor(world: World, f: ContractForecast | null, b: Building): PaceFleet | null {
   const goods = fleetGate(world, f);
   return goods ? fleetWait(world, b, goods, f?.seals ?? -1) : null;
+}
+
+/** The shared producer counts as held back by the fleet below this share of what its chain could make (D-307). */
+export const HAUL_RATE_SHARE = 0.9;
+
+/**
+ * The two-castle haul card (D-307), or null: a two-castle mission only (the castle switch card comes first), with the
+ * fleet card's gate (a better seal in reach with FLEET_ROOM_TICKS to spare, a wagon buyable, none idle, the fleet on
+ * the road the whole last minute), and the bottleneck good's producers making less than HAUL_RATE_SHARE of their
+ * capacity while their inputs could feed that capacity.
+ */
+export function haulCard(world: World, f: ContractForecast | null): PaceHaul | null {
+  const st = world.state;
+  if (!st.mission.extraContracts || !st.mission.contract) return null;
+  const chain = fleetGate(world, f);
+  if (!chain || !f || !f.aim) return null;
+  const b = f.goods[f.bottleneck]!;
+  if (b.toMake <= 0 || b.producer < 0 || !b.producerType || b.perMin < 0 || b.perMin >= HAUL_RATE_SHARE * b.capPerMin) return null;
+  // the inputs could feed the producers flat out (else more makers, not wagons, would help)
+  const r = BUILDINGS[b.producerType].recipe!;
+  for (const g of GOODS) {
+    const per = (r.inputs[g] ?? 0) / (r.outputs[b.good] ?? 1);
+    if (per <= 0) continue;
+    let cap = 0;
+    for (const p of st.buildings) {
+      const pr = BUILDINGS[p.type].recipe;
+      if (pr && outputGoods(p.type).includes(g)) cap += (pr.outputs[g] ?? 0) * 60 * TICK_HZ / cycleTicks(world, p.type, pr.ticks);
+    }
+    if (cap < per * b.capPerMin) return null;
+  }
+  return {
+    k: 'haul', good: b.good, producer: b.producer, type: b.producerType, wagons: st.wagons.length, rate: b.perMin, cap: b.capPerMin,
+    finishTick: f.finishTick, byTick: f.aim.byTick, seals: f.seals, aim: f.aim.seals,
+  };
 }
 
 function producerCard(world: World, f: ContractForecast | null): PaceProducer | null {

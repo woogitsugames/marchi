@@ -838,6 +838,8 @@ export const pl = {
   'castle.letterLate': 'Po terminie: {name} ({time}, termin {due})',
   'menu.m16': 'XVI. Dwa zamki',
   'menu.m16Sub': 'Kto pierwszy, ten na czas',
+  'cause.paceHaul': 'robi {rate} z {cap} {goodGen} na minutę, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
+  'fix.paceHaulWhy': 'Przez minutę żaden wóz nie stał wolny, a wozy nie nadążają odbierać {goodGen}. Oba zamki gotowe ok. {time} — {seals}; {aim} do {by}. Nowy wóz zdąży się zwrócić.',
 } as const;
 
 export type MessageKey = keyof typeof pl;

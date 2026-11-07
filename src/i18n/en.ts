@@ -833,4 +833,6 @@ export const en: FullDict = {
   'castle.letterLate': 'Late: {name} ({time}, due {due})',
   'menu.m16': 'XVI. Two castles',
   'menu.m16Sub': 'First in line, first on time',
+  'cause.paceHaul': 'makes {rate} of {cap} {goodGen} a minute, {n, plural, one {the only wagon is on the road} other {all # wagons on the road}} — buy a wagon',
+  'fix.paceHaulWhy': 'No wagon stood free for a minute, and the wagons cannot keep up collecting {goodGen}. Both castles done ≈{time} — {seals}; {aim} by {by}. A new wagon pays off in time.',
 };

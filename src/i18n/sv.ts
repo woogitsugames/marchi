@@ -776,4 +776,6 @@ export const sv: Dict = {
   "castle.letterLate": "Sent: {name} ({time}, frist {due})",
   "menu.m16": "XVI. Två slott",
   "menu.m16Sub": "Först i kön, först i tid",
+  "cause.paceHaul": "gör {rate} av {cap} {goodGen} i minuten, {n, plural, one {enda vagnen är ute} other {alla # vagnar ute}} — köp en vagn",
+  "fix.paceHaulWhy": "Ingen vagn stod ledig på en minut, och vagnarna hinner inte hämta {goodGen}. Båda borgarna klara ≈{time} — {seals}; {aim} före {by}. En ny vagn hinner betala sig.",
 };

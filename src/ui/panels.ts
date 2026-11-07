@@ -17,7 +17,7 @@ import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
 import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
-import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
+import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
 export { gapTarget };
 import { buildTypes } from './buildTool';
@@ -103,6 +103,7 @@ function paceCureHtml(world: World, pc: PaceCard, log: PaceLog): string {
   if (pc.k === 'castle') { const b = buildingById(world, pc.producer); return b ? castleSwitchHtml(world, b, log) : ''; }
   if (pc.k === 'mud') return mudCureHtml(world, pc);
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
+  if (pc.k === 'haul') return haulCureHtml(world, pc);
   if (pc.k === 'rank') return rankCureHtml(world, pc);
   if (pc.k === 'grow') return growCureHtml(pc);
   // D-245: the post card's subject is the post itself; its sheet's gap finder holds the road (normally `fix` wins)
@@ -189,6 +190,18 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
     : `<div class="s-hint">${esc(eta ? t('fix.paceFleetEta', { wagon: wagonName(world, pc.wagon), time: clock(eta.toDest) }) + ' ' : '')}${
       esc(pc.seals < 0 ? t('fix.paceFleetWhyFree') : t('fix.paceFleetWhy', { seals: t('why.pace.seals', { n: pc.seals }) }))}</div>`;
   return fixSection(btn, hint, short > 0);
+}
+
+/**
+ * The two-castle haul card (D-307) on the shared producer's sheet: the fleet cannot keep it at work, and the order of
+ * both castles is forecast past the next seal. "Kup wóz" with the forecast and the seal in reach.
+ */
+function haulCureHtml(world: World, pc: PaceHaul): string {
+  const why = t('fix.paceHaulWhy', {
+    goodGen: t(`goodGen.${pc.good}` as MessageKey), time: ticksClock(pc.finishTick), by: ticksClock(pc.byTick),
+    seals: t('why.pace.seals', { n: pc.seals }), aim: t('why.pace.seals', { n: pc.aim }),
+  });
+  return wagonCureHtml(world, why);
 }
 
 /** "Kup wóz" from the stable, with its reason (or the silver short of it). */
