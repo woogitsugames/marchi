@@ -750,7 +750,7 @@ export const pt_BR: Dict = {
   "help.valley.h": "Vale e patentes",
   "help.valley.p": "No Vale livre, faça a produção e o comércio crescerem no seu ritmo. O cartão de patente mostra o que é preciso para subir; consulte-o ao expandir. A partir da patente 4, há um entreposto do outro lado do rio. Ligue-o às estradas para que as carroças negociem lá; preços e espaço para mercadorias podem mudar.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} até o prazo: {name}",
+  "contract.toCastle": "{time} até o prazo",
   "castle.name.east": "Castelo Leste",
   "castle.name.north": "Castelo Norte",
   "castle.due": "{name} — até {time}",
@@ -762,7 +762,6 @@ export const pt_BR: Dict = {
   "castle.splitAfter": "{rival} vem primeiro — a mercadoria chega aqui só depois.",
   "castle.fcLate": "Nesta divisão, pronto ≈{time} — {late} após o prazo.",
   "castle.fcOk": "Nesta divisão, pronto ≈{time} — no prazo.",
-  "castle.fcFirst": "Se viesse primeiro: ≈{time}.",
   "castle.rival": "{rival} recebe agora as {goodAcc}: {n, plural, one {# carroça} other {# carroças}} a caminho. Aqui faltam {short} até {time}.",
   "castle.late": "atrasado — um selo a menos",
   "castle.lateBy": "atrasa {time}",

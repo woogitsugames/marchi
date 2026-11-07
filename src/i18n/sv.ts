@@ -750,7 +750,7 @@ export const sv: Dict = {
   "help.valley.h": "Dal och rang",
   "help.valley.p": "I den Fria dalen bygger du ut produktion och handel i din egen takt. Rangkortet visar vad som krävs för att stiga; titta på det när du bygger ut. Från rang 4 finns en handelsplats på andra sidan floden. Anslut den till vägarna så att vagnar kan handla där; priser och plats för varor kan ändras.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} till fristen: {name}",
+  "contract.toCastle": "{time} till fristen",
   "castle.name.east": "Östra slottet",
   "castle.name.north": "Norra slottet",
   "castle.due": "{name} — före {time}",
@@ -762,7 +762,6 @@ export const sv: Dict = {
   "castle.splitAfter": "{rival} går först — varorna kommer hit först efter det.",
   "castle.fcLate": "Med denna delning klart ≈{time} — {late} efter fristen.",
   "castle.fcOk": "Med denna delning klart ≈{time} — i tid.",
-  "castle.fcFirst": "Om det gick först: ≈{time}.",
   "castle.rival": "{rival} får {goodAcc} nu: {n, plural, one {# vagn} other {# vagnar}} på väg. Här saknas {short} före {time}.",
   "castle.late": "sent — ett sigill mindre",
   "castle.lateBy": "{time} sent",

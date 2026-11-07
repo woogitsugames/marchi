@@ -750,7 +750,7 @@ export const de: Dict = {
   "help.valley.h": "Tal und Ränge",
   "help.valley.p": "Im Freien Tal baust du Erzeugung und Handel in deinem Tempo aus. Die Rangkarte zeigt, was für den Aufstieg nötig ist; sieh sie dir beim Ausbau an. Ab Rang 4 gibt es einen Handelsposten jenseits des Flusses. Verbinde ihn mit den Wegen, damit Wagen dort handeln können; Preise und Platz für Waren können sich ändern.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} bis zur Frist: {name}",
+  "contract.toCastle": "{time} bis zur Frist",
   "castle.name.east": "Ostburg",
   "castle.name.north": "Nordburg",
   "castle.due": "{name} — bis {time}",
@@ -762,7 +762,6 @@ export const de: Dict = {
   "castle.splitAfter": "{rival} kommt zuerst — hierher kommt die Ware erst danach.",
   "castle.fcLate": "Bei dieser Teilung fertig ≈{time} — {late} nach der Frist.",
   "castle.fcOk": "Bei dieser Teilung fertig ≈{time} — rechtzeitig.",
-  "castle.fcFirst": "Wäre sie zuerst: ≈{time}.",
   "castle.rival": "{rival} bekommt jetzt die {goodAcc}: {n, plural, one {# Wagen} other {# Wagen}} unterwegs. Hier fehlen noch {short} bis {time}.",
   "castle.late": "zu spät — ein Siegel weniger",
   "castle.lateBy": "{time} zu spät",

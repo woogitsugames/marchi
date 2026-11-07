@@ -750,7 +750,7 @@ export const ru: Dict = {
   "help.valley.h": "Долина и ранги",
   "help.valley.p": "В Вольной долине развивайте производство и торговлю в своём темпе. Карточка ранга показывает, что нужно для повышения; заглядывайте в неё при расширении. С ранга 4 доступен торговый двор за рекой. Подключите его к дорогам, чтобы повозки могли там торговать; цены и место для товаров могут меняться.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} до срока: {name}",
+  "contract.toCastle": "{time} до срока",
   "castle.name.east": "Восточный замок",
   "castle.name.north": "Северный замок",
   "castle.due": "{name} — до {time}",
@@ -762,7 +762,6 @@ export const ru: Dict = {
   "castle.splitAfter": "Первым идёт {rival} — товар придёт сюда только после него.",
   "castle.fcLate": "При таком делении готово ≈{time} — на {late} позже срока.",
   "castle.fcOk": "При таком делении готово ≈{time} — вовремя.",
-  "castle.fcFirst": "Если бы он был первым: ≈{time}.",
   "castle.rival": "{rival} сейчас получает {goodAcc}: в пути {n, plural, one {# повозка} few {# повозки} many {# повозок} other {# повозки}}. Здесь не хватает {short} к {time}.",
   "castle.late": "опоздание — минус печать",
   "castle.lateBy": "опоздает на {time}",

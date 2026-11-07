@@ -750,7 +750,7 @@ export const tr: Dict = {
   "help.valley.h": "Vadi ve rütbeler",
   "help.valley.p": "Serbest vadide üretimi ve ticareti kendi hızında büyüt. Rütbe kartı yükselmek için gerekenleri gösterir; genişlerken ona bak. Rütbe 4’ten itibaren nehrin karşısında bir ticaret durağı açılır. Arabaların orada ticaret yapabilmesi için onu yollara bağla; fiyatlar ve mallar için yer değişebilir.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "Süreye {time}: {name}",
+  "contract.toCastle": "Süreye {time}",
   "castle.name.east": "Doğu Kalesi",
   "castle.name.north": "Kuzey Kalesi",
   "castle.due": "{name} — {time} saatine kadar",
@@ -762,7 +762,6 @@ export const tr: Dict = {
   "castle.splitAfter": "Önce {rival} — mal buraya ondan sonra gelir.",
   "castle.fcLate": "Bu paylaşımla bitiş ≈{time} — süreden {late} sonra.",
   "castle.fcOk": "Bu paylaşımla bitiş ≈{time} — zamanında.",
-  "castle.fcFirst": "Önce olsaydı: ≈{time}.",
   "castle.rival": "{goodAcc} şu an {rival} alıyor: yolda {n, plural, other {# araba}}. Burada {time} saatine kadar {short} eksik.",
   "castle.late": "geç — bir mühür eksik",
   "castle.lateBy": "{time} gecikecek",

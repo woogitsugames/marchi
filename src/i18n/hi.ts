@@ -750,7 +750,7 @@ export const hi: Dict = {
   "help.valley.h": "घाटी और दर्जे",
   "help.valley.p": "मुक्त घाटी में उत्पादन और व्यापार अपनी रफ़्तार से बढ़ाएँ। दर्जे का कार्ड बताता है कि आगे बढ़ने के लिए क्या चाहिए; विस्तार करते समय उसे देखें। दर्जा 4 से नदी पार व्यापार चौकी मिलती है। उसे रास्तों से जोड़ें ताकि गाड़ियाँ वहाँ व्यापार कर सकें; दाम और माल की जगह बदल सकते हैं।",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "समय-सीमा तक {time}: {name}",
+  "contract.toCastle": "समय-सीमा तक {time}",
   "castle.name.east": "पूर्वी किला",
   "castle.name.north": "उत्तरी किला",
   "castle.due": "{name} — {time} तक",
@@ -762,7 +762,6 @@ export const hi: Dict = {
   "castle.splitAfter": "पहले {rival} है — माल यहाँ उसके बाद आएगा।",
   "castle.fcLate": "इस बँटवारे से पूरा ≈{time} — समय-सीमा से {late} बाद।",
   "castle.fcOk": "इस बँटवारे से पूरा ≈{time} — समय पर।",
-  "castle.fcFirst": "अगर यह पहले होता: ≈{time}।",
   "castle.rival": "{rival} को अभी {goodAcc} मिल रहे हैं: {n, plural, one {# गाड़ी} other {# गाड़ियाँ}} रास्ते में। यहाँ {time} तक {short} कम हैं।",
   "castle.late": "देर — एक मुहर कम",
   "castle.lateBy": "{time} देर होगी",

@@ -750,7 +750,7 @@ export const fr: Dict = {
   "help.valley.h": "Vallée et rangs",
   "help.valley.p": "Dans la Vallée libre, développez production et commerce à votre rythme. La fiche de rang indique ce qu’il faut pour monter ; consultez-la en vous agrandissant. Dès le rang 4, un comptoir est disponible de l’autre côté de la rivière. Reliez-le aux routes pour que les chariots y commercent ; les prix et la place pour les marchandises peuvent changer.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} avant l’échéance : {name}",
+  "contract.toCastle": "{time} avant l’échéance",
   "castle.name.east": "Château de l’Est",
   "castle.name.north": "Château du Nord",
   "castle.due": "{name} — avant {time}",
@@ -762,7 +762,6 @@ export const fr: Dict = {
   "castle.splitAfter": "{rival} passe d’abord — les marchandises viendront ici après lui.",
   "castle.fcLate": "À ce partage, prêt ≈{time} — {late} après l’échéance.",
   "castle.fcOk": "À ce partage, prêt ≈{time} — à temps.",
-  "castle.fcFirst": "S’il passait d’abord : ≈{time}.",
   "castle.rival": "{rival} reçoit les {goodAcc} en ce moment : {n, plural, one {# chariot} other {# chariots}} en route. Il manque encore {short} ici avant {time}.",
   "castle.late": "en retard — un sceau de moins",
   "castle.lateBy": "en retard de {time}",

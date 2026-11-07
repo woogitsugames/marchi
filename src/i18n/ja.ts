@@ -750,7 +750,7 @@ export const ja: Dict = {
   "help.valley.h": "谷と位階",
   "help.valley.p": "自由の谷では、生産と交易を自分のペースで広げます。位階カードは昇格に必要なことを示すので、拡張するときに見てください。位階4から、川向こうに交易所が使えます。荷車がそこで交易できるよう道につなぎましょう。価格や品物の置き場所は変わることがあります。",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "期限まで{time}：{name}",
+  "contract.toCastle": "期限まで{time}",
   "castle.name.east": "東の城",
   "castle.name.north": "北の城",
   "castle.due": "{name} — {time}まで",
@@ -762,7 +762,6 @@ export const ja: Dict = {
   "castle.splitAfter": "{rival}が優先です — 品物はその後でここに届きます。",
   "castle.fcLate": "この配分なら完了≈{time} — 期限を{late}過ぎます。",
   "castle.fcOk": "この配分なら完了≈{time} — 間に合います。",
-  "castle.fcFirst": "優先すれば：≈{time}。",
   "castle.rival": "今は{rival}が{goodAcc}を受け取っています：{n, plural, other {#台}}が輸送中。ここは{time}までに{short}足りません。",
   "castle.late": "遅れ — 印章が一つ減ります",
   "castle.lateBy": "{time}遅れます",

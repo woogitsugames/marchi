@@ -750,7 +750,7 @@ export const ko: Dict = {
   "help.valley.h": "계곡과 등급",
   "help.valley.p": "자유 계곡에서는 생산과 교역을 자기 속도로 키우세요. 등급 카드는 승급에 필요한 것을 보여 주니 확장할 때 살펴보세요. 등급 4부터 강 건너 교역소를 쓸 수 있습니다. 수레가 그곳에서 교역하도록 길에 이으세요. 가격과 물건 둘 자리는 바뀔 수 있습니다.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "기한까지 {time}: {name}",
+  "contract.toCastle": "기한까지 {time}",
   "castle.name.east": "동쪽 성",
   "castle.name.north": "북쪽 성",
   "castle.due": "{name} — {time}까지",
@@ -762,7 +762,6 @@ export const ko: Dict = {
   "castle.splitAfter": "{rival}이 우선입니다 — 물건은 그다음에 이곳으로 옵니다.",
   "castle.fcLate": "이 배분이면 완료 ≈{time} — 기한보다 {late} 늦습니다.",
   "castle.fcOk": "이 배분이면 완료 ≈{time} — 제때입니다.",
-  "castle.fcFirst": "우선이라면: ≈{time}.",
   "castle.rival": "지금 {rival}에 {goodAcc} 배송 중: 수레 {n, plural, other {#대}}. 이곳은 {time}까지 {short} 모자랍니다.",
   "castle.late": "늦음 — 인장 하나 감소",
   "castle.lateBy": "{time} 늦음",

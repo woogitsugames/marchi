@@ -807,7 +807,7 @@ export const en: FullDict = {
   'help.valley.h': 'Valley and ranks',
   'help.valley.p': 'In the Free valley, grow production and trade at your own pace. The rank card shows what is needed to advance; consult it as you expand. From rank 4, a trading post is available across the river. Connect it to the road network so wagons can trade there; prices and space for goods can change.',
   // two castles, mission XVI (D-288..D-291)
-  'contract.toCastle': '{time} to the deadline: {name}',
+  'contract.toCastle': '{time} to deadline',
   'castle.name.east': 'East Castle',
   'castle.name.north': 'North Castle',
   'castle.due': '{name} — by {time}',
@@ -819,7 +819,6 @@ export const en: FullDict = {
   'castle.splitAfter': '{rival} goes first — goods come here only after it.',
   'castle.fcLate': 'At this split, done ≈{time} — {late} past the deadline.',
   'castle.fcOk': 'At this split, done ≈{time} — on time.',
-  'castle.fcFirst': 'If it went first: ≈{time}.',
   'castle.rival': '{rival} is getting the {goodAcc} now: {n, plural, one {# wagon} other {# wagons}} on the way. {short} still missing here by {time}.',
   'castle.late': 'late — one seal less',
   'castle.lateBy': 'late by {time}',

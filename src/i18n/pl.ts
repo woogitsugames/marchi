@@ -812,7 +812,7 @@ export const pl = {
   'help.valley.h': 'Dolina i rangi',
   'help.valley.p': 'W Wolnej dolinie rozwijaj produkcję i handel we własnym tempie. Karta rangi pokazuje warunki awansu; sprawdzaj ją, gdy chcesz rozbudować dolinę. Od rangi 4 dostępny jest posterunek handlowy za rzeką. Połącz go z drogami, aby wozy mogły tam handlować; ceny i miejsce na towary mogą się zmieniać.',
   // two castles, mission XVI (D-288..D-291)
-  'contract.toCastle': '{time} do terminu: {name}',
+  'contract.toCastle': '{time} do terminu',
   'castle.name.east': 'Zamek Wschodni',
   'castle.name.north': 'Zamek Północny',
   'castle.due': '{name} — do {time}',
@@ -824,7 +824,6 @@ export const pl = {
   'castle.splitAfter': 'Pierwszy jest {rival} — tu towar przyjdzie dopiero po nim.',
   'castle.fcLate': 'Przy tym podziale gotowe ok. {time} — {late} po terminie.',
   'castle.fcOk': 'Przy tym podziale gotowe ok. {time} — na czas.',
-  'castle.fcFirst': 'Gdyby był pierwszy: ok. {time}.',
   'castle.rival': '{rival} dostaje teraz {goodAcc}: {n, plural, one {# wóz} few {# wozy} other {# wozów}} w drodze. Tu brakuje {short} do {time}.',
   'castle.late': 'po terminie — minus pieczęć',
   'castle.lateBy': 'spóźni się o {time}',

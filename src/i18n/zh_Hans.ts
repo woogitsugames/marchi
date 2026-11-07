@@ -750,7 +750,7 @@ export const zh_Hans: Dict = {
   "help.valley.h": "山谷与等级",
   "help.valley.p": "在自由山谷中，按自己的节奏发展生产和贸易。等级卡片显示晋升所需条件；扩建时请查看。从等级4起，河对岸的贸易站可用。把它接上道路，货车才能在那里交易；价格和货物的存放空间可能变化。",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "距期限{time}：{name}",
+  "contract.toCastle": "距期限{time}",
   "castle.name.east": "东城堡",
   "castle.name.north": "北城堡",
   "castle.due": "{name} — {time}前",
@@ -762,7 +762,6 @@ export const zh_Hans: Dict = {
   "castle.splitAfter": "{rival}优先——货物之后才会到这里。",
   "castle.fcLate": "按此分配约{time}完成——超过期限{late}。",
   "castle.fcOk": "按此分配约{time}完成——按时。",
-  "castle.fcFirst": "若它优先：约{time}。",
   "castle.rival": "{rival}正在收{goodAcc}：{n, plural, other {#辆马车}}在路上。这里在{time}前还缺{short}。",
   "castle.late": "迟到——少一枚印章",
   "castle.lateBy": "迟到{time}",

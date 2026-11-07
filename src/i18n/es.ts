@@ -750,7 +750,7 @@ export const es: Dict = {
   "help.valley.h": "Valle y rangos",
   "help.valley.p": "En el Valle libre, haz crecer la producción y el comercio a tu ritmo. La ficha de rango muestra lo que hace falta para ascender; consúltala al ampliar. Desde el rango 4 hay un puesto comercial al otro lado del río. Únelo a los caminos para que los carros comercien allí; los precios y el espacio para mercancías pueden cambiar.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} hasta el plazo: {name}",
+  "contract.toCastle": "{time} hasta el plazo",
   "castle.name.east": "Castillo del Este",
   "castle.name.north": "Castillo del Norte",
   "castle.due": "{name} — antes de las {time}",
@@ -762,7 +762,6 @@ export const es: Dict = {
   "castle.splitAfter": "{rival} va primero — la mercancía llegará aquí después.",
   "castle.fcLate": "Con este reparto, listo ≈{time} — {late} tras el plazo.",
   "castle.fcOk": "Con este reparto, listo ≈{time} — a tiempo.",
-  "castle.fcFirst": "Si fuera primero: ≈{time}.",
   "castle.rival": "{rival} recibe ahora las {goodAcc}: {n, plural, one {# carro} other {# carros}} en camino. Aquí faltan {short} antes de las {time}.",
   "castle.late": "tarde — un sello menos",
   "castle.lateBy": "{time} tarde",

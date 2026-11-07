@@ -40,8 +40,9 @@ export function castleOrderHtml(world: World, b: Building, log: PaceLog): string
     const line = late
       ? tHtml('castle.fcLate', { time: ticksClock(fc.finishTick), late: ticksClock(fc.finishTick - fc.dueTick) })
       : tHtml('castle.fcOk', { time: ticksClock(fc.finishTick) });
-    const ifFirst = late && fc.share !== 'first' ? ` <small>${tHtml('castle.fcFirst', { time: ticksClock(fc.firstTick) })}</small>` : '';
-    out.push(`<div class="pace-fc castle-fc${late ? ' late' : ''}"><span dir="auto">${line}${ifFirst}</span></div>`);
+    // what "first" would bring is said once, under the switch in the dock (fix.castleFirstWhy/Late), so the chain's
+    // root stays above the dock on a 360 x 740 phone (D-146)
+    out.push(`<div class="pace-fc castle-fc${late ? ' late' : ''}"><span dir="auto">${line}</span></div>`);
   }
   const r = castleRival(world, b.id);
   if (r && fc.share !== 'first') {

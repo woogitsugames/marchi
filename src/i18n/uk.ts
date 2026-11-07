@@ -750,7 +750,7 @@ export const uk: Dict = {
   "help.valley.h": "Долина й ранги",
   "help.valley.p": "У Вільній долині розвивайте виробництво й торгівлю у своєму темпі. Картка рангу показує, що потрібно для підвищення; заглядайте в неї під час розбудови. З рангу 4 доступний торговий двір за річкою. З’єднайте його з дорогами, щоб вози могли там торгувати; ціни й місце для товарів можуть змінюватися.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} до терміну: {name}",
+  "contract.toCastle": "{time} до терміну",
   "castle.name.east": "Східний замок",
   "castle.name.north": "Північний замок",
   "castle.due": "{name} — до {time}",
@@ -762,7 +762,6 @@ export const uk: Dict = {
   "castle.splitAfter": "Першим іде {rival} — товар прийде сюди лише після нього.",
   "castle.fcLate": "За такого поділу готово ≈{time} — на {late} пізніше терміну.",
   "castle.fcOk": "За такого поділу готово ≈{time} — вчасно.",
-  "castle.fcFirst": "Якби він був першим: ≈{time}.",
   "castle.rival": "{rival} зараз отримує {goodAcc}: у дорозі {n, plural, one {# віз} few {# вози} many {# возів} other {# воза}}. Тут бракує {short} до {time}.",
   "castle.late": "запізнення — мінус печатка",
   "castle.lateBy": "запізниться на {time}",

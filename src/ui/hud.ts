@@ -904,7 +904,7 @@ export class Hud {
     if (pillKey !== this.pillKey) {
       this.pillKey = pillKey;
       setHtml(this.wbPill, due
-        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toCastle', { time: ticksClock(left), name: buildingName(world, due.castle) })}</span>`
+        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toCastle', { time: ticksClock(left) })}</span>`
         : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
     }
     this.wbPill.classList.toggle('late', late);
@@ -943,8 +943,8 @@ export class Hud {
       const f = fcs[i];
       const lateBy = f && f.finishTick > x.deadlineTick ? f.finishTick - x.deadlineTick : -1;
       const state = x.missed ? `<div class="tr-state">${esc(t('castle.late'))}</div>`
-        : f && f.finishTick >= 0 ? `<div class="wb-pace${lateBy >= 0 ? ' late' : ''}"><div class="wb-pace-eta" data-wb="b:${k.castle}" role="button" tabindex="0"><span>${
-          lateBy >= 0 ? tHtml('castle.lateBy', { time: ticksClock(Math.ceil(lateBy / (10 * TICK_HZ)) * 10 * TICK_HZ) }) : esc(t('castle.onTime'))}</span></div></div>` : '';
+        : f && f.finishTick >= 0 ? `<div class="castle-eta${lateBy >= 0 ? ' late' : ''}"><span>${
+          lateBy >= 0 ? tHtml('castle.lateBy', { time: ticksClock(Math.ceil(lateBy / (10 * TICK_HZ)) * 10 * TICK_HZ) }) : esc(t('castle.onTime'))}</span></div>` : '';
       return `<li class="wb-tr is-now wb-castle${first ? ' is-first' : ''}${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
         <div class="wb-goods">${goods}</div>${state}</li>`;
     }).join('');

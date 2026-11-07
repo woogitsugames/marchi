@@ -424,6 +424,8 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   -webkit-user-select: none;
   user-select: none;
 }
+/* the first 2 s after a sheet opens: no scroll anchoring under the root reveal (D-146, sheets.ts revealRoot) */
+.sheet-body.is-revealing { overflow-anchor: none; }
 
 /* side sheet (landscape, foldables >= 840 px) */
 body.is-side .sheet {
@@ -1851,15 +1853,15 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-castles .wb-tr.is-now + .wb-tr.is-now { margin-top: 2px; }
 .wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--brass-dk); text-transform: lowercase; }
 .wb-tr .tr-first svg { flex: none; }
-.wb-castles .wb-pace { border-top: 0; margin-top: 0; }
-.wb-castles .wb-pace-eta { min-height: 32px; }
+/* the castle row's state is a read-out, not a control (the bar line above takes the tap) */
+.wb-castles .castle-eta { display: flex; align-items: center; min-height: 24px; font-weight: 700; color: var(--meadow); }
+.wb-castles .castle-eta.late { color: var(--wine); }
 .castle-split { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 14px; color: var(--ink-soft); }
 .castle-split.is-first { color: var(--ink); font-weight: 700; }
 .castle-split svg, .castle-rival svg { flex: none; }
 .castle-fc small { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
 .castle-switch .btn[aria-pressed="true"] svg { opacity: .8; }
 .castle-rival { font-weight: 500; color: var(--ink); }
-.wb-castles .wb-pace:not(.late) .wb-pace-eta { color: var(--meadow); }
 /* valley plaque */
 .plaque { cursor: pointer; padding-top: 12px; }
 .plaque .pl-next { font-size: 13px; font-weight: 700; color: var(--wine); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }

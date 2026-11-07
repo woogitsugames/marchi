@@ -750,7 +750,7 @@ export const nl: Dict = {
   "help.valley.h": "Vallei en rangen",
   "help.valley.p": "In de Vrije vallei laat je productie en handel in je eigen tempo groeien. De rangkaart toont wat nodig is om te stijgen; bekijk die als je uitbreidt. Vanaf rang 4 is er een handelspost aan de overkant van de rivier. Sluit die aan op de wegen zodat wagens er handel kunnen drijven; prijzen en ruimte voor goederen kunnen veranderen.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} tot de termijn: {name}",
+  "contract.toCastle": "{time} tot de termijn",
   "castle.name.east": "Oostkasteel",
   "castle.name.north": "Noordkasteel",
   "castle.due": "{name} — vóór {time}",
@@ -762,7 +762,6 @@ export const nl: Dict = {
   "castle.splitAfter": "{rival} gaat eerst — de waren komen hier pas daarna.",
   "castle.fcLate": "Bij deze verdeling klaar ≈{time} — {late} na de termijn.",
   "castle.fcOk": "Bij deze verdeling klaar ≈{time} — op tijd.",
-  "castle.fcFirst": "Als het eerst ging: ≈{time}.",
   "castle.rival": "{rival} krijgt nu de {goodAcc}: {n, plural, one {# wagen} other {# wagens}} onderweg. Hier ontbreken nog {short} vóór {time}.",
   "castle.late": "te laat — één zegel minder",
   "castle.lateBy": "{time} te laat",

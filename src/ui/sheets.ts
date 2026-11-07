@@ -27,6 +27,9 @@ export interface Sheet {
   deferred: (() => void)[];
   /** The element focused before the sheet opened; focus returns there on close (a11y). */
   returnFocus?: HTMLElement | null;
+  /** The root reveal of the last open/replace (D-146) and until when the periodic update repeats it. */
+  reveal?: () => void;
+  revealUntil?: number;
 }
 
 let sheetSeq = 0;
@@ -113,15 +116,29 @@ export function revealAboveDock(body: HTMLElement, el: HTMLElement): void {
  * to sit under it while the subject row (already named by the title) took the space.
  */
 function revealRoot(sheet: Sheet): void {
+  // `at`: the scroll position the last reveal left; a later pass runs only while the player has not scrolled
+  let at = -1;
   const reveal = (): void => {
+    if (!sheet.body.isConnected || (at >= 0 && sheet.body.scrollTop !== at)) return;
     const root = sheet.body.querySelector<HTMLElement>('.chain > li:last-child');
     if (root) revealAboveDock(sheet.body, root);
+    at = sheet.body.scrollTop;
   };
   reveal();
   // once more after two frames: a sheet opened while the screen's layout classes or the dock were still settling
   // (a start with ?open=, a rotation) measured a different body; the player's own scroll in between wins
-  const at = sheet.body.scrollTop;
-  requestAnimationFrame(() => requestAnimationFrame(() => { if (sheet.body.isConnected && sheet.body.scrollTop === at) reveal(); }));
+  requestAnimationFrame(() => requestAnimationFrame(reveal));
+  // and once the fonts are in: a Cyrillic or extended-Latin subset (unicode-range) loads on first use and can
+  // rewrap the dock's note and the lead lines after those two frames (m16 castle card, 360 x 740 ru / pseudo)
+  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+  if (fonts && fonts.status !== 'loaded') void fonts.ready.then(() => requestAnimationFrame(reveal));
+  // and on the periodic updates of the first 2 s: a sheet opened from a start link (?openId=, a fast-forward) can get
+  // its lead lines on the next refresh, after the two frames (m16 castle card, 360 x 740: root 19 px under the dock)
+  // Scroll anchoring stays off meanwhile: a refresh that rewrote a line above the anchor moved the body back by
+  // 33 px after the reveal, which the next pass then took for the player's own scroll.
+  sheet.reveal = reveal;
+  sheet.revealUntil = performance.now() + 2000;
+  sheet.body.classList.add('is-revealing');
 }
 
 export class Sheets {
@@ -239,6 +256,10 @@ export class Sheets {
     for (const s of [...this.stack]) {
       const alive = s.content.update(s);
       syncDock(s);
+      if (s.reveal && s.revealUntil !== undefined) {
+        if (performance.now() < s.revealUntil) s.reveal();
+        else { s.reveal = undefined; s.revealUntil = undefined; s.body.classList.remove('is-revealing'); }
+      }
       if (!alive) {
         const i = this.stack.indexOf(s);
         if (i === this.stack.length - 1) this.closeTop();

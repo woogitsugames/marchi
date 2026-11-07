@@ -750,7 +750,7 @@ export const ar: Dict = {
   "help.valley.h": "الوادي والرتب",
   "help.valley.p": "في الوادي الحر، نمِّ الإنتاج والتجارة على مهلك. تُظهر بطاقة الرتبة ما يلزم للترقي؛ راجعها كلما توسّعت. من الرتبة 4 يتاح مركز التجارة عبر النهر. صِله بالطرق لتتاجر العربات هناك؛ وقد تتغيّر الأسعار والمساحة المتاحة للبضائع.",
   // two castles, mission XVI (D-288..D-291; agent translation, native review pending)
-  "contract.toCastle": "{time} حتى الموعد: {name}",
+  "contract.toCastle": "{time} حتى الموعد",
   "castle.name.east": "القلعة الشرقية",
   "castle.name.north": "القلعة الشمالية",
   "castle.due": "{name} — قبل {time}",
@@ -762,7 +762,6 @@ export const ar: Dict = {
   "castle.splitAfter": "{rival} أولًا — ستصل البضاعة إلى هنا بعدها.",
   "castle.fcLate": "بهذا التقسيم الإنجاز نحو {time} — بعد الموعد بـ {late}.",
   "castle.fcOk": "بهذا التقسيم الإنجاز نحو {time} — في الموعد.",
-  "castle.fcFirst": "لو كانت أولًا: نحو {time}.",
   "castle.rival": "{rival} تتلقى {goodAcc} الآن: {n, plural, zero {لا عربات} one {عربة واحدة} two {عربتان} few {# عربات} many {# عربة} other {# عربة}} في الطريق. ينقص هنا {short} قبل {time}.",
   "castle.late": "متأخرة — ختم أقل",
   "castle.lateBy": "تتأخر {time}",
