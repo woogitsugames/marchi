@@ -1122,6 +1122,11 @@ export class App implements PanelNav {
     return this.tutorial !== null;
   }
 
+  /** PanelNav: the build tutorial's new hut (its NO_ROAD reads the lesson's codex entry, D-339), else -1. */
+  tutorialHut(): number {
+    return this.tutorial instanceof BuildTutorial ? this.tutorial.hutId() : -1;
+  }
+
   /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
   pickBuild(type: BuildingType, near: number): void {
     if (!buildTypes(this.world).includes(type)) return;

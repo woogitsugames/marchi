@@ -7,6 +7,9 @@ import { STALL_CODEX, STALL_CODEX_CALM } from '../src/content/stallCodex';
 import { TICK_HZ, createWorld, explainBuilding, explainWagon, step } from '../src/sim/index';
 import { codexLink, isStallLink, isWagonWait } from '../src/ui/stallKinds';
 import { calmWhy, codexCalm, rankStalls } from '../src/ui/stalls';
+import { CODEX_SITUATIONS, situationKey, type CodexSituation } from '../src/ui/codexSituations';
+import { pl as plDict } from '../src/i18n/pl';
+import { en as enDict } from '../src/i18n/en';
 import { assert, eq, test } from './harness';
 
 function read(path: string): string {
@@ -59,6 +62,23 @@ function formatLocale(lang: 'pl' | 'en', e: (typeof STALL_CODEX)[string]['pl']):
   return `### EN — ${e.name}\n\n- **Meaning:** ${e.meaning}\n- **How to check:** ${e.check}\n- **Fixes / next steps:**\n${e.fixes.map((f, i) => `  ${i + 1}. ${f}`).join('\n')}\n- **Chain:** ${e.chain}\n\n`;
 }
 
+/** Where the fold shows each situational entry (the Markdown heading, D-339). */
+const SITUATION_WHERE: Record<CodexSituation, string> = {
+  wagonDue: '`status.WAGON_DUE` (D-156)',
+  marketFull: 'spichlerz pełny, rynek nasycony / granary full, market saturated (D-174, D-180)',
+  surplus: 'nadwyżka / surplus (D-160)',
+  postNoRoad: 'posterunek bez drogi / trading post without a road (D-170)',
+  castleRival: 'XVI: drugi zamek zabiera towar / the other castle takes the goods (D-291)',
+  castleEven: 'XVI: towar dzielony po równo / goods shared evenly (D-290)',
+  castleFirst: 'XVI: przełącznik pierwszeństwa włączony / castle-first switch on (D-289)',
+  tutorialNoRoad: 'samouczek budowania: chata bez drogi / build tutorial: hut without a road (D-259)',
+};
+
+function situationLocale(d: Record<string, string>, sit: CodexSituation): (typeof STALL_CODEX)[string]['pl'] {
+  const f = (x: 'name' | 'meaning' | 'check' | 'fix1' | 'fix2' | 'chain'): string => d[situationKey(sit, x)]!;
+  return { name: f('name'), meaning: f('meaning'), check: f('check'), fixes: [f('fix1'), f('fix2')], chain: f('chain') };
+}
+
 test('stall codex has exactly all BuildingStatus causes and WagonStatus variants', () => {
   const expected = expectedKeys();
   eq(new Set(expected).size, expected.length, 'types.ts defines unique codex variants');
@@ -103,10 +123,19 @@ Gdy postój jest spokojny (nadwyżka, której nikt teraz nie potrzebuje, wypełn
 fałda „Co to znaczy?” pokazuje ten wariant zamiast zwykłego wpisu (D-98).
 
 `;
+  const situationHeader = `# Wpisy sytuacyjne / Situational entries
+
+Stany, które karta czyta po swojemu (spokojna linia, linia zamku, samouczek), mają własny wpis fałdy
+„Co to znaczy?” zamiast wpisu statusu (D-339, \`src/ui/codexSituations.ts\`). Teksty są kluczami i18n
+\`codex.s.<wpis>.<pole>\` we wszystkich 17 językach; tu PL i EN.
+
+`;
   const expected = header + Object.entries(STALL_CODEX).map(([key, entry]) =>
     `## \`${key}\`\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('') +
     calmHeader + Object.entries(STALL_CODEX_CALM).map(([key, entry]) =>
-    `## \`${key}\` — spokojny / calm\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('');
+    `## \`${key}\` — spokojny / calm\n\n` + formatLocale('pl', entry.pl) + formatLocale('en', entry.en)).join('') +
+    situationHeader + CODEX_SITUATIONS.map((sit) =>
+    `## \`${sit}\` — ${SITUATION_WHERE[sit]}\n\n` + formatLocale('pl', situationLocale(plDict, sit)) + formatLocale('en', situationLocale(enDict, sit))).join('');
   eq(read('../docs/content/stall-codex.md').replace(/\r\n/g, '\n'), expected,
     'Markdown content must stay in sync with src/content/stallCodex.ts');
 });

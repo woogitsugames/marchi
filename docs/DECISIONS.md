@@ -3838,3 +3838,24 @@ Rain and thaw are read once per `stepWagons` (they depend on the tick only). The
 space once per dispatch and re-reads it after a job books space there. Bench medians (5 runs, own process per count),
 avg ms/tick 0.108/0.222/0.234 → 0.056/0.058/0.067, p99 1.52/1.57/1.68 → 0.63/0.57/0.65 at 50/100/200 wagons (D-336..338
 together). The replan budget (BACKLOG P3) stays unneeded: wagon `findPath` is ~3 % of the tick. (decided)
+
+**D-339 — Situational entries of the stall codex, in all 17 languages (orders 72 + 102, taken over from GPT).** The
+"Co to znaczy?" fold explained a bare status (`src/content/stallCodex.ts`, PL/EN, English in the other 15 languages),
+so where the sheet already reads a state its own way the fold said something else: a surplus yard or a saturated
+granary got the generic calm "Pełno — nic pilnego" or the red STORAGE_FULL advice ("build a granary"), the trading post
+the generic NO_ROAD, the build tutorial's hut the generic NO_ROAD although the lesson rings the fold (D-259),
+WAGON_DUE no fold at all (it is not a stall), and XVI's castles nothing (a starved castle reads WAITING_UPSTREAM).
+Now `codexSituation(world, link, hut)` (`src/ui/codexSituations.ts`, pure read) picks an own entry for the link the
+fold explains: `wagonDue` (any WAGON_DUE, D-156), `surplus` / `marketFull` / `postNoRoad` (the same `calmWhy` the
+calm line reads, D-160 / D-174 / D-180 / D-170), `tutorialNoRoad` (the build tutorial's new hut while the lesson runs —
+`PanelNav.tutorialHut`, from `BuildTutorial.hutId()`); a two-castle castle card always gets one via
+`castleCodexSituation` — `castleRival` (another castle takes its good while it is not first, D-291), `castleEven`
+(nobody first) or `castleFirst` (a castle is first, D-289/D-290), the readings of its own lead lines. Each entry:
+name, one-sentence meaning, how to check, two fixes, example chain — only actions the game has ("Ten zamek pierwszy" /
+"Dziel po równo", the card's road, the Road tool, accept an order, sell another good, wait); never "buy a wagon"
+where a wagon does not help. Texts are i18n keys `codex.s.<situation>.<field>` (48 keys × 17 languages; terms taken
+from each dictionary's own keys and docs/reviews/i18n-66-105-latin.md; ru/uk/ja/ko/zh_Hans/ar/hi only appended, their
+review pass runs in parallel). The status entry for WAGON_DUE is aligned to the same PL/EN text (two fixes, the bridge
+check moved into "how to check"); docs/content/stall-codex.md gains a "Wpisy sytuacyjne" section, kept in sync by
+tests/stall-codex.test.ts. Test tests/codex-situations.test.ts (17 dictionaries complete, ≤ 220 characters; each
+situation picked in a real or staged state, read-only). UI only, mission hashes identical. (decided)

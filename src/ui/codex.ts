@@ -2,12 +2,14 @@
 // with the stall codex entry (src/content/stallCodex.ts) for the status at the root of the chain — what it
 // means, how to check it, what to do, an example chain. Collapsed by default; once opened it stays open for
 // the session (the sheet re-renders every second). PL and EN are authored; other languages read the English
-// entry, marked lang="en" so an RTL sheet still lays it out left to right.
+// entry, marked lang="en" so an RTL sheet still lays it out left to right. Situational entries (codexSituations.ts,
+// D-339) are i18n keys in all 17 languages and replace the status entry where the sheet reads the state its own way.
 import { getLang, t } from '../i18n/index';
 import { STALL_CODEX, STALL_CODEX_CALM, type StallCodexLocale } from '../content/stallCodex';
 import type { BuildingStatus, WagonStatus } from '../sim/index';
 import { esc } from './dom';
 import { iconSvg } from './icons';
+import { situationKey, type CodexSituation, type CodexSituationField } from './codexSituations';
 
 let open = false;
 
@@ -31,8 +33,16 @@ export function codexEntry(kind: 'building' | 'wagon', s: BuildingStatus | Wagon
 export function codexHtml(kind: 'building' | 'wagon', s: BuildingStatus | WagonStatus, calm = false): string {
   const c = codexEntry(kind, s, calm);
   if (!c) return '';
-  const { e } = c;
-  const foreign = getLang() !== c.lang;
+  return foldHtml(c.e, getLang() !== c.lang);
+}
+
+/** A situational entry (src/ui/codexSituations.ts, D-339): translated into every language, read through t(). */
+export function codexSituationHtml(sit: CodexSituation): string {
+  const f = (x: CodexSituationField): string => t(situationKey(sit, x));
+  return foldHtml({ name: f('name'), meaning: f('meaning'), check: f('check'), fixes: [f('fix1'), f('fix2')], chain: f('chain') }, false);
+}
+
+function foldHtml(e: StallCodexLocale, foreign: boolean): string {
   const fixes = e.fixes.filter((f): f is string => !!f).map((f) => `<li>${esc(f)}</li>`).join('');
   return `<div class="codex${open ? ' is-open' : ''}">
     <button class="codex-tog cf" data-act="codex" aria-expanded="${open}"><span class="codex-ic">${iconSvg('inspect', 20)}</span><span class="codex-q" dir="auto">${esc(t('codex.toggle'))}</span><span class="codex-chev" aria-hidden="true"></span></button>

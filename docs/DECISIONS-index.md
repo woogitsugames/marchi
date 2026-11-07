@@ -287,3 +287,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-336 | 2026-11-07 | Dispatch distance maps are memoized across ticks (sim cost night, `docs/research/2026-11-07-sim-cost.md`) | decided | sim |
 | D-337 | — | Dijkstra walks cached neighbour lists | decided | inne |
 | D-338 | — | Fewer searches in rule A, and small per-tick savings; behaviour unchanged | decided | inne |
+| D-339 | — | Situational entries of the stall codex, in all 17 languages (orders 72 + 102, taken over from GPT) | decided | inne |
