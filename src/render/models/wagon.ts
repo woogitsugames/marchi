@@ -25,7 +25,7 @@ import {
   Vector4,
 } from 'three';
 import { HORSE_LEGS } from '../gait';
-import { type ModelPart, PartBuilder, smoothstep, trs, v3 } from './kit';
+import { type ModelPart, PartBuilder, prim, smoothstep, trs, v3 } from './kit';
 import { modelMaterial } from './materials';
 import { addHuman, HUMAN_STYLES } from './people';
 import { beam, box, loftGeometry, rod, sec, type Opts } from './shapes';
@@ -158,7 +158,7 @@ function buildBody(b: PartBuilder): void {
 function buildWheel(b: PartBuilder, radius: number, spokes: number, lod: 0 | 1 | 2, at = new Matrix4()): void {
   const w = radius > 0.55 ? 0.085 : 0.075;
   if (lod === 1) {
-    b.add('wood', new CylinderGeometry(radius, radius, w, 8, 1, false), {
+    b.add('wood', prim(CylinderGeometry, radius, radius, w, 8, 1, false), {
       color: '#4d4031',
       m: at.clone().multiply(trs(0, 0, 0, 0, 0, Math.PI / 2)),
       ao: 0,
@@ -303,8 +303,8 @@ function buildHorse(b: PartBuilder, Z: number, lod: HorseLod): void {
   b.add('hide', loftGeometry(head.filter((_, k) => hi || k % 2 === 0 || k === head.length - 1), hi ? 8 : 5), coat);
   if (hi) {
     for (const s of [-1, 1]) {
-      b.add('hide', new SphereGeometry(1, 5, 3), { ...coat, m: trs(s * 0.065, 1.74, Z + 1.47, -0.5, 0, 0, 0.06, 0.1, 0.11) });
-      b.add('hide', new SphereGeometry(1, 4, 3), { ...coat, color: '#141110', shade: undefined, m: trs(s * 0.11, 1.83, Z + 1.5, 0, 0, 0, 0.018, 0.022, 0.022) });
+      b.add('hide', prim(SphereGeometry, 1, 5, 3), { ...coat, m: trs(s * 0.065, 1.74, Z + 1.47, -0.5, 0, 0, 0.06, 0.1, 0.11) });
+      b.add('hide', prim(SphereGeometry, 1, 4, 3), { ...coat, color: '#141110', shade: undefined, m: trs(s * 0.11, 1.83, Z + 1.5, 0, 0, 0, 0.018, 0.022, 0.022) });
     }
   }
   for (let i = 0; i < 4; i++) {
@@ -353,12 +353,12 @@ function buildHorse(b: PartBuilder, Z: number, lod: HorseLod): void {
   // --- harness: collar with hames, cart saddle with tugs, belly band, breeching, traces, bridle
   const leather: Opts = { color: LEATHER, vary: 0, noise: 0.05, ao: 0, dirt: 0 };
   const bridle: Opts = { ...leather, rig: bodyRig(Z) };
-  b.add('hide', new TorusGeometry(0.25, 0.07, 4, hi ? 11 : 9), { ...leather, color: '#3a2c22', m: trs(0, 1.47, Z + 0.95, -0.78, 0, 0, 0.84, 1.15, 1) });
-  b.add('hide', new TorusGeometry(0.29, 0.024, 4, 10, Math.PI * 1.15), { ...leather, color: '#5c4a38', m: trs(0, 1.42, Z + 0.93, -0.78, 0, Math.PI * 0.92, 0.88, 1.18, 1) });
+  b.add('hide', prim(TorusGeometry, 0.25, 0.07, 4, hi ? 11 : 9), { ...leather, color: '#3a2c22', m: trs(0, 1.47, Z + 0.95, -0.78, 0, 0, 0.84, 1.15, 1) });
+  b.add('hide', prim(TorusGeometry, 0.29, 0.024, 4, 10, Math.PI * 1.15), { ...leather, color: '#5c4a38', m: trs(0, 1.42, Z + 0.93, -0.78, 0, Math.PI * 0.92, 0.88, 1.18, 1) });
   box(b, 'hide', 0.5, 0.07, 0.3, trs(0, 1.6, Z + 0.15), leather);
   box(b, 'hide', 0.54, 0.035, 0.12, trs(0, 1.63, Z + 0.15), { ...leather, color: '#4a3a2c' });
-  b.add('hide', new TorusGeometry(1, 0.022, 3, 14), { ...leather, m: trs(0, 1.2, Z + 0.15, 0, 0, 0, 0.385, 0.425, 1) });
-  b.add('hide', new TorusGeometry(1, 0.03, 3, 12, Math.PI), { ...leather, m: trs(0, 1.1, Z - 0.42, Math.PI / 2, 0, Math.PI, 0.39, 0.66, 1) });
+  b.add('hide', prim(TorusGeometry, 1, 0.022, 3, 14), { ...leather, m: trs(0, 1.2, Z + 0.15, 0, 0, 0, 0.385, 0.425, 1) });
+  b.add('hide', prim(TorusGeometry, 1, 0.03, 3, 12, Math.PI), { ...leather, m: trs(0, 1.1, Z - 0.42, Math.PI / 2, 0, Math.PI, 0.39, 0.66, 1) });
   if (!hi) return;
   for (const s of [-1, 1]) {
     // hip strap over the croup to the breeching, tug loop around the shaft
@@ -372,8 +372,8 @@ function buildHorse(b: PartBuilder, Z: number, lod: HorseLod): void {
     rod(b, 'hide', P3(s * 0.11, 1.86, Z + 1.42), P3(s * 0.095, 1.53, Z + 1.7), 0.012, 0.012, 3, bridle, true);
     box(b, 'hide', 0.012, 0.08, 0.09, trs(s * 0.125, 1.82, Z + 1.47, 0.3, s * 0.25, 0), bridle);
   }
-  b.add('hide', new TorusGeometry(1, 0.016, 3, 8), { ...bridle, m: trs(0, 1.55, Z + 1.71, 0.85, 0, 0, 0.1, 0.12, 1) });
-  b.add('hide', new TorusGeometry(1, 0.014, 3, 8, Math.PI), { ...bridle, m: trs(0, 1.86, Z + 1.43, 0.35, 0, 0, 0.12, 0.08, 1) });
+  b.add('hide', prim(TorusGeometry, 1, 0.016, 3, 8), { ...bridle, m: trs(0, 1.55, Z + 1.71, 0.85, 0, 0, 0.1, 0.12, 1) });
+  b.add('hide', prim(TorusGeometry, 1, 0.014, 3, 8, Math.PI), { ...bridle, m: trs(0, 1.86, Z + 1.43, 0.35, 0, 0, 0.12, 0.08, 1) });
 }
 
 const P3 = (x: number, y: number, z: number) => v3(x, y, z);
@@ -467,9 +467,9 @@ export function wagonLod1(): ModelPart[] {
   buildHorse(b, WAGON.horseZ, 1);
   // driver as three blobs
   const d: Opts = { color: HUMAN_STYLES[0].tunic, ao: 0, dirt: 0 };
-  b.add('cloth', new CylinderGeometry(0.15, 0.2, 0.62, 6), { ...d, m: trs(0, top + 0.72, 1.33) });
-  b.add('cloth', new SphereGeometry(0.12, 5, 3), { ...d, color: HUMAN_STYLES[0].hood, m: trs(0, top + 1.18, 1.34) });
-  b.add('cloth', new CylinderGeometry(0.07, 0.07, 0.5, 4, 1, true), { ...d, m: trs(0, top + 0.42, 1.6, Math.PI / 2, 0, 0, 2.2, 1, 1) });
+  b.add('cloth', prim(CylinderGeometry, 0.15, 0.2, 0.62, 6), { ...d, m: trs(0, top + 0.72, 1.33) });
+  b.add('cloth', prim(SphereGeometry, 0.12, 5, 3), { ...d, color: HUMAN_STYLES[0].hood, m: trs(0, top + 1.18, 1.34) });
+  b.add('cloth', prim(CylinderGeometry, 0.07, 0.07, 0.5, 4, 1, true), { ...d, m: trs(0, top + 0.42, 1.6, Math.PI / 2, 0, 0, 2.2, 1, 1) });
   lod1 = b.build();
   return lod1;
 }

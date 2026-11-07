@@ -21,7 +21,7 @@ import {
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BRIDGE, type BridgeKind, bridgeEndParts, bridgeFootings, bridgeParts } from './models/bridges';
 import { type MatKey, modelMaterial } from './models/materials';
-import { PartBuilder } from './models/kit';
+import { PartBuilder, prim } from './models/kit';
 import { noiseTexture } from './noiseTex';
 import type { BridgeCell } from './roads';
 
@@ -143,14 +143,14 @@ export class BridgesView {
       const ca = Math.cos(c.angle), sa = Math.sin(c.angle);
       if (kind === 'wood') {
         // frost on the deck: a thin pale sheet 2 cm over the planks (Mgła), and 3 floes at each pile pair
-        icePb.add('stone', new BoxGeometry(BRIDGE.woodWidth - 0.2, 0.02, BRIDGE.cell * c.stretch), {
+        icePb.add('stone', prim(BoxGeometry, BRIDGE.woodWidth - 0.2, 0.02, BRIDGE.cell * c.stretch), {
           color: '#c9c6bb', m: new Matrix4().makeTranslation(c.x, c.y + 0.02, c.z).multiply(R.makeRotationY(c.angle)), noise: 0.25, noiseFreq: 3, vary: 0.05,
         });
         for (const f of bridgeFootings(kind)) {
           _v.set(f.x, 0, f.z * c.stretch).applyMatrix4(R.makeRotationY(c.angle));
           for (let k = 0; k < 3; k++) {
             const r = icePb.r(0.45, 0.8), ox = icePb.r(-1.4, 1.4), oz = icePb.r(-1.4, 1.4);
-            icePb.add('stone', new CylinderGeometry(r, r * 1.05, 0.12, 6), {
+            icePb.add('stone', prim(CylinderGeometry, r, r * 1.05, 0.12, 6), {
               color: '#c9c6bb', m: new Matrix4().makeTranslation(c.x + _v.x + ox, waterLevel + 0.03, c.z + _v.z + oz)
                 .multiply(R.makeRotationY(icePb.r(0, 1)))
                 .multiply(new Matrix4().makeRotationX(icePb.r(-0.06, 0.06))),

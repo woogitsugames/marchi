@@ -23,7 +23,7 @@ import {
   Vector2,
   Vector3,
 } from 'three';
-import { fnoise, type ModelPart, PartBuilder, smoothstep, trs, v3 } from './kit';
+import { fnoise, type ModelPart, PartBuilder, prim, smoothstep, trs, v3 } from './kit';
 import { brewery, charcoalBurner, fisher, malthouse, quarry } from './chains';
 import { addHuman, HUMAN_STYLES, type WorkerKind } from './people';
 import {
@@ -381,7 +381,7 @@ function logBetween(b: PartBuilder, xa: number, xb: number, y: number, z: number
 // -------------------------------------------------------------------------------------------
 
 export function choppingBlock(b: PartBuilder, x: number, z: number): void {
-  b.add('bark', new CylinderGeometry(0.3, 0.34, 0.55, 10), {
+  b.add('bark', prim(CylinderGeometry, 0.3, 0.34, 0.55, 10), {
     color: '#584a3a',
     m: trs(x, 0.27, z),
     jitter: 0.02,
@@ -408,7 +408,7 @@ export function firewoodStack(b: PartBuilder, cx: number, cz: number, len: numbe
     for (let i = 0; i < nx; i++) {
       if (j === ny - 1 && b.r() < 0.35) continue;
       const x = cx - len / 2 + (i + 0.5) * (len / nx);
-      b.add('wood', new CylinderGeometry(0.065, 0.065, 0.45, 3), {
+      b.add('wood', prim(CylinderGeometry, 0.065, 0.065, 0.45, 3), {
         color: '#7a6448',
         m: trs(x + b.r(-0.01, 0.01), 0.07 + j * 0.115, cz + b.r(-0.03, 0.03), Math.PI / 2, 0, b.r(0, 6)),
         vary: 0.15,
@@ -517,9 +517,9 @@ export function ladder(b: PartBuilder, foot: Vector3, top: Vector3, side: Vector
 }
 
 function well(b: PartBuilder, x: number, z: number): void {
-  b.add('stone', new CylinderGeometry(0.75, 0.8, 0.8, 14, 2, true), { ...stoneO(), m: trs(x, 0.4, z) });
-  b.add('stone', new TorusGeometry(0.7, 0.1, 5, 14), { ...stoneO(C.stoneDark), m: trs(x, 0.8, z, Math.PI / 2) });
-  b.add('stone', new CylinderGeometry(0.62, 0.62, 0.05, 12), { color: '#1f2120', m: trs(x, 0.45, z), noise: 0, ao: 0, dirt: 0 });
+  b.add('stone', prim(CylinderGeometry, 0.75, 0.8, 0.8, 14, 2, true), { ...stoneO(), m: trs(x, 0.4, z) });
+  b.add('stone', prim(TorusGeometry, 0.7, 0.1, 5, 14), { ...stoneO(C.stoneDark), m: trs(x, 0.8, z, Math.PI / 2) });
+  b.add('stone', prim(CylinderGeometry, 0.62, 0.62, 0.05, 12), { color: '#1f2120', m: trs(x, 0.45, z), noise: 0, ao: 0, dirt: 0 });
   for (const s of [-1, 1]) rod(b, 'wood', v3(x + s * 0.7, 0, z), v3(x + s * 0.7, 1.8, z), 0.06, 0.05, 6, { color: C.timber });
   rod(b, 'wood', v3(x - 0.85, 1.65, z), v3(x + 0.85, 1.65, z), 0.06, 0.06, 6, { color: C.timber });
   // little roof
@@ -599,7 +599,7 @@ function sawmill(b: PartBuilder): Partial<BuildingModel> {
   // under the roof: a squared log on two blocks and an old sawdust heap
   for (const dx of [-1.3, 1.3]) box(b, 'wood', 0.3, 0.3, 0.6, trs(-0.6 + dx, 0.15, -1.6), { color: C.timber });
   logGeom(b, trs(-0.6, 0.48, -1.6, 0, 0, Math.PI / 2), 0.18, 3.8, 8);
-  b.add('thatch', new SphereGeometry(1, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a7916c', m: trs(1.6, 0, -2.2, 0, 0, 0, 0.9, 0.16, 0.7), ao: 0.1, dirt: 0.1 });
+  b.add('thatch', prim(SphereGeometry, 1, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a7916c', m: trs(1.6, 0, -2.2, 0, 0, 0, 0.9, 0.16, 0.7), ao: 0.1, dirt: 0.1 });
   // in the open yard, where the camera sees them (night 6): high sawing trestles with a log; the pit saw and the
   // two sawyers are animated workers — the top sawyer stands on the log, the pit man under it, the blade between
   const sx = -0.15, sz = 2.2, TY = 1.85, LY = TY + 0.23;
@@ -611,7 +611,7 @@ function sawmill(b: PartBuilder): Partial<BuildingModel> {
   const sawX = -0.25; // the blade's plane across x: the top sawyer's hands meet it 0.45 m ahead, the pit man's 0.27 m
   // the kerf already sawn on the far side of the blade (the cut runs toward the top sawyer), and fresh sawdust under it
   box(b, 'wood', 1.3, 0.02, 0.03, trs(sawX - 0.65, LY + 0.195, sz), { color: '#2e2620', ao: 0, dirt: 0 });
-  b.add('thatch', new SphereGeometry(1, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#b39d76', m: trs(sawX - 0.1, 0, sz, 0, 0, 0, 0.6, 0.1, 0.45), ao: 0.1, dirt: 0.05 });
+  b.add('thatch', prim(SphereGeometry, 1, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#b39d76', m: trs(sawX - 0.1, 0, sz, 0, 0, 0, 0.6, 0.1, 0.45), ao: 0.1, dirt: 0.05 });
   // plank stacks in the yard and logs waiting
   // the plank stack by the gate is the yard stock (drawn from the building's planks, D-71); an old stack
   // stays at the back and logs wait for the saw
@@ -644,7 +644,7 @@ function farm(b: PartBuilder): Partial<BuildingModel> {
   haystack(b, -3.6, 2.6, 0.75);
   well(b, 3.2, 2.0);
   // cart wheel leaning on the house and a few sacks of grain by the door
-  b.add('wood', new TorusGeometry(0.55, 0.05, 4, 16), { color: '#5d4c3a', m: trs(-4.6, 0.6, -0.35, -0.2) });
+  b.add('wood', prim(TorusGeometry, 0.55, 0.05, 4, 16), { color: '#5d4c3a', m: trs(-4.6, 0.6, -0.35, -0.2) });
   // bench under the front eave, and a ladder against the granary gable
   box(b, 'wood', 1.6, 0.07, 0.34, trs(-2.9, 0.48, -0.25), { color: C.timberLight, dirt: 0.2 });
   for (const sx of [-1, 1]) box(b, 'wood', 0.07, 0.45, 0.3, trs(-2.9 + sx * 0.65, 0.23, -0.25), { color: C.timber });
@@ -686,8 +686,8 @@ function mill(b: PartBuilder): Partial<BuildingModel> & { wheel: BuildingModel['
   const wb = new PartBuilder({ seed: 77, ao: 0, dirt: 0 });
   const R = 1.8, W = 0.8;
   for (const s of [-1, 1]) {
-    wb.add('wood', new TorusGeometry(R - 0.08, 0.07, 4, 28), { color: '#4d4034', m: trs(s * (W / 2), 0, 0, 0, Math.PI / 2, 0) });
-    wb.add('wood', new TorusGeometry(R * 0.55, 0.05, 4, 20), { color: '#4d4034', m: trs(s * (W / 2), 0, 0, 0, Math.PI / 2, 0) });
+    wb.add('wood', prim(TorusGeometry, R - 0.08, 0.07, 4, 28), { color: '#4d4034', m: trs(s * (W / 2), 0, 0, 0, Math.PI / 2, 0) });
+    wb.add('wood', prim(TorusGeometry, R * 0.55, 0.05, 4, 20), { color: '#4d4034', m: trs(s * (W / 2), 0, 0, 0, Math.PI / 2, 0) });
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI;
       const d = v3(0, Math.cos(a), Math.sin(a));
@@ -714,7 +714,7 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
   // domed bread oven of field stone + daub, with its own stone chimney
   const ox = 2.75, oz = -1.6;
   box(b, 'stone', 2.1, 0.8, 2.3, trs(ox, 0.4, oz), stoneO(C.stoneDark), 0.4);
-  b.add('plaster', new SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), {
+  b.add('plaster', prim(SphereGeometry, 1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), {
     color: '#7a7063',
     m: trs(ox, 0.8, oz, 0, 0, 0, 0.95, 0.85, 1.05),
     jitter: 0.04,
@@ -742,8 +742,8 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'wood', 1.8, 0.07, 0.4, trs(-2.2, 0.55, 1.0), { color: C.timberLight });
   for (const s of [-1, 1]) box(b, 'wood', 0.07, 0.55, 0.36, trs(-2.2 + s * 0.75, 0.27, 1.0), { color: C.timber });
   for (const x of [-2.6, -1.85]) {
-    b.add('wood', new CylinderGeometry(0.22, 0.18, 0.18, 12, 1, true), { color: '#7a6242', m: trs(x, 0.68, 1.0), ao: 0 });
-    for (let i = 0; i < 3; i++) b.add('cloth', new SphereGeometry(1, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), { color: '#a67a3d', m: trs(x + (i - 1) * 0.1, 0.74, 1.0 + (i % 2) * 0.06, 0, i, 0, 0.1, 0.07, 0.1), ao: 0 });
+    b.add('wood', prim(CylinderGeometry, 0.22, 0.18, 0.18, 12, 1, true), { color: '#7a6242', m: trs(x, 0.68, 1.0), ao: 0 });
+    for (let i = 0; i < 3; i++) b.add('cloth', prim(SphereGeometry, 1, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.6), { color: '#a67a3d', m: trs(x + (i - 1) * 0.1, 0.74, 1.0 + (i % 2) * 0.06, 0, i, 0, 0.1, 0.07, 0.1), ao: 0 });
   }
   return { gate: v3(-0.4, 0, 4), smoke: v3(ox + 0.15, 3.45, oz - 0.78), workers: [{ kind: 'peel', at: v3(ox, 0, 1.6), yaw: Math.PI }], yard: { at: v3(2.0, 0, 2.8), yaw: Math.PI / 2 } };
 }
@@ -793,7 +793,7 @@ function stable(b: PartBuilder): Partial<BuildingModel> {
       box(b, 'wood', w, 1.1, 0.05, m, { color: C.timberLight, vary: 0.12 });
       // hay rack / trough at the back wall
       box(b, 'wood', w - 0.4, 0.35, 0.4, trs(xm, 0.75, z0 + 0.35), { color: C.timber });
-      b.add('thatch', new SphereGeometry(1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: C.hay, m: trs(xm, 0.92, z0 + 0.35, 0, 0, 0, w / 2 - 0.3, 0.18, 0.2), ao: 0 });
+      b.add('thatch', prim(SphereGeometry, 1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: C.hay, m: trs(xm, 0.92, z0 + 0.35, 0, 0, 0, w / 2 - 0.3, 0.18, 0.2), ao: 0 });
     }
   }
   beam(b, 'wood', v3(x0 - 0.2, H, z1), v3(x1 + 0.2, H, z1), 0.22, 0.24, { color: C.timber });
@@ -879,7 +879,7 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
     b.add('stone', g, { ...stoneO(), jitter: 0.03, m: trs(0, 0, zf - d / 2 + 0.3) });
     quoins(b, 0, zf + 0.3 - d / 2 + d / 2 - 0.0, w, d, 0.6, gh);
     // arch voussoir ring (slightly proud) on the outer face
-    b.add('stone', new TorusGeometry(1.42, 0.17, 4, 12, Math.PI), { ...stoneO(C.stoneDark), m: trs(0, 2.6, zf + 1.55, 0, 0, 0, 1, 1, 0.6) });
+    b.add('stone', prim(TorusGeometry, 1.42, 0.17, 4, 12, Math.PI), { ...stoneO(C.stoneDark), m: trs(0, 2.6, zf + 1.55, 0, 0, 0, 1, 1, 0.6) });
     for (let i = 0; i < 4; i++) {
       const u = -w / 2 + 0.4 + i * ((w - 0.8) / 3);
       box(b, 'stone', 0.7, 0.85, 0.5, trs(u, gh + 0.42, zf + 1.6), stoneO());
@@ -919,7 +919,7 @@ function castle(b: PartBuilder): Partial<BuildingModel> {
       }
     }
     // shingled pyramid roof inside the parapet
-    b.add('wood', new CylinderGeometry(0.05, kw * 0.72, 3.6, 4, 3, false), {
+    b.add('wood', prim(CylinderGeometry, 0.05, kw * 0.72, 3.6, 4, 3, false), {
       color: C.shingle,
       m: trs(kx, kh + 2.0, kz, 0, Math.PI / 4),
       jitter: 0.02,
@@ -991,12 +991,12 @@ function tradePost(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'wood', pw + 0.6, 0.1, pd + 0.6, trs(sx, ph + 0.25, sz, 0.12), { color: C.shingle, noise: 0.2, jitter: 0.01 }, 0.4);
   beam(b, 'wood', v3(sx - pw / 2, ph - 0.1, sz), v3(sx + pw / 2, ph - 0.1, sz), 0.16, 0.16, { color: C.timber });
   // steelyard: three chain links, the beam a little tilted, a hook with a sack, a stone weight
-  for (let i = 0; i < 3; i++) b.add('metal', new TorusGeometry(0.07, 0.02, 3, 6), { color: '#3a3733', m: trs(sx, ph - 0.3 - i * 0.13, sz, 0, i % 2 ? Math.PI / 2 : 0, 0) });
+  for (let i = 0; i < 3; i++) b.add('metal', prim(TorusGeometry, 0.07, 0.02, 3, 6), { color: '#3a3733', m: trs(sx, ph - 0.3 - i * 0.13, sz, 0, i % 2 ? Math.PI / 2 : 0, 0) });
   box(b, 'wood', 2.6, 0.12, 0.12, trs(sx, ph - 0.72, sz, 0, 0, 0.08), { color: C.timberLight });
   rod(b, 'metal', v3(sx - 1.2, ph - 0.8, sz), v3(sx - 1.2, ph - 1.3, sz), 0.02, 0.02, 4, { color: '#3a3733' });
-  b.add('cloth', new SphereGeometry(0.32, 8, 6), { color: '#9c8458', m: trs(sx - 1.2, ph - 1.6, sz, 0, 0, 0, 1, 1.25, 1), jitter: 0.03, renormal: true });
+  b.add('cloth', prim(SphereGeometry, 0.32, 8, 6), { color: '#9c8458', m: trs(sx - 1.2, ph - 1.6, sz, 0, 0, 0, 1, 1.25, 1), jitter: 0.03, renormal: true });
   rod(b, 'metal', v3(sx + 1.15, ph - 0.6, sz), v3(sx + 1.15, ph - 0.95, sz), 0.015, 0.015, 4, { color: '#3a3733' });
-  b.add('stone', new SphereGeometry(0.2, 8, 6), { ...stoneO(C.stoneDark), m: trs(sx + 1.15, ph - 1.15, sz) });
+  b.add('stone', prim(SphereGeometry, 0.2, 8, 6), { ...stoneO(C.stoneDark), m: trs(sx + 1.15, ph - 1.15, sz) });
   // the yard: post-and-rail fence on the sides and front (entry in the middle), wattle behind the house
   fenceRun(b, v3(-7.6, 0, -7.6), v3(-7.6, 0, 7.6));
   fenceRun(b, v3(7.6, 0, -7.6), v3(7.6, 0, 7.6));
@@ -1005,7 +1005,7 @@ function tradePost(b: PartBuilder): Partial<BuildingModel> {
   wattleRun(b, v3(-7.6, 0, -7.6), v3(7.6, 0, -7.6));
   // sign post at the entry: a cut disc with a bar (a coin on a scale), no letters
   rod(b, 'bark', v3(-2.6, -0.1, 7.7), v3(-2.6, 2.8, 7.7), 0.09, 0.08, 6, { color: C.timber });
-  b.add('wood', new CylinderGeometry(0.5, 0.5, 0.06, 12), { color: C.boards, m: trs(-2.6, 2.3, 7.82, Math.PI / 2, 0, 0) });
+  b.add('wood', prim(CylinderGeometry, 0.5, 0.5, 0.06, 12), { color: C.boards, m: trs(-2.6, 2.3, 7.82, Math.PI / 2, 0, 0) });
   box(b, 'wood', 0.7, 0.08, 0.04, trs(-2.6, 2.3, 7.87), { color: C.boardsDark });
   // always there: a trough, a hitching rail, a barrel
   box(b, 'wood', 1.8, 0.4, 0.5, trs(-5.2, 0.2, 2.4), { color: C.timber }, 0.3);
@@ -1130,10 +1130,10 @@ export function castleUpgradeParts(): ModelPart[] {
   if (castleUpgradeCache) return castleUpgradeCache;
   const b = new PartBuilder({ seed: 977, ao: 0.4, aoHeight: 1.6, dirt: 0.3, dirtHeight: 0.45 });
   const tx = 6.4, tz = -6.4, r = 2.0, th = 12.5;
-  b.add('stone', new CylinderGeometry(r, r * 1.08, th, 14, 6, false), { ...stoneO(), m: trs(tx, th / 2, tz), jitter: 0.04 });
-  b.add('stone', new CylinderGeometry(r * 1.2, r * 1.25, 1.0, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, 0.5, tz) });
+  b.add('stone', prim(CylinderGeometry, r, r * 1.08, th, 14, 6, false), { ...stoneO(), m: trs(tx, th / 2, tz), jitter: 0.04 });
+  b.add('stone', prim(CylinderGeometry, r * 1.2, r * 1.25, 1.0, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, 0.5, tz) });
   // corbel ring and merlons
-  b.add('stone', new CylinderGeometry(r + 0.35, r + 0.05, 0.5, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, th + 0.2, tz) });
+  b.add('stone', prim(CylinderGeometry, r + 0.35, r + 0.05, 0.5, 14, 1, false), { ...stoneO(C.stoneDark), m: trs(tx, th + 0.2, tz) });
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
     box(b, 'stone', 0.7, 0.9, 0.45, trs(tx + Math.cos(a) * (r + 0.15), th + 0.9, tz + Math.sin(a) * (r + 0.15), 0, -a + Math.PI / 2), stoneO());
@@ -1143,7 +1143,7 @@ export function castleUpgradeParts(): ModelPart[] {
     box(b, 'stone', 0.14, 0.9, 0.05, trs(tx + Math.cos(a) * (r + 0.01), y, tz + Math.sin(a) * (r + 0.01), 0, -a + Math.PI / 2), { color: '#1d1a17', noise: 0, ao: 0, dirt: 0 });
   }
   // conical shingle roof inside the merlons
-  b.add('wood', new CylinderGeometry(0.04, r * 1.05, 4.2, 12, 3, false), { color: C.shingle, m: trs(tx, th + 2.3, tz), jitter: 0.02, ao: 0, dirt: 0 });
+  b.add('wood', prim(CylinderGeometry, 0.04, r * 1.05, 4.2, 12, 3, false), { color: C.shingle, m: trs(tx, th + 2.3, tz), jitter: 0.02, ao: 0, dirt: 0 });
   // pennant pole and cloth (the castle's warm accent)
   rod(b, 'wood', v3(tx, th + 4.2, tz), v3(tx, th + 6.6, tz), 0.05, 0.04, 5, { color: C.timber, ao: 0 });
   box(b, 'cloth', 1.4, 0.55, 0.03, trs(tx + 0.72, th + 6.25, tz), { color: C.clay, ao: 0, dirt: 0 });

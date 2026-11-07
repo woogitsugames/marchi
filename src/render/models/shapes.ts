@@ -16,7 +16,7 @@ import {
   Vector2,
   Vector3,
 } from 'three';
-import { type AddOpts, between, fnoise, PartBuilder, trs, v3 } from './kit';
+import { type AddOpts, between, fnoise, PartBuilder, prim, trs, v3 } from './kit';
 import type { MatKey } from './materials';
 
 export type Opts = Omit<AddOpts, 'm'>;
@@ -40,23 +40,23 @@ export function beam(b: PartBuilder, mat: MatKey, a: Vector3, c: Vector3, w: num
   const x = new Vector3().crossVectors(d, z);
   const m = new Matrix4().makeBasis(x, d, z).multiply(new Matrix4().makeScale(1, len, 1));
   m.setPosition(new Vector3().addVectors(a, c).multiplyScalar(0.5));
-  b.add(mat, new BoxGeometry(w, 1, h), { ...o, m });
+  b.add(mat, prim(BoxGeometry, w, 1, h), { ...o, m });
 }
 
 /** Cylinder (optionally tapered) between two points. */
 export function rod(b: PartBuilder, mat: MatKey, a: Vector3, c: Vector3, r1: number, r2: number, seg: number, o: Opts, open = false): void {
   // CylinderGeometry radiusTop is at +Y (= c)
-  b.add(mat, new CylinderGeometry(r2, r1, 1, seg, 1, open), { ...o, m: between(a, c) });
+  b.add(mat, prim(CylinderGeometry, r2, r1, 1, seg, 1, open), { ...o, m: between(a, c) });
 }
 
 /** Axis-aligned (then transformed) box with optional segments for colour/jitter resolution. */
 export function box(b: PartBuilder, mat: MatKey, w: number, h: number, d: number, m: Matrix4, o: Opts, seg = 0): void {
   const s = (len: number) => (seg > 0 ? Math.max(1, Math.round(len / seg)) : 1);
-  b.add(mat, new BoxGeometry(w, h, d, s(w), s(h), s(d)), { ...o, m });
+  b.add(mat, prim(BoxGeometry, w, h, d, s(w), s(h), s(d)), { ...o, m });
 }
 
 export function sphere(b: PartBuilder, mat: MatKey, m: Matrix4, o: Opts, ws = 10, hs = 7): void {
-  b.add(mat, new SphereGeometry(1, ws, hs), { ...o, m });
+  b.add(mat, prim(SphereGeometry, 1, ws, hs), { ...o, m });
 }
 
 export function lathe(b: PartBuilder, mat: MatKey, profile: [number, number][], seg: number, m: Matrix4, o: Opts): void {
@@ -608,7 +608,7 @@ export function thatchRoof(b: PartBuilder, s: ThatchSpec): void {
   const rx0 = f.X0 + half, rx1 = f.X1 - half;
   if (rx1 - rx0 > 0.3) {
     const len = rx1 - rx0;
-    b.add('thatch', new CylinderGeometry(t * 0.75, t * 0.75, len, 8, Math.max(2, Math.round(len / 0.5)), false), {
+    b.add('thatch', prim(CylinderGeometry, t * 0.75, t * 0.75, len, 8, Math.max(2, Math.round(len / 0.5)), false), {
       color: s.ridgeColor,
       m: trs((rx0 + rx1) / 2, ridgeTop - t * 0.15, (s.z0 + s.z1) / 2, 0, 0, Math.PI / 2, 1, 1, 0.85),
       jitter: 0.04,

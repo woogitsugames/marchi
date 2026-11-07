@@ -9,7 +9,7 @@
  */
 import { BoxGeometry, Color, CylinderGeometry, LatheGeometry, type Matrix4, SphereGeometry, TorusGeometry, Vector2 } from 'three';
 import { type BuildingModel, barrelGeom, C, firewoodStack, house, sack, SOOT, stoneO } from './buildings';
-import { fnoise, hash3, type PartBuilder, trs, v3 } from './kit';
+import { fnoise, hash3, type PartBuilder, prim, trs, v3 } from './kit';
 import { beam, box, fenceRun, logPile, type Opts, rod } from './shapes';
 
 // chain palette (sRGB, desaturated like the rest of the world)
@@ -57,7 +57,7 @@ export function creel(b: PartBuilder, m: Matrix4, h = 0.55, r = 0.24, color = '#
 
 /** One fish, nose at the origin pointing −Y (hanging) before `m`. ~40 tris. */
 export function fishGeom(b: PartBuilder, m: Matrix4, len = 0.38): void {
-  b.add('cloth', new SphereGeometry(1, 6, 4), {
+  b.add('cloth', prim(SphereGeometry, 1, 6, 4), {
     color: P.fishSkin,
     m: m.clone().multiply(trs(0, len * 0.45, 0, 0, 0, 0, len * 0.16, len * 0.5, len * 0.07)),
     ao: 0,
@@ -68,7 +68,7 @@ export function fishGeom(b: PartBuilder, m: Matrix4, len = 0.38): void {
     },
   });
   // forked tail
-  b.add('cloth', new CylinderGeometry(len * 0.15, 0.005, len * 0.22, 3), {
+  b.add('cloth', prim(CylinderGeometry, len * 0.15, 0.005, len * 0.22, 3), {
     color: '#5d5e57',
     m: m.clone().multiply(trs(0, len * 1.0, 0, 0, 0, 0, 1, 1, 0.25)),
     ao: 0,
@@ -78,7 +78,7 @@ export function fishGeom(b: PartBuilder, m: Matrix4, len = 0.38): void {
 
 /** Rough-hewn stone block, centre at the origin before `m`. */
 export function stoneBlock(b: PartBuilder, m: Matrix4, w: number, h: number, d: number, fresh = true): void {
-  b.add('stone', new BoxGeometry(w, h, d, 2, 2, 2), {
+  b.add('stone', prim(BoxGeometry, w, h, d, 2, 2, 2), {
     ...stoneO(fresh ? '#76716a' : P.rockOld),
     m,
     jitter: Math.min(w, h, d) * 0.1,
@@ -156,7 +156,7 @@ function netRack(b: PartBuilder, x0: number, x1: number, z: number, h = 1.9): vo
       const x = x0 + 0.3 + (i / 5) * (w - 0.2);
       const u = (x - (x0 + x1) / 2) / w;
       const y = h - 1.2 - (0.25 - u * u) * 0.5 - 0.05;
-      b.add('wood', new SphereGeometry(0.05, 4, 3), { color: '#8a7656', m: trs(x, y, z + s * 0.31), ao: 0, dirt: 0 });
+      b.add('wood', prim(SphereGeometry, 0.05, 4, 3), { color: '#8a7656', m: trs(x, y, z + s * 0.31), ao: 0, dirt: 0 });
     }
   }
 }
@@ -204,7 +204,7 @@ export function fisher(b: PartBuilder): Partial<BuildingModel> {
   boat(b, trs(jx + 1.35, 0.02, -2.7, 0.02, 0.06, 0.05));
   // mooring post with a coil of rope
   rod(b, 'wood', v3(jx + 0.65, 0.6, -4.5), v3(jx + 0.65, 1.25, -4.5), 0.07, 0.06, 5, { color: C.timber });
-  b.add('cloth', new TorusGeometry(0.16, 0.035, 4, 10), { color: '#6b5f4b', m: trs(jx + 0.2, 0.86, -3.9, Math.PI / 2), ao: 0, dirt: 0 });
+  b.add('cloth', prim(TorusGeometry, 0.16, 0.035, 4, 10), { color: '#6b5f4b', m: trs(jx + 0.2, 0.86, -3.9, Math.PI / 2), ao: 0, dirt: 0 });
   // yard: drying rack (left front), net rack (right front), creels and an upturned basket by the steps
   fishRack(b, -2.3, 1.7, 2.6);
   netRack(b, 0.9, 3.4, 2.1);
@@ -216,7 +216,7 @@ export function fisher(b: PartBuilder): Partial<BuildingModel> {
   // oar leaning on the wall, eel trap on the deck
   rod(b, 'wood', v3(cx - 2.55, 0, -0.7), v3(cx - 2.38, 2.6, -0.3), 0.03, 0.03, 4, { color: '#76624a' });
   box(b, 'wood', 0.14, 0.5, 0.03, trs(cx - 2.57, 0.3, -0.72, 0, 0.1, 0.05), { color: '#76624a' });
-  b.add('wood', new CylinderGeometry(0.16, 0.24, 0.9, 8, 3, true), { color: '#6a5841', m: trs(jx - 0.2, 1.05, -3.0, Math.PI / 2, 0, 0), noise: 0.2, noiseFreq: 14, ao: 0 });
+  b.add('wood', prim(CylinderGeometry, 0.16, 0.24, 0.9, 8, 3, true), { color: '#6a5841', m: trs(jx - 0.2, 1.05, -3.0, Math.PI / 2, 0, 0), noise: 0.2, noiseFreq: 14, ao: 0 });
   return {
     gate: v3(0.2, 0, 4), smoke: v3(cx - 1.4, 5.1, cz), yard: { at: v3(-2.6, 0, 3.0), yaw: Math.PI / 2 },
     // the fisherman near the end of the landing stage (kept on the footprint) with his lift net over the water (night 6)
@@ -249,7 +249,7 @@ function rockFace(b: PartBuilder, cx: number, zf: number, w: number, h: number, 
       const front = zf - setBack - b.r(0, 0.55) - (i % 2) * 0.15;
       const d = front - (zf - back);
       const hh = ch * (k === courses - 1 ? b.r(0.55, 1.0) : 1) + b.r(-0.06, 0.12);
-      b.add('stone', new BoxGeometry(bw + 0.04, hh, d, Math.max(1, Math.round(bw / 0.8)), 1, 2), {
+      b.add('stone', prim(BoxGeometry, bw + 0.04, hh, d, Math.max(1, Math.round(bw / 0.8)), 1, 2), {
         ...stoneO(P.rockFresh),
         m: trs(x + bw / 2, y + hh / 2, front - d / 2, b.r(-0.015, 0.015), b.r(-0.03, 0.03), b.r(-0.02, 0.02)),
         jitter: 0.08,
@@ -286,7 +286,7 @@ function shearLegs(b: PartBuilder, x: number, z: number): void {
     box(b, 'stone', 0.5, 0.25, 0.5, trs(f.x, 0.1, f.z), stoneO(C.stoneDark));
   }
   // lashing at the apex
-  b.add('cloth', new TorusGeometry(0.15, 0.05, 4, 8), { color: '#6b5f4b', m: trs(apex.x, apex.y - 0.05, apex.z, Math.PI / 2 - 0.5), ao: 0, dirt: 0 });
+  b.add('cloth', prim(TorusGeometry, 0.15, 0.05, 4, 8), { color: '#6b5f4b', m: trs(apex.x, apex.y - 0.05, apex.z, Math.PI / 2 - 0.5), ao: 0, dirt: 0 });
   // back guy rope to a stake
   const stake = v3(x - 1.6, 0, z + 3.2);
   rod(b, 'wood', stake.clone().setY(-0.2), stake.clone().setY(0.5), 0.06, 0.05, 5, { color: C.timber });
@@ -350,7 +350,7 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'metal', 0.22, 0.12, 0.12, trs(-2.42, 1.3, -0.73), { color: '#45423e', ao: 0, dirt: 0 });
   // tumbled natural boulders at the ends of the face, blending into the ground
   for (const [x, z, s] of [[-6.3, -1.2, 1.0], [6.2, -1.1, 0.8], [5.6, -1.5, 1.1], [-5.7, -0.4, 0.55]] as const) {
-    b.add('stone', new SphereGeometry(1, 7, 5), { ...stoneO(P.rockOld), m: trs(x, s * 0.35, z, 0, x, 0, s, s * 0.7, s * 0.9), jitter: s * 0.18, jitterFreq: 1.6, renormal: true });
+    b.add('stone', prim(SphereGeometry, 1, 7, 5), { ...stoneO(P.rockOld), m: trs(x, s * 0.35, z, 0, x, 0, s, s * 0.7, s * 0.9), jitter: s * 0.18, jitterFreq: 1.6, renormal: true });
   }
   // spoil heap of rubble, right front
   const heap = [[0.001, 0], [1.75, 0], [1.6, 0.15], [1.4, 0.35], [1.15, 0.58], [0.9, 0.78], [0.6, 0.97], [0.3, 1.08], [0.001, 1.12]].map(([r, y]) => new Vector2(r, y));
@@ -369,7 +369,7 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   });
   for (let i = 0; i < 14; i++) {
     const a = b.r(0, Math.PI * 2), r = b.r(0.4, 2.0), s = b.r(0.12, 0.28);
-    b.add('stone', new SphereGeometry(1, 5, 3), { ...stoneO(P.rubble), m: trs(4.1 + Math.cos(a) * r, Math.max(0, 1.12 * (1 - r / 1.75)) + s * 0.3, 1.3 + Math.sin(a) * r * 0.8, b.r(0, 3), b.r(0, 3), 0, s, s * 0.8, s * 1.1), jitter: s * 0.25, jitterFreq: 3 });
+    b.add('stone', prim(SphereGeometry, 1, 5, 3), { ...stoneO(P.rubble), m: trs(4.1 + Math.cos(a) * r, Math.max(0, 1.12 * (1 - r / 1.75)) + s * 0.3, 1.3 + Math.sin(a) * r * 0.8, b.r(0, 3), b.r(0, 3), 0, s, s * 0.8, s * 1.1), jitter: s * 0.25, jitterFreq: 3 });
   }
   shearLegs(b, -0.4, 0.4);
   sledge(b, 1.25, 1.7, 0.3);
@@ -377,7 +377,7 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   // stack stays at the right
   blockStack(b, 3.4, 3.3, -0.1, [[2, 0.5]]);
   // tools: a pick and a mallet on a chopping log, a short fence along the drop at the left
-  b.add('bark', new CylinderGeometry(0.26, 0.3, 0.5, 9), { color: '#584a3a', m: trs(-5.3, 0.25, 1.6) });
+  b.add('bark', prim(CylinderGeometry, 0.26, 0.3, 0.5, 9), { color: '#584a3a', m: trs(-5.3, 0.25, 1.6) });
   rod(b, 'wood', v3(-5.3, 0.5, 1.6), v3(-4.7, 0.95, 1.9), 0.025, 0.022, 4, { color: '#7a6448', ao: 0 });
   box(b, 'metal', 0.06, 0.06, 0.55, trs(-4.72, 0.97, 1.9, 0, 1.1, 0.3), { color: '#4a4744', ao: 0, dirt: 0 });
   fenceRun(b, v3(-6.0, 0, 0.3), v3(-6.0, 0, 3.6), 1.0);
@@ -388,7 +388,7 @@ export function quarry(b: PartBuilder): Partial<BuildingModel> {
   for (let i = 0; i < 4; i++) box(b, 'metal', 0.06, 0.11, 0.08, trs(-4.55 + i * 0.3, 0.6, 0.6 - i * 0.009), { color: '#45423e', ao: 0, dirt: 0 });
   for (let i = 0; i < 9; i++) {
     const a = b.r(0, Math.PI * 2), r = b.r(0.55, 1.0), s = b.r(0.05, 0.1);
-    b.add('stone', new SphereGeometry(1, 4, 3), { ...stoneO(P.rubble), m: trs(-4.1 + Math.cos(a) * r, s * 0.3, 0.6 + Math.sin(a) * r * 0.7, b.r(0, 3), b.r(0, 3), 0, s, s * 0.7, s * 1.2) });
+    b.add('stone', prim(SphereGeometry, 1, 4, 3), { ...stoneO(P.rubble), m: trs(-4.1 + Math.cos(a) * r, s * 0.3, 0.6 + Math.sin(a) * r * 0.7, b.r(0, 3), b.r(0, 3), 0, s, s * 0.7, s * 1.2) });
   }
   return {
     gate: v3(0.6, 0, 4), yard: { at: v3(-3.75, 0, 2.6), yaw: Math.PI / 2 },
@@ -429,9 +429,9 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
     },
   });
   // shallow ash ring around the foot
-  b.add('plaster', new TorusGeometry(R + 0.35, 0.22, 3, 20), { color: '#5d574f', m: trs(mx, 0.0, mz, Math.PI / 2, 0, 0, 1, 1, 0.35), ao: 0.2, dirt: 0.3 });
+  b.add('plaster', prim(TorusGeometry, R + 0.35, 0.22, 3, 20), { color: '#5d574f', m: trs(mx, 0.0, mz, Math.PI / 2, 0, 0, 1, 1, 0.35), ao: 0.2, dirt: 0.3 });
   // a dark smoke hole on top
-  b.add('plaster', new CylinderGeometry(0.2, 0.2, 0.05, 8), { color: '#141210', m: trs(mx, H - 0.02, mz), ao: 0, dirt: 0, noise: 0 });
+  b.add('plaster', prim(CylinderGeometry, 0.2, 0.2, 0.05, 8), { color: '#141210', m: trs(mx, H - 0.02, mz), ao: 0, dirt: 0, noise: 0 });
   // ladder leaning against the mound (the collier carries the rake, D-200)
   {
     const a = v3(mx + 1.2, 0, mz + 2.75), t = v3(mx + 0.55, 1.75, mz + 0.65);
@@ -450,7 +450,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
       if (r > 1 && i > 12) continue; // the outer course is unfinished on one side
       const a = (i / n) * Math.PI * 2 + r;
       const x = sx + Math.cos(a) * r, z = sz + Math.sin(a) * r;
-      b.add('wood', new CylinderGeometry(0.075, 0.08, h, 5), {
+      b.add('wood', prim(CylinderGeometry, 0.075, 0.08, h, 5), {
         color: '#6f5b45',
         m: trs(x, h / 2 - 0.02, z, Math.sin(a) * tilt, 0, -Math.cos(a) * tilt),
         vary: 0.14,
@@ -462,7 +462,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   }
   // burner's hut: cone of poles covered in bark and sod, a dark doorway toward the yard
   const hx = 2.35, hz = 1.0;
-  b.add('bark', new CylinderGeometry(0.08, 1.35, 2.5, 16, 3, true), {
+  b.add('bark', prim(CylinderGeometry, 0.08, 1.35, 2.5, 16, 3, true), {
     color: '#4a3f33',
     m: trs(hx, 1.2, hz),
     jitter: 0.06,
@@ -482,7 +482,7 @@ export function charcoalBurner(b: PartBuilder): Partial<BuildingModel> {
   logPile(b, v3(-2.6, 0, 2.3), 0.05, 2.6, 3, 0.14);
   firewoodStack(b, -0.3, -3.65, 3.2, 0.9);
   // finished charcoal by the gate: a loose heap, and the sacks are the yard stock (the burner's charcoal, D-71)
-  b.add('stone', new SphereGeometry(1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
+  b.add('stone', prim(SphereGeometry, 1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), {
     color: '#232120',
     m: trs(-0.75, 0, 2.6, 0, 0, 0, 0.6, 0.28, 0.5),
     jitter: 0.05,
@@ -524,7 +524,7 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   box(b, 'stone', 0.8, 0.14, 0.4, trs(kx, 0.97, cz + kd / 2 + 0.12), stoneO(C.stoneDark));
   firewoodStack(b, kx + 0.4, cz + kd / 2 + 1.55, 1.5, 0.8);
   // pyramid roof of shingles
-  b.add('wood', new CylinderGeometry(0.42, (Math.max(kw, kd) / 2 + 0.35) * Math.SQRT2, 2.1, 4, 3, true), {
+  b.add('wood', prim(CylinderGeometry, 0.42, (Math.max(kw, kd) / 2 + 0.35) * Math.SQRT2, 2.1, 4, 3, true), {
     color: C.shingle,
     m: trs(kx, kh + 1.05, cz, 0, 0, 0, kw / Math.max(kw, kd), 1, 1).multiply(trs(0, 0, 0, 0, Math.PI / 4)),
     jitter: 0.015,
@@ -546,14 +546,14 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
       box(b, 'wood', 0.14, 0.03, vs + 0.04, trs(kx + s * vs / 2, y, cz, 0, 0, -s * 0.6), { color: C.boards, ao: 0, dirt: 0 });
     }
   }
-  b.add('wood', new CylinderGeometry(0.03, 0.62, 0.55, 4, 1), {
+  b.add('wood', prim(CylinderGeometry, 0.03, 0.62, 0.55, 4, 1), {
     color: '#4a443c',
     m: trs(kx, vy + 1.02, cz, 0, Math.PI / 4),
     ao: 0,
     dirt: 0,
   });
   // soot staining on the roof just under the cowl
-  b.add('wood', new CylinderGeometry(0.44, 0.8, 0.4, 4, 1, true), { color: '#2f2b27', m: trs(kx, vy - 0.15, cz, 0, 0, 0, kw / kd, 1, 1).multiply(trs(0, 0, 0, 0, Math.PI / 4)), ao: 0, dirt: 0 });
+  b.add('wood', prim(CylinderGeometry, 0.44, 0.8, 0.4, 4, 1, true), { color: '#2f2b27', m: trs(kx, vy - 0.15, cz, 0, 0, 0, kw / kd, 1, 1).multiply(trs(0, 0, 0, 0, Math.PI / 4)), ao: 0, dirt: 0 });
   // yard: steeping cistern (water tub on a frame), a sack of grain by the door
   const tx = -2.55, tz = 1.75;
   box(b, 'wood', 1.9, 0.62, 0.95, trs(tx, 0.31, tz), { color: C.timber, ao: 0.3 }, 0.5);
@@ -561,7 +561,7 @@ export function malthouse(b: PartBuilder): Partial<BuildingModel> {
   for (const s of [-1, 1]) box(b, 'wood', 2.0, 0.08, 0.1, trs(tx, 0.64, tz + s * 0.45), { color: C.timberLight, ao: 0 });
   for (const s of [-1, 1]) box(b, 'wood', 0.1, 0.08, 1.0, trs(tx + s * 0.97, 0.64, tz), { color: C.timberLight, ao: 0 });
   // steeped grain heaped in the tub (the maltster turns it with his shovel, D-200)
-  b.add('cloth', new SphereGeometry(1, 16, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a08a5c', m: trs(tx, 0.6, tz, 0, 0, 0, 0.8, 0.1, 0.34), noise: 0.2, noiseFreq: 12, ao: 0, dirt: 0 });
+  b.add('cloth', prim(SphereGeometry, 1, 16, 4, 0, Math.PI * 2, 0, Math.PI / 2), { color: '#a08a5c', m: trs(tx, 0.6, tz, 0, 0, 0, 0.8, 0.1, 0.34), noise: 0.2, noiseFreq: 12, ao: 0, dirt: 0 });
   const dx = (mx0 + mx1) / 2 + 0.7;
   sack(b, dx - 1.0, 0.85, 0.2);
   // the malt tubs by the door are the yard stock (the malthouse's malt, D-71, D-201)
@@ -593,7 +593,7 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   const ax = cx - 0.9, az = cz + dep / 2;
   rod(b, 'wood', v3(ax + 0.9, 2.65, az), v3(ax + 0.9, 2.75, az + 1.6), 0.045, 0.04, 5, { color: C.timber });
   rod(b, 'wood', v3(ax + 0.9, 2.15, az + 0.02), v3(ax + 0.9, 2.7, az + 1.0), 0.03, 0.03, 4, { color: C.timber });
-  b.add('cloth', new SphereGeometry(1, 7, 5), { color: P.bush, m: trs(ax + 0.9, 2.35, az + 1.6, 0, 0, 0, 0.3, 0.36, 0.3), jitter: 0.06, jitterFreq: 5, renormal: true, ao: 0, dirt: 0 });
+  b.add('cloth', prim(SphereGeometry, 1, 7, 5), { color: P.bush, m: trs(ax + 0.9, 2.35, az + 1.6, 0, 0, 0, 0.3, 0.36, 0.3), jitter: 0.06, jitterFreq: 5, renormal: true, ao: 0, dirt: 0 });
   // brewing shed (lean-to against the gable): posts, mono-pitch shingle roof, open to the yard
   const x0 = cx + len / 2, x1 = 5.6, z0 = cz - dep / 2, z1 = cz + dep / 2 - 0.3;
   for (const x of [(x0 + x1) / 2 + 0.3, x1]) {
@@ -637,11 +637,11 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   };
   const kettle: [number, number][] = [[0.001, 0.7], [0.55, 0.72], [0.78, 0.9], [0.82, 1.25], [0.86, 1.32], [0.78, 1.3]];
   b.add('metal', new LatheGeometry(kettle.map(([r, y]) => new Vector2(r, y)), 16), { ...copper, m: trs(fx, 0, fz) });
-  b.add('plaster', new CylinderGeometry(0.76, 0.76, 0.02, 14), { color: '#4b4232', m: trs(fx, 1.18, fz), ao: 0, dirt: 0, noise: 0.1 }); // wort
+  b.add('plaster', prim(CylinderGeometry, 0.76, 0.76, 0.02, 14), { color: '#4b4232', m: trs(fx, 1.18, fz), ao: 0, dirt: 0, noise: 0.1 }); // wort
   // conical copper hood and flue pipe up through the shed roof
-  b.add('metal', new CylinderGeometry(0.2, 0.92, 0.75, 14, 1, true), { ...copper, m: trs(fx, 1.95, fz) });
-  b.add('metal', new CylinderGeometry(0.18, 0.2, 2.4, 10, 2, true), { ...copper, m: trs(fx, 3.5, fz) });
-  b.add('metal', new CylinderGeometry(0.02, 0.38, 0.32, 10, 1), { ...copper, m: trs(fx, 4.95, fz) }); // rain cap
+  b.add('metal', prim(CylinderGeometry, 0.2, 0.92, 0.75, 14, 1, true), { ...copper, m: trs(fx, 1.95, fz) });
+  b.add('metal', prim(CylinderGeometry, 0.18, 0.2, 2.4, 10, 2, true), { ...copper, m: trs(fx, 3.5, fz) });
+  b.add('metal', prim(CylinderGeometry, 0.02, 0.38, 0.32, 10, 1), { ...copper, m: trs(fx, 4.95, fz) }); // rain cap
   for (const s of [-1, 1]) rod(b, 'metal', v3(fx + s * 0.12, 4.7, fz), v3(fx + s * 0.12, 4.82, fz), 0.02, 0.02, 3, { color: '#3c3833', ao: 0, dirt: 0 });
   // mash paddle in the copper
   rod(b, 'wood', v3(fx - 0.2, 1.1, fz + 0.1), v3(fx - 0.9, 2.25, fz + 0.9), 0.03, 0.03, 4, { color: '#7a6448', ao: 0 });
@@ -653,8 +653,8 @@ export function brewery(b: PartBuilder): Partial<BuildingModel> {
   barrelGeom(b, trs(ax - 1.25, 0, az + 0.55));
   barrelGeom(b, trs(ax - 1.85, 0, az + 0.75, 0, 1.2));
   // trestle bench with a tankard-sized cask and a tun
-  b.add('wood', new CylinderGeometry(0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
-  b.add('plaster', new CylinderGeometry(0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
+  b.add('wood', prim(CylinderGeometry, 0.62, 0.55, 0.75, 14, 1, true), { color: '#5d4b39', m: trs(-5.0, 0.375, 1.5), noise: 0.1, noiseFreq: 9 });
+  b.add('plaster', prim(CylinderGeometry, 0.58, 0.58, 0.02, 12), { color: '#5a4b33', m: trs(-5.0, 0.66, 1.5), ao: 0, dirt: 0 });
   return {
     gate: v3(-0.8, 0, 4), smoke: v3(fx, 5.15, fz), yard: { at: v3(1.5, 0, 2.7), yaw: Math.PI / 2 },
     // the brewer stirring the tun in the yard with his mash oar, turned toward it from the front corner (D-200)

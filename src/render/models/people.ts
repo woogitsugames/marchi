@@ -6,7 +6,7 @@
  */
 import { type BufferGeometry, ConeGeometry, CylinderGeometry, Matrix4, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { type ModelPart, PartBuilder, trs, v3 } from './kit';
+import { type ModelPart, PartBuilder, prim, trs, v3 } from './kit';
 import { box, lathe, rod, type Opts } from './shapes';
 
 export interface HumanStyle {
@@ -72,7 +72,7 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
     },
   });
   // belt, buckle and purse
-  b.add('hide', new CylinderGeometry(0.172, 0.172, 0.045, seg + 4, 1, true), { color: '#3a2e24', m: torsoM.clone().multiply(trs(0, 1.04, 0)) });
+  b.add('hide', prim(CylinderGeometry, 0.172, 0.172, 0.045, seg + 4, 1, true), { color: '#3a2e24', m: torsoM.clone().multiply(trs(0, 1.04, 0)) });
   if (fine) box(b, 'hide', 0.035, 0.035, 0.012, m.clone().multiply(trs(0, 1.04 + dy, 0.122 + 0.14 * lean)), { color: '#5a554b', ao: 0, dirt: 0 });
   if (fine) box(b, 'hide', 0.085, 0.1, 0.035, m.clone().multiply(trs(0.12, 0.97 + dy, 0.08, 0, 0.5, 0)), { color: '#4a3b2d', ao: 0, dirt: 0.1 });
 
@@ -122,16 +122,16 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
       wrist = T(0.2 * s, 0.86, 0.06);
     }
     // rounded shoulder (no flat sleeve cap showing), open sleeve tube down to the elbow
-    b.add('cloth', new SphereGeometry(0.064, Math.max(5, seg - 1), 4), { ...cloth(style.tunic), m: new Matrix4().makeTranslation(sh.x, sh.y, sh.z) });
+    b.add('cloth', prim(SphereGeometry, 0.064, Math.max(5, seg - 1), 4), { ...cloth(style.tunic), m: new Matrix4().makeTranslation(sh.x, sh.y, sh.z) });
     rod(b, 'cloth', sh, elbow, 0.058, 0.047, Math.max(4, seg - 1), cloth(style.tunic), true);
     rod(b, 'cloth', elbow, wrist, 0.047, 0.041, Math.max(4, seg - 1), cloth(style.tunic), true);
-    if (fine) b.add('cloth', new SphereGeometry(0.047, Math.max(4, seg - 1), 3), { ...cloth(style.tunic), m: new Matrix4().makeTranslation(elbow.x, elbow.y, elbow.z) });
+    if (fine) b.add('cloth', prim(SphereGeometry, 0.047, Math.max(4, seg - 1), 3), { ...cloth(style.tunic), m: new Matrix4().makeTranslation(elbow.x, elbow.y, elbow.z) });
     const dir = new Vector3().subVectors(wrist, elbow).normalize();
     rod(b, 'cloth', wrist.clone().addScaledVector(dir, -0.05), wrist.clone().addScaledVector(dir, 0.005), 0.05, 0.05, seg - 2, cloth(style.hose), true);
     const hand = wrist.clone().addScaledVector(dir, 0.06);
     const hm = new Matrix4().lookAt(hand, hand.clone().add(dir), new Vector3(0, 1, 0).applyMatrix4(new Matrix4().extractRotation(m)));
     hm.setPosition(hand);
-    b.add('skin', new SphereGeometry(1, 5, 3), { ...flesh(style.skin), m: hm.multiply(new Matrix4().makeScale(0.04, 0.03, 0.065)) });
+    b.add('skin', prim(SphereGeometry, 1, 5, 3), { ...flesh(style.skin), m: hm.multiply(new Matrix4().makeScale(0.04, 0.03, 0.065)) });
   }
 
   if (!want('torso')) return;
@@ -139,17 +139,17 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
   rod(b, 'skin', T(0, 1.43, 0), T(0, 1.53, 0.012), 0.048, 0.046, 6, flesh(style.skin), true);
   const hc = T(0, 1.6, 0.015);
   const headM = new Matrix4().copy(m).setPosition(hc).multiply(trs(0, 0, 0, lean * 0.5, 0, 0));
-  b.add('skin', new SphereGeometry(1, seg + 2, Math.max(4, seg - 1)), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, 0, 0, 0, 0, 0, 0.083, 0.108, 0.098)) });
-  if (fine) b.add('skin', new SphereGeometry(1, 5, 3), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, -0.06, 0.035, 0, 0, 0, 0.062, 0.045, 0.06)) });
-  if (fine) b.add('skin', new CylinderGeometry(0.004, 0.017, 0.045, 4), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, -0.005, 0.098, -0.35)) });
+  b.add('skin', prim(SphereGeometry, 1, seg + 2, Math.max(4, seg - 1)), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, 0, 0, 0, 0, 0, 0.083, 0.108, 0.098)) });
+  if (fine) b.add('skin', prim(SphereGeometry, 1, 5, 3), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, -0.06, 0.035, 0, 0, 0, 0.062, 0.045, 0.06)) });
+  if (fine) b.add('skin', prim(CylinderGeometry, 0.004, 0.017, 0.045, 4), { ...flesh(style.skin), m: headM.clone().multiply(trs(0, -0.005, 0.098, -0.35)) });
   // hair below the headwear and a beard shadow for the darker-haired
-  b.add('cloth', new SphereGeometry(1, seg, 3, Math.PI * 0.68, Math.PI * 1.64, 0, Math.PI * 0.62), {
+  b.add('cloth', prim(SphereGeometry, 1, seg, 3, Math.PI * 0.68, Math.PI * 1.64, 0, Math.PI * 0.62), {
     color: style.hair, ao: 0, dirt: 0, m: headM.clone().multiply(trs(0, 0.0, -0.004, 0, 0, 0, 0.088, 0.112, 0.1)),
   });
 
   if (style.head === 'hood') {
     // chaperon hood: shell open at the face, shoulder cape, liripipe hanging down the back
-    b.add('cloth', new SphereGeometry(1, seg + 2, Math.max(3, seg - 2), Math.PI * 0.82, Math.PI * 1.36, 0, Math.PI * 0.64), {
+    b.add('cloth', prim(SphereGeometry, 1, seg + 2, Math.max(3, seg - 2), Math.PI * 0.82, Math.PI * 1.36, 0, Math.PI * 0.64), {
       ...cloth(style.hood), m: headM.clone().multiply(trs(0, 0.015, -0.008, 0, 0, 0, 0.108, 0.13, 0.122)),
     });
     lathe(b, 'cloth', [[0.001, 1.25], [0.26, 1.24], [0.255, 1.3], [0.22, 1.37], [0.15, 1.44], [0.1, 1.5], [0.001, 1.52]], seg + 2,
@@ -163,13 +163,13 @@ export function addHuman(b: PartBuilder, m: Matrix4, style: HumanStyle, pose: Hu
   } else if (style.head === 'hat') {
     // brimmed felt hat, slightly worn out of shape
     const hm = headM.clone().multiply(trs(0, 0.07, -0.005, -0.08, 0, 0.04));
-    b.add('cloth', new CylinderGeometry(0.075, 0.098, 0.1, seg + 2, 1, false), { ...cloth(style.hood), ao: 0, dirt: 0, m: hm.clone().multiply(trs(0, 0.05, 0)) });
-    b.add('cloth', new CylinderGeometry(0.175, 0.17, 0.012, seg + 6, 1, false), {
+    b.add('cloth', prim(CylinderGeometry, 0.075, 0.098, 0.1, seg + 2, 1, false), { ...cloth(style.hood), ao: 0, dirt: 0, m: hm.clone().multiply(trs(0, 0.05, 0)) });
+    b.add('cloth', prim(CylinderGeometry, 0.175, 0.17, 0.012, seg + 6, 1, false), {
       ...cloth(style.hood), ao: 0, dirt: 0, m: hm.clone().multiply(trs(0, 0.0, 0.01, 0.05, 0, 0, 1, 1, 0.95)), jitter: 0.008, jitterFreq: 9,
     });
   } else {
     // linen coif tied under the chin
-    b.add('cloth', new SphereGeometry(1, seg + 2, Math.max(3, seg - 3), Math.PI * 0.74, Math.PI * 1.52, 0, Math.PI * 0.7), {
+    b.add('cloth', prim(SphereGeometry, 1, seg + 2, Math.max(3, seg - 3), Math.PI * 0.74, Math.PI * 1.52, 0, Math.PI * 0.7), {
       ...cloth(style.hood), ao: 0, dirt: 0, m: headM.clone().multiply(trs(0, 0.01, -0.006, 0, 0, 0, 0.094, 0.118, 0.106)),
     });
   }
@@ -179,7 +179,7 @@ function shoe(b: PartBuilder, ankle: Vector3, m: Matrix4): void {
   const fwd = new Vector3(0, 0, 1).transformDirection(m);
   const c = ankle.clone().addScaledVector(fwd, 0.055).add(new Vector3(0, -0.04, 0));
   const ry = Math.atan2(fwd.x, fwd.z);
-  b.add('hide', new SphereGeometry(1, 6, 3), { color: '#3b3027', m: trs(c.x, c.y, c.z, 0, ry, 0, 0.05, 0.045, 0.13), dirt: 0.5 });
+  b.add('hide', prim(SphereGeometry, 1, 6, 3), { color: '#3b3027', m: trs(c.x, c.y, c.z, 0, ry, 0, 0.05, 0.045, 0.13), dirt: 0.5 });
 }
 
 /** Standalone standing worker for building yards. Origin between the feet, facing +Z. */
@@ -256,7 +256,7 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     box(ab, 'wood', 0.3, 0.018, 0.34, trs(0, -0.14, 2.0), { color: '#8a7354', ao: 0, dirt: 0.15 });
   } else if (kind === 'sack') {
     // a flour sack held against the body
-    ab.add('cloth', new SphereGeometry(1, 9, 6), { color: '#c4bba6', m: trs(0, -0.36, 0.42, 0, 0, 0, 0.22, 0.3, 0.17), vary: 0.04, noise: 0.1, ao: 0, dirt: 0.15, jitter: 0.02, jitterFreq: 4 });
+    ab.add('cloth', prim(SphereGeometry, 1, 9, 6), { color: '#c4bba6', m: trs(0, -0.36, 0.42, 0, 0, 0, 0.22, 0.3, 0.17), vary: 0.04, noise: 0.1, ao: 0, dirt: 0.15, jitter: 0.02, jitterFreq: 4 });
   } else if (kind === 'hoe') {
     // field hoe: a 1.2 m haft, the iron blade set across it at the far end, edge down
     rod(ab, 'wood', v3(0, -0.21, 0.3), v3(0, -0.3, 1.32), 0.017, 0.015, 5, handle);
@@ -265,13 +265,13 @@ export function workerRig(kind: WorkerKind, variant = 0): WorkerRig {
     // lift net: a 3.3 m pole, a willow hoop at its end and the net bag hanging from it
     const tip = v3(0, -1.0, 3.25);
     rod(ab, 'wood', v3(0, -0.2, 0.28), tip, 0.022, 0.016, 5, handle);
-    ab.add('wood', new TorusGeometry(0.42, 0.018, 4, 14), { color: '#6f5a3e', m: trs(tip.x, tip.y - 0.03, tip.z + 0.4, Math.PI / 2), ao: 0, dirt: 0.2 });
+    ab.add('wood', prim(TorusGeometry, 0.42, 0.018, 4, 14), { color: '#6f5a3e', m: trs(tip.x, tip.y - 0.03, tip.z + 0.4, Math.PI / 2), ao: 0, dirt: 0.2 });
     ab.add('cloth', new ConeGeometry(0.4, 0.55, 10, 2, true), { color: '#8a8270', m: trs(tip.x, tip.y - 0.31, tip.z + 0.4, Math.PI), vary: 0.05, noise: 0.25, ao: 0, dirt: 0.1, jitter: 0.03, jitterFreq: 6 });
   } else if (kind === 'mallet') {
     // stone splitter's sledge (quarry): a short ash haft, an iron head set across it with the face down, to drive
     // the wedges into the groove of the block on the bench
     rod(ab, 'wood', v3(0, -0.2, 0.34), v3(0, -0.13, 0.98), 0.02, 0.018, 5, handle);
-    ab.add('metal', new CylinderGeometry(0.06, 0.065, 0.24, 7), { color: '#4f4d48', m: trs(0, -0.15, 1.0), ao: 0, dirt: 0.1 });
+    ab.add('metal', prim(CylinderGeometry, 0.06, 0.065, 0.24, 7), { color: '#4f4d48', m: trs(0, -0.15, 1.0), ao: 0, dirt: 0.1 });
   } else if (kind === 'rake') {
     // collier's rake (charcoal burner): a long pole with a wooden head and short tines, to pull earth over the vents
     rod(ab, 'wood', v3(0, -0.12, 0.0), v3(0, -0.42, 1.25), 0.018, 0.016, 5, handle);
