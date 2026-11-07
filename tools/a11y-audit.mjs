@@ -329,6 +329,10 @@ try {
             entry.focus = stops;
           } else {
             await page.evaluate(scaleText);
+            // the app answers large text with body.is-bigtext (layout.ts watchTextScale, a ResizeObserver; D-120): on a
+            // device textZoom is set before the sheet opens, so read the layout only once the class is in (a loaded
+            // machine took > 300 ms and reported the pre-bigtext dock as clipped)
+            await page.waitForFunction(() => document.body.classList.contains('is-bigtext'), null, { timeout: 5000 }).catch(() => {});
             await page.waitForTimeout(300);
             entry.scale = await page.evaluate(scaleIssues);
             await page.screenshot({ path: `${out}/${tag}-text200.jpg`, type: 'jpeg', quality: 55, timeout: 180000 });
