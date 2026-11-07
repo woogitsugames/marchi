@@ -288,3 +288,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-337 | — | Dijkstra walks cached neighbour lists | decided | inne |
 | D-338 | — | Fewer searches in rule A, and small per-tick savings; behaviour unchanged | decided | inne |
 | D-339 | — | Situational entries of the stall codex, in all 17 languages (orders 72 + 102, taken over from GPT) | decided | inne |
+| D-340 | — | RTL code fixes from the Arabic review (`docs/research/gpt-rtl-ar.md`, code issues 1–7) | decided | inne |
+| D-341 | — | In Arabic the contract numeral is rubricated | decided | inne |
+| D-342 | — | Goods shape audit (order 81, taken over from GPT): the icons stay; bread vs malt on the wagon bed is a proposal | decided | sim |

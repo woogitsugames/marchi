@@ -3859,3 +3859,41 @@ review pass runs in parallel). The status entry for WAGON_DUE is aligned to the 
 check moved into "how to check"); docs/content/stall-codex.md gains a "Wpisy sytuacyjne" section, kept in sync by
 tests/stall-codex.test.ts. Test tests/codex-situations.test.ts (17 dictionaries complete, ≤ 220 characters; each
 situation picked in a real or staged state, read-only). UI only, mission hashes identical. (decided)
+
+**D-340 — RTL code fixes from the Arabic review (`docs/research/gpt-rtl-ar.md`, code issues 1–7).** (1) `bdi()` in
+`src/ui/format.ts` gives content with no letter (a price, count, time, ratio: "−30", "+2", "1:30") `dir="ltr"`: a bare
+`<bdi>` is dir=auto and, with no strong character, takes the parent's RTL direction, so every fix button showed "30−" and
+the undo refund "5+". Names keep dir=auto (an Arabic name inside an LTR isolate would reverse its words). The two
+`\u0001` link placeholders (castles.ts, pace.ts) now split on `bdi('\u0001')`. (2) The card's "?" was already mirrored
+by D-284 (the reviewer read the code, not the stylesheet); the shots show "؟" (computed transform `matrix(-1, 0, 0, 1,
+0, 0)`), so no change. (3) The manicule (`inspect`: menu help button, the moderator screen, help sheet, the
+"ماذا يعني هذا؟" fold) joins `RTL_MIRROR` (D-334): a hand pointing at the start of a line points along the reading
+direction. (4) The waybill's "أولًا" in landscape is screen-reader-only on purpose (D-329; the overflow check counted the
+1 px sr-only box as "clipped"). Elsewhere the tag gets `flex: none` and the castle line `min-width: 0`, so a long line
+wraps instead of squeezing the tag. (5) See D-341. (6) `t()` isolates number parameters itself in RTL
+(`isolateNumberParams`, `src/i18n/bidi.ts`): a parameter whose value has no letter is wrapped in FSI…PDI together with
+a sign before it ("+{n}", "−{price}", "×{k}"), a percent after it and number parameters joined by "/", ":" or "–";
+a parameter the translation already isolates (⁨{time}⁩, ⁨+{n}⁩) or an `iso()` value is left alone, and names are never
+wrapped (an isolate between two Arabic letters breaks their joining). Only `ar` is in `RTL_LANGS`, so the other 16
+languages are byte-identical; `tHtml` markers contain letters and keep their `<bdi>`. The existing marks in `ar.ts`
+stay (harmless, and they cover HTML paths). Test `tests/i18n-bidi.test.ts` (units + every Arabic message balanced, no
+doubled isolate); the dictionary lists of the codex test and the i18n tools skip `bidi`. (7) The moderator screen's
+device field has `dir="auto"`. Shots `docs/shots/rtlui-*-ar.jpg`. UI only, mission hashes identical. (decided)
+
+**D-341 — In Arabic the contract numeral is rubricated.** "I. الخبز والألواح" in the HUD ribbon: a lone "I" in the
+display face, with the period on its left as Arabic bidi puts it (D-329), reads as an alef. Arabic ordinals or Arabic-
+Indic numerals would break D-73 (Roman numerals in every language, shared with the menu medallions). `missionTitleHtml`
+(`src/ui/menu.ts`) puts the leading numeral and its period in `<span class="roman">` (no isolate: the reading order is
+unchanged); in RTL the ribbon draws it in light brass (#e6c27a on the wine ribbon) and the opening letter's heading in
+wine, as a scribe rubricates a number. Latin scripts look as before; accessible names keep the plain title. (decided)
+
+**D-342 — Goods shape audit (order 81, taken over from GPT): the icons stay; bread vs malt on the wagon bed is a proposal.**
+The goods icons are one ink colour, so shape was always their only identity. In grayscale at 16–48 px, struck through,
+light on dark and blurred, all ten read apart (`docs/shots/goods-shapes-icons-{gray,blur}.jpg`; pair scores by
+`tools/goods-shapes.mts`, IoU of the 18 px masks: highest flour–stone 0.63). The weakest pair, wood–stone at 16 px, still
+separates by proportion and outline, so `icons.ts` is unchanged — a redraw would not be clearly better. The 3D loads
+seen from above in grayscale (`tools/model-preview.html` views `cargoBase` / `cargoChain`, shots
+`goods-shapes-cargo-*.jpg`) have one weak pair: bread baskets and malt tubs (D-201), both six round open containers in
+a 2×3 grid. At the default zoom a wagon is ~25 px and the ETA tag's icon names the good, so it matters only zoomed in.
+Proposal (BACKLOG P3, art owner): oblong bread baskets. Not done here: a render change with a catalogue re-bake
+(D-331). Report `docs/research/goods-shapes.md`. (decided)

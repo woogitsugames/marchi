@@ -106,6 +106,8 @@ Matches D-37 (as amended) everywhere it was checked:
 
 ## UI code issues (not changed, for the code owner)
 
+*Resolved 2026-11-07 on `claude/w-rtlui`: D-340 (items 1–3, 5–7; item 1 was already handled by D-284, the CSS flip) and D-341 (item 4). Shots `docs/shots/rtlui-*-ar.jpg`.*
+
 1. **Sheet help button shows a Latin „?“** (`src/ui/sheets.ts:285`, `h('button.sh-help', …, '?')`). In Arabic
    the question mark is the mirrored „؟“. Either use `t()` for the glyph, or flip it with `.rtl-flip`.
    It shows on every sheet header (`gpt-rtl-ar-why-*.jpg`, `gpt-rtl-ar-castle-*.jpg`).
