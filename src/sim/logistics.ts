@@ -1,7 +1,7 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
 import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
-import { contractTarget, storeCapOf } from './contract';
+import { contractTarget, contractsOf, runningContractOf, storeCapOf } from './contract';
 import { isMarket, marketCents, marketOpen } from './town';
 import { orderOutstanding } from './events';
 import { MISSIONS } from './missions';
@@ -88,9 +88,9 @@ export function buildingById(world: World, id: number): Building | null {
 }
 
 function remainingContract(world: World, b: Building, g: Good): number {
-  const m = world.state.mission;
-  if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
-  return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
+  const c = runningContractOf(world.state.mission, b.id);
+  if (!c) return 0;
+  return contractTarget(c, g) - b.stock[g] - b.incoming[g];
 }
 
 /**
@@ -150,9 +150,12 @@ export function dispatch(world: World): void {
   for (const b of st.buildings) {
     const def = BUILDINGS[b.type];
     if (b.type === 'castle') {
+      // two castles (mission XVI, D-289): the castle marked first goes before every other demand, on the castle leg
+      // only; `firstCastle` is absent in every other mission (prio 0, by fill then id, as before)
+      const prio = st.mission.firstCastle === b.id ? -1 : 0;
       for (const g of GOODS) {
         const want = remainingContract(world, b, g);
-        if (want > 0) demands.push({ b, good: g, want, prio: 0, fill: (b.stock[g] + b.incoming[g]) / Math.max(1, world.state.mission.contract!.need[g]) });
+        if (want > 0) demands.push({ b, good: g, want, prio, fill: (b.stock[g] + b.incoming[g]) / Math.max(1, runningContractOf(st.mission, b.id)!.need[g]) });
       }
       continue;
     }
@@ -472,14 +475,17 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
     const m = world.state.mission;
     // free valley: the castle is the market; it only needs a road
     if (marketOpen(world)) return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
-    if (!m.contract || m.contract.castle !== b.id) return { k: 'IDLE' };
+    const own = contractsOf(m).find((c) => c.castle === b.id);
+    if (!own) return { k: 'IDLE' };
     if (m.result === 'won') return { k: 'CONTRACT_DONE' };
+    // two castles (D-288): one castle's order can be complete while the other still runs
+    if (m.extraContracts && GOODS.every((g) => b.stock[g] >= own.need[g])) return { k: 'CONTRACT_DONE' };
     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
     // report the first good still missing, preferring a real stall over "on the way"
     let waiting: BuildingStatus | null = null;
     for (const g of GOODS) {
       // with tranches only the goods of the letter currently due count
-      const target = contractTarget(m.contract, g);
+      const target = contractTarget(own, g);
       if (target - b.stock[g] <= 0) continue;
       const r = inputReason(world, b, g, unmet, held, dc);
       if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM' || r.k === 'WAGON_DUE') { if (!waiting) waiting = r; continue; }

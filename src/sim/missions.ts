@@ -10,6 +10,7 @@ import { PROPOSED_MISSIONS_7_9 } from './proposals/missions-7-9';
 import { PROPOSED_MISSIONS_10_12 } from './proposals/missions-10-12';
 import { M13_MISSION } from './proposals/m13';
 import { MISSIONS_14_15 } from './proposals/missions-14-15';
+import { M16_MISSION } from './proposals/m16';
 import { freshMarket, freshTown } from './town';
 import { freshTradePost, placeTradePost } from './tradePost';
 import type { World } from './network';
@@ -116,6 +117,13 @@ export interface MissionDef {
   ice?: RainSpell[];
   /** Contract in tranches (mission V). `contract` must equal their sum; the last dueMin is the deadline. */
   tranches?: TrancheDef[];
+  /**
+   * Two castles (mission XVI, D-288): one order per castle, in the order the castles stand in `buildings`, each due by
+   * its own `dueMin` (one tranche). The first castle holds the main contract (`contract` must equal its need; its
+   * deadline, star and end ticks are the mission's); the others become `state.mission.extraContracts`. Not combined
+   * with `tranches`.
+   */
+  castles?: TrancheDef[];
   /** The castle buys goods (default: open when there is no contract). Test maps close it. */
   market?: boolean;
   /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
@@ -252,6 +260,7 @@ MISSIONS.m12 = PROPOSED_MISSIONS_10_12.m12;
 MISSIONS.m13 = M13_MISSION;
 MISSIONS.m14 = MISSIONS_14_15.m14;
 MISSIONS.m15 = MISSIONS_14_15.m15;
+MISSIONS.m16 = M16_MISSION;
 MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 
@@ -343,6 +352,28 @@ export function buildMission(missionId: string, seedOverride?: number): { terrai
         if (sum !== (def.contract[g] ?? 0)) throw new Error(`mission ${def.id}: tranches of ${g} sum to ${sum}, contract says ${def.contract[g]}`);
       }
     }
+    if (def.castles) addCastleOrders(def, state);
   }
   return { terrain, state };
+}
+
+/**
+ * Two castles (D-288): the main contract gets the first castle's deadline as its one tranche, every further castle
+ * (in `buildings` order) an order of its own with one tranche; the mission clock (deadline, stars) stays the main one.
+ */
+function addCastleOrders(def: MissionDef, state: SimState): void {
+  const orders = def.castles!, main = state.mission.contract!;
+  const castles = state.buildings.filter((b) => b.type === 'castle');
+  if (def.tranches) throw new Error(`mission ${def.id}: castles and tranches do not combine`);
+  if (orders.length < 2 || castles.length !== orders.length) throw new Error(`mission ${def.id}: ${orders.length} castle orders for ${castles.length} castles`);
+  for (const g of GOODS) {
+    if ((orders[0]!.need[g] ?? 0) !== (def.contract![g] ?? 0)) throw new Error(`mission ${def.id}: the first castle order must equal the contract`);
+  }
+  const tick = (min: number): number => Math.round(min * 60 * TICK_HZ);
+  const one = (t: TrancheDef) => [{ need: goodsOf(t.need), deadlineTick: tick(t.dueMin), doneTick: -1, missed: false }];
+  main.tranches = one(orders[0]!);
+  state.mission.extraContracts = orders.slice(1).map((t, i) => ({
+    need: goodsOf(t.need), castle: castles[i + 1]!.id,
+    deadlineTick: main.deadlineTick, star3Tick: main.star3Tick, star2Tick: main.star2Tick, tranches: one(t),
+  }));
 }

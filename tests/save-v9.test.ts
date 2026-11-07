@@ -30,7 +30,7 @@ function migrated(edit?: (s: J) => void): { old: J; state: J } {
 }
 
 test('save v8 -> v9: a real v8 valley save gets the trading post on (37,58) with the next id, keeps running', () => {
-  eq(STATE_VERSION, 9, 'current state version (v9: trading post, D-170)');
+  eq(STATE_VERSION, 10, 'current state version (v10: two castles, D-288)');
   const { old, state } = migrated();
   assert(!('tradePost' in old), 'no slice in v8');
   assert(!old.buildings.some((b: J) => b.type === 'tradePost'), 'no post in v8');

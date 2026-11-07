@@ -1,7 +1,7 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
 import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
-import { contractTarget, storeCapOf } from './contract';
+import { contractTarget, contractsOf, storeCapOf } from './contract';
 import { marketOpen } from './town';
 import { postOpen } from './tradePost';
 import { cellSpeed, edgeLength, edgeSpeedAt, findPath, grade, isRaining, pathTime, reachable, slopeFactor, type World } from './network';
@@ -85,8 +85,8 @@ export function outputCustomer(world: World, id: number): number {
     if (c.id === b.id) continue;
     let takes = inputGoods(c.type).includes(g);
     if (!takes && c.type === 'castle') {
-      const k = st.mission.contract;
-      takes = k ? k.castle === c.id && k.need[g] > c.stock[g] : st.market.open;
+      // every castle with an order (two castles, D-288): the one whose own order still lacks the good takes it
+      takes = st.mission.contract ? contractsOf(st.mission).some((k) => k.castle === c.id && k.need[g] > c.stock[g]) : st.market.open;
     }
     if (!takes && c.type === 'tradePost') takes = postOpen(world); // the free valley's trading post (D-170)
     if (takes && findPath(world, b.gate, c.gate, true)) return c.id;
@@ -182,10 +182,9 @@ export function outputSurplus(world: World, id: number): 'SPARE' | 'MARKET' | nu
   const b = buildingById(world, id);
   if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON') return null;
   const g = b.status.good, st = world.state;
-  const k = st.mission.contract;
   // with tranches only the letter now due counts (D-106): the castle does not take the next letter's goods
-  // early, so a wagon would only park them in a granary — the dispatcher hauls that last
-  if (k && contractTarget(k, g) > (buildingById(world, k.castle)?.stock[g] ?? 0)) return null;
+  // early, so a wagon would only park them in a granary — the dispatcher hauls that last. Every castle's order counts.
+  for (const k of contractsOf(st.mission)) if (contractTarget(k, g) > (buildingById(world, k.castle)?.stock[g] ?? 0)) return null;
   if (g === 'stone' && (st.mission.roadStone || marketOpen(world))) {
     for (const q of st.buildings) {
       if (q.type !== 'warehouse') continue;
@@ -214,8 +213,7 @@ export function stoneInStore(world: World, id: number): number {
   const st = world.state;
   if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_WAGON' || b.status.good !== 'stone') return 0;
   if (!st.mission.roadStone || marketOpen(world)) return 0;
-  const k = st.mission.contract;
-  if (k && k.need.stone > (buildingById(world, k.castle)?.stock.stone ?? 0)) return 0;
+  for (const k of contractsOf(st.mission)) if (k.need.stone > (buildingById(world, k.castle)?.stock.stone ?? 0)) return 0;
   let n = 0;
   for (const q of st.buildings) {
     if (q.id === id) continue;
@@ -273,8 +271,10 @@ export function busyOutOfReach(world: World, id: number): number {
 export function contractFilled(world: World, id: number): Good | null {
   const b = buildingById(world, id);
   if (!b || b.status.k !== 'OUTPUT_FULL' || b.status.cause !== 'NO_DESTINATION') return null;
-  const g = b.status.good, k = world.state.mission.contract;
-  if (!k || k.need[g] <= 0 || (buildingById(world, k.castle)?.stock[g] ?? 0) < k.need[g]) return null;
+  const g = b.status.good;
+  // every castle ordering this good holds it in full (two castles, D-288; one castle: its order)
+  const orders = contractsOf(world.state.mission).filter((k) => k.need[g] > 0);
+  if (!orders.length || orders.some((k) => (buildingById(world, k.castle)?.stock[g] ?? 0) < k.need[g])) return null;
   return outputCustomer(world, id) < 0 ? g : null;
 }
 

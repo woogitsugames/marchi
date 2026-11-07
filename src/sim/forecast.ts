@@ -3,6 +3,7 @@
 // it; the waybill and the castle card read this instead. Read-only on the state: the pace log is
 // owned by the caller (the UI samples it every tick), never part of SimState, never hashed.
 import { BUILDINGS, GOODS, LOAD_TICKS, TICK_HZ, UNLOAD_TICKS, outputGoods } from './defs';
+import { contractsOf } from './contract';
 import { wagonEta } from './diagnose';
 import { buildingById } from './logistics';
 import { findPath, pathTime, type World } from './network';
@@ -152,7 +153,7 @@ function sealsAt(world: World, tick: number): number {
   const base = tick <= c.star3Tick ? 3 : tick <= c.star2Tick ? 2 : tick <= c.deadlineTick ? 1 : 0;
   if (base === 0) return 0;
   let missed = 0;
-  for (const t of c.tranches) if (t.missed) missed++;
+  for (const k of contractsOf(world.state.mission)) for (const t of k.tranches) if (t.missed) missed++;
   return Math.max(1, base - missed);
 }
 

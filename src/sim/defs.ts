@@ -3,7 +3,7 @@ import type { BuildingType, Good, GoodMap } from './types';
 
 export const TICK_HZ = 10;
 export const DT = 1 / TICK_HZ;
-export const STATE_VERSION = 9;
+export const STATE_VERSION = 10;
 
 /**
  * Every good, in the canonical order (the key order of every GoodMap, so of the state hash). The

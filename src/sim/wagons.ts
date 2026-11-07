@@ -2,7 +2,7 @@
 import {
   BUILDINGS, DT, LOAD_TICKS, NO_ROUTE_CANCEL_TICKS, UNLOAD_TICKS, WOOD_BRIDGE_MAX_WAGONS, capacityOf, emptyGoods, inputGoods, sumGoods,
 } from './defs';
-import { contractTarget, storeCapOf } from './contract';
+import { contractTarget, runningContractOf, storeCapOf } from './contract';
 import { bridgeIceUntil, thawing } from './seasons';
 import { buildingById } from './logistics';
 import { isMarket, sellAt } from './town';
@@ -319,9 +319,9 @@ export function acceptsUpTo(world: World, b: Building, g: Good): number {
   if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming);
   if (isMarket(world, b)) return capacityOf(g); // the market buys whatever arrives
   if (b.type === 'castle') {
-    const m = world.state.mission;
-    if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
-    return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
+    const c = runningContractOf(world.state.mission, b.id);
+    if (!c) return 0;
+    return contractTarget(c, g) - b.stock[g] - b.incoming[g];
   }
   if (inputGoods(b.type).includes(g)) return def.inCap - b.stock[g] - b.incoming[g];
   return 0;
@@ -332,8 +332,8 @@ export function accepts(world: World, b: Building, g: Good, qty: number): boolea
   if (b.type === 'warehouse') return storeCapOf(b) - sumGoods(b.stock) - sumGoods(b.incoming) >= qty;
   if (isMarket(world, b)) return true;
   if (b.type === 'castle') {
-    const m = world.state.mission;
-    return !!m.contract && m.result === 'running' && m.contract.castle === b.id && contractTarget(m.contract, g) - b.stock[g] - b.incoming[g] >= qty;
+    const c = runningContractOf(world.state.mission, b.id);
+    return !!c && contractTarget(c, g) - b.stock[g] - b.incoming[g] >= qty;
   }
   if (inputGoods(b.type).includes(g)) return def.inCap - b.stock[g] - b.incoming[g] >= qty;
   return false;

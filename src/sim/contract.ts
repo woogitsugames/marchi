@@ -1,11 +1,28 @@
 // Contract tranches (mission V), per-building storage capacity (mission VI) and ice windows
 // (mission IV): small pure helpers shared by dispatch, wagons, routing and checkMission.
 import { BUILDINGS, GOODS } from './defs';
-import type { Building, Contract, Good, SimState } from './types';
+import type { Building, Contract, Good, MissionState, SimState } from './types';
 
 /** Warehouse capacity of this building (all goods together). */
 export function storeCapOf(b: Building): number {
   return b.capOverride >= 0 ? b.capOverride : BUILDINGS[b.type].storeCap;
+}
+
+/**
+ * Every castle order of the mission: the main contract, then the further castles of mission XVI
+ * (D-288). One-castle missions return [contract] (or []), so callers behave exactly as before.
+ */
+export function contractsOf(m: MissionState): Contract[] {
+  if (!m.contract) return [];
+  return m.extraContracts ? [m.contract, ...m.extraContracts] : [m.contract];
+}
+
+/** The order this castle holds while the mission runs, or null (not a contract castle / mission over). */
+export function runningContractOf(m: MissionState, castleId: number): Contract | null {
+  if (!m.contract || m.result !== 'running') return null;
+  if (m.contract.castle === castleId) return m.contract;
+  if (m.extraContracts) for (const c of m.extraContracts) if (c.castle === castleId) return c;
+  return null;
 }
 
 /** Index of the first tranche not yet complete, or -1 (no tranches / all done). */

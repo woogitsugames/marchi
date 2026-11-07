@@ -180,6 +180,17 @@ export interface MissionState {
    * stone (rank gating) and keeps this false.
    */
   roadStone: boolean;
+  /**
+   * Contracts of further castles (state v10, mission XVI "Dwa zamki", D-288): each holds one tranche that carries
+   * its own deadline; stars, deadline and end of the mission stay on `contract`. Absent in every other mission, so
+   * those serialize exactly as before (same pattern as `valleyEvents`).
+   */
+  extraContracts?: Contract[];
+  /**
+   * Castle whose order the dispatcher serves first, castle leg only (the `castleFirst` command, D-289); absent =
+   * every castle by fill, then id. Only ever set in a mission with `extraContracts`.
+   */
+  firstCastle?: number;
 }
 
 export interface Ledger {
