@@ -777,5 +777,5 @@ export const ko: Dict = {
   "menu.m16": "XVI. 두 성",
   "menu.m16Sub": "먼저 고른 성이 제때 받는다",
   "cause.paceHaul": "분당 {cap} 중 {rate}개의 {goodGen}만 생산, {n, plural, other {수레 #대 모두 운행 중}} — 수레 구매",
-  "fix.paceHaulWhy": "1분 동안 빈 수레가 없었고, 수레가 {goodGen} 수거를 따라가지 못합니다. 두 성 모두 ≈{time} 완료 — {seals}. {by}까지 {aim}. 새 수레는 제때 본전을 뽑습니다.",
+  "fix.paceHaulWhy": "1분 동안 빈 수레가 없었고, 수레가 {goodGen} 수거를 따라가지 못합니다. {by}까지 {aim}을 얻으려면 물건이 더 빨리 떠나야 합니다. 새 수레는 제때 본전을 뽑습니다.",
 };

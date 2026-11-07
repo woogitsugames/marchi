@@ -777,5 +777,5 @@ export const zh_Hans: Dict = {
   "menu.m16": "XVI. 两座城堡",
   "menu.m16Sub": "先选者按时",
   "cause.paceHaul": "每分钟只做{rate}/{cap}{goodGen}，{n, plural, other {#辆货车全在路上}}——购买货车",
-  "fix.paceHaulWhy": "整整一分钟没有空闲货车，货车来不及运走{goodGen}。两座城堡约{time}完成——{seals}；{by}前可得{aim}。新货车来得及回本。",
+  "fix.paceHaulWhy": "整整一分钟没有空闲货车，货车来不及运走{goodGen}。要在{by}前拿到{aim}，货物必须更早出发；新货车来得及回本。",
 };

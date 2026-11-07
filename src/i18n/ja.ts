@@ -777,5 +777,5 @@ export const ja: Dict = {
   "menu.m16": "XVI. 二つの城",
   "menu.m16Sub": "先に選んだ城が間に合う",
   "cause.paceHaul": "毎分{cap}のうち{rate}の{goodGen}しか作れない、{n, plural, other {荷車#台すべて運行中}} — 荷車を買う",
-  "fix.paceHaulWhy": "1分間、空いた荷車が一台もなく、{goodGen}の引き取りが追いつかない。両方の城の完成は≈{time} — {seals}。{by}までに{aim}。新しい荷車は間に合って元が取れる。",
+  "fix.paceHaulWhy": "1分間、空いた荷車が一台もなく、{goodGen}の引き取りが追いつかない。{by}までに{aim}を得るには荷を早く出す必要がある。新しい荷車は間に合って元が取れる。",
 };

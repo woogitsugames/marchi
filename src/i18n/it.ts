@@ -777,5 +777,5 @@ export const it: Dict = {
   "menu.m16": "XVI. Due castelli",
   "menu.m16Sub": "Chi è primo arriva in tempo",
   "cause.paceHaul": "fa {rate} su {cap} {goodGen} al minuto, {n, plural, one {l'unico carro è in viaggio} other {tutti i # carri in viaggio}} — compra un carro",
-  "fix.paceHaulWhy": "Per un minuto nessun carro è rimasto libero e i carri non riescono a ritirare {goodGen}. Entrambi i castelli pronti ≈{time} — {seals}; {aim} entro {by}. Un carro nuovo si ripaga in tempo.",
+  "fix.paceHaulWhy": "Per un minuto nessun carro è rimasto libero e i carri non riescono a ritirare {goodGen}. Per {aim} entro {by} la merce deve partire prima; un carro nuovo si ripaga in tempo.",
 };

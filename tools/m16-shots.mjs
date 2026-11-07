@@ -1,6 +1,7 @@
 // Mission XVI screenshots (D-288..D-291): the opening letter, the castle pace card on the HUD with the two-castle
 // waybill (0:20), the east castle's card with the rival line and the "Ten zamek pierwszy" switch (2:30, even split),
-// and the same card after one tap on the switch.
+// and the same card after one tap on the switch; D-307: with the east castle first from 0:00, the haul card "Kup wóz" on
+// the HUD at 1:30 and the sawmill's sheet it opens.
 // Usage: [ONLY=regex] node tools/m16-shots.mjs [baseUrl] [WxH ...]  (server: npm run build; npx vite preview --port 5231 --strictPort)
 // -> docs/shots/m16-<what>-<w>x<h>.jpg
 import { createRequire } from 'node:module';
@@ -19,6 +20,8 @@ const SHOTS = [
   { what: 'card', q: 'ff=20&speed=0' },
   { what: 'castle', q: 'ff=150&speed=0&openId=5' },
   { what: 'switch', q: 'ff=40&speed=0&openId=5', tap: true },
+  { what: 'haul', q: 'speed=0', haul: 90 },
+  { what: 'haulsheet', q: 'speed=0', haul: 90, sheet: true },
 ];
 const only = process.env.ONLY ? new RegExp(process.env.ONLY) : null;
 for (const [w, h] of sizes) {
@@ -40,6 +43,27 @@ for (const [w, h] of sizes) {
       const start = page.locator('.letter [data-a="start"]');
       if (await start.count()) { await start.first().click(); await page.waitForTimeout(800); }
       await page.waitForTimeout(1500);
+    }
+    if (s.haul) {
+      // east first at 0:00, then the app's own loop to the given second (the pace and fleet logs sample every tick)
+      const k = await page.evaluate(([sec, sheet]) => {
+        const A = window.__marchia.app;
+        A.loop.enqueue({ t: 'castleFirst', castle: 5 }); A.loop.flushCommands();
+        while (A.world.state.tick < sec * 10) A.loop.tickOnce();
+        return A.world.state.tick;
+      }, [s.haul, !!s.sheet]);
+      await page.waitForTimeout(2000);
+      // the sheet as the player gets it: one tap on the card
+      if (s.sheet) {
+        await page.locator('.stall-eye').first().click();
+        // software GL renders a frame every few seconds after the forward: wait for the entrance (two frames), then
+        // drop the class that only animates it
+        await page.waitForFunction(() => !document.querySelector('#sheets .sheet.is-entering'), null, { timeout: 30000 }).catch(() => {});
+        await page.evaluate(() => document.querySelectorAll('#sheets .sheet.is-entering').forEach((e) => e.classList.remove('is-entering')));
+        await page.waitForFunction(() => [...document.querySelectorAll('#sheets .sheet')].every((e) => getComputedStyle(e).opacity === '1'), null, { timeout: 30000 }).catch(() => {});
+        await page.waitForTimeout(4000);
+      }
+      if (!(await page.locator('.stall-row.is-pace').count())) errors.push(`${s.what} ${tag}: no pace card at tick ${k}`);
     }
     if (s.tap) {
       const btn = page.locator('[data-act="first:5"]');

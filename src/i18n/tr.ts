@@ -777,5 +777,5 @@ export const tr: Dict = {
   "menu.m16": "XVI. İki kale",
   "menu.m16Sub": "Önce gelen zamanında gelir",
   "cause.paceHaul": "dakikada {cap} {goodGen} yerine {rate} yapıyor, {n, plural, one {tek araba yolda} other {# arabanın hepsi yolda}} — araba al",
-  "fix.paceHaulWhy": "Bir dakika boyunca hiçbir araba boş kalmadı ve arabalar {goodGen} toplamaya yetişemiyor. İki kale de ≈{time} hazır — {seals}; {by} öncesine {aim}. Yeni araba zamanında kendini öder.",
+  "fix.paceHaulWhy": "Bir dakika boyunca hiçbir araba boş kalmadı ve arabalar {goodGen} toplamaya yetişemiyor. {by} öncesine {aim} için mal daha erken yola çıkmalı; yeni araba zamanında kendini öder.",
 };

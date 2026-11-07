@@ -197,11 +197,19 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
  * both castles is forecast past the next seal. "Kup wóz" with the forecast and the seal in reach.
  */
 function haulCureHtml(world: World, pc: PaceHaul): string {
-  const why = t('fix.paceHaulWhy', {
-    goodGen: t(`goodGen.${pc.good}` as MessageKey), time: ticksClock(pc.finishTick), by: ticksClock(pc.byTick),
-    seals: t('why.pace.seals', { n: pc.seals }), aim: t('why.pace.seals', { n: pc.aim }),
-  });
-  return wagonCureHtml(world, why);
+  // the forecast's own finish is not printed: in the first minutes the long-run pace still carries the start-up wait
+  // for wood (XVI at 1:30: "10:00" for a run that ends at 7:15); the seal in reach and its time are exact
+  const why = t('fix.paceHaulWhy', { goodGen: t(`goodGen.${pc.good}` as MessageKey), by: ticksClock(pc.byTick), aim: t('why.pace.seals', { n: pc.aim }) });
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return '';
+  const short = WAGON_PRICE - world.state.coins;
+  const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
+    iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
+  const hint = short > 0
+    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+    : `<div class="s-hint">${esc(why)}</div>`;
+  // two sentences: their own full-width row on a short landscape sheet (D-270), as the grow card's
+  return fixSection(btn, hint, short > 0, true);
 }
 
 /** "Kup wóz" from the stable, with its reason (or the silver short of it). */
