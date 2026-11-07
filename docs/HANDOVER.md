@@ -89,8 +89,9 @@
   hasze misji bajt w bajt (sprawdzone też przez koordynatora), bot 7,94 min 3★ jak przedtem. Testy 623/0, smoke 0, layout 138/0.
 - **Polecenie właściciela 7 XI ~23:45:** praca autonomiczna i ciągła; zlecenia, których inne AI (GPT) nie oddały, robimy sami
   agentami Claude. Nieoddane: 66, 67, 68, 69, 70, 71, 72, 79, 80, 81, 82, 83, 84, 100, 101–105. Plan fal (po 2 agentów):
-  1) 66+105 i18n (de/es/fr/it/nl/pt_BR/sv/tr) ‖ 67+71+101 listy — **w toku od ~23:50** (`claude/w-i18n1`, `claude/w-letters`);
-  2) 66+105 i18n (ru/uk/ja/ko/zh_Hans/ar/hi) + 100 RTL ‖ 72+102 księga przestojów; 3) 103 playtest S10 + 104 pomoc ‖ 81 audyt
+  1) **scalone ~00:30:** 66+105 i18n de/es/fr/it/nl/pt_BR/sv/tr (207 kluczy/język, 317 zmian, `docs/reviews/i18n-66-105-latin.md`)
+  ‖ 67+71+101 listy (VIII/XIII bez zdradzania rozwiązania, XVI na nowo w 17 językach, XIV–XV przegląd, list doliny; `docs/reviews/letters-*`);
+  2) **w toku od ~00:35:** 66+105 i18n ru/uk/ja/ko/zh_Hans/ar/hi + 100 RTL (`claude/w-i18n2`) ‖ 72+102 księga przestojów (`claude/w-codex`); 3) 103 playtest S10 + 104 pomoc ‖ 81 audyt
   kształtów towarów + 68 ikony; 4) 82/83/84 audyty (częściowo zrobione QA 7 XI) ‖ 70 opisy sklepu; 5) 69/79/80 dźwięki CC0.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
