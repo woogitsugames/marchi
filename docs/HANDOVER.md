@@ -43,9 +43,13 @@
   karta „przewóz” (tartak robi mniej niż potrafi, wszystkie wozy w trasie → „Kup wóz”). Rozsądny gracz 3★ przy 10/30/60 s;
   I–XV bez zmian (148 wierszy bilansu i 71 haszy identyczne). Słabe miejsce: oko z przesunięciem fazy 60 s → 2★ (BACKLOG).
   Paczka GPT 14 wysłana (listy XVI, kodeks zamków, playtest S10, temat pomocy). Weryfikacja: testy 600/0, smoke 0, layout 126/0.
-- W toku (od ~14:25): agent `claude/w-perfworld` — szybsza budowa świata (siatka terenu, roślinność; D-310..D-312, bez zmian
-  obrazu); agent `claude/w-fc16early` — uczciwa prognoza XVI od ~1:00 (całość za pesymistyczna, zamek za optymistyczny;
-  D-313..D-316). Następny APK ~16:40.
+- Scalone ~15:30: **D-313..D-316** XVI — jeden model łańcucha (tartak 85 % vs flota) dla prognozy całości i zamków: błąd od 1:10
+  −36…+27 s (było do +192 s), karta zamku przy równym podziale mówi „spóźni się o 2:00” (było 0:33), arkusz „przewóz” znów
+  podaje godzinę (nowy klucz `fix.paceHaulAt`); oko 60 s z przesunięciem fazy 2★ → 3★. **D-310..D-312** szybsza budowa świata
+  (maska dróg tylko w dotkniętych wierszach, trzcina i plan drzew raz na grunt): menu → misja I 34 → 20 ms, menu −10 % CPU,
+  0 px różnicy na 15 scenach. Weryfikacja: testy 603/0, smoke 0, layout 126/0.
+- W toku: agent `claude/w-stale16` — w zrzucie XVI list przewozowy pokazuje 0/24 przy 6 deskach w zamku: błąd UI czy artefakt
+  zrzutu (D-317..). Następny APK ~16:40.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
