@@ -3174,3 +3174,78 @@ the probe's clock jump) — fixed as above. Shots (`tools/winter-trees-shots.mjs
 Inspected: winter oaks and birches read as bare trees with limbs and a fine twig haze, pines and spruces green, far
 copses bare, shadows lacy; autumn unchanged. Open: the regrown spring leaves keep the late-autumn colours of the art
 direction (a fresh spring tint would be a separate owner decision). (decided)
+
+**D-288 — Mission XVI "Dwa zamki": two castle orders in one mission, state v10.**
+Owner decision 2026-11-07 (research `docs/research/2026-11-07-two-castles.md`, option 2, design A). The state keeps
+`mission.contract` as the main castle's order (its deadline, star and end ticks stay the mission's) and gains two
+optional keys, absent in every other mission so they serialize byte for byte as before (the `valleyEvents` pattern):
+`mission.extraContracts` (further castles, one tranche each carrying that castle's own deadline) and
+`mission.firstCastle` (D-289). `contractsOf` / `runningContractOf` (`src/sim/contract.ts`) replace the single-castle
+checks in dispatch, `accepts` / `acceptsUpTo`, the castle status (a castle whose own order is complete reads
+`CONTRACT_DONE` while the other runs), `checkMission`, `stars`, the forecast seals and the read-only helpers
+(`outputCustomer`, `outputSurplus`, `stoneInStore`, `contractFilled`, the link anchor in `repair.ts`); for one castle
+they return exactly what the old checks read. Authoring: `MissionDef.castles` (`{ name, need, dueMin }[]` in building
+order, the first = `contract`; `name` keys the castle's player-facing name and is never in the state). Seals: one set
+for the mission from the last delivery, minus one per castle late on its own deadline (the tranche rule of V / XV),
+at least one for a win; loss only at the mission's end. `STATE_VERSION` 9 → 10 with an identity migration (a v9 save
+cannot hold a XVI state; an old build refuses a XVI save as newer). `saveGate` validates `extraContracts` (needs a main
+contract, an array of orders with one tranche each, every castle a castle holding one order) and `firstCastle` (a castle
+holding an order, only with two orders); tests in `tests/two-castles.test.ts`. Proof of "nothing else changed":
+`tools/mission-hashes.ts` now hashes with `version: 0` (`tools/golden-hash.ts`, the `CONTRACT_GOLDEN` convention) and
+covers XIII–XV (71 rows): identical output before the sim change (commit b0869ba) and after every later commit;
+`CONTRACT_GOLDEN` gains m16 only, `V4_GOLDEN` unchanged. (decided)
+
+**D-289 — "Ten zamek pierwszy": a real command, priority on the castle leg only.**
+`{ t: 'castleFirst', castle }` (`src/sim/commands.ts`, in the replay allowlist with `castle` ∈ −1..maxInt) sets
+`mission.firstCastle`; `castle: -1` deletes the key, so a cleared switch serializes exactly like one never touched.
+Refused (BAD_TARGET) outside a running mission with two orders or for a building holding no order. The dispatcher gives
+the first castle's demands `prio −1` (before every other demand); everything else is the unchanged even split by fill,
+then id — the castle leg only, no lift of the workshops upstream (the prototype's chain priority starved the other
+castle and is gone). The dispatcher never picks the earlier deadline by itself: doing nothing must lose the early letter.
+The castle card holds the switch (`src/ui/castles.ts`): "Ten zamek pierwszy" with what it brings ("gotowe ok. 3:13" or
+"…ale i tak po terminie"), and once on, "Dziel po równo"; a toast confirms; a woodcut pennant icon `first` drawn for it.
+The fuzzer draws the command only in a mission with two orders, so every other mission's seeds keep their scenarios.
+(decided)
+
+**D-290 — Castle forecast, the castle pace card and the two-row waybill.**
+`castleForecast(world, log, castle)` (read-only, `src/sim/forecast.ts`): the shared good's pace serves a pool — this
+castle's rest alone when it is first, the first castle's rest before it ('after'), both rests when they fill evenly
+('even': both finish together) — plus the shortest drive; `firstTick` is the same if it went first. It is ready from the
+first tick: the producers' capacity until the two-minute pace window is full, then the measured pace (the better of the
+window and the long run) — the decision is worth most at 0:00 and the old forecast waited two minutes. In a two-castle
+mission `contractForecast` reads the whole order of every castle (stock, promised goods, the farthest drive), so the
+producer and fleet cards see the mission's finish. New calm pace card `castle`: the castle whose own deadline falls first
+among those forecast late and not first ("Zamek Wschodni: spóźni się o 0:50 — towar dzielony po równo" / "— pierwszy jest
+Zamek Północny"); it takes the slot before the other pace cards (the switch is free and decides the lesson); its sheet is
+the castle's with the switch. Waybill: one row per castle (name and own deadline, bar, a brass "pierwszy" tag, state "na
+czas" / "spóźni się o M:SS" / delivered / "po terminie — minus pieczęć"); the pill counts to the earliest open castle
+deadline. (decided)
+
+**D-291 — Which castle took the goods: `castleRival`, castle names, the late castle in the end letter.**
+`contestedBy` in the sim skips consumers of the same type, so a castle starved by the other castle read
+WAITING_UPSTREAM ("the sawmill is making it"). `castleRival(world, castle)` (read-only, `src/sim/diagnose.ts`, the
+counterpart of `sharedInput` F3/D-38) names the castle whose wagons carry this castle's missing good now, with the
+wagons and units on the way; the castle card shows it above the chain: "Zamek Północny dostaje teraz deski: 2 wozy w
+drodze. Tu brakuje 18 do 5:00." (the rival a link). No sim change, no hash change. Castles are named "Zamek Wschodni" /
+"Zamek Północny" everywhere a building is named (`buildingName` reads `castleNameKey`). The end letter lists each
+castle's delivery and adds "Po terminie: Zamek Wschodni (6:58, termin 5:00)" for a castle that missed its deadline.
+(decided)
+
+**D-292 — Mission XVI data, thresholds and ladder.**
+Dry valley (`valley-m3`), no rain, no building: 2 woodcutters and 1 sawmill (4 wood each), stable, east castle (84,42) =
+main contract, north castle (62,27) on the spur (64,31)–(64,40); 60 silver, 4 wagons. East 24 planks by 5:00, north 30
+by 9:00, end 12:00, 3 seals by 7:05, 2 by 9:00 (owner's working thresholds, unchanged after the ladder). Ladder
+(`tools/bot-m16.ts`, `tools/m14-ladder.ts m16`): nothing 7:40 east late 1★; east first @0:00/@1:00/@1:30 7:15 2★;
+@2:00 7:56 east late 1★ (from 1:40 on the switch no longer saves the east letter); north first 7:31 1★; +1 wagon without
+the switch 7:08 east late 1★ (the wrong fix); +2 wagons without it 6:31 2★; east first + 1 wagon 6:43–6:44 3★ (+21 s);
+east first + 2 wagons 6:32 3★. The reasonable player (`eyePlayer`, 10/30/60 s, with and without hints, scan, letter)
+taps the castle card at its first look: 7:15, no castle late, 2★. The third seal needs a wagon the fleet card does not
+offer here (the whole-order forecast is ~20 s optimistic on this map) — BACKLOG. (decided)
+
+**D-293 — Mission XVI content: menu, letters and 27 keys in 17 languages.**
+Appended to the menu as XVI after XV (no renumbering, save keys unchanged): "XVI. Dwa zamki" / "Kto pierwszy, ten na
+czas". The castellan's letters (opening with both orders and times, 1–3 seals, loss) in 17 languages; the opening says
+the wagons share evenly and the switch is on the castle card ("zdecyduj wcześnie"), the signal from 0:00 the decision
+window needs. pl/en authored; the 15 other letters and the 27 new UI keys are agent translations, flagged in BACKLOG for
+native review. Mission page `docs/missions/m16.md`; smoke, robustness (save → load bit-identity of the winning strategy)
+and fuzz cover m16; screenshots `docs/shots/m16-{letter,card,castle,switch}-{412x915,915x412,904x1000}.jpg`. (decided)

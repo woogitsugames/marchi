@@ -242,3 +242,9 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-284 | — | In Arabic the card's "?" (D-254) is mirrored | decided | UI |
 | D-285 | — | On a short RTL sheet the grip is 8 px | decided | UI |
 | D-286 | — | Help opened from a card's "?" scrolls its topic into view | decided | UI |
+| D-288 | 2026-11-07 | Mission XVI "Dwa zamki": two castle orders in one mission, state v10 | decided | sim |
+| D-289 | — | "Ten zamek pierwszy": a real command, priority on the castle leg only | decided | inne |
+| D-290 | — | Castle forecast, the castle pace card and the two-row waybill | decided | UI |
+| D-291 | — | Which castle took the goods: `castleRival`, castle names, the late castle in the end letter | decided | treść |
+| D-292 | — | Mission XVI data, thresholds and ladder | decided | sim |
+| D-293 | — | Mission XVI content: menu, letters and 27 keys in 17 languages | decided | treść |
