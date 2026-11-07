@@ -87,7 +87,13 @@
 - Scalone ~23:30: **D-336..D-338** tańszy tick symulacji (pamięć odległości dyspozytora między tickami, Dijkstra na listach
   sąsiadów, dolna granica w regule A): 50/100/200 wozów 0,108/0,222/0,234 → 0,056/0,058/0,067 ms/tick, p99 ~1,6 → ~0,6 ms;
   hasze misji bajt w bajt (sprawdzone też przez koordynatora), bot 7,94 min 3★ jak przedtem. Testy 623/0, smoke 0, layout 138/0.
-- W toku: nic. Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
+- **Polecenie właściciela 7 XI ~23:45:** praca autonomiczna i ciągła; zlecenia, których inne AI (GPT) nie oddały, robimy sami
+  agentami Claude. Nieoddane: 66, 67, 68, 69, 70, 71, 72, 79, 80, 81, 82, 83, 84, 100, 101–105. Plan fal (po 2 agentów):
+  1) 66+105 i18n (de/es/fr/it/nl/pt_BR/sv/tr) ‖ 67+71+101 listy — **w toku od ~23:50** (`claude/w-i18n1`, `claude/w-letters`);
+  2) 66+105 i18n (ru/uk/ja/ko/zh_Hans/ar/hi) + 100 RTL ‖ 72+102 księga przestojów; 3) 103 playtest S10 + 104 pomoc ‖ 81 audyt
+  kształtów towarów + 68 ikony; 4) 82/83/84 audyty (częściowo zrobione QA 7 XI) ‖ 70 opisy sklepu; 5) 69/79/80 dźwięki CC0.
+  Gdy GPT odda coś później — porównać i wziąć lepsze.
+- Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
