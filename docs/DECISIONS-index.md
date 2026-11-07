@@ -254,3 +254,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-303 | — | Regrown spring crowns wear a muted young green, back to the late-autumn palette by summer | decided | inne |
 | D-304 | — | The spring tint costs one shared uniform; far trees follow in the same quarter steps | decided | inne |
 | D-305 | — | Cost of the spring tint and the acceptance shots | decided | inne |
+| D-306 | — | The two-castle whole-order forecast: long-run pace, the castle served last, the wait for a wagon | decided | sim |
+| D-307 | — | The haul card: the fleet cannot keep the shared producer at work (two castles only) | decided | UI |
+| D-308 | — | XVI ladder after D-306/D-307: the reasonable player earns three seals | decided | inne |
+| D-309 | — | XVI content after D-307: two keys in 17 languages, shots | decided | treść |
