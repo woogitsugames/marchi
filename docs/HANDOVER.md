@@ -55,7 +55,7 @@
   wierzchołek): modele menu 167 → 125 ms (node), w przeglądarce 137 → 105 ms; 0 px na 18 scenach, geometria bit w bit.
   Testy 606/0, smoke 0, layout 126/0. (Agenci stanęli ~16:00 na limicie użycia, wznowieni ~17:45.)
 - **Decyzje właściciela ~20:20:** noc → wydajność i jakość (nic nie zmienia rozgrywki ani haszy); dyspozytor (D-127, wóz
-  dokupiony w połowie gry) → po playteście; przegląd tłumaczeń agenta w 15 językach → paczka dla GPT (gpt6-15).
+  dokupiony w połowie gry) → po playteście; przegląd tłumaczeń agenta w 15 językach → paczka dla GPT (gpt6-15: najpierw 66, potem 105; wysłana).
 - **Eksperyment Free.AI (7 XI ~20:00 → 8 XI ~20:00, decyzja właściciela):** konektor Free.AI MCP (Qwen3-30B, self-hosted)
   do odciążenia limitu — łatwiejsze zlecenia zamiast agentów Claude: pierwszy przegląd diffów, podsumowania dużych plików,
   skrypty/testy, zbiorcze prace tekstowe. Pliki przez upload `curl --data-binary` → `blob:ID` (repo prywatne). Wynik zawsze
