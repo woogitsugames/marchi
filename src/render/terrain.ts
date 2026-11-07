@@ -3,6 +3,9 @@
 // MeshStandardMaterial that blends meadow / forest floor / tilled field / yard / wet bank,
 // draws roads from the distance field (ruts, grass strip, cobbles), and the overlays.
 import {
+  Box3,
+  BufferAttribute,
+  BufferGeometry,
   Color,
   DataTexture,
   Group,
@@ -12,6 +15,7 @@ import {
   RGBAFormat,
   UnsignedByteType,
   Vector2,
+  type Frustum,
   type IUniform,
 } from 'three';
 import type { World } from '../sim/index';
@@ -21,7 +25,7 @@ import type { Heightfield } from './heightfield';
 import { noiseTexture } from './noiseTex';
 import type { OverlayData } from './overlay';
 import { ROAD_MAXD, type RoadField } from './roads';
-import { CHUNKS_X, CHUNKS_Z, gridGeometry, terrainGrids } from './terrainGrid';
+import { CHUNKS_X, CHUNKS_Z, pieceBox, TERRAIN_PIECES, terrainGrid, type GridData } from './terrainGrid';
 import { disposeTerrainTextures, placeholderTerrainTextures, type TerrainTextureSet } from './terrainTextures';
 
 export { APRON, apronHeight } from './terrainGrid';
@@ -38,10 +42,18 @@ export class TerrainView {
   readonly groundTex: DataTexture;
   private readonly groundData: Uint8Array;
   private chunks: Mesh[] = [];
+  /** Indices of the pieces whose geometry is not built yet (D-296), and a box that holds each. */
+  private pending: { k: number; box: Box3 }[] = [];
+  private meshes: Mesh[] = [];
+  private grids: (GridData | undefined)[] = [];
   /** Splat arrays currently bound (owned: disposed when replaced or on dispose()). */
   private tex: TerrainTextureSet | null;
 
-  constructor(readonly hf: Heightfield, roads: RoadField, overlay: OverlayData) {
+  /**
+   * `defer`: build no grid yet (D-296); the view builds the pieces in the camera's frustum before the first frame
+   * (`buildInView`) and the rest after it (`buildRest`). The meshes exist from the start, hidden, in the same order.
+   */
+  constructor(readonly hf: Heightfield, roads: RoadField, overlay: OverlayData, defer = false) {
     const { w, h } = hf;
     this.groundData = new Uint8Array(w * h * 4);
     this.groundTex = new DataTexture(this.groundData, w, h, RGBAFormat, UnsignedByteType);
@@ -83,7 +95,7 @@ export class TerrainView {
       uSky: { value: new Color('#c9c6bb') },
     };
     this.material = makeTerrainMaterial(this.uniforms);
-    this.buildMeshes();
+    this.buildMeshes(defer);
   }
 
   /** Low quality: no normal/ORM reads, one meadow scale, shared mud sample, no rut relief. */
@@ -167,19 +179,60 @@ export class TerrainView {
     this.groundTex.needsUpdate = true;
   }
 
-  private buildMeshes(): void {
+  private buildMeshes(defer: boolean): void {
     const hf = this.hf;
-    // the grids are a function of the ground alone: a world on the same ground reuses them (D-282)
-    const grids = groundMemo('terrain-grids', hf.t, () => terrainGrids(hf));
-    grids.forEach((d, k) => {
-      const m = new Mesh(gridGeometry(d), this.material);
+    // the grids are a function of the ground alone: a world on the same ground reuses them (D-282), each one built
+    // on first use (D-296)
+    this.grids = groundMemo('terrain-grids', hf.t, () => new Array<GridData | undefined>(TERRAIN_PIECES));
+    for (let k = 0; k < TERRAIN_PIECES; k++) {
+      const m = new Mesh(new BufferGeometry(), this.material);
       m.receiveShadow = true;
       if (k < CHUNKS_X * CHUNKS_Z) {
         m.name = `terrain-${k % CHUNKS_X}-${Math.floor(k / CHUNKS_X)}`;
         this.chunks.push(m);
       } else m.name = 'terrain-apron';
+      this.meshes.push(m);
       this.group.add(m);
+      if (defer && !this.grids[k]) {
+        m.visible = false;
+        this.pending.push({ k, box: pieceBox(hf, k) });
+      } else this.fill(k);
+    }
+  }
+
+  /** Give mesh `k` its grid (the geometry object it was created with, so draw order and ids stay as before). */
+  private fill(k: number): void {
+    const d = (this.grids[k] ??= terrainGrid(this.hf, k));
+    const g = this.meshes[k]!.geometry;
+    g.setAttribute('position', new BufferAttribute(d.pos, 3));
+    g.setAttribute('normal', new BufferAttribute(d.nor, 3));
+    g.setIndex(new BufferAttribute(d.idx, 1));
+    g.boundingBox = d.box.clone();
+    g.boundingSphere = d.sphere.clone();
+    this.meshes[k]!.visible = true;
+  }
+
+  /** Pieces not built yet (D-296). */
+  get pendingPieces(): number {
+    return this.pending.length;
+  }
+
+  /** Build the pending pieces that may show inside `frustum` (a conservative box test); returns how many. */
+  buildInView(frustum: Frustum): number {
+    let n = 0;
+    this.pending = this.pending.filter((p) => {
+      if (!frustum.intersectsBox(p.box)) return true;
+      this.fill(p.k);
+      n++;
+      return false;
     });
+    return n;
+  }
+
+  /** Build every pending piece. */
+  buildRest(): void {
+    for (const p of this.pending) this.fill(p.k);
+    this.pending = [];
   }
 
   dispose(): void {
