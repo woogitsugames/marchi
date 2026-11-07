@@ -7,7 +7,9 @@ import {
   AgXToneMapping,
   BoxGeometry,
   Color,
+  Frustum,
   Group,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   PCFSoftShadowMap,
@@ -75,6 +77,8 @@ const MODEL_TEXTURES: [MatKey, TextureName][] = [
 const _v = new Vector3();
 const _v2 = new Vector3();
 const _ray = new Ray();
+const _frustum = new Frustum();
+const _viewProj = new Matrix4();
 
 export interface WorldViewDebug {
   /** Force a time of day (0..1) or null for the sim clock. Harness/dev only. */
@@ -144,6 +148,8 @@ class View implements WorldView {
   private bakedCell = 0;
   /** Bare level the far-tree atlases hold (D-260, `bareBakeLevel`). */
   private bakedBare = 0;
+  /** The build of the terrain pieces outside the first frame is queued (D-296). */
+  private terrainRestQueued = false;
   private menu = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
@@ -267,7 +273,8 @@ class View implements WorldView {
       this.rig.setHeightfield(hf);
       this.roads = new RoadField(hf.w, hf.h);
       this.overlay = new OverlayData(hf.w, hf.h);
-      this.terrain = new TerrainView(hf, this.roads, this.overlay);
+      // the terrain pieces are built where the first frame's camera looks, the rest after it (D-296)
+      this.terrain = new TerrainView(hf, this.roads, this.overlay, true);
       if (carried) this.terrain.setTextures(carried);
       this.water = new WaterView(hf);
       this.vegetation = new VegetationView(hf, this.treeGroup);
@@ -366,8 +373,9 @@ class View implements WorldView {
     this.syncDeckGhost();
     this.buildings!.sync(w);
     this.terrain!.updateGround(w);
+    // no re-bucket here (D-297): the camera may not be placed yet (the menu sets it after the world), and rebuild()
+    // leaves the buckets stale, so the next frame's update() sorts the trees from the camera that frame draws with
     this.vegetation!.rebuild(w, this.roads);
-    this.vegetation!.update(this.rig.camera.position, true);
     this.cover?.rebuild(w, this.roads);
     this.updateEmitters(true);
     if (this.ghostReq) this.ghost.set(this.ghostReq, w, this.hf, this.overlay);
@@ -509,6 +517,7 @@ class View implements WorldView {
       this.bakedCell = cell;
       this.bakedBare = bareLvl;
     }
+    this.buildTerrainInView(cam);
     r.render(this.scene, cam);
     this.lastStats.calls = r.info.render.calls;
     this.lastStats.triangles = r.info.render.triangles;
@@ -516,6 +525,27 @@ class View implements WorldView {
       this.warmPending = false;
       this.startPrewarm();
     }
+  }
+
+  /**
+   * Before a frame is drawn (D-296): build the terrain pieces not built yet that may show in it, and once, after
+   * this frame, the rest — a new world's first frame waits only for the ground it shows.
+   */
+  private buildTerrainInView(cam: import('three').PerspectiveCamera): void {
+    const tv = this.terrain;
+    if (!tv || !tv.pendingPieces) return;
+    cam.updateMatrixWorld();
+    _frustum.setFromProjectionMatrix(_viewProj.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+    tv.buildInView(_frustum);
+    if (!tv.pendingPieces || this.terrainRestQueued) return;
+    this.terrainRestQueued = true;
+    // queued before the pre-warm's timer (started after this render), so the pre-warm sees every piece
+    setTimeout(() => {
+      this.terrainRestQueued = false;
+      if (this.terrain !== tv) return;
+      tv.buildRest();
+      startupMark('terrain-rest'); // once: the menu world's (startup probe)
+    }, 0);
   }
 
   /** Bridge centre and axis (first bridge found), for the menu shot. */

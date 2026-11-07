@@ -6,7 +6,7 @@ import { menuWorld } from '../src/game/menuScene';
 import { clearGroundMemo, groundMemo, sameGround } from '../src/render/groundCache';
 import { CELL, Heightfield } from '../src/render/heightfield';
 import { fnoise, hash3, vnoise } from '../src/render/models/kit';
-import { APRON, apronHeight, gridGeometry, terrainGrids } from '../src/render/terrainGrid';
+import { APRON, apronHeight, gridGeometry, pieceBox, TERRAIN_PIECES, terrainGrid, terrainGrids } from '../src/render/terrainGrid';
 import { WaterView } from '../src/render/water';
 import { assert, eq, test } from './harness';
 
@@ -255,4 +255,20 @@ test('ground identity: the ground memo hands back the same data only for the sam
   const fresh = terrainGrids(new Heightfield(m4));
   build(m2).forEach((d, k) => sameGeometry(gridGeometry(d), gridGeometry(fresh[k]!), `memo grid ${k}`));
   clearGroundMemo();
+});
+
+// D-296: the view builds the terrain pieces one by one (those in the first frame, then the rest) and decides from
+// `pieceBox` before a piece exists; the box must hold the piece, and a piece must not depend on the build order
+test('ground identity: terrain pieces built one by one in any order equal terrainGrids, inside their pieceBox', () => {
+  for (const [name, t] of moreGrounds()) {
+    const all = terrainGrids(new Heightfield(t));
+    eq(all.length, TERRAIN_PIECES, `${name}: piece count`);
+    const hf = new Heightfield(t);
+    for (const k of [9, 0, 6, 2, 8, 5, 1, 7, 3, 4]) {
+      const d = terrainGrid(hf, k);
+      sameGeometry(gridGeometry(d), gridGeometry(all[k]!), `${name} piece ${k}`);
+      const b = pieceBox(hf, k);
+      assert(b.containsBox(d.box), `${name} piece ${k}: box ${d.box.min.toArray()}..${d.box.max.toArray()} outside ${b.min.toArray()}..${b.max.toArray()}`);
+    }
+  }
 });

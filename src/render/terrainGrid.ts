@@ -76,27 +76,67 @@ export interface GridData {
   sphere: Sphere;
 }
 
-/** The 6 map chunks (row by row) and the 4 apron pieces (north, south, west, east) of a ground. */
-export function terrainGrids(hf: Heightfield): GridData[] {
-  const out: GridData[] = [];
-  const cw = Math.ceil(hf.w / CHUNKS_X), ch = Math.ceil(hf.h / CHUNKS_Z);
-  for (let jz = 0; jz < CHUNKS_Z; jz++) {
-    for (let ix = 0; ix < CHUNKS_X; ix++) {
-      const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
-      const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
-      out.push(gridData(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, false));
-    }
+/** Number of terrain grids of a ground: the 6 map chunks (row by row), then the 4 apron pieces (N, S, W, E). */
+export const TERRAIN_PIECES = CHUNKS_X * CHUNKS_Z + 4;
+
+/** Apron sample step (m). */
+const APRON_STEP = 8;
+
+/** The grid of a piece: origin (m), quads per axis, vertex step (m). */
+function pieceSpec(hf: Heightfield, k: number): { x0: number; z0: number; nx: number; nz: number; step: number; apron: boolean } {
+  if (k < CHUNKS_X * CHUNKS_Z) {
+    const cw = Math.ceil(hf.w / CHUNKS_X), ch = Math.ceil(hf.h / CHUNKS_Z);
+    const ix = k % CHUNKS_X, jz = Math.floor(k / CHUNKS_X);
+    const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
+    const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
+    return { x0: x0 * CELL, z0: z0 * CELL, nx: (x1 - x0) * SUB, nz: (z1 - z0) * SUB, step: CELL / SUB, apron: false };
   }
   // apron: coarse ring beyond the map edge (4 pieces so it can be culled)
-  const S = 8;
-  const A = APRON;
+  const S = APRON_STEP, A = APRON;
   const pieces: [number, number, number, number][] = [
     [-A, -A, hf.sizeX + 2 * A, A + 8], // north
     [-A, hf.sizeZ - 8, hf.sizeX + 2 * A, A + 8], // south
     [-A, -8, A + 8, hf.sizeZ + 16], // west
     [hf.sizeX - 8, -8, A + 8, hf.sizeZ + 16], // east
   ];
-  for (const [x, z, sx, sz] of pieces) out.push(gridData(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, true));
+  const [x, z, sx, sz] = pieces[k - CHUNKS_X * CHUNKS_Z]!;
+  return { x0: x, z0: z, nx: Math.round(sx / S), nz: Math.round(sz / S), step: S, apron: true };
+}
+
+/** Grid `k` of a ground (0..TERRAIN_PIECES-1, the order of `terrainGrids`). */
+export function terrainGrid(hf: Heightfield, k: number): GridData {
+  const p = pieceSpec(hf, k);
+  return gridData(hf, p.x0, p.z0, p.nx, p.nz, p.step, p.apron);
+}
+
+/** The 6 map chunks (row by row) and the 4 apron pieces (north, south, west, east) of a ground. */
+export function terrainGrids(hf: Heightfield): GridData[] {
+  const out: GridData[] = [];
+  for (let k = 0; k < TERRAIN_PIECES; k++) out.push(terrainGrid(hf, k));
+  return out;
+}
+
+/**
+ * A box that holds grid `k` without building it (D-296): its x/z extent exactly, and heights from `hf.bounds()`
+ * (the map chunks) or from `apronFrom`'s ceiling (the apron: border base - 0,35 plus a rise of at most 0,24 m per
+ * metre beyond the border, the largest at a corner of the piece), with 1 m of slack.
+ */
+export function pieceBox(hf: Heightfield, k: number, out = new Box3()): Box3 {
+  const p = pieceSpec(hf, k);
+  const x1 = p.x0 + p.nx * p.step, z1 = p.z0 + p.nz * p.step;
+  const b = hf.bounds();
+  let y0 = b.min - 1, y1 = b.max + 1;
+  if (p.apron) {
+    let far = 0;
+    for (const x of [p.x0, x1]) for (const z of [p.z0, z1]) {
+      const cx = Math.min(hf.sizeX, Math.max(0, x)), cz = Math.min(hf.sizeZ, Math.max(0, z));
+      far = Math.max(far, Math.sqrt((x - cx) * (x - cx) + (z - cz) * (z - cz)));
+    }
+    y0 = b.min - 0.35 - 1;
+    y1 = b.max - 0.35 + 0.24 * far + 1;
+  }
+  out.min.set(p.x0, y0, p.z0);
+  out.max.set(x1, y1, z1);
   return out;
 }
 
