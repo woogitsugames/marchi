@@ -3,6 +3,8 @@
 // Built game: npm run build -- --outDir <dist>; npx vite preview --outDir <dist> --port 5201 --strictPort.
 //   node tools/winter-trees-shots.mjs <baseUrl> <tag> [scene,...] [quality,...] [sizes]
 // -> docs/shots/winter-trees-<tag>-<scene>-<quality>-<w>x<h>.jpg
+// Spring tint (D-303..D-305): the spring-* / summer* scenes write docs/shots/spring-trees-<tag>-<scene>-...jpg
+//   node tools/winter-trees-shots.mjs <baseUrl> <tag> spring-early,spring-mid,spring-mid-far,spring-late,spring-late-near,summer-early,summer
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +28,15 @@ const SCENES = {
   autumn: { tick: AUTUMN, dist: 70 },
   'late-autumn': { tick: LATE_AUTUMN, dist: 70 },
   spring: { tick: SPRING, dist: 70 },
+  // young spring green (D-303), year 2: spring 36000-45000, summer 45000-54000. Early spring 30 % (leaves half back,
+  // green 0.35), mid 50 % (0.84), late 85 % (full green), early summer 20 % (fading, 0.5), summer 60 % (normal palette)
+  'spring-early': { tick: 38700, dist: 70, file: 'spring-trees' },
+  'spring-mid': { tick: 40500, dist: 70, file: 'spring-trees' },
+  'spring-mid-far': { tick: 40500, dist: 110, yaw: 0.9, file: 'spring-trees' },
+  'spring-late': { tick: 43650, dist: 70, file: 'spring-trees' },
+  'spring-late-near': { tick: 43650, dist: 45, yaw: 0.2, file: 'spring-trees' },
+  'summer-early': { tick: 46800, dist: 70, file: 'spring-trees' },
+  summer: { tick: 50400, dist: 70, file: 'spring-trees' },
 };
 
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -64,7 +75,7 @@ for (const [name, sc] of Object.entries(SCENES)) {
       await page.waitForTimeout(4000);
       await page.evaluate(() => window.__marchia.app.view.rig.set(...window.__wtCam));
       await page.waitForTimeout(1500);
-      const f = resolve(outDir, `winter-trees-${tag}-${name}-${quality}-${vw}x${vh}.jpg`);
+      const f = resolve(outDir, `${sc.file ?? 'winter-trees'}-${tag}-${name}-${quality}-${vw}x${vh}.jpg`);
       await page.screenshot({ path: f, type: 'jpeg', quality: 82, timeout: 600000 });
       console.log(`${name} ${quality} ${size}: ${JSON.stringify(info)} -> ${f.replace(root + '/', '')}`);
       await ctx.close();

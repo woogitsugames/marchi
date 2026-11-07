@@ -3295,3 +3295,46 @@ and fuzz cover m16; screenshots `docs/shots/m16-{letter,card,castle,switch}-{412
 read-out, not a 32 px control; the deadline pill no longer names the castle (it spilled at 904x1000 in pseudo), and
 `castle.fcFirst` is dropped because the dock's note says the same; and the sheets' root reveal (D-146)
 repeats for 2 s with scroll anchoring off, which had moved the castle card back 33 px at 360x740 ru/pseudo. (decided)
+
+## Spring tint of the regrown crowns (owner decision 2026-11-07, BACKLOG P3 from D-263)
+
+**D-303 — Regrown spring crowns wear a muted young green, back to the late-autumn palette by summer.**
+In the free valley (seasonal worlds only; contract missions keep `uSpring` = 0, i.e. their look bit for bit) oak,
+birch and the hazel/blackthorn shrubs come back in spring in a restrained young green — new leaves under an overcast
+sky: desaturated, a little yellow, never the candy green the art direction forbids — and settle back to the normal
+(late-autumn) palette in early summer; spruce and pine have no leaf cards and are untouched. The curve
+`springAt(tick)` (`src/render/leafFall.ts`) rises exactly as the leaves return (`1 − bareAt`, 15–55 % of spring, so a
+card that switches back from twigs is already green), holds to the end of spring and fades over the first 40 % of
+summer (6 game minutes, smoothstep, ≤ 0,021 per 5 s of game time); 0 in autumn and winter. The colour
+(`springLeaf`, in the shared `TWIG_GLSL` block): the leaf vertex colour moves toward a young green *of the same
+luminance*, so the baked clump occlusion and the per-clump value spread stay and a dark oak clump turns dark olive while
+a light birch clump turns light yellow-green; each card picks its own shade between olive-green and yellow-green
+(linear `SPRING_COL` 0,165/0,25/0,07 … `SPRING_COL2` 0,215/0,255/0,065) and its own strength (78–100 %) from the card
+hash it already carries for the leaf fall (`aTree.z`), so a crown does not go one flat colour. The per-tree broadleaf
+tint loses 60 % of its russet/ochre hue spread at full spring (it would brown the green), keeping its value spread.
+(decided)
+
+**D-304 — The spring tint costs one shared uniform; far trees follow in the same quarter steps.**
+One number `treeUniforms.uSpring` written per frame next to `uBare` (`VegetationView.setBare(bare, spring)`), read by
+the `leaves` material (near trees, ground-cover shrubs) and by the per-tree tint of the `billboard` cards; no new
+meshes, attributes, textures or draw calls, no per-frame allocation, no `needsUpdate`. The far atlas bakes the same
+`springLeaf` with `bakeSpring`; the view re-bakes when `bareBakeLevel(spring)` changes (quarter steps, into the targets
+it has). Because the rise mirrors the leaf return, the spring steps fall on the same frames as the bare steps — the
+only extra re-bakes are the 4 of the early-summer fade (8 re-bakes a year → 12). Shadows are unaffected (colour only).
+(decided)
+
+**D-305 — Cost of the spring tint and the acceptance shots.**
+Forest edge of the free valley (scratch `tree-probe`, sandbox with seasons forced on, noon; autumn, winter, early /
+mid / late spring at 70 and 110 m, early summer, summer, autumn of the next year), before → after: draw calls identical
+in every state (high 56 / 57 / 56 / 56 / 56 / 53 / 56 / 56 / 56, low 52 / 53 / 52 / 52 / 52 / 40 / 52 / 52 / 52),
+triangles identical (high 308 548 at 70 m, 286 917 at 110 m; low 259 725 / 244 351), shader programs identical (high
+43 → 47, low 41 → 45 in both builds: the deferred pre-warm and the first bake, not a season step); 0 new programs on
+any season switch, the spring tint added no program. Allocations (`tools/alloc-probe.mjs`, low, 100 wagons, 15 s, ×4;
+a scratch copy also forces seasons on at spring 30 %, so `uSpring` moves and the atlas re-bakes during sampling),
+before → after: plain 507,3 → 509,3 KB/frame, spring 604,6 → 497,6 KB/frame (20 frames per run under SwiftShader:
+noise of ±100 KB), no leaf-fall, vegetation, tree or bake code among the allocators. Inspected against the forbidden
+list: muted olive to yellow-green crowns, AO and per-card spread kept, no candy or neon green, conifers and the
+summer shots unchanged, far copses follow. Shots
+(`tools/winter-trees-shots.mjs`, scenes `spring-early` (spring 30 %), `spring-mid` (50 %), `spring-mid-far` (110 m),
+`spring-late` (85 %), `spring-late-near` (45 m), `summer-early` (summer 20 %, fading), `summer` (60 %, normal palette);
+412 × 915 and 915 × 412, low and high): `docs/shots/spring-trees-before-*` and `spring-trees-after-*`. (decided)

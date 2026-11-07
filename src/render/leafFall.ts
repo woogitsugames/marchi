@@ -27,3 +27,16 @@ export function bareAt(tick: number): number {
 export function bareBakeLevel(bare: number): number {
   return Math.round(bare * 4) / 4;
 }
+
+/**
+ * How strongly the deciduous crowns wear the young spring green (D-303), 0 … 1: it rises with the returning leaves
+ * (15–55 % of spring, the mirror of `bareAt`, so a card comes back already green), holds through late spring and
+ * fades over the first 40 % of summer (6 game minutes) back to the late-autumn palette of the art direction.
+ * Autumn and winter 0. Derived from the tick alone, like `bareAt`.
+ */
+export function springAt(tick: number): number {
+  const s = Math.floor(tick / SEASON_TICKS) % 4, f = (tick % SEASON_TICKS) / SEASON_TICKS;
+  if (s === 0) return smooth(0.15, 0.55, f);
+  if (s === 1) return 1 - smooth(0, 0.4, f);
+  return 0;
+}

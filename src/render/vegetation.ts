@@ -107,14 +107,18 @@ export class VegetationView {
     this.apron = groundMemo('apron-trees', hf.t, () => placeApron(hf)); // same ground, same apron trees (D-282)
   }
 
-  /** Bake (or re-bake at another cell size or bare level, D-260) the far-card atlases. */
-  bake(renderer: WebGLRenderer, cellPx: number, bare = 0): void {
-    bakeTreeBillboards(renderer, cellPx, bare);
+  /** Bake (or re-bake at another cell size, bare or spring level, D-260 / D-303) the far-card atlases. */
+  bake(renderer: WebGLRenderer, cellPx: number, bare = 0, spring = 0): void {
+    bakeTreeBillboards(renderer, cellPx, bare, spring);
   }
 
-  /** Deciduous crowns 0 (in leaf) … 1 (bare) for the near trees and the ground-cover shrubs (D-260). */
-  setBare(bare: number): void {
+  /**
+   * Deciduous crowns 0 (in leaf) … 1 (bare) (D-260) and 0 … 1 young spring green (D-303) for the near trees, the
+   * ground-cover shrubs and the far cards' per-tree tint: two numbers written into shared uniforms.
+   */
+  setBare(bare: number, spring = 0): void {
     treeUniforms.uBare.value = bare;
+    treeUniforms.uSpring.value = spring;
   }
 
   setShadows(on: boolean): void {

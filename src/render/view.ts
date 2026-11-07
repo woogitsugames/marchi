@@ -51,7 +51,7 @@ import {
   setUltraBase,
   type TextureName,
 } from './textures';
-import { bareAt, bareBakeLevel } from './leafFall';
+import { bareAt, bareBakeLevel, springAt } from './leafFall';
 import { VegetationView } from './vegetation';
 import { WaterView } from './water';
 import { WagonsView } from './wagonsView';
@@ -130,6 +130,8 @@ class View implements WorldView {
   private winter = 0;
   /** 0..1 bare deciduous crowns (free valley seasons, D-260): `bareAt(tick)`. */
   private bare = 0;
+  /** 0..1 young spring green of the deciduous crowns (free valley seasons, D-303): `springAt(tick)`. */
+  private spring = 0;
   private tod = MENU_TIME;
   private fps = 60;
   private overlayMode: Overlay = 'none';
@@ -148,6 +150,8 @@ class View implements WorldView {
   private bakedCell = 0;
   /** Bare level the far-tree atlases hold (D-260, `bareBakeLevel`). */
   private bakedBare = 0;
+  /** Spring green level the far-tree atlases hold (D-303, quarter steps like `bakedBare`). */
+  private bakedSpring = 0;
   /** The build of the terrain pieces outside the first frame is queued (D-296). */
   private terrainRestQueued = false;
   private menu = false;
@@ -436,6 +440,7 @@ class View implements WorldView {
     // leaf fall and spring leaves follow the season clock directly (D-260): it moves them by < 0,03 per 5 s of game
     // time, and a jump of the clock (load, fast-forward) then re-bakes the far trees once, not at every quarter step
     this.bare = seasons ? bareAt(w.state.tick) : 0;
+    this.spring = seasons ? springAt(w.state.tick) : 0;
     // time-of-day lights every 2nd frame (D-257, owner 2026-11-06): they drift over game minutes, and each change
     // re-sends the light uniforms (three's setValueV3f, the largest allocator left after D-223). Fresh at once after a
     // world or quality change (snap), a stall or resume (long frame), and while the clock catches up a jump.
@@ -489,7 +494,7 @@ class View implements WorldView {
     this.deckGhost.update(env.light);
 
     this.buildings!.update(w, dt);
-    this.vegetation!.setBare(this.bare);
+    this.vegetation!.setBare(this.bare, this.spring);
     this.vegetation!.update(cam.position);
     this.vegetation!.tick(this.time);
     this.cover?.update(this.rig.target, dist);
@@ -511,11 +516,14 @@ class View implements WorldView {
     // (2 x 7 MB), the full 256 px atlas only on ultra (2 x 28 MB)
     const cell = this.quality === 'ultra' ? 256 : 128;
     // and per bare level of the deciduous crowns (D-260): a season change re-bakes into the same targets
-    const bareLvl = bareBakeLevel(this.bare);
-    if (this.vegetation && (this.bakedCell !== cell || this.bakedBare !== bareLvl)) {
-      this.vegetation.bake(r, cell, bareLvl);
+    // and per spring green level (D-303, same quarter steps; the rise coincides with the leaves' return, so it adds
+    // only the 4 steps of the summer fade)
+    const bareLvl = bareBakeLevel(this.bare), springLvl = bareBakeLevel(this.spring);
+    if (this.vegetation && (this.bakedCell !== cell || this.bakedBare !== bareLvl || this.bakedSpring !== springLvl)) {
+      this.vegetation.bake(r, cell, bareLvl, springLvl);
       this.bakedCell = cell;
       this.bakedBare = bareLvl;
+      this.bakedSpring = springLvl;
     }
     this.buildTerrainInView(cam);
     r.render(this.scene, cam);

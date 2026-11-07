@@ -247,7 +247,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-290 | — | Castle forecast, the castle pace card and the two-row waybill | decided | UI |
 | D-291 | — | Which castle took the goods: `castleRival`, castle names, the late castle in the end letter | decided | treść |
 | D-292 | — | Mission XVI data, thresholds and ladder | decided | sim |
-| D-293 | — | Mission XVI content: menu, letters and 26 keys in 17 languages | decided | treść |
+| D-293 | 2026-11-07 | Mission XVI content: menu, letters and 26 keys in 17 languages | decided | treść |
 | D-296 | — | Terrain pieces outside the first frame are built after it | decided | render |
 | D-297 | — | `syncNetwork` no longer re-buckets the trees | decided | inne |
 | D-298 | — | What day 13 buys: tens of ms of CPU out of the menu world build, a few out of the first frame; not a wall- clock change on this machine | decided | UI |
+| D-303 | — | Regrown spring crowns wear a muted young green, back to the late-autumn palette by summer | decided | inne |
+| D-304 | — | The spring tint costs one shared uniform; far trees follow in the same quarter steps | decided | inne |
+| D-305 | — | Cost of the spring tint and the acceptance shots | decided | inne |
