@@ -90,7 +90,8 @@ try {
     const ax = await axNodes(page);
     const dlg = ax.find((n) => n.role === 'dialog');
     ok(!!dlg && dlg.modal !== true && dlg.name.trim().length > 0, `dialog: non-modal dialog named "${dlg?.name ?? ''}"`);
-    const inside = await page.evaluate(() => !!document.activeElement?.closest('.sheet'));
+    // focus moves in on the next animation frame: under load a frame can take longer than the evaluate round trip
+    const inside = await page.waitForFunction(() => !!document.activeElement?.closest('.sheet'), null, { timeout: 5000 }).then(() => true, () => false);
     ok(inside, 'dialog: focus moved into the sheet');
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);

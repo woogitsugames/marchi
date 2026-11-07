@@ -20,7 +20,8 @@ let openTopic = 'cause';
 
 /** Help opened on one topic (the "?" of a game card, D-254); without one the last open topic stays. */
 export function helpSheet(topic?: string): SheetContent {
-  if (topic && HELP_TOPICS.some((x) => x.id === topic)) openTopic = topic;
+  const asked = !!topic && HELP_TOPICS.some((x) => x.id === topic);
+  if (asked) openTopic = topic!;
   return {
     key: 'help',
     update(sheet: Sheet) {
@@ -42,6 +43,15 @@ export function helpSheet(topic?: string): SheetContent {
           // the opened topic (heading and answer) under a short landscape sheet: bring it into view
           if (openTopic) sheet.body.querySelector(`#help-${id}`)?.closest('.help-topic')?.scrollIntoView({ block: 'nearest' });
         }));
+        // opened from a card's "?" (D-254) on a topic low in the list (wagons, valley): a short landscape sheet showed
+        // only its heading at the bottom edge — bring heading and answer into view once laid out (QA 2026-11-07, D-286)
+        // (the body's own scrollTop, not scrollIntoView: the sheet is still sliding in and no ancestor may scroll)
+        if (asked) requestAnimationFrame(() => {
+          const el = sheet.body.querySelector('.help-topic.is-open');
+          if (!el) return;
+          const r = el.getBoundingClientRect(), box = sheet.body.getBoundingClientRect();
+          if (r.bottom > box.bottom) sheet.body.scrollTop += Math.min(r.bottom - box.bottom, r.top - box.top);
+        });
       }
       return true;
     },

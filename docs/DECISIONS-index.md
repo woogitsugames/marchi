@@ -234,4 +234,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-280 | — | Heightfield skips the blurred water-mask interpolation where every tap is 0 | decided | inne |
 | D-281 | 2026-11-06 | Leaner ground build, bit for bit | decided | inne |
 | D-282 | — | Terrain grids, water strip and apron trees are kept for the last two grounds | decided | render |
-| D-283 | — | Not kept: one-pass grid evaluator, "certainly dry" water skip; deferred chunks wait for `view.ts` | decided | inne |
+| D-283 | 2026-11-07 | Not kept: one-pass grid evaluator, "certainly dry" water skip; deferred chunks wait for `view.ts` | decided | inne |
+| D-284 | — | In Arabic the card's "?" (D-254) is mirrored | decided | UI |
+| D-285 | — | On a short RTL sheet the grip is 8 px | decided | UI |
+| D-286 | — | Help opened from a card's "?" scrolls its topic into view | decided | UI |

@@ -4,11 +4,15 @@
 //   fame-hud-<w>x<h>.jpg    — the calm slot's grow card: "Do rangi 4 (…) brakuje przepływu srebra — postaw jeszcze: …";
 //   fame-sheet-<w>x<h>.jpg  — its eye: the subject's sheet with "Postaw: …" and the flow line.
 // Built game: npm run build; npx vite preview --outDir dist --port 5202 --strictPort.
-//   node tools/fame-shots.mjs [baseUrl] [WxH ...]
+//   node tools/fame-shots.mjs [baseUrl] [WxH ...] [--lang pl]   (SHOTS_DIR=dir overrides docs/shots)
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const args = process.argv.slice(2);
+const li = args.indexOf('--lang');
+const lang = li >= 0 ? args[li + 1] : 'pl';
+const suffix = lang === 'pl' ? '' : `-${lang}`;
+const OUT = process.env.SHOTS_DIR ?? 'docs/shots';
 const base = args.find((a) => a.startsWith('http')) ?? 'http://127.0.0.1:5202/';
 const picked = args.filter((a) => /^\d+x\d+$/.test(a)).map((s) => s.split('x').map(Number));
 const sizes = picked.length ? picked : [[412, 915], [915, 412]];
@@ -21,7 +25,7 @@ for (const [w, h] of sizes) {
   page.setDefaultNavigationTimeout(180000);
   page.on('pageerror', (e) => errors.push(`${w}x${h}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(`${w}x${h}: ${m.text()}`); });
-  await page.goto(`${base}?play=sandbox&ff=60&speed=0&quality=low&dynres=0&debug=1&lang=pl`);
+  await page.goto(`${base}?play=sandbox&ff=60&speed=0&quality=low&dynres=0&debug=1&lang=${lang}`);
   await page.waitForFunction(() => window.__marchia?.ready === true, null, { timeout: 180000 });
   await page.waitForTimeout(800);
   await page.evaluate(() => {
@@ -39,11 +43,11 @@ for (const [w, h] of sizes) {
   await page.evaluate(() => document.querySelector('.rank-letter')?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   await page.waitForTimeout(8000);
   console.log(`${w}x${h} hud`, tx(await page.evaluate(() => document.querySelector('.stall-row')?.textContent)));
-  await page.screenshot({ path: `docs/shots/fame-hud-${w}x${h}.jpg`, type: 'jpeg', quality: 60, timeout: 120000 });
+  await page.screenshot({ path: `${OUT}/fame-hud${suffix}-${w}x${h}.jpg`, type: 'jpeg', quality: 60, timeout: 120000 });
   await page.click('.stall-row .stall-eye');
   await page.waitForTimeout(6000);
   console.log(`${w}x${h} sheet`, tx(await page.evaluate(() => document.querySelector('#sheets .sheet:last-child .fix-dock')?.textContent)));
-  await page.screenshot({ path: `docs/shots/fame-sheet-${w}x${h}.jpg`, type: 'jpeg', quality: 60, timeout: 120000 });
+  await page.screenshot({ path: `${OUT}/fame-sheet${suffix}-${w}x${h}.jpg`, type: 'jpeg', quality: 60, timeout: 120000 });
   await ctx.close();
 }
 await browser.close();

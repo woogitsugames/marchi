@@ -40,7 +40,7 @@ for (const [w, h] of sizes) {
       return { step: window.__marchia.app.buildTut?.current ?? -1, note: r(document.querySelector('.tut-note-wrap')), ring: r(document.querySelector('.tut-ring.is-shown')), arrow: !!document.querySelector('.tut-arrow.is-shown'), text: document.querySelector('.tut-text')?.textContent };
     });
     console.log(`${w}x${h} ${id}`, JSON.stringify(info));
-    await page.screenshot({ path: `docs/shots/onboard-${id}${suffix}-${w}x${h}.jpg`, type: 'jpeg', quality: 62, timeout: 300000 });
+    await page.screenshot({ path: `${process.env.SHOTS_DIR ?? 'docs/shots'}/onboard-${id}${suffix}-${w}x${h}.jpg`, type: 'jpeg', quality: 62, timeout: 300000 });
   };
   const waitStep = (s) => page.waitForFunction((s) => (window.__marchia.app.buildTut?.current ?? -1) === s, s, { timeout: 90000 });
 

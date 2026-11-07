@@ -3090,3 +3090,27 @@ needs `view.ts` (changed on `claude/w-winter`): building the terrain chunks outs
 first frame (portrait: 2 of 6 chunks and the west apron piece; three uploads attributes before `onBeforeRender`, so a
 self-contained lazy chunk is not possible), and the forced `vegetation.update` in `syncNetwork` that runs before the
 menu camera is placed (~10 ms, redone in the first frame). Both go to BACKLOG for after the winter merge. (decided)
+
+## QA sweep of the night's UI (D-254, D-259, D-264..D-270), 2026-11-07
+
+**D-284 — In Arabic the card's "?" (D-254) is mirrored.** The Arabic question mark (؟, U+061F) is the mirror image of
+the Latin one, and the card under the button already asks "ماذا يعني هذا؟"; a Latin "?" in the head of an RTL card read
+as a foreign glyph (`helpmap-*-ar-*` shots). The display face has no U+061F, so the button keeps its own "?" and flips
+it: `:root[dir='rtl'] .sheet-head .sh-help { transform: scaleX(-1) }`. The button already sits beside the close button
+on the left in RTL (flex order follows `dir`); its accessible name (`menu.help`) is unchanged. Why flip instead of the
+character: a fallback font for one glyph would break the display face the button was drawn in (D-254).
+`tools/help-map-shots.mjs --lang ar` checks the computed transform. (decided)
+
+**D-285 — On a short RTL sheet the grip is 8 px.** In 915×412 (`body.is-short`) the grip is 4 px, so the head starts
+~26 px under the frame's outer edge; Latin small caps fit under the frame's inner rule, but Arabic ascenders (lam,
+alif) in the kicker ("لماذا توقف؟", "عربة") touched it. RTL short sheets get 8 px; other scripts unchanged. Seen in
+the help-map shots (building/wagon, ar, 915×412). (decided)
+
+**D-286 — Help opened from a card's "?" scrolls its topic into view.** D-254 opens help on the card's topic, but
+"Wozy" and "Dolina i rangi" are low in the list; on a short landscape game sheet (915×412, the sheet ends above the
+rail) only the topic's heading showed at the bottom edge and the answer lay under the fold
+(`helpmap-wagon-help-ar-915x412.jpg`). `helpSheet(topic)` now scrolls the sheet body (its own `scrollTop`, not
+`scrollIntoView`: the sheet is still sliding in and no ancestor may scroll) so the open topic's heading and answer are
+in view, one frame after it is built. Help from the menu keeps its scroll at the top. `tools/help-map-shots.mjs`
+checks the answer is in view; it also now starts a real game (`play=m1&ff=60`) — `play=1` is not a mission key, so its
+cards had opened over the menu world. (decided)
