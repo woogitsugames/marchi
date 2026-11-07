@@ -691,7 +691,7 @@ export const it: Dict = {
   "fix.rankWhy": "Merci diverse vendute: {sold} di {goods} per {rankName}. Il mercato non ha ancora visto {good} — questo edificio ne produce.",
   "fix.paceFleetWhy": "Per un minuto nessun carro è rimasto libero. Previsione: {seals}; un carro nuovo ritira prima il carico e si ripaga prima del sigillo.",
   "fix.paceFleetWhyFree": "Per un minuto nessun carro è rimasto libero. Un carro nuovo ritira prima il carico — merce venduta è argento e fama.",
-  "letter.valleyOpening": "All'amministratore della valle: qui non ti attendono ordini né scadenze — la valle è tua finché i carri girano. Ogni merce venduta al mercato del castello porta fama, e anche il numero di merci diverse alza il tuo rango; la tavola del rango mostra cosa manca. Comincia da una fattoria sulla strada del castello — i carri porteranno il raccolto al mercato.\n— Wszebor, castellano di Łozinny Bród",
+  "letter.valleyOpening": "All'amministratore della valle: questa volta, né ordini né scadenze — la valle è tua finché i carri girano. Ogni merce venduta al mercato del castello porta fama; un rango più alto chiede anche merci diverse ed entrate costanti. La tavola del rango mostra cosa manca. Comincia da una fattoria sulla strada del castello: i carri porteranno il raccolto al mercato.\n— Wszebor, castellano di Łozinny Bród",
   "building.tradePost": "Emporio",
   "town.unlockPost": "l’emporio oltre il fiume",
   "town.postOpen": "Oltre il fiume ha aperto un emporio: paga il {pct} del prezzo del castello. Portaci una strada con un ponte.",

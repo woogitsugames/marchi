@@ -691,7 +691,7 @@ export const de: Dict = {
   "fix.rankWhy": "Verschiedene Waren verkauft: {sold} von {goods} für {rankName}. {good} kam noch nie auf den Markt — dieses Gebäude stellt die Ware her.",
   "fix.paceFleetWhy": "Eine Minute lang stand kein Wagen frei. Prognose: {seals}; ein neuer Wagen holt die Ladung früher und zahlt sich vor dem Siegel aus.",
   "fix.paceFleetWhyFree": "Eine Minute lang stand kein Wagen frei. Ein neuer Wagen holt die Ladung früher — verkaufte Ware bringt Silber und Ansehen.",
-  "letter.valleyOpening": "An den Verwalter des Tals: Hier warten kein Auftrag und keine Frist — das Tal ist Euer, solange die Wagen rollen. Jede auf dem Burgmarkt verkaufte Ware bringt Ansehen, und die Zahl verschiedener Waren hebt auch Euren Rang; die Rangtafel zeigt, was noch fehlt. Beginnt mit einem Bauernhof am Burgweg — die Wagen bringen die Ernte selbst zum Markt.\n— Wszebor, Burggraf von Łozinny Bród",
+  "letter.valleyOpening": "An den Verwalter des Tals: Diesmal setze ich Euch weder Auftrag noch Frist — das Tal ist Euer, solange die Wagen rollen. Jede auf dem Burgmarkt verkaufte Ware bringt Ansehen; ein höherer Rang verlangt zudem verschiedene Waren und steten Ertrag. Die Rangtafel zeigt, was fehlt. Beginnt mit einem Bauernhof am Burgweg — die Wagen bringen die Ernte zum Markt.\n— Wszebor, Burggraf von Łozinny Bród",
   "building.tradePost": "Handelsposten",
   "town.unlockPost": "den Handelsposten jenseits des Flusses",
   "town.postOpen": "Jenseits des Flusses hat ein Handelsposten geöffnet: Er zahlt {pct} des Burgpreises. Bau einen Weg mit Brücke dorthin.",

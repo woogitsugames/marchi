@@ -691,7 +691,7 @@ export const sv: Dict = {
   "fix.rankWhy": "Olika varor sålda: {sold} av {goods} för {rankName}. {good}: aldrig sålt på marknaden — den här byggnaden tillverkar varan.",
   "fix.paceFleetWhy": "Ingen vagn stod ledig på en minut. Prognos: {seals}; en ny vagn hämtar lasten tidigare och betalar sig före sigillet.",
   "fix.paceFleetWhyFree": "Ingen vagn stod ledig på en minut. En ny vagn hämtar lasten tidigare — sålda varor ger silver och anseende.",
-  "letter.valleyOpening": "Till dalens förvaltare: här väntar ingen beställning och ingen frist — dalen är din så länge vagnarna rullar. Varje vara som säljs på borgens marknad ger anseende, och antalet olika varor höjer också din rang; rangtavlan visar vad som saknas. Börja med en gård vid borgvägen — vagnarna kör själva skörden till marknaden.\n— Wszebor, kastellan av Łozinny Bród",
+  "letter.valleyOpening": "Till dalens förvaltare: den här gången ger jag dig varken beställning eller frist – dalen är din så länge vagnarna rullar. Varje vara som säljs på borgens marknad ger anseende; en högre rang kräver också olika varor och ett jämnt flöde. Rangtavlan visar vad som saknas. Börja med en gård vid borgvägen – vagnarna kör själva skörden till marknaden.\n— Wszebor, kastellan av Łozinny Bród",
   "building.tradePost": "Handelsplats",
   "town.unlockPost": "handelsplatsen på andra sidan floden",
   "town.postOpen": "På andra sidan floden har en handelsplats öppnat: den betalar {pct} av slottets pris. Dra dit en väg med bro.",

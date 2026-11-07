@@ -691,7 +691,7 @@ export const nl: Dict = {
   "fix.rankWhy": "Verschillende waren verkocht: {sold} van de {goods} voor {rankName}. {good}: nog nooit op de markt — dit gebouw maakt die waar.",
   "fix.paceFleetWhy": "Een minuut lang stond geen wagen vrij. Prognose: {seals}; een nieuwe wagen haalt de lading eerder en verdient zich terug vóór het zegel.",
   "fix.paceFleetWhyFree": "Een minuut lang stond geen wagen vrij. Een nieuwe wagen haalt de lading eerder — verkochte waren zijn zilver en aanzien.",
-  "letter.valleyOpening": "Aan de beheerder van de vallei: hier wachten geen bestelling en geen termijn — de vallei is van jou zolang de wagens rijden. Elke waar verkocht op de kasteelmarkt brengt aanzien, en ook het aantal verschillende waren verhoogt je rang; het rangbord toont wat nog ontbreekt. Begin met een boerderij aan de kasteelweg — de wagens brengen de oogst zelf naar de markt.\n— Wszebor, kastelein van Łozinny Bród",
+  "letter.valleyOpening": "Aan de beheerder van de vallei: deze keer geen bestelling en geen termijn — de vallei is van jou zolang de wagens rijden. Elke waar verkocht op de kasteelmarkt brengt aanzien; een hogere rang vraagt ook verschillende waren en een gestage stroom. Het rangbord toont wat ontbreekt. Begin met een boerderij aan de kasteelweg — de wagens brengen de oogst zelf naar de markt.\n— Wszebor, kastelein van Łozinny Bród",
   "building.tradePost": "Handelspost",
   "town.unlockPost": "de handelspost over de rivier",
   "town.postOpen": "Over de rivier is een handelspost geopend: die betaalt {pct} van de kasteelprijs. Leg er een weg met brug naartoe aan.",

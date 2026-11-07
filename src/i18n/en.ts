@@ -746,7 +746,7 @@ export const en: FullDict = {
   'fix.paceFleetWhy': 'No wagon stood free for a minute. The forecast gives {seals}; a new wagon collects the load sooner and pays off before the seal.',
   'fix.paceFleetWhyFree': 'No wagon stood free for a minute. A new wagon picks the load up sooner — goods sold mean silver and renown.',
   // free valley opening letter (D-151; see PENDING_KEYS)
-  'letter.valleyOpening': 'To the steward of the valley: no order and no deadline await you here — the valley is yours while the wagons roll. Every good sold at the castle market brings renown, and the number of different goods raises your rank as well; the rank plaque shows what is still missing. Begin with a farm by the castle road — the wagons will carry its harvest to the market.\n— Wszebor, Castellan of Łozinny Bród',
+  'letter.valleyOpening': 'To the steward of the valley: this time I set you no order and no deadline — the valley is yours while the wagons roll. Every good sold at the castle market brings renown; a higher rank also asks for different goods and a steady flow. The rank plaque shows what is missing. Begin with a farm by the castle road — the wagons will carry its harvest to market.\n— Wszebor, Castellan of Łozinny Bród',
   // free valley trading post (D-170)
   'building.tradePost': 'Trading post',
   'town.unlockPost': 'the trading post across the river',

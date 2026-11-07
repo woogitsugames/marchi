@@ -751,7 +751,7 @@ export const pl = {
   'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
   'fix.paceFleetWhyFree': 'Przez minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',
   // free valley opening letter (D-151; localized)
-  'letter.valleyOpening': 'Do zarządcy doliny: tu nie czeka żadne zamówienie ani termin — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi sławę, a rangę podnosi też liczba różnych towarów; tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze zamkowej — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
+  'letter.valleyOpening': 'Do zarządcy doliny: tym razem nie wyznaczam ci zamówienia ani terminu — dolina jest twoja, póki wozy jeżdżą. Każdy towar sprzedany na targu przy zamku przynosi sławę, a do wyższej rangi trzeba też różnych towarów i stałego przepływu. Tablica rangi pokaże, czego jeszcze brak. Zacznij od gospodarstwa przy drodze do zamku — wozy same zawiozą plony na targ.\n— Wszebor, kasztelan Łozinnego Brodu',
   // free valley trading post (D-170)
   'building.tradePost': 'Posterunek handlowy',
   'town.unlockPost': 'posterunek handlowy za rzeką',
