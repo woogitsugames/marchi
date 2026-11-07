@@ -242,3 +242,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-284 | — | In Arabic the card's "?" (D-254) is mirrored | decided | UI |
 | D-285 | — | On a short RTL sheet the grip is 8 px | decided | UI |
 | D-286 | — | Help opened from a card's "?" scrolls its topic into view | decided | UI |
+| D-296 | — | Terrain pieces outside the first frame are built after it | decided | render |
+| D-297 | — | `syncNetwork` no longer re-buckets the trees | decided | inne |
+| D-298 | — | What day 13 buys: tens of ms of CPU out of the menu world build, a few out of the first frame; not a wall- clock change on this machine | decided | UI |

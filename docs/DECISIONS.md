@@ -3174,3 +3174,45 @@ the probe's clock jump) — fixed as above. Shots (`tools/winter-trees-shots.mjs
 Inspected: winter oaks and birches read as bare trees with limbs and a fine twig haze, pines and spruces green, far
 copses bare, shadows lacy; autumn unchanged. Open: the regrown spring leaves keep the late-autumn colours of the art
 direction (a fresh spring tint would be a separate owner decision). (decided)
+
+## Menu world build: deferred terrain pieces, no forced tree re-bucket (perf day 13, BACKLOG P3 from D-283)
+
+**D-296 — Terrain pieces outside the first frame are built after it.** `TerrainView(…, defer)` creates its 10 meshes
+(6 map chunks, 4 apron pieces) at once, hidden, each with its own empty `BufferGeometry`, in the old order — so object
+ids, group order and the opaque sort among the terrain draws stay as they were. Before each frame is drawn,
+`View.buildTerrainInView` fills the pieces whose box meets the camera frustum, and after the first frame one task
+(queued before the pre-warm's timer, so the pre-warm sees every piece) fills the rest. The box is known before the
+piece exists (`pieceBox`): its x/z extent exactly, heights from `hf.bounds()` for a map chunk, and for the apron the
+border base − 0,35 plus `apronFrom`'s ceiling (rise ≤ 0,24 m per metre beyond the border, largest at a piece corner),
+1 m of slack; `tests/ground-identity.test.ts` checks the box holds the built grid on 17 grounds and that pieces built one
+by one in any order equal `terrainGrids` bit for bit. The grids stay in the ground memo (D-282), now filled per piece,
+so a world on a kept ground builds none. Menu, portrait 412×915: `terrain-0-0`, `terrain-2-1` and the west and east
+apron are deferred; landscape 915×412: `terrain-2-1` and the west apron. It applies to every world change (a mission
+on a new ground too), not only the menu: the frustum test is what keeps it safe, and a piece the camera turns to is
+built before the frame that would show it. Why not lazy inside the mesh: three.js uploads the attributes before
+`onBeforeRender`, so the view has to decide before `render`. Pixels: menu frames 1–5 (high) and 1/3/5 (low), menu
+frame 30, mission frame 1 at 240 m and the three settled day-12 scenes — **0 px** against `20cb94c`; the deferral alone
+(build with only D-297 applied vs. this branch, `prior=m12`) — **0 px**. A `marchia:terrain-rest` mark records when the
+rest is built. (decided)
+
+**D-297 — `syncNetwork` no longer re-buckets the trees.** It ran `vegetation.update(camera, force)` right after
+`rebuild`, with whatever camera stood there: at startup the camera the menu had not placed yet (`setMenuMode` comes
+after `setWorld`), on a world change the previous world's camera (`rig.set` only moves the camera in the next
+`update`). `rebuild` already marks the buckets stale (`lastX = Infinity`), so the frame's own `update` sorts the trees
+from the camera it draws with. One visible difference, a correction: when the new world's camera stood within 6 m of
+the old one's (harness `prior=m12`), the old code kept the buckets of the previous world's camera until the player moved
+6 m — 1 675 px of tree shadow on a field differ from `20cb94c` (all of it this change: before vs. before-without-the-
+forced-update is the same 1 675 px). The menu path is unchanged (its camera always moves > 6 m before frame 1). The
+cost moves rather than vanishes: the cold first `update` (~10–15 ms, JIT) is now frame 1's, and what is saved is the
+second, warm one (~2–3 ms) — D-283's "~10 ms" counted the cold one. (decided)
+
+**D-298 — What day 13 buys: tens of ms of CPU out of the menu world build, a few out of the first frame; not a wall-
+clock change on this machine.** Startup probe (`startup13-data/run.sh 4`, 4 rounds × 3 runs interleaved, load 5–9 from
+other sessions): CPU of the menu world build (`menu-start`) high 502 → 471 ms, low 487 → 453 ms; `terrainGrid.ts` there
+60 / 56 → 0 (the pieces in view, 42 / 39 ms, now run in frame 1; the rest, 8 / 8 ms warm, after it). Frame 1's own CPU
+(`ready` phase) rose by the pieces it now builds and by shader-compile noise (high 754 → 871, low 680 → 724 ms);
+`ready` 1134 → 1055 / 1096 → 1096 ms and first frame 1941 → 1910 / 1777 → 1858 ms (medians) are within this machine's
+spread. Cold node probe (`tools/defer-probe.ts`, 15 interleaved cold processes): all 10 grids 78,8 ms vs. 64,6 in view
++ 12,7 deferred; tree re-bucket cold 15–16, warm 3 ms. Net: ~12–16 ms (loaded) less work before the first frame, and
+`ready` earlier by the in-view pieces. Kept because it is identical in pixels and costs nothing after start; on the
+Fold the share should be the same (measure `menu-world` → `first-frame` there). (decided)
