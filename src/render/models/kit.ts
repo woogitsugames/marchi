@@ -153,6 +153,13 @@ export function prim<C extends PrimCtor>(Ctor: C, ...args: ConstructorParameters
   return g;
 }
 
+/** Number of shared primitive templates alive (test guard: world-dependent sizes must not use `prim`, D-330). */
+export function primCount(): number {
+  let n = 0;
+  for (const m of prims.values()) n += m.size;
+  return n;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Part builder
 // ---------------------------------------------------------------------------------------------

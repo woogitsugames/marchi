@@ -3717,3 +3717,13 @@ showed (scratchpad, flat map):
 Checked and left: RTL (ar) sheet and card read in order, the period of "XVI." sits left of the numeral as Arabic
 bidi puts it; long words (de, ru, uk) wrap whole; no console errors; nothing on the forbidden list. Sim untouched.
 (decided)
+
+**D-330 — Bridge ice uses one-off geometries; a test guards `prim` against world-dependent sizes.**
+After D-328 (slope plinth) a scan of the remaining `prim` call sites found the same leak in `bridgesView.ts`: the
+winter frost sheet on wooden bridges took its length from the bridge (`BRIDGE.cell * c.stretch`) and each of the
+three floes per pile pair a random radius (`icePb.r(0.45, 0.8)`), so every frozen bridge cell and floe kept a shared
+template for the whole session. Both are now `new BoxGeometry` / `new CylinderGeometry` (same arguments, same
+geometry; the PartBuilder copies it, so the one-off is garbage). `primCount()` in `kit.ts` counts live templates;
+`tests/prim-guard.test.ts` builds the whole model catalogue twice (count must not change) and fails if any world-driven
+module directly under `src/render/` calls `prim`. The model catalogue itself is a fixed set, so its templates are
+bounded. (decided)
