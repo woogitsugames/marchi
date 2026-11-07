@@ -263,3 +263,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-314 | — | The haul card aims at a seal the forecast reaches by less than 30 s | decided | UI |
 | D-315 | — | The haul sheet prints the forecast finish again | decided | UI |
 | D-316 | — | XVI ladder after D-313/D-314; I–XV unchanged | decided | inne |
+| D-317 | — | The XVI "stale waybill" was the shot tool reading the folded parchment; the UI is consistent | decided | UI |
