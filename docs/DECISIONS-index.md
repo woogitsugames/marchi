@@ -247,4 +247,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-290 | — | Castle forecast, the castle pace card and the two-row waybill | decided | UI |
 | D-291 | — | Which castle took the goods: `castleRival`, castle names, the late castle in the end letter | decided | treść |
 | D-292 | — | Mission XVI data, thresholds and ladder | decided | sim |
-| D-293 | — | Mission XVI content: menu, letters and 27 keys in 17 languages | decided | treść |
+| D-293 | — | Mission XVI content: menu, letters and 26 keys in 17 languages | decided | treść |

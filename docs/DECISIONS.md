@@ -3242,10 +3242,14 @@ east first + 2 wagons 6:32 3★. The reasonable player (`eyePlayer`, 10/30/60 s,
 taps the castle card at its first look: 7:15, no castle late, 2★. The third seal needs a wagon the fleet card does not
 offer here (the whole-order forecast is ~20 s optimistic on this map) — BACKLOG. (decided)
 
-**D-293 — Mission XVI content: menu, letters and 27 keys in 17 languages.**
+**D-293 — Mission XVI content: menu, letters and 26 keys in 17 languages.**
 Appended to the menu as XVI after XV (no renumbering, save keys unchanged): "XVI. Dwa zamki" / "Kto pierwszy, ten na
 czas". The castellan's letters (opening with both orders and times, 1–3 seals, loss) in 17 languages; the opening says
 the wagons share evenly and the switch is on the castle card ("zdecyduj wcześnie"), the signal from 0:00 the decision
-window needs. pl/en authored; the 15 other letters and the 27 new UI keys are agent translations, flagged in BACKLOG for
+window needs. pl/en authored; the 15 other letters and the 26 new UI keys are agent translations, flagged in BACKLOG for
 native review. Mission page `docs/missions/m16.md`; smoke, robustness (save → load bit-identity of the winning strategy)
-and fuzz cover m16; screenshots `docs/shots/m16-{letter,card,castle,switch}-{412x915,915x412,904x1000}.jpg`. (decided)
+and fuzz cover m16; screenshots `docs/shots/m16-{letter,card,castle,switch}-{412x915,915x412,904x1000}.jpg`. Layout check (scenes `waybill-m16`,
+`castle-m16`, 50 jobs, then the `--quick` matrix, 126 jobs): 0 failures after three fixes — the castle row's state is a
+read-out, not a 32 px control; the deadline pill no longer names the castle (it spilled at 904x1000 in pseudo), and
+`castle.fcFirst` is dropped because the dock's note says the same; and the sheets' root reveal (D-146)
+repeats for 2 s with scroll anchoring off, which had moved the castle card back 33 px at 360x740 ru/pseudo. (decided)
