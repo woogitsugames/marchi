@@ -718,6 +718,15 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   // correct when the card shader divides by alpha (no dark or olive fringe)
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
+  // the copy program's first use (link check) before any tree is drawn (D-325): three waits for the link at the
+  // first draw with a program, and that wait also waits for every draw queued before it, so a first copy after
+  // the first row's trees held the main thread until the GPU had rendered them. Drawn into the row (cleared
+  // before each view) with no source bound; the bake programs' first use comes with the first tree, also on an
+  // empty queue, after which the bake only queues work and returns.
+  copyMat.uniforms.src!.value = null;
+  renderer.setRenderTarget(row);
+  renderer.render(copyScene, copyCam);
+  copyMat.uniforms.src!.value = row.texture;
   [rtA, rtN].forEach((rt, mode) => {
     renderer.setRenderTarget(rt);
     renderer.clear();
@@ -746,13 +755,16 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
         renderer.render(scene, cam);
         scene.remove(grp);
       });
-      // copy the resolved row into its atlas row (mips are rebuilt after each copy; 8 per atlas)
+      // copy the resolved row into its atlas row; the mip chain is built once, after the last row's copy (three
+      // rebuilds it after every render into a mipmapped target: 8 full-chain rebuilds per atlas, each from scratch)
       rt.viewport.set(0, v * rowH, rowW, rowH);
       rt.scissor.set(0, v * rowH, rowW, rowH);
       rt.scissorTest = true;
+      rt.texture.generateMipmaps = v === BB_VIEWS - 1;
       renderer.setRenderTarget(rt);
       renderer.render(copyScene, copyCam);
     }
+    rt.texture.generateMipmaps = true;
   });
   for (const rt of [rtA, rtN]) {
     rt.scissorTest = false;
@@ -775,6 +787,9 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     m.needsUpdate = true;
   }
   treeUniforms.uBbNormal.value = rtN.texture;
+  // hand the queued work to the GPU now (D-325): WebGL sends it only when its command buffer fills or something
+  // waits on it, so a bake queued before a long CPU task (the world build) otherwise ran after it, not during it
+  renderer.getContext().flush();
   atlas = rtA;
   atlasN = rtN;
   atlasCell = cellPx;
