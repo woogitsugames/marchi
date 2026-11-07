@@ -12,7 +12,7 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, sentences, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
@@ -993,7 +993,7 @@ export class Hud {
     if (this.lastSeason !== null && season !== this.lastSeason) {
       const fx = SEASON_EFFECT[season];
       // winter slows fishers too (50%), not only farms: say both in the one notice
-      const text = season === 'winter' ? `${t('season.effect.winter-farm')} ${t('season.effect.winter-fisher')}` : fx ? t(fx) : t(`season.${season}`);
+      const text = season === 'winter' ? sentences(t('season.effect.winter-farm'), t('season.effect.winter-fisher')) : fx ? t(fx) : t(`season.${season}`);
       this.showNotice(SEASON_ICON[season], esc(text));
     } else if (this.lastSeason !== null && thaw && !this.wasThaw) {
       this.showNotice('road_dirt', esc(t(SEASON_EFFECT.thaw!)));
