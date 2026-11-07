@@ -340,6 +340,13 @@ export function dispatch(world: World): void {
   }
 
   // --- surplus: producers push output to warehouses before they fill up
+  // free granary space per id, read once per dispatch and dropped when a job below books space there
+  const space = new Map<number, number>();
+  const spaceOf = (wh: Building): number => {
+    let v = space.get(wh.id);
+    if (v === undefined) { v = warehouseSpace(wh); space.set(wh.id, v); }
+    return v;
+  };
   for (const b of st.buildings) {
     if (b.type === 'warehouse' || b.type === 'castle' || b.type === 'stable') continue;
     const def = BUILDINGS[b.type];
@@ -353,7 +360,7 @@ export function dispatch(world: World): void {
       const fwd = free.length === 0 ? null : dc.from(b.gate);
       for (const wh of st.buildings) {
         if (wh.type !== 'warehouse') continue;
-        if (warehouseSpace(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
+        if (spaceOf(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
         const t = fwd ? fwd.dist[wh.gate]! : reachable(world, b.gate, wh.gate) ? 0 : Infinity;
         if (t === Infinity) { if (cutOffWh === -1) cutOffWh = wh.id; continue; }
         if (t < bestT) { bestT = t; best = wh; }
@@ -367,8 +374,9 @@ export function dispatch(world: World): void {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
         continue;
       }
-      const qty = Math.min(avail, cap, warehouseSpace(best));
+      const qty = Math.min(avail, cap, spaceOf(best));
       assignJob(world, wagon, b, best, g, qty);
+      space.delete(best.id);
       free.splice(free.indexOf(wagon), 1);
     }
   }
