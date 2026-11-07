@@ -6,7 +6,7 @@
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
 - Baza = `main` = **D-284..D-286 scalone** (7 XI ~04:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
-  Ostatnie APK: **e9b389a** (7 XI ~16:05, wysłane; XVI prognoza i karta przewozu, szybsza budowa świata).
+  Ostatnie APK: **d359249** (7 XI ~18:50, wysłane; kupiec przy ladzie, szybsze menu). Następne: jedno rano.
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
   budowa świata menu −23…−28 % CPU (geometria bit w bit), leniwe LOD-y wozów, **światła co 2. klatkę** (decyzja właściciela),
@@ -50,7 +50,7 @@
   0 px różnicy na 15 scenach. Weryfikacja: testy 603/0, smoke 0, layout 126/0.
 - Scalone ~16:00: **D-317** „nieaktualny list” w XVI to artefakt narzędzia zrzutów (zwinięty list w pionie), UI spójne;
   narzędzie sprawdza teraz zgodność ze stanem. **D-318** arkusz zamku zaokrągla spóźnienie w górę do 10 s jak karta i list.
-- APK **e9b389a** wysłany ~16:05 (XVI prognoza + karta przewozu, szybsza budowa świata, a11y). Następny ~19:00.
+- APK **e9b389a** wysłany ~16:05; **d359249** ~18:50 (kupiec, szybsze modele). Następny rano.
 - Scalone ~18:10: **D-320..D-322** szybsza budowa modeli (wspólne prymitywy, typowane tablice w `PartBuilder`, szum raz na
   wierzchołek): modele menu 167 → 125 ms (node), w przeglądarce 137 → 105 ms; 0 px na 18 scenach, geometria bit w bit.
   Testy 606/0, smoke 0, layout 126/0. (Agenci stanęli ~16:00 na limicie użycia, wznowieni ~17:45.)
