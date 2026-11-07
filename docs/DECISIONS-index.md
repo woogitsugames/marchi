@@ -284,3 +284,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-333 | — | Not done: an IndexedDB cache of built models, building only the first frame's kinds | decided | inne |
 | D-334 | 2026-11-07 | RTL: the pennant icons turn with the script; an audit of which icons mirror (QA 2026-11-07, BACKLOG P3) | decided | inne |
 | D-335 | — | The loss letter's three costs leave out calm seconds (BACKLOG P3 from D-212) | decided | treść |
+| D-336 | 2026-11-07 | Dispatch distance maps are memoized across ticks (sim cost night, `docs/research/2026-11-07-sim-cost.md`) | decided | sim |
+| D-337 | — | Dijkstra walks cached neighbour lists | decided | inne |
+| D-338 | — | Fewer searches in rule A, and small per-tick savings; behaviour unchanged | decided | inne |
