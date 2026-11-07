@@ -128,7 +128,8 @@ export interface PaceCastle {
  * it could (its inputs could feed that much), and the whole order is forecast at `finishTick`, past the next seal's
  * `byTick` with time left for a new wagon to pay off. On a long castle leg the yard's pickup wait (the fleet card's
  * evidence) only shows minutes later, in bursts, when a wagon no longer pays off. `producer` is that producer (the
- * card's subject; its sheet offers "Kup wóz"), `seals` what the forecast earns, `aim` the seals in reach.
+ * card's subject; its sheet offers "Kup wóz"), `seals` what the forecast earns, `aim` the seals in reach (= `seals` when
+ * the forecast reaches them by less than HAUL_MARGIN_TICKS, D-313).
  */
 export interface PaceHaul {
   k: 'haul'; good: Good; producer: number; type: BuildingType; wagons: number; rate: number; cap: number;
@@ -427,14 +428,17 @@ function bottleneckChain(world: World, f: ContractForecast): Set<Good> {
   return out;
 }
 
-/** The fleet-wide part of the fleet card's rule; the goods of the bottleneck chain when it holds, else null. */
-function fleetGate(world: World, f: ContractForecast | null): Set<Good> | null {
+/**
+ * The fleet-wide part of the fleet card's rule; the goods of the bottleneck chain when it holds, else null. `aim`: the
+ * seal the wagon aims at (default: the forecast's next better seal).
+ */
+function fleetGate(world: World, f: ContractForecast | null, aim: { byTick: number } | null = f?.aim ?? null): Set<Good> | null {
   const st = world.state;
   if (st.mission.result !== 'running') return null;
   if (!st.mission.contract) return freeFleetGate(world);
   if (!f || !f.ready || f.bottleneck < 0) return null;
   // a better seal is still in reach, with time for a new wagon to pay off before it
-  if (!f.aim || f.aim.byTick - st.tick < FLEET_ROOM_TICKS) return null;
+  if (!aim || aim.byTick - st.tick < FLEET_ROOM_TICKS) return null;
   // a wagon must be buyable now, and must not cost the stone bridge before the ice (D-117)
   if (st.coins < WAGON_PRICE || st.wagons.length >= MAX_WAGONS || !st.buildings.some((b) => b.type === 'stable')) return null;
   if (iceBeforeWagon(world)) return null;
@@ -484,6 +488,24 @@ export function fleetCueFor(world: World, f: ContractForecast | null, b: Buildin
   return goods ? fleetWait(world, b, goods, f?.seals ?? -1) : null;
 }
 
+/**
+ * Two castles (D-313): the whole-order forecast holds to within this much of the run's finish from 1:10 on
+ * (tools/m16-forecast-error.ts), so a seal it reaches by less is not yet safe.
+ */
+export const HAUL_MARGIN_TICKS = 30 * TICK_HZ;
+
+/**
+ * The seal the haul card aims at (D-313): the forecast's next better seal, else the seal it earns when its finish
+ * lies within HAUL_MARGIN_TICKS of that seal's time (the forecast may be that early). Null otherwise.
+ */
+function haulAim(world: World, f: ContractForecast | null): { seals: number; byTick: number } | null {
+  if (!f || !f.ready) return null;
+  if (f.aim) return f.aim;
+  const c = world.state.mission.contract!;
+  const byTick = f.seals === 3 ? c.star3Tick : f.seals === 2 ? c.star2Tick : -1;
+  return byTick >= 0 && f.finishTick + HAUL_MARGIN_TICKS > byTick ? { seals: f.seals, byTick } : null;
+}
+
 /** The shared producer counts as held back by the fleet below this share of what its chain could make (D-307). */
 export const HAUL_RATE_SHARE = 0.9;
 
@@ -496,8 +518,9 @@ export const HAUL_RATE_SHARE = 0.9;
 export function haulCard(world: World, f: ContractForecast | null): PaceHaul | null {
   const st = world.state;
   if (!st.mission.extraContracts || !st.mission.contract) return null;
-  const chain = fleetGate(world, f);
-  if (!chain || !f || !f.aim) return null;
+  const aim = haulAim(world, f);
+  const chain = fleetGate(world, f, aim);
+  if (!chain || !f || !aim) return null;
   const b = f.goods[f.bottleneck]!;
   if (b.toMake <= 0 || b.producer < 0 || !b.producerType || b.perMin < 0 || b.perMin >= HAUL_RATE_SHARE * b.capPerMin) return null;
   // the inputs could feed the producers flat out (else more makers, not wagons, would help)
@@ -514,7 +537,7 @@ export function haulCard(world: World, f: ContractForecast | null): PaceHaul | n
   }
   return {
     k: 'haul', good: b.good, producer: b.producer, type: b.producerType, wagons: st.wagons.length, rate: b.perMin, cap: b.capPerMin,
-    finishTick: f.finishTick, byTick: f.aim.byTick, seals: f.seals, aim: f.aim.seals,
+    finishTick: f.finishTick, byTick: aim.byTick, seals: f.seals, aim: aim.seals,
   };
 }
 

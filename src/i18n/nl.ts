@@ -778,4 +778,5 @@ export const nl: Dict = {
   "menu.m16Sub": "Wie eerst komt, is op tijd",
   "cause.paceHaul": "maakt {rate} van {cap} {goodGen} per minuut, {n, plural, one {de enige wagen is onderweg} other {alle # wagens onderweg}} — koop een wagen",
   "fix.paceHaulWhy": "Een minuut lang stond geen wagen vrij en de wagens kunnen het ophalen van {goodGen} niet bijhouden. Voor {aim} vóór {by} moet de waar eerder vertrekken; een nieuwe wagen verdient zich op tijd terug.",
+  "fix.paceHaulAt": "In dit tempo is de hele bestelling rond {finish} klaar.",
 };

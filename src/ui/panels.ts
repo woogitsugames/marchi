@@ -194,12 +194,14 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
 
 /**
  * The two-castle haul card (D-307) on the shared producer's sheet: the fleet cannot keep it at work, and the order of
- * both castles is forecast past the next seal. "Kup wóz" with the forecast and the seal in reach.
+ * both castles is forecast past (or too close to, D-313) the next seal. "Kup wóz" with the forecast's finish and the
+ * seal in reach.
  */
 function haulCureHtml(world: World, pc: PaceHaul): string {
-  // the forecast's own finish is not printed: in the first minutes the long-run pace still carries the start-up wait
-  // for wood (XVI at 1:30: "10:00" for a run that ends at 7:15); the seal in reach and its time are exact
-  const why = t('fix.paceHaulWhy', { goodGen: t(`goodGen.${pc.good}` as MessageKey), by: ticksClock(pc.byTick), aim: t('why.pace.seals', { n: pc.aim }) });
+  // D-313: the whole order's forecast finish comes first — while the card shows it holds to within ~20 s of the run's
+  // finish (tools/m16-forecast-error.ts), so "ok." (around) is honest; then the seal in reach and its exact time
+  const why = t('fix.paceHaulAt', { finish: ticksClock(pc.finishTick) }) + ' ' +
+    t('fix.paceHaulWhy', { goodGen: t(`goodGen.${pc.good}` as MessageKey), by: ticksClock(pc.byTick), aim: t('why.pace.seals', { n: pc.aim }) });
   const stable = world.state.buildings.find((q) => q.type === 'stable');
   if (!stable) return '';
   const short = WAGON_PRICE - world.state.coins;
