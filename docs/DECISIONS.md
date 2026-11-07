@@ -3220,7 +3220,7 @@ Fold the share should be the same (measure `menu-world` → `first-frame` there)
 **D-300 — Small a11y fixes after the 7 XI audit: ETA plaque near-white, a forced-colors outline on the map pin, the
 docked hint grows at large text.** (a11y ar, 7 XI; `tools/a11y-audit.mjs` hud/why/wagon/castle, pl + ar, 412×915 and
 915×412.) (1) The ETA plaque on the map (`.eta-tag span.num`) sits on the kit's slate `eta` sprite like the snow pill,
-so it takes the same near-white `#fbfbf8` (D-122) instead of `#eef0ee`: 4.50 → 4.97:1. (2) The critical pin's
+so it takes the same near-white `#fbfbf8` (D-122) instead of `#eef0ee`: 4.45–4.51 → 4.92–4.98:1 (pl, ar, both viewports). (2) The critical pin's
 keyboard ring was there all along — the D-123 two-tone ring is drawn on the pin's head (`.bb::before`, D-147) and a
 screenshot of the Tab-focused pin with the bakery sheet open shows it — but the audit only read the button's own
 outline / box-shadow. The audit now also counts a two-tone ring on a descendant's `::before`/`::after`. The pin's
@@ -3231,4 +3231,7 @@ colour, so there the focus no longer vanishes. A transparent outline does not co
 clamp) cut "Brakujący odcinek zaznaczono na mapie." in half. Under `body.is-short.is-bigtext` the note drops both and
 wraps in full; the dock grows and the body above gives way through `--dock-h` (as D-270). The clamp stays at normal
 text size, where three lines fit 48 px anyway. The audit waits for `body.is-bigtext` before reading the 200 % layout
-(a loaded machine needed > 300 ms for the ResizeObserver and reported the pre-bigtext dock). (decided)
+(a loaded machine needed > 300 ms for the ResizeObserver and reported the pre-bigtext dock) and reports text cut by a
+fixed-height ancestor (the hint was cut by `.fix-note`, not by its own box). Audit hud/why/wagon/castle × pl/ar ×
+412×915/915×412, before → after: low contrast 3 → 2, clipped at 200 % 2 → 0, focus without ring 0 → 0 (the old check:
+2 → 0). The remaining two are `wagon-915x412` pl "Dostawa za" / `dd.eta` sampled over the map, unchanged. (decided)
