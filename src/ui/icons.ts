@@ -2206,10 +2206,23 @@ function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function wrap(inner: string, size: number, title?: string): string {
+/**
+ * Icons whose drawing points along the reading direction and so turn round under `dir=rtl` (D-334): the pennant
+ * flying from its pole ('first', and the destination pennant at the end of the broken way in 'no_route'). The SVG
+ * gets `class="ico-rtl"`; the stylesheet mirrors it with `scale` (composes with `:active` translate transforms).
+ * Never mirrored: goods and buildings (shapes are their identity), wagon / no_wagon / buy_wagon (a picture of a
+ * cart, the 3D wagons keep their real heading), rotate (a physical clockwise turn), speed1/2/4 (playback speed,
+ * like media controls), contested (a fork drawn as on the ground), weather, coin, seal, eye. 'back' and 'undo' are
+ * turned by their call sites (`.rtl-flip`, or `.fwd` for the back arrow used as "go to"), since `.fwd` relies on
+ * the unflipped glyph.
+ */
+export const RTL_MIRROR: ReadonlySet<IconId> = new Set<IconId>(['first', 'no_route']);
+
+function wrap(inner: string, size: number, title?: string, id?: IconId): string {
   const a11y = title ? `aria-label="${escapeAttr(title)}"` : 'aria-hidden="true" focusable="false"';
+  const cls = id && RTL_MIRROR.has(id) ? ' class="ico-rtl"' : '';
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" role="img" ${a11y}>` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" role="img"${cls} ${a11y}>` +
     inner +
     '</svg>'
   );
@@ -2217,7 +2230,7 @@ function wrap(inner: string, size: number, title?: string): string {
 
 /** A complete `<svg>` element for an icon. */
 export function iconSvg(id: IconId, size = 24, title?: string): string {
-  return wrap(ICONS[id], size, title);
+  return wrap(ICONS[id], size, title, id);
 }
 
 /**
@@ -2227,5 +2240,5 @@ export function iconSvg(id: IconId, size = 24, title?: string): string {
 export function struckIconSvg(id: IconId, size = 24, title?: string): string {
   const strike = BUILT.geom.strike;
   const inner = render([...cutBand(BUILT.geom[id], STRIKE_A, STRIKE_B, STRIKE_GAP), ...strike]);
-  return wrap(inner, size, title);
+  return wrap(inner, size, title, id);
 }

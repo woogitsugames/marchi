@@ -543,6 +543,8 @@ body.is-side .sheet-grip::before { display: none; }
 /* direction icons drawn pointing back / turning back (back, undo): mirrored in RTL; goods and buildings never */
 .rtl-flip { display: inline-grid; }
 :root[dir='rtl'] .rtl-flip { transform: scaleX(-1); }
+/* icons drawn along the reading direction (RTL_MIRROR in icons.ts, D-334): the pennant flies with the script */
+:root[dir='rtl'] svg.ico-rtl { scale: -1 1; }
 .link.is-root { --frame: var(--clay); --hair: 1.5px; }
 .link.is-root .l-icon { color: var(--clay); --icon-halo: #e2d3c2; }
 .link .root-tag { display: inline-block; font-size: 13px; font-weight: 700; color: var(--clay); font-variant: small-caps; text-transform: lowercase; letter-spacing: .06em; margin-inline-start: 6px; }
