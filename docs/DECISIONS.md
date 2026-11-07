@@ -3541,3 +3541,18 @@ offers the wagon at 2:00, before the dispatcher's chaotic window). Other mission
 (`tests/two-castles.test.ts`): error bounds over time for all 10 strategies (whole order ≤ 40 s from 1:10, ≤ 25 s
 while the haul card shows, east castle ≤ 50 s and north ≤ 70 s from 0:10; at the even split the east card says late by
 ≥ 1:30 and within 30 s of the truth through 1:50). (decided)
+
+**D-317 — The XVI "stale waybill" was the shot tool reading the folded parchment; the UI is consistent.**
+Report: in `m16-castle-412x915` the waybill read 0/24 while the east castle held 6 planks. Probe (paused at tick 1500,
+`ff=150&speed=0&openId=5`, this worktree's build on port 5222): the castle sheet opened in portrait folds the waybill to
+its seal (D-62), the folded `.waybill` is `display:none` and `updateCastles`/`updateContract` return before the rows
+(D-153), so the hidden DOM still held the tick-0 text — which `tools/m16-shots.mjs` printed as "waybill". On screen the
+seal fill was 11.1 % = 6/54 (both orders), the card "spóźni się o 2:20" and the sheet "7:12 — 2:12 po terminie" (same
+forecast; the card and the waybill round the lateness up to 10 s, the sheet prints the exact finish). Closing the sheet
+in pause unfolds the waybill and `applyFold` clears `lastSig` and sets `contractDirty`, so the next frame draws 6/24,
+"spóźni się o 2:20"; 915×412 and 904×1000 (not folded) showed 6/24 directly, still after 8 s of pause. XI–XV use the
+same fold path (`updateContract`), and no other shot tool reads the waybill text, so no older shot was affected. Fix in
+the tool only: after the last step it waits two animation frames, logs the state's castle counts, reads the waybill rows
+only when they are shown (else the seal's text and fill) and reports a mismatch between the shown counts or seal fill
+and the state as an error. All 18 `docs/shots/m16-*` regenerated, 0 errors. No UI, no sim change (`tools/mission-hashes.ts`
+identical). (decided)
