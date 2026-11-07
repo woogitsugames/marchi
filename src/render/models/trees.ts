@@ -40,7 +40,7 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
-import { leafTexture, modelMaterial, needleTexture, treeUniforms } from './materials';
+import { leafTexture, modelMaterial, needleTexture, treeUniforms, TWIG_GLSL } from './materials';
 import { rod } from './shapes';
 
 export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch' | 'bush';
@@ -311,6 +311,10 @@ function oak(b: PartBuilder, v: number): void {
   const list: Clump[] = ends.map((e) => ({ c: e.clone().add(v3(0, 0.4, 0)), r: 1.5 + r() * 0.4 }));
   list.push(...shell(r, crownC, crownR, 16, 0.55, [1.3, 1.8], -0.35));
   list.push({ c: v3(0.2, 10.4, 0), r: 1.7 });
+  // the bare winter crown shows its scaffold (D-260): a thin branch from the nearest limb into every outer clump, so
+  // no twig spray floats in the air
+  const joints = [trunkTop, ...ends, v3(0.3, 10.2, -0.2)];
+  for (const k of list.slice(ends.length)) branchTo(b, joints, k.c, 0.09, BARK);
   const cols = ['#7a5a33', '#6c5232', '#8d6b3a', '#5f4a30', '#9a7440', '#6f6236', '#a5643a'];
   clumps(b, 'leaves', list, 3, crownC, crownR, cols, 31 + v * 7);
 }
@@ -341,7 +345,13 @@ function birch(b: PartBuilder, v: number): void {
     // drooping clumps below the branch end
     list.push({ c: e.clone().add(v3(Math.cos(a) * 0.3, -0.5, Math.sin(a) * 0.3)), r: 0.95 + r() * 0.3 });
   }
+  const n0 = list.length;
   list.push(...shell(r, crownC, crownR, 10, 0.5, [0.9, 1.2], -0.5));
+  // bare crown scaffold (D-260): thin rising branches from the stem into the outer clumps
+  for (const k of list.slice(n0)) {
+    const y = Math.max(H * 0.3, k.c.y - 1.4), t = y / (H * 0.92);
+    branchTo(b, [v3(lean.x * t * t, y, lean.z * t * t)], k.c, 0.05, '#5e5249');
+  }
   clumps(b, 'leaves', list, 3, crownC, crownR, ['#a08a45', '#8f7c45', '#b39a4f', '#857446', '#97894a', '#7b7a44'], 43 + v * 11);
 }
 
@@ -358,11 +368,24 @@ function bush(b: PartBuilder, v: number): void {
   const crownR = v3(1.75, 1.15, 1.75);
   const list = shell(r, crownC, crownR, 8 + v, 0.35, [0.7, 0.95], -0.3);
   list.push({ c: v3(0.15, 1.9, -0.1), r: 0.85 });
+  // (no extra scaffold for the shrub, D-261: its twig sprays and five stems carry the bare look, and shrubs are the
+  // most numerous near model — 6 triangles a clump would be the largest share of the added geometry)
   // hazel/blackthorn in November: dull olive and ochre with a few russet clumps
   const cols = v
     ? ['#646541', '#706b3c', '#5a5e3e', '#7b6a3c', '#7f5a3c']
     : ['#5d6440', '#6a6a3e', '#535b3c', '#74683e', '#6e5636'];
   clumps(b, 'leaves', list, 3, crownC, crownR, cols, 52 + v * 5);
+}
+
+/**
+ * A thin branch (3-sided open rod, 6 triangles) from the nearest of `from` to just short of the clump centre `to`
+ * (D-260): hidden in the leaf mass in summer, the scaffold of the bare crown in winter.
+ */
+function branchTo(b: PartBuilder, from: Vector3[], to: Vector3, r0: number, color: string): void {
+  let best = from[0]!, bd = Infinity;
+  for (const f of from) { const d = f.distanceToSquared(to); if (d < bd) { bd = d; best = f; } }
+  const end = best.clone().lerp(to, 0.88);
+  rod(b, 'bark', best, end, r0, r0 * 0.35, 3, { color, ao: 0, dirt: 0 }, true);
 }
 
 const BUILD: Record<TreeKind, (b: PartBuilder, v: number) => void> = { spruce, pine, oak, birch, bush };
@@ -377,16 +400,26 @@ export function treeParts(kind: TreeKind, variant = 0): ModelPart[] {
   BUILD[kind](b, variant);
   // trunks get their own material: bark maps plus the tree shader (LOD dither, sway)
   const parts = b.build().map((p): ModelPart => ({ geometry: p.geometry, material: p.material === 'bark' ? 'trunk' : p.material }));
-  for (const p of parts) addTreeAttr(p.geometry, kind);
+  for (const p of parts) addTreeAttr(p.geometry, kind, 0, p.material === 'leaves' ? 600 + TREE_KINDS.indexOf(kind) * 7 + variant : 0);
   cache.set(key, parts);
   return parts;
 }
 
-function addTreeAttr(g: BufferGeometry, kind: TreeKind, lift = 0): void {
+/**
+ * `aTree` = (LOD factor, tint family, z). z is the far card's lift; on leaf cards (`cardSeed` > 0) it is the card's
+ * own hash in [0.02, 0.98] instead, the same for its 4 corners (clumps() writes 4 consecutive vertices per card): the
+ * bare factor drops the cards in this order (D-260).
+ */
+function addTreeAttr(g: BufferGeometry, kind: TreeKind, lift = 0, cardSeed = 0): void {
   const n = g.getAttribute('position').count;
   const a = new Float32Array(n * 3);
   const [k, t] = TREE_ATTR[kind];
-  for (let i = 0; i < n; i++) { a[i * 3] = k; a[i * 3 + 1] = t; a[i * 3 + 2] = lift; }
+  const r = cardSeed > 0 ? rng(cardSeed) : null;
+  let h = lift;
+  for (let i = 0; i < n; i++) {
+    if (r && (i & 3) === 0) h = 0.02 + 0.96 * r();
+    a[i * 3] = k; a[i * 3 + 1] = t; a[i * 3 + 2] = h;
+  }
   g.setAttribute('aTree', new BufferAttribute(a, 3));
 }
 
@@ -428,10 +461,17 @@ export const BB_ELEV = 0.52;
  * Card extent per kind in the elevated view: width = model extent plus an empty margin (no mip
  * bleed between atlas columns); height in the bake camera's up direction, the trunk foot at 0.
  */
+const cardSizes = new Map<TreeKind, { W: number; y0: number; y1: number }>();
+
 function cardSize(kind: TreeKind): { W: number; y0: number; y1: number } {
+  // cached: the model is (D-260: a season re-bake asked for it 80 times, each a walk over every vertex)
+  let cs = cardSizes.get(kind);
+  if (cs) return cs;
   const { half, top } = treeExtent(kind);
   const c = Math.cos(BB_ELEV), s = Math.sin(BB_ELEV);
-  return { W: half * 2 * 1.16, y0: -0.25 * c - half * s * 1.08, y1: (top + 0.2) * c + half * s * 1.08 };
+  cs = { W: half * 2 * 1.16, y0: -0.25 * c - half * s * 1.08, y1: (top + 0.2) * c + half * s * 1.08 };
+  cardSizes.set(kind, cs);
+  return cs;
 }
 
 /**
@@ -519,18 +559,34 @@ export function billboardDepthMaterial(): MeshDepthMaterial {
 let atlas: WebGLRenderTarget | null = null;
 let atlasN: WebGLRenderTarget | null = null;
 let atlasCell = 0;
+/** Bare factor the atlas pair holds (D-260); the bake materials read it from `bakeBare`. */
+let atlasBare = -1;
+const bakeBare = { value: 0 };
 
 // Bake shaders: albedo (vertex colour × card texture) and object-space normals, both cut by the
 // card alpha. Object space = card space for a camera on +Z (x right, y up, z toward the viewer).
 const BAKE_VERT = /* glsl */ `
 attribute vec3 color;
+attribute vec3 aTree;
+uniform float bare;
+uniform float leafUv;
 varying vec3 vN;
 varying vec3 vC;
 varying vec2 vUv;
+varying float vTwig;
+${TWIG_GLSL}
 void main() {
   vN = normalize(normalMatrix * normal);
   vC = color;
   vUv = uv;
+  vTwig = 0.0;
+  // leaf cards: the same winter card selection as the leaf material (D-260)
+  if (leafUv > 0.5) {
+    float sel = twigSel(aTree.z, bare);
+    vUv = twigUv(uv, sel, aTree.z);
+    vC = mix(color, TWIG_COL, sel);
+    vTwig = sel;
+  }
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 const BAKE_FRAG = /* glsl */ `
@@ -540,23 +596,36 @@ uniform float mode;
 varying vec3 vN;
 varying vec3 vC;
 varying vec2 vUv;
+varying float vTwig;
 void main() {
   vec4 t = useMap > 0.5 ? texture2D(map, vUv) : vec4(1.0);
-  if (t.a < 0.5) discard;
-  if (mode > 0.5) gl_FragColor = vec4(normalize(vN) * 0.5 + 0.5, 1.0);
+  float a = 1.0;
+  // twig cards (D-260): partial coverage through alpha to coverage on the multisampled row, so the resolved atlas
+  // holds a bare crown as a thin haze of twigs (premultiplied like the rest of the atlas), not as a solid mass;
+  // a little mip hold-up like the leaf material's. Leaf and needle cards stay fully covered or cut, as before.
+  if (vTwig > 0.5) {
+    vec2 tuv = vUv * vec2(textureSize(map, 0));
+    float lod = max(0.0, 0.5 * log2(max(dot(dFdx(tuv), dFdx(tuv)), dot(dFdy(tuv), dFdy(tuv)))));
+    a = clamp(t.a * 0.55 * (1.0 + lod * 0.15), 0.0, 1.0);
+    if (a < 0.08) discard;
+  } else if (t.a < 0.5) discard;
+  if (mode > 0.5) gl_FragColor = vec4(normalize(vN) * 0.5 + 0.5, a);
   // the full model also shades itself through the shadow map (darker, a little greyer in the
   // crown's depth); the card cannot, so its albedo is pulled down the same way
   else {
     vec3 c = vC * t.rgb;
-    gl_FragColor = vec4(mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))), 0.12) * 0.84, 1.0);
+    gl_FragColor = vec4(mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))), 0.12) * 0.84, a);
   }
 }`;
 
-function bakeMaterial(map: Texture | null, mode: number): ShaderMaterial {
+function bakeMaterial(map: Texture | null, mode: number, leaf = false): ShaderMaterial {
   return new ShaderMaterial({
+    // leaf cards: the twig haze goes in by coverage (opaque leaves and the other kinds write alpha 1: unchanged)
+    alphaToCoverage: leaf,
     vertexShader: BAKE_VERT,
     fragmentShader: BAKE_FRAG,
-    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode } },
+    // `bare` is shared by every bake material (one value per bake)
+    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode }, leafUv: { value: leaf ? 1 : 0 }, bare: bakeBare },
     side: DoubleSide,
   });
 }
@@ -602,11 +671,8 @@ export function treeAtlasBytes(): number {
   return bytes * (atlasN ? 2 : 1);
 }
 
-export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGLRenderTarget {
-  if (atlas && atlasCell === cellPx) return atlas;
-  // re-bake at another resolution (quality tier switch): free the old pair first
-  atlas?.dispose();
-  atlasN?.dispose();
+export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare = 0): WebGLRenderTarget {
+  if (atlas && atlasCell === cellPx && atlasBare === bare) return atlas;
   const rowW = cellPx * ATLAS_COLS, rowH = cellPx * 2;
   const mk = () => {
     const rt = new WebGLRenderTarget(rowW, rowH * BB_VIEWS);
@@ -615,8 +681,16 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGL
     rt.texture.minFilter = LinearMipmapLinearFilter;
     return rt;
   };
-  const rtA = mk();
-  const rtN = mk();
+  // a new bare factor at the same size re-renders into the pair it has (D-260: no new GPU memory per season step);
+  // another resolution (quality tier switch) frees the old pair first
+  const reuse = !!(atlas && atlasN && atlasCell === cellPx);
+  if (!reuse) {
+    atlas?.dispose();
+    atlasN?.dispose();
+  }
+  const rtA = reuse ? atlas! : mk();
+  const rtN = reuse ? atlasN! : mk();
+  bakeBare.value = bare;
   const row = new WebGLRenderTarget(rowW, rowH, { samples: 4 });
   row.texture.generateMipmaps = false;
   row.texture.minFilter = NearestFilter;
@@ -635,15 +709,18 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGL
   const prevAlpha = renderer.getClearAlpha();
   const prevAutoClear = renderer.autoClear;
   const mats = bakeMats ??= [0, 1].map((mode) => ({
-    leaves: bakeMaterial(leafTexture(), mode),
+    leaves: bakeMaterial(leafTexture(), mode, true),
     needles: bakeMaterial(needleTexture(), mode),
     solid: bakeMaterial(null, mode),
   }));
-  const groups = TREE_KINDS.map((kind) => {
+  const cam = new OrthographicCamera(-1, 1, 1, -1, 0.1, 120);
+  // one group of meshes per kind and pass, built once per bake (not per view)
+  const groups = [0, 1].map((mode) => TREE_KINDS.map((kind) => {
     const grp = new Group();
-    grp.userData.parts = treeParts(kind);
+    const m = mats[mode]!;
+    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
     return grp;
-  });
+  }));
   // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
   // correct when the card shader divides by alpha (no dark or olive fringe)
   renderer.setClearColor(0x000000, 0);
@@ -651,7 +728,6 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGL
   [rtA, rtN].forEach((rt, mode) => {
     renderer.setRenderTarget(rt);
     renderer.clear();
-    const m = mats[mode]!;
     for (let v = 0; v < BB_VIEWS; v++) {
       const az = (v / BB_VIEWS) * Math.PI * 2;
       row.scissorTest = false;
@@ -660,13 +736,12 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGL
       renderer.clear();
       TREE_KINDS.forEach((kind, i) => {
         const { W, y0, y1 } = cardSize(kind);
-        const grp = groups[i]!;
-        grp.clear();
-        for (const p of grp.userData.parts as ModelPart[]) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
+        const grp = groups[mode]![i]!;
         scene.add(grp);
         // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk
         // foot at the origin
-        const cam = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+        cam.left = -W / 2; cam.right = W / 2; cam.top = y1; cam.bottom = y0;
+        cam.updateProjectionMatrix();
         const h = Math.cos(BB_ELEV) * 50;
         cam.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
         cam.lookAt(0, 0, 0);
@@ -698,14 +773,18 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128): WebGL
   renderer.setRenderTarget(prevTarget);
   renderer.setClearColor(prevClear, prevAlpha);
   const m = modelMaterial('billboard');
-  m.map = rtA.texture;
-  m.alphaTest = 0.4;
+  const md = m as unknown as { defines?: Record<string, string> };
+  // a season re-bake into the same pair changes no program input: no needsUpdate (D-260)
+  if (m.map !== rtA.texture || !md.defines || !('TREE_BB_NORMAL' in md.defines)) {
+    m.map = rtA.texture;
+    m.alphaTest = 0.4;
+    md.defines = { ...md.defines, TREE_BB_NORMAL: '', TREE_BB_VIEWS: BB_VIEWS.toFixed(1) };
+    m.needsUpdate = true;
+  }
   treeUniforms.uBbNormal.value = rtN.texture;
-  const md = m as unknown as { defines: Record<string, string> };
-  md.defines = { ...md.defines, TREE_BB_NORMAL: '', TREE_BB_VIEWS: BB_VIEWS.toFixed(1) };
-  m.needsUpdate = true;
   atlas = rtA;
   atlasN = rtN;
   atlasCell = cellPx;
+  atlasBare = bare;
   return rtA;
 }

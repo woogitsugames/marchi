@@ -92,7 +92,26 @@ export const treeUniforms = {
   uLodNear: { value: 1e6 },
   uLodBand: { value: 0 },
   uBbNormal: { value: null as Texture | null },
+  /** 0 … 1 deciduous crowns bare (D-260): a leaf card whose `aTree.z` is below it shows the twig spray. */
+  uBare: { value: 0 },
 };
+
+/**
+ * Bare deciduous crowns (D-260): the `leaves` texture holds the leaf clump in its left half and a bare twig spray in
+ * its right half. Each leaf card carries its own hash in `aTree.z` (trees.ts); a card whose hash is below the bare
+ * factor samples the right half and takes the twig colour, so the crown thins card by card as the factor rises.
+ * Shared by the leaf material, its shadow depth material and the far-card bake (one formula, one look).
+ * TWIG_COL is the linear albedo of the twigs (cold grey-brown; the texture adds the rimed upper edges).
+ */
+export const TWIG_GLSL = /* glsl */ `
+#define TWIG_COL vec3(0.19, 0.165, 0.14)
+float twigSel(float h, float bare) { return h < bare ? 1.0 : 0.0; }
+// about a third of the bare cards show nothing at all (a transparent texel): a bare crown is more open than the
+// three crossed cards of a leaf clump
+vec2 twigUv(vec2 uv, float sel, float h) {
+  return sel * step(fract(h * 13.0), 0.3) > 0.5 ? vec2(0.502, 0.004) : vec2(uv.x * 0.5 + sel * 0.5, uv.y);
+}
+`;
 
 // Far-tree cards turn about their vertical axis to face the camera (cylindrical billboard), so
 // from a high camera there is no "X" of two crossed cards. Their shadows use a separate blob
@@ -157,9 +176,13 @@ uniform float uTreeTime;
 uniform float uWindAmp;
 uniform float uLodNear;
 uniform float uLodBand;
+uniform float uBare;
 attribute vec3 aTree;
 varying vec3 vTint;
 varying float vLodT;
+#ifdef TREE_LEAVES
+varying float vTwig;
+#endif
 #ifdef TREE_FAR
 varying vec3 vBbR;
 varying vec3 vBbU;
@@ -183,6 +206,19 @@ const TREE_VERT_BODY = /* glsl */ `
   float tH1 = fract((hp.x + hp.y) * hp.x);
   float tH2 = fract((hp.x + hp.y) * hp.y);
   float tVal = 0.86 + 0.28 * tH1;
+#ifdef TREE_LEAVES
+  // bare winter crown (D-260): this card shows the twig spray, untinted, in the twig colour, and barely flutters
+  float tBare = twigSel(aTree.z, uBare);
+  vTwig = tBare;
+#ifdef USE_MAP
+  vMapUv = twigUv(vMapUv, tBare, aTree.z);
+#endif
+#ifdef USE_COLOR
+  vColor.rgb = mix(vColor.rgb, TWIG_COL * (0.9 + 0.2 * tH2), tBare);
+#endif
+#else
+  float tBare = 0.0;
+#endif
   if (aTree.y > 0.5) {
     // broadleaf: from russet-brown through ochre to a dull green-yellow, lighter/darker per tree
     vec3 warm = vec3(1.13, 0.97, 0.80);
@@ -192,6 +228,7 @@ const TREE_VERT_BODY = /* glsl */ `
     // conifers: value and a slight blue-green / yellow-green shift
     vTint = mix(vec3(0.95, 1.0, 1.0), vec3(1.05, 1.02, 0.92), tH2) * (0.9 + 0.2 * tH1);
   }
+  vTint = mix(vTint, vec3(1.0), tBare);
   float lodK = aTree.x > 0.0 ? aTree.x : 1.0;
   vLodT = uLodBand > 0.0 ? clamp((uLodNear * lodK - distance(cameraPosition, tO)) / (uLodBand * lodK), 0.0, 1.0) : -1.0;
   float wh = max(transformed.y, 0.0);
@@ -199,7 +236,7 @@ const TREE_VERT_BODY = /* glsl */ `
   float sway = (sin(wPh) * 0.7 + sin(wPh * 2.37 + 1.3) * 0.3) * uWindAmp * 0.0006 * wh * wh;
 #if !defined(TREE_FAR) && !defined(TREE_TRUNK)
   // leaf flutter on top of the sway (cards only; the far card keeps its silhouette)
-  float fl = sin(uTreeTime * 3.7 + dot(position, vec3(1.9, 1.3, 2.3)) + tH2 * 6.2831) * 0.035 * uWindAmp * min(wh, 2.0);
+  float fl = sin(uTreeTime * 3.7 + dot(position, vec3(1.9, 1.3, 2.3)) + tH2 * 6.2831) * 0.035 * uWindAmp * min(wh, 2.0) * (1.0 - 0.75 * tBare);
   transformed += vec3(fl, fl * 0.4, -fl * 0.6);
 #endif
   transformed.x += sway;
@@ -209,6 +246,9 @@ const TREE_VERT_BODY = /* glsl */ `
 const TREE_FRAG_HEAD = /* glsl */ `
 varying vec3 vTint;
 varying float vLodT;
+#ifdef TREE_LEAVES
+varying float vTwig;
+#endif
 #ifdef TREE_FAR
 varying vec3 vBbR;
 varying vec3 vBbU;
@@ -231,7 +271,18 @@ const TREE_FRAG_MIPALPHA = /* glsl */ `
   vec2 tuv = vMapUv * vec2(textureSize(map, 0));
   vec2 tdx = dFdx(tuv), tdy = dFdy(tuv);
   float tlod = max(0.0, 0.5 * log2(max(dot(tdx, tdx), dot(tdy, tdy))));
+#ifdef TREE_LEAVES
+  // thin twigs average away faster than leaves in the coarse mips: hold them up harder (D-260)
+  diffuseColor.a *= 1.0 + tlod * (0.3 + 0.2 * vTwig);
+#ifndef ALPHA_TO_COVERAGE
+  // low tier (plain alpha test): screen-door the twig cards by their coverage, so a bare crown keeps the thin haze
+  // alpha to coverage gives it on high instead of losing every twig thinner than the cut (a pattern offset from
+  // the LOD dither's, so the two do not line up in the crossfade band)
+  if (vTwig > 0.5) diffuseColor.a = step(0.1 + 0.8 * fract(52.9829189 * fract(dot(gl_FragCoord.xy + 17.0, vec2(0.00583715, 0.06711056)))), diffuseColor.a);
+#endif
+#else
   diffuseColor.a *= 1.0 + tlod * 0.3;
+#endif
 }
 #endif
 `;
@@ -303,9 +354,9 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
     if (key === 'billboard') sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', BB_NORMAL).replace('#include <begin_vertex>', BB_VERTEX);
     if (tree) {
       Object.assign(sh.uniforms, treeUniforms);
-      const def = key === 'billboard' ? '#define TREE_FAR\n' : key === 'trunk' ? '#define TREE_TRUNK\n' : '';
+      const def = key === 'billboard' ? '#define TREE_FAR\n' : key === 'trunk' ? '#define TREE_TRUNK\n' : key === 'leaves' ? '#define TREE_LEAVES\n' : '';
       sh.vertexShader = sh.vertexShader
-        .replace('#include <common>', '#include <common>\n' + def + TREE_VERT_HEAD)
+        .replace('#include <common>', '#include <common>\n' + def + TWIG_GLSL + TREE_VERT_HEAD)
         .replace('#include <morphtarget_vertex>', '#include <morphtarget_vertex>\n' + TREE_VERT_BODY);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', '#include <common>\n' + def + TREE_FRAG_HEAD)
@@ -320,7 +371,7 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
         .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * uFoliageLift;');
     }
   };
-  m.customProgramCacheKey = () => 'foliage3-' + key;
+  m.customProgramCacheKey = () => 'foliage4-' + key;
 }
 
 /**
@@ -558,6 +609,29 @@ export function instancedDepthMaterial(): MeshDepthMaterial {
   return instDepth;
 }
 
+let leafDepth: MeshDepthMaterial | null = null;
+
+/**
+ * Shadow depth material for leaf cards (D-260): the shadow map would otherwise draw them with its own clone of the
+ * plain depth material and the plain UVs, i.e. full summer crowns casting shadows under bare winter trees. Same
+ * card selection as the leaf material (`TWIG_GLSL`); map and alpha test come from the leaf material per draw
+ * (WebGLShadowMap copies them onto a custom depth material too).
+ */
+export function leafDepthMaterial(): MeshDepthMaterial {
+  if (leafDepth) return leafDepth;
+  const m = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
+  m.name = 'leaf-depth';
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uBare = treeUniforms.uBare;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uBare;\nattribute vec3 aTree;' + TWIG_GLSL)
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\n  vMapUv = twigUv(vMapUv, twigSel(aTree.z, uBare), aTree.z);\n#endif');
+  };
+  m.customProgramCacheKey = () => 'leaf-depth-1';
+  leafDepth = m;
+  return m;
+}
+
 /**
  * Give an instanced shadow caster the shared instanced depth material, unless it has its own (horse skin, far cards)
  * or its material makes WebGLShadowMap pick a per-material depth clone (alpha-tested map, alpha to coverage,
@@ -565,6 +639,8 @@ export function instancedDepthMaterial(): MeshDepthMaterial {
  */
 export function shareInstancedDepth(mesh: InstancedMesh): void {
   if (mesh.customDepthMaterial) return;
+  // leaf cards: their own depth material that drops the leaves in winter like the colour pass (D-260)
+  if (mesh.material === cache.get('leaves')) { mesh.customDepthMaterial = leafDepthMaterial(); return; }
   const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
   for (const m of ms) {
     const s = m as Material & { map?: unknown; alphaMap?: unknown; displacementMap?: unknown; displacementScale?: number };
@@ -637,24 +713,30 @@ let leafTex: DataTexture | null = null;
 
 /**
  * Procedural leaf-cluster texture (grey-scale, leaf-shaped alpha), drawn on a canvas so nothing
- * is downloaded. One card is a whole clump of foliage: a lobed, irregular mass of small leaves,
- * darker toward its lower inner part and lighter on the upper rim (baked clump occlusion), with
- * a few twigs and gaps. Colour comes from the vertex colours of the card.
+ * is downloaded. Left half (u 0→0.5): one card is a whole clump of foliage, a lobed, irregular mass
+ * of small leaves, darker toward its lower inner part and lighter on the upper rim (baked clump
+ * occlusion), with a few twigs and gaps. Right half (u 0.5→1): the same clump in winter, a bare
+ * twig spray (D-260, `TWIG_GLSL` picks the half per card). Colour comes from the vertex colours.
  */
 export function leafTexture(): DataTexture {
   if (leafTex) return leafTex;
   const size = 256;
   const cv = document.createElement('canvas');
-  cv.width = cv.height = size;
+  cv.width = size * 2;
+  cv.height = size;
   const g = cv.getContext('2d');
   if (!g) throw new Error('2d canvas unavailable');
-  g.clearRect(0, 0, size, size);
+  g.clearRect(0, 0, size * 2, size);
   let s = 12345;
   const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   const c = size / 2;
   // lobed outline: radius per angle from three low harmonics
   const p1 = r() * 6.28, p2 = r() * 6.28, p3 = r() * 6.28;
   const rim = (a: number) => size * 0.4 * (1 + 0.13 * Math.sin(3 * a + p1) + 0.09 * Math.sin(5 * a + p2) + 0.05 * Math.sin(8 * a + p3));
+  g.save();
+  g.beginPath();
+  g.rect(0, 0, size, size);
+  g.clip();
   // twigs from the lower centre outward
   g.strokeStyle = 'rgb(96,88,80)';
   g.lineCap = 'round';
@@ -689,8 +771,83 @@ export function leafTexture(): DataTexture {
     g.ellipse(x, y, len * 1.7, len * 0.8, rot, 0, Math.PI * 2);
     g.fill();
   }
+  g.restore();
+  drawTwigSpray(g, size, size, rim, r);
   leafTex = straightAlpha(cv, 175);
   return leafTex;
+}
+
+/**
+ * Bare twig spray for the winter half of the leaf texture (D-260), in the cell at x0: a few limbs from the lower
+ * centre fan up and out and fork four to five times, tapering to hair-thin tips that fill the same lobed outline as
+ * the leaf clump (the bare crown keeps the summer silhouette, as a real one does). Woodcut reading: a dark stroke per
+ * twig with a pale cut along its upper edge (light and rime from above), no soft shading.
+ */
+function drawTwigSpray(g: CanvasRenderingContext2D, x0: number, size: number, rim: (a: number) => number, r: () => number): void {
+  const c = size / 2, by = c + size * 0.18;
+  g.save();
+  g.beginPath();
+  g.rect(x0, 0, size, size);
+  g.clip();
+  g.lineCap = 'round';
+  const segs: [number, number, number, number, number][] = [];
+  const grow = (x: number, y: number, a: number, len: number, w: number, depth: number) => {
+    // a slight crook per segment: two straight pieces with a kink, as twigs grow node to node
+    const kink = (r() - 0.5) * 0.5;
+    const mx = x + Math.cos(a + kink) * len * 0.5, my = y + Math.sin(a + kink) * len * 0.5;
+    let ex = mx + Math.cos(a - kink * 0.6) * len * 0.5, ey = my + Math.sin(a - kink * 0.6) * len * 0.5;
+    // keep the spray inside the clump outline
+    const dx = ex - c, dy = ey - c, d = Math.hypot(dx, dy), lim = rim(Math.atan2(dy, dx)) * 1.08;
+    if (d > lim) { ex = c + (dx / d) * lim; ey = c + (dy / d) * lim; }
+    segs.push([x, y, mx, my, w], [mx, my, ex, ey, w * 0.88]);
+    // short spurs along the older twigs: the dense, fine outer twigging that makes a bare crown a haze, not sticks
+    if (depth <= 3) {
+      for (let k = 0; k < 1 + (depth <= 1 ? 1 : 0); k++) {
+        const t = 0.3 + r() * 0.6, sa = a + (r() < 0.5 ? -1 : 1) * (0.6 + r() * 0.5);
+        const sx = x + (ex - x) * t, sy = y + (ey - y) * t, sl = len * (0.22 + r() * 0.2);
+        segs.push([sx, sy, sx + Math.cos(sa) * sl, sy + Math.sin(sa) * sl, Math.max(0.9, w * 0.5)]);
+      }
+    }
+    if (depth <= 0) return;
+    const n = depth > 4 ? 2 : 2 + (r() < 0.6 ? 1 : 0);
+    for (let k = 0; k < n; k++) {
+      const spread = (0.3 + r() * 0.32) * (k === 0 ? -1 : k === 1 ? 1 : (r() - 0.5) * 0.7);
+      // tips curl a little upward (canvas y grows down: up is -PI/2)
+      const up = (-Math.PI / 2 - a) * 0.12;
+      grow(ex, ey, a + spread + up, len * (0.64 + r() * 0.14), Math.max(1.0, w * 0.7), depth - 1);
+    }
+  };
+  for (let i = 0; i < 6; i++) {
+    const a = -Math.PI / 2 + (i - 2.5) * 0.55 + (r() - 0.5) * 0.3;
+    grow(c, by, a, rim(a) * (0.3 + r() * 0.08), 4.6 - Math.abs(i - 2.5) * 0.4, 5);
+  }
+  // a couple of shorter limbs hanging lower and out
+  for (let i = 0; i < 2; i++) {
+    const a = (i ? 0.2 : Math.PI - 0.2) + (r() - 0.5) * 0.3;
+    grow(c, by, a, rim(a) * 0.28, 3.0, 4);
+  }
+  // body: dark strokes, thick first
+  segs.sort((p, q) => q[4] - p[4]);
+  g.strokeStyle = 'rgb(150,146,140)';
+  for (const [ax, ay, bx, bly, w] of segs) {
+    g.lineWidth = w;
+    g.beginPath();
+    g.moveTo(x0 + ax, ay);
+    g.lineTo(x0 + bx, bly);
+    g.stroke();
+  }
+  // pale upper edge on the thicker twigs (light and rime from above)
+  g.strokeStyle = 'rgb(240,240,238)';
+  for (const [ax, ay, bx, bly, w] of segs) {
+    if (w < 1.6) continue;
+    g.lineWidth = Math.max(0.6, w * 0.35);
+    const o = w * 0.32;
+    g.beginPath();
+    g.moveTo(x0 + ax, ay - o);
+    g.lineTo(x0 + bx, bly - o);
+    g.stroke();
+  }
+  g.restore();
 }
 
 let needleTex: DataTexture | null = null;

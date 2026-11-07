@@ -222,6 +222,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-257 | 2026-11-06 | Time-of-day lights refresh every 2nd frame (owner decision 2026-11-06, BACKLOG P2 allocator) | decided | inne |
 | D-258 | — | With KHR_parallel_shader_compile the menu's programs are requested right after the menu world is built | decided | UI |
 | D-259 | — | Build tutorial: the stall is triggered on purpose (owner 2026-11-06 ~21:20, "wywołać celowo") | decided | inne |
+| D-260 | 2026-11-06 | Deciduous crowns go bare in winter, conifers stay green (owner decision 2026-11-06, follow-up of D-203) | decided | inne |
+| D-261 | — | The bare crown: a woodcut twig spray in the leaf texture, thin scaffold branches, a third of the cards open | decided | render |
+| D-262 | — | Shadows and far trees turn bare too: a leaf depth material, the far atlas re-baked in quarter steps | decided | inne |
+| D-263 | — | Cost of the bare winter trees and the acceptance shots | decided | inne |
 | D-264 | — | The grow card also shows while the next rank lacks silver flow, and says so; the card players press the bottleneck card | decided | UI |
 | D-265 | — | When every standing chain is saturated, the grow card names a good never sold | decided | UI |
 | D-266 | — | In the free valley the build ghost prefers a site a road can reach; the rank and grow cards count only such sites, by the castle first | decided | sim |

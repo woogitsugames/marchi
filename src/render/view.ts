@@ -49,6 +49,7 @@ import {
   setUltraBase,
   type TextureName,
 } from './textures';
+import { bareAt, bareBakeLevel } from './leafFall';
 import { VegetationView } from './vegetation';
 import { WaterView } from './water';
 import { WagonsView } from './wagonsView';
@@ -123,6 +124,8 @@ class View implements WorldView {
   private wet = 0;
   /** 0..1 winter frost on the terrain (free valley seasons), eased like the wet ground. */
   private winter = 0;
+  /** 0..1 bare deciduous crowns (free valley seasons, D-260): `bareAt(tick)`. */
+  private bare = 0;
   private tod = MENU_TIME;
   private fps = 60;
   private overlayMode: Overlay = 'none';
@@ -139,6 +142,8 @@ class View implements WorldView {
   texturesReady: Promise<void> = Promise.resolve();
   /** Cell width (px) the far-tree atlases were baked at; re-baked when the tier wants another. */
   private bakedCell = 0;
+  /** Bare level the far-tree atlases hold (D-260, `bareBakeLevel`). */
+  private bakedBare = 0;
   private menu = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
@@ -420,6 +425,9 @@ class View implements WorldView {
     this.wet = snap ? wt : this.wet + (wt - this.wet) * Math.min(1, dt * (wt > this.wet ? 0.4 : 0.05));
     const winterT = seasons && seasonAt(w.state.tick) === 'winter' ? 1 : 0;
     this.winter = snap ? winterT : this.winter + (winterT - this.winter) * Math.min(1, dt * 0.25);
+    // leaf fall and spring leaves follow the season clock directly (D-260): it moves them by < 0,03 per 5 s of game
+    // time, and a jump of the clock (load, fast-forward) then re-bakes the far trees once, not at every quarter step
+    this.bare = seasons ? bareAt(w.state.tick) : 0;
     // time-of-day lights every 2nd frame (D-257, owner 2026-11-06): they drift over game minutes, and each change
     // re-sends the light uniforms (three's setValueV3f, the largest allocator left after D-223). Fresh at once after a
     // world or quality change (snap), a stall or resume (long frame), and while the clock catches up a jump.
@@ -473,6 +481,7 @@ class View implements WorldView {
     this.deckGhost.update(env.light);
 
     this.buildings!.update(w, dt);
+    this.vegetation!.setBare(this.bare);
     this.vegetation!.update(cam.position);
     this.vegetation!.tick(this.time);
     this.cover?.update(this.rig.target, dist);
@@ -493,9 +502,12 @@ class View implements WorldView {
     // far-tree atlases per tier (multi-view, D-58 amendment 2026-11-03): low and high 128 px cells
     // (2 x 7 MB), the full 256 px atlas only on ultra (2 x 28 MB)
     const cell = this.quality === 'ultra' ? 256 : 128;
-    if (this.vegetation && this.bakedCell !== cell) {
-      this.vegetation.bake(r, cell);
+    // and per bare level of the deciduous crowns (D-260): a season change re-bakes into the same targets
+    const bareLvl = bareBakeLevel(this.bare);
+    if (this.vegetation && (this.bakedCell !== cell || this.bakedBare !== bareLvl)) {
+      this.vegetation.bake(r, cell, bareLvl);
       this.bakedCell = cell;
+      this.bakedBare = bareLvl;
     }
     r.render(this.scene, cam);
     this.lastStats.calls = r.info.render.calls;

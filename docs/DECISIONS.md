@@ -3114,3 +3114,63 @@ rail) only the topic's heading showed at the bottom edge and the answer lay unde
 in view, one frame after it is built. Help from the menu keeps its scroll at the top. `tools/help-map-shots.mjs`
 checks the answer is in view; it also now starts a real game (`play=m1&ff=60`) — `play=1` is not a mission key, so its
 cards had opened over the menu world. (decided)
+
+**D-260 — Deciduous crowns go bare in winter, conifers stay green (owner decision 2026-11-06, follow-up of D-203).**
+In the free valley (seasonal worlds only; contract missions keep their late-autumn look bit for bit) oak, birch and the
+hazel/blackthorn shrubs lose their leaves; spruce and pine have no leaf cards (`needles` only) and are untouched. The
+season comes from the sim clock, read only: `bareAt(tick)` (`src/render/leafFall.ts`) is 0 in summer, the leaves fall
+over the last 40 % of autumn (6 game minutes, smoothstep, done when winter starts), 1 all winter, and the leaves come
+back over 15–55 % of spring (with the thaw); the view follows it directly (it moves < 0,03 per 5 s of game time, and a
+jump of the clock — load, fast-forward — then re-bakes the far trees once, not at every step, D-262). No pop:
+every leaf card carries its own hash in `aTree.z` (the far-card lift slot, unused on near parts; one value for the 4
+corners, `addTreeAttr`), and a card whose hash is below the bare factor switches to the bare twig spray — the crown thins
+card by card over the 6 minutes (at ×4 speed 90 s) and fills again in spring. The switch is in the vertex shader of the
+`leaves` material (`TWIG_GLSL`: the UV moves into the right half of the leaf texture, the vertex colour becomes the twig
+colour, the per-tree autumn tint and most of the flutter are dropped): one shared uniform `treeUniforms.uBare`, no new
+meshes, no extra draw calls, no per-frame allocation (a number written per frame). The ground-cover shrubs use the same
+material and follow. Test `tests/winter-trees.test.ts`: no step above 0,03 per 5 s of game time over a year, leaf fall
+monotonic, leaf cards only on broadleaf kinds, one hash per card. (decided)
+
+**D-261 — The bare crown: a woodcut twig spray in the leaf texture, thin scaffold branches, a third of the cards open.**
+Bare trees must read as naturalistic trees, not sticks. The leaf texture is 512 × 256 now: the leaf clump as before on
+the left, on the right a twig spray drawn for this game (`drawTwigSpray`): six limbs from the clump's lower centre fork
+five times with a small crook per node, short spurs on the older twigs, tips curling up, all inside the same lobed
+outline as the leaf clump (a bare crown keeps its summer silhouette); woodcut reading — a dark stroke per twig with a
+pale cut along its upper edge (light and rime from above), no soft shading. Twig albedo `TWIG_COL` cold grey-brown.
+About a third of the bare cards show nothing (a transparent texel), so a bare crown is more open than the three crossed
+cards of a leaf clump. Oak and birch get a thin branch (3-sided open rod, 6 triangles) from the nearest limb / the stem
+into every outer clump (`branchTo`), so no twig spray floats; hidden in the leaf mass in summer. Shrubs get none: their
+five stems and sprays carry the look, and they are the most numerous near model. Thin twigs vanish in coarse mips under
+a plain alpha cut, so twig cards get a stronger mip alpha hold-up, and on the low tier (no alpha to coverage) they are
+screen-doored by their coverage (a pattern offset from the LOD dither's), keeping the thin haze high gets from alpha to
+coverage. (decided)
+
+**D-262 — Shadows and far trees turn bare too: a leaf depth material, the far atlas re-baked in quarter steps.**
+WebGLShadowMap draws alpha-tested cards with its own depth clone and the plain UVs, so bare trees cast full summer
+crowns: leaf meshes get `leafDepthMaterial()` (`shareInstancedDepth` picks it for the `leaves` material; same card
+selection, map and alpha test copied per draw by three). Far cards (billboards, apron hills) show what the atlas holds,
+so the atlas is re-baked at `bareBakeLevel` = the eased factor in quarter steps (0, ¼, ½, ¾, 1): 4 re-bakes per leaf fall
+and 4 per spring, into the targets it already has (no new GPU memory; a tier switch still re-allocates), without
+`needsUpdate` on the billboard material (no program work). The bake uses the same `TWIG_GLSL` selection and colour;
+twig cards go into the multisampled bake row with alpha to coverage at about half their coverage, so the resolved,
+premultiplied atlas holds a bare crown as a thin haze of twigs with its limbs showing, not a solid brown mass (leaf and
+needle cards still write alpha 1: the summer atlas is unchanged). Rejected: extra bare columns in the atlas (+60 %
+atlas memory, 2 × 4 MB on low/high, 2 × 17 MB on ultra) and a per-frame bake. The bake itself got cheaper: the card
+sizes are cached (each bake walked every vertex of every model 80 times in `treeExtent`), the bake meshes are built once
+per pass instead of once per view, one bake camera. Re-bake cost (SwiftShader, high, 128 px cells, loaded machine,
+CPU incl. `gl.finish`): 2,4–5,5 ms per season step, tier re-bake 2,1–3,2 ms. (decided)
+
+**D-263 — Cost of the bare winter trees and the acceptance shots.**
+Forest edge of the free valley (`tree-probe`, sandbox, forced noon, autumn / winter / summer at 70 and 110 m), before →
+after: draw calls identical in every state (high 56 / 57 / 54 / 53 / 56, low 52 / 53 / 41 / 40 / 52); triangles high
+305 740 → 308 548 (+0,9 %) at 70 m, 284 775 → 286 917 (+0,8 %) at 110 m, low 258 249 → 259 725 (+0,6 %), 110 m
+unchanged (the scaffold branches); programs high 45 → 47, low 43 → 45 (the leaf depth program and the alpha-to-coverage
+bake program, both compiled before play: pre-warm / first bake); 0 new programs on autumn ↔ winter ↔ summer switches.
+Allocations (`tools/alloc-probe.mjs`, low, 100 wagons, 15 s, ×4): 534,1 → 535,2 KB/frame (20,3 → 19,9 MB sampled), no
+tree code among the allocators; a first run with the eased factor showed `treeExtent` and bake meshes (4 re-bakes after
+the probe's clock jump) — fixed as above. Shots (`tools/winter-trees-shots.mjs`,
+412 × 915 and 915 × 412, low and high, forest edge of the valley at 45 / 70 / 110 m): `docs/shots/winter-trees-before-*`
+(winter, winter-far, autumn) and `winter-trees-after-*` (winter, winter-far, winter-near, autumn, late-autumn, spring).
+Inspected: winter oaks and birches read as bare trees with limbs and a fine twig haze, pines and spruces green, far
+copses bare, shadows lacy; autumn unchanged. Open: the regrown spring leaves keep the late-autumn colours of the art
+direction (a fresh spring tint would be a separate owner decision). (decided)
