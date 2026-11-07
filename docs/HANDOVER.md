@@ -54,6 +54,15 @@
 - Scalone ~18:10: **D-320..D-322** szybsza budowa modeli (wspólne prymitywy, typowane tablice w `PartBuilder`, szum raz na
   wierzchołek): modele menu 167 → 125 ms (node), w przeglądarce 137 → 105 ms; 0 px na 18 scenach, geometria bit w bit.
   Testy 606/0, smoke 0, layout 126/0. (Agenci stanęli ~16:00 na limicie użycia, wznowieni ~17:45.)
+- **Decyzje właściciela ~20:20:** noc → wydajność i jakość (nic nie zmienia rozgrywki ani haszy); dyspozytor (D-127, wóz
+  dokupiony w połowie gry) → po playteście; przegląd tłumaczeń agenta w 15 językach → paczka dla GPT (gpt6-15).
+- **Eksperyment Free.AI (7 XI ~20:00 → 8 XI ~20:00, decyzja właściciela):** konektor Free.AI MCP (Qwen3-30B, self-hosted)
+  do odciążenia limitu — łatwiejsze zlecenia zamiast agentów Claude: pierwszy przegląd diffów, podsumowania dużych plików,
+  skrypty/testy, zbiorcze prace tekstowe. Pliki przez upload `curl --data-binary` → `blob:ID` (repo prywatne). Wynik zawsze
+  weryfikuje koordynator. Przypomnienie 8 XI 20:00: raport właścicielowi + reguła w CLAUDE.md. Dziennik:
+  - 20:25 `qwen_review` diffu D-325..D-327 (300 linii): 1. „mipy odwrócone” — fałszywy alarm (mip z poziomu 0 raz na atlas
+    jest celowy, atlasy bit w bit); 2. MSAA + MRT (`samples: 4, count: 2`) — trafna uwaga do sprawdzenia na urządzeniu
+    (WebGL2 to wspiera, ale sterowniki bywają różne) → BACKLOG; odpowiedź ucięta. ~11 tys. tokenów po stronie Qwena.
 - Scalone ~18:40: **D-323/D-324** kupiec przy ladzie faktorii: po sprzedaży gest 3 s (sięga po monetę, waży, wrzuca do skrzyni),
   wykrycie z `tradePost.recent` (tylko odczyt), te same wywołania rysowania. Testy 611/0, smoke 0, layout 126/0.
 - W toku: agent `claude/w-billboard` — szybsze wypiekanie billboardów drzew (D-325..D-327); agent `claude/w-qa2` — przegląd
