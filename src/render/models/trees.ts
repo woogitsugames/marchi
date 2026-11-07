@@ -15,6 +15,7 @@
  * blob shadows (`billboardDepthMaterial`). The near/far swap is a dithered crossfade (materials.ts).
  */
 import {
+  ArrayCamera,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -34,6 +35,7 @@ import {
   Scene,
   ShaderMaterial,
   type Texture,
+  Vector4,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -706,12 +708,30 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     needles: bakeMaterial(needleTexture(), mode),
     solid: bakeMaterial(null, mode),
   }));
-  const cam = new OrthographicCamera(-1, 1, 1, -1, 0.1, 120);
-  // one group of meshes per kind and pass, built once per bake (not per view)
-  const groups = [0, 1].map((mode) => TREE_KINDS.map((kind) => {
+  // one camera per kind (its column of the row as its viewport, its card's extent as its frustum), all rendered by
+  // one ArrayCamera pass per row (D-326): the 5 per-kind passes each ended in a resolve of the whole multisampled
+  // row (and a scissor around their column); one pass resolves it once. Kind i draws only on layer i + 1.
+  const cams = TREE_KINDS.map((kind, i) => {
+    const { W, y0, y1 } = cardSize(kind);
+    const c = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+    // the target's own viewport (render-target pixels, independent of the pixel ratio)
+    c.viewport = new Vector4(i * cellPx, 0, cellPx, rowH);
+    c.layers.set(i + 1);
+    return c;
+  });
+  const cam = new ArrayCamera(cams as unknown as ConstructorParameters<typeof ArrayCamera>[0]);
+  cam.layers.enableAll();
+  // one group of meshes per kind and pass, built once per bake (not per view); every view's frustum holds the whole
+  // tree (the card is sized to it), so nothing is culled, and the ArrayCamera's own frustum is not the views'
+  const groups = [0, 1].map((mode) => TREE_KINDS.map((kind, i) => {
     const grp = new Group();
     const m = mats[mode]!;
-    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
+    for (const p of treeParts(kind)) {
+      const mesh = new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid);
+      mesh.layers.set(i + 1);
+      mesh.frustumCulled = false;
+      grp.add(mesh);
+    }
     return grp;
   }));
   // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
@@ -730,31 +750,19 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   [rtA, rtN].forEach((rt, mode) => {
     renderer.setRenderTarget(rt);
     renderer.clear();
+    for (const grp of groups[mode]!) scene.add(grp);
     for (let v = 0; v < BB_VIEWS; v++) {
       const az = (v / BB_VIEWS) * Math.PI * 2;
-      row.scissorTest = false;
-      row.viewport.set(0, 0, rowW, rowH);
+      // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk foot at the origin
+      const h = Math.cos(BB_ELEV) * 50;
+      for (const c of cams) {
+        c.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
+        c.lookAt(0, 0, 0);
+        c.updateMatrixWorld();
+      }
       renderer.setRenderTarget(row);
       renderer.clear();
-      TREE_KINDS.forEach((kind, i) => {
-        const { W, y0, y1 } = cardSize(kind);
-        const grp = groups[mode]![i]!;
-        scene.add(grp);
-        // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk
-        // foot at the origin
-        cam.left = -W / 2; cam.right = W / 2; cam.top = y1; cam.bottom = y0;
-        cam.updateProjectionMatrix();
-        const h = Math.cos(BB_ELEV) * 50;
-        cam.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
-        cam.lookAt(0, 0, 0);
-        // the target's own viewport/scissor (render-target pixels, independent of the pixel ratio)
-        row.viewport.set(i * cellPx, 0, cellPx, rowH);
-        row.scissor.set(i * cellPx, 0, cellPx, rowH);
-        row.scissorTest = true;
-        renderer.setRenderTarget(row);
-        renderer.render(scene, cam);
-        scene.remove(grp);
-      });
+      renderer.render(scene, cam);
       // copy the resolved row into its atlas row; the mip chain is built once, after the last row's copy (three
       // rebuilds it after every render into a mipmapped target: 8 full-chain rebuilds per atlas, each from scratch)
       rt.viewport.set(0, v * rowH, rowW, rowH);
@@ -765,6 +773,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
       renderer.render(copyScene, copyCam);
     }
     rt.texture.generateMipmaps = true;
+    for (const grp of groups[mode]!) scene.remove(grp);
   });
   for (const rt of [rtA, rtN]) {
     rt.scissorTest = false;
