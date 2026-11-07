@@ -33,9 +33,12 @@
   wariant A** (wszystkie rekomendacje raportu); card-60 — czekać na playtest.
 - **Decyzje właściciela 7 XI ~12:00:** D-128 (misja I bez „Kup wóz” w oknie samouczka) — zostaje, po playteście; wiosenny
   odcień koron — **tak** (kolejka); 4K do pobrania — przed wydaniem; przeniesienie XIII — po playteście.
-- Kolejka: wiosenny odcień koron (zrzuty do akceptacji) — następny wolny agent.
-- W toku: agent `claude/w-m16` — misja XVI „Dwa zamki” (D-288..D-295, 2–3 sesje, etapami: sim+komenda → UI/diagnoza →
-  treści/i18n → drabina/zrzuty);
+- Scalone ~13:30: **misja XVI „Dwa zamki”** (D-288..D-293): dwa zamówienia zamków, przełącznik „Ten zamek pierwszy” (komenda
+  `castleFirst`, priorytet tylko na ostatnim odcinku), diagnoza `castleRival`, karta zamku z prognozą, `STATE_VERSION` 10.
+  Drabina: nic 1★, przełącznik 2★, przełącznik + wóz 3★ (+21 s), za późno (≥1:40) 1★. Hasze I–XV bez zmian. Otwarte:
+  rozsądny gracz 2★ (prognoza ~20 s za optymistyczna — karta floty się nie pojawia), progi robocze, przegląd tłumaczeń.
+- W toku: agent `claude/w-spring` — wiosenny odcień koron (D-303..D-305, zrzuty do akceptacji).
+- W toku:
   agent `claude/w-a11y` — kontrast ETA na pasku, pierścień fokusu pinezki krytycznej, podpowiedź przy tekście 200 %.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
