@@ -742,7 +742,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
       sheet.kicker.classList.toggle('is-calm', calm);
-      sheet.title.textContent = t(`building.${b.type}` as MessageKey);
+      // two castles (D-288): each castle by its own name
+      sheet.title.textContent = buildingName(world, id);
       const chain = explainBuilding(world, id, 5, true);
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;

@@ -61,8 +61,7 @@ export function castleSwitchHtml(world: World, b: Building, log: PaceLog): strin
   if (!fc || fc.done) return '';
   if (fc.share === 'first') {
     return `<div class="section-h">${esc(t('castle.first'))}</div><div class="fix fix-dock castle-switch is-on">
-      <button class="btn cf fix-btn" data-act="first:-1" aria-pressed="true">${iconSvg('contested', 26)}<span>${esc(t('castle.even'))}</span></button>
-      <div class="fix-note" dir="auto"><div class="s-hint">${iconSvg('first', 18)}<span>${esc(t('castle.firstOn'))}</span></div></div></div>`;
+      <button class="btn cf fix-btn" data-act="first:-1" aria-pressed="true">${iconSvg('contested', 26)}<span>${esc(t('castle.even'))}</span></button></div>`;
   }
   const late = fc.firstTick >= 0 && fc.firstTick > fc.dueTick;
   const why = fc.firstTick < 0 ? '' : tHtml(late ? 'fix.castleFirstLate' : 'fix.castleFirstWhy', { time: ticksClock(fc.firstTick) });
