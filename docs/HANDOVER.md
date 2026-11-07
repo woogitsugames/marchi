@@ -48,8 +48,11 @@
   podaje godzinę (nowy klucz `fix.paceHaulAt`); oko 60 s z przesunięciem fazy 2★ → 3★. **D-310..D-312** szybsza budowa świata
   (maska dróg tylko w dotkniętych wierszach, trzcina i plan drzew raz na grunt): menu → misja I 34 → 20 ms, menu −10 % CPU,
   0 px różnicy na 15 scenach. Weryfikacja: testy 603/0, smoke 0, layout 126/0.
-- W toku: agent `claude/w-stale16` — w zrzucie XVI list przewozowy pokazuje 0/24 przy 6 deskach w zamku: błąd UI czy artefakt
-  zrzutu (D-317..). Następny APK ~16:40.
+- Scalone ~16:00: **D-317** „nieaktualny list” w XVI to artefakt narzędzia zrzutów (zwinięty list w pionie), UI spójne;
+  narzędzie sprawdza teraz zgodność ze stanem. **D-318** arkusz zamku zaokrągla spóźnienie w górę do 10 s jak karta i list.
+- APK **e9b389a** wysłany ~16:05 (XVI prognoza + karta przewozu, szybsza budowa świata, a11y). Następny ~19:00.
+- W toku: agent `claude/w-kitperf` — szybsza budowa modeli (`kit.ts`, ~100 ms menu; D-320..D-322); agent `claude/w-merchant` —
+  kupiec przy ladzie reaguje na sprzedaż (D-200 → D-323/D-324).
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
