@@ -268,3 +268,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-316 | — | XVI ladder after D-313/D-314; I–XV unchanged | decided | inne |
 | D-317 | — | The XVI "stale waybill" was the shot tool reading the folded parchment; the UI is consistent | decided | UI |
 | D-318 | — | One rounding for a castle's lateness: the castle sheet also rounds up to 10 s | decided | UI |
+| D-323 | — | The trader at the open trading post answers each sale with a short gesture (BACKLOG P3 from D-200) | nieokreślony | inne |
+| D-324 | — | The sale is read from `tradePost.recent`, not stored anywhere new | nieokreślony | inne |

@@ -3564,3 +3564,27 @@ The sheet's `castle.fcLate` now prints the deadline plus the rounded lateness ("
 one helper `lateTicks10` in `src/ui/format.ts` used by all three places. Rounding up keeps the "late" message on the
 safe side; the exact second is not something the player can act on. On-time forecasts (`castle.fcOk`) and the switch
 line keep the forecast's own time. UI only, no sim change. (decided)
+
+**D-323 — The trader at the open trading post answers each sale with a short gesture (BACKLOG P3 from D-200).**
+The trader behind the open post's counter (D-200) ran his fixed 7 s idle loop whatever happened at the post, so a
+wagon selling there had no answer at the counter. Now, when a wagon sells, he plays one 3 s gesture blended over the
+idle pose and eases back into the loop: he leans over the counter and reaches out to the carter (takes the coin,
+0–0.8 s), straightens with both hands raised before his face (weighs it, 0.8–1.6 s), bends down to the strongbox
+under the counter (drops it in, 1.6–2.3 s), then the idle loop fades back in (to 3 s). Same rig, same two angles
+(hip bend, arm swing) — no new parts, no prop, no new draw: the D-200 batching (legs/torso per clothing variant,
+arms per kind) is unchanged. Smoothstep transitions only, no overshoot; at most ~210°/s at the arms (a calm
+movement, tested at 60 fps steps). `traderSalePose(age, pose)` in `src/render/models/people.ts`, `TRADER_SALE = 3`.
+
+**D-324 — The sale is read from `tradePost.recent`, not stored anywhere new.**
+Each wagon unloading at the post already appends a `TradeSale` with its tick to `state.tradePost.recent` (D-170, for
+the sheet). `BuildingsView` reads the newest tick each frame (`lastPostSaleTick`) and compares it with the one it saw
+last frame (`freshPostSale`, `src/render/postSale.ts`, pure): a changed tick that is at most 2 s of sim time old and
+not in the future starts the gesture. The first look of a fresh view only records (a loaded game does not open with
+a gesture); an old sale revealed by a load or a jump, or a save of another game swapped in, plays nothing. Two
+wagons selling within one frame play one gesture; a sale during a gesture restarts it. The gesture clock is the
+view's real frame time like the idle loop (×4 does not hurry the trader; a pause cannot produce a sale). No sim
+state, no command, sim hashes unchanged (`tools/mission-hashes.ts`). Cost: one array read and a few multiplies per
+frame for the one trader; draw count identical by construction (no mesh added). Tests `tests/trader-sale.test.ts`
+(the cue as a pure function, live trade at the post: gestures ≤ sales, hash identical with and without reading,
+the gesture shape and its smoothness). Shots `docs/shots/merchant-{before,after}-<size>-seq.jpg` (idle, reach,
+weigh, drop) and the full frames at "weigh" (`tools/merchant-shots.mjs`).
