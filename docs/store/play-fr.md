@@ -18,9 +18,13 @@ Les contrats du château sont de courtes missions conçues pour des parties de 5
 
 La Vallée libre est un mode paisible de construction de ville avec trois emplacements de sauvegarde indépendants. Faites évoluer votre colonie par rangs jusqu'à devenir une capitale. Débloquez la pêche, les carrières de pierre pour les pavés et les ponts, la fabrication de charbon de bois, la malterie et la brasserie. Chaque chaîne dépend toujours des livraisons réelles par chariot.
 
-Douze missions (I–XII) abordent ponts bloqués, débâcle, livraisons en plusieurs fois, petit grenier, poisson, pavage avant l'orage, conflit sur le bois, charbon de bois, malt et bière. Touchez le pire blocage pour en connaître la cause.
+Seize missions du château (I–XVI) abordent les embouteillages de ponts, la glace sur les rivières, les livraisons échelonnées, un petit grenier, le transport de poisson, le pavage avant l'orage, les conflits sur le bois, le charbon de bois, le malt et la bière, une flotte trop petite pour sa chaîne, un entrepôt placé là où il servira, et deux châteaux attendant des planches d'une seule scierie. Chaque mission s'ouvre avec une lettre du châtelain. Touchez le pire blocage pour en connaître la cause.
 
 La Vallée libre comprend trois Livres de colonies, des rangs jusqu'à la capitale, les saisons et un marché. Commandes royales, foires et marchand ambulant sont des événements facultatifs.
+
+À partir du rang 4, un comptoir commercial de l'autre côté de la rivière achète les marchandises que le marché saturé du château ne veut plus — à condition que votre route y mène ; en hiver, la rivière gèle. La carte « Vers le rang » indique ce dont le rang suivant a encore besoin : d'autres marchandises, un flux régulier d'argent, ou simplement plus de renom.
+
+Accessibilité : labels pour lecteur d'écran, raccourcis clavier, réduction des mouvements et texte agrandi jusqu'à 200 %.
 
 Cinq points clés :
 - Explication en un geste des arrêts des bâtiments et chariots, avec leur chaîne de causes.
@@ -29,7 +33,7 @@ Cinq points clés :
 - Contrats de 5 à 12 minutes et vallée ouverte sans échéance.
 - Livraisons physiques de bûches, planches, grain, farine et pain, sans téléportation instantanée.
 
-Les douze missions (I–XII) et la Vallée libre sont gratuites. Sans publicité, achats intégrés, abonnements, avantages payants ni attente artificielle. Le jeu fonctionne hors ligne, sans accès Internet. Les sauvegardes sont locales et peuvent être transférées par sauvegarde système.
+Les seize missions (I–XVI) et la Vallée libre sont gratuites. Sans publicité, achats intégrés, abonnements, avantages payants ni attente artificielle. Le jeu fonctionne hors ligne, sans accès Internet. Les sauvegardes sont locales et peuvent être transférées par sauvegarde système.
 
 ## Mots-clés — référence ASO (Google Play ne propose pas de champ dédié)
 logistique médiévale, stratégie, chariots, livraisons, chaînes d’approvisionnement, routes, ponts, commerce, contrats, jeu économique

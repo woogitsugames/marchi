@@ -18,9 +18,13 @@ Kontrakty dla zamku to krótkie zadania na około 5–12 minut. Dowoź zamówion
 
 Wolna dolina to spokojny tryb budowania miasta z trzema niezależnymi slotami zapisu. Rozwijaj osadę przez kolejne rangi — od Osady przez Wieś targową, Miasteczko, Miasto i Gród aż po Stolicę. Odblokuj rybaka, kamieniołom (kamień do bruku i kamiennych mostów), wypalarnię węgla drzewnego, słodownię i browar. Każdy łańcuch wymaga rzeczywistych dostaw wozami.
 
-12 misji kontraktowych (I–XII): most i korki, kra, dostawy w transzach, mały spichlerz, ryby, bruk przed burzą, spór o drewno oraz łańcuchy węgla drzewnego, słodu i piwa. Karta „Najgorszy zastój” prowadzi do arkusza „Dlaczego stoi?” jednym dotknięciem.
+16 misji kontraktowych (I–XVI): most i korki, kra, dostawy w transzach, mały spichlerz, ryby, bruk przed burzą, spór o drewno, łańcuchy węgla drzewnego, słodu i piwa, za mała flota na cały łańcuch, skład postawiony tam, gdzie będzie potrzebny, i dwa zamki czekające na deski z jednego tartaku. Każdą misję otwiera list kasztelana. Karta „Najgorszy zastój” prowadzi do arkusza „Dlaczego stoi?” jednym dotknięciem.
 
 Wolna dolina to trzy Księgi osad, rangi Osada–Stolica, pory roku i targ. Zamówienia królewskie, jarmarki sezonowe i wędrowny kupiec są dobrowolne.
+
+Od rangi 4 posterunek handlowy za rzeką kupuje towary, których nasycony targ zamkowy już nie chce — jeśli doprowadzisz do niego drogę; zimą rzeka zamarza. Karta „Droga do rangi” pokazuje, czego brakuje do następnej rangi: innych towarów, stałego przepływu srebra albo po prostu sławy.
+
+Dostępność: opisy dla czytnika ekranu, skróty klawiszowe, ograniczony ruch i duży tekst do 200 %.
 
 Pięć najważniejszych cech:
 - Przyczyna każdego przestoju dostępna jednym dotknięciem, z możliwością sprawdzenia łańcucha dostaw.
@@ -29,7 +33,7 @@ Pięć najważniejszych cech:
 - Kontrakty na 5–12 minut oraz swobodna gra bez terminu dostawy.
 - Logistyka drewna, desek, zboża, mąki i chleba — bez magicznego przenoszenia towarów.
 
-Wszystkie 12 misji (I–XII) i Wolna dolina są darmowe. Bez reklam, zakupów w aplikacji, subskrypcji, płatnych przewag i sztucznego oczekiwania. Gra działa offline bez dostępu do Internetu. Lokalny zapis może być przeniesiony kopią zapasową systemu.
+Wszystkie 16 misji (I–XVI) i Wolna dolina są darmowe. Bez reklam, zakupów w aplikacji, subskrypcji, płatnych przewag i sztucznego oczekiwania. Gra działa offline bez dostępu do Internetu. Lokalny zapis może być przeniesiony kopią zapasową systemu.
 
 ## Słowa kluczowe — materiał do ASO (Google Play nie ma osobnego pola keywords)
 średniowieczna strategia, logistyka, szlaki handlowe, transport, wozy, dostawy, budowa dróg, mosty, ekonomia, kontrakty

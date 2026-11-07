@@ -67,6 +67,11 @@
   - 21:50 `qwen_code` (zrzut w layout-check nie może psuć zmierzonego zadania): logika trafna, ale zgubiony warunek `!css`
     i rozjechane wcięcia → poprawione ręcznie. ~5 tys. tokenów Qwena; mój koszt: opis zadania + przegląd ≈ tyle co sam kod.
     Wniosek wstępny: przy jednoliniowych zmianach nie opłaca się; sensowne dla większych, dobrze opisanych plików/testów.
+  - ~01:00 zlecenie 70 (opisy sklepu): `qwen_ask` z plikiem EN + starym plikiem języka → zaktualizuj 8 języków. de dobre po 3
+    poprawkach; es/fr/it/nl/pt_BR: w każdym błąd logiczny (warunek „jeśli droga dochodzi” sklejony z zimą), „skład” jako
+    „sklep”, it „17 misji”; sv rozsypany (akapity zamienione, zdanie po angielsku), tr literówki i zła składnia. Poprawione
+    ręcznie; 9 pozostałych języków (sv, tr, ru, uk, ja, ko, zh, ar, hi) napisał koordynator. **Wniosek: tłumaczenia Qwen3-30B
+    nie nadają się bez pełnej korekty — czas korekty ≈ czas pisania.** Tokeny Qwena ~7 tys./plik.
 - Scalone ~18:40: **D-323/D-324** kupiec przy ladzie faktorii: po sprzedaży gest 3 s (sięga po monetę, waży, wrzuca do skrzyni),
   wykrycie z `tradePost.recent` (tylko odczyt), te same wywołania rysowania. Testy 611/0, smoke 0, layout 126/0.
 - Scalone ~21:00: **D-325..D-327** billboardy drzew (programy przy starcie, ArrayCamera na wiersz, albedo+normalne w jednym

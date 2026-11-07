@@ -18,9 +18,13 @@ Kale sözleşmeleri 5–12 dakikalık oturumlar için tasarlanmış kısa görev
 
 Serbest Vadi, üç bağımsız kayıt yuvası sunan sakin bir şehir kurma modudur. Yerleşimini kademeler boyunca başkente dönüştür. Balıkçılığı, taş yollar ve taş köprüler için taş ocaklarını, odun kömürü üretimini, malt yapımını ve bira üretimini aç. Her üretim zincirinde mallar yine arabalarla gerçekten taşınmalıdır.
 
-On iki kale görevi (I–XII) köprü tıkanıklığı, nehir buzu, aşamalı teslimat, küçük ambar, balık, fırtına öncesi yol döşeme, odun anlaşmazlığı, kömür, malt ve bira zincirlerini içerir. En büyük duraklamaya dokunarak nedenini bul.
+On altı kale görevi (I–XVI) köprü tıkanıklığı, nehir buzu, aşamalı teslimat, küçük ambar, balık, fırtına öncesi yol döşeme, odun anlaşmazlığı, kömür, malt ve bira zincirlerini; zincirine yetmeyen küçük bir araba filosunu, ihtiyaç duyulacağı yere kurulan bir depoyu ve aynı bıçkıhaneden kalas bekleyen iki kaleyi içerir. Her görev kale kâhyasının bir mektubuyla başlar. En büyük duraklamaya dokunarak nedenini bul.
 
 Serbest Vadi'de üç yerleşim defteri, başkente kadar rütbeler, mevsimler ve pazar vardır. Kraliyet siparişleri, panayırlar ve gezgin tüccar isteğe bağlıdır.
+
+Rütbe 4'ten itibaren nehrin karşısındaki ticaret karakolu, doymuş kale pazarının artık almadığı malları satın alır; yeter ki yolunuz oraya ulaşsın. Kışın nehir donar. “Rütbe yolu” kartı bir sonraki rütbe için neyin eksik olduğunu gösterir: başka mallar, düzenli gümüş akışı ya da yalnızca daha fazla itibar.
+
+Erişilebilirlik: ekran okuyucu etiketleri, klavye kısayolları, azaltılmış hareket ve %200'e kadar büyük metin.
 
 Beş temel özellik:
 - Duran bina ve arabalar için nedenler zinciriyle birlikte tek dokunuşta açıklama.
@@ -29,7 +33,7 @@ Beş temel özellik:
 - 5–12 dakikalık sözleşmeler ve süre sınırı olmayan açık vadi.
 - Kütük, kalas, tahıl, un ve ekmeğin fiziksel teslimatı; mallar anında ışınlanmaz.
 
-On iki görevin (I–XII) tamamı ve Serbest Vadi ücretsizdir. Reklam, uygulama içi satın alma, abonelik, ücretli üstünlük veya yapay bekleme yoktur. Oyun internet olmadan çalışır. Kayıtlar cihazda kalır; sistem yedeklemesi aktarım sağlayabilir.
+On altı görevin (I–XVI) tamamı ve Serbest Vadi ücretsizdir. Reklam, uygulama içi satın alma, abonelik, ücretli üstünlük veya yapay bekleme yoktur. Oyun internet olmadan çalışır. Kayıtlar cihazda kalır; sistem yedeklemesi aktarım sağlayabilir.
 
 ## Anahtar kelimeler — ASO başvurusu (Google Play'de ayrı anahtar kelime alanı yoktur)
 orta çağ lojistiği, strateji, arabalar, teslimat, tedarik zinciri, yol yapımı, köprüler, ticaret, sözleşme, ekonomi oyunu

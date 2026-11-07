@@ -18,9 +18,13 @@ Os contratos do castelo são missões curtas para partidas de 5 a 12 minutos. En
 
 O Vale Livre é um modo tranquilo de construção de cidade com três espaços de salvamento independentes. Desenvolva seu povoado por diferentes níveis até chegar a uma capital. Desbloqueie pesca, pedreiras para pavimentação e pontes de pedra, produção de carvão vegetal, maltagem e fabricação de cerveja. Toda cadeia ainda depende de entregas reais por carroças.
 
-Doze missões (I–XII) trazem pontes congestionadas, gelo no rio, entregas por etapas, pequeno celeiro, peixes, pavimentação antes da tempestade, disputa por madeira, carvão vegetal, malte e cerveja. Toque no pior bloqueio para descobrir a causa.
+Dezesseis missões (I–XVI) trazem pontes congestionadas, gelo no rio, entregas por etapas, pequeno celeiro, peixes, pavimentação antes da tempestade, disputa por madeira, carvão vegetal, malte e cerveja, uma frota pequena demais para sua cadeia, um armazém erguido onde será necessário e dois castelos esperando tábuas de uma única serraria. Cada missão abre com uma carta do castelão. Toque no pior bloqueio para descobrir a causa.
 
 O Vale Livre tem três livros de povoados, níveis até capital, estações do ano e mercado. Encomendas reais, feiras e mercador viajante são opcionais.
+
+A partir do nível 4, um posto comercial do outro lado do rio compra bens que o mercado saturado do castelo já não quer — desde que sua estrada chegue até ele; no inverno, o rio congela. O cartão “Rumo ao nível” mostra o que o próximo nível ainda precisa: outras mercadorias, um fluxo constante de prata ou simplesmente mais renome.
+
+Acessibilidade: rótulos para leitor de tela, atalhos de teclado, redução de movimento e texto grande até 200 %.
 
 Cinco recursos principais:
 - Explicações com um toque para construções e carroças paradas, incluindo a cadeia de causas.
@@ -29,7 +33,7 @@ Cinco recursos principais:
 - Contratos de 5 a 12 minutos e um vale livre sem prazo.
 - Entregas físicas de toras, tábuas, grãos, farinha e pão, sem teletransporte instantâneo de produtos.
 
-Todas as doze missões (I–XII) e o Vale Livre são gratuitos. Sem anúncios, compras no aplicativo, assinaturas, vantagens pagas ou esperas artificiais. Funciona offline sem Internet. Os saves ficam no dispositivo e backups do sistema podem transferi-los.
+Todas as dezesseis missões (I–XVI) e o Vale Livre são gratuitos. Sem anúncios, compras no aplicativo, assinaturas, vantagens pagas ou esperas artificiais. Funciona offline sem Internet. Os saves ficam no dispositivo e backups do sistema podem transferi-los.
 
 ## Palavras-chave — referência ASO (o Google Play não tem campo separado para palavras-chave)
 logística medieval, estratégia, carroças, entregas, cadeias de abastecimento, construção de estradas, pontes, rotas comerciais, contratos, jogo econômico

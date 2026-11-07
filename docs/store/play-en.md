@@ -18,9 +18,13 @@ Castle contracts are short missions designed for 5–12 minute sessions. Deliver
 
 Free Valley is a relaxed town builder with three independent save slots. Grow your settlement through ranks from a hamlet to a capital to unlock fishing, quarrying stone for cobbled roads and stone bridges, charcoal burning, malting and brewing beer. Every supply chain still needs real wagon deliveries.
 
-Twelve castle missions (I–XII) cover bridge jams, river ice, staged deliveries, a small granary, fish transport, paving before a storm, timber disputes, charcoal, malt and beer. Tap the worst stall to see why it stopped.
+Sixteen castle missions (I–XVI) cover bridge jams, river ice, staged deliveries, a small granary, fish transport, paving before a storm, timber disputes, charcoal, malt and beer, a fleet too small for its chain, a store placed where it will be needed, and two castles waiting for planks from one sawmill. Each mission opens with a letter from the castellan. Tap the worst stall to see why it stopped.
 
 Free Valley has three independent settlement ledgers, ranks from hamlet to capital, seasons and a market. Royal orders, seasonal fairs and a travelling merchant are optional events.
+
+From rank 4 a trading post across the river buys goods the saturated castle market no longer wants — if your road reaches it, and in winter the river freezes. The “Road to rank” card shows what the next rank still needs: different goods, a steady flow of silver, or simply more renown.
+
+Accessibility: screen reader labels, keyboard shortcuts, reduced motion and large text up to 200 %.
 
 Five key features:
 - One-tap explanations for stalled buildings and wagons, including the chain of causes.
@@ -29,7 +33,7 @@ Five key features:
 - 5–12 minute contracts plus an open-ended valley without deadlines.
 - Physical deliveries of logs, planks, grain, flour and bread — no instant teleporting goods.
 
-All twelve missions (I–XII) and Free Valley are free. No ads, in-app purchases, subscriptions, paid advantages or artificial waits. Play fully offline with no internet access. Saves stay on the device and may be transferable through system backups.
+All sixteen missions (I–XVI) and Free Valley are free. No ads, in-app purchases, subscriptions, paid advantages or artificial waits. Play fully offline with no internet access. Saves stay on the device and may be transferable through system backups.
 
 ## Keywords — ASO reference (Google Play has no separate keywords field)
 medieval logistics, strategy, wagons, deliveries, supply chains, road building, bridges, trade routes, contracts, economic game

@@ -21,11 +21,13 @@ Each loaded wagon visibly carries its goods. You can also check where it's headi
 
 Free Valley is a relaxed town-building mode with three separate save slots. Grow your settlement through ranks from a hamlet to a capital. Unlock fishing, quarry stone for cobbled roads and stone bridges, burn charcoal, produce malt and brew beer — while keeping every chain supplied by wagons.
 
-Twelve castle missions cover bridge jams, river ice, staged deliveries, small granaries, fish, paving before a storm, a timber dispute and chains for charcoal, malt and beer. The worst stall is one tap away, with a panel explaining why it stopped.
+Sixteen castle missions cover bridge jams, river ice, staged deliveries, small granaries, fish, paving before a storm, a timber dispute, chains for charcoal, malt and beer, a fleet too small for its chain, a store built where it will be needed and two castles waiting for planks from one sawmill. Each opens with a letter from the castellan. The worst stall is one tap away, with a panel explaining why it stopped.
 
-Free Valley offers three settlement ledgers, ranks from hamlet to capital, seasons and a market, with optional royal orders, seasonal fairs and a travelling merchant.
+Free Valley offers three settlement ledgers, ranks from hamlet to capital, seasons and a market, with optional royal orders, seasonal fairs and a travelling merchant. From rank 4 a trading post across the river buys what the saturated castle market no longer wants, if your road reaches it.
 
-All twelve missions (I–XII) and Free Valley are free, with no ads, in-app purchases, subscriptions, energy meter or paid advantages. Play offline with no internet access. Saves stay on the device; supported system backups may transfer them.
+Accessibility: screen reader labels, keyboard shortcuts, reduced motion and large text up to 200 %.
+
+All sixteen missions (I–XVI) and Free Valley are free, with no ads, in-app purchases, subscriptions, energy meter or paid advantages. Play offline with no internet access. Saves stay on the device; supported system backups may transfer them.
 
 Marchia is a medieval logistics strategy game about routes, deliveries and finding the causes of stalls. What matters isn't how many buildings you have, but whether the goods actually arrive.
 

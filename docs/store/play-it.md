@@ -18,9 +18,13 @@ I contratti del castello sono brevi missioni pensate per partite di 5–12 minut
 
 La Valle libera è una modalità rilassante di costruzione della città con tre slot di salvataggio indipendenti. Fai crescere l'insediamento attraverso vari ranghi fino alla capitale. Sblocca pesca, cave per pietre destinate a selciati e ponti, produzione di carbone di legna, maltazione e birrificazione. Ogni filiera richiede vere consegne con i carri.
 
-Dodici missioni (I–XII) comprendono ponti bloccati, ghiaccio sul fiume, consegne a tappe, piccoli granai, pesca, selciati prima della tempesta, disputa per il legno, carbone, malto e birra. Tocca il blocco più grave per scoprirne la causa.
+Sedici missioni del castello (I–XVI) comprendono ponti bloccati, ghiaccio sul fiume, consegne a tappe, piccoli granai, pesca, selciati prima della tempesta, disputa per il legno, carbone, malto e birra, una flotta troppo piccola per la sua catena, un magazzino costruito dove servirà, e due castelli in attesa di assi da una sola segheria. Ogni missione si apre con una lettera del castellano. Tocca il blocco più grave per scoprirne la causa.
 
 La Valle libera ha tre registri di insediamento, ranghi fino alla capitale, stagioni e mercato. Ordini reali, fiere e mercante itinerante sono eventi facoltativi.
+
+Dal rango 4 un posto di scambio sull'altra riva del fiume compra le merci che il mercato del castello saturo non vuole più — purché la tua strada lo raggiunga; d'inverno il fiume gela. La carta «Verso il rango» mostra cosa serve ancora al prossimo rango: beni diversi, un flusso costante di argento, o semplicemente più rinomanza.
+
+Accessibilità: etichette per screen reader, scorciatoie da tastiera, riduzione del movimento e testo grande fino al 200 %.
 
 Cinque caratteristiche principali:
 - Spiegazioni con un tocco degli arresti di edifici e carri, inclusa la catena delle cause.
@@ -29,7 +33,7 @@ Cinque caratteristiche principali:
 - Contratti di 5–12 minuti e una valle libera senza scadenze.
 - Consegne fisiche di tronchi, assi, grano, farina e pane: le merci non si teletrasportano.
 
-Tutte le dodici missioni (I–XII) e la Valle libera sono gratuite. Niente pubblicità, acquisti in-app, abbonamenti, vantaggi a pagamento o attese artificiali. Si gioca offline senza Internet. I salvataggi sono locali e il backup di sistema può trasferirli.
+Tutte le sedici missioni (I–XVI) e la Valle libera sono gratuite. Niente pubblicità, acquisti in-app, abbonamenti, vantaggi a pagamento o attese artificiali. Si gioca offline senza Internet. I salvataggi sono locali e il backup di sistema può trasferirli.
 
 ## Parole chiave — riferimento ASO (Google Play non ha un campo dedicato)
 logistica medievale, strategia, carri, consegne, catene di approvvigionamento, costruzione strade, ponti, rotte commerciali, contratti, gioco economico
