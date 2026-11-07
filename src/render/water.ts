@@ -18,7 +18,7 @@ import { groundMemo } from './groundCache';
 import { CELL, type Heightfield } from './heightfield';
 import { rng } from './models/kit';
 import { noiseTexture } from './noiseTex';
-import { APRON, ApronRow } from './terrain';
+import { APRON, ApronRow } from './terrainGrid';
 
 const WATER_VERT = /* glsl */ `
 attribute float depth;

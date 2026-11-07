@@ -1,8 +1,9 @@
 // Render data that depends only on the ground (D-282): the terrain chunks, the water strip and the apron trees are
 // pure functions of the terrain's size, corner heights, water cells and water level (Heightfield reads nothing else).
-// The menu valley and missions I / the free valley share one ground, and a world change rebuilds the view from
-// scratch, so the last result per kind is kept and handed out again when the next world has the same ground —
-// compared value for value, not by a hash. Results are treated as read-only by their users.
+// A world change rebuilds the view from scratch, and the usual path goes menu → mission → menu → next mission: the
+// results of the last two grounds per kind are kept (the menu valley's and the mission's) and handed out again when a
+// world has one of those grounds — compared value for value, not by a hash (missions II/IV/VII and III/X/XII–XV share a
+// ground under different map ids). Results are treated as read-only by their users.
 import type { Terrain } from '../sim/index';
 
 interface Slot {
@@ -10,7 +11,9 @@ interface Slot {
   value: unknown;
 }
 
-const slots = new Map<string, Slot>();
+/** Grounds kept per kind: the current one and the one before (most recent first). */
+const KEEP = 2;
+const slots = new Map<string, Slot[]>();
 
 /** Do two terrains give the same Heightfield (size, water level, corner heights, water cells)? */
 export function sameGround(a: Terrain, b: Terrain): boolean {
@@ -23,15 +26,20 @@ export function sameGround(a: Terrain, b: Terrain): boolean {
   return true;
 }
 
-/** `build()` for this ground, or the value kept from the last build of this kind on the same ground. */
+/** `build()` for this ground, or the value kept from an earlier build of this kind on the same ground. */
 export function groundMemo<T>(kind: string, t: Terrain, build: () => T): T {
-  const s = slots.get(kind);
-  if (s && sameGround(s.t, t)) {
+  let list = slots.get(kind);
+  if (!list) slots.set(kind, (list = []));
+  const i = list.findIndex((s) => sameGround(s.t, t));
+  if (i >= 0) {
+    const s = list.splice(i, 1)[0]!;
     s.t = t; // the next comparison against this world's terrain is by identity
+    list.unshift(s);
     return s.value as T;
   }
   const value = build();
-  slots.set(kind, { t, value });
+  list.unshift({ t, value });
+  if (list.length > KEEP) list.length = KEEP;
   return value;
 }
 
