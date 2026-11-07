@@ -83,6 +83,9 @@ const SCENES = [
   { name: 'waybill-m7', q: 'play=m7&speed=0&ff=120' },
   { name: 'end', q: 'play=m1&bot=1&ff=600' },
   { name: 'castle', q: 'play=m5&speed=0&ff=60', act: (p) => p.evaluate(() => { const A = window.__marchia.app; A.go('building', A.world.state.mission.contract.castle, true); }) },
+  // two castles (D-290): the two-row waybill with the castle pace card, and the castle card with the rival and the switch
+  { name: 'waybill-m16', q: 'play=m16&speed=0&ff=20' },
+  { name: 'castle-m16', q: 'play=m16&speed=0&ff=150&openId=5' },
   { name: 'valley', q: 'play=sandbox&speed=0&ff=240&slot=layout' },
   { name: 'market', q: 'play=sandbox&speed=0&market=1&slot=layout' },
   { name: 'opening', q: 'play=m1&tut=1&speed=0' },

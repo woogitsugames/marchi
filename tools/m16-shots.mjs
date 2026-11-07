@@ -1,7 +1,7 @@
 // Mission XVI screenshots (D-288..D-291): the opening letter, the castle pace card on the HUD with the two-castle
 // waybill (0:20), the east castle's card with the rival line and the "Ten zamek pierwszy" switch (2:30, even split),
 // and the same card after one tap on the switch.
-// Usage: node tools/m16-shots.mjs [baseUrl] [WxH ...]  (server: npm run build; npx vite preview --port 5231 --strictPort)
+// Usage: [ONLY=regex] node tools/m16-shots.mjs [baseUrl] [WxH ...]  (server: npm run build; npx vite preview --port 5231 --strictPort)
 // -> docs/shots/m16-<what>-<w>x<h>.jpg
 import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
@@ -20,9 +20,11 @@ const SHOTS = [
   { what: 'castle', q: 'ff=150&speed=0&openId=5' },
   { what: 'switch', q: 'ff=40&speed=0&openId=5', tap: true },
 ];
+const only = process.env.ONLY ? new RegExp(process.env.ONLY) : null;
 for (const [w, h] of sizes) {
   const tag = `${w}x${h}${lang === 'pl' ? '' : '-' + lang}`;
   for (const s of SHOTS) {
+    if (only && !only.test(s.what)) continue;
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const page = await ctx.newPage();
     page.setDefaultNavigationTimeout(180000);
