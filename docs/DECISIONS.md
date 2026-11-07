@@ -3613,3 +3613,45 @@ Identity: pixels `docs/research/perf15-diff/jam-diff.txt` — 18 harness scenes 
 in the other quality: menu 1/3/30 high and low, missions I, II, VII, XII, XVI, priors) before (`5f62eb3`) vs after: 0 px; `tools/mission-hashes.ts` identical
 (71 rows, sim untouched). Left: `bakeTreeBillboards` (~50 ms, GPU bake in SwiftShader), the ground memo, cold builders.
 (decided)
+## Menu world build: the far-tree bake (perf day 16, BACKLOG P3 from D-322)
+
+**D-325 — The bake holds the main thread for nothing: programs requested at mount, mips built once, no early
+bake.** Profile first. `bakeTreeBillboards` runs in the first frame (not before `ready`); its CPU part in the startup
+profile (SwiftShader, function-level, inclusive) was 45–125 ms, and two thirds of that was three's `onFirstUse`: link
+checks of the bake programs, the copy program's check after the first row's trees had been queued (so it also waited for
+them). The rest of its cost is GPU work that no CPU profile shows: a warm re-bake timed with a `readPixels` after it
+took ~430 ms (load 6) to ~900 ms (load 20) of SwiftShader time — tree draws ~280 ms, the 80 per-kind passes' resolves of
+the whole multisampled row ~70 ms (empty passes 110 ms vs none 38), the rest the 16 full mip-chain rebuilds (three
+rebuilds the chain after every render into a mipmapped target, i.e. after each of the 8 row copies per atlas). That
+work is executed when something waits for it — under SwiftShader the first frame's compositor commit, which reads the
+canvas back and so waits for the bake plus the frame (the `first-frame` mark is set when the frame's JS ends, ~4–5 s
+before the frame is composited in the probe). Changes: `requestTreeBakePrograms` (called from `View.mount`) compiles the
+bake and copy programs into a 1×1 render target (same program keys as in the bake: linear output, no tone mapping) and
+flushes, so the driver links them during the world build; inside the bake the copy program is first used before any
+tree (a draw into the albedo atlas just before its clear), and each atlas's mip chain is built once, after its last row
+(`generateMipmaps` off for rows 0–6; the flag stays on when the target is allocated, three sizes the storage from it).
+Measured and not done: baking before the world build so the GPU renders during it (`setWorld`, before the terrain) —
+`ready` +700 ms: the menu DOM's compositor commit then waited for the bake in its canvas read-back, and under SwiftShader
+the GPU threads compete with the build for the CPU; a `flush()` at the end of the bake — the frame's JS +450 ms
+(`first-frame` mark), the composited frame about the same; deferring the bake past the first frame or baking only the
+kinds present — every world has all 5 kinds and draws 5 000–6 500 far cards in its first frame (apron hills included),
+so the first frame needs the atlas; reuse across worlds — already (one atlas pair per session in `trees.ts`, a call with
+the levels it holds returns at once; the prior-world harness scenes cover it). (decided)
+
+**D-326 — One ArrayCamera pass per atlas row.** The bake drew each kind with its own `render()` into its column of the
+multisampled row (viewport + scissor), and every `render()` into a multisampled target ends in a resolve of the whole
+target: 5 resolves per row where 1 is needed. Now one `ArrayCamera` of 5 orthographic sub-cameras (sub-camera i: the
+card frustum of kind i, viewport = column i, layer i + 1; the kind's meshes on layer i + 1, `frustumCulled` off since the
+frustum of the array camera is not the views' and every view holds its whole tree) renders the row in one pass. Same
+matrices (built by the same calls), same draw order per kind (all meshes at the origin, so the sort keys are equal as
+before), no scissor needed (triangles are clipped to each view's frustum = its column). 80 → 16 passes and resolves per
+bake (8 after D-327). (decided)
+
+**D-327 — Albedo and normal atlases from one pass (two render targets).** Both atlases came from the same draws with
+the same coverage, only the output differed (`mode` uniform). The bake shader is GLSL3 now and writes albedo to location
+0 and normals to location 1 of a `count: 2` multisampled row; attachment 0's alpha drives alpha to coverage as before
+(albedo and normal alpha are the same value), the resolved row is copied into each atlas. 80 → 40 model draws, one bake
+program pair instead of two. Identity of D-325..D-327: atlas texels read back after bakes at five (cell, bare, spring)
+sets — (128, 0, 0), (128, 0.5, 0.25), (128, 1, 0), (256, 0.25, 1), (256, 0, 0) — hash-identical at mip levels 0, 3 and
+6 for both atlases; the renderer holds 50 programs after the pre-warm, as before. Cost and pixels: PERF day 16.
+(decided)

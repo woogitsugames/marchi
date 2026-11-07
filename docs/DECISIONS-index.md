@@ -271,3 +271,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-320 | — | Primitives are shared read-only templates (`prim`) | decided | inne |
 | D-321 | — | `PartBuilder.add`/`build` on plain arrays | decided | inne |
 | D-322 | — | Noise once per shared vertex; per-vertex waste out of the shades; bridges merged like buildings | decided | inne |
+| D-325 | — | The bake holds the main thread for nothing: programs requested at mount, mips built once, no early bake | decided | inne |
+| D-326 | — | One ArrayCamera pass per atlas row | decided | inne |
+| D-327 | — | Albedo and normal atlases from one pass (two render targets) | decided | render |

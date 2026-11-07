@@ -1,0 +1,2 @@
+after 5 {'ready': 1173, 'ff': 2090, 'done': 6024, 'gap': 830, 'dgap': 4894, 'commit': 3836}
+before 5 {'ready': 1090, 'ff': 2114, 'done': 6442, 'gap': 1015, 'dgap': 5352, 'commit': 4327}
