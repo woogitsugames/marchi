@@ -840,6 +840,7 @@ export const pl = {
   'menu.m16Sub': 'Kto pierwszy, ten na czas',
   'cause.paceHaul': 'robi {rate} z {cap} {goodGen} na minutę, {n, plural, one {jedyny wóz w trasie} few {wszystkie # wozy w trasie} many {wszystkie # wozów w trasie} other {wszystkie # wozu w trasie}} — kup wóz',
   'fix.paceHaulWhy': 'Przez minutę żaden wóz nie stał wolny, a wozy nie nadążają odbierać {goodGen}. Na {aim} do {by} towar musi ruszać szybciej; nowy wóz zdąży się zwrócić.',
+  'fix.paceHaulAt': 'Przy tym tempie całe zamówienie będzie gotowe ok. {finish}.',
 } as const;
 
 export type MessageKey = keyof typeof pl;

@@ -778,4 +778,5 @@ export const sv: Dict = {
   "menu.m16Sub": "Först i kön, först i tid",
   "cause.paceHaul": "gör {rate} av {cap} {goodGen} i minuten, {n, plural, one {enda vagnen är ute} other {alla # vagnar ute}} — köp en vagn",
   "fix.paceHaulWhy": "Ingen vagn stod ledig på en minut, och vagnarna hinner inte hämta {goodGen}. För {aim} före {by} måste varorna iväg tidigare; en ny vagn hinner betala sig.",
+  "fix.paceHaulAt": "I den här takten är hela beställningen klar runt {finish}.",
 };

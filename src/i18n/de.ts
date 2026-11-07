@@ -778,4 +778,5 @@ export const de: Dict = {
   "menu.m16Sub": "Wer zuerst kommt, ist pünktlich",
   "cause.paceHaul": "macht {rate} von {cap} {goodGen} pro Minute, {n, plural, one {der einzige Wagen fährt} other {alle # Wagen fahren}} — Wagen kaufen",
   "fix.paceHaulWhy": "Eine Minute lang stand kein Wagen frei, und die Wagen kommen mit dem Abholen der {goodGen} nicht nach. Für {aim} bis {by} muss die Ware früher los; ein neuer Wagen zahlt sich rechtzeitig aus.",
+  "fix.paceHaulAt": "Bei diesem Tempo ist der ganze Auftrag gegen {finish} fertig.",
 };

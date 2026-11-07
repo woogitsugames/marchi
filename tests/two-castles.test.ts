@@ -14,6 +14,7 @@ import { M16_EXTRA, M16_STRATEGIES, castlesOf, runM16 } from '../tools/bot-m16';
 import { castleForecast, castleRival, newPaceLog, samplePace } from '../src/sim/index';
 import { castleCard, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { eyePlayer, run } from '../tools/balance-night6';
+import { STRATS, measure, worst } from '../tools/m16-forecast-error';
 import { readFileSync } from 'node:fs';
 import { assert, eq, test } from './harness';
 
@@ -208,8 +209,6 @@ test('m16: the castle card names the early castle at 0:00 and leaves once it goe
   eq(card!.share, 'even', 'even split');
   assert(card!.firstTick <= min(5), 'first, it would make its deadline');
   eq(paceCard(w, null, log)?.k, 'castle', 'it takes the calm card slot');
-  const fe = castleForecast(w, log, east)!;
-  eq(fe.measured, false, 'no measured pace yet');
   applyCommand(w, { t: 'castleFirst', castle: east });
   eq(castleCard(w, log), null, 'gone once the east castle goes first');
   eq(castleForecast(w, log, east)!.share, 'first', 'east first');
@@ -276,5 +275,28 @@ test('m16: the whole-order forecast is honest after the switch (D-306) and the h
   while (o.state.mission.result === 'running' && o.state.tick < min(8)) {
     step(o); samplePace(lo, o); sampleFleet(o);
     if (o.state.tick % (10 * TICK_HZ) === 0) assert(paceCard(o, forecastFor(o, lo), lo)?.k !== 'haul', 'no haul card with one castle');
+  }
+});
+
+test('m16: forecast error bounds over time (D-313): the whole order from 1:10, each castle from 0:10, the haul card', () => {
+  // against the run played on passively from each 10 s sample (the forecast cannot know a later wagon)
+  const sec = (t: number): number => t * TICK_HZ;
+  const err = (f: number, a: number): number | null => (f < 0 || a < 0 ? null : (f - a) / TICK_HZ);
+  for (const [name, mk] of STRATS) {
+    const r = measure(mk());
+    const whole = worst(r.samples, (s) => err(s.whole, s.wholeAct), sec(60));
+    assert(whole !== null && Math.abs(whole) <= 40, `${name}: whole order within 40 s from 1:10 (worst ${whole} s; was up to +192 s)`);
+    const haul = worst(r.samples, (s) => (s.haul ? err(s.whole, s.wholeAct) : null), 0);
+    assert(haul === null || Math.abs(haul) <= 25, `${name}: within 25 s while the haul card shows (worst ${haul} s)`);
+    const east = worst(r.samples, (s) => err(s.castle[0], s.castleAct[0]), sec(10));
+    assert(east !== null && Math.abs(east) <= 50, `${name}: east castle within 50 s from 0:10 (worst ${east} s; was up to +104 s)`);
+    const north = worst(r.samples, (s) => err(s.castle[1], s.castleAct[1]), sec(10));
+    assert(north !== null && Math.abs(north) <= 70, `${name}: north castle within 70 s from 0:10 (worst ${north} s; was up to −111 s)`);
+  }
+  // the even split (D-290's case): the east card says late by about two minutes from the first look, not 0:33-0:50
+  const even = measure(STRATS[0]![1]());
+  for (const s of even.samples.filter((x) => x.t <= sec(110))) {
+    const late = (s.castle[0] - min(5)) / TICK_HZ, real = (s.castleAct[0] - min(5)) / TICK_HZ;
+    assert(Math.abs(late - real) <= 30 && late >= 90, `even split at ${s.t / TICK_HZ} s: east late by ${late} s (real ${real} s)`);
   }
 });

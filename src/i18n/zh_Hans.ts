@@ -778,4 +778,5 @@ export const zh_Hans: Dict = {
   "menu.m16Sub": "先选者按时",
   "cause.paceHaul": "每分钟只做{rate}/{cap}{goodGen}，{n, plural, other {#辆货车全在路上}}——购买货车",
   "fix.paceHaulWhy": "整整一分钟没有空闲货车，货车来不及运走{goodGen}。要在{by}前拿到{aim}，货物必须更早出发；新货车来得及回本。",
+  "fix.paceHaulAt": "按这个速度，整笔订单约在{finish}完成。",
 };

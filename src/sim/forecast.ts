@@ -2,7 +2,7 @@
 // A slower supply is not a stall (design/seasons.md §3), so no building carries a StallReason for
 // it; the waybill and the castle card read this instead. Read-only on the state: the pace log is
 // owned by the caller (the UI samples it every tick), never part of SimState, never hashed.
-import { BUILDINGS, GOODS, LOAD_TICKS, TICK_HZ, UNLOAD_TICKS, outputGoods } from './defs';
+import { BUILDINGS, GOODS, LOAD_TICKS, TICK_HZ, UNLOAD_TICKS, capacityOf, outputGoods } from './defs';
 import { contractsOf } from './contract';
 import { wagonEta } from './diagnose';
 import { buildingById } from './logistics';
@@ -105,6 +105,65 @@ export function wagonWait(world: World, trip: number): number {
   return Math.round(2 * trip / Math.max(1, world.state.wagons.length));
 }
 
+/** Ticks of the quickest empty drive (no load or unload). −1 without a route. */
+function emptyTicks(world: World, from: number, to: number): number {
+  const p = findPath(world, from, to, false);
+  return p ? Math.round(pathTime(world, from, p, false) * TICK_HZ) : -1;
+}
+
+/**
+ * Two castles (D-313): wagon-ticks one unit of `g` costs to bring to castle `q` — a round trip of the castle leg from
+ * the nearest producer (loaded there, empty back, load and unload) over the load, plus the same for each input the
+ * recipe needs for that unit, from its nearest maker to that producer. −1 when a leg has no route.
+ */
+export function unitHaulTicks(world: World, g: Good, q: number): number {
+  const st = world.state;
+  const gate = buildingById(world, q)?.gate;
+  if (gate === undefined) return -1;
+  let best = -1, bestP = -1;
+  for (const p of st.buildings) {
+    if (!outputGoods(p.type).includes(g)) continue;
+    const there = tripTicks(world, p.gate, gate), back = emptyTicks(world, gate, p.gate);
+    if (there < 0 || back < 0) continue;
+    if (best < 0 || there + back < best) { best = there + back; bestP = p.id; }
+  }
+  if (best < 0) return -1;
+  const prod = buildingById(world, bestP)!;
+  let t = best / capacityOf(g);
+  const r = BUILDINGS[prod.type].recipe;
+  if (r) for (const input of GOODS) {
+    const per = (r.inputs[input] ?? 0) / (r.outputs[g] ?? 1);
+    if (per <= 0) continue;
+    let leg = -1;
+    for (const m of st.buildings) {
+      if (!outputGoods(m.type).includes(input)) continue;
+      const there = tripTicks(world, m.gate, prod.gate), back = emptyTicks(world, prod.gate, m.gate);
+      if (there >= 0 && back >= 0 && (leg < 0 || there + back < leg)) leg = there + back;
+    }
+    if (leg < 0) return -1;
+    t += per * leg / capacityOf(input);
+  }
+  return t;
+}
+
+/**
+ * Two castles (D-313): wagon-ticks the fleet still owes its current jobs — each wagon's ticks until its load is
+ * delivered, plus for a load bound for a castle the empty drive back to where it came from (the next load waits
+ * there). −1 when a wagon has no route.
+ */
+function busyTicks(world: World): number {
+  let t = 0;
+  for (const w of world.state.wagons) {
+    if (!w.job) continue;
+    const e = wagonEta(world, w.id);
+    if (!e) return -1;
+    t += e.toFinish * TICK_HZ;
+    const to = buildingById(world, w.job.to), from = buildingById(world, w.job.from);
+    if (to && from && to.type === 'castle') { const back = emptyTicks(world, to.gate, from.gate); if (back > 0) t += back; }
+  }
+  return t;
+}
+
 /** Ticks until the last wagon now bringing `g` to `castle` has unloaded (−1 if one has no route). */
 function lastDelivery(world: World, castle: number, g: Good): number {
   let last = 0;
@@ -154,6 +213,52 @@ function pooledTicks(goods: GoodPace[], lags: number[], i: number, perMinOf: (gi
     if (t > best) best = t;
   }
   return best;
+}
+
+/** Most of `g` a minute the makers of its producer's inputs can feed (Infinity when it needs none). */
+function inputCapPerMin(world: World, type: BuildingType | null, g: Good): number {
+  const r = type ? BUILDINGS[type].recipe : null;
+  if (!r) return Infinity;
+  let out = Infinity;
+  for (const input of GOODS) {
+    const per = (r.inputs[input] ?? 0) / (r.outputs[g] ?? 1);
+    if (per <= 0) continue;
+    let cap = 0;
+    for (const m of world.state.buildings) {
+      const mr = BUILDINGS[m.type].recipe;
+      if (mr && outputGoods(m.type).includes(input)) cap += (mr.outputs[input] ?? 0) * 60 * TICK_HZ / cycleTicks(world, m.type, mr.ticks);
+    }
+    out = Math.min(out, cap / per);
+  }
+  return out;
+}
+
+/**
+ * Two castles (D-313): the share of full work the chain keeps up on a shared long haul — the producer waits for its
+ * input or for a wagon, a wagon drives to a load that is not ready yet, the dispatcher sends wood while planks wait.
+ * Measured on mission XVI (tools/m16-forecast-error.ts): 0.85 keeps the whole-order forecast within ±36 s of the run's
+ * finish from 1:10 on for every strategy of the ladder.
+ */
+export const CHAIN_SHARE = 0.85;
+
+/**
+ * Two castles (D-313): ticks from now until the castles in `owed` (castle id, units of `g` still neither there nor on
+ * a wagon) hold their goods — the later of the producers making `toMake` at CHAIN_SHARE of their capacity (as their
+ * inputs allow) plus `lag` (the last drive), and the fleet finishing its current jobs and a round trip of every leg
+ * per unit owed (unitHaulTicks), shared by the wagons at CHAIN_SHARE. −1 when a leg has no route.
+ */
+function chainTicks(world: World, g: Good, owed: readonly (readonly [number, number])[], toMake: number, lag: number, cap: number, type: BuildingType | null): number {
+  const prod = CHAIN_SHARE * Math.min(cap, inputCapPerMin(world, type, g));
+  if (lag < 0 || prod <= 0) return -1;
+  let haul = busyTicks(world);
+  for (const [q, n] of owed) {
+    if (n <= 0 || haul < 0) continue;
+    const u = unitHaulTicks(world, g, q);
+    haul = u < 0 ? -1 : haul + n * u;
+  }
+  if (haul < 0) return -1;
+  const fleet = haul / (Math.max(1, world.state.wagons.length) * CHAIN_SHARE);
+  return Math.round(Math.max(toMake * 60 * TICK_HZ / prod + lag, fleet));
 }
 
 function sealsAt(world: World, tick: number): number {
@@ -222,7 +327,7 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
     return after.length ? after : short.length ? short : castles;
   };
   const goods: GoodPace[] = [];
-  const lags: number[] = [], shorts: number[] = [];
+  const lags: number[] = [], shorts: number[] = [], models: number[] = [];
   for (let gi = 0; gi < GOODS.length; gi++) {
     const g = GOODS[gi]!;
     const need = needAll(g);
@@ -259,6 +364,12 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
     goods.push({ good: g, need, have: Math.min(stockOf(g), need), toMake, perMin: perMinOf(gi), capPerMin: cap, producers, producerType, producer, etaTicks: 0 });
     lags.push(lag);
     shorts.push(short);
+    // two castles (D-313): what the chain can deliver from here (the measured pace still carries the start-up wait
+    // for wood in the first minutes, and the producer's waits for wagons later)
+    const model = two && short > 0
+      ? chainTicks(world, g, castles.map((q) => [q.id, Math.max(0, contractsOf(st.mission).find((o) => o.castle === q.id)!.need[g] - q.stock[g] - q.incoming[g])] as const), toMake, lag, cap, producerType)
+      : -1;
+    models.push(model);
   }
   let ready = enough, worst = -1, worstTicks = -1;
   for (let i = 0; i < goods.length; i++) {
@@ -271,7 +382,8 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
     } else if (short > 0) {
       // the last unit still has to be made (at the measured pace) and driven to the castle
       const make = gp.toMake === 0 ? 0 : gp.perMin > 0 ? gp.toMake * 60 * TICK_HZ / gp.perMin : -1;
-      eta = make < 0 || lag < 0 ? -1 : Math.round(make) + lag;
+      // two castles (D-313): the chain's capacity and the fleet's haul instead of the measured pace
+      eta = two ? models[i]! : make < 0 || lag < 0 ? -1 : Math.round(make) + lag;
       const pooled = gp.toMake > 0 && lag >= 0 ? pooledTicks(goods, lags, i, perMinOf) : -1;
       if (pooled >= 0 && (eta < 0 || pooled < eta)) eta = pooled;
     }
@@ -287,7 +399,7 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
   // the next better outcome: the pace the bottleneck needs to make the rest before that seal's tick
   let aim: ContractForecast['aim'] = null;
   const b = goods[worst]!;
-  const lagB = b.etaTicks - (b.toMake === 0 || b.perMin <= 0 ? 0 : Math.round(b.toMake * 60 * TICK_HZ / b.perMin));
+  const lagB = two && lags[worst]! >= 0 ? lags[worst]! : b.etaTicks - (b.toMake === 0 || b.perMin <= 0 ? 0 : Math.round(b.toMake * 60 * TICK_HZ / b.perMin));
   for (const [s, byTick] of [[3, c.star3Tick], [2, c.star2Tick], [1, c.deadlineTick]] as const) {
     if (needOf || s <= seals) break;
     const room = byTick - st.tick - lagB;
@@ -332,19 +444,17 @@ export interface CastleForecast {
   finishTick: number;
   /** The same if this castle were first (= finishTick when it is). */
   firstTick: number;
-  /** The pace is measured (pace log); false: the producers' full-work capacity (the first minute). */
-  measured: boolean;
 }
 
 /**
  * Forecast of one castle's order in a two-castle mission (D-290), or null (no such order, mission over). Pure read
- * of the state and the caller's pace log. The shared good's pace (measured, or for the first two minutes the producers'
- * capacity)
- * serves a pool: this castle's rest alone when it is first, the first castle's rest before it when the other is
- * first, and both rests when they fill evenly. Unlike `contractForecast` it is ready from the first tick — the
- * decision "which castle first" is worth most at 0:00.
+ * of the state. The chain (D-313: the producers at CHAIN_SHARE of their capacity, the fleet's current jobs and a round
+ * trip per unit owed, chainTicks) serves a pool: this castle's rest alone when it is first, the first castle's rest
+ * before it when the other is first, and both rests when they fill evenly. Ready from the first tick — the decision
+ * "which castle first" is worth most at 0:00. `_log` is kept for the callers (D-313: no measured pace here — in the
+ * first two minutes the producers' capacity said 12 planks a minute where the wagons brought 7).
  */
-export function castleForecast(world: World, log: PaceLog, castleId: number): CastleForecast | null {
+export function castleForecast(world: World, _log: PaceLog, castleId: number): CastleForecast | null {
   const st = world.state, m = st.mission;
   if (!m.extraContracts || m.result !== 'running') return null;
   const orders = contractsOf(m);
@@ -359,51 +469,46 @@ export function castleForecast(world: World, log: PaceLog, castleId: number): Ca
   const base = { castle: castleId, dueTick };
   if (done) {
     const at = tr && tr.doneTick >= 0 ? tr.doneTick : st.tick;
-    return { ...base, share: first === castleId ? 'first' : firstOrder ? 'after' : 'even', done, finishTick: at, firstTick: at, measured: true };
+    return { ...base, share: first === castleId ? 'first' : firstOrder ? 'after' : 'even', done, finishTick: at, firstTick: at };
   }
-  const n = log.ticks.length;
-  const span = n > 1 ? log.ticks[n - 1]! - log.ticks[0]! : 0;
   const rest = (k: typeof c, g: Good): number => {
     const b = buildingById(world, k.castle);
     return b ? Math.max(0, k.need[g] - b.stock[g] - b.incoming[g]) : 0;
   };
-  let measured = true, share: CastleShare = first === castleId ? 'first' : 'even';
+  let share: CastleShare = first === castleId ? 'first' : 'even';
   let worst = 0, worstFirst = 0;
-  for (let gi = 0; gi < GOODS.length; gi++) {
-    const g = GOODS[gi]!;
+  for (const g of GOODS) {
     if (c.need[g] - castle.stock[g] <= 0) continue;
     let spare = 0, cap = 0, lag = -1;
+    let type: BuildingType | null = null;
     for (const p of st.buildings) {
       if (!outputGoods(p.type).includes(g)) continue;
       const r = BUILDINGS[p.type].recipe!;
+      type ??= p.type;
       spare += p.stock[g] - p.reservedOut[g];
       cap += (r.outputs[g] ?? 0) * 60 * TICK_HZ / cycleTicks(world, p.type, r.ticks);
       const trip = tripTicks(world, p.gate, castle.gate);
       if (trip >= 0 && (lag < 0 || trip < lag)) lag = trip;
     }
-    // the measured pace once the two-minute window is full (the better of the window and the long run, as in
-    // contractForecast); before that the start-up stock and the first trips distort it, so the producers' capacity
-    let pace = -1;
-    if (span >= PACE_WINDOW_TICKS - PACE_SAMPLE_TICKS) {
-      const now = log.produced[n - 1]![gi]!;
-      pace = (now - log.produced[0]![gi]!) * 60 * TICK_HZ / span;
-      const longSpan = log.ticks[n - 1]! - log.firstTick;
-      if (longSpan > span) pace = Math.max(pace, (now - log.first[gi]!) * 60 * TICK_HZ / longSpan);
-    }
-    if (pace <= 0) { pace = cap; measured = false; }
-    const own = rest(c, g);
-    let pool = own;
+    const own: (readonly [number, number])[] = [[castleId, rest(c, g)]];
+    const pool = [...own];
     if (first !== castleId) {
-      if (firstOrder && rest(firstOrder, g) > 0) { pool += rest(firstOrder, g); share = 'after'; }
-      else if (!firstOrder) for (const k of orders) if (k !== c) pool += rest(k, g);
+      if (firstOrder && rest(firstOrder, g) > 0) { pool.push([firstOrder.castle, rest(firstOrder, g)]); share = 'after'; }
+      else if (!firstOrder) for (const k of orders) if (k !== c) pool.push([k.castle, rest(k, g)]);
     }
     const arrive = lastDelivery(world, castleId, g);
-    if (lag < 0 || pace <= 0 || arrive < 0) return { ...base, share, done, finishTick: -1, firstTick: -1, measured };
+    if (lag < 0 || arrive < 0) return { ...base, share, done, finishTick: -1, firstTick: -1 };
     // D-306: the last load waits for a wagon of the busy fleet before its drive
     lag += wagonWait(world, lag);
-    const eta = (p: number): number => (own <= 0 ? arrive : Math.max(arrive, Math.round(Math.max(0, p - spare) * 60 * TICK_HZ / pace) + lag));
-    worst = Math.max(worst, eta(pool));
-    worstFirst = Math.max(worstFirst, eta(own));
+    const eta = (list: (readonly [number, number])[]): number => {
+      if (own[0]![1] <= 0) return arrive;
+      const t = chainTicks(world, g, list, Math.max(0, list.reduce((a, o) => a + o[1], 0) - spare), lag, cap, type);
+      return t < 0 ? -1 : Math.max(arrive, t);
+    };
+    const tp = eta(pool), to = eta(own);
+    if (tp < 0 || to < 0) return { ...base, share, done, finishTick: -1, firstTick: -1 };
+    worst = Math.max(worst, tp);
+    worstFirst = Math.max(worstFirst, to);
   }
-  return { ...base, share, done, finishTick: st.tick + worst, firstTick: st.tick + worstFirst, measured };
+  return { ...base, share, done, finishTick: st.tick + worst, firstTick: st.tick + worstFirst };
 }
