@@ -338,8 +338,7 @@ export function releaseDistMap(world: World, m: DistMap): void {
  * reverse=true: dist[x] = time x -> start. Stops early when `stopAt` is settled.
  */
 export function dijkstra(world: World, start: number, reverse: boolean, loaded: boolean, stopAt = -1, reuse = false): DistMap {
-  const t = world.terrain, w = t.w, h = t.h;
-  const n = w * h;
+  const n = world.terrain.w * world.terrain.h;
   const sc = scratch(world);
   // reuse=true: results live in shared scratch buffers (valid until the next reuse call) — no allocation
   // reuse=false: own arrays, recycled from `releaseDistMap` when available (same contents after fill)
@@ -347,9 +346,17 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   let pd = pool?.dist.pop(), pp = pool?.prev.pop();
   if (pd && pd.length !== n) pd = undefined;
   if (pp && pp.length !== n) pp = undefined;
-  const dist = reuse ? sc.dist.fill(Infinity) : (pd ?? new Float64Array(n)).fill(Infinity);
-  const prev = reuse ? sc.prev.fill(-1) : (pp ?? new Int32Array(n)).fill(-1);
-  if (!world.state.roads[start]) return { dist, prev };
+  const dist = reuse ? sc.dist : pd ?? new Float64Array(n);
+  const prev = reuse ? sc.prev : pp ?? new Int32Array(n);
+  search(world, sc, start, reverse, loaded, stopAt, dist, prev);
+  return { dist, prev };
+}
+
+/** The search itself, into `dist` / `prev` (filled here: Infinity / -1 before the start). */
+function search(world: World, sc: PathScratch, start: number, reverse: boolean, loaded: boolean, stopAt: number, dist: Float64Array, prev: Int32Array): void {
+  dist.fill(Infinity);
+  prev.fill(-1);
+  if (!world.state.roads[start]) return;
   const hn = sc.heapNode, hk = sc.heapKey;
   let size = 0;
   const push = (node: number, key: number) => {
@@ -421,7 +428,6 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
       }
     }
   }
-  return { dist, prev };
 }
 
 /**
@@ -481,8 +487,8 @@ export function dijkstraMemo(world: World, start: number, reverse: boolean, load
   const n = world.terrain.w * world.terrain.h;
   let out = memo.spare.pop();
   if (!out || out.length !== n) out = new Float64Array(n);
-  // search in the shared scratch buffers, keep a copy of the distances
-  out.set(dijkstra(world, start, reverse, loaded, -1, true).dist);
+  // distances straight into the memo array; `prev` goes to the shared scratch (nobody reads it)
+  search(world, scratch(world), start, reverse, loaded, -1, out, scratch(world).prev);
   memo.maps.set(key, out);
   return out;
 }

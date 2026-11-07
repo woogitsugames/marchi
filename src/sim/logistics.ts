@@ -98,8 +98,16 @@ export function isFree(w: Wagon): boolean {
 }
 
 export function buildingById(world: World, id: number): Building | null {
-  // buildings are kept sorted by id; linear scan is fine at this scale
-  for (const b of world.state.buildings) if (b.id === id) return b;
+  // buildings are kept sorted by id (appended with increasing ids): binary search, and the old linear
+  // scan as a fallback, so an unsorted list (hand-built test states) still finds the same building
+  const bs = world.state.buildings;
+  let lo = 0, hi = bs.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1, b = bs[mid]!;
+    if (b.id === id) return b;
+    if (b.id < id) lo = mid + 1; else hi = mid - 1;
+  }
+  for (const b of bs) if (b.id === id) return b;
   return null;
 }
 
@@ -231,9 +239,14 @@ export function dispatch(world: World): void {
       if (!j || j.phase !== 'dropoff' || w.status.k === 'BRIDGE_CLOSED' || w.status.k === 'NO_ROUTE') continue;
       const to = buildingById(world, j.to);
       if (!to) continue;
+      const onward = to.gate === source.gate ? 0 : rev.dist[to.gate]!;
+      const unloading = w.status.k === 'UNLOADING';
+      // the loaded run is never negative, so t >= a full unloading + the onward run: when even that
+      // bound does not beat dueT the run need not be searched (D-338, same choice, fewer searches)
+      if (!unloading && UNLOAD_TICKS / TICK_HZ + onward >= dueT) continue;
       // seconds until the drop-off is done: the unloading left, or the loaded run plus a full unloading
-      const rest = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
-      const t = rest + (to.gate === source.gate ? 0 : rev.dist[to.gate]!);
+      const rest = unloading ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
+      const t = rest + onward;
       if (t < dueT) { dueT = t; due = w; }
     }
     // the status shows when the busy wagon should stand at the source (whole ticks, rounded up)

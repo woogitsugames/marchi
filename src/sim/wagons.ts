@@ -16,7 +16,9 @@ const JAM_RECONSIDER_TICKS = 10 * 10;
 const JAM_RECONSIDER_EVERY = 30;
 
 export function stepWagons(world: World): void {
-  for (const w of world.state.wagons) stepWagon(world, w);
+  // weather depends only on the tick (and the world's calendar), so it is the same for every wagon
+  const rain = isRaining(world.state), thaw = thawing(world);
+  for (const w of world.state.wagons) stepWagon(world, w, rain, thaw);
 }
 
 function targetNode(world: World, w: Wagon): number {
@@ -28,7 +30,7 @@ function targetNode(world: World, w: Wagon): number {
   return home ? home.gate : -1;
 }
 
-function stepWagon(world: World, w: Wagon): void {
+function stepWagon(world: World, w: Wagon, rain: boolean, thaw: boolean): void {
   const st = world.state;
   if (w.busyTicks > 0) {
     w.busyTicks--;
@@ -76,7 +78,7 @@ function stepWagon(world: World, w: Wagon): void {
     // advance along at -> next
     const len = edgeLength(world.terrain, w.at, w.next);
     const loaded = w.cargoQty > 0;
-    const v = edgeSpeedAt(world, w.at, w.next, w.edgeT / len, loaded, isRaining(st), thawing(world));
+    const v = edgeSpeedAt(world, w.at, w.next, w.edgeT / len, loaded, rain, thaw);
     const step = v * DT * budget;
     if (w.edgeT + step < len) {
       w.edgeT += step;
