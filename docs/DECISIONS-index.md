@@ -273,3 +273,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-322 | — | Noise once per shared vertex; per-vertex waste out of the shades; bridges merged like buildings | decided | inne |
 | D-323 | — | The trader at the open trading post answers each sale with a short gesture (BACKLOG P3 from D-200) | nieokreślony | inne |
 | D-324 | — | The sale is read from `tradePost.recent`, not stored anywhere new | nieokreślony | inne |
+| D-328 | — | QA of 7 XI: `prim` templates only for shapes that repeat; the slope plinth is a one-off box | decided | inne |

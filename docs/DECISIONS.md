@@ -3639,3 +3639,17 @@ render 7.4 / 8.4 ms before, 8.7 / 7.5 ms after (run-to-run noise). Tests `tests/
 (the cue as a pure function, live trade at the post: gestures ≤ sales, hash identical with and without reading,
 the gesture shape and its smoothness). Shots `docs/shots/merchant-{before,after}-<size>-seq.jpg` (idle, reach,
 weigh, drop) and the full frames at "weigh" (`tools/merchant-shots.mjs`).
+
+**D-328 — QA of 7 XI: `prim` templates only for shapes that repeat; the slope plinth is a one-off box.**
+`prim` (D-320) keeps one shared BufferGeometry per constructor and argument list for the session. Every call site was
+checked: the model shapes, the bridge deck frost (fixed sizes) and the ice floes (a fixed-seed stream, so the same
+radii on every rebuild) repeat their arguments; the field-stone plinth under a building on a slope
+(`BuildingsView`) did not — its width, depth and height follow the ground under each placement, so each building
+ever placed kept its own template until the page closed. It is a plain `new BoxGeometry` again (the pre-D-320 code;
+`PartBuilder.add` only reads it, so it is garbage once the merged part is built). Same geometry, tests 611/0. Rule:
+pass `prim` only arguments drawn from code constants or a fixed-seed stream, never world-dependent values.
+Probe (`scratchpad`, 30 world switches menu → I…XVI → menu in one page, low and high, GC between samples): JS heap
+14 → ~20.7 MB after the first round of missions, then flat (20.5–20.9 MB over the next 20 switches); array-buffer
+backing store 83–91 MB with no trend; three.js live geometries 70–85 and textures 22–25 throughout — the ground memo
+(2 grounds per kind), the tree plan and the reed candidates do not grow with switches.
+(decided)
