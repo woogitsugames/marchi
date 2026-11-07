@@ -56,10 +56,10 @@ const langsExpr = initializer(source('src/i18n/index.ts'), 'LANGS');
 assert(ts.isArrayLiteralExpression(langsExpr), 'LANGS must be a literal tuple');
 const langs = langsExpr.elements.map((x) => string(x, 'LANGS member'));
 const letters = object(initializer(source('src/content/letters.ts'), 'CONTRACT_LETTERS'), 'CONTRACT_LETTERS');
-const missions = Array.from({ length: 15 }, (_, i) => 'm' + (i + 1));
+const missions = Array.from({ length: 16 }, (_, i) => 'm' + (i + 1));
 
 test('all missions have five signed letters in every supported language, within 400/200 characters', () => {
-  assert(letters.properties.length === 15, 'unexpected number of contract missions');
+  assert(letters.properties.length === 16, 'unexpected number of contract missions');
   assert(langs.length === 17, 'unexpected number of supported languages');
   for (const mission of missions) {
     const byLang = object(prop(letters, mission), mission);
@@ -87,6 +87,10 @@ test('all missions have five signed letters in every supported language, within 
       }
       if (mission === 'm15') {
         for (const n of ['30', '40', '5:30', '8:30', '12:00']) assert(opening.includes(n), `missing ${n}: ${label}`);
+      }
+      // D-288: the two castles' orders and times (24 planks by 5:00, 30 by 9:00, everything by 12:00)
+      if (mission === 'm16') {
+        for (const n of ['24', '30', '5:00', '9:00', '12:00']) assert(opening.includes(n), `missing ${n}: ${label}`);
       }
       if (mission === 'm12') {
         for (const n of ['40', '48', '32', '6:00', '8', '12', '9:00', '36', '12:00']) {

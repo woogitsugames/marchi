@@ -5,6 +5,7 @@
 import { COST_DIRT, COST_WOOD_BRIDGE, MAX_GRADE, inputGoods, outputGoods } from './defs';
 import { DX, DY, dijkstra, grade, net, type World } from './network';
 import type { Building } from './types';
+import { contractsOf } from './contract';
 
 export interface RoadSuggestion {
   /** Full contiguous cell path from `from` to `to`, existing road cells included (pass to a road command). */
@@ -155,9 +156,9 @@ function linkAnchor(world: World, b: Pick<Building, 'id' | 'type'>, onNet: (cell
     if (sup.length) return best(sup);
   }
   const outs = outputGoods(b.type);
-  const need = st.mission.contract?.need;
+  const orders = contractsOf(st.mission);
   const cus = others.filter((q) => inputGoods(q.type).some((g) => outs.includes(g)) ||
-    (q.type === 'castle' && !!need && outs.some((g) => need[g] > 0)));
+    (q.type === 'castle' && orders.some((k) => k.castle === q.id && outs.some((g) => k.need[g] > 0))));
   return best(cus);
 }
 

@@ -1,8 +1,9 @@
 // Deterministic acceptance/balance runner for missions VII-IX (registered in missions.ts; withProposal
 // re-installs the data from src/sim/proposals/missions-7-9.ts for the run, a no-op once registered).
+import { goldenHash } from './golden-hash';
 import {
   MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, lineCells,
-  stars, stateHash, step, stoneAvailable, unexplainedStalls,
+  stars, step, stoneAvailable, unexplainedStalls,
   type Command, type World,
 } from '../src/sim/index';
 import { PROPOSED_MISSIONS_7_9, M7_FISHER_SITE, M8_LANE, M9_WOODCUTTER_SITE, type Mission789Id } from '../src/sim/proposals/missions-7-9';
@@ -124,7 +125,7 @@ export function runProposed(id: Mission789Id, strategy: Strategy): RunResult {
       minutes: st.mission.endTick / (60 * TICK_HZ), seals: stars(w), coins: st.coins,
       actionSecond, commandErrors, invariantErrors, stoneUsed, peakStoneStored, maxStoneWagon,
       fishCrossings, contestedSamples, delivered, produced: { fish: l.fish, stone: l.stone, malt: l.malt, beer: l.beer },
-      hash: stateHash(w),
+      hash: goldenHash(w),
     };
   });
 }

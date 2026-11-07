@@ -1,5 +1,5 @@
 // Player-facing text for sim data (status keys -> i18n), times and icons for reasons.
-import { BUILDINGS, RANKS, TICK_HZ, buildingById, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
+import { BUILDINGS, RANKS, TICK_HZ, buildingById, castleNameKey, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
 import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
 import { bridgeJamCause, type BridgeJamCause } from './bridgeJam';
 import { esc } from './dom';
@@ -74,7 +74,10 @@ export function goodName(g: Good): string {
 
 export function buildingName(world: World, id: number): string {
   const b = buildingById(world, id);
-  return b ? t(`building.${b.type}` as MessageKey) : '—';
+  if (!b) return '—';
+  // two castles (D-288): each castle by its own name ("Zamek Wschodni", "Zamek Północny")
+  const named = b.type === 'castle' ? castleNameKey(world, id) : null;
+  return named ? t(`castle.name.${named}`) : t(`building.${b.type}` as MessageKey);
 }
 
 /** Fleet number of a wagon ("Wóz 3", D-44), or null when it is gone (sold). */

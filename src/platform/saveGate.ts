@@ -123,6 +123,8 @@ export const LIMITS = {
   maxRain: 256,
   /** Contract tranches (state v3); missions use 2-3. */
   maxTranches: 64,
+  /** Further castle orders (state v10, mission XVI has one). */
+  maxCastles: 8,
   /** Bound for any integer counter (ticks, ids, ledger, coins). 2^40 ticks = 3,500 years at 10 Hz. */
   maxInt: 2 ** 40,
   maxErrors: 20,
@@ -523,28 +525,9 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
     if (!has(m, 'contract')) e.add('BAD_TYPE', `${mp}.contract`, 'missing');
     else if (m.contract !== null) {
       const ct = obj(c, m, 'contract', mp);
-      if (ct) {
-        const cp = `${mp}.contract`;
-        goodMap(c, ct, 'need', cp);
-        const castle = int(c, ct, 'castle', cp, 1, LIMITS.maxInt);
-        if (castle !== null && ids.get(castle) !== 'castle') e.add('DANGLING_REF', `${cp}.castle`, `castle ${castle} is not a castle`);
-        int(c, ct, 'deadlineTick', cp, 0, LIMITS.maxInt);
-        int(c, ct, 'star3Tick', cp, 0, LIMITS.maxInt);
-        int(c, ct, 'star2Tick', cp, 0, LIMITS.maxInt);
-        // state v3 (D-26): the waybill of tranches
-        if (version >= 3 || has(ct, 'tranches')) {
-          const trs = arr(c, ct, 'tranches', cp, LIMITS.maxTranches) ?? [];
-          trs.forEach((t, i) => {
-            const tp = `${cp}.tranches[${i}]`;
-            if (!isObj(t)) { e.add('BAD_TYPE', tp, `expected object, got ${show(t)}`); return; }
-            goodMap(c, t, 'need', tp);
-            int(c, t, 'deadlineTick', tp, 0, LIMITS.maxInt);
-            int(c, t, 'doneTick', tp, -1, LIMITS.maxInt);
-            if (typeof t.missed !== 'boolean') e.add('BAD_TYPE', `${tp}.missed`, `expected boolean, got ${show(t.missed)}`);
-          });
-        }
-      }
+      if (ct) gateContract(c, ct, `${mp}.contract`, version, ids);
     }
+    gateCastles(c, m, mp, version, ids);
   }
 
   // ledger
@@ -601,6 +584,61 @@ function gateStateInner(s: unknown, version: number, e: Errs): void {
   }
   gateValleyEvents(c, s, version);
   gateTradePost(c, s, version, ids);
+}
+
+/** One castle order (the main contract, or one of the two-castle `extraContracts`). */
+function gateContract(c: Ctx, ct: Obj, cp: string, version: number, ids: Map<number, string>): void {
+  const e = c.e;
+  goodMap(c, ct, 'need', cp);
+  const castle = int(c, ct, 'castle', cp, 1, LIMITS.maxInt);
+  if (castle !== null && ids.get(castle) !== 'castle') e.add('DANGLING_REF', `${cp}.castle`, `castle ${castle} is not a castle`);
+  int(c, ct, 'deadlineTick', cp, 0, LIMITS.maxInt);
+  int(c, ct, 'star3Tick', cp, 0, LIMITS.maxInt);
+  int(c, ct, 'star2Tick', cp, 0, LIMITS.maxInt);
+  // state v3 (D-26): the waybill of tranches
+  if (version >= 3 || has(ct, 'tranches')) {
+    const trs = arr(c, ct, 'tranches', cp, LIMITS.maxTranches) ?? [];
+    trs.forEach((t, i) => {
+      const tp = `${cp}.tranches[${i}]`;
+      if (!isObj(t)) { e.add('BAD_TYPE', tp, `expected object, got ${show(t)}`); return; }
+      goodMap(c, t, 'need', tp);
+      int(c, t, 'deadlineTick', tp, 0, LIMITS.maxInt);
+      int(c, t, 'doneTick', tp, -1, LIMITS.maxInt);
+      if (typeof t.missed !== 'boolean') e.add('BAD_TYPE', `${tp}.missed`, `expected boolean, got ${show(t.missed)}`);
+    });
+  }
+}
+
+/**
+ * state v10 (D-288, D-289): mission XVI's further castle orders and the "this castle first" switch. Both keys are
+ * optional and absent in every other mission. `extraContracts` needs a main contract, a castle per order (each castle
+ * holds one order) and one tranche each; `firstCastle` must name a castle holding an order.
+ */
+function gateCastles(c: Ctx, m: Obj, mp: string, version: number, ids: Map<number, string>): void {
+  const e = c.e;
+  const castles: number[] = [];
+  const main = isObj(m.contract) ? m.contract : null;
+  if (main && typeof main.castle === 'number') castles.push(main.castle);
+  if (has(m, 'extraContracts')) {
+    if (!main) e.add('INCONSISTENT', `${mp}.extraContracts`, 'further castle orders without a main contract');
+    const xs = arr(c, m, 'extraContracts', mp, LIMITS.maxCastles) ?? [];
+    if (xs.length === 0) e.add('OUT_OF_RANGE', `${mp}.extraContracts`, 'expected at least one order');
+    xs.forEach((x, i) => {
+      const xp = `${mp}.extraContracts[${i}]`;
+      if (!isObj(x)) { e.add('BAD_TYPE', xp, `expected object, got ${show(x)}`); return; }
+      gateContract(c, x, xp, version, ids);
+      if (Array.isArray(x.tranches) && x.tranches.length !== 1) e.add('OUT_OF_RANGE', `${xp}.tranches`, `expected one tranche, got ${x.tranches.length}`);
+      if (typeof x.castle === 'number') {
+        if (castles.includes(x.castle)) e.add('INCONSISTENT', `${xp}.castle`, `castle ${x.castle} holds two orders`);
+        castles.push(x.castle);
+      }
+    });
+  }
+  if (has(m, 'firstCastle')) {
+    const f = int(c, m, 'firstCastle', mp, 1, LIMITS.maxInt);
+    if (!has(m, 'extraContracts')) e.add('INCONSISTENT', `${mp}.firstCastle`, 'a castle first without two castle orders');
+    else if (f !== null && !castles.includes(f)) e.add('DANGLING_REF', `${mp}.firstCastle`, `castle ${f} holds no order`);
+  }
 }
 
 /**

@@ -3,9 +3,9 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  BUILDINGS, GOODS, MARKET, MAX_WAGONS, capacityOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  BUILDINGS, GOODS, MARKET, MAX_WAGONS, capacityOf, castleForecast, contractsOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
   edgeLength, findPath, suggestLinkToStable, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
-  type Building, type BuildingType, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
+  type Building, type BuildingType, type CastleForecast, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
 } from '../sim/index';
 import { iceBeforeWagon } from './stalls';
 import { postWouldTake } from './stallKinds';
@@ -23,15 +23,19 @@ export function forecastFor(world: World, log: PaceLog): ContractForecast | null
   const st = world.state;
   const c = st.mission.contract;
   if (!c || st.mission.result !== 'running') return null;
+  // two castles (D-290): the whole order (both castles; each castle's own deadline is read by castleForecastFor)
+  const whole = !!st.mission.extraContracts;
   // an order with tranches is read tranche by tranche (BACKLOG P3, D-78): the forecast covers what the castle
   // must hold once the tranche now due is complete
   const cur = c.tranches.findIndex((x) => x.doneTick < 0);
-  if (c.tranches.length > 0 && cur < 0) return null;
-  const castle = buildingById(world, c.castle);
+  if (!whole && c.tranches.length > 0 && cur < 0) return null;
   let sum = 0;
-  if (castle) for (const g of GOODS) if (c.need[g] > 0) sum += castle.stock[g] * 1000 + castle.incoming[g];
+  for (const k of whole ? contractsOf(st.mission) : [c]) {
+    const q = buildingById(world, k.castle);
+    if (q) for (const g of GOODS) if (k.need[g] > 0) sum = sum * 31 + q.stock[g] * 1000 + q.incoming[g];
+  }
   const key = `${st.mapId}|${log.ticks[log.ticks.length - 1] ?? -1}|${st.netVersion}|${sum}|${st.buildings.length}|${cur}|${cur >= 0 && st.tick - (cur > 0 ? c.tranches[cur - 1]!.doneTick : 0) < PACE_WINDOW_TICKS}`;
-  if (cache?.key !== key || cache.world !== world || cache.log !== log) cache = { world, log, key, f: cur >= 0 ? trancheForecast(world, log) : contractForecast(world, log) };
+  if (cache?.key !== key || cache.world !== world || cache.log !== log) cache = { world, log, key, f: cur >= 0 && !whole ? trancheForecast(world, log) : contractForecast(world, log) };
   return cache.f;
 }
 
@@ -108,7 +112,55 @@ export interface PacePost {
   k: 'post'; producer: number; good: Good; granaries: number; bridge: boolean; cost: number;
 }
 
-export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow | PacePost;
+/**
+ * 'castle' (two castles, mission XVI, D-290) — a castle's order is forecast past its own deadline while another castle
+ * takes the shared goods: they are split evenly (`share` 'even', no castle first) or the other castle is first
+ * ('after'). `producer` is the late castle (the card's subject; its sheet holds the "this castle first" switch),
+ * `rival` the castle that takes the goods, `lateTicks` how late, `firstTick` when it would be done if it went first.
+ */
+export interface PaceCastle {
+  k: 'castle'; producer: number; rival: number; good: Good; share: 'even' | 'after'; lateTicks: number; firstTick: number; dueTick: number;
+}
+
+export type PaceCard = PaceProducer | PaceMud | PaceFleet | PaceRank | PaceGrow | PacePost | PaceCastle;
+
+let castleCache: { world: World; log: PaceLog; key: string; f: Map<number, CastleForecast | null> } | null = null;
+
+/**
+ * Two castles (D-290): the forecast of one castle's order (castleForecast), recomputed only when a pace sample lands,
+ * the network, a castle's stock or promised goods, or the "first" switch change. Null outside a two-castle mission.
+ */
+export function castleForecastFor(world: World, log: PaceLog, castle: number): CastleForecast | null {
+  const st = world.state;
+  if (!st.mission.extraContracts || st.mission.result !== 'running') return null;
+  let sum = 0;
+  for (const c of contractsOf(st.mission)) {
+    const b = buildingById(world, c.castle);
+    if (b) for (const g of GOODS) if (c.need[g] > 0) sum = sum * 31 + b.stock[g] * 1000 + b.incoming[g];
+  }
+  const key = `${st.mapId}|${log.ticks[log.ticks.length - 1] ?? -1}|${st.netVersion}|${sum}|${st.buildings.length}|${st.mission.firstCastle ?? -1}`;
+  if (castleCache?.key !== key || castleCache.world !== world || castleCache.log !== log) castleCache = { world, log, key, f: new Map() };
+  const f = castleCache.f;
+  if (!f.has(castle)) f.set(castle, castleForecast(world, log, castle));
+  return f.get(castle)!;
+}
+
+/** The 'castle' pace card (D-290): the castle whose own deadline falls first among those forecast late and not first. */
+export function castleCard(world: World, log: PaceLog): PaceCastle | null {
+  const m = world.state.mission;
+  if (!m.extraContracts || m.result !== 'running') return null;
+  const orders = [...contractsOf(m)].sort((a, b) => (a.tranches[0]?.deadlineTick ?? a.deadlineTick) - (b.tranches[0]?.deadlineTick ?? b.deadlineTick) || a.castle - b.castle);
+  for (const c of orders) {
+    const fc = castleForecastFor(world, log, c.castle);
+    if (!fc || fc.done || fc.share === 'first' || fc.finishTick < 0 || fc.finishTick <= fc.dueTick) continue;
+    const castle = buildingById(world, c.castle)!;
+    const good = GOODS.find((g) => c.need[g] > castle.stock[g]) ?? GOODS.find((g) => c.need[g] > 0)!;
+    const rival = fc.share === 'after' ? m.firstCastle! : orders.find((o) => o !== c && o.need[good] > 0)?.castle ?? -1;
+    if (rival < 0) continue;
+    return { k: 'castle', producer: c.castle, rival, good, share: fc.share, lateTicks: fc.finishTick - fc.dueTick, firstTick: fc.firstTick, dueTick: fc.dueTick };
+  }
+  return null;
+}
 
 /** A stretch shorter than this, or a gain below this, is not worth a card. */
 const MUD_MIN_CELLS = 6;
@@ -116,9 +168,13 @@ const MUD_MIN_PCT = 15;
 
 /**
  * The pace card for this forecast, or null. Generic: no mission names, only the forecast, the mission's
- * buildable list and the rank gate.
+ * buildable list and the rank gate. `log`: the pace log (the two-castle card reads its own forecast from it).
  */
-export function paceCard(world: World, f: ContractForecast | null): PaceCard | null {
+export function paceCard(world: World, f: ContractForecast | null, log: PaceLog | null = null): PaceCard | null {
+  // two castles (D-290): a castle late on its own deadline because the other one takes the goods comes first — the
+  // switch costs nothing and decides the lesson, and it is worth most in the first minutes
+  const castle = log ? castleCard(world, log) : null;
+  if (castle) return castle;
   const prod = producerCard(world, f);
   if (prod) return prod;
   const mud = mudCard(world, f);

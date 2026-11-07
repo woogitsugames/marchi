@@ -82,7 +82,9 @@ export type IconId =
   | 'undo'
   | 'bridge_ice'
   // valley chains (UI round 5)
-  | 'contested';
+  | 'contested'
+  // two castles (D-289): the castle's pennant, "this castle first"
+  | 'first';
 
 // ---------------------------------------------------------------------------
 // Geometry kit
@@ -2055,6 +2057,20 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.inkFine(band(seg([3.4, 6], [3.4, 1.2], 3), 0.9), circ(3.4, 1.6, 1.1));
     // wheel ruts gouged into the worn stem and fork
     d.cut(band(stem.slice(1, 7), taper(0.55, 0.2)), band(right.slice(3, 19), taper(0.5, 0.15)));
+  },
+
+  first(d) {
+    // a castle's pennant on its pole (two castles, D-289): "this castle first". The swallow-tailed banner flies
+    // right from a finial; a gouged stripe and hatching on its lit upper half, a mound of earth at the foot
+    d.ink(band(seg([6.2, 22.6], [6.2, 3], 8), taper(2, 1.5)));
+    d.ink(circ(6.2, 2.4, 1.6));
+    d.ink([[2.2, 23.4], [3.8, 21.2], [6.2, 20.6], [8.8, 21.2], [10.6, 23.4]]);
+    d.layer();
+    const flag: Pt[] = [[7, 4], [11.4, 3.2], [16.2, 4.2], [22.4, 4], [18.2, 8.4], [22, 12.8], [16.4, 12.6], [11.6, 11.6], [7, 12.4]];
+    d.ink(flag);
+    d.cut(band(cubic([8.4, 8.2], [11.6, 7.2], [14.6, 8.6], [18.4, 8.2], 12), taper(0.7, 0.35)));
+    d.hatchCut([[8.2, 5], [11.4, 4.4], [16, 5.4], [19.6, 5.2], [17, 7.2], [8.2, 7.2]], -50, 1.6, 0.55);
+    d.cut(gouge([6.6, 6], [6.6, 18.6], 0.45));
   },
 
   back(d) {

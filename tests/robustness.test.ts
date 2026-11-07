@@ -16,7 +16,8 @@ function asVersion(cur: J, to: number): J {
   if (to <= 5) return downgrade(cur, to as 1 | 2 | 3 | 4 | 5);
   const s = JSON.parse(JSON.stringify(cur)) as J;
   s.version = to;
-  dropTradePost(s); // v9 (D-170)
+  // v10 (D-288) adds only mission XVI's optional castle keys: a v9 state is the current one with version 9
+  if (to <= 8) dropTradePost(s); // v9 (D-170)
   if (to <= 7) delete s.valleyEvents; // v8 (D-54)
   if (to <= 6) { // v7 (D-44)
     delete s.nextWagonN;
@@ -45,7 +46,7 @@ test('robustness: every save fixture (v6-v8) migrates and plays 10 min with inva
 });
 
 for (const id of ['sandbox', 'm1', 'm4', 'm13']) {
-  test(`robustness: ${id} saves of every version v1-v8 (from a played state) migrate and play 10 min clean`, () => {
+  test(`robustness: ${id} saves of every older version (from a played state) migrate and play 10 min clean`, () => {
     const w = createWorld(id);
     const d = id === 'sandbox' ? valleyDriver() : null;
     for (let i = 0; i < (id === 'sandbox' ? 8 : 3) * 60 * TICK_HZ; i++) {

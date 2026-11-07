@@ -112,6 +112,13 @@ export function genCommand(w: World, rng: RngState): Command {
     return { t: 'demolish', cell: (b.y + nextInt(rng, 0, b.h - 1)) * W + b.x + nextInt(rng, 0, b.w - 1) };
   }
   if (roll < 0.78) {
+    // two castles (D-289): the switch, to any castle or back to the even split (only where the mission has two
+    // castle orders, so every other mission draws exactly as before)
+    const m = w.state.mission;
+    if (m.extraContracts && roll >= 0.7) {
+      const ids = [-1, ...w.state.buildings.filter((b) => b.type === 'castle').map((b) => b.id)];
+      return { t: 'castleFirst', castle: pick(rng, ids)! };
+    }
     const stables = w.state.buildings.filter((b) => b.type === 'stable');
     const s = pick(rng, stables);
     return { t: 'buyWagon', stable: s ? s.id : -1 };
@@ -136,7 +143,7 @@ export function genCommand(w: World, rng: RngState): Command {
 /** Missions the short fuzz in `npm test` uses (kept stable so its seeds keep their scenarios). */
 export const DEFAULT_FUZZ_MISSIONS = ['m1', 'sandbox'];
 /** Every playable map: the long mode (`tools/fuzz.ts`) fuzzes all of them by default. */
-export const ALL_FUZZ_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'sandbox'];
+export const ALL_FUZZ_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16', 'sandbox'];
 
 export function generateScenario(
   fuzzSeed: number,

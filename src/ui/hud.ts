@@ -6,7 +6,7 @@
 import {
   GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
-  type BuildingType, type Command, type Contract, type Good, type PaceLog, type SandboxStatus, type Season, type World,
+  type BuildingType, type Command, type Contract, type Good, type GoodMap, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods, TRADE_POST, tradePostOf,
 } from '../sim/index';
 import type { Speed } from '../game/loop';
@@ -17,7 +17,7 @@ import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
 import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
-import { paceCard, type PaceCard } from './paceCard';
+import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
 
@@ -507,7 +507,7 @@ export class Hud {
         cobble.setAttribute('aria-disabled', String(!gate.ok));
       }
       // the pace card (day 8c) takes the slot only when no real stall needs it (none, or the worst one is calm)
-      const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace)) : null;
+      const pc = cards && pace && (!stalls[0] || stalls[0].minor) ? paceCard(world, forecastFor(world, pace), pace) : null;
       // the free valley's bottleneck card (D-171): the calm slot's last claim — after a real stall and the pace
       // cards (fleet cue, rank card), before the calm pins
       const neck = cards && !pc && (!stalls[0] || stalls[0].minor) ? bottleneckCard(world) : null;
@@ -553,6 +553,7 @@ export class Hud {
         : pc.k === 'grow'
           ? t('seal.tempo.grow', { goodGen: t(`goodGen.${pc.good}` as MessageKey) })
           : pc.k === 'post' ? t('seal.tempo.post')
+          : pc.k === 'castle' ? t('seal.tempo.castle')
           : t(pc.k === 'fleet' ? 'seal.tempo.fleet' : 'seal.tempo.mud');
     setHtml(this.tempo, `<span class="st-line" dir="auto">${esc(text)}</span>`);
     this.tempo.setAttribute('aria-label', `${text}. ${t('hud.worstShow', { name: buildingName(world, pc.producer) })}`);
@@ -597,8 +598,12 @@ export class Hud {
     if (calmOnly !== this.alarm.classList.contains('is-calm')) this.alarm.classList.toggle('is-calm', calmOnly);
     if (!this.neck) this.stallRow.classList.remove('is-neck');
     if (pc) {
-      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.k === 'post' ? 'road' : pc.risk ? 'pave' : null;
-      const sig = pc.k === 'post'
+      this.cure = pc.k === 'producer' || pc.k === 'rank' || pc.k === 'grow' ? 'producer' : pc.k === 'fleet' ? 'wagon' : pc.k === 'post' ? 'road'
+        : pc.k === 'castle' ? null : pc.risk ? 'pave' : null;
+      const sig = pc.k === 'castle'
+        // two castles (D-290): the lateness in 10 s steps, so the live region is not told a new text every second
+        ? `pace|${pc.k}|${pc.producer}|${pc.rival}|${pc.share}|${Math.floor(pc.lateTicks / (10 * TICK_HZ))}|${stalls.length}|${getLang()}`
+        : pc.k === 'post'
         ? `pace|${pc.k}|${pc.producer}|${pc.bridge}|${stalls.length}|${getLang()}`
         : pc.k === 'rank'
         ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
@@ -641,6 +646,20 @@ export class Hud {
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
         const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
         if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+        setText(this.alarmBadge, fmtInt(stalls.length));
+        this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
+        return;
+      }
+      if (pc.k === 'castle') {
+        // two castles (D-290): the late castle, how late, and who takes its goods; its sheet holds the switch
+        const late = ticksClock(Math.ceil(pc.lateTicks / (10 * TICK_HZ)) * 10 * TICK_HZ);
+        const text = pc.share === 'after'
+          ? t('cause.paceCastleAfter', { late, rival: buildingName(world, pc.rival) })
+          : t('cause.paceCastleEven', { late });
+        setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(text)}</span>`);
+        this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
+        const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
+        setHtml(this.alarmIcon, first ? buildingStatusIcon(first.status, 34, first.type) : iconSvg('first', 34));
         setText(this.alarmBadge, fmtInt(stalls.length));
         this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
         return;
@@ -738,6 +757,7 @@ export class Hud {
 
   private updateContract(world: World, c: Contract, pace: PaceLog | null): void {
     const st = world.state;
+    if (st.mission.extraContracts) { this.updateCastles(world, c, pace); return; }
     const castle = st.buildings.find((b) => b.id === c.castle);
     const stock = castle ? castle.stock : emptyGoods();
     const goods = GOODS.filter((g) => c.need[g] > 0) as Good[];
@@ -837,6 +857,98 @@ export class Hud {
       if (before !== undefined && have[i]! > before) this.wbBody.querySelector(`.wb-line[data-g="${g}"]`)?.classList.add('is-bump');
       this.prevHave.set(g, have[i]!);
     });
+  }
+
+  /**
+   * Two castles (mission XVI, D-290): the waybill holds one row per castle — its name and own deadline, a bar for its
+   * order, the "first" pennant on the castle that goes first, and its state: delivered, late, or the forecast at the
+   * current split ("na czas" / "spóźni się o 1:58"). The seals are the mission's: three minus one per late castle until
+   * the end. A row opens its castle's card. The folded seal fills with both orders together.
+   */
+  private updateCastles(world: World, main: Contract, pace: PaceLog | null): void {
+    const st = world.state, m = st.mission;
+    const orders = [main, ...(m.extraContracts ?? [])];
+    const stockOf = (k: Contract): GoodMap => st.buildings.find((b) => b.id === k.castle)?.stock ?? emptyGoods();
+    let total = 0, got = 0;
+    for (const k of orders) for (const g of GOODS) if (k.need[g] > 0) { total += k.need[g]; got += Math.min(stockOf(k)[g], k.need[g]); }
+    const frac = got / Math.max(1, total);
+    // the clock runs to the earliest castle deadline still open (not delivered, not yet missed), else to the end
+    let due: Contract | null = null;
+    for (const k of orders) {
+      const x = k.tranches[0];
+      if (x && x.doneTick < 0 && !x.missed && (!due || x.deadlineTick < due.tranches[0]!.deadlineTick)) due = k;
+    }
+    const dueTick = due ? due.tranches[0]!.deadlineTick : main.deadlineTick;
+    const left = Math.max(0, dueTick - st.tick);
+    const late = left < 120 * TICK_HZ;
+    const dueMissing = due ? GOODS.reduce((a, g) => a + Math.max(0, due!.need[g] - stockOf(due!)[g]), 0) : total - got;
+    this.contractMilestones(m.result === 'running', frac, got, total, dueTick, left, dueMissing, !!due);
+    const lang = getLang();
+    const sec = Math.round(left / TICK_HZ);
+    if (this.folded()) {
+      const key = `${got}|${total}|${sec}|${lang}`;
+      if (key !== this.sealKey) {
+        this.sealKey = key;
+        this.sealFc = null;
+        setHtml(this.sealOnly, sealOnly(frac, ticksClock(left)));
+      }
+      this.sealOnly.classList.toggle('late', late);
+      return;
+    }
+    const titleKey = `${m.id}|${lang}`;
+    if (titleKey !== this.titleKey) {
+      this.titleKey = titleKey;
+      setText(this.wbTitle, missionTitle(m.id));
+    }
+    const pillKey = `c${due?.castle ?? -1}|${sec}|${lang}`;
+    if (pillKey !== this.pillKey) {
+      this.pillKey = pillKey;
+      setHtml(this.wbPill, due
+        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toCastle', { time: ticksClock(left) })}</span>`
+        : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+    }
+    this.wbPill.classList.toggle('late', late);
+    const missed = orders.reduce((a, k) => a + k.tranches.filter((x) => x.missed).length, 0);
+    const won = m.result === 'won';
+    const sealN = won ? stars(world) : Math.max(1, 3 - missed);
+    const sealsSig = `c|${sealN}|${won}`;
+    if (sealsSig !== this.sealsSig) {
+      this.sealsSig = sealsSig;
+      setHtml(this.wbSeals, seals(sealN, t('contract.stars', { n: sealN })));
+    }
+    // per castle: [have per good], done/missed, the forecast (10 s steps), first
+    const fcs = orders.map((k) => (pace && m.result === 'running' ? castleForecastFor(world, pace, k.castle) : null));
+    const sig = orders.map((k, i) => {
+      const f = fcs[i];
+      const x = k.tranches[0]!;
+      return `${GOODS.map((g) => (k.need[g] > 0 ? stockOf(k)[g] : '')).join(',')}:${x.doneTick >= 0 ? 1 : 0}${x.missed ? 1 : 0}:${
+        f && f.finishTick >= 0 ? Math.floor((f.finishTick - x.deadlineTick) / (10 * TICK_HZ)) : '-'}:${m.firstCastle === k.castle ? 1 : 0}`;
+    }).join('|') + `|${lang}`;
+    if (sig === this.lastSig) return;
+    this.lastSig = sig;
+    const body = orders.map((k, i) => {
+      const x = k.tranches[0]!;
+      const stock = stockOf(k);
+      const first = m.firstCastle === k.castle;
+      const name = buildingName(world, k.castle);
+      const flag = first ? `<span class="tr-first">${iconSvg('first', 18)}<span>${esc(t('castle.firstTag'))}</span></span>` : '';
+      const head = `<span class="tr-t">${tHtml('castle.due', { name, time: ticksClock(x.deadlineTick) })}</span>${flag}`;
+      if (x.doneTick >= 0) {
+        return `<li class="wb-tr is-done${x.missed ? ' is-late' : ''}" data-wb="b:${k.castle}"><div class="tr-h">${head}<i class="kseal${x.missed ? '' : ' on'}"></i></div>
+          <div class="tr-state">${esc(t(x.missed ? 'castle.late' : 'contract.trancheDone'))}</div></li>`;
+      }
+      const goods = (GOODS.filter((g) => k.need[g] > 0) as Good[]).map((g) => `<div class="wb-line" data-wb="b:${k.castle}" data-g="${g}" role="button" tabindex="0">
+        <span class="wb-gi">${iconSvg(g, 22, goodName(g))}</span>${bar(Math.min(stock[g], k.need[g]) / Math.max(1, k.need[g]))}
+        <bdi class="count num">${fmtInt(Math.min(stock[g], k.need[g]))}<small>/${fmtInt(k.need[g])}</small></bdi></div>`).join('');
+      const f = fcs[i];
+      const lateBy = f && f.finishTick > x.deadlineTick ? f.finishTick - x.deadlineTick : -1;
+      const state = x.missed ? `<div class="tr-state">${esc(t('castle.late'))}</div>`
+        : f && f.finishTick >= 0 ? `<div class="castle-eta${lateBy >= 0 ? ' late' : ''}"><span>${
+          lateBy >= 0 ? tHtml('castle.lateBy', { time: ticksClock(Math.ceil(lateBy / (10 * TICK_HZ)) * 10 * TICK_HZ) }) : esc(t('castle.onTime'))}</span></div>` : '';
+      return `<li class="wb-tr is-now wb-castle${first ? ' is-first' : ''}${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
+        <div class="wb-goods">${goods}</div>${state}</li>`;
+    }).join('');
+    setHtml(this.wbBody, `<ol class="wb-tranches wb-castles">${body}</ol>`);
   }
 
   /**

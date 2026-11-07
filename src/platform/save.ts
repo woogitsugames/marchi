@@ -137,6 +137,9 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
     st.tradePost = freshTradePost(placeTradePost(worldFromState(st))); // terrain from mapId + seed, as on load
     return out;
   },
+  // v9 -> v10: two castles (mission XVI, D-288): the optional mission.extraContracts / mission.firstCastle exist only
+  // in a mission XVI state, which no v9 save can be. Every save is unchanged apart from the version.
+  9: (s) => ({ ...s, version: 10 }),
 };
 
 export function migrate(env: SaveEnvelope): SaveEnvelope {

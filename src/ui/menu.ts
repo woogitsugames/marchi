@@ -1,7 +1,7 @@
 // Main menu strip over the live scene, the settings sheet, the in-game menu sheet and the
 // end-of-mission sealed letter.
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
-import { GOODS, MISSIONS, topStallCauses, type World } from '../sim/index';
+import { GOODS, MISSIONS, contractsOf, topStallCauses, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
 import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
 import { lossActionKey } from './stallKinds';
@@ -14,7 +14,7 @@ import type { Sheet, SheetContent } from './sheets';
 import type { QualityChoice, QualityPref } from './tier';
 
 /** Missions offered in the main menu, in order (the hidden test bench 'lab' never appears). */
-export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15'] as const;
+export const MENU_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16'] as const;
 export type MissionKey = (typeof MENU_MISSIONS)[number] | 'sandbox';
 
 export function isMissionKey(x: string | null | undefined): x is MissionKey {
@@ -52,7 +52,7 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 /** Margin numeral of a contract's save entry: the mission's own number. */
 // Contract numbers stay Roman in every language (D-73): they are part of each title in all 17 translations and
 // of the save-slot margin, so the medallion repeats the glyph the title starts with rather than a locale digit.
-const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];
+const ROMAN_MISSION = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'];
 
 /** "Księga II" for a valley slot. */
 export function slotLabel(slot: ValleySlot): string {
@@ -598,9 +598,19 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
   const st = world.state;
   const won = st.mission.result === 'won';
   const c = st.mission.contract;
-  const castle = c ? st.buildings.find((b) => b.id === c.castle) : null;
-  const delivered = c ? GOODS.filter((g) => c.need[g] > 0).map((g) =>
-    `<span class="dl-item">${iconSvg(g, 20)}<span>${tHtml('contract.deliveredItem', { count: fmtRatio(Math.min(castle?.stock[g] ?? 0, c.need[g]), c.need[g]), good: goodName(g) })}</span></span>`).join('') : '';
+  // two castles (D-288): each castle's delivery under its name, and the castle that missed its own deadline
+  const orders = contractsOf(st.mission);
+  const two = orders.length > 1;
+  const delivered = orders.map((k) => {
+    const castle = st.buildings.find((b) => b.id === k.castle);
+    const items = GOODS.filter((g) => k.need[g] > 0).map((g) =>
+      `<span class="dl-item">${iconSvg(g, 20)}<span>${two ? `${esc(buildingName(world, k.castle))}: ` : ''}${tHtml('contract.deliveredItem', { count: fmtRatio(Math.min(castle?.stock[g] ?? 0, k.need[g]), k.need[g]), good: goodName(g) })}</span></span>`).join('');
+    return items;
+  }).join('');
+  const lateCastles = two ? orders.filter((k) => k.tranches[0]?.missed).map((k) => {
+    const x = k.tranches[0]!;
+    return `<p class="l-late" dir="auto">${tHtml('castle.letterLate', { name: buildingName(world, k.castle), time: ticksClock(x.doneTick >= 0 ? x.doneTick : st.tick), due: ticksClock(x.deadlineTick) })}</p>`;
+  }).join('') : '';
   const def = MISSIONS[st.mission.id];
   const sealRow = [0, 1, 2].map((i) => `<i class="s kseal${i < seals ? ' on' : ''}"></i>`).join('');
   // the castellan's own words by seals (or the loss), the generic line for missions without letters
@@ -616,7 +626,7 @@ export function buildEndLetter(world: World, seals: number, act: EndActions): HT
     <div class="l-words">
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
     <h2 id="end-title" dir="auto">${esc(t((won ? 'contract.won' : 'contract.lost') as MessageKey))}</h2>
-    ${authored ? `<div class="l-body">${letterHtml(authored)}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
+    ${authored ? `<div class="l-body">${letterHtml(authored)}${lateCastles}</div>` : `<p>${esc(t(won ? 'contract.wonText' : 'contract.lostText'))}</p>`}
     </div><div class="l-record">
     ${won ? `<div class="seals">${sealRow}<span class="s-label">${esc(t('contract.stars', { n: seals }))}</span></div>` : ''}
     <dl class="kv">

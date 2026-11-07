@@ -26,7 +26,8 @@ test('m14-m15: registered, appended as XIV and XV after XIII, the dry valley, go
   eq(MISSIONS.m15, MISSIONS_14_15.m15, 'm15 registered');
   // the menu module needs the browser i18n loader: read its list as text
   const menu = readFileSync(new URL('../src/ui/menu.ts', import.meta.url), 'utf8');
-  assert(/MENU_MISSIONS = \[[^\]]*'m13', 'm14', 'm15'\] as const/.test(menu) && /'XIII', 'XIV', 'XV'\]/.test(menu), 'appended as XIV, XV (D-210)');
+  // later missions follow them (XVI, D-288)
+  assert(/MENU_MISSIONS = \[[^\]]*'m13', 'm14', 'm15'[,\]]/.test(menu) && /'XIII', 'XIV', 'XV'[,\]]/.test(menu), 'appended as XIV, XV (D-210)');
   eq(String(missionBuildable('m14')), 'charcoalBurner', 'XIV builds burners only');
   eq(String(missionBuildable('m15')), 'warehouse', 'XV builds granaries only');
   for (const id of ['m14', 'm15']) {

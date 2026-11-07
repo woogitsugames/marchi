@@ -1,6 +1,6 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
-  BUILDINGS, GOODS, buildingById, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
+  BUILDINGS, GOODS, buildingById, contractsOf, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
   suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote, TRADE_POST, MARKET, tradePostStatus,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -14,6 +14,7 @@ import { iconSvg, type IconId } from './icons';
 import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
+import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
 import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
@@ -49,6 +50,8 @@ export interface PanelNav {
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
   pickBuild(type: BuildingType, near: number): void;
+  /** Two castles (D-289): this castle's order first (castleFirst command); -1 shares evenly again. */
+  castleFirst(castle: number): void;
 }
 
 // ---------------------------------------------------------------- gap finder
@@ -96,7 +99,8 @@ function fixSection(btn: string, hint: string, why: boolean, wide = false): stri
  * The pace card's fix on its producer's sheet (day 8c): the producers work flat out and still miss the next seal,
  * so one more of them (the build tool opens with that type, the ghost on the mission's authored site, D-107).
  */
-function paceCureHtml(world: World, pc: PaceCard): string {
+function paceCureHtml(world: World, pc: PaceCard, log: PaceLog): string {
+  if (pc.k === 'castle') { const b = buildingById(world, pc.producer); return b ? castleSwitchHtml(world, b, log) : ''; }
   if (pc.k === 'mud') return mudCureHtml(world, pc);
   if (pc.k === 'fleet') return fleetCureHtml(world, pc);
   if (pc.k === 'rank') return rankCureHtml(world, pc);
@@ -436,6 +440,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'sfold') { toggleCastleFold(el); return; }
     if (act === 'chain') { openChain(el, (el.dataset.act ?? '').slice(6)); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
+    if (act === 'first') nav.castleFirst(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
@@ -447,17 +452,17 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     }
     if (act === 'mud' && !el.classList.contains('is-disabled')) {
       // the pace card's mud stretch (day 8c), recomputed now: the same cells the sheet showed
-      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace), nav.pace);
       if (pc && pc.k === 'mud' && pc.producer === Number(arg)) nav.buildRoad(pc.cells, 2);
     }
     if (act === 'rank' && !el.classList.contains('is-disabled')) {
       // the free valley's rank card (D-152), recomputed now: build that producer, the ghost by the castle
-      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace), nav.pace);
       if (pc && pc.k === 'rank' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
     }
     if (act === 'grow') {
       // the free valley's grow card (D-192), recomputed now: one more producer, the ghost by the castle
-      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace));
+      const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace), nav.pace);
       if (pc && pc.k === 'grow' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
@@ -610,7 +615,8 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
         tHtml('why.stoneAll', { n: fmtInt(stoneAvailable(world)) })}</small></span></div>`);
     }
   } else if (b.type === 'castle') {
-    const c = world.state.mission.contract;
+    // two castles (D-288): each castle shows its own order
+    const c = contractsOf(world.state.mission).find((k) => k.castle === b.id) ?? world.state.mission.contract;
     if (c) {
       const gs = GOODS.filter((g) => c.need[g] > 0);
       const own: string[] = [];
@@ -618,7 +624,7 @@ function stockHtml(world: World, b: Building, pace: PaceLog, fold = false): stri
         chip(g, Math.min(b.stock[g], c.need[g]), c.need[g], inc(g))).join('')}</div>`);
       // a slow supply is not a stall: the pace and the forecast say what the statuses cannot (F10);
       // while the castle only waits for wagons this section leads the card instead (buildingSheet)
-      if (c.castle === b.id && (isStall(b.status) || b.status.k === 'NO_INPUT')) own.push(castlePaceHtml(world, forecastFor(world, pace)));
+      if (c.castle === b.id && !world.state.mission.extraContracts && (isStall(b.status) || b.status.k === 'NO_INPUT')) own.push(castlePaceHtml(world, forecastFor(world, pace)));
       parts.push(fold ? castleFold(own.join('')) : own.join(''));
     }
   } else if (b.type === 'tradePost') {
@@ -736,7 +742,8 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       setHtml(sheet.icon, iconSvg(b.type as IconId, 36));
       sheet.kicker.textContent = stalled ? t('why.title') : '';
       sheet.kicker.classList.toggle('is-calm', calm);
-      sheet.title.textContent = t(`building.${b.type}` as MessageKey);
+      // two castles (D-288): each castle by its own name
+      sheet.title.textContent = buildingName(world, id);
       const chain = explainBuilding(world, id, 5, true);
       const since = b.stalledTicks > 0 ? `<span class="since">${tHtml('why.stalledFor', { time: ticksClock(b.stalledTicks) })}</span>` : '';
       let top: string;
@@ -767,7 +774,10 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // an input shared with a consumer of another kind goes first: a wagon on the way or busy
       // wagons are the chain's root, but the lesson is the shared supply (F3)
       const fold = b.type === 'castle' && !!nav.tutorialRunning?.();
-      const pace = b.type === 'castle' && !stalled && !fold && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
+      // two castles (D-290): the split, the forecast against this castle's own deadline and the rival castle instead
+      const two = twoCastleOrder(world, b);
+      const pace = two ? castleOrderHtml(world, b, nav.pace)
+        : b.type === 'castle' && !stalled && !fold && world.state.mission.contract?.castle === b.id ? castlePaceHtml(world, forecastFor(world, nav.pace)) : '';
       // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
@@ -782,7 +792,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const ownCure = calm && own === 'wagon' ? null : own;
       const paced = !fix && !ownCure;
       const fc = paced ? forecastFor(world, nav.pace) : null;
-      const pc = paced ? paceCard(world, fc) : null;
+      const pc = paced ? paceCard(world, fc, nav.pace) : null;
       // a long pickup wait while the fleet is on the road gets "Kup wóz" on its own sheet too (D-128), not only
       // the yard the card names
       const pcHere = pc && pc.producer === b.id ? pc : paced ? fleetCueFor(world, fc, b) : null;
@@ -801,7 +811,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // the card said "wszystkie wozy zajęte" but a wagon took the job while the sheet opened (×4): the same cure,
       // with the wait it answers (first-10-e N8, D-161)
       const ago = !fix && !pcHere && !stalled && !carded && !nav.tutorialRunning?.() && !iceBeforeWagon(world) ? recentWagonWait(world, id) : -1;
-      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix, postWhy(world, b)) : pcHere ? paceCureHtml(world, pcHere) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
+      setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix, postWhy(world, b)) : two ? castleSwitchHtml(world, b, nav.pace) : pcHere ? paceCureHtml(world, pcHere, nav.pace) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
         : ago >= 0 ? wagonCureHtml(world, t('fix.wagonLately')) : '');
       setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
       return true;
