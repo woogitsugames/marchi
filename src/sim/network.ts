@@ -50,6 +50,8 @@ export interface World {
    * a released map's arrays are overwritten by a later `dijkstra` call.
    */
   distPool?: { dist: Float64Array[]; prev: Int32Array[] };
+  /** Memoized full Dijkstra results across ticks (`dijkstraMemo`). Derived, never saved. */
+  distMemo?: DistMemo | null;
 }
 
 export function net(world: World): NetCache {
@@ -381,6 +383,70 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
     }
   }
   return { dist, prev };
+}
+
+/**
+ * Everything a full `dijkstra` result depends on besides (start, reverse, loaded): the network
+ * (edge mask and cost tables live in the `NetCache` object, rebuilt on every netVersion), rain and
+ * thaw (cost table variant) and the bridge queue penalties (by content). Bridge ice makes the result
+ * tick-dependent, so nothing is memoized while it lasts.
+ */
+interface DistMemo {
+  net: NetCache;
+  rain: boolean;
+  thaw: boolean;
+  /** Penalties as sorted "span:seconds" pairs, see `penaltyKey`. */
+  pen: string;
+  /** The `spanPenalties` map `pen` was read from (same object = same content, no re-read needed). */
+  penMap: Map<number, number>;
+  maps: Map<number, DistMap>;
+}
+
+/** Keep at most this many memoized maps (83 KB each on a 96x72 map); beyond it callers compute their own. */
+const DIST_MEMO_MAX = 48;
+
+function penaltyKey(pen: Map<number, number>): string {
+  if (pen.size === 0) return '';
+  const spans = [...pen.keys()].sort((a, b) => a - b);
+  let s = '';
+  for (const sp of spans) s += sp + ':' + pen.get(sp) + ';';
+  return s;
+}
+
+/**
+ * The same `DistMap` as `dijkstra(world, start, reverse, loaded)` (full search, no stopAt), memoized while
+ * the network, weather and bridge queues stay the same — most dispatch ticks repeat the previous one's
+ * searches exactly (D-336). Returns null when the result cannot be memoized (bridge ice) or the memo is
+ * full; the caller then runs `dijkstra` itself. The returned map is read-only, must never be released,
+ * and must not be kept across calls that may change the world (a later call may recycle its arrays).
+ */
+export function dijkstraMemo(world: World, start: number, reverse: boolean, loaded: boolean): DistMap | null {
+  const st = world.state;
+  // the same inputs `dijkstra` reads, read at the same moment (penalties are cached per tick)
+  const until = bridgeIceUntil(world);
+  if (until >= 0 && until - st.tick > 0) { flushMemo(world); return null; }
+  const c = net(world), rain = isRaining(st), thaw = thawing(world), penMap = spanPenalties(world);
+  let memo = world.distMemo;
+  if (!memo || memo.net !== c || memo.rain !== rain || memo.thaw !== thaw || (memo.penMap !== penMap && memo.pen !== penaltyKey(penMap))) {
+    flushMemo(world);
+    memo = world.distMemo = { net: c, rain, thaw, pen: penaltyKey(penMap), penMap, maps: new Map() };
+  }
+  memo.penMap = penMap;
+  const key = start * 4 + (reverse ? 2 : 0) + (loaded ? 1 : 0);
+  let m = memo.maps.get(key);
+  if (m) return m;
+  if (memo.maps.size >= DIST_MEMO_MAX) return null;
+  m = dijkstra(world, start, reverse, loaded);
+  memo.maps.set(key, m);
+  return m;
+}
+
+/** Drop the memo; its arrays go back to the pool (no memoized map is held across a tick boundary). */
+function flushMemo(world: World): void {
+  const memo = world.distMemo;
+  if (!memo) return;
+  for (const m of memo.maps.values()) releaseDistMap(world, m);
+  world.distMemo = null;
 }
 
 /** Node list from `from` (exclusive) to `to` (inclusive), or null if unreachable. */

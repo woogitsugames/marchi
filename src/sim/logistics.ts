@@ -6,7 +6,7 @@ import { isMarket, marketCents, marketOpen } from './town';
 import { orderOutstanding } from './events';
 import { MISSIONS } from './missions';
 import { linkedToStable, postOpen } from './tradePost';
-import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
+import { dijkstra, dijkstraMemo, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Contract, Good, Wagon } from './types';
 
 interface Demand {
@@ -39,34 +39,47 @@ export const DISPATCH2 = { ruleA: true, fleetGate: 2, minFreeRunS: 50, ruleC: fa
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
 interface Held { wagon: number; at: number }
 
+/**
+ * Distance maps for one dispatch. Full searches come from `dijkstraMemo` (shared across dispatches while
+ * network, weather and bridge queues are unchanged, D-336); only when it declines does this run its own
+ * `dijkstra` and recycle the arrays afterwards.
+ */
 class DistCache {
   private fwd = new Map<number, DistMap>();
   private rev = new Map<number, DistMap>();
   private revLoaded = new Map<number, DistMap>();
+  /** Maps computed here (not memoized) that `release` hands back to the pool. */
+  private own: DistMap[] = [];
   constructor(private world: World) {}
+  private get(node: number, reverse: boolean, loaded: boolean): DistMap {
+    const memo = dijkstraMemo(this.world, node, reverse, loaded);
+    if (memo) return memo;
+    const m = dijkstra(this.world, node, reverse, loaded);
+    this.own.push(m);
+    return m;
+  }
   /** time from node (loaded) to anything */
   from(node: number): DistMap {
     let m = this.fwd.get(node);
-    if (!m) { m = dijkstra(this.world, node, false, true); this.fwd.set(node, m); }
+    if (!m) { m = this.get(node, false, true); this.fwd.set(node, m); }
     return m;
   }
   /** time from anything (empty) to node */
   to(node: number): DistMap {
     let m = this.rev.get(node);
-    if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
+    if (!m) { m = this.get(node, true, false); this.rev.set(node, m); }
     return m;
   }
   /** time from anything (loaded) to node */
   toLoaded(node: number): DistMap {
     let m = this.revLoaded.get(node);
-    if (!m) { m = dijkstra(this.world, node, true, true); this.revLoaded.set(node, m); }
+    if (!m) { m = this.get(node, true, true); this.revLoaded.set(node, m); }
     return m;
   }
-  /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
+  /** Recycle every map this dispatch computed itself; none may be read afterwards (they never leave `dispatch`). */
   release(): void {
-    for (const m of this.fwd.values()) releaseDistMap(this.world, m);
-    for (const m of this.rev.values()) releaseDistMap(this.world, m);
-    for (const m of this.revLoaded.values()) releaseDistMap(this.world, m);
+    for (const m of this.own) releaseDistMap(this.world, m);
+    this.own.length = 0;
     this.revLoaded.clear();
     this.fwd.clear();
     this.rev.clear();
