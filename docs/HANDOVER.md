@@ -20,7 +20,10 @@
   rodzi się odcięty), linia „rozbuduj” zawija się w poziomie. card-10 R5 śr. 90 min, card-30 95–100, card-60 2/4 ziaren.
 - Research **„dwa zamki”** gotowy: `docs/research/2026-11-07-two-castles.md` (w bazie); prototyp sim tylko na gałęzi
   `claude/research-castles` (eksperymentalny, hasze misji bez zmian) — pytania w „Decyzje na rano” pkt 3.
-- W toku: agent `claude/w-listeners` — rosnące `jsEventListeners` (IndexedDB/arkusze), D-276..D-279.
+- Scalone ~03:00: **D-276/D-277** rosnące `jsEventListeners` to nie wyciek — Chrome obniża licznik dopiero po
+  zamieceniu właściciela; „settled” (GC, 3 s, GC) stoi płasko (~100). Narzędzie `tools/listeners-probe.mjs`. Do
+  potwierdzenia na telefonie: godzina gry, licznik po GC + ~5 s.
+- W toku: agent `claude/w-terrain` — siatka terenu i rozkład roślinności w budowie świata menu (D-280..D-283).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
