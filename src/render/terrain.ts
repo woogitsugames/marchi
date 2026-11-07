@@ -3,8 +3,6 @@
 // MeshStandardMaterial that blends meadow / forest floor / tilled field / yard / wet bank,
 // draws roads from the distance field (ruts, grass strip, cobbles), and the overlays.
 import {
-  BufferAttribute,
-  BufferGeometry,
   Color,
   DataTexture,
   Group,
@@ -18,15 +16,16 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
-import { CELL, Heightfield } from './heightfield';
+import { groundMemo } from './groundCache';
+import type { Heightfield } from './heightfield';
 import { noiseTexture } from './noiseTex';
 import type { OverlayData } from './overlay';
 import { ROAD_MAXD, type RoadField } from './roads';
+import { CHUNKS_X, CHUNKS_Z, gridGeometry, terrainGrids } from './terrainGrid';
 import { disposeTerrainTextures, placeholderTerrainTextures, type TerrainTextureSet } from './terrainTextures';
 
-const SUB = 3;
-const CHUNKS_X = 3, CHUNKS_Z = 2;
-export const APRON = 280;
+export { APRON, apronHeight } from './terrainGrid';
+
 
 export interface TerrainUniforms {
   [k: string]: IUniform;
@@ -170,35 +169,17 @@ export class TerrainView {
 
   private buildMeshes(): void {
     const hf = this.hf;
-    const cw = Math.ceil(hf.w / CHUNKS_X), ch = Math.ceil(hf.h / CHUNKS_Z);
-    for (let jz = 0; jz < CHUNKS_Z; jz++) {
-      for (let ix = 0; ix < CHUNKS_X; ix++) {
-        const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
-        const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
-        const g = gridGeometry(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, null);
-        const m = new Mesh(g, this.material);
-        m.receiveShadow = true;
-        m.name = `terrain-${ix}-${jz}`;
-        this.chunks.push(m);
-        this.group.add(m);
-      }
-    }
-    // apron: coarse ring beyond the map edge (4 pieces so it can be culled)
-    const S = 8;
-    const A = APRON;
-    const pieces: [number, number, number, number][] = [
-      [-A, -A, hf.sizeX + 2 * A, A + 8], // north
-      [-A, hf.sizeZ - 8, hf.sizeX + 2 * A, A + 8], // south
-      [-A, -8, A + 8, hf.sizeZ + 16], // west
-      [hf.sizeX - 8, -8, A + 8, hf.sizeZ + 16], // east
-    ];
-    for (const [x, z, sx, sz] of pieces) {
-      const g = gridGeometry(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, apronHeight);
-      const m = new Mesh(g, this.material);
+    // the grids are a function of the ground alone: a world on the same ground reuses them (D-282)
+    const grids = groundMemo('terrain-grids', hf.t, () => terrainGrids(hf));
+    grids.forEach((d, k) => {
+      const m = new Mesh(gridGeometry(d), this.material);
       m.receiveShadow = true;
-      m.name = 'terrain-apron';
+      if (k < CHUNKS_X * CHUNKS_Z) {
+        m.name = `terrain-${k % CHUNKS_X}-${Math.floor(k / CHUNKS_X)}`;
+        this.chunks.push(m);
+      } else m.name = 'terrain-apron';
       this.group.add(m);
-    }
+    });
   }
 
   dispose(): void {
@@ -208,70 +189,6 @@ export class TerrainView {
     if (this.tex) disposeTerrainTextures(this.tex);
     this.tex = null;
   }
-}
-
-/** Height outside the map: clamp to the border and rise into wooded hills. */
-export function apronHeight(hf: Heightfield, x: number, z: number): number {
-  const cx = Math.min(hf.sizeX, Math.max(0, x)), cz = Math.min(hf.sizeZ, Math.max(0, z));
-  const out = Math.hypot(x - cx, z - cz);
-  const b = hf.base(cx, cz);
-  if (out <= 0) return b - 0.35; // under the real terrain (hides seams)
-  // keep the river channel low where it leaves the map
-  const riverK = Math.min(1, Math.max(0, (b - hf.waterLevel - 0.2) / 2.5));
-  const n = Math.sin(x * 0.013 + Math.cos(z * 0.011) * 2) * 0.5 + Math.sin(z * 0.017 - x * 0.006) * 0.5;
-  const rise = out * (0.07 + 0.05 * n) + Math.max(0, out - 60) * 0.12;
-  return b - 0.35 + rise * (0.25 + 0.75 * riverK);
-}
-
-function gridGeometry(
-  hf: Heightfield,
-  x0: number,
-  z0: number,
-  nx: number,
-  nz: number,
-  step: number,
-  heightFn: ((hf: Heightfield, x: number, z: number) => number) | null,
-): BufferGeometry {
-  const vx = nx + 1, vz = nz + 1;
-  const pos = new Float32Array(vx * vz * 3);
-  const nor = new Float32Array(vx * vz * 3);
-  const hs = new Float32Array(vx * vz);
-  const H = heightFn ? (x: number, z: number) => heightFn(hf, x, z) : (x: number, z: number) => hf.height(x, z);
-  for (let j = 0; j < vz; j++) for (let i = 0; i < vx; i++) {
-    const x = x0 + i * step, z = z0 + j * step;
-    const k = j * vx + i;
-    const y = H(x, z);
-    hs[k] = y;
-    pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
-  }
-  // normals from central differences (sampling outside the grid for seamless chunk edges)
-  const e = step;
-  for (let j = 0; j < vz; j++) for (let i = 0; i < vx; i++) {
-    const k = j * vx + i;
-    const x = x0 + i * step, z = z0 + j * step;
-    const hl = i > 0 ? hs[k - 1]! : H(x - e, z);
-    const hr = i < nx ? hs[k + 1]! : H(x + e, z);
-    const hu = j > 0 ? hs[k - vx]! : H(x, z - e);
-    const hd = j < nz ? hs[k + vx]! : H(x, z + e);
-    const ax = -(hr - hl), ay = 2 * e, az = -(hd - hu);
-    const l = Math.hypot(ax, ay, az);
-    nor[k * 3] = ax / l; nor[k * 3 + 1] = ay / l; nor[k * 3 + 2] = az / l;
-  }
-  const idx = vx * vz > 65535 ? new Uint32Array(nx * nz * 6) : new Uint16Array(nx * nz * 6);
-  let p = 0;
-  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-    const a = j * vx + i, b = a + 1, c = a + vx, d = c + 1;
-    // alternate the diagonal for a less regular triangulation
-    if ((i + j) & 1) { idx[p++] = a; idx[p++] = c; idx[p++] = b; idx[p++] = b; idx[p++] = c; idx[p++] = d; }
-    else { idx[p++] = a; idx[p++] = c; idx[p++] = d; idx[p++] = a; idx[p++] = d; idx[p++] = b; }
-  }
-  const g = new BufferGeometry();
-  g.setAttribute('position', new BufferAttribute(pos, 3));
-  g.setAttribute('normal', new BufferAttribute(nor, 3));
-  g.setIndex(new BufferAttribute(idx, 1));
-  g.computeBoundingBox();
-  g.computeBoundingSphere();
-  return g;
 }
 
 // ------------------------------------------------------------------------------------------

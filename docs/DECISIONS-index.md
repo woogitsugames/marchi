@@ -231,3 +231,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-270 | — | On a short landscape sheet the grow card's reason wraps in the wider column instead of a three-line clamp | decided | UI |
 | D-276 | — | The valley's `jsEventListeners` growth is lazy sweeping, not a leak: no code change | decided | inne |
 | D-277 | — | Memory probes read a settled listener count | decided | inne |
+| D-280 | — | Heightfield skips the blurred water-mask interpolation where every tap is 0 | decided | inne |
+| D-281 | 2026-11-06 | Leaner ground build, bit for bit | decided | inne |
+| D-282 | — | Terrain grids, water strip and apron trees are kept for the last two grounds | decided | render |
+| D-283 | — | Not kept: one-pass grid evaluator, "certainly dry" water skip; deferred chunks wait for `view.ts` | decided | inne |

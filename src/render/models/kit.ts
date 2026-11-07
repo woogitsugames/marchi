@@ -51,7 +51,12 @@ export function rng(seed: number): () => number {
 
 /** Integer lattice hash → [0, 1). */
 export function hash3(x: number, y: number, z: number, seed = 0): number {
-  let h = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(z | 0, 2147483647) + Math.imul(seed | 0, 1442695041)) | 0;
+  return mix3(Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(z | 0, 2147483647) + Math.imul(seed | 0, 1442695041));
+}
+
+/** hash3's mixing step, from the sum of its four lattice products. */
+function mix3(sum: number): number {
+  let h = sum | 0;
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   h ^= h >>> 16;
   return (h >>> 0) / 4294967296;
@@ -66,10 +71,16 @@ export function vnoise(x: number, y: number, z: number, seed = 0): number {
   const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
   const xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
   // no closures: this runs per wagon per frame through Heightfield.height (GC audit, frame-cost item 5)
-  const c000 = hash3(xi, yi, zi, seed), c100 = hash3(xi + 1, yi, zi, seed);
-  const c010 = hash3(xi, yi + 1, zi, seed), c110 = hash3(xi + 1, yi + 1, zi, seed);
-  const c001 = hash3(xi, yi, zi + 1, seed), c101 = hash3(xi + 1, yi, zi + 1, seed);
-  const c011 = hash3(xi, yi + 1, zi + 1, seed), c111 = hash3(xi + 1, yi + 1, zi + 1, seed);
+  // hash3 of the 8 lattice corners with its 7 distinct products worked out once (D-281: was 32 Math.imul); the
+  // products are int32, so their sums are exact in a double and the hashes are bit for bit hash3's
+  const X0 = Math.imul(xi | 0, 374761393), X1 = Math.imul((xi + 1) | 0, 374761393);
+  const Y0 = Math.imul(yi | 0, 668265263), Y1 = Math.imul((yi + 1) | 0, 668265263);
+  const Z0 = Math.imul(zi | 0, 2147483647), Z1 = Math.imul((zi + 1) | 0, 2147483647);
+  const S = Math.imul(seed | 0, 1442695041);
+  const c000 = mix3(X0 + Y0 + Z0 + S), c100 = mix3(X1 + Y0 + Z0 + S);
+  const c010 = mix3(X0 + Y1 + Z0 + S), c110 = mix3(X1 + Y1 + Z0 + S);
+  const c001 = mix3(X0 + Y0 + Z1 + S), c101 = mix3(X1 + Y0 + Z1 + S);
+  const c011 = mix3(X0 + Y1 + Z1 + S), c111 = mix3(X1 + Y1 + Z1 + S);
   const a0 = c000 + (c100 - c000) * xf, b0 = c010 + (c110 - c010) * xf;
   const a1 = c001 + (c101 - c001) * xf, b1 = c011 + (c111 - c011) * xf;
   const z0 = a0 + (b0 - a0) * yf, z1 = a1 + (b1 - a1) * yf;

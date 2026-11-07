@@ -18,6 +18,7 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
+import { groundMemo } from './groundCache';
 import { CELL, type Heightfield } from './heightfield';
 import { markInstances } from './instancedParts';
 import { rng, vnoise } from './models/kit';
@@ -103,7 +104,7 @@ export class VegetationView {
 
   constructor(private readonly hf: Heightfield, group: import('three').Group) {
     this.group = group;
-    this.apron = placeApron(hf);
+    this.apron = groundMemo('apron-trees', hf.t, () => placeApron(hf)); // same ground, same apron trees (D-282)
   }
 
   /** Bake (or re-bake at another cell size) the far-card atlases. */

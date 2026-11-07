@@ -166,3 +166,10 @@ w misji, stałe). Światła pory dnia co 2. klatkę: alokacje XII 60 m 3,55 → 
 Na telefonie: `marchia:precompile` (D-258) pojawia się tylko z `KHR_parallel_shader_compile` — porównać `ready` →
 `first-frame` przed/po.
 
+## 2026-11-07 — dzień 12: teren i roślinność w budowie świata menu (D-280..D-283)
+
+Raport: `docs/research/2026-11-06-perf-day10.md`, sekcja „After day 12”. CPU budowy świata menu high 781 → 676 ms,
+low 762 → 729 ms (SwiftShader, load 11–14 — w szumie); node, CPU wątku: teren + woda + roślinność + trzcina 143,6 →
+129,6 ms. Zmiana świata menu ↔ misja: teren, pas wody i drzewa fartucha z cache (−45…55 ms desktop). Wszystko bit w bit
+(`tools/terrain-hash.ts`, `tests/ground-identity.test.ts`).
+

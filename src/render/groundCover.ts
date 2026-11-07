@@ -124,14 +124,14 @@ export class GroundCover {
       if (hf.waterDist[cz * hf.w + cx]! > 2.5) continue;
       const jx = x + hash3(Math.round(x * 4), Math.round(z * 4), 1, 5) * S;
       const jz = z + hash3(Math.round(x * 4), Math.round(z * 4), 2, 5) * S;
-      const h = hf.height(jx, jz) - WL;
+      const hy = hf.height(jx, jz), h = hy - WL; // (one sample for the test and the instance: D-281)
       if (h < -0.22 || h > 0.32) continue;
       // reed beds in patches, with gaps of open bank
       const patch = vnoise(jx / 11, jz / 9, 0.5, 61) + (vnoise(jx / 3, jz / 3, 1.5, 62) - 0.5) * 0.3;
       if (patch < 0.5) continue;
       if (roads.distAt(jx, jz) < 3.6) continue; // (field saturates at ROAD_MAXD)
       const s = 0.75 + 0.6 * Math.min(1, (patch - 0.5) * 3) * (0.7 + hash3(Math.round(jx * 3), Math.round(jz * 3), 3, 5) * 0.5);
-      items.push(jx, hf.height(jx, jz) - 0.05, jz, hash3(Math.round(jx * 5), 0, Math.round(jz * 5), 7) * 6.28, s);
+      items.push(jx, hy - 0.05, jz, hash3(Math.round(jx * 5), 0, Math.round(jz * 5), 7) * 6.28, s);
     }
     const n = items.length / 5;
     const g = bladeClump(30, 0.7, 1.6, 0.45, 0.28, '#3a3a29', '#8c7b50', 9, '#5b5e3c');
