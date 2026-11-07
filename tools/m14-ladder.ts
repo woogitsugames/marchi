@@ -113,7 +113,7 @@ export function cards(id: string, secs = 200): string[] {
     if (w.state.tick % TICK_HZ) continue;
     const r = rankStalls(w)[0], b = r ? w.state.buildings.find((q) => q.id === r.id)! : null;
     const st = b ? `${b.type}:${b.status.k}${'cause' in b.status ? '.' + b.status.cause : ''}${r!.minor ? '(calm)' : ''} cure=${cureFor(w, b.id)}` : '-';
-    const pc = paceCard(w, forecastFor(w, log));
+    const pc = paceCard(w, forecastFor(w, log), log);
     const ps = pc ? `${pc.k}${'type' in pc ? ' ' + pc.type : ''}` : '-';
     if (st !== lastS) { out.push(`${w.state.tick / TICK_HZ}s stall ${st}`); lastS = st; }
     if (ps !== lastP) { out.push(`${w.state.tick / TICK_HZ}s pace ${ps}`); lastP = ps; }

@@ -11,6 +11,9 @@ import { buildReport, createRecorder, parseReport, recordTick, replay, type Time
 import { gateState, makeEnvelope, parseSave } from '../src/platform/saveGate';
 import { migrate } from '../src/platform/save';
 import { M16_EXTRA, M16_STRATEGIES, castlesOf, runM16 } from '../tools/bot-m16';
+import { castleForecast, castleRival, newPaceLog, samplePace } from '../src/sim/index';
+import { castleCard, paceCard } from '../src/ui/paceCard';
+import { eyePlayer, run } from '../tools/balance-night6';
 import { assert, eq, test } from './harness';
 
 const min = (m: number): number => Math.round(m * 60 * TICK_HZ);
@@ -187,4 +190,44 @@ test('m16: a replay report with castleFirst replays hash for hash', () => {
   eq(res.ok, true, 'replays bit-identically');
   const bad = parseReport({ ...rep.value, journal: [{ tick: 0, cmd: { t: 'castleFirst', castle: -2 } }] });
   eq(bad.ok, false, 'castle -2 is not a valid report field');
+});
+
+test('m16: the castle card names the early castle at 0:00 and leaves once it goes first; the rival line names who takes the planks', () => {
+  const w = createWorld('m16');
+  const log = newPaceLog();
+  const [east, north] = castlesOf(w);
+  step(w); samplePace(log, w);
+  const card = castleCard(w, log);
+  assert(!!card, 'a card from the first tick (capacity forecast)');
+  eq(card!.producer, east, 'the east castle (due 5:00) is late at the even split');
+  eq(card!.rival, north, 'the north castle shares its planks');
+  eq(card!.share, 'even', 'even split');
+  assert(card!.firstTick <= min(5), 'first, it would make its deadline');
+  eq(paceCard(w, null, log)?.k, 'castle', 'it takes the calm card slot');
+  const fe = castleForecast(w, log, east)!;
+  eq(fe.measured, false, 'no measured pace yet');
+  applyCommand(w, { t: 'castleFirst', castle: east });
+  eq(castleCard(w, log), null, 'gone once the east castle goes first');
+  eq(castleForecast(w, log, east)!.share, 'first', 'east first');
+  eq(castleForecast(w, log, north)!.share, 'after', 'north after it');
+  // the even split: by 2:30 wagons drive planks to the north castle while the east one still lacks them
+  const v = createWorld('m16');
+  let seen = 0;
+  while (v.state.tick < min(5)) {
+    step(v);
+    const r = castleRival(v, castlesOf(v)[0]);
+    if (r) { seen++; eq(r.rival, castlesOf(v)[1], 'rival = north'); eq(r.good, 'planks', 'planks'); assert(r.wagons >= 1 && r.short > 0, 'wagons and shortfall'); }
+  }
+  assert(seen > 0, 'the rival line shows during the even split');
+  eq(castleRival(createWorld('m15'), createWorld('m15').state.mission.contract!.castle), null, 'no rival with one castle');
+});
+
+test('m16: the reasonable player (eye, 10/30/60 s) finds the switch from the castle card and keeps both letters', () => {
+  for (const s of [10, 30, 60]) {
+    const a: Record<string, number> = {}, seen: Record<string, number> = {};
+    const r = run('m16', 'eye', eyePlayer(s, true, a, seen), a, seen);
+    eq(a.castleFirst, 1, `eye ${s}s: one tap on the switch`);
+    eq(r.late, 0, `eye ${s}s: no castle late`);
+    assert(r.seals >= 2, `eye ${s}s: at least two seals`);
+  }
 });

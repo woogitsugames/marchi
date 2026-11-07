@@ -30,8 +30,8 @@ export const M16_MISSION: MissionDef = {
   ],
   contract: { planks: 24 },
   castles: [
-    { need: { planks: 24 }, dueMin: 5 },
-    { need: { planks: 30 }, dueMin: 9 },
+    { name: 'east', need: { planks: 24 }, dueMin: 5 },
+    { name: 'north', need: { planks: 30 }, dueMin: 9 },
   ],
   // working thresholds (owner 2026-11-07): 3 seals by 7:05, 2 by 9:00, the mission ends at 12:00
   deadlineMin: 12, star3Min: 7 + 5 / 60, star2Min: 9, rain: [],

@@ -6,10 +6,10 @@ export {
   applyCommand, validateRoad, validatePlace, cutsDiagonalRoad, gateCell, lineCells, roadCellCost, roadStoneCost, stoneAvailable, stoneOutlook, nearWater, onRock, isRockCell,
   type Command, type CommandResult, type CommandError,
 } from './commands';
-export { MISSIONS, VALLEY_W, VALLEY_H, demolishIsFinal, missionBuildable, missionSeasons, missionSiteHint, type SiteHint } from './missions';
+export { MISSIONS, VALLEY_W, VALLEY_H, demolishIsFinal, missionBuildable, missionSeasons, missionSiteHint, castleNameKey, type CastleOrderDef, type SiteHint } from './missions';
 export { isRaining, cellSpeed, edgeLength, findPath, pathTime, net, hasEdge, grade, reachable, type World } from './network';
 export { buildingById, gateConnected, topUpHold } from './logistics';
-export { busyOutOfReach, contractFilled, explainBuilding, explainWagon, granaryRelief, heldWagon, isHeld, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
+export { busyOutOfReach, castleRival, type CastleRival, contractFilled, explainBuilding, explainWagon, granaryRelief, heldWagon, isHeld, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, thinDelivery, type SharedInput, type ThinDelivery, wagonEta, wagonSlowdown, seasonNote, timeOfDay, type ReasonLink, type SeasonNote, type Slowdown } from './diagnose';
 export {
   SEASON_TICKS, SEASON_WARNING_TICKS, YEAR_TICKS, bridgeIceUntil, cycleTicks, effectsAt, nextChange, seasonAt, seasonal,
   thawing, yearAt, type Season, type SeasonChange, type SeasonChangeKind, type SeasonEffects,
@@ -22,8 +22,8 @@ export {
   type DemolishQuote, type PriceInfo, type RankGateError, type RankGoal, type SandboxStatus,
 } from './town';
 export {
-  PACE_MIN_TICKS, PACE_SAMPLE_TICKS, PACE_WINDOW_TICKS, contractForecast, newPaceLog, samplePace, trancheForecast, trancheNeed,
-  type ContractForecast, type GoodPace, type PaceLog,
+  PACE_MIN_TICKS, PACE_SAMPLE_TICKS, PACE_WINDOW_TICKS, castleForecast, contractForecast, newPaceLog, samplePace, trancheForecast, trancheNeed,
+  type CastleForecast, type CastleShare, type ContractForecast, type GoodPace, type PaceLog,
 } from './forecast';
 export {
   EVENT_CHECK_TICKS, FAIR_PRICE_PERCENT, MAX_ROYAL_ORDERS, MERCHANT_PRICE_PERCENT, ORDER_TEMPLATES,
@@ -34,3 +34,4 @@ export {
   freshTradePost, linkedToStable, placeTradePost, postCents, postOpen, tradePostOf, tradePostStatus,
   type TradePostPrice, type TradePostStatus,
 } from './tradePost';
+export { contractsOf, runningContractOf } from './contract';

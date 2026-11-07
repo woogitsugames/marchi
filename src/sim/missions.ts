@@ -95,6 +95,9 @@ export interface SiteHint { type: BuildingType; x: number; y: number; facing: nu
 /** A contract tranche as authored: goods due by `dueMin` mission minutes. */
 export interface TrancheDef { need: Partial<GoodMap>; dueMin: number }
 
+/** Two castles (D-288): one castle's order; `name` keys its player-facing name (UI read only, never in the state). */
+export interface CastleOrderDef extends TrancheDef { name: 'east' | 'north' }
+
 export interface MissionDef {
   id: string;
   mapId: string;
@@ -123,7 +126,7 @@ export interface MissionDef {
    * deadline, star and end ticks are the mission's); the others become `state.mission.extraContracts`. Not combined
    * with `tranches`.
    */
-  castles?: TrancheDef[];
+  castles?: CastleOrderDef[];
   /** The castle buys goods (default: open when there is no contract). Test maps close it. */
   market?: boolean;
   /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
@@ -151,6 +154,19 @@ export function missionSeasons(missionId: string): boolean {
 export function missionBuildable(missionId: string): BuildingType[] | 'ranked' {
   if (missionId === 'sandbox') return 'ranked';
   return MISSIONS[missionId]?.buildable ?? [];
+}
+
+/**
+ * Two castles (D-288): the authored name key of this castle ('east' / 'north'), or null (one castle, or not a castle
+ * holding an order). UI read helper: the castles' orders follow `castles` in building order.
+ */
+export function castleNameKey(world: World, castleId: number): CastleOrderDef['name'] | null {
+  const m = world.state.mission;
+  const defs = MISSIONS[m.id]?.castles;
+  if (!defs || !m.contract) return null;
+  if (m.contract.castle === castleId) return defs[0]?.name ?? null;
+  const i = (m.extraContracts ?? []).findIndex((c) => c.castle === castleId);
+  return i >= 0 ? defs[i + 1]?.name ?? null : null;
 }
 
 /** The mission's authored site for this building type (D-107), or null. UI read helper; no sim effect. */

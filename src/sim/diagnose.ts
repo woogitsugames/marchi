@@ -1,5 +1,5 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+import { DAY_TICKS, GOODS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
 import { contractTarget, contractsOf, storeCapOf } from './contract';
 import { marketOpen } from './town';
@@ -494,3 +494,34 @@ export function thinDelivery(world: World, id: number): ThinDelivery | null {
   return { good: g, wagon: w.id, qty: j.qty, full, source: src.id };
 }
 
+
+/**
+ * Two castles (mission XVI, D-291): a castle still short of good `good` while the shared supply goes to the other
+ * castle — `wagons` wagons drive `good` there now (loaded, or on the way to a load reserved at a producer), `units` in
+ * all. `short`: what this castle still lacks of its order. The read-only counterpart of
+ * `sharedInput` (F3, D-38) for castles: `contestedBy` in the sim skips consumers of the same type, so the starving
+ * castle reads WAITING_UPSTREAM ("the sawmill is making it"), and this names who takes the goods.
+ */
+export interface CastleRival { rival: number; good: Good; wagons: number; units: number; short: number }
+
+/** The castle that takes this castle's goods now (see CastleRival), or null (one castle, done, nobody takes them). */
+export function castleRival(world: World, castleId: number): CastleRival | null {
+  const st = world.state, m = st.mission;
+  if (!m.extraContracts || m.result !== 'running') return null;
+  const b = buildingById(world, castleId);
+  const own = contractsOf(m).find((k) => k.castle === castleId);
+  if (!b || !own) return null;
+  let best: CastleRival | null = null;
+  for (const g of GOODS) {
+    const short = own.need[g] - b.stock[g];
+    if (short <= 0) continue;
+    for (const k of contractsOf(m)) {
+      if (k === own || k.need[g] <= 0) continue;
+      let wagons = 0, units = 0;
+      for (const w of st.wagons) if (w.job && w.job.to === k.castle && w.job.good === g) { wagons++; units += w.job.qty; }
+      if (wagons === 0) continue;
+      if (!best || wagons > best.wagons) best = { rival: k.castle, good: g, wagons, units, short };
+    }
+  }
+  return best;
+}

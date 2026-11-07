@@ -1845,6 +1845,19 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-tr.is-later { opacity: .75; }
 .wb-tr .tr-goods { display: flex; gap: 12px; padding-inline-start: 28px; font-size: 14px; font-weight: 700; }
 .wb-tr .tr-goods span { display: inline-flex; align-items: center; gap: 3px; }
+/* two castles (D-290): a row per castle; the castle that goes first carries a small brass pennant tag */
+.wb-castles .wb-tr.is-now { background: none; border-inline-start-color: rgb(160 122 58 / .45); }
+.wb-castles .wb-tr.is-now.is-first { background: rgb(160 122 58 / .14); border-inline-start-color: var(--brass); }
+.wb-castles .wb-tr.is-now + .wb-tr.is-now { margin-top: 2px; }
+.wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--brass-dk); text-transform: lowercase; }
+.wb-tr .tr-first svg { flex: none; }
+.wb-castles .wb-pace { border-top: 0; margin-top: 0; }
+.wb-castles .wb-pace-eta { min-height: 32px; }
+.castle-split { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 14px; color: var(--ink-soft); }
+.castle-split.is-first { color: var(--ink); font-weight: 700; }
+.castle-split svg, .castle-rival svg { flex: none; }
+.castle-fc small { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+.castle-switch .btn[aria-pressed="true"] svg { opacity: .8; }
 /* valley plaque */
 .plaque { cursor: pointer; padding-top: 12px; }
 .plaque .pl-next { font-size: 13px; font-weight: 700; color: var(--wine); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }

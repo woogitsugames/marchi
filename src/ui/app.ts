@@ -1067,6 +1067,11 @@ export class App implements PanelNav {
     else if (cmd.t === 'buyWagon') this.hud.toast(t('hud.wagonBought', { n }), 'info', icon, 1800);
     else if (cmd.t === 'sellWagon') this.hud.toast(t('hud.wagonSold', { n }), 'info', icon, 1800);
     else if (cmd.t === 'merchantSell') this.hud.toast(t('events.merchant.sold', { n }), 'info', 'coin', 2200);
+    else if (cmd.t === 'castleFirst') {
+      // two castles (D-289): the switch says which castle goes first now, or that both share evenly again
+      this.hud.toast(cmd.castle < 0 ? t('hud.castleEven') : t('hud.castleFirst', { name: buildingName(this.world, cmd.castle) }), 'info', 'first', 1800);
+      this.sheets.update();
+    }
     else if (cmd.t === 'place') this.afterPlace(cmd.type, cmd.x, cmd.y, n);
   }
 
@@ -1209,6 +1214,10 @@ export class App implements PanelNav {
 
   buyWagon(stable: number): void {
     this.enqueue({ t: 'buyWagon', stable });
+  }
+
+  castleFirst(castle: number): void {
+    this.enqueue({ t: 'castleFirst', castle });
   }
 
   sellWagon(wagon: number): void {

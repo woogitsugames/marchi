@@ -58,6 +58,8 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
     { t: 'place', type: 'charcoalBurner', ...M14_BURNER_SITE }, { t: 'road', surface: 1, cells: col(w, M14_BURNER_SITE.x + 1, 40, 41) },
   ],
   m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_GRANARY_SITE }, { t: 'road', surface: 1, cells: col(w, M15_GRANARY_SITE.x + 1, 40, 41) }],
+  // XVI: the castle with the early deadline first (D-289)
+  m16: (w) => [{ t: 'castleFirst', castle: w.state.mission.contract!.castle }],
 };
 
 /** The tempting wrong fix of missions XIV-XV: the same building at the wrong end of the road. */
@@ -66,6 +68,8 @@ export const WRONG: Record<string, (w: World) => Command[]> = {
     { t: 'place', type: 'charcoalBurner', ...M14_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M14_WRONG_SITE.x + 1, 39, 40) },
   ],
   m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M15_WRONG_SITE.x + 1, 40, 41) }],
+  // XVI: the castle with the late deadline first
+  m16: (w) => [{ t: 'castleFirst', castle: w.state.mission.extraContracts![0]!.castle }],
 };
 
 export interface Row {
@@ -226,7 +230,7 @@ function eyeTap(w: World, hints: boolean, seen: Record<string, number>, scan = f
   // the pace card (day 8c) takes the slot when no real stall needs it: an empty card or a calm one
   if (PACE_CARD && (!ranked.length || ranked[0]!.minor)) {
     const log = paceLogs.get(w);
-    let pc = log ? paceCard(w, forecastFor(w, log)) : null;
+    let pc = log ? paceCard(w, forecastFor(w, log), log) : null;
     if (pc?.k === 'fleet' && !FLEET_CARD) pc = null;
     if (pc) {
       const act = tapPace(w, pc);
@@ -256,6 +260,8 @@ function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string
   if (pc.k === 'grow') return placeAtGhost(w, pc.type, pc.producer) >= 0 ? 'grow:' + pc.type : 'grow?fail';
   // post (D-245, free valley only): never in a mission
   if (pc.k === 'post') return '';
+  // two castles (D-290): the late castle's sheet holds the switch — one tap puts it first
+  if (pc.k === 'castle') return applyCommand(w, { t: 'castleFirst', castle: pc.producer }).ok ? 'castleFirst' : 'castleFirst?fail';
   // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
   if (!pc.risk) return '';
   const r = applyCommand(w, { t: 'road', surface: 2, cells: pc.cells });
