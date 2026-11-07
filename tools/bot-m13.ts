@@ -1,7 +1,8 @@
 // Mission XIII ("Pierwsze piętro łańcucha", D-102) strategy runner in the real simulation.
 // Use: npx tsx tools/bot-m13.ts — prints every strategy; exit != 0 when the seal ladder breaks.
+import { goldenHash } from './golden-hash';
 import {
-  MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, stars, stateHash, step, unexplainedStalls,
+  MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, stars, step, unexplainedStalls,
   type Command, type World,
 } from '../src/sim/index';
 
@@ -86,7 +87,7 @@ export function runM13(strategy: M13Strategy): M13Result {
   return {
     strategy: strategy.name, result: st.mission.result, minutes: st.mission.endTick / (60 * TICK_HZ), seals: stars(w),
     wagons: st.wagons.length, commandErrors, invariantErrors, allBusySamples, firstAllBusy, starvedWithStock, delivered,
-    hash: stateHash(w),
+    hash: goldenHash(w),
   };
 }
 

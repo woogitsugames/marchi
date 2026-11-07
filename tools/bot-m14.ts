@@ -1,8 +1,9 @@
 // Mission XIV ("Węgiel z lasu", D-210) strategy runner in the real simulation, and the shared runner of the
 // "build it at the right end of the road" missions XIV-XV (bot-m15.ts uses runSiteBot).
 // Use: npx tsx tools/bot-m14.ts — prints every strategy; exit != 0 when the seal ladder breaks.
+import { goldenHash } from './golden-hash';
 import {
-  MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, lineCells, stars, stateHash, step, unexplainedStalls,
+  MISSIONS, TICK_HZ, applyCommand, checkInvariants, createWorld, lineCells, stars, step, unexplainedStalls,
   type Command, type World,
 } from '../src/sim/index';
 import { M14_BURNER_SITE, M14_WRONG_SITE } from '../src/sim/proposals/missions-14-15';
@@ -61,7 +62,7 @@ export function runSiteBot(id: string, strategy: SiteStrategy): SiteResult {
   return {
     strategy: strategy.name, result: st.mission.result, minutes: st.mission.endTick / (60 * TICK_HZ), seals: stars(w),
     late: c.tranches.filter((t) => t.missed).length, wagons: st.wagons.length, coins: st.coins,
-    commandErrors, invariantErrors, delivered, hash: stateHash(w),
+    commandErrors, invariantErrors, delivered, hash: goldenHash(w),
   };
 }
 
