@@ -65,8 +65,15 @@
     (WebGL2 to wspiera, ale sterowniki bywają różne) → BACKLOG; odpowiedź ucięta. ~11 tys. tokenów po stronie Qwena.
 - Scalone ~18:40: **D-323/D-324** kupiec przy ladzie faktorii: po sprzedaży gest 3 s (sięga po monetę, waży, wrzuca do skrzyni),
   wykrycie z `tradePost.recent` (tylko odczyt), te same wywołania rysowania. Testy 611/0, smoke 0, layout 126/0.
-- W toku: agent `claude/w-billboard` — szybsze wypiekanie billboardów drzew (D-325..D-327); agent `claude/w-qa2` — przegląd
-  jakości dnia (pełny layout, XVI w 17 językach, przegląd refaktorów renderu, pamięć przy 30 zmianach świata; D-328..).
+- Scalone ~21:00: **D-325..D-327** billboardy drzew (programy przy starcie, ArrayCamera na wiersz, albedo+normalne w jednym
+  przebiegu): CPU bake w 1. klatce 74 → 36 ms, GPU ponad 2× krócej, atlasy bit w bit, 0 px na 20 scenach. **QA dnia**
+  (`claude/w-qa2`, pełny layout 525/0): **D-328** cokół na zboczu bez szablonu `prim` (wyciek geometrii), **D-329** list w
+  krótkim poziomie (fr „d'abord” → tylko dla czytnika), dwuliniowe żetony towarów, CJK bez spacji między zdaniami
+  (`sentences()`), ru/uk „jedyny wóz” tylko dla 1. Pamięć: 30 zmian świata — sterta płaska po 1. rundzie.
+  Koordynator: **D-330** lód mostów też bez `prim` (losowy promień kry = wyciek) + test `prim-guard`; zimowy efekt sezonu
+  przez `sentences()`. Testy 614/0, smoke 0, layout 138/0.
+- W toku: agent `claude/w-geomcache` — zimne budowanie modeli: prebake/IndexedDB/odroczenie, wdrożenie tylko przy wyraźnym
+  zysku (D-331..D-333).
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
