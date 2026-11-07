@@ -68,12 +68,6 @@ export class Heightfield {
     return (0.5 - m) * 11.5 + wob + 6 * (1 - smooth(0, 0.1, m));
   }
 
-  private corner(ix: number, iz: number): number {
-    if (ix < 0) ix = 0; else if (ix > this.w) ix = this.w;
-    if (iz < 0) iz = 0; else if (iz > this.h) iz = this.h;
-    return this.c[iz * this.cw + ix]!;
-  }
-
   private hb: { min: number; max: number } | null = null;
   /**
    * Conservative bounds of `height` over the whole map (metres). Catmull-Rom weights sum to 1 with |w| summing to at
@@ -122,12 +116,17 @@ export class Heightfield {
     const wz1 = ((3 * tz - 5) * tz * tz + 2) * 0.5;
     const wz2 = ((-3 * tz + 4) * tz + 1) * tz * 0.5;
     const wz3 = ((tz - 1) * tz * tz) * 0.5;
+    // the 4 x 4 corner taps, clamped to the map once per column and row (D-281: was 16 `corner` calls, 32 clamps)
+    const W = this.w, H = this.h, CW = this.cw, c = this.c;
+    const c0 = ix - 1 < 0 ? 0 : ix - 1 > W ? W : ix - 1, c1 = ix < 0 ? 0 : ix > W ? W : ix;
+    const c2 = ix + 1 < 0 ? 0 : ix + 1 > W ? W : ix + 1, c3 = ix + 2 < 0 ? 0 : ix + 2 > W ? W : ix + 2;
+    const r0 = (iz - 1 < 0 ? 0 : iz - 1 > H ? H : iz - 1) * CW, r1 = (iz < 0 ? 0 : iz > H ? H : iz) * CW;
+    const r2 = (iz + 1 < 0 ? 0 : iz + 1 > H ? H : iz + 1) * CW, r3 = (iz + 2 < 0 ? 0 : iz + 2 > H ? H : iz + 2) * CW;
     let s = 0;
-    for (let k = 0; k < 4; k++) {
-      const zz = iz - 1 + k;
-      const r = wx0 * this.corner(ix - 1, zz) + wx1 * this.corner(ix, zz) + wx2 * this.corner(ix + 1, zz) + wx3 * this.corner(ix + 2, zz);
-      s += r * (k === 0 ? wz0 : k === 1 ? wz1 : k === 2 ? wz2 : wz3);
-    }
+    s += (wx0 * c[r0 + c0]! + wx1 * c[r0 + c1]! + wx2 * c[r0 + c2]! + wx3 * c[r0 + c3]!) * wz0;
+    s += (wx0 * c[r1 + c0]! + wx1 * c[r1 + c1]! + wx2 * c[r1 + c2]! + wx3 * c[r1 + c3]!) * wz1;
+    s += (wx0 * c[r2 + c0]! + wx1 * c[r2 + c1]! + wx2 * c[r2 + c2]! + wx3 * c[r2 + c3]!) * wz2;
+    s += (wx0 * c[r3 + c0]! + wx1 * c[r3 + c1]! + wx2 * c[r3 + c2]! + wx3 * c[r3 + c3]!) * wz3;
     return s;
   }
 

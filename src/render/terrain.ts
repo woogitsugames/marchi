@@ -3,6 +3,7 @@
 // MeshStandardMaterial that blends meadow / forest floor / tilled field / yard / wet bank,
 // draws roads from the distance field (ruts, grass strip, cobbles), and the overlays.
 import {
+  Box3,
   BufferAttribute,
   BufferGeometry,
   Color,
@@ -12,8 +13,10 @@ import {
   Mesh,
   MeshStandardMaterial,
   RGBAFormat,
+  Sphere,
   UnsignedByteType,
   Vector2,
+  Vector3,
   type IUniform,
 } from 'three';
 import type { World } from '../sim/index';
@@ -175,7 +178,7 @@ export class TerrainView {
       for (let ix = 0; ix < CHUNKS_X; ix++) {
         const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
         const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
-        const g = gridGeometry(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, null);
+        const g = gridGeometry(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, false);
         const m = new Mesh(g, this.material);
         m.receiveShadow = true;
         m.name = `terrain-${ix}-${jz}`;
@@ -193,7 +196,7 @@ export class TerrainView {
       [hf.sizeX - 8, -8, A + 8, hf.sizeZ + 16], // east
     ];
     for (const [x, z, sx, sz] of pieces) {
-      const g = gridGeometry(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, apronHeight);
+      const g = gridGeometry(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, true);
       const m = new Mesh(g, this.material);
       m.receiveShadow = true;
       m.name = 'terrain-apron';
@@ -213,8 +216,54 @@ export class TerrainView {
 /** Height outside the map: clamp to the border and rise into wooded hills. */
 export function apronHeight(hf: Heightfield, x: number, z: number): number {
   const cx = Math.min(hf.sizeX, Math.max(0, x)), cz = Math.min(hf.sizeZ, Math.max(0, z));
+  return apronFrom(hf, x, z, cx, cz, hf.base(cx, cz));
+}
+
+/**
+ * `apronHeight` of the grid x = x0 + i * step, z = z0 + j * step into `out[j * vx + i]`, asking `hf.base` once per
+ * distinct border point: a point repeats the one left of it (a row clamped to the west/east border) or the one
+ * above it (a column clamped to the north/south border) — `base` is a pure function, so the values are the same.
+ */
+function apronGrid(hf: Heightfield, x0: number, z0: number, vx: number, vz: number, step: number, out: Float32Array): void {
+  const colX = new Float64Array(vx).fill(NaN), colZ = new Float64Array(vx).fill(NaN), colB = new Float64Array(vx);
+  for (let j = 0; j < vz; j++) {
+    const z = z0 + j * step;
+    let lx = NaN, lz = NaN, lb = 0;
+    for (let i = 0; i < vx; i++) {
+      const x = x0 + i * step;
+      const cx = Math.min(hf.sizeX, Math.max(0, x)), cz = Math.min(hf.sizeZ, Math.max(0, z));
+      let b: number;
+      if (cx === lx && cz === lz) b = lb;
+      else if (cx === colX[i] && cz === colZ[i]) b = colB[i]!;
+      else b = hf.base(cx, cz);
+      lx = cx; lz = cz; lb = b;
+      colX[i] = cx; colZ[i] = cz; colB[i] = b;
+      out[j * vx + i] = apronFrom(hf, x, z, cx, cz, b);
+    }
+  }
+}
+
+/**
+ * `apronHeight` along a row of points, reusing `hf.base` while consecutive points clamp to the same border point
+ * (a row west or east of the map clamps to one point per row). Same values: `base` is pure.
+ */
+export class ApronRow {
+  private lx = NaN;
+  private lz = NaN;
+  private lb = 0;
+
+  constructor(private readonly hf: Heightfield) {}
+
+  at(x: number, z: number): number {
+    const hf = this.hf;
+    const cx = Math.min(hf.sizeX, Math.max(0, x)), cz = Math.min(hf.sizeZ, Math.max(0, z));
+    if (cx !== this.lx || cz !== this.lz) { this.lx = cx; this.lz = cz; this.lb = hf.base(cx, cz); }
+    return apronFrom(hf, x, z, cx, cz, this.lb);
+  }
+}
+
+function apronFrom(hf: Heightfield, x: number, z: number, cx: number, cz: number, b: number): number {
   const out = Math.hypot(x - cx, z - cz);
-  const b = hf.base(cx, cz);
   if (out <= 0) return b - 0.35; // under the real terrain (hides seams)
   // keep the river channel low where it leaves the map
   const riverK = Math.min(1, Math.max(0, (b - hf.waterLevel - 0.2) / 2.5));
@@ -230,19 +279,19 @@ function gridGeometry(
   nx: number,
   nz: number,
   step: number,
-  heightFn: ((hf: Heightfield, x: number, z: number) => number) | null,
+  apron: boolean,
 ): BufferGeometry {
   const vx = nx + 1, vz = nz + 1;
   const pos = new Float32Array(vx * vz * 3);
   const nor = new Float32Array(vx * vz * 3);
   const hs = new Float32Array(vx * vz);
-  const H = heightFn ? (x: number, z: number) => heightFn(hf, x, z) : (x: number, z: number) => hf.height(x, z);
+  const H = apron ? (x: number, z: number) => apronHeight(hf, x, z) : (x: number, z: number) => hf.height(x, z);
+  // the apron asks hf.base once per border point its vertices clamp to (most of a ring row or column clamps to one)
+  if (apron) apronGrid(hf, x0, z0, vx, vz, step, hs);
+  else for (let j = 0; j < vz; j++) for (let i = 0; i < vx; i++) hs[j * vx + i] = hf.height(x0 + i * step, z0 + j * step);
   for (let j = 0; j < vz; j++) for (let i = 0; i < vx; i++) {
-    const x = x0 + i * step, z = z0 + j * step;
     const k = j * vx + i;
-    const y = H(x, z);
-    hs[k] = y;
-    pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
+    pos[k * 3] = x0 + i * step; pos[k * 3 + 1] = hs[k]!; pos[k * 3 + 2] = z0 + j * step;
   }
   // normals from central differences (sampling outside the grid for seamless chunk edges)
   const e = step;
@@ -269,9 +318,32 @@ function gridGeometry(
   g.setAttribute('position', new BufferAttribute(pos, 3));
   g.setAttribute('normal', new BufferAttribute(nor, 3));
   g.setIndex(new BufferAttribute(idx, 1));
-  g.computeBoundingBox();
-  g.computeBoundingSphere();
+  setGridBounds(g, pos);
   return g;
+}
+
+/**
+ * `computeBoundingBox()` + `computeBoundingSphere()` of a plain position array, with the same float operations as
+ * three.js (Box3.expandByPoint's Math.min/max per axis, centre (min + max) * 0.5, the largest squared distance to
+ * it, sqrt) but straight over the Float32Array instead of a Vector3 per vertex and per pass (D-281).
+ */
+function setGridBounds(g: BufferGeometry, pos: Float32Array): void {
+  let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
+  for (let k = 0; k < pos.length; k += 3) {
+    const x = pos[k]!, y = pos[k + 1]!, z = pos[k + 2]!;
+    x0 = Math.min(x0, x); y0 = Math.min(y0, y); z0 = Math.min(z0, z);
+    x1 = Math.max(x1, x); y1 = Math.max(y1, y); z1 = Math.max(z1, z);
+  }
+  const box = new Box3(new Vector3(x0, y0, z0), new Vector3(x1, y1, z1));
+  const c = box.getCenter(new Vector3());
+  const cx = c.x, cy = c.y, cz = c.z;
+  let r2 = 0;
+  for (let k = 0; k < pos.length; k += 3) {
+    const dx = cx - pos[k]!, dy = cy - pos[k + 1]!, dz = cz - pos[k + 2]!;
+    r2 = Math.max(r2, dx * dx + dy * dy + dz * dz);
+  }
+  g.boundingBox = box;
+  g.boundingSphere = new Sphere(c, Math.sqrt(r2));
 }
 
 // ------------------------------------------------------------------------------------------
