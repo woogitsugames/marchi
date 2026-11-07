@@ -51,8 +51,10 @@
 - Scalone ~16:00: **D-317** „nieaktualny list” w XVI to artefakt narzędzia zrzutów (zwinięty list w pionie), UI spójne;
   narzędzie sprawdza teraz zgodność ze stanem. **D-318** arkusz zamku zaokrągla spóźnienie w górę do 10 s jak karta i list.
 - APK **e9b389a** wysłany ~16:05 (XVI prognoza + karta przewozu, szybsza budowa świata, a11y). Następny ~19:00.
-- W toku: agent `claude/w-kitperf` — szybsza budowa modeli (`kit.ts`, ~100 ms menu; D-320..D-322); agent `claude/w-merchant` —
-  kupiec przy ladzie reaguje na sprzedaż (D-200 → D-323/D-324).
+- Scalone ~18:10: **D-320..D-322** szybsza budowa modeli (wspólne prymitywy, typowane tablice w `PartBuilder`, szum raz na
+  wierzchołek): modele menu 167 → 125 ms (node), w przeglądarce 137 → 105 ms; 0 px na 18 scenach, geometria bit w bit.
+  Testy 606/0, smoke 0, layout 126/0. (Agenci stanęli ~16:00 na limicie użycia, wznowieni ~17:45.)
+- W toku: agent `claude/w-merchant` — kupiec przy ladzie reaguje na sprzedaż (D-323/D-324).
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
