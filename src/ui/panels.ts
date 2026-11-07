@@ -7,7 +7,7 @@ import {
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, tHtml, ticksClock,
+  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -200,8 +200,8 @@ function fleetCureHtml(world: World, pc: PaceFleet): string {
 function haulCureHtml(world: World, pc: PaceHaul): string {
   // D-313: the whole order's forecast finish comes first — while the card shows it holds to within ~20 s of the run's
   // finish (tools/m16-forecast-error.ts), so "ok." (around) is honest; then the seal in reach and its exact time
-  const why = t('fix.paceHaulAt', { finish: ticksClock(pc.finishTick) }) + ' ' +
-    t('fix.paceHaulWhy', { goodGen: t(`goodGen.${pc.good}` as MessageKey), by: ticksClock(pc.byTick), aim: t('why.pace.seals', { n: pc.aim }) });
+  const why = sentences(t('fix.paceHaulAt', { finish: ticksClock(pc.finishTick) }),
+    t('fix.paceHaulWhy', { goodGen: t(`goodGen.${pc.good}` as MessageKey), by: ticksClock(pc.byTick), aim: t('why.pace.seals', { n: pc.aim }) }));
   const stable = world.state.buildings.find((q) => q.type === 'stable');
   if (!stable) return '';
   const short = WAGON_PRICE - world.state.coins;

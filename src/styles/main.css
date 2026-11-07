@@ -488,6 +488,10 @@ body.is-side .sheet-grip::before { display: none; }
 .good-chip b { font-size: 17px; }
 .good-chip .cap { color: var(--ink-soft); }
 .good-chip .inc { font-size: 13px; color: #6b4f1d; display: block; line-height: 1; }
+/* the sub-line ("+2 unterwegs", "В пути: +2") kept clear of the frame's lower rule: the kit border is drawn ~5 px
+   inside the edge, and a 4 px padding put the descenders on it. The content moves up 2 px instead of the chip
+   growing, so no sheet gets taller (a taller chip pushed a 360 x 740 cause chain under the dock) (QA 7 XI, D-329) */
+.good-chip:has(.inc) { padding-block: 2px 6px; }
 .good-chip.is-empty { --frame: var(--clay); }
 .good-chip.is-empty b { color: #6e3520; }
 .good-chip .arrow { color: var(--ink-soft); margin: 0 -2px; }
@@ -1853,6 +1857,11 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-castles .wb-tr.is-now + .wb-tr.is-now { margin-top: 2px; }
 .wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--brass-dk); text-transform: lowercase; }
 .wb-tr .tr-first svg { flex: none; }
+/* the short landscape card (D-53) keeps the pennant and the row's brass tint; the tag's word is for screen readers
+   only, so a long castle line ("Château de l'Est — avant 5:00") stays on one row and the card clears the tools (D-329) */
+body.is-landscape .wb-tr .tr-first > span {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
 /* the castle row's state is a read-out, not a control (the bar line above takes the tap) */
 .wb-castles .castle-eta { display: flex; align-items: center; min-height: 24px; font-weight: 700; color: var(--meadow); }
 .wb-castles .castle-eta.late { color: var(--wine); }

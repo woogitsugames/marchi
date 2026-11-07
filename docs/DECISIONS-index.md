@@ -275,4 +275,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-324 | — | The sale is read from `tradePost.recent`, not stored anywhere new | nieokreślony | inne |
 | D-325 | — | The bake holds the main thread for nothing: programs requested at mount, mips built once, no early bake | decided | inne |
 | D-326 | — | One ArrayCamera pass per atlas row | decided | inne |
-| D-327 | — | Albedo and normal atlases from one pass (two render targets) | decided | render |
+| D-327 | — | Albedo and normal atlases from one pass (two render targets) | nieokreślony | render |
+| D-328 | — | QA of 7 XI: `prim` templates only for shapes that repeat; the slope plinth is a one-off box | decided | inne |
+| D-329 | — | QA of 7 XI: the haul card and the castle rows in every language; three small UI fixes; the layout check measures the haul card | decided | UI |

@@ -46,6 +46,12 @@ export function joinList(parts: string[]): string {
   try { return new Intl.ListFormat(getLang(), { type: 'unit', style: 'short' }).format(p); } catch { return p.join(' · '); }
 }
 
+/** Two or more whole sentences in a row: Chinese and Japanese set none after "。", the other scripts one space. */
+export function sentences(...parts: string[]): string {
+  const l = getLang();
+  return parts.filter(Boolean).join(l === 'ja' || l === 'zh-Hans' ? '' : ' ');
+}
+
 /** Bidi-isolate a number/time inside a plain-text sentence (FSI … PDI) when the UI is right-to-left. */
 export function iso(s: string | number): string {
   return isRtl() ? `\u2068${s}\u2069` : String(s);
