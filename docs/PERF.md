@@ -8,6 +8,18 @@ from 15 stocked granaries across the river, two wooden one-lane bridges (deliber
 
 | wagons | avg ms/tick | p99 ms | max ms | ms/frame at ×4 (60 fps) | moving | heap Δ MB | save KB | invariant errors |
 |---|---|---|---|---|---|---|---|---|
+| 50 | 0.046–0.064 | 0.52–0.76 | 2.5–10.4 | 0.03–0.04 | 49 | ±2 | 68 | 0 |
+| 100 | 0.038–0.043 | 0.46–0.47 | 1.0–4.5 | 0.03 | 61 | ±0 | 81 | 0 |
+| 200 | 0.038–0.042 | 0.41–0.46 | 0.8–1.6 | 0.03 | 61 | ±2 | 100 | 0 |
+
+Measured 2026-11-07 on `claude/w-simperf` after D-336..D-338 (three runs of `npm run perf:sim`, one process; max is
+GC/JIT noise). Same branch before the change: avg 0.11–0.13 / 0.20–0.23 / 0.20–0.24, p99 1.5–1.8 / 1.5–1.6 / 1.5–2.0 ms.
+Details and per-count medians: section "noc 2026-11-07" below.
+
+Older table (2026-11-01):
+
+| wagons | avg ms/tick | p99 ms | max ms | ms/frame at ×4 (60 fps) | moving | heap Δ MB | save KB | invariant errors |
+|---|---|---|---|---|---|---|---|---|
 | 50 | 0.250 | 2.05–2.35 | 5.53 | 0.17 | 45 | ±1 | 62 | 0 |
 | 100 | 0.120 | 1.18–1.38 | 4.32 | 0.08 | 95 | ±3 | 85 | 0 |
 | 200 | 0.085 | 0.87–0.88 | 3.16 | 0.06 | 109 | ±2 | 108 | 0 |
@@ -227,3 +239,22 @@ instaluje go tuż przed `app.start()` (zawsze już był: 0,3–2,6 ms po znaczni
 365 → 228 / 906 → 472 ms; `first-frame` 1 818 → 1 621 / 3 753 → 3 165 ms. Zmiana świata (menu → I, II) w szumie.
 Identyczne: 20 scen harnessu 0 px (`perf17-diff/`, `baked=1` kontra przed), bajty katalogu (`tests/models-baked.test.ts`:
 dwa świeże procesy, dekodowanie + kodowanie, porównanie pole po polu), `model-probe HASH=1`, `tools/mission-hashes.ts`.
+
+## 2026-11-07 — noc: koszt ticku symulacji (D-336..D-338)
+
+Raport: `docs/research/2026-11-07-sim-cost.md`. Profil (`node --cpu-prof`, bench 15 min gry): 53–67 % ticku to pełne
+Dijkstry dyspozytora (`from`/`to`/`toLoaded` reguły A), a w ~80 % ticków dispatchu sieć, pogoda i kolejki mostowe są
+takie same jak w poprzednim. Zmiany: pamięć map odległości między tickami (D-336), Dijkstra po listach sąsiadów
+29 → 15 µs (D-337), pomijanie przeszukań reguły A, które nie mogą wygrać, i drobne (D-338). Zachowanie bit w bit:
+`tools/mission-hashes.ts` identyczny, hashe benchu i bota doliny identyczne, `STATE_VERSION` bez zmian.
+
+Mediany 5 przebiegów, osobny proces na liczbę wozów (ms/tick):
+
+| wozy | śr. przed → po | p99 przed → po | tick dispatchu śr. przed → po |
+|---|---|---|---|
+| 50 | 0,108 → 0,056 | 1,52 → 0,63 | 0,44 → 0,18 |
+| 100 | 0,222 → 0,058 | 1,57 → 0,57 | 0,98 → 0,18 |
+| 200 | 0,234 → 0,067 | 1,68 → 0,65 | 1,02 → 0,21 |
+
+Telefon (założenie ×4–6): ×4 przy 200 wozach ≈ 40–55 → 11–16 ms symulacji na sekundę głównego wątku; najgorszy tick
+dispatchu (zmiana kolejki na moście) ≈ 6–10 → 2,5–4 ms. Pamięć: do 64 map × 55 KB (≈ 3,5 MB, bench ≤ 50).

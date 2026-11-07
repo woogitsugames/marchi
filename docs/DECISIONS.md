@@ -3807,3 +3807,34 @@ contested sawmill (X's lesson); V/XII players who connected late now read "road"
 built a granary no longer read "build a granary" for a store next to one with room (→ "wagon"); XV without a granary keeps
 "granary". m2, m3, m7, m11, m13, m14, m16 unchanged; I changes only its third line. Test `tests/loss-causes-calm.test.ts`.
 `tools/mission-hashes.ts` identical (71 rows). (decided)
+
+**D-336 — Dispatch distance maps are memoized across ticks (sim cost night, `docs/research/2026-11-07-sim-cost.md`).**
+Profile of the 50/100/200-wagon bench: 53–67 % of the tick was full Dijkstra searches of the dispatcher, ~96 % of
+them inside `dispatch` (`from`, `to`, rule A's `toLoaded`), and in ~80 % of dispatch ticks the network, weather and
+bridge queue penalties were the same as in the previous dispatch — the same maps were recomputed. `dijkstraMemo`
+(`src/sim/network.ts`) keeps full-search distances by (start, reverse, loaded) while the `NetCache` object, rain, thaw
+and the queue penalties (by content; the per-tick `spanPenalties` map, re-read only when it is a new object) stay the
+same; bridge ice makes a search tick-dependent, so nothing is memoized while it lasts. The context is checked on every
+call, at the moment the search itself would read it. Distances only (no reader walks `prev`), at most 64 maps
+(≈ 3.5 MB on a 96×72 map; the bench holds ≤ 50), never saved, like `cache`/`scratch`. `DistCache` takes memo maps
+first and recycles only the maps it computed itself. Result: identical maps, so identical choices — mission hashes,
+bench and free-valley bot hashes byte-identical; `tests/dist-memo.test.ts` compares memo and fresh search at many ticks
+(queues, rain, ice, a cut network). (decided)
+
+**D-337 — Dijkstra walks cached neighbour lists.** One search was ~29 µs on the bench (362 road cells): the inner loop
+scanned 8 directions with bounds checks per settled cell. `adjacency` (once per network version, on the `NetCache`)
+lists for each cell the directions with an edge either way, in direction order 0..7, with the forward and reverse
+cost-table indices; a missing edge still reads Infinity from the cost table, so the search relaxes exactly the same
+edges in the same order (same ties, same `prev`) — ~15 µs. The memo searches straight into its own array (no copy),
+and `alternativeDestination` searches in the scratch buffers (each call used to drain the recycling pool). Test: the
+pre-D-337 search kept verbatim in `tests/dist-memo.test.ts` against the new one on randomized networks (rain, queues,
+ice, `stopAt`), dist and prev equal. (decided)
+
+**D-338 — Fewer searches in rule A, and small per-tick savings; behaviour unchanged.** Rule A (D-155) searched the
+loaded run of every wagon in drop-off phase; it is skipped when the lower bound (a full unloading + the onward run to
+the source) already fails `t < dueT` — the run is never negative and float addition is monotone, so the same wagon is
+chosen. `buildingById` binary-searches the id-sorted list, with the old linear scan as fallback (hand-built states).
+Rain and thaw are read once per `stepWagons` (they depend on the tick only). The surplus pass reads each granary's free
+space once per dispatch and re-reads it after a job books space there. Bench medians (5 runs, own process per count),
+avg ms/tick 0.108/0.222/0.234 → 0.056/0.058/0.067, p99 1.52/1.57/1.68 → 0.63/0.57/0.65 at 50/100/200 wagons (D-336..338
+together). The replan budget (BACKLOG P3) stays unneeded: wagon `findPath` is ~3 % of the tick. (decided)

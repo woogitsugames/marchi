@@ -6,7 +6,7 @@ import { isMarket, marketCents, marketOpen } from './town';
 import { orderOutstanding } from './events';
 import { MISSIONS } from './missions';
 import { linkedToStable, postOpen } from './tradePost';
-import { dijkstra, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
+import { dijkstra, dijkstraMemo, hasEdge, net, reachable, releaseDistMap, DX, DY, type DistMap, type World } from './network';
 import type { Building, BuildingStatus, Contract, Good, Wagon } from './types';
 
 interface Demand {
@@ -39,34 +39,50 @@ export const DISPATCH2 = { ruleA: true, fleetGate: 2, minFreeRunS: 50, ruleC: fa
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
 interface Held { wagon: number; at: number }
 
+/**
+ * Distance maps for one dispatch. Full searches come from `dijkstraMemo` (shared across dispatches while
+ * network, weather and bridge queues are unchanged, D-336); only when it declines does this run its own
+ * `dijkstra` and recycle the arrays afterwards.
+ */
+/** Seconds per cell, Infinity when unreachable (a `DistMap` without `prev`). */
+type Dists = Pick<DistMap, 'dist'>;
+
 class DistCache {
-  private fwd = new Map<number, DistMap>();
-  private rev = new Map<number, DistMap>();
-  private revLoaded = new Map<number, DistMap>();
+  private fwd = new Map<number, Dists>();
+  private rev = new Map<number, Dists>();
+  private revLoaded = new Map<number, Dists>();
+  /** Maps computed here (not memoized) that `release` hands back to the pool. */
+  private own: DistMap[] = [];
   constructor(private world: World) {}
+  private get(node: number, reverse: boolean, loaded: boolean): Dists {
+    const memo = dijkstraMemo(this.world, node, reverse, loaded);
+    if (memo) return { dist: memo };
+    const m = dijkstra(this.world, node, reverse, loaded);
+    this.own.push(m);
+    return m;
+  }
   /** time from node (loaded) to anything */
-  from(node: number): DistMap {
+  from(node: number): Dists {
     let m = this.fwd.get(node);
-    if (!m) { m = dijkstra(this.world, node, false, true); this.fwd.set(node, m); }
+    if (!m) { m = this.get(node, false, true); this.fwd.set(node, m); }
     return m;
   }
   /** time from anything (empty) to node */
-  to(node: number): DistMap {
+  to(node: number): Dists {
     let m = this.rev.get(node);
-    if (!m) { m = dijkstra(this.world, node, true, false); this.rev.set(node, m); }
+    if (!m) { m = this.get(node, true, false); this.rev.set(node, m); }
     return m;
   }
   /** time from anything (loaded) to node */
-  toLoaded(node: number): DistMap {
+  toLoaded(node: number): Dists {
     let m = this.revLoaded.get(node);
-    if (!m) { m = dijkstra(this.world, node, true, true); this.revLoaded.set(node, m); }
+    if (!m) { m = this.get(node, true, true); this.revLoaded.set(node, m); }
     return m;
   }
-  /** Recycle every map handed out; none may be read afterwards (they never leave `dispatch`). */
+  /** Recycle every map this dispatch computed itself; none may be read afterwards (they never leave `dispatch`). */
   release(): void {
-    for (const m of this.fwd.values()) releaseDistMap(this.world, m);
-    for (const m of this.rev.values()) releaseDistMap(this.world, m);
-    for (const m of this.revLoaded.values()) releaseDistMap(this.world, m);
+    for (const m of this.own) releaseDistMap(this.world, m);
+    this.own.length = 0;
     this.revLoaded.clear();
     this.fwd.clear();
     this.rev.clear();
@@ -82,8 +98,16 @@ export function isFree(w: Wagon): boolean {
 }
 
 export function buildingById(world: World, id: number): Building | null {
-  // buildings are kept sorted by id; linear scan is fine at this scale
-  for (const b of world.state.buildings) if (b.id === id) return b;
+  // buildings are kept sorted by id (appended with increasing ids): binary search, and the old linear
+  // scan as a fallback, so an unsorted list (hand-built test states) still finds the same building
+  const bs = world.state.buildings;
+  let lo = 0, hi = bs.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1, b = bs[mid]!;
+    if (b.id === id) return b;
+    if (b.id < id) lo = mid + 1; else hi = mid - 1;
+  }
+  for (const b of bs) if (b.id === id) return b;
   return null;
 }
 
@@ -215,9 +239,14 @@ export function dispatch(world: World): void {
       if (!j || j.phase !== 'dropoff' || w.status.k === 'BRIDGE_CLOSED' || w.status.k === 'NO_ROUTE') continue;
       const to = buildingById(world, j.to);
       if (!to) continue;
+      const onward = to.gate === source.gate ? 0 : rev.dist[to.gate]!;
+      const unloading = w.status.k === 'UNLOADING';
+      // the loaded run is never negative, so t >= a full unloading + the onward run: when even that
+      // bound does not beat dueT the run need not be searched (D-338, same choice, fewer searches)
+      if (!unloading && UNLOAD_TICKS / TICK_HZ + onward >= dueT) continue;
       // seconds until the drop-off is done: the unloading left, or the loaded run plus a full unloading
-      const rest = w.status.k === 'UNLOADING' ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
-      const t = rest + (to.gate === source.gate ? 0 : rev.dist[to.gate]!);
+      const rest = unloading ? w.busyTicks / TICK_HZ : dc.toLoaded(to.gate).dist[wagonNode(w)]! + UNLOAD_TICKS / TICK_HZ;
+      const t = rest + onward;
       if (t < dueT) { dueT = t; due = w; }
     }
     // the status shows when the busy wagon should stand at the source (whole ticks, rounded up)
@@ -311,6 +340,13 @@ export function dispatch(world: World): void {
   }
 
   // --- surplus: producers push output to warehouses before they fill up
+  // free granary space per id, read once per dispatch and dropped when a job below books space there
+  const space = new Map<number, number>();
+  const spaceOf = (wh: Building): number => {
+    let v = space.get(wh.id);
+    if (v === undefined) { v = warehouseSpace(wh); space.set(wh.id, v); }
+    return v;
+  };
   for (const b of st.buildings) {
     if (b.type === 'warehouse' || b.type === 'castle' || b.type === 'stable') continue;
     const def = BUILDINGS[b.type];
@@ -324,7 +360,7 @@ export function dispatch(world: World): void {
       const fwd = free.length === 0 ? null : dc.from(b.gate);
       for (const wh of st.buildings) {
         if (wh.type !== 'warehouse') continue;
-        if (warehouseSpace(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
+        if (spaceOf(wh) < 1) { if (fullWh === -1) fullWh = wh.id; continue; }
         const t = fwd ? fwd.dist[wh.gate]! : reachable(world, b.gate, wh.gate) ? 0 : Infinity;
         if (t === Infinity) { if (cutOffWh === -1) cutOffWh = wh.id; continue; }
         if (t < bestT) { bestT = t; best = wh; }
@@ -338,8 +374,9 @@ export function dispatch(world: World): void {
         pushFail.set(key, { cause: 'NO_WAGON', blockedBy: -1 });
         continue;
       }
-      const qty = Math.min(avail, cap, warehouseSpace(best));
+      const qty = Math.min(avail, cap, spaceOf(best));
       assignJob(world, wagon, b, best, g, qty);
+      space.delete(best.id);
       free.splice(free.indexOf(wagon), 1);
     }
   }
