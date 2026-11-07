@@ -37,7 +37,8 @@
   `castleFirst`, priorytet tylko na ostatnim odcinku), diagnoza `castleRival`, karta zamku z prognozą, `STATE_VERSION` 10.
   Drabina: nic 1★, przełącznik 2★, przełącznik + wóz 3★ (+21 s), za późno (≥1:40) 1★. Hasze I–XV bez zmian. Otwarte:
   rozsądny gracz 2★ (prognoza ~20 s za optymistyczna — karta floty się nie pojawia), progi robocze, przegląd tłumaczeń.
-- W toku: agent `claude/w-spring` — wiosenny odcień koron (D-303..D-305, zrzuty do akceptacji).
+- Scalone ~14:30 (akceptacja właściciela): **D-303..D-305** wiosenna, stonowana zieleń odrastających koron, znika w 40 % lata.
+- W toku: agent `claude/w-m16fc` — uczciwa prognoza w XVI, by karta floty podsunęła wóz (rozsądny gracz 3★), D-306..D-309.
 - W toku:
   agent `claude/w-a11y` — kontrast ETA na pasku, pierścień fokusu pinezki krytycznej, podpowiedź przy tekście 200 %.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
