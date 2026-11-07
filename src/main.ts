@@ -46,16 +46,15 @@ function loadViewModule(params: URLSearchParams): Promise<ViewModule> | null {
   return p;
 }
 
-async function pickView(loading: Promise<ViewModule> | null, baked: Promise<ArrayBuffer | null>): Promise<{ view: WorldView; kind: 'three' | 'flat' }> {
+type PickedView = { view: WorldView; kind: 'three' | 'flat'; install?: (buf: ArrayBuffer | null) => number };
+
+async function pickView(loading: Promise<ViewModule> | null): Promise<PickedView> {
   if (loading) {
     try {
       const mod = await loading;
-      const buf = await baked;
-      try { mod.installBakedModels?.(buf); } catch (e) { console.warn('baked models not used', e); }
-      startupMark('baked-models');
       if (mod.createWorldView) {
         const view = mod.createWorldView();
-        return { view, kind: 'three' };
+        return { view, kind: 'three', install: mod.installBakedModels };
       }
     } catch (e) {
       console.warn('three.js view failed to load, using the flat view', e);
@@ -111,7 +110,7 @@ async function boot(): Promise<void> {
 
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
   const ui = document.getElementById('ui') as HTMLElement;
-  let picked = await pickView(viewModule, bakedModels);
+  let picked = await pickView(viewModule);
   startupMark('view-module');
   let app: App;
   try {
@@ -129,6 +128,12 @@ async function boot(): Promise<void> {
   startupMark('app');
   // screenshot/perf scripts drive the camera through this handle (debug only, never read by the game)
   if (params.get('perf') === '1') (window as unknown as { __marchiaView?: WorldView }).__marchiaView = picked.view;
+  // the prebaked models (D-331) are needed from the first world on: the fetch had the view's mount to finish in
+  if (picked.install) {
+    const buf = await bakedModels;
+    try { picked.install(buf); } catch (e) { console.warn('baked models not used', e); }
+    startupMark('baked-models');
+  }
   await app.start();
 }
 

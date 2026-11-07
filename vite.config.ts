@@ -38,6 +38,15 @@ function bakedModels(): Plugin {
       if (serve) return;
       ref = this.emitFile({ type: 'asset', name: 'models.bin', source: bakeModels(root) });
     },
+    // the fetch starts while the HTML is parsed, not when main.ts runs (main.ts's fetch takes the preloaded response)
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        if (!ctx.bundle || !ref) return;
+        const file = Object.values(ctx.bundle).find((f) => f.type === 'asset' && f.names.includes('models.bin'));
+        return file ? [{ tag: 'link', attrs: { rel: 'preload', href: `./${file.fileName}`, as: 'fetch', crossorigin: '' }, injectTo: 'head' }] : undefined;
+      },
+    },
     resolveId(s) { return s === id ? '\0' + id : null; },
     load(s) {
       if (s !== '\0' + id) return null;
