@@ -33,7 +33,15 @@ export class Heightfield {
     this.c = Float32Array.from(t.corners);
     this.waterDist = waterDistance(t);
     this.wm = blurMask(t);
+    this.far = farFromWater(this.wm, t.w, t.h);
   }
+
+  /**
+   * far[(iz + 1) * (w + 1) + ix + 1] = 1 when the 4 x 4 taps `cellField` reads around its (ix, iz) =
+   * floor(x / CELL - 0.5), floor(z / CELL - 0.5) — cells ix - 1 … ix + 2, clamped — are all 0 in the blurred mask
+   * (-1 ≤ ix < w, -1 ≤ iz < h covers every point of the map; D-280).
+   */
+  private readonly far: Uint8Array;
 
   /** Catmull-Rom sample of a cell-centred field. */
   private cellField(f: Float32Array, x: number, z: number): number {
@@ -61,6 +69,10 @@ export class Heightfield {
    * saturates further out. Includes a low-frequency wobble so the banks are not parallel.
    */
   shoreDist(x: number, z: number): number {
+    // inland shortcut (D-280): when every tap of the blurred mask is 0, cellField returns ±0 (< 0.004) — skip the
+    // 16-tap interpolation; the cell index is the one cellField computes, so the answer is the same
+    const ix = Math.floor(x / CELL - 0.5), iz = Math.floor(z / CELL - 0.5);
+    if (ix >= -1 && ix < this.w && iz >= -1 && iz < this.h && this.far[(iz + 1) * (this.w + 1) + ix + 1] === 1) return 12;
     const m = this.cellField(this.wm, x, z);
     if (m < 0.004) return 12;
     const wob = (vnoise(x / 26, z / 19, 1.5, 91) - 0.5) * 3.8 + (vnoise(x / 7.5, z / 6.5, 2.5, 92) - 0.5) * 1.1;
@@ -166,6 +178,23 @@ export class Heightfield {
 function smooth(a: number, b: number, x: number): number {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
+}
+
+/** See `Heightfield.far`: per cellField (ix, iz), are all its 4 x 4 clamped mask taps exactly 0? */
+function farFromWater(wm: Float32Array, W: number, H: number): Uint8Array {
+  const far = new Uint8Array((W + 1) * (H + 1));
+  for (let iz = -1; iz < H; iz++) for (let ix = -1; ix < W; ix++) {
+    let zero = true;
+    for (let k = 0; k < 4 && zero; k++) {
+      const j = iz - 1 + k < 0 ? 0 : iz - 1 + k >= H ? H - 1 : iz - 1 + k;
+      for (let l = 0; l < 4; l++) {
+        const i = ix - 1 + l < 0 ? 0 : ix - 1 + l >= W ? W - 1 : ix - 1 + l;
+        if (wm[j * W + i] !== 0) { zero = false; break; }
+      }
+    }
+    far[(iz + 1) * (W + 1) + ix + 1] = zero ? 1 : 0;
+  }
+  return far;
 }
 
 /** Separable Gaussian blur (σ ≈ 1.1 cells) of the water mask. */
