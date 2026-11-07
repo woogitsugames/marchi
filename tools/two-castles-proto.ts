@@ -1,8 +1,8 @@
 // EXPERIMENTAL throwaway prototype (research 2026-11-07, docs/research/2026-11-07-two-castles.md): can the dispatcher
-// serve two castle orders deterministically, and does "which castle first" decide the seals? Registers two
+// serve two castle orders deterministically, and does "which castle first" decide the seals? Registers three
 // tool-only missions (never in the menu, never in MISSIONS outside this process), adds the second castle's order
 // through the experimental `mission.extraContracts`, and plays a few fixed strategies.
-//   npx tsx tools/two-castles-proto.ts [--map] [--sweep]
+//   npx tsx tools/two-castles-proto.ts [--map] [--sweep] [--chain]
 // Proof of "no change for existing missions": tools/mission-hashes.ts before/after and the golden tests in npm test.
 import {
   MISSIONS, TICK_HZ, applyCommand, createWorld, deserialize, net, serialize, stateHash, step, stars, type World,
