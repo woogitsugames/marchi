@@ -42,23 +42,11 @@ import {
 import { fnoise, type ModelPart, PartBuilder, rng, trs, v3 } from './kit';
 import { leafTexture, modelMaterial, needleTexture, treeUniforms, TWIG_GLSL } from './materials';
 import { rod } from './shapes';
+import { TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind } from './treeKinds';
 
-export type TreeKind = 'spruce' | 'pine' | 'oak' | 'birch' | 'bush';
-export const TREE_KINDS: TreeKind[] = ['spruce', 'pine', 'oak', 'birch', 'bush'];
-
-/** Nominal height and crown radius at scale 1 (used for billboards and culling). */
-export const TREE_SIZE: Record<TreeKind, { height: number; radius: number }> = {
-  spruce: { height: 15, radius: 3.2 },
-  pine: { height: 16, radius: 3.6 },
-  oak: { height: 12, radius: 5.2 },
-  birch: { height: 11, radius: 3.0 },
-  bush: { height: 2.8, radius: 2.0 },
-};
+export { TREE_KINDS, TREE_SIZE, TREE_VARIANTS, type TreeKind };
 
 const BARK = '#4a4036';
-
-/** Number of geometry variants per kind (each is its own `InstancedMesh` near the camera). */
-export const TREE_VARIANTS = 2;
 
 /** LOD radius factor per kind (shrubs keep full models further out) and tint family. */
 const TREE_ATTR: Record<TreeKind, [number, number]> = {

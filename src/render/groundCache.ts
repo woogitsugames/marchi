@@ -26,11 +26,14 @@ export function sameGround(a: Terrain, b: Terrain): boolean {
   return true;
 }
 
-/** `build()` for this ground, or the value kept from an earlier build of this kind on the same ground. */
-export function groundMemo<T>(kind: string, t: Terrain, build: () => T): T {
+/**
+ * `build()` for this ground, or the value kept from an earlier build of this kind on the same ground. `same` decides
+ * what "the same ground" means for this kind (default `sameGround`; the tree plan also compares forest and fields).
+ */
+export function groundMemo<T>(kind: string, t: Terrain, build: () => T, same: (a: Terrain, b: Terrain) => boolean = sameGround): T {
   let list = slots.get(kind);
   if (!list) slots.set(kind, (list = []));
-  const i = list.findIndex((s) => sameGround(s.t, t));
+  const i = list.findIndex((s) => same(s.t, t));
   if (i >= 0) {
     const s = list.splice(i, 1)[0]!;
     s.t = t; // the next comparison against this world's terrain is by identity

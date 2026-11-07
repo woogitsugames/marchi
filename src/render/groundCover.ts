@@ -15,11 +15,13 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
+import { groundMemo } from './groundCache';
 import { CELL, type Heightfield } from './heightfield';
 import { markInstances } from './instancedParts';
 import { hash3, rng, vnoise } from './models/kit';
 import { instancedMaterial, modelMaterial, shareInstancedDepth } from './models/materials';
 import { treeParts } from './models/trees';
+import { reedCandidates } from './placement';
 import type { RoadField } from './roads';
 
 /** A clump of tapered blades (one triangle each), leaning outward. */
@@ -115,23 +117,15 @@ export class GroundCover {
   }
 
   private buildReeds(roads: RoadField): void {
-    const hf = this.hf, WL = hf.waterLevel;
+    const hf = this.hf;
     if (this.reeds) { this.group.remove(this.reeds); this.reeds.dispose(); this.reeds.geometry.dispose(); }
+    // every test but the road clearance depends on the ground alone: the candidates are kept per ground (D-311), so a
+    // road change or a world on the same ground (menu -> mission I) only filters them by the road field
+    const cand = groundMemo('reed-candidates', hf.t, () => reedCandidates(hf));
     const items: number[] = [];
-    const S = 1.0;
-    for (let z = 0; z < hf.sizeZ; z += S) for (let x = 0; x < hf.sizeX; x += S) {
-      const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
-      if (hf.waterDist[cz * hf.w + cx]! > 2.5) continue;
-      const jx = x + hash3(Math.round(x * 4), Math.round(z * 4), 1, 5) * S;
-      const jz = z + hash3(Math.round(x * 4), Math.round(z * 4), 2, 5) * S;
-      const hy = hf.height(jx, jz), h = hy - WL; // (one sample for the test and the instance: D-281)
-      if (h < -0.22 || h > 0.32) continue;
-      // reed beds in patches, with gaps of open bank
-      const patch = vnoise(jx / 11, jz / 9, 0.5, 61) + (vnoise(jx / 3, jz / 3, 1.5, 62) - 0.5) * 0.3;
-      if (patch < 0.5) continue;
-      if (roads.distAt(jx, jz) < 3.6) continue; // (field saturates at ROAD_MAXD)
-      const s = 0.75 + 0.6 * Math.min(1, (patch - 0.5) * 3) * (0.7 + hash3(Math.round(jx * 3), Math.round(jz * 3), 3, 5) * 0.5);
-      items.push(jx, hy - 0.05, jz, hash3(Math.round(jx * 5), 0, Math.round(jz * 5), 7) * 6.28, s);
+    for (let k = 0; k < cand.length; k += 5) {
+      if (roads.distAt(cand[k]!, cand[k + 2]!) < 3.6) continue; // (field saturates at ROAD_MAXD)
+      items.push(cand[k]!, cand[k + 1]!, cand[k + 2]!, cand[k + 3]!, cand[k + 4]!);
     }
     const n = items.length / 5;
     const g = bladeClump(30, 0.7, 1.6, 0.45, 0.28, '#3a3a29', '#8c7b50', 9, '#5b5e3c');

@@ -3417,6 +3417,65 @@ with one castle (XI). Shots (`tools/m16-shots.mjs`, `haul` and `haulsheet`: east
 calm brass pace card and the existing sheet, no new visual element. The D-293 shots of the castle card still show the
 old "gotowe ok." times (D-306 moved them by the wait for a wagon). (decided)
 
+## World build: road mask, reeds and tree plan (perf day 14, BACKLOG P3 from D-255)
+
+**D-310 — The road mask encodes only the texel spans its segments swept.** The startup profile of the menu world build
+(browser, `menu-start` phase, function level) put `RoadField.rebuild` first among the ground's own functions (19 ms
+self, plus 7 ms in `segment`); day 13 listed it as the next item. Most of it was the encode loop over all 768 × 576
+texels (3 × `Math.round` each), run cold. A texel no segment swept holds `ROAD_MAXD` in all three distance fields, and
+`Math.round((6 / 6) * 255)` is 255: the texture now starts as `fill(255)` and each texel row encodes only the span
+between the first and last column any segment of this rebuild swept (`rowLo` / `rowHi`, widened per segment). Same bytes
+by construction; `tests/road-mask-identity.test.ts` compares with the replaced full encode on 7 worlds, also after half
+and all of the roads are removed (texels written by the previous rebuild must return to 255 — checked to fail without
+the `fill`). Measured and not kept: skipping `sqrt` for texels with d² ≥ 36 in `segment` (exact, but no gain within
+the noise). Cost (node, `tools/world-probe.ts`, cold process per run, thread CPU, median of 21 interleaved): menu
+`roads.rebuild` 28,3 → 20,0 ms; browser (startup probe, `menu-start`, 9 runs per version) `roads.ts` 26 → 15 ms. The
+rebuild runs on every network change too (warm, ~8 ms, now mostly `segment`). (decided)
+
+**D-311 — Reeds: the scan visits only cells near water, and its ground-only result is kept per ground.** `buildReeds`
+walked every metre of the map (442 000 points) to test the cell's water distance; the new `reedCandidates`
+(`src/render/placement.ts`) walks the same rows and, inside a row, only the cells with `waterDist ≤ 2,5`, their 4 points
+in order (`x = cx · 4 + k`, exactly what `x += 1` from 0 gave) — the same points in the same order. Every test except the
+road clearance depends on the ground alone, so the candidates (x, y, z, rotation, scale) go into the ground memo (D-282,
+kind `reed-candidates`) and each rebuild only filters them by `roads.distAt < 3,6`: a road change, or a world on the
+same ground (menu → mission I), no longer samples any height for reeds. Cost (node, as D-310): menu reeds 14,8 → 10,1
+ms (the rest is the instanced mesh, its matrices and bounding sphere); menu → mission I 10,5 → 0,0 ms; menu → mission
+II (a new ground, warm) 17,1 → 8,6 ms. (decided)
+
+**D-312 — Trees: a plan per ground, filtered per world; placement in its own headless module.** `placeTrees` depends
+on the world only through buildings, yards, roads (`blocked`, `rd`, `roads.distAt`); the rest — the per-cell generators,
+forest / scrub-belt / hedgerow / bank / copse rules, the water and field cells, field clearance, height, water line and
+matrices — depends on the ground (with its forest and fields). `planTrees` records, per map cell, the candidates its
+generator yields (main, then the bank shrubs, which the old code made only where `rd > 2` and which are that cell's last
+use of its generator) and the copses that pass the ground tests, each with its road clearance and cell; `placeTrees`
+skips blocked cells and candidates, the bank shrubs where `rd ≤ 2` and copses near the network, and runs the old
+`put`'s remaining tests (field clearance, then height and water line) and `makeTree` once per candidate and ground, on
+first use — so the first build does no more work than before (eagerly testing every candidate cost +5–10 ms cold:
+the old `put` rejected candidates near roads before sampling the height). Two details found by measuring: candidate data
+in growable typed arrays (number[] pushes of doubles were slower than the placement), and `kind | 0` when a tree is
+made from the Float64Array (a double in `Tree.kind` turned the field representation to Double and slowed every
+`filter` and `update` over the trees). The plan is kept per ground with `sameTreeGround` (`sameGround` plus forest and
+fields; `groundMemo` takes the comparison as a new optional argument). Tree kinds, sizes and the variant count moved
+to `models/treeKinds.ts` and the placement (trees, apron trees, reeds) to `placement.ts`, both without materials, so
+`tests/tree-plan-identity.test.ts` runs them under tsx: it keeps the replaced `placeTrees` and reed scan as references
+and compares trees and reed items bit for bit on menu, I, II, VII, the free valley (seed 7), menu and II again (kept
+plans), each as built, with 250 more roads, with half the roads, with half the buildings (checked to fail with
+`rd ≥ 2`). Cost (node, as D-310): menu tree placement 18,8 → 19,9 ms (same within the noise), menu → mission I
+13,2 → 6,8 ms (what is left: `rd`, the yards, the instanced meshes). Whole render-side world build in node: menu
+189 → 179 ms, menu → mission I (same ground: network sync only) 34,3 → 20,1 ms, menu → mission II 77,3 → 72,7 ms.
+Browser (SwiftShader, 412×915, high, `docs/research/startup14-data/run.sh`, 3 rounds × 3 runs interleaved, load 6–8
+from other sessions): CPU of the menu world build (`menu-start`) 463 → 418 ms (−10 %), `menu-world` mark 839 → 761,
+`ready` 1055 → 1032, first frame 1936 → 1899 (the last two within the spread); `newGame('m1')` after the menu
+(`tools/world-load-probe.mjs`, synchronous) 102 → 92 ms median (runs 39–125, noisy), mission II 158 → 161 (unchanged:
+a new ground still builds everything). Identity: pixels `docs/research/perf14-diff/jam-diff.txt` — 15 harness scenes
+before (`28d3076`) vs after, menu frames 1/3/30 high and low, mission I at 60–240 m with 20–40 wagons, II, VII, XII,
+XVI as built (new `world=` harness parameter), `prior=m12`, `prior=m1` (same terrain object: resync only), II after VII
+and VII after II (one ground, two map ids, kept plans) — **0 px** in all; `tools/terrain-hash.ts` (terrain, heights,
+water, tree lists, instances, reeds) identical on 15 worlds; `tools/mission-hashes.ts` identical (71 rows, sim
+untouched). Not done: the terrain mesh itself. D-283's one-pass grid evaluator was slower cold; since D-296 only the
+pieces in the first frame's view are built before it (~20 ms of frame 1 in the browser profile, no longer ~110 ms
+before `ready`), and a second world on a kept ground builds none. Left in the menu world build: the building and tree
+models (`kit.ts`, three's geometry code, ~100 ms of `menu-start`). (decided)
 ## Mission XVI: a forecast honest from the first minute (BACKLOG P3 from D-290 and D-306/D-308)
 
 **D-313 — Two castles: the forecast models the chain (producers and fleet) instead of reading the measured pace.**

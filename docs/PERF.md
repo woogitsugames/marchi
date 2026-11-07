@@ -173,3 +173,10 @@ low 762 → 729 ms (SwiftShader, load 11–14 — w szumie); node, CPU wątku: t
 129,6 ms. Zmiana świata menu ↔ misja: teren, pas wody i drzewa fartucha z cache (−45…55 ms desktop). Wszystko bit w bit
 (`tools/terrain-hash.ts`, `tests/ground-identity.test.ts`).
 
+## 2026-11-07 — dzień 14: maska dróg, trzcina i plan drzew w budowie świata (D-310..D-312)
+
+Raport: `docs/research/2026-11-06-perf-day10.md`, sekcja „After day 14”. CPU budowy świata menu (`menu-start`,
+SwiftShader, 9 przebiegów na wersję naprzemiennie, load 6–8) 463 → 418 ms; `roads.ts` 26 → 15 ms. Node (`tools/world-probe.ts`,
+zimny proces, CPU wątku, mediana 21): świat menu 189 → 179 ms, menu → misja I (to samo podłoże, tylko synchronizacja sieci)
+34,3 → 20,1 ms, menu → misja II 77,3 → 72,7 ms. Każda zmiana sieci w misji: trzcina 0 ms, plan drzew z cache.
+Identyczne: 15 scen harnessu 0 px (`perf14-diff/`), `tools/terrain-hash.ts` (15 światów), `tools/mission-hashes.ts`.
