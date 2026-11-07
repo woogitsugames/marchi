@@ -831,6 +831,7 @@ export const en: FullDict = {
   'seal.tempo.castle': 'pace: pick a castle',
   'hud.castleFirst': '{name} goes first',
   'hud.castleEven': 'The castles share goods evenly',
+  'castle.letterLate': 'Late: {name} ({time}, due {due})',
   'menu.m16': 'XVI. Two castles',
   'menu.m16Sub': 'First in line, first on time',
 };

@@ -1,6 +1,6 @@
 // Long-running simulation fuzzer.
 //   npx tsx tools/fuzz.ts --runs 500 [--ticks 6000] [--seed 1] [--missions m1,m4] [--save] [--timing] [--no-stalls]
-// Each run: a seeded random command sequence on one of the missions (default: every playable map, m1-m15 + sandbox), every tick checked for
+// Each run: a seeded random command sequence on one of the missions (default: every playable map, m1-m16 + sandbox), every tick checked for
 // invariants, unexplained stalls, NaN/Infinity and stuck wagons; a save/load clone runs side by
 // side from a random tick; the whole run is replayed once more for determinism.
 // On failure the sequence is shrunk; --save writes it to tests/regressions/<kind>-<seed>.json.

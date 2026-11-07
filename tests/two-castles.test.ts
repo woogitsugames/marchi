@@ -14,6 +14,7 @@ import { M16_EXTRA, M16_STRATEGIES, castlesOf, runM16 } from '../tools/bot-m16';
 import { castleForecast, castleRival, newPaceLog, samplePace } from '../src/sim/index';
 import { castleCard, paceCard } from '../src/ui/paceCard';
 import { eyePlayer, run } from '../tools/balance-night6';
+import { readFileSync } from 'node:fs';
 import { assert, eq, test } from './harness';
 
 const min = (m: number): number => Math.round(m * 60 * TICK_HZ);
@@ -21,6 +22,9 @@ type J = Record<string, any>; // eslint-disable-line @typescript-eslint/no-expli
 
 test('m16: registered, two castles on the dry valley, the east castle holds the main contract', () => {
   eq(MISSIONS.m16, M16_MISSION, 'm16 registered');
+  // the menu module needs the browser i18n loader: read its list as text (appended as XVI, no renumbering)
+  const menu = readFileSync(new URL('../src/ui/menu.ts', import.meta.url), 'utf8');
+  assert(/MENU_MISSIONS = \[[^\]]*'m14', 'm15', 'm16'\] as const/.test(menu) && /'XIV', 'XV', 'XVI'\]/.test(menu), 'appended as XVI (D-288)');
   const w = createWorld('m16');
   const m = w.state.mission;
   eq(w.state.mapId, 'valley-m3', 'reuses the dry valley');

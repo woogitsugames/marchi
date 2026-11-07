@@ -836,6 +836,7 @@ export const pl = {
   'seal.tempo.castle': 'tempo: wybierz zamek',
   'hud.castleFirst': '{name} pierwszy',
   'hud.castleEven': 'Zamki dzielą towar po równo',
+  'castle.letterLate': 'Po terminie: {name} ({time}, termin {due})',
   'menu.m16': 'XVI. Dwa zamki',
   'menu.m16Sub': 'Kto pierwszy, ten na czas',
 } as const;
@@ -848,32 +849,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  'contract.toCastle',
-  'castle.name.east',
-  'castle.name.north',
-  'castle.due',
-  'castle.firstTag',
-  'castle.first',
-  'castle.firstOn',
-  'castle.even',
-  'castle.splitEven',
-  'castle.splitAfter',
-  'castle.fcLate',
-  'castle.fcOk',
-  'castle.fcFirst',
-  'castle.rival',
-  'castle.late',
-  'castle.lateBy',
-  'castle.onTime',
-  'cause.paceCastleEven',
-  'cause.paceCastleAfter',
-  'fix.castleFirstWhy',
-  'fix.castleFirstLate',
-  'seal.tempo.castle',
-  'hud.castleFirst',
-  'hud.castleEven',
-  'menu.m16',
-  'menu.m16Sub',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

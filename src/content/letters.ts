@@ -1,10 +1,11 @@
-// Authored contract letters for missions I-XV (VII-IX: docs/content/letters-7-9.md, X-XII:
-// docs/content/letters-10-12.md; XIII: docs/missions/m13.md, night 6; XIV-XV: docs/missions/m14.md, m15.md, D-210); all
+// Authored contract letters for missions I-XVI (VII-IX: docs/content/letters-7-9.md, X-XII:
+// docs/content/letters-10-12.md; XIII: docs/missions/m13.md, night 6; XIV-XV: docs/missions/m14.md, m15.md, D-210;
+// XVI: docs/missions/m16.md, D-288); all
 // player-facing copy is localized.
 // The letter counts are intentionally separate from simulation and UI logic.
 import { getLang, type Lang } from '../i18n/index';
 
-export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12' | 'm13' | 'm14' | 'm15';
+export type ContractMissionId = 'm1' | 'm2' | 'm3' | 'm4' | 'm5' | 'm6' | 'm7' | 'm8' | 'm9' | 'm10' | 'm11' | 'm12' | 'm13' | 'm14' | 'm15' | 'm16';
 export type LetterPhase = 'opening' | 'won' | 'lost';
 export type SealCount = 1 | 2 | 3;
 
@@ -2339,6 +2340,162 @@ export const CONTRACT_LETTERS = {
         3: "दूसरा पत्र आया तो लकड़ी पहले से द्वार पर थी। भंडार सही जगह रखने के लिए तीन मुहरें।\n— Wszebor",
       },
       lost: "समय बीत गया, बाड़ नहीं बनी। लकड़हारे भरे आँगन के साथ खड़े रहे — क़िले के पास भंडार उन्हें काम में लगाए रखता।\n— Wszebor",
+    },
+  },
+  // mission XVI "Dwa zamki" (D-288; pl/en authored, the other languages agent translations pending native review)
+  m16: {
+    pl: {
+      opening: "Dwa zamki czekają na deski z jednego tartaku: Zamek Wschodni chce 24 do 5:00, Zamek Północny 30 do 9:00; wszystko przed 12:00. Same wozy podzielą deski po równo i Wschodni się spóźni. Na karcie zamku wybierz, który jest pierwszy — i zdecyduj wcześnie.\n— Wszebor",
+      won: {
+        1: "Oba zamki mają deski, ale jeden list przyszedł po terminie. Jedna pieczęć; kto pierwszy, ten na czas — wybierz od razu.\n— Wszebor",
+        2: "Oba listy spełnione na czas. Dwie pieczęcie; jeszcze jeden wóz skróciłby deskom drogę do obu bram.\n— Wszebor",
+        3: "Wschodni dostał deski długo przed terminem, Północny wkrótce po nim. Trzy pieczęcie za trafny wybór i dość wozów.\n— Wszebor",
+      },
+      lost: "Minęło południe, a zamki wciąż czekają na deski. Wybierz wcześnie, który zamek jest pierwszy, i pilnuj, by wozy jeździły.\n— Wszebor",
+    },
+    en: {
+      opening: "Two castles await planks from one sawmill: the East Castle needs 24 by 5:00, the North Castle 30 by 9:00; all before 12:00. Left alone, the wagons share the planks evenly and the East Castle will be late. On a castle's card choose which goes first — and choose early.\n— Wszebor",
+      won: {
+        1: "Both castles have their planks, but one letter came late. One seal; first in line is first on time — choose at once.\n— Wszebor",
+        2: "Both letters were met on time. Two seals; one more wagon would have shortened the planks' road to both gates.\n— Wszebor",
+        3: "The East Castle had its planks well before its deadline, the North soon after. Three seals for a sound choice and enough wagons.\n— Wszebor",
+      },
+      lost: "Noon has passed and the castles still wait for planks. Choose early which castle goes first, and keep the wagons moving.\n— Wszebor",
+    },
+    de: {
+      opening: "Zwei Burgen warten auf Bretter aus einem Sägewerk: die Ostburg braucht 24 bis 5:00, die Nordburg 30 bis 9:00; alles vor 12:00. Allein teilen die Wagen die Bretter gleich, und die Ostburg kommt zu spät. Wähle auf der Karte einer Burg, welche zuerst kommt — und wähle früh.\n— Wszebor",
+      won: {
+        1: "Beide Burgen haben ihre Bretter, doch ein Brief kam zu spät. Ein Siegel; wer zuerst kommt, ist pünktlich — wähle sofort.\n— Wszebor",
+        2: "Beide Briefe rechtzeitig erfüllt. Zwei Siegel; ein Wagen mehr hätte den Brettern den Weg zu beiden Toren verkürzt.\n— Wszebor",
+        3: "Die Ostburg hatte ihre Bretter lange vor der Frist, die Nordburg bald danach. Drei Siegel für die kluge Wahl und genug Wagen.\n— Wszebor",
+      },
+      lost: "Mittag ist vorbei, und die Burgen warten noch auf Bretter. Wähle früh, welche Burg zuerst kommt, und halte die Wagen in Fahrt.\n— Wszebor",
+    },
+    fr: {
+      opening: "Deux châteaux attendent des planches d'une seule scierie : le Château de l'Est en veut 24 avant 5:00, le Château du Nord 30 avant 9:00 ; le tout avant 12:00. Seuls, les chariots partagent également et l'Est sera en retard. Sur la fiche d'un château, choisis lequel passe d'abord — et choisis tôt.\n— Wszebor",
+      won: {
+        1: "Les deux châteaux ont leurs planches, mais une lettre est arrivée en retard. Un sceau ; premier servi, premier à temps.\n— Wszebor",
+        2: "Les deux lettres honorées à temps. Deux sceaux ; un chariot de plus aurait raccourci la route des planches.\n— Wszebor",
+        3: "L'Est a eu ses planches bien avant l'échéance, le Nord peu après. Trois sceaux pour un choix juste et assez de chariots.\n— Wszebor",
+      },
+      lost: "Midi est passé et les châteaux attendent encore leurs planches. Choisis tôt lequel passe d'abord et fais rouler les chariots.\n— Wszebor",
+    },
+    nl: {
+      opening: "Twee kastelen wachten op planken uit één zagerij: het Oostkasteel wil 24 vóór 5:00, het Noordkasteel 30 vóór 9:00; alles vóór 12:00. Vanzelf verdelen de wagens gelijk en komt het Oostkasteel te laat. Kies op de kaart van een kasteel welk eerst gaat — en kies vroeg.\n— Wszebor",
+      won: {
+        1: "Beide kastelen hebben hun planken, maar één brief kwam te laat. Eén zegel; wie eerst komt, is op tijd — kies meteen.\n— Wszebor",
+        2: "Beide brieven op tijd vervuld. Twee zegels; nog een wagen had de weg van de planken naar beide poorten verkort.\n— Wszebor",
+        3: "Het Oostkasteel had zijn planken ruim op tijd, het Noordkasteel kort daarna. Drie zegels voor een goede keus en genoeg wagens.\n— Wszebor",
+      },
+      lost: "Het middaguur is voorbij en de kastelen wachten nog op planken. Kies vroeg welk kasteel eerst gaat en houd de wagens rijdend.\n— Wszebor",
+    },
+    es: {
+      opening: "Dos castillos esperan tablas de un solo aserradero: el Castillo del Este quiere 24 antes de las 5:00, el Castillo del Norte 30 antes de las 9:00; todo antes de las 12:00. Solos, los carros reparten por igual y el Este llegará tarde. En la ficha de un castillo elige cuál va primero, y elige pronto.\n— Wszebor",
+      won: {
+        1: "Ambos castillos tienen sus tablas, pero una carta llegó tarde. Un sello; el primero llega a tiempo: elige enseguida.\n— Wszebor",
+        2: "Ambas cartas cumplidas a tiempo. Dos sellos; otro carro habría acortado el camino de las tablas a ambas puertas.\n— Wszebor",
+        3: "El Este tuvo sus tablas mucho antes del plazo, el Norte poco después. Tres sellos por una buena elección y carros suficientes.\n— Wszebor",
+      },
+      lost: "Pasó el mediodía y los castillos aún esperan tablas. Elige pronto cuál va primero y mantén los carros en marcha.\n— Wszebor",
+    },
+    it: {
+      opening: "Due castelli aspettano assi da una sola segheria: il Castello Est ne vuole 24 entro le 5:00, il Castello Nord 30 entro le 9:00; tutto prima delle 12:00. Da soli, i carri dividono in parti uguali e l'Est arriverà tardi. Sulla scheda di un castello scegli chi è primo, e scegli presto.\n— Wszebor",
+      won: {
+        1: "Entrambi i castelli hanno le assi, ma una lettera è arrivata tardi. Un sigillo; chi è primo arriva in tempo: scegli subito.\n— Wszebor",
+        2: "Entrambe le lettere rispettate in tempo. Due sigilli; un carro in più avrebbe accorciato la strada delle assi.\n— Wszebor",
+        3: "L'Est ha avuto le assi ben prima della scadenza, il Nord poco dopo. Tre sigilli per la scelta giusta e carri sufficienti.\n— Wszebor",
+      },
+      lost: "È passato mezzogiorno e i castelli aspettano ancora le assi. Scegli presto chi è primo e tieni i carri in movimento.\n— Wszebor",
+    },
+    "pt-BR": {
+      opening: "Dois castelos esperam tábuas de uma só serraria: o Castelo Leste quer 24 até 5:00, o Castelo Norte 30 até 9:00; tudo antes de 12:00. Sozinhas, as carroças dividem igualmente e o Leste vai atrasar. Na ficha de um castelo, escolha qual vem primeiro — e escolha cedo.\n— Wszebor",
+      won: {
+        1: "Os dois castelos têm suas tábuas, mas uma carta chegou atrasada. Um selo; quem vem primeiro chega no prazo: escolha logo.\n— Wszebor",
+        2: "As duas cartas cumpridas no prazo. Dois selos; mais uma carroça teria encurtado o caminho das tábuas às duas portas.\n— Wszebor",
+        3: "O Leste recebeu as tábuas bem antes do prazo, o Norte logo depois. Três selos pela escolha certa e carroças suficientes.\n— Wszebor",
+      },
+      lost: "Passou o meio-dia e os castelos ainda esperam tábuas. Escolha cedo qual vem primeiro e mantenha as carroças rodando.\n— Wszebor",
+    },
+    sv: {
+      opening: "Två slott väntar på plankor från ett enda sågverk: Östra slottet vill ha 24 före 5:00, Norra slottet 30 före 9:00; allt före 12:00. På egen hand delar vagnarna lika och Östra slottet blir sent. Välj på ett slotts kort vilket som går först — och välj tidigt.\n— Wszebor",
+      won: {
+        1: "Båda slotten har sina plankor, men ett brev kom för sent. Ett sigill; först i kön är först i tid — välj genast.\n— Wszebor",
+        2: "Båda breven uppfyllda i tid. Två sigill; en vagn till hade kortat plankornas väg till båda portarna.\n— Wszebor",
+        3: "Östra slottet fick sina plankor långt före fristen, Norra strax efter. Tre sigill för ett klokt val och nog med vagnar.\n— Wszebor",
+      },
+      lost: "Middagen är förbi och slotten väntar fortfarande på plankor. Välj tidigt vilket slott som går först och håll vagnarna i rörelse.\n— Wszebor",
+    },
+    tr: {
+      opening: "İki kale tek bir hızarhaneden kalas bekliyor: Doğu Kalesi 5:00'e kadar 24, Kuzey Kalesi 9:00'a kadar 30 istiyor; hepsi 12:00'den önce. Kendi hâline bırakılırsa arabalar eşit paylaştırır ve Doğu geç kalır. Bir kalenin kartında hangisinin önce olacağını seç — ve erken seç.\n— Wszebor",
+      won: {
+        1: "İki kale de kalaslarını aldı ama bir mektup gecikti. Bir mühür; önce gelen zamanında gelir — hemen seç.\n— Wszebor",
+        2: "İki mektup da zamanında karşılandı. İki mühür; bir araba daha kalasların iki kapıya yolunu kısaltırdı.\n— Wszebor",
+        3: "Doğu kalaslarını süresinden çok önce, Kuzey hemen ardından aldı. Doğru seçim ve yeterli araba için üç mühür.\n— Wszebor",
+      },
+      lost: "Öğle geçti, kaleler hâlâ kalas bekliyor. Hangi kalenin önce olacağını erken seç ve arabaları yürüt.\n— Wszebor",
+    },
+    ru: {
+      opening: "Два замка ждут доски с одной лесопилки: Восточному замку нужно 24 к 5:00, Северному — 30 к 9:00; всё до 12:00. Сами повозки поделят доски поровну, и Восточный опоздает. В карточке замка выбери, какой первым, — и выбери рано.\n— Wszebor",
+      won: {
+        1: "Оба замка получили доски, но одно письмо опоздало. Одна печать; кто первый, тот вовремя — выбирай сразу.\n— Wszebor",
+        2: "Оба письма исполнены вовремя. Две печати; ещё одна повозка сократила бы доскам путь к обоим воротам.\n— Wszebor",
+        3: "Восточный получил доски задолго до срока, Северный вскоре после. Три печати за верный выбор и достаточно повозок.\n— Wszebor",
+      },
+      lost: "Полдень миновал, а замки всё ждут досок. Выбери рано, какой замок первым, и не давай повозкам стоять.\n— Wszebor",
+    },
+    uk: {
+      opening: "Два замки чекають на дошки з однієї лісопильні: Східному замку треба 24 до 5:00, Північному — 30 до 9:00; усе до 12:00. Самі вози поділять дошки порівну, і Східний запізниться. У картці замку обери, який першим, — і обери рано.\n— Wszebor",
+      won: {
+        1: "Обидва замки мають дошки, але один лист запізнився. Одна печатка; хто перший, той вчасно — обирай одразу.\n— Wszebor",
+        2: "Обидва листи виконано вчасно. Дві печатки; ще один віз скоротив би дошкам шлях до обох брам.\n— Wszebor",
+        3: "Східний отримав дошки задовго до терміну, Північний невдовзі по тому. Три печатки за влучний вибір і досить возів.\n— Wszebor",
+      },
+      lost: "Минув полудень, а замки все чекають на дошки. Обери рано, який замок першим, і не давай возам стояти.\n— Wszebor",
+    },
+    ja: {
+      opening: "二つの城が一つの製材所の板材を待っている。東の城は5:00までに24、北の城は9:00までに30、すべて12:00より前に。放っておけば荷車は均等に分け、東の城は遅れる。城のカードでどちらを優先するか選べ。早く選ぶことだ。\n— Wszebor",
+      won: {
+        1: "両方の城に板材が届いたが、一通の書状は期限に遅れた。印章一つ。先に選んだ城が間に合う。すぐに選べ。\n— Wszebor",
+        2: "二通の書状とも期限内に果たされた。印章二つ。荷車がもう一台あれば、両方の門への道のりが縮んだろう。\n— Wszebor",
+        3: "東の城は期限よりずっと前に、北の城もほどなく板材を得た。正しい選択と十分な荷車に印章三つ。\n— Wszebor",
+      },
+      lost: "正午を過ぎても城はまだ板材を待っている。どちらの城を優先するか早く選び、荷車を止めるな。\n— Wszebor",
+    },
+    ko: {
+      opening: "두 성이 제재소 한 곳의 판자를 기다린다. 동쪽 성은 5:00까지 24개, 북쪽 성은 9:00까지 30개, 모두 12:00 전에. 그냥 두면 수레가 똑같이 나누어 동쪽 성이 늦는다. 성 카드에서 어느 성을 먼저 할지 골라라. 일찍 골라야 한다.\n— Wszebor",
+      won: {
+        1: "두 성 모두 판자를 받았지만 서한 하나가 늦었다. 인장 하나. 먼저 고른 성이 제때 받는다. 바로 골라라.\n— Wszebor",
+        2: "두 서한 모두 제때 이행되었다. 인장 둘. 수레 한 대가 더 있었다면 두 성문까지의 길이 짧아졌을 것이다.\n— Wszebor",
+        3: "동쪽 성은 기한보다 한참 전에, 북쪽 성도 곧이어 판자를 받았다. 올바른 선택과 충분한 수레에 인장 셋.\n— Wszebor",
+      },
+      lost: "정오가 지났는데 성들은 아직 판자를 기다린다. 어느 성을 먼저 할지 일찍 고르고 수레를 쉬지 않게 하라.\n— Wszebor",
+    },
+    "zh-Hans": {
+      opening: "两座城堡等着同一家锯木厂的木板：东城堡要在5:00前收到24块，北城堡要在9:00前收到30块；全部在12:00前。放任不管，马车会平均分配，东城堡就会迟到。在城堡卡片上选定哪座优先——要早做决定。\n— Wszebor",
+      won: {
+        1: "两座城堡都拿到了木板，但有一封信迟了。一枚印章；先选者按时——要立刻选。\n— Wszebor",
+        2: "两封信都按时完成。两枚印章；再多一辆马车，木板通往两座城门的路就会更短。\n— Wszebor",
+        3: "东城堡远在期限前就拿到木板，北城堡紧随其后。三枚印章，奖励正确的选择和足够的马车。\n— Wszebor",
+      },
+      lost: "正午已过，城堡还在等木板。早些选定哪座城堡优先，别让马车停下。\n— Wszebor",
+    },
+    ar: {
+      opening: "قلعتان تنتظران ألواحًا من منشرة واحدة: القلعة الشرقية تريد 24 قبل 5:00، والقلعة الشمالية 30 قبل 9:00؛ والكل قبل 12:00. إن تُركت العربات وحدها قسمت الألواح بالتساوي فتتأخر الشرقية. اختر من بطاقة القلعة أيهما أولًا، واختر مبكرًا.\n— Wszebor",
+      won: {
+        1: "وصلت الألواح إلى القلعتين، لكن رسالة واحدة تأخرت. ختم واحد؛ الأولى تصل في الموعد، فاختر فورًا.\n— Wszebor",
+        2: "نُفذت الرسالتان في الموعد. ختمان؛ عربة أخرى كانت ستقصّر طريق الألواح إلى البوابتين.\n— Wszebor",
+        3: "نالت الشرقية ألواحها قبل موعدها بكثير، والشمالية بعدها بقليل. ثلاثة أختام لاختيار صائب وعربات كافية.\n— Wszebor",
+      },
+      lost: "مضى الظهر والقلعتان ما زالتا تنتظران الألواح. اختر مبكرًا أي قلعة أولًا، وأبقِ العربات تسير.\n— Wszebor",
+    },
+    hi: {
+      opening: "दो किले एक ही आरा मिल के तख्तों की राह देख रहे हैं: पूर्वी किले को 5:00 तक 24, उत्तरी किले को 9:00 तक 30 चाहिए; सब 12:00 से पहले। अपने आप गाड़ियाँ तख्ते बराबर बाँटेंगी और पूर्वी किला देर से पाएगा। किले के कार्ड पर चुनो कि पहले कौन — और जल्दी चुनो।\n— Wszebor",
+      won: {
+        1: "दोनों किलों को तख्ते मिल गए, पर एक पत्र देर से पूरा हुआ। एक मुहर; जो पहले, वही समय पर — तुरंत चुनो।\n— Wszebor",
+        2: "दोनों पत्र समय पर पूरे हुए। दो मुहरें; एक और गाड़ी तख्तों का रास्ता दोनों फाटकों तक छोटा कर देती।\n— Wszebor",
+        3: "पूर्वी किले को तख्ते समय-सीमा से बहुत पहले मिले, उत्तरी को उसके तुरंत बाद। सही चुनाव और काफ़ी गाड़ियों के लिए तीन मुहरें।\n— Wszebor",
+      },
+      lost: "दोपहर बीत गई और किले अब भी तख्तों की राह देख रहे हैं। जल्दी चुनो कि पहले कौन, और गाड़ियाँ चलती रखो।\n— Wszebor",
     },
   },
 } as const satisfies Record<ContractMissionId, Record<Lang, ContractLetterSet>>;
