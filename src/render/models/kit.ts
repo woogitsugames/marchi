@@ -300,14 +300,7 @@ export class PartBuilder {
         pa[i * 3 + 1] = y + fnoise(x * f + 31.7, y * f, z * f, seed + 2) * a;
         pa[i * 3 + 2] = z + fnoise(x * f, y * f + 57.1, z * f, seed + 3) * a;
       }
-      if (o.renormal) {
-        // three's computeVertexNormals rewrites the existing normal array in place
-        const t = new BufferGeometry();
-        t.setIndex(new BufferAttribute(index, 1));
-        t.setAttribute('position', new BufferAttribute(pa, 3));
-        t.setAttribute('normal', new BufferAttribute(na, 3));
-        t.computeVertexNormals();
-      }
+      if (o.renormal) vertexNormals(index, pa, na);
     }
 
     // vertex colours
@@ -395,6 +388,33 @@ function iota(n: number): Uint32Array {
   const idx = new Uint32Array(n);
   for (let i = 0; i < n; i++) idx[i] = i;
   return idx;
+}
+
+/**
+ * three's indexed `computeVertexNormals` + `normalizeNormals` on plain arrays, in place (D-321): the same face
+ * normals, accumulated through the float32 array in the same order (all three corners read before any is written,
+ * as three does), then normalised the same way; without the per-vertex attribute accessors.
+ */
+function vertexNormals(index: Uint32Array, pa: Float32Array, na: Float32Array): void {
+  na.fill(0);
+  for (let i = 0; i + 2 < index.length; i += 3) {
+    const a = index[i]! * 3, b = index[i + 1]! * 3, c = index[i + 2]! * 3;
+    const bx = pa[b]!, by = pa[b + 1]!, bz = pa[b + 2]!;
+    const cbx = pa[c]! - bx, cby = pa[c + 1]! - by, cbz = pa[c + 2]! - bz;
+    const abx = pa[a]! - bx, aby = pa[a + 1]! - by, abz = pa[a + 2]! - bz;
+    const x = cby * abz - cbz * aby, y = cbz * abx - cbx * abz, z = cbx * aby - cby * abx;
+    const ax0 = na[a]! + x, ay0 = na[a + 1]! + y, az0 = na[a + 2]! + z;
+    const bx0 = na[b]! + x, by0 = na[b + 1]! + y, bz0 = na[b + 2]! + z;
+    const cx0 = na[c]! + x, cy0 = na[c + 1]! + y, cz0 = na[c + 2]! + z;
+    na[a] = ax0; na[a + 1] = ay0; na[a + 2] = az0;
+    na[b] = bx0; na[b + 1] = by0; na[b + 2] = bz0;
+    na[c] = cx0; na[c + 1] = cy0; na[c + 2] = cz0;
+  }
+  for (let i = 0; i < na.length; i += 3) {
+    const x = na[i]!, y = na[i + 1]!, z = na[i + 2]!;
+    const k = 1 / (Math.sqrt(x * x + y * y + z * z) || 1);
+    na[i] = x * k; na[i + 1] = y * k; na[i + 2] = z * k;
+  }
 }
 
 /**
