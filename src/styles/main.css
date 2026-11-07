@@ -413,6 +413,9 @@ body.is-clear #hud, body.is-clear #markers, body.is-clear #sheets, body.is-clear
   font-family: var(--font-head); font-weight: 600; font-size: 26px; line-height: 1; }
 .sheet-head .sh-help[hidden] { display: none; }
 .sheet-head .sh-help:active { color: var(--ink); }
+/* RTL: the Arabic question mark is the mirror image of the Latin one (؟, as in the card's own "ماذا يعني هذا؟");
+   the display face has no U+061F, so its own "?" is flipped (QA 2026-11-07, D-284) */
+:root[dir='rtl'] .sheet-head .sh-help { transform: scaleX(-1); }
 .sheet-body {
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -2536,6 +2539,9 @@ body.is-mini .letter.l-parts .ledger li:nth-child(n + 2) { display: none; }
 .c-more-btn .c-n { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .c-more-btn:active { color: var(--clay); }
 body.is-short .sheet-grip { height: 4px; }
+/* Arabic ascenders (lam, alif) rise above a Latin cap: with a 4 px grip the kicker touched the frame's inner rule in
+   915x412 (QA 2026-11-07, D-285) */
+:root[dir='rtl'] body.is-short .sheet-grip { height: 8px; }
 body.is-short .sheet-head { padding-block-end: 4px; }
 body.is-short .section-h.chain-h { display: none; }
 body.is-short .chain li + li { margin-top: 14px; }
