@@ -3653,3 +3653,24 @@ Probe (`scratchpad`, 30 world switches menu → I…XVI → menu in one page, lo
 backing store 83–91 MB with no trend; three.js live geometries 70–85 and textures 22–25 throughout — the ground memo
 (2 grounds per kind), the tree plan and the reed candidates do not grow with switches.
 (decided)
+
+**D-329 — QA of 7 XI: the haul card and the castle rows in every language; three small UI fixes; the layout check measures the haul card.**
+Full layout matrix on the merged base (`npm run layout`, own preview of the build): 525 jobs, 0 failures, positive
+control ok. The haul card (D-307) and its sheet were not in the matrix: two scenes `haul-m16` / `haulsheet-m16`
+(XVI, east castle first from 0:00, the app's loop to 1:30, the card's eye tapped; the switch's toast waited out; the
+card only attached, since the Flip cover folds it into the seal). Run in all 17 languages + pseudo at 412 x 915 and
+915 x 412, and in the default five at every view. They found, and the shots of `tools/m16-shots.mjs` in 17 languages
+showed (scratchpad, flat map):
+1. Short landscape, French and pseudo: the waybill overlapped the tool rail (62 px²) once a castle goes first — the
+   pennant tag's word ("d'abord", "первый", "primero") broke "Château de l'Est — avant 5:00" onto two lines. On the
+   compact landscape card (D-53) the tag keeps its pennant and the row its brass tint; the word is screen-reader only,
+   as the supplier's name there. All 18 languages pass. Shots `docs/shots/qa17-waybill-flag-{before,after}-915x412-fr.jpg`.
+2. Every sheet's good chip with a sub-line ("+2 unterwegs", "В пути: +2", "+2运输中"): the sub-line's descenders sat on
+   the kit frame's lower rule (CJK glyphs crossed it). The chip with a sub-line pads 2/6 px instead of 4/4: the text
+   moves up 2 px, the chip keeps its height (an 8 px bottom first grew it and pushed the 360 x 740 pseudo castle chain
+   under the dock — caught by the layout check, D-146). Shots `docs/shots/qa17-chip-{before,after}-412x915-{de,zh}.jpg`.
+3. The haul sheet's two sentences were joined with a space, so Chinese and Japanese showed a gap after "。".
+   `sentences(...)` in `src/ui/format.ts` joins with nothing for ja / zh-Hans, a space otherwise (Korean spaces).
+Checked and left: RTL (ar) sheet and card read in order, the period of "XVI." sits left of the numeral as Arabic
+bidi puts it; long words (de, ru, uk) wrap whole; no console errors; nothing on the forbidden list. Sim untouched.
+(decided)

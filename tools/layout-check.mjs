@@ -64,6 +64,23 @@ const openSettings = async (p) => {
   }
   throw new Error('settings sheet did not open');
 };
+/** Mission XVI with the east castle first, the app's own loop run to `sec`; `sheet`: one tap on the card's eye. */
+const haulAt = async (p, sec, sheet) => {
+  await p.evaluate((s) => {
+    document.querySelector('.letter [data-a="start"]')?.click();
+    const A = window.__marchia.app;
+    A.loop.enqueue({ t: 'castleFirst', castle: 5 }); A.loop.flushCommands();
+    while (A.world.state.tick < s * 10) A.loop.tickOnce();
+  }, sec);
+  // attached, not visible: the Flip cover's mini HUD folds the card into its seal (0 x 0)
+  await p.waitForSelector('.stall-row.is-pace', { state: 'attached', timeout: 30000 });
+  // the switch's toast ("… first") is a transient of the setup, not of the screen measured
+  await p.waitForFunction(() => !document.querySelector('.toast'), null, { timeout: 15000 }).catch(() => {});
+  if (sheet) {
+    await p.evaluate(() => document.querySelector('.stall-eye')?.click());
+    await p.waitForSelector('#sheets .sheet .fix-dock', { state: 'attached', timeout: 30000 });
+  }
+};
 const SCENES = [
   { name: 'menu', q: '' },
   { name: 'settings', q: '', act: openSettings },
@@ -86,6 +103,9 @@ const SCENES = [
   // two castles (D-290): the two-row waybill with the castle pace card, and the castle card with the rival and the switch
   { name: 'waybill-m16', q: 'play=m16&speed=0&ff=20' },
   { name: 'castle-m16', q: 'play=m16&speed=0&ff=150&openId=5' },
+  // two castles, east first from 0:00 (D-307): the haul card "kup wóz" on the HUD at 1:30, and the sawmill sheet it opens
+  { name: 'haul-m16', q: 'play=m16&speed=0', act: (p) => haulAt(p, 90, false) },
+  { name: 'haulsheet-m16', q: 'play=m16&speed=0', act: (p) => haulAt(p, 90, true) },
   { name: 'valley', q: 'play=sandbox&speed=0&ff=240&slot=layout' },
   { name: 'market', q: 'play=sandbox&speed=0&market=1&slot=layout' },
   { name: 'opening', q: 'play=m1&tut=1&speed=0' },
