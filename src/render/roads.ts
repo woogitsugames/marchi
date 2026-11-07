@@ -46,6 +46,12 @@ export class RoadField {
   readonly junc: Float32Array;
   readonly texture: DataTexture;
   private readonly data: Uint8Array;
+  /**
+   * Per texel row: the first and last column any segment of the current rebuild swept (D-310). Every texel outside
+   * these spans still holds ROAD_MAXD in all three fields, which encodes to 255: only the spans are encoded.
+   */
+  private readonly rowLo: Int32Array;
+  private readonly rowHi: Int32Array;
   /** Per cell: bit d set when the drawn centreline runs toward neighbour d (DX8/DY8). */
   readonly links: Uint8Array;
   private water: ArrayLike<number> | null = null;
@@ -60,6 +66,8 @@ export class RoadField {
     this.junc = new Float32Array(this.tw * this.th);
     this.links = new Uint8Array(w * h);
     this.data = new Uint8Array(this.tw * this.th * 4);
+    this.rowLo = new Int32Array(this.th);
+    this.rowHi = new Int32Array(this.th);
     this.texture = new DataTexture(this.data, this.tw, this.th, RGBAFormat, UnsignedByteType);
     this.texture.magFilter = LinearFilter;
     this.texture.minFilter = LinearFilter;
@@ -83,6 +91,8 @@ export class RoadField {
     this.cobble.fill(ROAD_MAXD);
     this.junc.fill(ROAD_MAXD);
     this.links.fill(0);
+    this.rowLo.fill(this.tw);
+    this.rowHi.fill(-1);
     this.water = t.water;
     const roads = st.roads;
     const isRoad = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && roads[y * w + x]! > 0 && occ[y * w + x] === -1;
@@ -137,13 +147,17 @@ export class RoadField {
         if (t.water[c]) this.bridges.push(bridgeCell(world, x, y, nb, roads[c] === 2 ? 2 : 1));
       }
     }
-    // encode
-    const dd = this.data, n = this.tw * this.th;
-    for (let i = 0; i < n; i++) {
-      dd[i * 4] = Math.round((this.dirt[i]! / ROAD_MAXD) * 255);
-      dd[i * 4 + 1] = Math.round((this.cobble[i]! / ROAD_MAXD) * 255);
-      dd[i * 4 + 2] = Math.round((this.junc[i]! / ROAD_MAXD) * 255);
-      dd[i * 4 + 3] = 255;
+    // encode: a texel no segment swept holds ROAD_MAXD in all three fields, Math.round((6 / 6) * 255) = 255, so the
+    // whole texture starts as 255 and only the swept span of each row is encoded (D-310; was every texel)
+    const dd = this.data, tw = this.tw, lo = this.rowLo, hi = this.rowHi;
+    const dirt = this.dirt, cobble = this.cobble, junc = this.junc;
+    dd.fill(255);
+    for (let j = 0; j < this.th; j++) {
+      for (let i = j * tw + lo[j]!, e = j * tw + hi[j]!; i <= e; i++) {
+        dd[i * 4] = Math.round((dirt[i]! / ROAD_MAXD) * 255);
+        dd[i * 4 + 1] = Math.round((cobble[i]! / ROAD_MAXD) * 255);
+        dd[i * 4 + 2] = Math.round((junc[i]! / ROAD_MAXD) * 255);
+      }
     }
     this.texture.needsUpdate = true;
     this.version = st.netVersion;
@@ -261,6 +275,11 @@ export class RoadField {
     const j1 = Math.min(this.th - 1, Math.ceil((Math.max(az, bz) + M) * R));
     const vx = bx - ax, vz = bz - az;
     const ll = vx * vx + vz * vz;
+    const lo = this.rowLo, hi = this.rowHi;
+    for (let j = j0; j <= j1; j++) {
+      if (i0 < lo[j]!) lo[j] = i0;
+      if (i1 > hi[j]!) hi[j] = i1;
+    }
     for (let j = j0; j <= j1; j++) {
       const pz = (j + 0.5) / R;
       const row = j * this.tw;
