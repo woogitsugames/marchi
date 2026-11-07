@@ -691,7 +691,7 @@ export const pt_BR: Dict = {
   "fix.rankWhy": "Mercadorias diferentes vendidas: {sold} de {goods} para {rankName}. {good}: nunca chegou ao mercado — este prédio produz.",
   "fix.paceFleetWhy": "Por um minuto nenhuma carroça ficou livre. A previsão dá {seals}; uma carroça nova pega a carga antes e se paga antes do selo.",
   "fix.paceFleetWhyFree": "Por um minuto nenhuma carroça ficou livre. Uma carroça nova pega a carga antes — mercadoria vendida é prata e renome.",
-  "letter.valleyOpening": "Ao administrador do vale: aqui não há pedido nem prazo à sua espera — o vale é seu enquanto as carroças rodarem. Cada mercadoria vendida no mercado do castelo traz renome, e o número de mercadorias diferentes também eleva seu nível; a placa de nível mostra o que ainda falta. Comece por uma fazenda na estrada do castelo — as carroças levarão a colheita ao mercado.\n— Wszebor, castelão de Łozinny Bród",
+  "letter.valleyOpening": "Ao administrador do vale: desta vez, nem pedido nem prazo — o vale é seu enquanto as carroças rodarem. Cada mercadoria vendida no mercado do castelo traz renome; um nível mais alto pede também bens diferentes e receita constante. O painel de nível mostra o que falta. Comece por uma fazenda na estrada do castelo: as carroças levarão a colheita ao mercado.\n— Wszebor, castelão de Łozinny Bród",
   "building.tradePost": "Entreposto",
   "town.unlockPost": "o entreposto do outro lado do rio",
   "town.postOpen": "Do outro lado do rio abriu um entreposto: ele paga {pct} do preço do castelo. Leve até lá uma estrada com ponte.",

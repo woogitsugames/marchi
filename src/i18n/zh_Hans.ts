@@ -691,7 +691,7 @@ export const zh_Hans: Dict = {
   "fix.rankWhy": "已卖出的不同货物：{sold}/{goods}（{rankName}所需）。{good}：市场上还没卖过——这座建筑能生产。",
   "fix.paceFleetWhy": "整整一分钟没有空闲货车。预测为{seals}；新货车能更早取货，并在盖印前回本。",
   "fix.paceFleetWhyFree": "整整一分钟没有空闲货车。新货车能更早取货——卖出的货物就是银子和声望。",
-  "letter.valleyOpening": "致山谷总管：这里没有订单，也没有期限——只要货车在跑，山谷就归你。城堡市场上卖出的每件货物都带来声望，卖出的货物种类越多，等级也越高；等级牌会显示还缺什么。先在城堡路边建一座农场——货车会自己把收成运到市场。\n— Wszebor，Łozinny Bród城堡总管",
+  "letter.valleyOpening": "致山谷总管：这一次我不给你订单，也不定期限——只要马车在跑，山谷就归你。城堡市场上卖出的每件货物都带来声望；要升到更高的等级，还需要多种货物和稳定的收入。告示牌会显示还缺什么。先在城堡路边建一座农场——马车会自己把收成运到市场。\n— Wszebor，Łozinny Bród城堡总管",
   "building.tradePost": "贸易站",
   "town.unlockPost": "河对岸的贸易站",
   "town.postOpen": "河对岸开了一座贸易站：按城堡价格的{pct}收购。修一条带桥的路过去。",

@@ -691,7 +691,7 @@ export const fr: Dict = {
   "fix.rankWhy": "Marchandises différentes vendues : {sold} sur {goods} pour {rankName}. {good} : jamais vendu au marché — ce bâtiment en produit.",
   "fix.paceFleetWhy": "Aucun chariot n'a été libre pendant une minute. La prévision donne {seals} ; un nouveau chariot prend la charge plus tôt et se rembourse avant le sceau.",
   "fix.paceFleetWhyFree": "Aucun chariot n'a été libre pendant une minute. Un nouveau chariot prend la charge plus tôt — vendre, c'est argent et renommée.",
-  "letter.valleyOpening": "À l'intendant de la vallée : ni commande ni échéance ne vous attendent ici — la vallée est à vous tant que roulent les chariots. Chaque marchandise vendue au marché du château apporte de la renommée, et le nombre de marchandises différentes élève aussi votre rang ; la plaque du rang montre ce qui manque. Commencez par une ferme sur la route du château — les chariots porteront la récolte au marché.\n— Wszebor, châtelain de Łozinny Bród",
+  "letter.valleyOpening": "À l'intendant de la vallée : cette fois, ni commande ni échéance — la vallée est à vous tant que roulent les chariots. Chaque marchandise vendue au marché du château apporte de la renommée ; un rang plus élevé veut aussi des biens variés et un revenu régulier. Le panneau du rang montre ce qui manque. Commencez par une ferme sur la route du château : les chariots porteront la récolte au marché.\n— Wszebor, châtelain de Łozinny Bród",
   "building.tradePost": "Comptoir",
   "town.unlockPost": "le comptoir de l’autre côté de la rivière",
   "town.postOpen": "Un comptoir a ouvert de l’autre côté de la rivière : il paie {pct} du prix du château. Menez-y une route avec un pont.",
