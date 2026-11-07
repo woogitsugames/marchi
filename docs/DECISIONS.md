@@ -3216,3 +3216,19 @@ spread. Cold node probe (`tools/defer-probe.ts`, 15 interleaved cold processes):
 + 12,7 deferred; tree re-bucket cold 15–16, warm 3 ms. Net: ~12–16 ms (loaded) less work before the first frame, and
 `ready` earlier by the in-view pieces. Kept because it is identical in pixels and costs nothing after start; on the
 Fold the share should be the same (measure `menu-world` → `first-frame` there). (decided)
+
+**D-300 — Small a11y fixes after the 7 XI audit: ETA plaque near-white, a forced-colors outline on the map pin, the
+docked hint grows at large text.** (a11y ar, 7 XI; `tools/a11y-audit.mjs` hud/why/wagon/castle, pl + ar, 412×915 and
+915×412.) (1) The ETA plaque on the map (`.eta-tag span.num`) sits on the kit's slate `eta` sprite like the snow pill,
+so it takes the same near-white `#fbfbf8` (D-122) instead of `#eef0ee`: 4.50 → 4.97:1. (2) The critical pin's
+keyboard ring was there all along — the D-123 two-tone ring is drawn on the pin's head (`.bb::before`, D-147) and a
+screenshot of the Tab-focused pin with the bakery sheet open shows it — but the audit only read the button's own
+outline / box-shadow. The audit now also counts a two-tone ring on a descendant's `::before`/`::after`. The pin's
+`outline: none` became `outline: 2px solid transparent`: nothing changes on screen (touch and mouse focus still show
+nothing, `button:focus`), but forced-colors / high-contrast mode drops box-shadows and paints outlines in a system
+colour, so there the focus no longer vanishes. A transparent outline does not count as a ring in the audit. (3) At
+200 % text in a short landscape sheet the docked hint beside the fix button (D-138, a 48 px box and a three-line
+clamp) cut "Brakujący odcinek zaznaczono na mapie." in half. Under `body.is-short.is-bigtext` the note drops both and
+wraps in full; the dock grows and the body above gives way through `--dock-h` (as D-270). The clamp stays at normal
+text size, where three lines fit 48 px anyway. The audit waits for `body.is-bigtext` before reading the 200 % layout
+(a loaded machine needed > 300 ms for the ResizeObserver and reported the pre-bigtext dock). (decided)

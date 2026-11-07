@@ -245,3 +245,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-296 | — | Terrain pieces outside the first frame are built after it | decided | render |
 | D-297 | — | `syncNetwork` no longer re-buckets the trees | decided | inne |
 | D-298 | — | What day 13 buys: tens of ms of CPU out of the menu world build, a few out of the first frame; not a wall- clock change on this machine | decided | UI |
+| D-300 | — | Small a11y fixes after the 7 XI audit: ETA plaque near-white, a forced-colors outline on the map pin, the docked hint grows at large text | decided | treść |
