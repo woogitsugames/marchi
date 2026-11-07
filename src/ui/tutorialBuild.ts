@@ -34,6 +34,12 @@ export class BuildTutorial extends Tutorial {
 
   override get current(): number { return this.step; }
 
+  /** The hut this lesson is about (the newest woodcutter's hut not on the map at the start), -1 when none or ended. */
+  hutId(): number {
+    if (this.ended) return -1;
+    return newHut(this.bhost.world, this.baseline)?.id ?? -1;
+  }
+
   override onOpen(kind: 'building' | 'wagon', id: number, prevTop: string | null): void {
     if (this.ended) return;
     // step 5: a cause-chain link followed from the hut's card is the diagnosis opened

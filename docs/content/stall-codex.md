@@ -292,21 +292,19 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
 ### PL — Wóz zaraz przyjedzie
 
 - **Co to znaczy:** Towar czeka, bo zajęty wóz kończy kurs obok i dojedzie po niego szybciej niż wolny wóz z daleka.
-- **Jak sprawdzić:** Dotknij budynku: linia mówi, który wóz i za ile przyjedzie; dotknij wozu w łańcuchu.
+- **Jak sprawdzić:** Dotknij budynku: linia mówi, który wóz i za ile przyjedzie. Dotknij tego wozu i sprawdź, czy nie stoi przy moście.
 - **Naprawy / działania:**
-  1. Poczekaj — dyspozytor celowo nie wysyła dalszego wozu.
-  2. Nie kupuj wozu z tego powodu: nowy wóz by tu nie zdążył szybciej.
-  3. Jeśli to trwa długo, sprawdź, czy ten wóz nie stoi przy moście.
+  1. Poczekaj — dalszy wóz celowo nie rusza.
+  2. Nie kupuj wozu z tego powodu: nowy wóz nie dojechałby tu szybciej.
 - **Łańcuch:** Tartak pełen desek → wóz 2 rozładowuje obok → za kilka sekund weźmie deski.
 
 ### EN — Wagon due shortly
 
 - **Meaning:** The goods wait because a busy wagon finishing a run nearby will get there sooner than a free wagon from far away.
-- **How to check:** Tap the building: the line says which wagon comes and when; tap the wagon in the chain.
+- **How to check:** Tap the building: the line says which wagon comes and when. Tap that wagon and check it is not held at a bridge.
 - **Fixes / next steps:**
-  1. Wait — the dispatcher holds the far wagon back on purpose.
+  1. Wait — the far wagon is held back on purpose.
   2. Do not buy a wagon for this: a new one would not get there sooner.
-  3. If it lasts long, check that this wagon is not held at a bridge.
 - **Chain:** Sawmill full of planks → wagon 2 unloads next door → takes the planks in a few seconds.
 
 ## `status.STORAGE_FULL`
@@ -577,4 +575,170 @@ fałda „Co to znaczy?” pokazuje ten wariant zamiast zwykłego wpisu (D-98).
   2. Turn to a stall with a red seal, if there is one.
   3. When the goods are needed again, a wagon comes on its own.
 - **Chain:** Sawmill full of planks → plank order filled → the sawmill waits calmly.
+
+# Wpisy sytuacyjne / Situational entries
+
+Stany, które karta czyta po swojemu (spokojna linia, linia zamku, samouczek), mają własny wpis fałdy
+„Co to znaczy?” zamiast wpisu statusu (D-339, `src/ui/codexSituations.ts`). Teksty są kluczami i18n
+`codex.s.<wpis>.<pole>` we wszystkich 17 językach; tu PL i EN.
+
+## `wagonDue` — `status.WAGON_DUE` (D-156)
+
+### PL — Wóz zaraz przyjedzie
+
+- **Co to znaczy:** Towar czeka, bo zajęty wóz kończy kurs obok i dojedzie po niego szybciej niż wolny wóz z daleka.
+- **Jak sprawdzić:** Dotknij budynku: linia mówi, który wóz i za ile przyjedzie. Dotknij tego wozu i sprawdź, czy nie stoi przy moście.
+- **Naprawy / działania:**
+  1. Poczekaj — dalszy wóz celowo nie rusza.
+  2. Nie kupuj wozu z tego powodu: nowy wóz nie dojechałby tu szybciej.
+- **Łańcuch:** Tartak pełen desek → wóz 2 rozładowuje obok → za kilka sekund weźmie deski.
+
+### EN — Wagon due shortly
+
+- **Meaning:** The goods wait because a busy wagon finishing a run nearby will get there sooner than a free wagon from far away.
+- **How to check:** Tap the building: the line says which wagon comes and when. Tap that wagon and check it is not held at a bridge.
+- **Fixes / next steps:**
+  1. Wait — the far wagon is held back on purpose.
+  2. Do not buy a wagon for this: a new one would not get there sooner.
+- **Chain:** Sawmill full of planks → wagon 2 unloads next door → takes the planks in a few seconds.
+
+## `marketFull` — spichlerz pełny, rynek nasycony / granary full, market saturated (D-174, D-180)
+
+### PL — Spichlerz pełny — rynek nasycony
+
+- **Co to znaczy:** Spichlerz jest pełen towaru, którego rynki teraz więcej nie wezmą — cena spadła do dna albo wozy już wiozą tyle, ile rynek przyjmie.
+- **Jak sprawdzić:** Przeczytaj spokojną linię wyżej w karcie: rynek bierze tyle, ile zje. Sprawdź, jakie towary leżą w spichlerzu pełnymi ładunkami.
+- **Naprawy / działania:**
+  1. Nie kupuj wozu z tego powodu — nowy wóz tylko by czekał.
+  2. Sprzedaj inny towar albo przyjmij zamówienie; posterunek handlowy za rzeką, gdy jest otwarty i ma drogę, kupi więcej.
+- **Łańcuch:** Spichlerz pełen drewna → cena drewna w zamku na dnie → wozy nie mają dokąd go wieźć.
+
+### EN — Granary full — the market is saturated
+
+- **Meaning:** The granary is full of goods the markets will not take more of now — the price is at its floor or wagons already carry all the market accepts.
+- **How to check:** Read the calm line higher up on the card: the market only takes what it can use. Check which goods lie in the granary in full loads.
+- **Fixes / next steps:**
+  1. Do not buy a wagon for this — a new wagon would just wait.
+  2. Sell another good or accept an order; the trading post across the river, once open and reached by a road, buys more.
+- **Chain:** Granary full of logs → log price at the castle on the floor → wagons have nowhere to take them.
+
+## `surplus` — nadwyżka / surplus (D-160)
+
+### PL — Nadwyżka — nikt jej teraz nie potrzebuje
+
+- **Co to znaczy:** Plac budynku jest pełny, ale żaden odbiorca nie czeka teraz na ten towar, więc wozy zabiorą go na końcu.
+- **Jak sprawdzić:** Przeczytaj linię wyżej w karcie: nadwyżka poczeka na placu. Dotknij odbiorców tego towaru — żaden nie stoi z jego braku.
+- **Naprawy / działania:**
+  1. Nie kupuj wozu z tego powodu — nowy wóz tego nie przyspieszy.
+  2. Zajmij się postojem, który naprawdę coś blokuje; gdy towar znów będzie potrzebny, wóz przyjedzie sam.
+- **Łańcuch:** Gospodarstwo pełne zboża → młyn ma zapas → zboże spokojnie czeka na placu.
+
+### EN — Surplus — nobody needs it now
+
+- **Meaning:** The building's yard is full, but no customer is waiting for this good now, so wagons collect it last.
+- **How to check:** Read the line higher up on the card: the surplus waits in the yard. Tap the customers of this good — none of them stands for lack of it.
+- **Fixes / next steps:**
+  1. Do not buy a wagon for this — a new wagon would not move it sooner.
+  2. Turn to a stall that really blocks something; when the good is needed again, a wagon comes on its own.
+- **Chain:** Farmstead full of grain → the watermill has stock → the grain waits calmly in the yard.
+
+## `postNoRoad` — posterunek bez drogi / trading post without a road (D-170)
+
+### PL — Posterunek bez drogi
+
+- **Co to znaczy:** Posterunek handlowy za rzeką płaci więcej niż zamek, ale żadna droga ze stajni nie dochodzi do jego bramy.
+- **Jak sprawdzić:** Dotknij posterunku: karta pokazuje drogę z mostem i jej cenę. Sprawdź też, czy posterunek już kupuje, czy otworzy się dopiero w podanej randze.
+- **Naprawy / działania:**
+  1. Gdy masz srebro na most, zbuduj drogę z karty — to Twój wybór, nie awaria.
+  2. Dopóki drogi nie ma, sprzedawaj w zamku; posterunek poczeka.
+- **Łańcuch:** Posterunek za rzeką → brak mostu → wozy jeżdżą tylko do zamku.
+
+### EN — Trading post without a road
+
+- **Meaning:** The trading post across the river pays more than the castle, but no road from a stable reaches its gate.
+- **How to check:** Tap the trading post: the card shows the road with its bridge and its price. Check too whether the post is buying yet or opens only at the rank it names.
+- **Fixes / next steps:**
+  1. When you have the silver for the bridge, build the road from the card — your choice, not a fault.
+  2. Until the road is there, sell at the castle; the post will wait.
+- **Chain:** Trading post across the river → no bridge → wagons drive only to the castle.
+
+## `castleRival` — XVI: drugi zamek zabiera towar / the other castle takes the goods (D-291)
+
+### PL — Drugi zamek zabiera towar
+
+- **Co to znaczy:** Oba zamki czekają na ten sam towar, a wozy wiozą go teraz do drugiego zamku, więc tu zapas nie rośnie.
+- **Jak sprawdzić:** Dotknij zamku: linia w karcie mówi, który zamek dostaje towar, ile wozów jedzie i ile tu brakuje do terminu. Porównaj terminy obu zamków w liście przewozowym.
+- **Naprawy / działania:**
+  1. Jeśli ten zamek ma wcześniejszy termin, dotknij „Ten zamek pierwszy” — zdecyduj wcześnie.
+  2. Jeśli pilniejszy jest drugi zamek, zostaw podział albo daj pierwszeństwo jemu.
+- **Łańcuch:** Tartak robi deski → 2 wozy wiozą je do Zamku Północnego → Zamkowi Wschodniemu brakuje 18 do 5:00.
+
+### EN — The other castle takes the goods
+
+- **Meaning:** Both castles wait for the same good, and wagons now carry it to the other castle, so the stock here does not grow.
+- **How to check:** Tap the castle: a line on its card names the castle getting the goods, the wagons on the way and what is still missing here by the deadline. Compare both deadlines on the waybill.
+- **Fixes / next steps:**
+  1. If this castle's deadline comes first, tap “This castle first” — decide early.
+  2. If the other castle is more urgent, keep the split or put that one first.
+- **Chain:** Sawmill makes planks → 2 wagons take them to the North Castle → the East Castle lacks 18 by 5:00.
+
+## `castleEven` — XVI: towar dzielony po równo / goods shared evenly (D-290)
+
+### PL — Towar dzielony po równo
+
+- **Co to znaczy:** Żaden zamek nie jest pierwszy, więc wozy dzielą gotowy towar między oba zamki — każdy ładunek jedzie tam, gdzie zamówienie jest mniej wypełnione.
+- **Jak sprawdzić:** Dotknij zamku: prognoza mówi, czy przy tym podziale zdąży na swój termin. Pod przyciskiem „Ten zamek pierwszy” widać, kiedy byłby gotowy jako pierwszy.
+- **Naprawy / działania:**
+  1. Gdy zamek spóźni się przy podziale, a jako pierwszy by zdążył, dotknij u niego „Ten zamek pierwszy”.
+  2. Decyduj wcześnie: im później przełączysz, tym mniej to da.
+- **Łańcuch:** Tartak robi deski → wozy wiozą je na zmianę do obu zamków → Zamek Wschodni spóźni się o 0:50.
+
+### EN — Goods shared evenly
+
+- **Meaning:** No castle goes first, so wagons share the finished goods between both castles — each load goes where the order is less filled.
+- **How to check:** Tap the castle: the forecast says whether it makes its deadline at this split. Under “This castle first” you can see when it would be done going first.
+- **Fixes / next steps:**
+  1. If a castle will be late at the split but would make it going first, tap “This castle first” on its card.
+  2. Decide early: the later you switch, the less it gains.
+- **Chain:** Sawmill makes planks → wagons take them to both castles in turn → the East Castle will be 0:50 late.
+
+## `castleFirst` — XVI: przełącznik pierwszeństwa włączony / castle-first switch on (D-289)
+
+### PL — Zamek ma pierwszeństwo
+
+- **Co to znaczy:** Jeden zamek jest pierwszy: wozy z gotowym towarem jadą najpierw do niego, a drugi zamek dostaje towar dopiero po nim.
+- **Jak sprawdzić:** Dotknij zamku: linia w karcie mówi, który zamek jest pierwszy. Prognoza każdego zamku pokazuje, czy zdąży na swój termin.
+- **Naprawy / działania:**
+  1. Zostaw tak — gdy pierwszy zamek dostanie całe zamówienie, wozy same pojadą do drugiego.
+  2. Żeby wrócić do podziału, dotknij „Dziel po równo” na karcie pierwszego zamku.
+- **Łańcuch:** Zamek Wschodni pierwszy → wozy wiozą deski najpierw tam → Zamek Północny dostaje je po nim.
+
+### EN — A castle goes first
+
+- **Meaning:** One castle goes first: wagons with finished goods drive to it first, and the other castle gets goods only after it.
+- **How to check:** Tap the castle: a line on its card says which castle goes first. Each castle's forecast shows whether it makes its deadline.
+- **Fixes / next steps:**
+  1. Leave it — once the first castle has its whole order, wagons drive to the other one on their own.
+  2. To go back to the split, tap “Share evenly” on the first castle's card.
+- **Chain:** East Castle first → wagons take the planks there first → the North Castle gets them after it.
+
+## `tutorialNoRoad` — samouczek budowania: chata bez drogi / build tutorial: hut without a road (D-259)
+
+### PL — Chata bez drogi
+
+- **Co to znaczy:** Chata drwala ścina drewno na swoje podwórze, ale bez drogi do bramy żaden wóz go nie odbierze — gdy podwórze się zapełni, chata staje.
+- **Jak sprawdzić:** Dotknij chaty: status mówi „Brak drogi do bramy”, a na mapie widać proponowaną drogę od bramy. Sprawdź, czy podwórze jest pełne.
+- **Naprawy / działania:**
+  1. Zbuduj drogę zaproponowaną na karcie albo narysuj ją narzędziem Droga od bramy do drogi prowadzącej do stajni.
+  2. Gdy droga połączy chatę ze stajnią, wóz zabierze drewno i chata znów ruszy.
+- **Łańcuch:** Chata drwala bez drogi → podwórze pełne drewna → chata stoi.
+
+### EN — Hut without a road
+
+- **Meaning:** The woodcutter's hut cuts logs into its yard, but with no road to its gate no wagon can collect them — once the yard is full, the hut stops.
+- **How to check:** Tap the hut: its status reads “No road to the gate” and the map shows the suggested road from the gate. Check whether the yard is full.
+- **Fixes / next steps:**
+  1. Build the road the card offers, or draw one with the Road tool from the gate to a road that leads to the stable.
+  2. Once the road joins the hut to the stable, a wagon takes the logs and the hut starts again.
+- **Chain:** Woodcutter's hut without a road → yard full of logs → the hut stands.
 

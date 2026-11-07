@@ -22,7 +22,8 @@ import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, ty
 export { gapTarget };
 import { buildTypes } from './buildTool';
 import { errorText } from './roadTool';
-import { codexHtml, toggleCodex } from './codex';
+import { codexHtml, codexSituationHtml, toggleCodex } from './codex';
+import { castleCodexSituation, codexSituation } from './codexSituations';
 
 export interface PanelNav {
   readonly world: World;
@@ -30,6 +31,8 @@ export interface PanelNav {
   readonly pace: PaceLog;
   /** Mission I's tutorial runs: the castle card folds its order and pace (research P6, ~45 words at once). */
   tutorialRunning?(): boolean;
+  /** The build tutorial's new woodcutter's hut while the lesson runs, else -1 (its stall reads the lesson's entry). */
+  tutorialHut?(): number;
   /** Jump the camera to a subject and open its sheet. */
   go(kind: 'building' | 'wagon', id: number): void;
   buyWagon(stable: number): void;
@@ -804,7 +807,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // "what does it mean?" for the last stall of the chain (the one the player has to fix), never for a
       // producer at work or a wagon on its way (audit fix 4)
       const cl = codexLink(chain, { kind: 'building', id, status: b.status });
-      const codex = stalled ? codexHtml(cl.kind, cl.status, codexCalm(world, cl)) : '';
+      // a state the sheet reads its own way gets its own entry (D-339): a wagon due shortly (not a stall, still
+      // explained), a surplus, a saturated market, the trading post's road, the build tutorial's hut, a XVI castle
+      const sit = two ? castleCodexSituation(world, b, nav.pace)
+        : stalled || b.status.k === 'WAGON_DUE' ? codexSituation(world, cl, nav.tutorialHut?.() ?? -1) : null;
+      const codex = sit ? codexSituationHtml(sit) : stalled ? codexHtml(cl.kind, cl.status, codexCalm(world, cl)) : '';
       // a waiting (not stalled) building on the card for a shared single producer or a held span (research P4/P5)
       // gets that card's fix too
       const carded = !stalled && !fix && (cureFor(world, b.id) === 'producer' || cureFor(world, b.id) === 'pave');
