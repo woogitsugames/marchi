@@ -5,7 +5,7 @@
   `node_modules` — **nigdy `git add -A` w worktree** (symlink trafił raz do commita i podmienił `node_modules` bazy;
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
-- Baza = `main` = **D-280..D-283 scalone** (7 XI ~03:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
+- Baza = `main` = **D-284..D-286 scalone** (7 XI ~04:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
   Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
@@ -26,7 +26,10 @@
 - Scalone ~03:00: **D-280..D-283** teren: szybszy `Heightfield` (pomija interpolację maski wody tam, gdzie zero),
   `vnoise` 7 zamiast 32 mnożeń, pamięć gruntu dla 2 ostatnich światów (zmiana świata: teren/woda ~0,3 ms). Menu −13 % CPU
   (high), wynik bit w bit (SHA na 14 światach, jam-diff 0 px). Dalsze kroki w `view.ts` po scaleniu `w-winter`.
-- W toku: agent `claude/w-qa` — przegląd jakości nocnych zmian (pełny layout 475/0, a11y, de/ar/pseudo).
+- Scalone ~04:00: **D-284..D-286** przegląd jakości nocy (pełny layout 475/0): „?” lustrzany po arabsku, uchwyt 8 px na
+  krótkich arkuszach RTL, pomoc z „?” przewija się do tematu; narzędzia zrzutów z `--lang`. Restart przerwał audyt a11y
+  po arabsku i zrzuty samouczka de/pseudo — powtarzane przez koordynatora.
+- Agentów w toku: brak (reszta backlogu czeka na decyzje rano / pomiary na telefonie).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
