@@ -164,7 +164,7 @@ export const ar: Dict = {
   "why.chain": "سلسلة الأسباب",
   "why.cycle": "الإنتاج جارٍ",
   "why.reserved": "بانتظار عربة: ⁨{n}⁩",
-  "why.inbound": "في الطريق: +⁨{n}⁩",
+  "why.inbound": "في الطريق: ⁨+{n}⁩",
   "why.wagons": "العربات: ⁨{n}⁩",
   "wagon.follow": "تتبع العربة",
   "wagon.unfollow": "أوقف التتبع",
