@@ -230,4 +230,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-269 | — | The valley site check (D-266) accepts a neighbouring road only as the network would drive it | decided | sim |
 | D-270 | — | On a short landscape sheet the grow card's reason wraps in the wider column instead of a three-line clamp | decided | UI |
 | D-276 | — | The valley's `jsEventListeners` growth is lazy sweeping, not a leak: no code change | decided | inne |
-| D-277 | — | Memory probes read a settled listener count | decided | inne |
+| D-277 | 2026-11-07 | Memory probes read a settled listener count | decided | inne |
+| D-284 | — | In Arabic the card's "?" (D-254) is mirrored | decided | UI |
+| D-285 | — | On a short RTL sheet the grip is 8 px | decided | UI |
+| D-286 | — | Help opened from a card's "?" scrolls its topic into view | decided | UI |
