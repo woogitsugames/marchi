@@ -29,30 +29,17 @@
 - Scalone ~04:00: **D-284..D-286** przegląd jakości nocy (pełny layout 475/0): „?” lustrzany po arabsku, uchwyt 8 px na
   krótkich arkuszach RTL, pomoc z „?” przewija się do tematu; narzędzia zrzutów z `--lang`. Restart przerwał audyt a11y
   po arabsku i zrzuty samouczka de/pseudo — powtarzane przez koordynatora.
-- Agentów w toku: brak (reszta backlogu czeka na decyzje rano / pomiary na telefonie).
+- **Decyzje właściciela 7 XI ~09:45:** drzewa zimą — scalić (**scalone**, D-260..D-263); misja XVI „Dwa zamki” — **tak,
+  wariant A** (wszystkie rekomendacje raportu); card-60 — czekać na playtest.
+- W toku: agent `claude/w-m16` — misja XVI „Dwa zamki” (D-288..D-295, 2–3 sesje, etapami: sim+komenda → UI/diagnoza →
+  treści/i18n → drabina/zrzuty); agent `claude/w-view` — chunki terenu poza kadrem po 1. klatce, bez zbędnego
+  `vegetation.update` (D-296..D-299).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
   `docs/shots/winter-trees-{before,after}-*` (np. `after-winter-high-915x412`, `after-winter-near-high-412x915`).
 
-### Decyzje na rano (7 XI)
-1. **Drzewa zimą (`claude/w-winter`)**: scalić? (rekomendacja: **tak** — wygląda naturalnie, iglaste odróżniają się od
-   gołych; na „low” lekki dithering gałązek). Wiosną liście wracają w kolorach późnej jesieni — osobny odcień wiosenny?
-   (rekomendacja: tak, mała paczka po scaleniu).
-2. **card-60 (gracz raz na minutę)** nadal bez rangi 5 na 3/4 ziaren: karta łącząca kroki (słodownia + browar jednym
-   przyciskiem)? (rekomendacja: poczekać na playtest — card-10/30 już dochodzą).
-3. **Misja XVI „Dwa zamki”** (raport `docs/research/2026-11-07-two-castles.md`): wariant 2, mapa A — dwa zamki chcą desek
-   z jednego tartaku (wschodni 24 do 5:00, północny 30 do 9:00); dźwignia gracza: przełącznik „ten zamek pierwszy” na
-   karcie zamku (rekomendacja: **tak**; alternatywy: brak dźwigni / ręczne przypisanie wozów). Pieczęcie wspólne, −1 za
-   każdy spóźniony zamek (rek.); dyspozytor domyślnie dzieli po równo (rek. — inaczej lekcja znika); priorytet tylko na
-   ostatnim odcinku (rek.); `STATE_VERSION` 10 z pustą migracją (rek.); nazwy „Dwa zamki” / „Kto pierwszy, ten na czas”,
-   zamki „Wschodni” i „Północny”, dopisane jako XVI (rek.); progi 3★ 7:05 / 2★ 9:00 robocze. Koszt 2–3 sesje.
-- GPT: paczka 12 (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
-- **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
-  liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
-  pomoc także z mapy („?” na karcie) — TAK. Otwarte nadal: progi XIV/XV i wyzwanie kontraktu (po playteście).
-- Kolejka (następny wolny agent): research „dwa zamki” (rozszerzenie sim pod nową misję); P1 teren menu (~110 ms) i
-  rozkład roślinności; playtest-owe P2 czekają na właściciela.
+### Decyzje na rano (7 XI) — rozstrzygnięte ~09:45 (wyżej)
 
 # Handover — MARCHIA (stan 2026-11-06 ~19:00 Europe/Brussels) — PRZEJĘCIE PRZEZ NOWĄ SESJĘ
 
