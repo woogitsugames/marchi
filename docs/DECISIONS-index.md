@@ -259,3 +259,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-307 | — | The haul card: the fleet cannot keep the shared producer at work (two castles only) | decided | UI |
 | D-308 | — | XVI ladder after D-306/D-307: the reasonable player earns three seals | decided | inne |
 | D-309 | — | XVI content after D-307: two keys in 17 languages, shots | decided | treść |
+| D-310 | — | The road mask encodes only the texel spans its segments swept | decided | sim |
+| D-311 | — | Reeds: the scan visits only cells near water, and its ground-only result is kept per ground | decided | inne |
+| D-312 | — | Trees: a plan per ground, filtered per world; placement in its own headless module | decided | inne |

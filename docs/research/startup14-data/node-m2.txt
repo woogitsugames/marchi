@@ -1,0 +1,13 @@
+step             wp-before.mjs  wp-after.mjs
+m2.heightfield             5.8           8.7
+m2.fields                  0.0           0.0
+m2.terrain                16.3          17.4
+m2.water                  10.1           9.4
+m2.vegApron                6.1           4.1
+m2.cover                   2.2           2.4
+m2.roads                   9.9           7.8
+m2.ground                  3.0           1.6
+m2.vegPlace               10.1          10.8
+m2.reeds                  17.1           8.6
+m2.vegUpdate               0.0           3.1
+m2.sum                    77.3          72.7
