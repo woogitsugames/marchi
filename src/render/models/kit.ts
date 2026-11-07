@@ -211,7 +211,7 @@ interface PieceAttr {
 
 /** One transformed, coloured primitive waiting for `build()`: an index and attributes in insertion order. */
 interface Piece {
-  index: Uint16Array | Uint32Array;
+  index: Uint32Array;
   count: number;
   attrs: Record<string, PieceAttr>;
 }
@@ -245,7 +245,8 @@ export class PartBuilder {
     // twice and kept the groups and bounds, all thrown away again. Since D-321 a piece is plain typed arrays, not a
     // BufferGeometry (a uuid and an attribute object each, ~2000 per menu)
     const m = o.m;
-    let index: Uint16Array | Uint32Array;
+    // the piece index is always 32-bit (one element kind for the merge loop; the merged index width is decided there)
+    let index: Uint32Array;
     const attrs: Record<string, PieceAttr> = {};
     if (plainFloat3(src.attributes.position) && plainFloat3(src.attributes.normal)) {
       // copy and transform in one pass (D-321): the same double operations as `applyMatrix4` (Vector3.applyMatrix4,
@@ -258,7 +259,7 @@ export class PartBuilder {
         else if (name === 'normal') attrs[name] = { array: m ? transformNormals(arr, m) : arr.slice(), itemSize: 3, normalized: false };
         else if (name === 'uv') attrs[name] = { array: o.keepUv ? arr.slice() : arr, itemSize: a.itemSize, normalized: a.normalized };
       }
-      index = src.index ? (src.index.array.slice() as Uint16Array | Uint32Array) : iota(attrs.position!.array.length / 3);
+      index = src.index ? Uint32Array.from(src.index.array as Uint16Array) : iota(attrs.position!.array.length / 3);
     } else {
       const g = new BufferGeometry();
       if (src.index) g.setIndex(new BufferAttribute(src.index.array.slice(), 1));
@@ -270,7 +271,7 @@ export class PartBuilder {
       if (!g.index) g.setIndex(new BufferAttribute(iota(g.getAttribute('position').count), 1));
       if (!g.getAttribute('normal')) g.computeVertexNormals();
       if (m) g.applyMatrix4(m);
-      index = g.index!.array as Uint16Array | Uint32Array;
+      index = Uint32Array.from(g.index!.array as Uint16Array);
       for (const name of Object.keys(g.attributes)) {
         const a = g.attributes[name]!;
         attrs[name] = { array: a.array as Float32Array, itemSize: a.itemSize, normalized: a.normalized };
@@ -319,7 +320,8 @@ export class PartBuilder {
     const dirtK = o.dirt ?? this.settings.dirt;
     const aoH = this.settings.aoHeight, dirtH = this.settings.dirtHeight;
     const col = new Float32Array(count * 3);
-    const noiseK = new Float64Array(count);
+    if (noiseScratch.length < count) noiseScratch = new Float64Array(Math.max(count, noiseScratch.length * 2));
+    const noiseK = noiseScratch;
     const shade = o.shade;
     const c = shadeColor;
     const p = new Vector3();
@@ -399,13 +401,21 @@ function iota(n: number): Uint32Array {
  * For every vertex the first vertex at the bit-identical position (itself when it is the first): an open-addressing
  * table over the float bits. Pure functions of the position (jitter, colour noise) are worked out at those only.
  */
+let firstTable = new Int32Array(256);
+/** Colour noise per first vertex (PartBuilder.add scratch). */
+let noiseScratch = new Float64Array(128);
+let firstRep = new Int32Array(128);
+
 function firstAt(pa: Float32Array, count: number): Int32Array {
   const u = new Uint32Array(pa.buffer, pa.byteOffset, count * 3);
   let size = 16;
   while (size < count * 2) size <<= 1;
   const mask = size - 1;
-  const table = new Int32Array(size).fill(-1);
-  const rep = new Int32Array(count);
+  // scratch arrays shared by every add (grown, never shrunk): the result is only read until the next call
+  if (firstTable.length < size) firstTable = new Int32Array(size);
+  if (firstRep.length < count) firstRep = new Int32Array(Math.max(count, firstRep.length * 2));
+  const table = firstTable.fill(-1, 0, size);
+  const rep = firstRep;
   for (let i = 0; i < count; i++) {
     const a = u[i * 3]!, b = u[i * 3 + 1]!, c = u[i * 3 + 2]!;
     let h = Math.imul(a, 0x9e3779b1) ^ Math.imul(b, 0x85ebca77) ^ Math.imul(c, 0xc2b2ae3d);
@@ -558,13 +568,10 @@ function mergePieces(list: Piece[]): BufferGeometry {
   let verts = 0, idx = 0;
   for (const pc of list) { verts += pc.count; idx += pc.index.length; }
   const out = new BufferGeometry();
-  const index = verts - 1 >= 65535 ? new Uint32Array(idx) : new Uint16Array(idx);
-  let io = 0, vo = 0;
-  for (const pc of list) {
-    const ia = pc.index;
-    for (let j = 0; j < ia.length; j++) index[io++] = ia[j]! + vo;
-    vo += pc.count;
-  }
+  // one loop per index width: a single loop writing either kind runs on generic element access
+  let index: Uint16Array | Uint32Array;
+  if (verts - 1 >= 65535) index = offsetIndex32(list, idx);
+  else index = offsetIndex16(list, idx);
   out.setIndex(new BufferAttribute(index, 1));
   for (const name of names) {
     const a0 = first.attrs[name]!;
@@ -578,6 +585,28 @@ function mergePieces(list: Piece[]): BufferGeometry {
     out.setAttribute(name, new BufferAttribute(arr, a0.itemSize, a0.normalized));
   }
   return out;
+}
+
+function offsetIndex16(list: Piece[], n: number): Uint16Array {
+  const index = new Uint16Array(n);
+  let io = 0, vo = 0;
+  for (const pc of list) {
+    const ia = pc.index;
+    for (let j = 0; j < ia.length; j++) index[io++] = ia[j]! + vo;
+    vo += pc.count;
+  }
+  return index;
+}
+
+function offsetIndex32(list: Piece[], n: number): Uint32Array {
+  const index = new Uint32Array(n);
+  let io = 0, vo = 0;
+  for (const pc of list) {
+    const ia = pc.index;
+    for (let j = 0; j < ia.length; j++) index[io++] = ia[j]! + vo;
+    vo += pc.count;
+  }
+  return index;
 }
 
 /** Box-projected UVs in model space (dominant normal axis). */
