@@ -1,7 +1,7 @@
 // Dispatcher: matches demand to supply, reserves cargo, assigns the nearest free wagon.
 // Also computes each building's status (the "why is it stalled?" data).
 import { BUILDINGS, GOODS, MARKET, STONE_RESERVE, TICK_HZ, TOP_UP_MIN, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
-import { contractTarget, storeCapOf } from './contract';
+import { contractTarget, contractsOf, runningContractOf, storeCapOf } from './contract';
 import { isMarket, marketCents, marketOpen } from './town';
 import { orderOutstanding } from './events';
 import { MISSIONS } from './missions';
@@ -35,6 +35,12 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
  * object, before a run; the game and the tests use the values below.
  */
 export const DISPATCH2 = { ruleA: true, fleetGate: 2, minFreeRunS: 50, ruleC: false };
+
+/**
+ * EXPERIMENTAL (two castles, research 2026-11-07; tools/two-castles-proto.ts only): with `chainPriority` the castle
+ * marked first also lifts the workshops upstream of its missing goods. Off by default; only that tool flips it.
+ */
+export const TWO_CASTLES = { chainPriority: false };
 
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
 interface Held { wagon: number; at: number }
@@ -88,9 +94,9 @@ export function buildingById(world: World, id: number): Building | null {
 }
 
 function remainingContract(world: World, b: Building, g: Good): number {
-  const m = world.state.mission;
-  if (!m.contract || m.result !== 'running' || m.contract.castle !== b.id) return 0;
-  return contractTarget(m.contract, g) - b.stock[g] - b.incoming[g];
+  const c = runningContractOf(world.state.mission, b.id);
+  if (!c) return 0;
+  return contractTarget(c, g) - b.stock[g] - b.incoming[g];
 }
 
 /**
@@ -145,14 +151,20 @@ export function dispatch(world: World): void {
   // D-156: rules A and C act only with a fleet well above the authored one
   const gateOpen = st.wagons.length >= (MISSIONS[st.mission.id]?.wagons ?? 0) + DISPATCH2.fleetGate;
 
+  // EXPERIMENTAL (two castles, research 2026-11-07): goods the first castle still lacks, and every input upstream of
+  // them; workshops making one of these ask before the other workshops (prio 0.5). Empty without `firstCastle`.
+  const firstChain = firstChainGoods(world);
   // --- demands
   const demands: Demand[] = [];
   for (const b of st.buildings) {
     const def = BUILDINGS[b.type];
     if (b.type === 'castle') {
+      // EXPERIMENTAL (two castles, research 2026-11-07): the castle marked first goes before every other demand;
+      // `firstCastle` is absent in every authored mission (prio 0 as before)
+      const prio = st.mission.firstCastle === b.id ? -1 : 0;
       for (const g of GOODS) {
         const want = remainingContract(world, b, g);
-        if (want > 0) demands.push({ b, good: g, want, prio: 0, fill: (b.stock[g] + b.incoming[g]) / Math.max(1, world.state.mission.contract!.need[g]) });
+        if (want > 0) demands.push({ b, good: g, want, prio, fill: (b.stock[g] + b.incoming[g]) / Math.max(1, runningContractOf(st.mission, b.id)!.need[g]) });
       }
       continue;
     }
@@ -162,9 +174,10 @@ export function dispatch(world: World): void {
     // are all delivered keeps pulling wood one unit at a time and takes wagons from the chains that are
     // still short (mission I: the bread chain lost the contract after a late extra wagon).
     if (DISPATCH2.ruleC && gateOpen && contract && !outputGoods(b.type).some((og) => stillWanted(world, contract, og))) continue;
+    const prio = firstChain.length > 0 && outputGoods(b.type).some((og) => firstChain.includes(og)) ? 0.5 : 1;
     for (const g of inputGoods(b.type)) {
       const want = def.inCap - b.stock[g] - b.incoming[g];
-      if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
+      if (want > 0) demands.push({ b, good: g, want, prio, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
   }
   // free valley and missions with road stone (D-32): granaries keep a stone reserve for cobbles and
@@ -345,6 +358,27 @@ export function dispatch(world: World): void {
   dc.release();
 }
 
+/**
+ * EXPERIMENTAL (two castles): goods the `firstCastle` still lacks and, transitively, the inputs of the workshops on
+ * the map that make them (bread -> flour -> grain). [] when no castle is marked first (every authored mission).
+ */
+function firstChainGoods(world: World): Good[] {
+  const m = world.state.mission;
+  if (m.firstCastle === undefined || !TWO_CASTLES.chainPriority) return [];
+  const c = runningContractOf(m, m.firstCastle);
+  const castle = c ? buildingById(world, c.castle) : null;
+  if (!c || !castle) return [];
+  const out: Good[] = [];
+  for (const g of GOODS) if (contractTarget(c, g) - castle.stock[g] > 0) out.push(g);
+  for (let i = 0; i < out.length; i++) {
+    for (const b of world.state.buildings) {
+      if (b.type === 'warehouse' || b.type === 'castle' || !outputGoods(b.type).includes(out[i]!)) continue;
+      for (const ig of inputGoods(b.type)) if (!out.includes(ig)) out.push(ig);
+    }
+  }
+  return out;
+}
+
 /** A building that produces `good` (lowest id, not `except`), or -1. */
 export function upstreamOf(world: World, good: Good, except: number): number {
   for (const b of world.state.buildings) if (b.id !== except && outputGoods(b.type).includes(good)) return b.id;
@@ -472,14 +506,17 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
     const m = world.state.mission;
     // free valley: the castle is the market; it only needs a road
     if (marketOpen(world)) return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
-    if (!m.contract || m.contract.castle !== b.id) return { k: 'IDLE' };
+    const own = contractsOf(m).find((c) => c.castle === b.id);
+    if (!own) return { k: 'IDLE' };
     if (m.result === 'won') return { k: 'CONTRACT_DONE' };
+    // EXPERIMENTAL (two castles): one castle's order can be complete while the other still runs
+    if (m.extraContracts && GOODS.every((g) => b.stock[g] >= own.need[g])) return { k: 'CONTRACT_DONE' };
     if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
     // report the first good still missing, preferring a real stall over "on the way"
     let waiting: BuildingStatus | null = null;
     for (const g of GOODS) {
       // with tranches only the goods of the letter currently due count
-      const target = contractTarget(m.contract, g);
+      const target = contractTarget(own, g);
       if (target - b.stock[g] <= 0) continue;
       const r = inputReason(world, b, g, unmet, held, dc);
       if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM' || r.k === 'WAGON_DUE') { if (!waiting) waiting = r; continue; }

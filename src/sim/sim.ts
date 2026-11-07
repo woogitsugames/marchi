@@ -3,7 +3,7 @@ import { BUILDINGS, capacityOf, DISPATCH_INTERVAL, GOODS, STATE_VERSION, TICK_HZ
 import { applyCommand, type Command, type CommandResult } from './commands';
 import { hashState } from './hash';
 import { dispatch } from './logistics';
-import { trancheCovered } from './contract';
+import { contractsOf, trancheCovered } from './contract';
 import { explainBuilding } from './diagnose';
 import { buildMission, missionSeasons, terrainFor } from './missions';
 import type { World } from './network';
@@ -155,23 +155,26 @@ export function topStallCauses(world: World, n = 3): { kind: string; id: number;
 function checkMission(world: World): void {
   const st = world.state, m = st.mission;
   if (!m.contract || m.result !== 'running') return;
-  const c = m.contract;
-  const castle = st.buildings.find((b) => b.id === c.castle);
-  if (!castle) return;
-  // waybill: tranches complete in order; a passed deadline marks a tranche missed (delivery still counts)
-  for (let i = 0; i < c.tranches.length; i++) {
-    const tr = c.tranches[i]!;
-    if (tr.doneTick >= 0) continue;
-    if (trancheCovered(c, i, castle.stock)) { tr.doneTick = st.tick; continue; }
-    if (!tr.missed && st.tick >= tr.deadlineTick) tr.missed = true;
-    break;
-  }
+  // EXPERIMENTAL (two castles, research 2026-11-07): every castle's order is checked the same way; the mission is
+  // won when all are complete and lost at the main contract's deadline. One castle: exactly the old check.
   let done = true;
-  for (const g of GOODS) if (castle.stock[g] < c.need[g]) done = false;
+  for (const c of contractsOf(m)) {
+    const castle = st.buildings.find((b) => b.id === c.castle);
+    if (!castle) return;
+    // waybill: tranches complete in order; a passed deadline marks a tranche missed (delivery still counts)
+    for (let i = 0; i < c.tranches.length; i++) {
+      const tr = c.tranches[i]!;
+      if (tr.doneTick >= 0) continue;
+      if (trancheCovered(c, i, castle.stock)) { tr.doneTick = st.tick; continue; }
+      if (!tr.missed && st.tick >= tr.deadlineTick) tr.missed = true;
+      break;
+    }
+    for (const g of GOODS) if (castle.stock[g] < c.need[g]) done = false;
+  }
   if (done) {
     m.result = 'won';
     m.endTick = st.tick;
-  } else if (st.tick >= c.deadlineTick) {
+  } else if (st.tick >= m.contract.deadlineTick) {
     m.result = 'lost';
     m.endTick = st.tick;
   }
@@ -183,7 +186,7 @@ export function stars(world: World): number {
   if (m.result !== 'won' || !m.contract) return 0;
   const base = m.endTick <= m.contract.star3Tick ? 3 : m.endTick <= m.contract.star2Tick ? 2 : 1;
   let missed = 0;
-  for (const t of m.contract.tranches) if (t.missed) missed++;
+  for (const c of contractsOf(m)) for (const t of c.tranches) if (t.missed) missed++;
   return Math.max(1, base - missed);
 }
 

@@ -180,6 +180,14 @@ export interface MissionState {
    * stone (rank gating) and keeps this false.
    */
   roadStone: boolean;
+  /**
+   * EXPERIMENTAL (research 2026-11-07 "dwa zamki", not in any authored mission): contracts of further castles,
+   * each with one tranche that carries its own deadline. Absent everywhere else, so every mission serializes
+   * exactly as before (same pattern as `valleyEvents`).
+   */
+  extraContracts?: Contract[];
+  /** EXPERIMENTAL (same research): castle whose order the dispatcher serves first; absent = by fill, then id. */
+  firstCastle?: number;
 }
 
 export interface Ledger {
