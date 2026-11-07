@@ -461,3 +461,25 @@ export function workerPose(kind: WorkerKind, t: number, working: boolean, out: W
     out.arm = 25 * D * down - 55 * D * lift;
   }
 }
+
+/** Length (s) of the trader's sale gesture (D-323), played once when a wagon sells at the open post. */
+export const TRADER_SALE = 3;
+
+/**
+ * The trader's sale gesture `age` s after the sale, blended over the idle pose already in `out` (D-323): he leans
+ * over the counter and reaches out to the carter (takes the coin), straightens with both hands raised before his
+ * face (weighs it, looks at it), bends down to the strongbox under the counter (drops it in), then eases back into
+ * his idle loop. Calm transitions (smoothstep, no overshoot); outside 0..TRADER_SALE `out` is left as it is.
+ */
+export function traderSalePose(age: number, out: WorkerPose): void {
+  if (!(age >= 0 && age < TRADER_SALE)) return;
+  const D = Math.PI / 180;
+  // weight of the gesture over the idle pose: in over 0.5 s, out over the last 0.8 s
+  const w = smooth01(age / 0.5) * (1 - smooth01((age - 2.2) / 0.8));
+  // key poses: reach (to 0.8 s), weigh (0.8..1.25 in, held to 1.6), drop (1.6..2.3, held while it fades out)
+  const weigh = smooth01((age - 0.8) / 0.45), drop = smooth01((age - 1.6) / 0.7);
+  const bend = 22 * D + (3 * D - 22 * D) * weigh + (24 * D - 3 * D) * drop;
+  const arm = -8 * D + (-38 * D + 8 * D) * weigh + (50 * D + 38 * D) * drop;
+  out.bend += (bend - out.bend) * w;
+  out.arm += (arm - out.arm) * w;
+}

@@ -16,7 +16,8 @@ import { CELL, type Heightfield } from './heightfield';
 import { POST_TRADER, buildingModel, castleUpgradeParts, tradePostClosedParts, tradePostOpenParts, type BuildingKind, type WorkerSpot } from './models/buildings';
 import { mergeIndexed, type ModelPart, PartBuilder, prim } from './models/kit';
 import { type MatKey, modelMaterial } from './models/materials';
-import { HOE_STEP, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
+import { HOE_STEP, TRADER_SALE, WORKER_HIP_Y, WORKER_SHOULDER_Y, hoeWalk, traderSalePose, type WorkerKind, type WorkerPose, workerPose, workerRig } from './models/people';
+import { freshPostSale, lastPostSaleTick } from './postSale';
 import { Parts } from './instancedParts';
 
 export interface BuildingInfo {
@@ -153,6 +154,9 @@ export class BuildingsView {
   private bodyParts = new Map<number, { legs: Parts; torso: Parts }>();
   private readonly workerGroup = new Group();
   private time = 0;
+  /** Newest trading-post sale tick seen last frame (-2: none seen yet) and the trader's gesture clock (s, D-323). */
+  private saleSeen = -2;
+  private saleT = TRADER_SALE;
   private signature = '';
 
   constructor(private readonly hf: Heightfield) {
@@ -376,6 +380,11 @@ export class BuildingsView {
     for (const b of this.bodyParts.values()) { b.legs.begin(); b.torso.begin(); }
     for (const p of this.workerParts.values()) { p.arms.begin(); p.tool?.begin(); }
     const bs = world.state.buildings;
+    // a wagon sold at the open post since the last frame: the trader plays his sale gesture (read only, D-323)
+    const sale = lastPostSaleTick(world.state);
+    if (freshPostSale(this.saleSeen, sale, world.state.tick)) this.saleT = 0;
+    else if (this.saleT < TRADER_SALE) this.saleT += dt;
+    this.saleSeen = sale;
     for (const w of this.workers) {
       let working = !!w.always;
       if (!working) for (let i = 0; i < bs.length; i++) if (bs[i]!.id === w.buildingId) { working = bs[i]!.status.k === 'WORKING'; break; }
@@ -392,7 +401,10 @@ export class BuildingsView {
         // facing the tilled earth he draws toward his feet, so he steps backwards; turned round at the row's end
         _wb.makeRotationY(Math.atan2(wk.ax, wk.az) + (back ? 0 : Math.PI)).setPosition(x, this.hf.height(x, z), z);
         base = _wb;
-      } else workerPose(w.kind, this.time + w.phase, working, _pose);
+      } else {
+        workerPose(w.kind, this.time + w.phase, working, _pose);
+        if (w.kind === 'trader') traderSalePose(this.saleT, _pose);
+      }
       const p = this.workerParts.get(w.kind)!;
       if (p.torso.count >= WORKER_CAP || p.arms.count >= WORKER_CAP) continue;
       if (!w.noLegs) p.legs.push(base);

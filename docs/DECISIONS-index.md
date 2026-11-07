@@ -271,3 +271,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-320 | — | Primitives are shared read-only templates (`prim`) | decided | inne |
 | D-321 | — | `PartBuilder.add`/`build` on plain arrays | decided | inne |
 | D-322 | — | Noise once per shared vertex; per-vertex waste out of the shades; bridges merged like buildings | decided | inne |
+| D-323 | — | The trader at the open trading post answers each sale with a short gesture (BACKLOG P3 from D-200) | nieokreślony | inne |
+| D-324 | — | The sale is read from `tradePost.recent`, not stored anywhere new | nieokreślony | inne |
