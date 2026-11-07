@@ -26,6 +26,8 @@ const MOSS = new Color('#5f5a40');
 const FRESH_STRAW = new Color('#a08a63');
 /** Grey-green lichen on old shingles. */
 const LICHEN = new Color('#5e604d');
+/** Log end grain (logGeom). */
+const END_GRAIN = new Color('#a8916c');
 
 /**
  * Box between two points (long axis a→b), cross-section `w` × `h`. The `h` side is oriented
@@ -218,7 +220,7 @@ export function gableRoof(b: PartBuilder, mat: MatKey, s: RoofSpec, extra?: Matr
     const ex = extra ?? new Matrix4();
     if (s.ridge === 'roll') {
       const rr = s.thickness * 0.9;
-      const g = new CylinderGeometry(rr, rr, width + 0.1, 10, Math.max(2, nx), false);
+      const g = prim(CylinderGeometry, rr, rr, width + 0.1, 10, Math.max(2, nx), false);
       b.add(mat, g, {
         color: rc,
         m: ex.clone().multiply(trs(cx, ry + s.thickness * 0.75, cz, 0, 0, Math.PI / 2, 1, 1, 0.8)),
@@ -230,7 +232,7 @@ export function gableRoof(b: PartBuilder, mat: MatKey, s: RoofSpec, extra?: Matr
       });
     } else {
       for (const side of [1, -1]) {
-        const g = new BoxGeometry(width + 0.06, 0.035, 0.26);
+        const g = prim(BoxGeometry, width + 0.06, 0.035, 0.26);
         const nrm = v3(0, Math.cos(p), side * Math.sin(p));
         const at = v3(cx, ry, cz).add(nrm.clone().multiplyScalar(s.thickness + 0.02)).add(v3(0, -Math.sin(p) * 0.11, side * Math.cos(p) * 0.11));
         b.add(mat, g, { color: rc, m: ex.clone().multiply(trs(at.x, at.y, at.z, side * p, 0, 0)), ao: 0, dirt: 0 });
@@ -360,17 +362,16 @@ export function logPile(b: PartBuilder, center: Vector3, ry: number, len: number
 
 /** One log with bark and lighter end grain; axis along local Y before `m`. */
 export function logGeom(b: PartBuilder, m: Matrix4, r: number, len: number, seg = 8): void {
-  const g = new CylinderGeometry(r, r * 1.04, len, seg, 1, false);
-  b.add('bark', g, {
+  // caps: the end grain. Normal ~ parallel to the log axis (worked out once per log, not per vertex: D-322)
+  const ax = new Vector3(0, 1, 0).transformDirection(m);
+  b.add('bark', prim(CylinderGeometry, r, r * 1.04, len, seg, 1, false), {
     color: '#544636',
     m,
     jitter: r * 0.12,
     jitterFreq: 5,
     noise: 0.12,
     shade: (_p, n, c) => {
-      // caps: the end grain. Normal ~ parallel to the log axis
-      const ax = new Vector3(0, 1, 0).transformDirection(m);
-      if (Math.abs(n.dot(ax)) > 0.7) c.set('#a8916c');
+      if (Math.abs(n.dot(ax)) > 0.7) c.copy(END_GRAIN);
     },
   });
 }

@@ -18,10 +18,9 @@ import {
   UniformsUtils,
   Vector3,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BRIDGE, type BridgeKind, bridgeEndParts, bridgeFootings, bridgeParts } from './models/bridges';
 import { type MatKey, modelMaterial } from './models/materials';
-import { PartBuilder, prim } from './models/kit';
+import { mergeIndexed, PartBuilder, prim } from './models/kit';
 import { noiseTexture } from './noiseTex';
 import type { BridgeCell } from './roads';
 
@@ -114,16 +113,16 @@ export class BridgesView {
     if (this.ice) { this.group.remove(this.ice); this.ice.geometry.dispose(); this.ice = null; }
     if (!cells.length) return;
     const icePb = new PartBuilder({ seed: 4711, ao: 0, dirt: 0 });
-    const byMat = new Map<MatKey, BufferGeometry[]>();
+    // per material: the part geometries and where each stands, merged with the transforms baked in one pass
+    // (mergeIndexed, as the buildings: no clone, attribute delete and applyMatrix4 per part, D-322)
+    const byMat = new Map<MatKey, { geos: BufferGeometry[]; mats: Matrix4[] }>();
     const S = new Matrix4(), R = new Matrix4(), F = new Matrix4().makeRotationY(Math.PI);
     const add = (parts: ReturnType<typeof bridgeParts>, m: Matrix4) => {
       for (const p of parts) {
-        const g = p.geometry.clone();
-        for (const k of Object.keys(g.attributes)) if (!KEEP.has(k)) g.deleteAttribute(k);
-        g.applyMatrix4(m);
         let l = byMat.get(p.material);
-        if (!l) byMat.set(p.material, (l = []));
-        l.push(g);
+        if (!l) byMat.set(p.material, (l = { geos: [], mats: [] }));
+        l.geos.push(p.geometry);
+        l.mats.push(m);
       }
     };
     // run ends: no bridge cell one segment further along the road axis
@@ -179,10 +178,8 @@ export class BridgesView {
         foamIdx.push(base, base + 2, base + 1, base, base + 3, base + 2);
       }
     }
-    for (const [mat, list] of byMat) {
-      const g = mergeGeometries(list, false);
-      for (const l of list) l.dispose();
-      if (!g) continue;
+    for (const [mat, l] of byMat) {
+      const g = mergeIndexed(l.geos, l.mats, KEEP);
       g.computeBoundingSphere();
       const mesh = new Mesh(g, modelMaterial(mat) as Material);
       mesh.castShadow = true;
@@ -193,20 +190,14 @@ export class BridgesView {
     }
     const iceParts = icePb.build();
     if (iceParts.length) {
-      const g = mergeGeometries(iceParts.map((p) => {
-        const q = p.geometry.clone();
-        for (const k of Object.keys(q.attributes)) if (!KEEP.has(k)) q.deleteAttribute(k);
-        return q;
-      }), false);
-      if (g) {
-        g.computeBoundingSphere();
-        this.ice = new Mesh(g, modelMaterial('stone') as Material);
-        this.ice.name = 'bridge-ice';
-        this.ice.castShadow = true;
-        this.ice.receiveShadow = true;
-        this.ice.visible = this.iceOn;
-        this.group.add(this.ice);
-      }
+      const g = mergeIndexed(iceParts.map((p) => p.geometry), undefined, KEEP);
+      g.computeBoundingSphere();
+      this.ice = new Mesh(g, modelMaterial('stone') as Material);
+      this.ice.name = 'bridge-ice';
+      this.ice.castShadow = true;
+      this.ice.receiveShadow = true;
+      this.ice.visible = this.iceOn;
+      this.group.add(this.ice);
     }
     if (foamIdx.length) {
       const g = new Geometry();

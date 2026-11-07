@@ -144,6 +144,7 @@ const STREAK = new Color('#4f4b44');
 const SPLASH = new Color('#6f6250');
 const RUNOFF = new Color('#857b69');
 export const SOOT = new Color('#2e2a26');
+const OVEN_SOOT = new Color('#3a332c');
 export const stoneO = (color = C.stone): Opts => ({
   color,
   jitter: 0.04,
@@ -724,12 +725,14 @@ function bakery(b: PartBuilder): Partial<BuildingModel> {
     dirt: 0.2,
     shade: (p, _n, c) => {
       if (p.z > oz + 0.8 && Math.abs(p.x - ox) < 0.3 && p.y < 1.25) c.set('#1c1714'); // oven mouth
-      else if (p.y > 1.45) c.lerp(new Color('#3a332c'), 0.35); // soot
+      else if (p.y > 1.45) c.lerp(OVEN_SOOT, 0.35); // soot
     },
   });
-  // flue: a short, soot-darkened field-stone stack at the back of the oven dome (~3.3 m)
-  const flue = { ...stoneO('#4f4a42'), shade: (p: Vector3, n: Vector3, c: Color) => {
-    stoneO('#4f4a42').shade!(p, n, c);
+  // flue: a short, soot-darkened field-stone stack at the back of the oven dome (~3.3 m); the stone shade made once,
+  // not per vertex (D-322)
+  const flueStone = stoneO('#4f4a42');
+  const flue = { ...flueStone, shade: (p: Vector3, n: Vector3, c: Color) => {
+    flueStone.shade!(p, n, c);
     if (p.y > 2.3) c.lerp(SOOT, Math.min(0.6, (p.y - 2.3) * 0.7));
   } };
   box(b, 'stone', 0.56, 3.2, 0.56, trs(ox + 0.15, 1.6, oz - 0.78), flue, 0.4);

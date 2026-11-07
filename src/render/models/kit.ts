@@ -281,10 +281,19 @@ export class PartBuilder {
     const count = pa.length / 3;
     const seed = this.settings.seed;
 
+    // vertices at the same spot (a box's 24 corners are 8 points, a cylinder's seam and caps repeat its rings) get
+    // the same jitter and the same colour noise: worked out once per point (D-322), copied bit for bit to the others
+    const rep = firstAt(pa, count);
+
     if (o.jitter) {
       const f = o.jitterFreq ?? 2.5;
       const a = o.jitter;
       for (let i = 0; i < count; i++) {
+        const r = rep[i]!;
+        if (r !== i) {
+          pa[i * 3] = pa[r * 3]!; pa[i * 3 + 1] = pa[r * 3 + 1]!; pa[i * 3 + 2] = pa[r * 3 + 2]!;
+          continue;
+        }
         const x = pa[i * 3]!, y = pa[i * 3 + 1]!, z = pa[i * 3 + 2]!;
         pa[i * 3] = x + fnoise(x * f, y * f, z * f, seed + 1) * a;
         pa[i * 3 + 1] = y + fnoise(x * f + 31.7, y * f, z * f, seed + 2) * a;
@@ -310,8 +319,9 @@ export class PartBuilder {
     const dirtK = o.dirt ?? this.settings.dirt;
     const aoH = this.settings.aoHeight, dirtH = this.settings.dirtHeight;
     const col = new Float32Array(count * 3);
+    const noiseK = new Float64Array(count);
     const shade = o.shade;
-    const c = new Color();
+    const c = shadeColor;
     const p = new Vector3();
     const n = new Vector3();
     // plain array reads (same values as getX/getY/getZ: the attributes are not normalized); the colour arithmetic
@@ -326,7 +336,8 @@ export class PartBuilder {
         shade(p, n, c);
         r = c.r; gg = c.g; bb = c.b;
       }
-      const k = pieceK * (1 + fnoise(px * nf, py * nf, pz * nf, seed + 9) * noiseA);
+      const r0 = rep[i]!;
+      const k = r0 !== i ? noiseK[r0]! : (noiseK[i] = pieceK * (1 + fnoise(px * nf, py * nf, pz * nf, seed + 9) * noiseA));
       const ao = 1 - aoK * (1 - smoothstep(0, aoH, py));
       // faces pointing down receive less sky light
       const down = ny < 0 ? 1 + ny * 0.25 : 1;
@@ -384,6 +395,31 @@ function iota(n: number): Uint32Array {
   return idx;
 }
 
+/**
+ * For every vertex the first vertex at the bit-identical position (itself when it is the first): an open-addressing
+ * table over the float bits. Pure functions of the position (jitter, colour noise) are worked out at those only.
+ */
+function firstAt(pa: Float32Array, count: number): Int32Array {
+  const u = new Uint32Array(pa.buffer, pa.byteOffset, count * 3);
+  let size = 16;
+  while (size < count * 2) size <<= 1;
+  const mask = size - 1;
+  const table = new Int32Array(size).fill(-1);
+  const rep = new Int32Array(count);
+  for (let i = 0; i < count; i++) {
+    const a = u[i * 3]!, b = u[i * 3 + 1]!, c = u[i * 3 + 2]!;
+    let h = Math.imul(a, 0x9e3779b1) ^ Math.imul(b, 0x85ebca77) ^ Math.imul(c, 0xc2b2ae3d);
+    h = (h ^ (h >>> 15)) & mask;
+    for (;;) {
+      const j = table[h]!;
+      if (j < 0) { table[h] = i; rep[i] = i; break; }
+      if (u[j * 3] === a && u[j * 3 + 1] === b && u[j * 3 + 2] === c) { rep[i] = j; break; }
+      h = (h + 1) & mask;
+    }
+  }
+  return rep;
+}
+
 /** Parsed albedo per colour value (setStyle parses the string and converts sRGB to linear on every call). */
 const colors = new Map<string | number, Color>();
 
@@ -393,6 +429,16 @@ function baseColor(v: ColorRepresentation): Color {
   if (!c) colors.set(v, (c = new Color(v)));
   return c;
 }
+
+/**
+ * The colour handed to `AddOpts.shade`. Its `set` with a CSS string copies the cached parse (D-322: shades set a
+ * literal colour per vertex, each a setStyle parse and an sRGB conversion); the result is the same.
+ */
+const shadeColor = new Color();
+const colorSet = Color.prototype.set;
+shadeColor.set = function (this: Color, r: ColorRepresentation, g?: number, b?: number): Color {
+  return typeof r === 'string' && g === undefined && b === undefined ? this.copy(baseColor(r)) : colorSet.call(this, r as number, g as number, b as number);
+} as Color['set'];
 
 /** A copy of `src` with Vector3.applyMatrix4(m) applied to every point (bit for bit BufferAttribute.applyMatrix4). */
 function transformPoints(src: Float32Array, m: Matrix4): Float32Array {
