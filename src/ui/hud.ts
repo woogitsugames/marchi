@@ -12,7 +12,7 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, rankName, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitle } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
@@ -655,7 +655,7 @@ export class Hud {
       }
       if (pc.k === 'castle') {
         // two castles (D-290): the late castle, how late, and who takes its goods; its sheet holds the switch
-        const late = ticksClock(Math.ceil(pc.lateTicks / (10 * TICK_HZ)) * 10 * TICK_HZ);
+        const late = ticksClock(lateTicks10(pc.lateTicks));
         const text = pc.share === 'after'
           ? t('cause.paceCastleAfter', { late, rival: buildingName(world, pc.rival) })
           : t('cause.paceCastleEven', { late });
@@ -949,7 +949,7 @@ export class Hud {
       const lateBy = f && f.finishTick > x.deadlineTick ? f.finishTick - x.deadlineTick : -1;
       const state = x.missed ? `<div class="tr-state">${esc(t('castle.late'))}</div>`
         : f && f.finishTick >= 0 ? `<div class="castle-eta${lateBy >= 0 ? ' late' : ''}"><span>${
-          lateBy >= 0 ? tHtml('castle.lateBy', { time: ticksClock(Math.ceil(lateBy / (10 * TICK_HZ)) * 10 * TICK_HZ) }) : esc(t('castle.onTime'))}</span></div>` : '';
+          lateBy >= 0 ? tHtml('castle.lateBy', { time: ticksClock(lateTicks10(lateBy)) }) : esc(t('castle.onTime'))}</span></div>` : '';
       return `<li class="wb-tr is-now wb-castle${first ? ' is-first' : ''}${x.missed ? ' is-late' : ''}"><div class="tr-h">${head}</div>
         <div class="wb-goods">${goods}</div>${state}</li>`;
     }).join('');

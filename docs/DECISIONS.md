@@ -3556,3 +3556,11 @@ the tool only: after the last step it waits two animation frames, logs the state
 only when they are shown (else the seal's text and fill) and reports a mismatch between the shown counts or seal fill
 and the state as an error. All 18 `docs/shots/m16-*` regenerated, 0 errors. No UI, no sim change (`tools/mission-hashes.ts`
 identical). (decided)
+
+**D-318 — One rounding for a castle's lateness: the castle sheet also rounds up to 10 s.**
+D-317 found the pace card and the waybill saying "spóźni się o 2:20" (lateness rounded up to 10 s) while the castle
+sheet said "ok. 7:12 — 2:12 po terminie" (exact); in landscape both are on screen and read as two different forecasts.
+The sheet's `castle.fcLate` now prints the deadline plus the rounded lateness ("ok. 7:20 — 2:20 po terminie"), through
+one helper `lateTicks10` in `src/ui/format.ts` used by all three places. Rounding up keeps the "late" message on the
+safe side; the exact second is not something the player can act on. On-time forecasts (`castle.fcOk`) and the switch
+line keep the forecast's own time. UI only, no sim change. (decided)

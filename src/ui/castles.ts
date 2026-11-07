@@ -4,7 +4,7 @@
 import { castleRival, contractsOf, type Building, type PaceLog, type World } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
-import { buildingName, capFirst, tHtml, ticksClock } from './format';
+import { buildingName, capFirst, lateTicks10, tHtml, ticksClock } from './format';
 import { iconSvg } from './icons';
 import { castleForecastFor } from './paceCard';
 
@@ -37,8 +37,10 @@ export function castleOrderHtml(world: World, b: Building, log: PaceLog): string
   out.push(split);
   if (fc.finishTick >= 0) {
     const late = fc.finishTick > fc.dueTick;
+    // same rounding as the pace card and the waybill, so landscape never shows "2:20" next to "2:12" (D-318)
+    const lateBy = lateTicks10(fc.finishTick - fc.dueTick);
     const line = late
-      ? tHtml('castle.fcLate', { time: ticksClock(fc.finishTick), late: ticksClock(fc.finishTick - fc.dueTick) })
+      ? tHtml('castle.fcLate', { time: ticksClock(fc.dueTick + lateBy), late: ticksClock(lateBy) })
       : tHtml('castle.fcOk', { time: ticksClock(fc.finishTick) });
     // what "first" would bring is said once, under the switch in the dock (fix.castleFirstWhy/Late), so the chain's
     // root stays above the dock on a 360 x 740 phone (D-146)

@@ -26,6 +26,11 @@ export function clock(sec: number): string {
   return fmtDuration(sec);
 }
 
+/** Lateness rounded up to 10 s — one rule for the pace card, the waybill and the castle sheet (D-318). */
+export function lateTicks10(ticks: number): number {
+  return Math.ceil(ticks / (10 * TICK_HZ)) * 10 * TICK_HZ;
+}
+
 export function ticksClock(ticks: number): string {
   return fmtDuration(ticks / TICK_HZ);
 }
