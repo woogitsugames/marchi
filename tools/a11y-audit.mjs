@@ -195,7 +195,15 @@ function focusInfo() {
   if (!el || el === document.body) return { tag: 'body' };
   const cs = getComputedStyle(el);
   const r = el.getBoundingClientRect();
-  const ring = (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0) || (cs.boxShadow !== 'none' && /focus|0px 0px 0px/.test(cs.boxShadow + ''));
+  const shadowRing = (bs) => bs !== 'none' && /focus|0px 0px 0px/.test(bs + '');
+  // a transparent outline is the forced-colors fallback (it paints only in high-contrast mode), not a visible ring
+  const outlineRing = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0 && !/^(transparent|rgba\(.*,\s*0\))$/.test(cs.outlineColor);
+  // a ring drawn on a shape inside the control (the map pin's round head, D-147: `.bubble:focus-visible .bb::before`)
+  const innerRing = [...el.querySelectorAll('*')].slice(0, 20).some((d) => ['::before', '::after'].some((ps) => {
+    const pc = getComputedStyle(d, ps);
+    return pc.content !== 'none' && pc.content !== 'normal' && shadowRing(pc.boxShadow) && /246, 233, 200|29, 24, 19/.test(pc.boxShadow);
+  }));
+  const ring = outlineRing || shadowRing(cs.boxShadow) || innerRing;
   return {
     tag: el.tagName.toLowerCase(), cls: [...el.classList].slice(0, 3).join('.'),
     name: (el.getAttribute('aria-label') ?? el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40),
