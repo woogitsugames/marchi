@@ -54,7 +54,8 @@
 - Scalone ~18:10: **D-320..D-322** szybsza budowa modeli (wspólne prymitywy, typowane tablice w `PartBuilder`, szum raz na
   wierzchołek): modele menu 167 → 125 ms (node), w przeglądarce 137 → 105 ms; 0 px na 18 scenach, geometria bit w bit.
   Testy 606/0, smoke 0, layout 126/0. (Agenci stanęli ~16:00 na limicie użycia, wznowieni ~17:45.)
-- W toku: agent `claude/w-merchant` — kupiec przy ladzie reaguje na sprzedaż (D-323/D-324).
+- W toku: agent `claude/w-merchant` — kupiec przy ladzie reaguje na sprzedaż (D-323/D-324); agent `claude/w-billboard` —
+  szybsze wypiekanie billboardów drzew (~50 ms menu; D-325..D-327).
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
   `vegetation.update` (naprawia stare sortowanie drzew po zmianie świata).
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
