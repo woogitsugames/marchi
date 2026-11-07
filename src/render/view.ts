@@ -36,7 +36,7 @@ import { PartBuilder } from './models/kit';
 import { applyTextures, foliageLift, frostUniform, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
 import { OverlayData } from './overlay';
 import { PlacementGhostView } from './placementGhost';
-import { treeAtlasBytes } from './models/trees';
+import { requestTreeBakePrograms, treeAtlasBytes } from './models/trees';
 import { ShaderPrewarm } from './prewarm';
 import { cellAtPoint, rayGround, screenRay } from './picking';
 import { RoadField } from './roads';
@@ -210,6 +210,12 @@ class View implements WorldView {
     if (import.meta.env.DEV && getUltraBase() === null) setUltraBase(`${import.meta.env.BASE_URL}assets-ultra/`);
     this.applyQuality();
     this.resize(canvas.clientWidth || 1, canvas.clientHeight || 1, window.devicePixelRatio || 1);
+    // the far-tree bake's programs link while the world is built, not in the first frame (D-325)
+    try {
+      requestTreeBakePrograms(r);
+    } catch (e) {
+      console.warn('[view] tree bake programs', e);
+    }
     // Deferred: a setQuality() right after mount() (the app does that) picks the tier first,
     // so the default tier is not downloaded only to be thrown away.
     queueMicrotask(() => this.loadTextures());

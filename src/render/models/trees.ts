@@ -642,8 +642,9 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  * Render every tree kind from `BB_VIEWS` azimuths into a shared albedo atlas and a matching
  * normal atlas (columns = kinds, rows = views), attached to the `billboard` material: the far
  * card is then lit like the full model (same crown normals, same vertex-colour occlusion), so the
- * LOD swap does not change the value of the forest. Call once after the renderer exists; cheap
- * (5 kinds x 8 views x 2 passes of small renders + 16 row copies). `cellPx` is the cell width (the
+ * LOD swap does not change the value of the forest. Call once after the renderer exists: 8 passes (one per view,
+ * D-326) that draw the 5 kinds into both atlases at once (D-327), 16 row copies, one mip build per atlas (D-325);
+ * the main thread queues them and returns, the GPU renders them after. `cellPx` is the cell width (the
  * view.ts tier picks it): atlas = 5·cell x 16·cell RGBA8 + mips, two of them — 128 px (low, high)
  * 2 x 7 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
  * re-bakes (old pair disposed).
@@ -654,6 +655,36 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  */
 let bakeMats: { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial } | null = null;
 let copyMat: ShaderMaterial | null = null;
+
+function bakeMaterials(): { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial } {
+  return bakeMats ??= { leaves: bakeMaterial(leafTexture(), true), needles: bakeMaterial(needleTexture()), solid: bakeMaterial(null) };
+}
+
+function copyMaterial(): ShaderMaterial {
+  return copyMat ??= new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: null } }, depthTest: false, depthWrite: false, blending: NoBlending });
+}
+
+/**
+ * Hand the bake's programs to the driver now, without waiting for them (D-325): called when the renderer is made,
+ * long before the first frame bakes, so their links are done by then instead of holding that frame. Same program
+ * keys as in the bake (drawn into a render target: linear output, no tone mapping); nothing is drawn.
+ */
+export function requestTreeBakePrograms(renderer: WebGLRenderer): void {
+  if (atlas) return;
+  const bm = bakeMaterials();
+  const box = new BufferGeometry();
+  box.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3));
+  const scene = new Scene();
+  for (const mat of [bm.leaves, bm.needles, bm.solid, copyMaterial()]) scene.add(new Mesh(box, mat));
+  const rt = new WebGLRenderTarget(1, 1);
+  const prev = renderer.getRenderTarget();
+  renderer.setRenderTarget(rt);
+  renderer.compile(scene, new OrthographicCamera());
+  renderer.setRenderTarget(prev);
+  rt.dispose();
+  box.dispose();
+  renderer.getContext().flush();
+}
 
 /** GPU bytes held by the baked far-tree atlas pair (albedo + normal, RGBA8 with a full mip chain). */
 export function treeAtlasBytes(): number {
@@ -696,9 +727,9 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   }
   const scene = new Scene();
   const copyScene = new Scene();
-  copyMat ??= new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: null } }, depthTest: false, depthWrite: false, blending: NoBlending });
+  const copy = copyMaterial();
   const quadGeo = new PlaneGeometry(2, 2);
-  const quad = new Mesh(quadGeo, copyMat);
+  const quad = new Mesh(quadGeo, copy);
   quad.frustumCulled = false;
   copyScene.add(quad);
   const copyCam = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -706,11 +737,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
   const prevAutoClear = renderer.autoClear;
-  const bm = bakeMats ??= {
-    leaves: bakeMaterial(leafTexture(), true),
-    needles: bakeMaterial(needleTexture()),
-    solid: bakeMaterial(null),
-  };
+  const bm = bakeMaterials();
   // one camera per kind (its column of the row as its viewport, its card's extent as its frustum), all rendered by
   // one ArrayCamera pass per row (D-326): the 5 per-kind passes each ended in a resolve of the whole multisampled
   // row (and a scissor around their column); one pass resolves it once. Kind i draws only on layer i + 1.
@@ -740,12 +767,14 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   renderer.autoClear = false;
   // the copy program's first use (link check) before any tree is drawn (D-325): three waits for the link at the
   // first draw with a program, and that wait also waits for every draw queued before it, so a first copy after
-  // the first row's trees held the main thread until the GPU had rendered them. Drawn into the row (cleared
-  // before each view) with no source bound; the bake programs' first use comes with the first tree, also on an
-  // empty queue, after which the bake only queues work and returns.
-  copyMat.uniforms.src!.value = null;
-  renderer.setRenderTarget(row);
+  // the first row's trees held the main thread until the GPU had rendered them. Drawn into the albedo atlas
+  // (cleared right after; no mip build) with no source bound; the bake programs' first use comes with the first
+  // tree, also on an empty queue, after which the bake only queues work and returns.
+  copy.uniforms.src!.value = null;
+  renderer.setRenderTarget(rtA); // allocated here, with its mip levels (the flag is read at allocation)
+  rtA.texture.generateMipmaps = false;
   renderer.render(copyScene, copyCam);
+  rtA.texture.generateMipmaps = true;
   for (const rt of [rtA, rtN]) {
     renderer.setRenderTarget(rt);
     renderer.clear();
@@ -765,7 +794,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     // copy the resolved row into its atlas rows; the mip chains are built once, after the last row's copy (three
     // rebuilds them after every render into a mipmapped target: 8 full-chain rebuilds per atlas, each from scratch)
     [rtA, rtN].forEach((rt, i) => {
-      copyMat!.uniforms.src!.value = row.textures[i];
+      copy.uniforms.src!.value = row.textures[i];
       rt.viewport.set(0, v * rowH, rowW, rowH);
       rt.scissor.set(0, v * rowH, rowW, rowH);
       rt.scissorTest = true;
@@ -781,7 +810,7 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     rt.scissor.set(0, 0, rt.width, rt.height);
   }
   row.dispose();
-  copyMat.uniforms.src!.value = null;
+  copy.uniforms.src!.value = null;
   quadGeo.dispose();
   renderer.autoClear = prevAutoClear;
   renderer.setRenderTarget(prevTarget);
@@ -796,9 +825,6 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
     m.needsUpdate = true;
   }
   treeUniforms.uBbNormal.value = rtN.texture;
-  // hand the queued work to the GPU now (D-325): WebGL sends it only when its command buffer fills or something
-  // waits on it, so a bake queued before a long CPU task (the world build) otherwise ran after it, not during it
-  renderer.getContext().flush();
   atlas = rtA;
   atlasN = rtN;
   atlasCell = cellPx;
