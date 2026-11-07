@@ -14,7 +14,7 @@ import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
 import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, sentences, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
-import { missionTitle } from './menu';
+import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
 import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
@@ -802,7 +802,7 @@ export class Hud {
     const titleKey = `${st.mission.id}|${lang}`;
     if (titleKey !== this.titleKey) {
       this.titleKey = titleKey;
-      setText(this.wbTitle, missionTitle(st.mission.id));
+      setHtml(this.wbTitle, missionTitleHtml(st.mission.id));
     }
     // orders in tranches (V, VI): the clock runs to the delivery now due, not to the snow — say which
     const toTranche = dueTick !== c.deadlineTick;
@@ -903,7 +903,7 @@ export class Hud {
     const titleKey = `${m.id}|${lang}`;
     if (titleKey !== this.titleKey) {
       this.titleKey = titleKey;
-      setText(this.wbTitle, missionTitle(m.id));
+      setHtml(this.wbTitle, missionTitleHtml(m.id));
     }
     const pillKey = `c${due?.castle ?? -1}|${sec}|${lang}`;
     if (pillKey !== this.pillKey) {

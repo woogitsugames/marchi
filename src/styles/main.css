@@ -1770,6 +1770,9 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
   text-shadow: 0 1px 0 rgb(43 10 12 / .55);
 }
 .ribbon .rb-t { text-wrap: balance; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
+/* RTL: the contract numeral is rubricated so a lone "I." is not read as an alef (D-341) */
+:root[dir='rtl'] .ribbon .roman { color: #e6c27a; }
+:root[dir='rtl'] .letter h2 .roman { color: var(--wine); }
 .wb-panel {
   position: relative;
   margin-top: -8px;
