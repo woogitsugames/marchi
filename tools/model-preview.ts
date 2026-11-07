@@ -1,7 +1,8 @@
 /**
  * Standalone preview of the procedural models (`src/render/models/`).
  * Run `npx vite` at the repo root and open /tools/model-preview.html?view=overview
- * Views: overview, wagons, close, far, buildings, castle, trees, bridges, chains (D-29 buildings and loads).
+ * Views: overview, wagons, close, far, buildings, castle, trees, bridges, chains (D-29 buildings and loads),
+ * cargoBase, cargoChain (full loads from above, goods-shape audit).
  */
 import {
   ACESFilmicToneMapping,
@@ -400,6 +401,9 @@ const views: Record<string, [Vector3, Vector3]> = {
   mill: [new Vector3(25, 8, -9), new Vector3(12, 2, -20)],
   ridge: [new Vector3(25, 8.5, -13), new Vector3(22, 4.6, -20)],
   chains: [new Vector3(0, 31, 86), new Vector3(0, 0, 34)],
+  // goods-shape audit (order 81): the full loads seen from above at about the game camera's pitch
+  cargoBase: [new Vector3(19, 40, 27), new Vector3(19, 0, 0)],
+  cargoChain: [new Vector3(-8, 40, 60), new Vector3(-8, 0, 33)],
   chainsW: [new Vector3(-17, 13, 42), new Vector3(-17, 1.5, 21)],
   chainsE: [new Vector3(17, 16, 44), new Vector3(17, 1.5, 22)],
   chaincargo: [new Vector3(-14, 10, 50), new Vector3(-12, 1, 36)],

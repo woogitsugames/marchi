@@ -8,7 +8,7 @@
  *  - fish   : tall narrow wicker creels with fish tails sticking out of the open tops
  *  - stone  : rough grey blocks, low and heavy (a wagon carries 4), two-by-two on the floor
  *  - charcoal: black sacks standing open, heaped with dull lumps
- *  - malt   : small pale tied bags lying in pairs, necks opposite (smaller than grain/flour)
+ *  - malt   : squat open tubs with two dark hoops, heaped with amber malt (D-201)
  *  - beer   : barrels lying lengthwise, four on the floor and two nested on top
  *  - crate  : fallback for a good without its own load (plain crates)
  *
