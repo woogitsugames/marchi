@@ -302,7 +302,8 @@ function alternativeDestination(world: World, w: Wagon, except: number): Buildin
   const g = w.cargoGood;
   if (!g) return null;
   const st = world.state;
-  const m = dijkstra(world, w.next >= 0 ? w.next : w.at, false, true);
+  // shared scratch buffers: read before any other search runs (`accepts` runs none)
+  const m = dijkstra(world, w.next >= 0 ? w.next : w.at, false, true, -1, true);
   let best: Building | null = null, bestT = Infinity;
   for (const b of st.buildings) {
     if (b.id === except) continue;

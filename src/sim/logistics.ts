@@ -44,34 +44,37 @@ interface Held { wagon: number; at: number }
  * network, weather and bridge queues are unchanged, D-336); only when it declines does this run its own
  * `dijkstra` and recycle the arrays afterwards.
  */
+/** Seconds per cell, Infinity when unreachable (a `DistMap` without `prev`). */
+type Dists = Pick<DistMap, 'dist'>;
+
 class DistCache {
-  private fwd = new Map<number, DistMap>();
-  private rev = new Map<number, DistMap>();
-  private revLoaded = new Map<number, DistMap>();
+  private fwd = new Map<number, Dists>();
+  private rev = new Map<number, Dists>();
+  private revLoaded = new Map<number, Dists>();
   /** Maps computed here (not memoized) that `release` hands back to the pool. */
   private own: DistMap[] = [];
   constructor(private world: World) {}
-  private get(node: number, reverse: boolean, loaded: boolean): DistMap {
+  private get(node: number, reverse: boolean, loaded: boolean): Dists {
     const memo = dijkstraMemo(this.world, node, reverse, loaded);
-    if (memo) return memo;
+    if (memo) return { dist: memo };
     const m = dijkstra(this.world, node, reverse, loaded);
     this.own.push(m);
     return m;
   }
   /** time from node (loaded) to anything */
-  from(node: number): DistMap {
+  from(node: number): Dists {
     let m = this.fwd.get(node);
     if (!m) { m = this.get(node, false, true); this.fwd.set(node, m); }
     return m;
   }
   /** time from anything (empty) to node */
-  to(node: number): DistMap {
+  to(node: number): Dists {
     let m = this.rev.get(node);
     if (!m) { m = this.get(node, true, false); this.rev.set(node, m); }
     return m;
   }
   /** time from anything (loaded) to node */
-  toLoaded(node: number): DistMap {
+  toLoaded(node: number): Dists {
     let m = this.revLoaded.get(node);
     if (!m) { m = this.get(node, true, true); this.revLoaded.set(node, m); }
     return m;

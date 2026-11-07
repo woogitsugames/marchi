@@ -27,6 +27,43 @@ export interface NetCache {
    * `reachable`. Labels are the minimal cell index of each component.
    */
   comp: Int32Array | null;
+  /** Lazily built road adjacency for `dijkstra`, see `adjacency`. */
+  adj?: Adjacency | null;
+}
+
+/**
+ * Compressed neighbour lists over `edgeMask` (D-337): for cell u, entries adjStart[u]..adjStart[u+1]-1
+ * in direction order 0..7, each with the neighbour cell and the cost-table index of the forward edge
+ * u -> v (u*8+d) and of the reverse edge v -> u (v*8+OPP[d]). A direction is listed when either edge
+ * exists; a missing one still reads Infinity from the cost table, so the search sees exactly the edges
+ * the full 8-direction scan saw, in the same order.
+ */
+interface Adjacency {
+  start: Int32Array;
+  node: Int32Array;
+  fwd: Int32Array;
+  rev: Int32Array;
+}
+
+function adjacency(world: World, c: NetCache): Adjacency {
+  if (c.adj) return c.adj;
+  const w = world.terrain.w, h = world.terrain.h, n = w * h, mask = c.edgeMask;
+  const start = new Int32Array(n + 1);
+  const node: number[] = [], fwd: number[] = [], rev: number[] = [];
+  for (let u = 0; u < n; u++) {
+    start[u] = node.length;
+    const ux = u % w, uy = (u - ux) / w;
+    for (let d = 0; d < 8; d++) {
+      const vx = ux + DX[d]!, vy = uy + DY[d]!;
+      if (vx < 0 || vy < 0 || vx >= w || vy >= h) continue;
+      const v = vy * w + vx;
+      if (!mask[u * 8 + d] && !mask[v * 8 + OPP[d]!]) continue;
+      node.push(v); fwd.push(u * 8 + d); rev.push(v * 8 + OPP[d]!);
+    }
+  }
+  start[n] = node.length;
+  c.adj = { start, node: Int32Array.from(node), fwd: Int32Array.from(fwd), rev: Int32Array.from(rev) };
+  return c.adj;
 }
 
 /** Opposite direction index for DX/DY. */
@@ -341,9 +378,13 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   const rain = isRaining(world.state);
   const costs = edgeCosts(world, loaded, rain, thawing(world));
   const pen = spanPenalties(world);
-  const spanOf = net(world).span;
+  const nc = net(world);
+  const spanOf = nc.span;
+  const adj = adjacency(world, nc);
+  const aStart = adj.start, aNode = adj.node, aCost = reverse ? adj.rev : adj.fwd;
   const until = bridgeIceUntil(world);
   const iceLeft = until >= 0 ? (until - world.state.tick) / TICK_HZ : 0;
+  const spans = pen.size > 0 || iceLeft > 0;
   dist[start] = 0;
   push(start, 0);
   sc.curStamp = (sc.curStamp + 1) >>> 0 || 1;
@@ -355,15 +396,13 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
     if (key > dist[u]!) continue;
     done[u] = mark;
     if (u === stopAt) break;
-    const ux = u % w, uy = (u - ux) / w;
-    for (let d = 0; d < 8; d++) {
-      const vx = ux + DX[d]!, vy = uy + DY[d]!;
-      if (vx < 0 || vy < 0 || vx >= w || vy >= h) continue;
-      const v = vy * w + vx;
+    const du = dist[u]!;
+    for (let k = aStart[u]!, end = aStart[u + 1]!; k < end; k++) {
+      const v = aNode[k]!;
       if (done[v] === mark) continue;
-      let cost = reverse ? costs[v * 8 + OPP[d]!]! : costs[u * 8 + d]!;
+      let cost = costs[aCost[k]!]!;
       if (cost === Infinity) continue;
-      if (pen.size > 0 || iceLeft > 0) {
+      if (spans) {
         // entering a span: forward u -> v, reverse the real move is v -> u
         const from = reverse ? v : u, to = reverse ? u : v;
         const sp = spanOf[to]!;
@@ -371,10 +410,10 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
           cost += pen.get(sp) ?? 0;
           // Ice: wait at the bridgehead until the thaw. Forward searches know the arrival time
           // (dist[u]); reverse searches do not and charge the whole remaining window.
-          if (iceLeft > 0) cost += reverse ? iceLeft : Math.max(0, iceLeft - dist[u]!);
+          if (iceLeft > 0) cost += reverse ? iceLeft : Math.max(0, iceLeft - du);
         }
       }
-      const nd = dist[u]! + cost;
+      const nd = du + cost;
       if (nd < dist[v]!) {
         dist[v] = nd;
         prev[v] = u;
@@ -399,11 +438,14 @@ interface DistMemo {
   pen: string;
   /** The `spanPenalties` map `pen` was read from (same object = same content, no re-read needed). */
   penMap: Map<number, number>;
-  maps: Map<number, DistMap>;
+  /** Distance arrays by start*4 + reverse*2 + loaded (only `dist`: no memo reader walks `prev`). */
+  maps: Map<number, Float64Array>;
+  /** Arrays of flushed generations, reused for new entries. */
+  spare: Float64Array[];
 }
 
-/** Keep at most this many memoized maps (83 KB each on a 96x72 map); beyond it callers compute their own. */
-const DIST_MEMO_MAX = 48;
+/** Keep at most this many memoized maps (55 KB each on a 96x72 map); beyond it callers compute their own. */
+const DIST_MEMO_MAX = 64;
 
 function penaltyKey(pen: Map<number, number>): string {
   if (pen.size === 0) return '';
@@ -414,13 +456,13 @@ function penaltyKey(pen: Map<number, number>): string {
 }
 
 /**
- * The same `DistMap` as `dijkstra(world, start, reverse, loaded)` (full search, no stopAt), memoized while
+ * The distances `dijkstra(world, start, reverse, loaded).dist` would return (full search, no stopAt), memoized while
  * the network, weather and bridge queues stay the same — most dispatch ticks repeat the previous one's
  * searches exactly (D-336). Returns null when the result cannot be memoized (bridge ice) or the memo is
  * full; the caller then runs `dijkstra` itself. The returned map is read-only, must never be released,
  * and must not be kept across calls that may change the world (a later call may recycle its arrays).
  */
-export function dijkstraMemo(world: World, start: number, reverse: boolean, loaded: boolean): DistMap | null {
+export function dijkstraMemo(world: World, start: number, reverse: boolean, loaded: boolean): Float64Array | null {
   const st = world.state;
   // the same inputs `dijkstra` reads, read at the same moment (penalties are cached per tick)
   const until = bridgeIceUntil(world);
@@ -428,25 +470,30 @@ export function dijkstraMemo(world: World, start: number, reverse: boolean, load
   const c = net(world), rain = isRaining(st), thaw = thawing(world), penMap = spanPenalties(world);
   let memo = world.distMemo;
   if (!memo || memo.net !== c || memo.rain !== rain || memo.thaw !== thaw || (memo.penMap !== penMap && memo.pen !== penaltyKey(penMap))) {
-    flushMemo(world);
-    memo = world.distMemo = { net: c, rain, thaw, pen: penaltyKey(penMap), penMap, maps: new Map() };
+    const spare = flushMemo(world);
+    memo = world.distMemo = { net: c, rain, thaw, pen: penaltyKey(penMap), penMap, maps: new Map(), spare };
   }
   memo.penMap = penMap;
   const key = start * 4 + (reverse ? 2 : 0) + (loaded ? 1 : 0);
   let m = memo.maps.get(key);
   if (m) return m;
   if (memo.maps.size >= DIST_MEMO_MAX) return null;
-  m = dijkstra(world, start, reverse, loaded);
-  memo.maps.set(key, m);
-  return m;
+  const n = world.terrain.w * world.terrain.h;
+  let out = memo.spare.pop();
+  if (!out || out.length !== n) out = new Float64Array(n);
+  // search in the shared scratch buffers, keep a copy of the distances
+  out.set(dijkstra(world, start, reverse, loaded, -1, true).dist);
+  memo.maps.set(key, out);
+  return out;
 }
 
-/** Drop the memo; its arrays go back to the pool (no memoized map is held across a tick boundary). */
-function flushMemo(world: World): void {
+/** Drop the memo and return its arrays for reuse (no memoized map is held across a context change). */
+function flushMemo(world: World): Float64Array[] {
   const memo = world.distMemo;
-  if (!memo) return;
-  for (const m of memo.maps.values()) releaseDistMap(world, m);
+  if (!memo) return [];
+  for (const m of memo.maps.values()) memo.spare.push(m);
   world.distMemo = null;
+  return memo.spare;
 }
 
 /** Node list from `from` (exclusive) to `to` (inclusive), or null if unreachable. */
