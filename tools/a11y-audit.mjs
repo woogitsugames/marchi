@@ -176,7 +176,15 @@ function scaleIssues() {
     if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || el.closest('[hidden]')) continue;
     const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
     const clipX = (cs.overflowX !== 'visible' || cs.textOverflow === 'ellipsis') && el.scrollWidth > el.clientWidth + 2;
-    const clipY = cs.overflowY === 'hidden' && el.scrollHeight > el.clientHeight + 2;
+    let clipY = cs.overflowY === 'hidden' && el.scrollHeight > el.clientHeight + 2;
+    // clipped by a fixed-height box above it (the docked fix note's 48 px, D-138), up to the nearest scroller
+    if (own && !clipY) {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        const c = getComputedStyle(p);
+        if (/(auto|scroll)/.test(c.overflowY)) break;
+        if (c.overflowY === 'hidden' || c.overflowY === 'clip') { if (r.bottom > p.getBoundingClientRect().bottom + 2) clipY = true; break; }
+      }
+    }
     const interactive = el.matches('button, [role="button"], a[href], input, select');
     let scroller = false;
     for (let p = el.parentElement; p; p = p.parentElement) { const c = getComputedStyle(p); if (/(auto|scroll)/.test(c.overflowY + c.overflowX) && (p.scrollHeight > p.clientHeight + 1 || p.scrollWidth > p.clientWidth + 1)) { scroller = true; break; } }
