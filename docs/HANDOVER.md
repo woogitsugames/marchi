@@ -5,7 +5,7 @@
   `node_modules` — **nigdy `git add -A` w worktree** (symlink trafił raz do commita i podmienił `node_modules` bazy;
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
-- Baza = `main` = **D-264..D-267 scalone** (7 XI ~00:30): testy **579/0**, build, smoke 0, layout 114/0. `setup:android` OK.
+- Baza = `main` = **D-268..D-270 scalone** (7 XI ~02:00): testy **580/0**, build, smoke 0, layout 114/0. `setup:android` OK.
   Ostatnie APK nadal **b2625c6** — następne rano (noc bez APK).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
@@ -16,8 +16,11 @@
 - Scalone ~00:30: **D-264..D-267** luka sławy — karta „rozbuduj” także przy braku przepływu i dla nigdy niesprzedanych
   towarów, duch w dolinie na miejscu osiągalnym drogą, słodownia rośnie przed browarem. card-30 ranga 5 na 4/4 ziaren
   (97–105 min), card-60 1/4; misje i DECENT bez zmian. Research `docs/research/2026-11-07-valley-fame-gap.md`.
-- W toku: agent `claude/w-neck` — „Wąskie gardło” pomija nasycone łańcuchy + zawijanie linii `fix.growWhyFlow` w poziomie
-  (D-268..D-271); researcher `claude/research-castles` — misja „dwa zamki” (raport `docs/research/2026-11-07-two-castles.md`).
+- Scalone ~02:00: **D-268..D-270** „Wąskie gardło” pomija łańcuchy z nasyconym towarem, poprawka `siteLinked` (browar nie
+  rodzi się odcięty), linia „rozbuduj” zawija się w poziomie. card-10 R5 śr. 90 min, card-30 95–100, card-60 2/4 ziaren.
+- Research **„dwa zamki”** gotowy: `docs/research/2026-11-07-two-castles.md` (w bazie); prototyp sim tylko na gałęzi
+  `claude/research-castles` (eksperymentalny, hasze misji bez zmian) — pytania w „Decyzje na rano” pkt 3.
+- W toku: agent `claude/w-listeners` — rosnące `jsEventListeners` (IndexedDB/arkusze), D-276..D-279.
 - **GOTOWE, czeka na akceptację właściciela:** `claude/w-winter` (D-260..D-263) — gołe korony dębów/brzóz/krzewów zimą,
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
@@ -29,7 +32,12 @@
    (rekomendacja: tak, mała paczka po scaleniu).
 2. **card-60 (gracz raz na minutę)** nadal bez rangi 5 na 3/4 ziaren: karta łącząca kroki (słodownia + browar jednym
    przyciskiem)? (rekomendacja: poczekać na playtest — card-10/30 już dochodzą).
-3. **Misja „dwa zamki”** — pytania z raportu researchera (gdy gotowy).
+3. **Misja XVI „Dwa zamki”** (raport `docs/research/2026-11-07-two-castles.md`): wariant 2, mapa A — dwa zamki chcą desek
+   z jednego tartaku (wschodni 24 do 5:00, północny 30 do 9:00); dźwignia gracza: przełącznik „ten zamek pierwszy” na
+   karcie zamku (rekomendacja: **tak**; alternatywy: brak dźwigni / ręczne przypisanie wozów). Pieczęcie wspólne, −1 za
+   każdy spóźniony zamek (rek.); dyspozytor domyślnie dzieli po równo (rek. — inaczej lekcja znika); priorytet tylko na
+   ostatnim odcinku (rek.); `STATE_VERSION` 10 z pustą migracją (rek.); nazwy „Dwa zamki” / „Kto pierwszy, ten na czas”,
+   zamki „Wschodni” i „Północny”, dopisane jako XVI (rek.); progi 3★ 7:05 / 2★ 9:00 robocze. Koszt 2–3 sesje.
 - GPT: paczka 12 (66–70) i 71, 72, 79–84, 100 nadal nieoddane.
 - **Decyzje właściciela 6 XI ~21:20:** światła pory dnia co 2. klatkę — TAK (zlecone `claude/w-perf`); gołe korony drzew
   liściastych zimą — TAK (zrzuty do akceptacji przed scaleniem); samouczek budowania krok 5 — **wywołać przestój celowo**;
