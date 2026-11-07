@@ -9,10 +9,12 @@ import {
   DoubleSide,
   Mesh,
   ShaderMaterial,
+  type Sphere,
   UniformsLib,
   UniformsUtils,
   Vector3,
 } from 'three';
+import { groundMemo } from './groundCache';
 import { CELL, type Heightfield } from './heightfield';
 import { rng } from './models/kit';
 import { noiseTexture } from './noiseTex';
@@ -158,61 +160,13 @@ export class WaterView {
 
   constructor(hf: Heightfield) {
     const WL = hf.waterLevel;
-    // strip spanning the river's z range, extended through the apron on both sides
-    let zmin = Infinity, zmax = -Infinity;
-    for (let y = 0; y < hf.h; y++) for (let x = 0; x < hf.w; x++) {
-      if (hf.waterDist[y * hf.w + x]! < 0.5) { zmin = Math.min(zmin, y); zmax = Math.max(zmax, y); }
-    }
-    if (!isFinite(zmin)) { zmin = 0; zmax = 0; }
-    const z0 = (zmin - 3) * CELL, z1 = (zmax + 4) * CELL;
-    const x0 = -APRON, x1 = hf.sizeX + APRON;
-    const S = 1;
-    const nx = Math.ceil((x1 - x0) / S), nz = Math.ceil((z1 - z0) / S);
-    const vid = new Int32Array((nx + 1) * (nz + 1)).fill(-1);
-    // emit only quads where some corner is under water
-    const depthAt = new Float32Array((nx + 1) * (nz + 1));
-    // the strip runs 280 m into the apron on both sides, where a whole row clamps to one border point: ApronRow asks
-    // hf.base once per border point instead of once per metre (D-281; same values)
-    const ap = new ApronRow(hf);
-    for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
-      const x = x0 + i * S, z = z0 + j * S;
-      depthAt[j * (nx + 1) + i] = WL - (hf.inside(x, z) ? hf.height(x, z) : ap.at(x, z));
-    }
-    // two passes straight into typed arrays (D-281; were number[] pushes copied afterwards): number the vertices in
-    // the order the quads first use them, then fill; the index width follows three's setIndex(array) rule
-    const wet = new Uint8Array(nx * nz);
-    let nv = 0, nq = 0;
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      const k = j * (nx + 1) + i;
-      const m = Math.max(depthAt[k]!, depthAt[k + 1]!, depthAt[k + nx + 1]!, depthAt[k + nx + 2]!);
-      if (m < -0.35) continue;
-      wet[j * nx + i] = 1;
-      nq++;
-      if (vid[k]! < 0) vid[k] = nv++;
-      if (vid[k + 1]! < 0) vid[k + 1] = nv++;
-      if (vid[k + nx + 1]! < 0) vid[k + nx + 1] = nv++;
-      if (vid[k + nx + 2]! < 0) vid[k + nx + 2] = nv++;
-    }
-    const verts = new Float32Array(nv * 3), depth = new Float32Array(nv);
-    const idx = nv - 1 >= 65535 ? new Uint32Array(nq * 6) : new Uint16Array(nq * 6);
-    for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
-      const k = j * (nx + 1) + i, v = vid[k]!;
-      if (v < 0) continue;
-      verts[v * 3] = x0 + i * S; verts[v * 3 + 1] = WL; verts[v * 3 + 2] = z0 + j * S;
-      depth[v] = depthAt[k]!;
-    }
-    let p = 0;
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-      if (!wet[j * nx + i]) continue;
-      const k = j * (nx + 1) + i;
-      const a = vid[k]!, b = vid[k + 1]!, c = vid[k + nx + 1]!, d = vid[k + nx + 2]!;
-      idx[p++] = a; idx[p++] = c; idx[p++] = b; idx[p++] = b; idx[p++] = c; idx[p++] = d;
-    }
+    // the strip is a function of the ground alone: a world on the same ground reuses it (D-282)
+    const st = groundMemo('water-strip', hf.t, () => waterStrip(hf));
     const g = new BufferGeometry();
-    g.setAttribute('position', new BufferAttribute(verts, 3));
-    g.setAttribute('depth', new BufferAttribute(depth, 1));
-    g.setIndex(new BufferAttribute(idx, 1));
-    g.computeBoundingSphere();
+    g.setAttribute('position', new BufferAttribute(st.verts, 3));
+    g.setAttribute('depth', new BufferAttribute(st.depth, 1));
+    g.setIndex(new BufferAttribute(st.idx, 1));
+    g.boundingSphere = st.sphere.clone();
     this.material = new ShaderMaterial({
       uniforms: UniformsUtils.merge([
         UniformsLib.fog,
@@ -309,4 +263,63 @@ export class WaterView {
     this.material.dispose();
     this.mistMaterial.dispose();
   }
+}
+
+/** The river surface strip: vertices at the water level where some quad corner is under water, depth per vertex. */
+function waterStrip(hf: Heightfield): { verts: Float32Array; depth: Float32Array; idx: Uint16Array | Uint32Array; sphere: Sphere } {
+  const WL = hf.waterLevel;
+  // strip spanning the river's z range, extended through the apron on both sides
+  let zmin = Infinity, zmax = -Infinity;
+  for (let y = 0; y < hf.h; y++) for (let x = 0; x < hf.w; x++) {
+    if (hf.waterDist[y * hf.w + x]! < 0.5) { zmin = Math.min(zmin, y); zmax = Math.max(zmax, y); }
+  }
+  if (!isFinite(zmin)) { zmin = 0; zmax = 0; }
+  const z0 = (zmin - 3) * CELL, z1 = (zmax + 4) * CELL;
+  const x0 = -APRON, x1 = hf.sizeX + APRON;
+  const S = 1;
+  const nx = Math.ceil((x1 - x0) / S), nz = Math.ceil((z1 - z0) / S);
+  const vid = new Int32Array((nx + 1) * (nz + 1)).fill(-1);
+  // emit only quads where some corner is under water
+  const depthAt = new Float32Array((nx + 1) * (nz + 1));
+  // the strip runs 280 m into the apron on both sides, where a whole row clamps to one border point: ApronRow asks
+  // hf.base once per border point instead of once per metre (D-281; same values)
+  const ap = new ApronRow(hf);
+  for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
+    const x = x0 + i * S, z = z0 + j * S;
+    depthAt[j * (nx + 1) + i] = WL - (hf.inside(x, z) ? hf.height(x, z) : ap.at(x, z));
+  }
+  // two passes straight into typed arrays (D-281; were number[] pushes copied afterwards): number the vertices in
+  // the order the quads first use them, then fill; the index width follows three's setIndex(array) rule
+  const wet = new Uint8Array(nx * nz);
+  let nv = 0, nq = 0;
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const k = j * (nx + 1) + i;
+    const m = Math.max(depthAt[k]!, depthAt[k + 1]!, depthAt[k + nx + 1]!, depthAt[k + nx + 2]!);
+    if (m < -0.35) continue;
+    wet[j * nx + i] = 1;
+    nq++;
+    if (vid[k]! < 0) vid[k] = nv++;
+    if (vid[k + 1]! < 0) vid[k + 1] = nv++;
+    if (vid[k + nx + 1]! < 0) vid[k + nx + 1] = nv++;
+    if (vid[k + nx + 2]! < 0) vid[k + nx + 2] = nv++;
+  }
+  const verts = new Float32Array(nv * 3), depth = new Float32Array(nv);
+  const idx = nv - 1 >= 65535 ? new Uint32Array(nq * 6) : new Uint16Array(nq * 6);
+  for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
+    const k = j * (nx + 1) + i, v = vid[k]!;
+    if (v < 0) continue;
+    verts[v * 3] = x0 + i * S; verts[v * 3 + 1] = WL; verts[v * 3 + 2] = z0 + j * S;
+    depth[v] = depthAt[k]!;
+  }
+  let p = 0;
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    if (!wet[j * nx + i]) continue;
+    const k = j * (nx + 1) + i;
+    const a = vid[k]!, b = vid[k + 1]!, c = vid[k + nx + 1]!, d = vid[k + nx + 2]!;
+    idx[p++] = a; idx[p++] = c; idx[p++] = b; idx[p++] = b; idx[p++] = c; idx[p++] = d;
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new BufferAttribute(verts, 3));
+  g.computeBoundingSphere();
+  return { verts, depth, idx, sphere: g.boundingSphere! };
 }

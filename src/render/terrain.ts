@@ -21,6 +21,7 @@ import {
 } from 'three';
 import type { World } from '../sim/index';
 import { net } from '../sim/index';
+import { groundMemo } from './groundCache';
 import { CELL, Heightfield } from './heightfield';
 import { noiseTexture } from './noiseTex';
 import type { OverlayData } from './overlay';
@@ -173,35 +174,17 @@ export class TerrainView {
 
   private buildMeshes(): void {
     const hf = this.hf;
-    const cw = Math.ceil(hf.w / CHUNKS_X), ch = Math.ceil(hf.h / CHUNKS_Z);
-    for (let jz = 0; jz < CHUNKS_Z; jz++) {
-      for (let ix = 0; ix < CHUNKS_X; ix++) {
-        const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
-        const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
-        const g = gridGeometry(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, false);
-        const m = new Mesh(g, this.material);
-        m.receiveShadow = true;
-        m.name = `terrain-${ix}-${jz}`;
-        this.chunks.push(m);
-        this.group.add(m);
-      }
-    }
-    // apron: coarse ring beyond the map edge (4 pieces so it can be culled)
-    const S = 8;
-    const A = APRON;
-    const pieces: [number, number, number, number][] = [
-      [-A, -A, hf.sizeX + 2 * A, A + 8], // north
-      [-A, hf.sizeZ - 8, hf.sizeX + 2 * A, A + 8], // south
-      [-A, -8, A + 8, hf.sizeZ + 16], // west
-      [hf.sizeX - 8, -8, A + 8, hf.sizeZ + 16], // east
-    ];
-    for (const [x, z, sx, sz] of pieces) {
-      const g = gridGeometry(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, true);
-      const m = new Mesh(g, this.material);
+    // the grids are a function of the ground alone: a world on the same ground reuses them (D-282)
+    const grids = groundMemo('terrain-grids', hf.t, () => terrainGrids(hf));
+    grids.forEach((d, k) => {
+      const m = new Mesh(gridGeometry(d), this.material);
       m.receiveShadow = true;
-      m.name = 'terrain-apron';
+      if (k < CHUNKS_X * CHUNKS_Z) {
+        m.name = `terrain-${k % CHUNKS_X}-${Math.floor(k / CHUNKS_X)}`;
+        this.chunks.push(m);
+      } else m.name = 'terrain-apron';
       this.group.add(m);
-    }
+    });
   }
 
   dispose(): void {
@@ -272,7 +255,51 @@ function apronFrom(hf: Heightfield, x: number, z: number, cx: number, cz: number
   return b - 0.35 + rise * (0.25 + 0.75 * riverK);
 }
 
-function gridGeometry(
+/** Positions, normals, index and bounds of one terrain grid (shared, read-only once built). */
+interface GridData {
+  pos: Float32Array;
+  nor: Float32Array;
+  idx: Uint16Array | Uint32Array;
+  box: Box3;
+  sphere: Sphere;
+}
+
+/** The 6 map chunks (row by row) and the 4 apron pieces (north, south, west, east) of a ground. */
+function terrainGrids(hf: Heightfield): GridData[] {
+  const out: GridData[] = [];
+  const cw = Math.ceil(hf.w / CHUNKS_X), ch = Math.ceil(hf.h / CHUNKS_Z);
+  for (let jz = 0; jz < CHUNKS_Z; jz++) {
+    for (let ix = 0; ix < CHUNKS_X; ix++) {
+      const x0 = ix * cw, x1 = Math.min(hf.w, x0 + cw);
+      const z0 = jz * ch, z1 = Math.min(hf.h, z0 + ch);
+      out.push(gridData(hf, x0 * CELL, z0 * CELL, (x1 - x0) * SUB, (z1 - z0) * SUB, CELL / SUB, false));
+    }
+  }
+  // apron: coarse ring beyond the map edge (4 pieces so it can be culled)
+  const S = 8;
+  const A = APRON;
+  const pieces: [number, number, number, number][] = [
+    [-A, -A, hf.sizeX + 2 * A, A + 8], // north
+    [-A, hf.sizeZ - 8, hf.sizeX + 2 * A, A + 8], // south
+    [-A, -8, A + 8, hf.sizeZ + 16], // west
+    [hf.sizeX - 8, -8, A + 8, hf.sizeZ + 16], // east
+  ];
+  for (const [x, z, sx, sz] of pieces) out.push(gridData(hf, x, z, Math.round(sx / S), Math.round(sz / S), S, true));
+  return out;
+}
+
+/** A geometry over a grid's (shared) arrays, with its own copies of the bounds. */
+function gridGeometry(d: GridData): BufferGeometry {
+  const g = new BufferGeometry();
+  g.setAttribute('position', new BufferAttribute(d.pos, 3));
+  g.setAttribute('normal', new BufferAttribute(d.nor, 3));
+  g.setIndex(new BufferAttribute(d.idx, 1));
+  g.boundingBox = d.box.clone();
+  g.boundingSphere = d.sphere.clone();
+  return g;
+}
+
+function gridData(
   hf: Heightfield,
   x0: number,
   z0: number,
@@ -280,7 +307,7 @@ function gridGeometry(
   nz: number,
   step: number,
   apron: boolean,
-): BufferGeometry {
+): GridData {
   const vx = nx + 1, vz = nz + 1;
   const pos = new Float32Array(vx * vz * 3);
   const nor = new Float32Array(vx * vz * 3);
@@ -314,12 +341,7 @@ function gridGeometry(
     if ((i + j) & 1) { idx[p++] = a; idx[p++] = c; idx[p++] = b; idx[p++] = b; idx[p++] = c; idx[p++] = d; }
     else { idx[p++] = a; idx[p++] = c; idx[p++] = d; idx[p++] = a; idx[p++] = d; idx[p++] = b; }
   }
-  const g = new BufferGeometry();
-  g.setAttribute('position', new BufferAttribute(pos, 3));
-  g.setAttribute('normal', new BufferAttribute(nor, 3));
-  g.setIndex(new BufferAttribute(idx, 1));
-  setGridBounds(g, pos);
-  return g;
+  return { pos, nor, idx, ...gridBounds(pos) };
 }
 
 /**
@@ -327,7 +349,7 @@ function gridGeometry(
  * three.js (Box3.expandByPoint's Math.min/max per axis, centre (min + max) * 0.5, the largest squared distance to
  * it, sqrt) but straight over the Float32Array instead of a Vector3 per vertex and per pass (D-281).
  */
-function setGridBounds(g: BufferGeometry, pos: Float32Array): void {
+function gridBounds(pos: Float32Array): { box: Box3; sphere: Sphere } {
   let x0 = Infinity, y0 = Infinity, z0 = Infinity, x1 = -Infinity, y1 = -Infinity, z1 = -Infinity;
   for (let k = 0; k < pos.length; k += 3) {
     const x = pos[k]!, y = pos[k + 1]!, z = pos[k + 2]!;
@@ -342,8 +364,7 @@ function setGridBounds(g: BufferGeometry, pos: Float32Array): void {
     const dx = cx - pos[k]!, dy = cy - pos[k + 1]!, dz = cz - pos[k + 2]!;
     r2 = Math.max(r2, dx * dx + dy * dy + dz * dz);
   }
-  g.boundingBox = box;
-  g.boundingSphere = new Sphere(c, Math.sqrt(r2));
+  return { box, sphere: new Sphere(c, Math.sqrt(r2)) };
 }
 
 // ------------------------------------------------------------------------------------------
