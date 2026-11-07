@@ -1,0 +1,13 @@
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+const require = createRequire('/workspace/marchi-billboard/package.json');
+const { chromium } = require('playwright');
+const [base, out] = process.argv.slice(2);
+const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 0.5, isMobile: true, hasTouch: true });
+const page = await ctx.newPage();
+await browser.startTracing(page, { path: out, categories: ['toplevel', 'blink.user_timing', 'devtools.timeline', 'gpu', 'disabled-by-default-devtools.timeline', 'mojom', 'ipc', 'renderer.scheduler', 'IndexedDB'] });
+await page.goto(base + '?quality=high&debug=1');
+await page.waitForFunction(() => performance.getEntriesByName('marchia:first-frame').length > 0, null, { timeout: 120000, polling: 50 });
+await browser.stopTracing();
+await browser.close();

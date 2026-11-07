@@ -15,13 +15,14 @@
  * blob shadows (`billboardDepthMaterial`). The near/far swap is a dithered crossfade (materials.ts).
  */
 import {
+  ArrayCamera,
   BufferAttribute,
   BufferGeometry,
   Color,
   CylinderGeometry,
   DoubleSide,
   Float32BufferAttribute,
-  Group,
+  GLSL3,
   LatheGeometry,
   LinearMipmapLinearFilter,
   Mesh,
@@ -34,6 +35,7 @@ import {
   Scene,
   ShaderMaterial,
   type Texture,
+  Vector4,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -582,9 +584,11 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 const BAKE_FRAG = /* glsl */ `
+// both atlases in one pass (D-327): albedo to attachment 0 (whose alpha drives alpha to coverage), normals to 1
+layout(location = 0) out highp vec4 oAlbedo;
+layout(location = 1) out highp vec4 oNormal;
 uniform sampler2D map;
 uniform float useMap;
-uniform float mode;
 varying vec3 vN;
 varying vec3 vC;
 varying vec2 vUv;
@@ -601,23 +605,22 @@ void main() {
     a = clamp(t.a * 0.55 * (1.0 + lod * 0.15), 0.0, 1.0);
     if (a < 0.08) discard;
   } else if (t.a < 0.5) discard;
-  if (mode > 0.5) gl_FragColor = vec4(normalize(vN) * 0.5 + 0.5, a);
+  oNormal = vec4(normalize(vN) * 0.5 + 0.5, a);
   // the full model also shades itself through the shadow map (darker, a little greyer in the
   // crown's depth); the card cannot, so its albedo is pulled down the same way
-  else {
-    vec3 c = vC * t.rgb;
-    gl_FragColor = vec4(mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))), 0.12) * 0.84, a);
-  }
+  vec3 c = vC * t.rgb;
+  oAlbedo = vec4(mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))), 0.12) * 0.84, a);
 }`;
 
-function bakeMaterial(map: Texture | null, mode: number, leaf = false): ShaderMaterial {
+function bakeMaterial(map: Texture | null, leaf = false): ShaderMaterial {
   return new ShaderMaterial({
+    glslVersion: GLSL3,
     // leaf cards: the twig haze goes in by coverage (opaque leaves and the other kinds write alpha 1: unchanged)
     alphaToCoverage: leaf,
     vertexShader: BAKE_VERT,
     fragmentShader: BAKE_FRAG,
     // `bare` and `spring` are shared by every bake material (one value per bake)
-    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, mode: { value: mode }, leafUv: { value: leaf ? 1 : 0 }, bare: bakeBare, spring: bakeSpring },
+    uniforms: { map: { value: map }, useMap: { value: map ? 1 : 0 }, leafUv: { value: leaf ? 1 : 0 }, bare: bakeBare, spring: bakeSpring },
     side: DoubleSide,
   });
 }
@@ -639,8 +642,9 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  * Render every tree kind from `BB_VIEWS` azimuths into a shared albedo atlas and a matching
  * normal atlas (columns = kinds, rows = views), attached to the `billboard` material: the far
  * card is then lit like the full model (same crown normals, same vertex-colour occlusion), so the
- * LOD swap does not change the value of the forest. Call once after the renderer exists; cheap
- * (5 kinds x 8 views x 2 passes of small renders + 16 row copies). `cellPx` is the cell width (the
+ * LOD swap does not change the value of the forest. Call once after the renderer exists: 8 passes (one per view,
+ * D-326) that draw the 5 kinds into both atlases at once (D-327), 16 row copies, one mip build per atlas (D-325);
+ * the main thread queues them and returns, the GPU renders them after. `cellPx` is the cell width (the
  * view.ts tier picks it): atlas = 5·cell x 16·cell RGBA8 + mips, two of them — 128 px (low, high)
  * 2 x 7 MB, 256 px (ultra) 2 x 28 MB. Calling again with another size
  * re-bakes (old pair disposed).
@@ -649,8 +653,38 @@ void main() { gl_FragColor = texture2D(src, vUv); }`;
  * Bake materials kept across bakes: disposing them freed their programs, so every tier switch
  * re-linked them inside the frame that re-baked (2 links per switch, measured with SwiftShader).
  */
-let bakeMats: { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial }[] | null = null;
+let bakeMats: { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial } | null = null;
 let copyMat: ShaderMaterial | null = null;
+
+function bakeMaterials(): { leaves: ShaderMaterial; needles: ShaderMaterial; solid: ShaderMaterial } {
+  return bakeMats ??= { leaves: bakeMaterial(leafTexture(), true), needles: bakeMaterial(needleTexture()), solid: bakeMaterial(null) };
+}
+
+function copyMaterial(): ShaderMaterial {
+  return copyMat ??= new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: null } }, depthTest: false, depthWrite: false, blending: NoBlending });
+}
+
+/**
+ * Hand the bake's programs to the driver now, without waiting for them (D-325): called when the renderer is made,
+ * long before the first frame bakes, so their links are done by then instead of holding that frame. Same program
+ * keys as in the bake (drawn into a render target: linear output, no tone mapping); nothing is drawn.
+ */
+export function requestTreeBakePrograms(renderer: WebGLRenderer): void {
+  if (atlas) return;
+  const bm = bakeMaterials();
+  const box = new BufferGeometry();
+  box.setAttribute('position', new Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3));
+  const scene = new Scene();
+  for (const mat of [bm.leaves, bm.needles, bm.solid, copyMaterial()]) scene.add(new Mesh(box, mat));
+  const rt = new WebGLRenderTarget(1, 1);
+  const prev = renderer.getRenderTarget();
+  renderer.setRenderTarget(rt);
+  renderer.compile(scene, new OrthographicCamera());
+  renderer.setRenderTarget(prev);
+  rt.dispose();
+  box.dispose();
+  renderer.getContext().flush();
+}
 
 /** GPU bytes held by the baked far-tree atlas pair (albedo + normal, RGBA8 with a full mip chain). */
 export function treeAtlasBytes(): number {
@@ -684,16 +718,18 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   const rtN = reuse ? atlasN! : mk();
   bakeBare.value = bare;
   bakeSpring.value = spring;
-  const row = new WebGLRenderTarget(rowW, rowH, { samples: 4 });
-  row.texture.generateMipmaps = false;
-  row.texture.minFilter = NearestFilter;
-  row.texture.magFilter = NearestFilter;
+  // two attachments (D-327): albedo and normals of the same draws, resolved together
+  const row = new WebGLRenderTarget(rowW, rowH, { samples: 4, count: 2 });
+  for (const t of row.textures) {
+    t.generateMipmaps = false;
+    t.minFilter = NearestFilter;
+    t.magFilter = NearestFilter;
+  }
   const scene = new Scene();
   const copyScene = new Scene();
-  copyMat ??= new ShaderMaterial({ vertexShader: COPY_VERT, fragmentShader: COPY_FRAG, uniforms: { src: { value: null } }, depthTest: false, depthWrite: false, blending: NoBlending });
-  copyMat.uniforms.src!.value = row.texture;
+  const copy = copyMaterial();
   const quadGeo = new PlaneGeometry(2, 2);
-  const quad = new Mesh(quadGeo, copyMat);
+  const quad = new Mesh(quadGeo, copy);
   quad.frustumCulled = false;
   copyScene.add(quad);
   const copyCam = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -701,66 +737,80 @@ export function bakeTreeBillboards(renderer: WebGLRenderer, cellPx = 128, bare =
   const prevClear = renderer.getClearColor(new Color()).clone();
   const prevAlpha = renderer.getClearAlpha();
   const prevAutoClear = renderer.autoClear;
-  const mats = bakeMats ??= [0, 1].map((mode) => ({
-    leaves: bakeMaterial(leafTexture(), mode, true),
-    needles: bakeMaterial(needleTexture(), mode),
-    solid: bakeMaterial(null, mode),
-  }));
-  const cam = new OrthographicCamera(-1, 1, 1, -1, 0.1, 120);
-  // one group of meshes per kind and pass, built once per bake (not per view)
-  const groups = [0, 1].map((mode) => TREE_KINDS.map((kind) => {
-    const grp = new Group();
-    const m = mats[mode]!;
-    for (const p of treeParts(kind)) grp.add(new Mesh(p.geometry, p.material === 'leaves' ? m.leaves : p.material === 'needles' ? m.needles : m.solid));
-    return grp;
-  }));
+  const bm = bakeMaterials();
+  // one camera per kind (its column of the row as its viewport, its card's extent as its frustum), all rendered by
+  // one ArrayCamera pass per row (D-326): the 5 per-kind passes each ended in a resolve of the whole multisampled
+  // row (and a scissor around their column); one pass resolves it once. Kind i draws only on layer i + 1.
+  const cams = TREE_KINDS.map((kind, i) => {
+    const { W, y0, y1 } = cardSize(kind);
+    const c = new OrthographicCamera(-W / 2, W / 2, y1, y0, 0.1, 120);
+    // the target's own viewport (render-target pixels, independent of the pixel ratio)
+    c.viewport = new Vector4(i * cellPx, 0, cellPx, rowH);
+    c.layers.set(i + 1);
+    return c;
+  });
+  const cam = new ArrayCamera(cams as unknown as ConstructorParameters<typeof ArrayCamera>[0]);
+  cam.layers.enableAll();
+  // the meshes of every kind, built once per bake (not per view); every view's frustum holds the whole tree (the
+  // card is sized to it), so nothing is culled, and the ArrayCamera's own frustum is not the views'
+  TREE_KINDS.forEach((kind, i) => {
+    for (const p of treeParts(kind)) {
+      const mesh = new Mesh(p.geometry, p.material === 'leaves' ? bm.leaves : p.material === 'needles' ? bm.needles : bm.solid);
+      mesh.layers.set(i + 1);
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+    }
+  });
   // cleared to 0 with opaque foliage on top = a premultiplied atlas: mips and MSAA edges stay
   // correct when the card shader divides by alpha (no dark or olive fringe)
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
-  [rtA, rtN].forEach((rt, mode) => {
+  // the copy program's first use (link check) before any tree is drawn (D-325): three waits for the link at the
+  // first draw with a program, and that wait also waits for every draw queued before it, so a first copy after
+  // the first row's trees held the main thread until the GPU had rendered them. Drawn into the albedo atlas
+  // (cleared right after; no mip build) with no source bound; the bake programs' first use comes with the first
+  // tree, also on an empty queue, after which the bake only queues work and returns.
+  copy.uniforms.src!.value = null;
+  renderer.setRenderTarget(rtA); // allocated here, with its mip levels (the flag is read at allocation)
+  rtA.texture.generateMipmaps = false;
+  renderer.render(copyScene, copyCam);
+  rtA.texture.generateMipmaps = true;
+  for (const rt of [rtA, rtN]) {
     renderer.setRenderTarget(rt);
     renderer.clear();
-    for (let v = 0; v < BB_VIEWS; v++) {
-      const az = (v / BB_VIEWS) * Math.PI * 2;
-      row.scissorTest = false;
-      row.viewport.set(0, 0, rowW, rowH);
-      renderer.setRenderTarget(row);
-      renderer.clear();
-      TREE_KINDS.forEach((kind, i) => {
-        const { W, y0, y1 } = cardSize(kind);
-        const grp = groups[mode]![i]!;
-        scene.add(grp);
-        // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk
-        // foot at the origin
-        cam.left = -W / 2; cam.right = W / 2; cam.top = y1; cam.bottom = y0;
-        cam.updateProjectionMatrix();
-        const h = Math.cos(BB_ELEV) * 50;
-        cam.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
-        cam.lookAt(0, 0, 0);
-        // the target's own viewport/scissor (render-target pixels, independent of the pixel ratio)
-        row.viewport.set(i * cellPx, 0, cellPx, rowH);
-        row.scissor.set(i * cellPx, 0, cellPx, rowH);
-        row.scissorTest = true;
-        renderer.setRenderTarget(row);
-        renderer.render(scene, cam);
-        scene.remove(grp);
-      });
-      // copy the resolved row into its atlas row (mips are rebuilt after each copy; 8 per atlas)
+  }
+  for (let v = 0; v < BB_VIEWS; v++) {
+    const az = (v / BB_VIEWS) * Math.PI * 2;
+    // looking down at BB_ELEV from azimuth `az`: image "up" tilts toward the tree, the trunk foot at the origin
+    const h = Math.cos(BB_ELEV) * 50;
+    for (const c of cams) {
+      c.position.set(Math.sin(az) * h, Math.sin(BB_ELEV) * 50, Math.cos(az) * h);
+      c.lookAt(0, 0, 0);
+      c.updateMatrixWorld();
+    }
+    renderer.setRenderTarget(row);
+    renderer.clear();
+    renderer.render(scene, cam);
+    // copy the resolved row into its atlas rows; the mip chains are built once, after the last row's copy (three
+    // rebuilds them after every render into a mipmapped target: 8 full-chain rebuilds per atlas, each from scratch)
+    [rtA, rtN].forEach((rt, i) => {
+      copy.uniforms.src!.value = row.textures[i];
       rt.viewport.set(0, v * rowH, rowW, rowH);
       rt.scissor.set(0, v * rowH, rowW, rowH);
       rt.scissorTest = true;
+      rt.texture.generateMipmaps = v === BB_VIEWS - 1;
       renderer.setRenderTarget(rt);
       renderer.render(copyScene, copyCam);
-    }
-  });
+    });
+  }
   for (const rt of [rtA, rtN]) {
+    rt.texture.generateMipmaps = true;
     rt.scissorTest = false;
     rt.viewport.set(0, 0, rt.width, rt.height);
     rt.scissor.set(0, 0, rt.width, rt.height);
   }
   row.dispose();
-  copyMat.uniforms.src!.value = null;
+  copy.uniforms.src!.value = null;
   quadGeo.dispose();
   renderer.autoClear = prevAutoClear;
   renderer.setRenderTarget(prevTarget);

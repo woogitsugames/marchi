@@ -191,3 +191,22 @@ granicami w pętlach (bit w bit jak three), szum raz na wspólny wierzchołek, k
 124 → 92). Przeglądarka (`menu-start`, 9 przebiegów naprzemiennie, load 5–8): kubełki modeli 137 → 105 ms, całe
 `menu-start` 415 → 336 ms (szum 250–470). Identyczne: 18 scen harnessu 0 px (`perf15-diff/`, menu 1/3/30 high i low), `model-probe HASH=1`
 (cały katalog), `tests/part-builder-identity.test.ts`, `tools/mission-hashes.ts`.
+
+## 2026-11-07 — dzień 16: atlas dalekich drzew (`bakeTreeBillboards`, D-325..D-327)
+
+Dane i sondy: `docs/research/startup16-data/`. Profil: bake idzie w pierwszej klatce; jego CPU (45–125 ms) to w dwóch
+trzecich czekanie na linkowanie programów, reszta kosztu to praca GPU, której profil CPU nie widzi: ciepły re-bake z
+`readPixels` po nim ~430 ms (load 6) do ~900 ms (load 20) SwiftShadera — rysowanie drzew ~280 ms, 80 rozwiązań MSAA
+całego wiersza ~70 ms, reszta 16 przebudów łańcucha mipów. Pod SwiftShaderem wykonuje się dopiero, gdy coś na nią
+czeka: commit kompozytora pierwszej klatki (czyta płótno), więc obraz pierwszej klatki pojawia się 4–5 s po znaczniku
+`first-frame`. Zmiany: programy bake'a zamawiane przy starcie renderera, program kopii użyty przed drzewami, mipy raz
+na atlas (D-325); jeden przebieg `ArrayCamera` na wiersz zamiast pięciu (D-326); albedo i normalne z jednego przebiegu,
+dwa cele (D-327). Zmierzone i odrzucone: bake przed budową świata (`ready` +700 ms — commit DOM menu czekał na GPU),
+`flush()` po bake'u (JS klatki +450 ms), odroczenie za pierwszą klatkę i bake tylko obecnych gatunków (każdy świat ma
+5 gatunków i 5–6,5 tys. dalekich kart w pierwszej klatce), ponowne użycie między światami (już jest).
+Wyniki (SwiftShader, 412×915, high, naprzemiennie, load 15–20): CPU bake'a w pierwszej klatce 73,7 → 36,4 ms (mediana
+6), czekanie na linki 19,6 → 10,1 ms; ready → znacznik `first-frame` 922 → 842 ms; ready → pierwsza klatka złożona
+(koniec zadania z commitem, trace, mediana 5) 5 352 → 4 894 ms; ciepły re-bake CPU+GPU 904/1 048 → 452/399 ms.
+Identyczne: atlasy (poziomy 0, 3, 6, pięć zestawów rozmiar/łysienie/wiosna) — hash; 20 scen harnessu 0 px
+(`perf16-diff/`: menu 1/3/30 high i low, misje I, II, VII, XII, XVI, poprzednie światy, plus menu i II w ultra);
+50 programów po pre-warmie jak przed; `tools/mission-hashes.ts` bez zmian.
