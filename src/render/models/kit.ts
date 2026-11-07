@@ -203,9 +203,22 @@ export interface BuilderSettings {
   dirtHeight?: number;
 }
 
+interface PieceAttr {
+  array: Float32Array;
+  itemSize: number;
+  normalized: boolean;
+}
+
+/** One transformed, coloured primitive waiting for `build()`: an index and attributes in insertion order. */
+interface Piece {
+  index: Uint16Array | Uint32Array;
+  count: number;
+  attrs: Record<string, PieceAttr>;
+}
+
 /** Accumulates transformed, coloured primitives grouped by material kind. */
 export class PartBuilder {
-  private readonly groups = new Map<MatKey, BufferGeometry[]>();
+  private readonly groups = new Map<MatKey, Piece[]>();
   private readonly settings: Required<BuilderSettings>;
   readonly rand: () => number;
   private hasRig = false;
@@ -229,22 +242,26 @@ export class PartBuilder {
   add(mat: MatKey, src: BufferGeometry, o: AddOpts): this {
     // a plain copy of the index and the attributes we merge (D-255): `src.clone()` first ran the primitive's own
     // constructor with default parameters (a 32 x 16 sphere for every SphereGeometry piece), copied every attribute
-    // twice and kept the groups and bounds, all thrown away again
-    const g = new BufferGeometry();
-    if (src.index) g.setIndex(new BufferAttribute(src.index.array.slice(), 1));
+    // twice and kept the groups and bounds, all thrown away again. Since D-321 a piece is plain typed arrays, not a
+    // BufferGeometry (a uuid and an attribute object each, ~2000 per menu)
     const m = o.m;
+    let index: Uint16Array | Uint32Array;
+    const attrs: Record<string, PieceAttr> = {};
     if (plainFloat3(src.attributes.position) && plainFloat3(src.attributes.normal)) {
       // copy and transform in one pass (D-321): the same double operations as `applyMatrix4` (Vector3.applyMatrix4,
       // and Vector3.applyNormalMatrix with the matrix's normal matrix) without the per-vertex attribute accessors;
       // the uv is a placeholder (the source's, not copied) unless kept: boxUv replaces it, the key order stays
       for (const name of Object.keys(src.attributes)) {
         const a = src.attributes[name] as BufferAttribute;
-        if (name === 'position') g.setAttribute(name, new BufferAttribute(m ? transformPoints(a.array as Float32Array, m) : a.array.slice(), 3));
-        else if (name === 'normal') g.setAttribute(name, new BufferAttribute(m ? transformNormals(a.array as Float32Array, m) : a.array.slice(), 3));
-        else if (name === 'uv') g.setAttribute(name, o.keepUv ? new BufferAttribute(a.array.slice(), a.itemSize, a.normalized) : a);
+        const arr = a.array as Float32Array;
+        if (name === 'position') attrs[name] = { array: m ? transformPoints(arr, m) : arr.slice(), itemSize: 3, normalized: false };
+        else if (name === 'normal') attrs[name] = { array: m ? transformNormals(arr, m) : arr.slice(), itemSize: 3, normalized: false };
+        else if (name === 'uv') attrs[name] = { array: o.keepUv ? arr.slice() : arr, itemSize: a.itemSize, normalized: a.normalized };
       }
-      if (!g.index) g.setIndex(new BufferAttribute(iota(g.getAttribute('position').count), 1));
+      index = src.index ? (src.index.array.slice() as Uint16Array | Uint32Array) : iota(attrs.position!.array.length / 3);
     } else {
+      const g = new BufferGeometry();
+      if (src.index) g.setIndex(new BufferAttribute(src.index.array.slice(), 1));
       for (const name of Object.keys(src.attributes)) {
         if (name !== 'position' && name !== 'normal' && name !== 'uv') continue;
         const a = src.attributes[name]!;
@@ -253,24 +270,34 @@ export class PartBuilder {
       if (!g.index) g.setIndex(new BufferAttribute(iota(g.getAttribute('position').count), 1));
       if (!g.getAttribute('normal')) g.computeVertexNormals();
       if (m) g.applyMatrix4(m);
+      index = g.index!.array as Uint16Array | Uint32Array;
+      for (const name of Object.keys(g.attributes)) {
+        const a = g.attributes[name]!;
+        attrs[name] = { array: a.array as Float32Array, itemSize: a.itemSize, normalized: a.normalized };
+      }
     }
 
-    const pos = g.getAttribute('position') as BufferAttribute;
-    const nor = g.getAttribute('normal') as BufferAttribute;
-    const count = pos.count;
+    const pa = attrs.position!.array, na = attrs.normal!.array;
+    const count = pa.length / 3;
     const seed = this.settings.seed;
 
     if (o.jitter) {
       const f = o.jitterFreq ?? 2.5;
       const a = o.jitter;
-      const pa = pos.array as Float32Array;
       for (let i = 0; i < count; i++) {
         const x = pa[i * 3]!, y = pa[i * 3 + 1]!, z = pa[i * 3 + 2]!;
         pa[i * 3] = x + fnoise(x * f, y * f, z * f, seed + 1) * a;
         pa[i * 3 + 1] = y + fnoise(x * f + 31.7, y * f, z * f, seed + 2) * a;
         pa[i * 3 + 2] = z + fnoise(x * f, y * f + 57.1, z * f, seed + 3) * a;
       }
-      if (o.renormal) g.computeVertexNormals();
+      if (o.renormal) {
+        // three's computeVertexNormals rewrites the existing normal array in place
+        const t = new BufferGeometry();
+        t.setIndex(new BufferAttribute(index, 1));
+        t.setAttribute('position', new BufferAttribute(pa, 3));
+        t.setAttribute('normal', new BufferAttribute(na, 3));
+        t.computeVertexNormals();
+      }
     }
 
     // vertex colours
@@ -289,7 +316,6 @@ export class PartBuilder {
     const n = new Vector3();
     // plain array reads (same values as getX/getY/getZ: the attributes are not normalized); the colour arithmetic
     // in scalars, the same operations as Color.copy / multiplyScalar / lerp (D-321)
-    const pa = pos.array as Float32Array, na = nor.array as Float32Array;
     for (let i = 0; i < count; i++) {
       const px = pa[i * 3]!, py = pa[i * 3 + 1]!, pz = pa[i * 3 + 2]!, ny = na[i * 3 + 1]!;
       let r = base.r, gg = base.g, bb = base.b;
@@ -312,10 +338,10 @@ export class PartBuilder {
       col[i * 3 + 1] = gg;
       col[i * 3 + 2] = bb;
     }
-    g.setAttribute('color', new BufferAttribute(col, 3));
+    attrs.color = { array: col, itemSize: 3, normalized: false };
 
-    if (!o.keepUv) boxUv(g);
-    else if (!g.getAttribute('uv')) boxUv(g);
+    // box projection unless the primitive's own UVs are kept (and exist); assigning an existing key keeps its order
+    if (!o.keepUv || !attrs.uv) attrs.uv = { array: boxUvArray(pa, na), itemSize: 2, normalized: false };
 
     // the skinning attribute only for rigged pieces; build() gives the others zeros when the model has a rig
     // (D-255: an all-zero array per piece was merged and then deleted for every unrigged model)
@@ -323,21 +349,21 @@ export class PartBuilder {
       this.hasRig = true;
       const rg = new Float32Array(count * 4);
       for (let i = 0; i < count; i++) rg.set(o.rig(p.set(pa[i * 3]!, pa[i * 3 + 1]!, pa[i * 3 + 2]!)), i * 4);
-      g.setAttribute('rig', new BufferAttribute(rg, 4));
+      attrs.rig = { array: rg, itemSize: 4, normalized: false };
     }
 
     let list = this.groups.get(mat);
     if (!list) this.groups.set(mat, (list = []));
-    list.push(g);
+    list.push({ index, count, attrs });
     return this;
   }
 
-  /** Merge everything added so far into one geometry per material kind. */
+/** Merge everything added so far into one geometry per material kind. */
   build(): ModelPart[] {
     const out: ModelPart[] = [];
     for (const [material, list] of this.groups) {
-      if (this.hasRig) for (const g of list) if (!g.getAttribute('rig')) g.setAttribute('rig', new BufferAttribute(new Float32Array(g.getAttribute('position').count * 4), 4));
-      const merged = mergeIndexed(list);
+      if (this.hasRig) for (const pc of list) if (!pc.attrs.rig) pc.attrs.rig = { array: new Float32Array(pc.count * 4), itemSize: 4, normalized: false };
+      const merged = mergePieces(list);
       computeBounds(merged);
       out.push({ geometry: merged, material });
     }
@@ -479,14 +505,45 @@ export function mergeIndexed(list: BufferGeometry[], mats?: Matrix4[], keep?: Re
   return out;
 }
 
+/** `mergeIndexed` for PartBuilder pieces (no transforms): the same index width rule, attribute order and arrays. */
+function mergePieces(list: Piece[]): BufferGeometry {
+  const first = list[0]!;
+  const names = Object.keys(first.attrs);
+  let verts = 0, idx = 0;
+  for (const pc of list) { verts += pc.count; idx += pc.index.length; }
+  const out = new BufferGeometry();
+  const index = verts - 1 >= 65535 ? new Uint32Array(idx) : new Uint16Array(idx);
+  let io = 0, vo = 0;
+  for (const pc of list) {
+    const ia = pc.index;
+    for (let j = 0; j < ia.length; j++) index[io++] = ia[j]! + vo;
+    vo += pc.count;
+  }
+  out.setIndex(new BufferAttribute(index, 1));
+  for (const name of names) {
+    const a0 = first.attrs[name]!;
+    const arr = new (a0.array.constructor as Float32ArrayConstructor)(verts * a0.itemSize);
+    let o = 0;
+    for (const pc of list) {
+      const src = pc.attrs[name]!.array;
+      arr.set(src, o);
+      o += pc.count * a0.itemSize;
+    }
+    out.setAttribute(name, new BufferAttribute(arr, a0.itemSize, a0.normalized));
+  }
+  return out;
+}
+
 /** Box-projected UVs in model space (dominant normal axis). */
 export function boxUv(g: BufferGeometry): void {
-  const pos = g.getAttribute('position');
-  const nor = g.getAttribute('normal');
-  const uv = new Float32Array(pos.count * 2);
+  g.setAttribute('uv', new BufferAttribute(boxUvArray(g.getAttribute('position').array as Float32Array, g.getAttribute('normal').array as Float32Array), 2));
+}
+
+function boxUvArray(pa: Float32Array, na: Float32Array): Float32Array {
+  const count = pa.length / 3;
+  const uv = new Float32Array(count * 2);
   const s = 1 / UV_METRES;
-  const pa = pos.array as Float32Array, na = nor.array as Float32Array;
-  for (let i = 0; i < pos.count; i++) {
+  for (let i = 0; i < count; i++) {
     const ax = Math.abs(na[i * 3]!), ay = Math.abs(na[i * 3 + 1]!), az = Math.abs(na[i * 3 + 2]!);
     const x = pa[i * 3]!, y = pa[i * 3 + 1]!, z = pa[i * 3 + 2]!;
     let u: number, v: number;
@@ -496,7 +553,7 @@ export function boxUv(g: BufferGeometry): void {
     uv[i * 2] = u * s;
     uv[i * 2 + 1] = v * s;
   }
-  g.setAttribute('uv', new BufferAttribute(uv, 2));
+  return uv;
 }
 
 /** Merge several part lists (e.g. building + props) into one list, one geometry per material. */
