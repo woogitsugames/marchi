@@ -355,7 +355,7 @@ export const nl: Dict = {
   "menu.m12": "XII. Het grote brouwen",
   "menu.m12Sub": "Bier voor de volgende levering",
   "menu.m13": "XIII. De eerste trede van de keten",
-  "menu.m13Sub": "Eén wagen voor de hele mark",
+  "menu.m13Sub": "Eén wagen voor de hele grensmark",
   "menu.m14": "XIV. Houtskool uit het bos",
   "menu.m14Sub": "Houtskool bij het bos",
   "menu.m15": "XV. De opslag bij het kasteel",
