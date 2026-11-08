@@ -45,8 +45,8 @@ export function codexSituationHtml(sit: CodexSituation): string {
 function foldHtml(e: StallCodexLocale, foreign: boolean): string {
   const fixes = e.fixes.filter((f): f is string => !!f).map((f) => `<li>${esc(f)}</li>`).join('');
   return `<div class="codex${open ? ' is-open' : ''}">
-    <button class="codex-tog cf" data-act="codex" aria-expanded="${open}"><span class="codex-ic">${iconSvg('inspect', 20)}</span><span class="codex-q" dir="auto">${esc(t('codex.toggle'))}</span><span class="codex-chev" aria-hidden="true"></span></button>
-    <div class="codex-body"${foreign ? ' lang="en" dir="ltr"' : ''}${open ? '' : ' hidden'}>
+    <button class="codex-tog cf" data-act="codex" aria-expanded="${open}" aria-controls="codex-body"><span class="codex-ic">${iconSvg('inspect', 20)}</span><span class="codex-q" dir="auto">${esc(t('codex.toggle'))}</span><span class="codex-chev" aria-hidden="true"></span></button>
+    <div class="codex-body" id="codex-body"${foreign ? ' lang="en" dir="ltr"' : ''}${open ? '' : ' hidden'}>
       <p class="codex-name"><b>${esc(e.name)}</b> — ${esc(e.meaning)}</p>
       <div class="codex-h">${esc(t('codex.check'))}</div><p>${esc(e.check)}</p>
       <div class="codex-h">${esc(t('codex.fixes'))}</div><ol class="codex-fixes">${fixes}</ol>
@@ -62,4 +62,7 @@ export function toggleCodex(btn: HTMLElement): void {
   btn.setAttribute('aria-expanded', String(open));
   const body = root?.querySelector<HTMLElement>('.codex-body');
   if (body) body.hidden = !open;
+  // opened under the docked fix, the answer was below the fold with nothing moving (a11y 2026-11-08, D-347): bring its
+  // first line into view (the sheet body's scroll-padding keeps it clear of the dock)
+  if (open) body?.querySelector<HTMLElement>('.codex-name')?.scrollIntoView({ block: 'nearest' });
 }

@@ -28,3 +28,9 @@ test('a11y: each bar of the two-castle waybill names its castle', () => {
   assert(i > 0, 'castle bar found');
   assert(/aria-label="\$\{esc\(`\$\{name\}: \$\{goodName\(g\)\}/.test(hud.slice(i, i + 300)), 'aria-label = "<castle>: <good> n/need"');
 });
+
+test('a11y: the codex fold controls its body and brings the answer into view when opened', () => {
+  const codex = src('ui/codex.ts');
+  assert(codex.includes('aria-controls="codex-body"') && codex.includes('id="codex-body"'), 'aria-controls -> id');
+  assert(/if \(open\) body\?\.querySelector<HTMLElement>\('\.codex-name'\)\?\.scrollIntoView/.test(codex), 'scrolls the first line into view');
+});
