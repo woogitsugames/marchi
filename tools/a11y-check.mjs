@@ -9,6 +9,8 @@
 //   ring      the focus ring is painted around a chamfered (.cf) button, read from the pixels (D-137); round on
 //             the stall card's eye and a pin's head (D-147)
 //   motion    with prefers-reduced-motion: reduce every running CSS animation / transition lasts ≤ 1 ms
+//   forced    in forced colors (dark system palette) every visible woodcut icon sits on a Canvas plate and the
+//             contract bars keep an outline (D-348)
 // Exit 1 on any failure. Usage: npm run a11y   (A11Y_URL=http://127.0.0.1:5173/ to use a running server)
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
@@ -32,7 +34,10 @@ const errors = [];
 const ok = (cond, what) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${what}`); if (!cond) failures.push(what); };
 
 async function open(q, opts = {}) {
-  const ctx = await browser.newContext({ viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference' });
+  const ctx = await browser.newContext({
+    viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
+    ...(opts.forced ? { forcedColors: 'active', colorScheme: 'dark' } : {}),
+  });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -268,6 +273,24 @@ try {
       return out;
     });
     ok(slow.length === 0, `motion: no animation or transition over 1 ms with reduced motion${slow.length ? ` (${slow.slice(0, 3).join('; ')})` : ''}`);
+    await ctx.close();
+  }
+  // --- forced colors (dark palette): icons are plated like text, bars outlined
+  {
+    const { ctx, page } = await open('play=m1&bot=1&ff=120&speed=0', { forced: true });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.letter [data-a="start"]')?.click());
+    await page.waitForTimeout(400);
+    const r = await page.evaluate(() => {
+      const vis = (el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 && !el.closest('[hidden]'); };
+      const icons = [...document.querySelectorAll('svg[role="img"]')].filter(vis);
+      const bare = icons.filter((el) => /rgba\(0, 0, 0, 0\)|transparent/.test(getComputedStyle(el).backgroundColor));
+      const bars = [...document.querySelectorAll('.kbar')].filter(vis);
+      return { forced: matchMedia('(forced-colors: active)').matches, icons: icons.length, bare: bare.length,
+        bars: bars.length, outlined: bars.filter((el) => parseFloat(getComputedStyle(el).borderTopWidth) >= 1).length };
+    });
+    ok(r.forced && r.icons > 0 && r.bare === 0, `forced: ${r.icons} icons on a Canvas plate (${r.bare} bare)`);
+    ok(r.bars > 0 && r.outlined === r.bars, `forced: ${r.outlined}/${r.bars} contract bars outlined`);
     await ctx.close();
   }
 } finally {

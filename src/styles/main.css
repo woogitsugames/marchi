@@ -950,6 +950,15 @@ body.is-book.is-split:not(.is-flex) .toasts {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }
+/* Forced colors / high contrast (a11y audit 2026-11-08, D-348): the painted kit stays (url images are kept) and the
+   browser puts a backplate behind text, but the woodcut icons take the system text colour straight onto the
+   parchment (white on paper in a dark theme) and the progress groove (gradients, shadows) vanishes. Icons get the
+   same Canvas plate as text; the bar gets a system-colour outline and fill. */
+@media (forced-colors: active) {
+  svg[role="img"] { background: Canvas; border-radius: 3px; }
+  .kbar { border: 1px solid CanvasText; }
+  .kbar > i { background: Highlight; }
+}
 
 
 /* --- Script-specific font stacks (D-18). Latin and Cyrillic are bundled (OFL); CJK, Arabic and
