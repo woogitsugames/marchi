@@ -777,6 +777,10 @@ export const en: FullDict = {
   'fix.marketFullPostRoad': 'The trading post buys more.',
   'cause.unwanted': 'full — nobody needs these goods now',
   'fix.unwanted': 'Neither the order nor any workshop takes what lies here — a new wagon would just wait. If a producer stands because of it, its goods need another granary.',
+  'cause.filling': 'filling — wagons are already bringing goods here',
+  'fix.filling': 'The room is taken by loads the wagons are already bringing. Another granary only once this one is really full.',
+  'cause.granaryFilling': 'yard full — a new granary is still taking its first loads',
+  'fix.granaryFilling': 'A new granary is taking its first loads right now — wait until it works before you build another:',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Bottleneck',
   'neck.reason': 'on average {n} of {m} workshops wait',

@@ -2,8 +2,8 @@
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
 import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
-import { granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
-export { granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
+import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
+export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 import { siteAnchor } from './site';
 
@@ -63,7 +63,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
-    marketSaturated(world, b) || granaryUnwanted(world, b.id);
+    marketSaturated(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
   calmCache.set(b.id, { key, calm });
   return calm;
 }
@@ -74,12 +74,16 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | 'unwanted' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | 'unwanted' | 'filling' | 'granaryFilling' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
   if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
+  // D-393: a free-valley granary "full" of loads still on the way (a fresh one reads 0 in stock)
+  if (granaryFilling(world, b.id)) return 'filling';
+  // D-393: a full yard while a fresh granary takes its first loads
+  if (freshGranary(world, b) >= 0) return 'granaryFilling';
   if (contractFilled(world, b.id)) return 'orderFilled';
   // D-95: the granary already holds stone to pave with (mission VIII's quarry)
   if (stoneInStore(world, b.id) > 0) return 'stoneStored';
@@ -476,6 +480,20 @@ export function cutOffProducer(world: World, chain: ReasonLink[]): number {
 }
 
 /**
+ * D-394: the free valley's mirror of cutOffProducer — the chain's own building waits for an input it cannot reach
+ * (NO_INPUT.UNREACHABLE) because its own gate is off the stable's road network (a later building cut the diagonal step
+ * it hung on); the chain then ends at a working source, so the gap finder had nothing to offer and the card stayed
+ * critical with no cure (card-10 `--no-pairs` seed 1303: a brewery from 69 min on, its link 4 cells). Its id, or -1.
+ */
+export function cutOffConsumer(world: World, chain: ReasonLink[]): number {
+  const head = chain[0];
+  if (!head || head.kind !== 'building' || head.status.k !== 'NO_INPUT' || head.status.cause !== 'UNREACHABLE' || !rankGated(world)) return -1;
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  const b = buildingById(world, head.id);
+  return stable && b && !reachable(world, stable.gate, b.gate) ? b.id : -1;
+}
+
+/**
  * Building whose missing link to the stable is the root of this chain, or -1 (the sheet's gap finder offers
  * the cheapest road from the stable to it). NO_WAGON.ALL_BUSY counts when no stable reaches any source of
  * the good (audit 2026-11-03, fix 5): the target is that source, as for NONE_CAN_REACH it is the consumer.
@@ -485,6 +503,8 @@ export function gapTarget(world: World, chain: ReasonLink[]): number {
   if (!root) return -1;
   const cut = cutOffProducer(world, chain);
   if (cut >= 0) return cut;
+  const off = cutOffConsumer(world, chain);
+  if (off >= 0) return off;
   if (root.kind === 'building') {
     const s = root.status;
     if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
@@ -539,7 +559,7 @@ let cureCache: { key: string; cure: Cure } | null = null;
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}`;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}`;
   if (cureCache?.key === key) return cureCache.cure;
   if (sharedOneCard(world, b)) {
     cureCache = { key, cure: 'producer' };
@@ -581,6 +601,8 @@ export function cureFor(world: World, id: number): Cure {
         // D-212: its own goods are wanted by nobody — nothing to build for the granary itself; a producer of a
         // wanted good it refuses (i > 0) still needs another granary
         if (i === 0 && granaryUnwanted(world, l.id)) break;
+        // D-393: it is still filling (loads on the way, stock under its cap) — no second granary before it holds them
+        if (i === 0 && granaryFilling(world, l.id)) break;
         cure = loads === 'wagon' ? 'wagon' : 'granary';
       }
     } else if (l.status.k === 'NO_ROUTE') cure = 'road';
@@ -588,6 +610,9 @@ export function cureFor(world: World, id: number): Cure {
   }
   // before the ice, one more wagon would leave too little silver for the stone bridge: the span first (day 8c)
   if (cure === 'wagon' && iceBeforeWagon(world)) cure = 'pave';
+  // D-393: a producer's full yard while the last granary still takes its first loads — no other one before it has
+  // (calm 'granaryFilling'; the chain may end at the producer or at the granary that refused it)
+  if (cure === 'granary' && freshGranary(world, b) >= 0) cure = null;
   // D-391: no granary site a road reaches anywhere the ghost would look — nothing to offer
   if (cure === 'granary' && granaryAnchor(world, b, chainRoot(chain, b.id)) < 0) cure = null;
   cureCache = { key, cure };

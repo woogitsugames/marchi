@@ -782,6 +782,10 @@ export const pl = {
   'fix.marketFullPostRoad': 'Posterunek handlowy kupi więcej.',
   'cause.unwanted': 'pełny — tego towaru nikt teraz nie potrzebuje',
   'fix.unwanted': 'Tego, co tu leży, nie bierze ani zamówienie, ani żaden warsztat — nowy wóz tylko by czekał. Jeśli przez to stoi producent, jego towar potrzebuje innego spichlerza.',
+  'cause.filling': 'zapełnia się — wozy już wiozą tu towar',
+  'fix.filling': 'Miejsce zajmują ładunki, które wozy już tu wiozą. Kolejny spichlerz dopiero wtedy, gdy ten naprawdę się zapełni.',
+  'cause.granaryFilling': 'pełne podwórze — nowy spichlerz dopiero przyjmuje ładunki',
+  'fix.granaryFilling': 'Nowy spichlerz właśnie przyjmuje pierwsze ładunki — zaczekaj, aż zacznie działać, zanim postawisz kolejny:',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',
@@ -928,6 +932,8 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
+  // D-393
+  'cause.filling', 'fix.filling', 'cause.granaryFilling', 'fix.granaryFilling',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

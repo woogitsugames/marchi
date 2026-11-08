@@ -16,6 +16,14 @@ export const NECK_SHOW_X100 = 150; // mean waiting consumers x100 to show
 export const NECK_HIDE_X100 = 110; // a shown good stays until the mean drops below this
 export const NECK_MIN_CONSUMERS = 2;
 export const NECK_FLEET_RANK = 2;
+/**
+ * D-392: a producer of the good that went up within the last window counts as relieving one waiting workshop already
+ * (a farm makes 1 grain / 8 s, a mill eats 1 / 7 s): the card compares the mean minus 100 per fresh producer with its
+ * thresholds. A farm needs ~50 s for its first load plus the haul, while the 3-minute mean still holds the waits from
+ * before it; without this a player who looks every 10 s built a farm on every look until the mean fell (card-10: up
+ * to 79 farms in 120 min). A deep shortage (many workshops waiting) still asks for the next one at once.
+ */
+export const NECK_FRESH_X100 = 100;
 
 export interface BottleneckCard {
   kind: 'good' | 'fleet';
@@ -49,6 +57,9 @@ interface Log {
   sumN: GoodNums;
   sumS: GoodNums;
   sumF: GoodNums;
+  /** D-392: producers of each good in the last sample, and the samples (n) at which one more stood (newest last). */
+  prod: GoodNums;
+  added: Record<Good, number[]>;
   /** 1 when no wagon stood idle in that second. */
   busy: number[];
   sumBusy: number;
@@ -65,6 +76,7 @@ const rings = (): Record<Good, number[]> => Object.fromEntries(GOODS.map((g) => 
 function freshLog(tick: number): Log {
   return {
     n: 0, tick, wait: rings(), noWagon: rings(), starved: rings(), full: rings(), sumW: zeros(), sumN: zeros(), sumS: zeros(), sumF: zeros(),
+    prod: zeros(), added: Object.fromEntries(GOODS.map((g) => [g, [] as number[]])) as Record<Good, number[]>,
     busy: new Array<number>(NECK_WINDOW).fill(0), sumBusy: 0, shown: null, cardTick: -1, card: null,
   };
 }
@@ -83,8 +95,9 @@ export function sampleBottleneck(world: World): void {
   if (log.n > 0 && st.tick === log.tick) return;
   log.tick = st.tick;
   const i = log.n % NECK_WINDOW;
-  const cw = zeros(), cn = zeros(), cs = zeros(), cf = zeros();
+  const cw = zeros(), cn = zeros(), cs = zeros(), cf = zeros(), cp = zeros();
   for (const b of st.buildings) {
+    for (const o of outputGoods(b.type)) cp[o]++;
     if (b.status.k === 'OUTPUT_FULL') for (const o of outputGoods(b.type)) cf[o]++;
     if (!waitsForInput(b)) continue;
     const g = (b.status as { good: Good }).good;
@@ -94,6 +107,11 @@ export function sampleBottleneck(world: World): void {
     for (const o of outputGoods(b.type)) cs[o]++;
   }
   for (const g of GOODS) {
+    // D-392: new producers of g (not on the first sample: the valley as found); forget those older than the window
+    if (log.n > 0) for (let k = log.prod[g]; k < cp[g]; k++) log.added[g].push(log.n);
+    const ad = log.added[g];
+    while (ad.length && log.n - ad[0]! >= NECK_WINDOW) ad.shift();
+    log.prod[g] = cp[g];
     log.sumW[g] += cw[g] - log.wait[g][i]!; log.wait[g][i] = cw[g];
     log.sumN[g] += cn[g] - log.noWagon[g][i]!; log.noWagon[g][i] = cn[g];
     log.sumS[g] += cs[g] - log.starved[g][i]!; log.starved[g][i] = cs[g];
@@ -142,9 +160,11 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
   if (log.n < NECK_WINDOW) { log.shown = null; return null; }
   const st = world.state;
   const dead = new Map<BuildingType, boolean>();
-  const cands: { g: Good; mean: number; consumers: Building[]; cure: 'producer' | 'wagon'; type: BuildingType }[] = [];
+  const cands: { g: Good; mean: number; raw: number; consumers: Building[]; cure: 'producer' | 'wagon'; type: BuildingType }[] = [];
   for (const g of GOODS) {
-    const mean = Math.floor((log.sumW[g] * 100) / NECK_WINDOW);
+    // D-392: each producer of g placed within the window already counts as one workshop served
+    const raw = Math.floor((log.sumW[g] * 100) / NECK_WINDOW);
+    const mean = raw - NECK_FRESH_X100 * log.added[g].length;
     if (mean < (log.shown === g ? NECK_HIDE_X100 : NECK_SHOW_X100)) continue;
     const consumers = consumersOf(world, g);
     if (consumers.length < NECK_MIN_CONSUMERS) continue;
@@ -160,7 +180,7 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
     // (deliveries on the way); one more producer would only add a full yard (card-10: a hundred farms, grain still "short")
     if (producers > 0 && log.sumF[g] * 2 >= producers * NECK_WINDOW) continue;
     const cure = log.sumN[g] * 2 >= log.sumW[g] ? 'wagon' : 'producer';
-    cands.push({ g, mean, consumers, cure, type });
+    cands.push({ g, mean, raw, consumers, cure, type });
   }
   // the worst good first (ties: GOODS order)
   cands.sort((a, b) => b.mean - a.mean);
@@ -178,7 +198,7 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
     if (best.cure === 'producer' && near < 0) continue;
     log.shown = best.g;
     return {
-      kind: 'good', good: best.g, meanX100: best.mean, consumers: best.consumers.length, cure: best.cure,
+      kind: 'good', good: best.g, meanX100: best.raw, consumers: best.consumers.length, cure: best.cure,
       build: best.type, near, focus: focus.id,
     };
   }

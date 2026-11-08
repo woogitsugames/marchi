@@ -16,7 +16,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { chainRoot, codexCalm, quietStall, cureFor, granaryAnchor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { chainRoot, codexCalm, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -355,6 +355,16 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
   // D-212: a granary full of goods nothing wants now (mission XV's fish): no repair, no wagon
   if (granaryUnwanted(world, b.id)) {
     return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.unwanted')}>${esc(t('fix.unwanted'))}</span></div>`;
+  }
+  // D-393: a free-valley granary "full" of loads still on the way — no second granary before it holds them
+  if (granaryFilling(world, b.id)) {
+    return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.filling')}>${esc(t('fix.filling'))}</span></div>`;
+  }
+  // D-393: a full yard while a fresh granary takes its first loads — one tap to it
+  const fresh = freshGranary(world, b);
+  if (fresh >= 0) {
+    return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.granaryFilling')}>${esc(t('fix.granaryFilling'))} <button class="linkish" data-go="building:${fresh}">${
+      esc(buildingName(world, fresh))}</button></span></div>`;
   }
   if (chain.length > 1) return '';
   const s = b.status;

@@ -4250,3 +4250,48 @@ the valley -> ghost at the screen centre); card-10 read `granary?fail` for 2–1
 (`src/ui/stalls.ts`): this building, the chain's root, another granary, the castle, the stable — the first with a site a
 road reaches; in the free valley `cureFor` drops the granary cure when none has one. Missions keep the building itself.
 The tool used the chain root, the game the building: both now use `granaryAnchor`. (decided)
+
+**D-392 — The bottleneck card counts a fresh producer as one workshop served (2026-11-08).**
+Backlog P2 (D-390): the card-10 player (looks every 10 s) built 29–79 farms (`neck:farm`) in 120 min, often one on every
+look. Cause: the card's 180 s mean still held the waits from before the farm it had just asked for, while a farm needs
+~50 s for its first load plus the haul — a person pressing the card's cure would have walled in the valley the same
+way. `src/ui/bottleneck.ts`: every sample counts the producers of each good; a producer that stood up within the last
+window (`added`, any source — the card's own cure, the grow or rank card) takes `NECK_FRESH_X100` = 100 off the mean
+before the show / hide thresholds (a farm makes 1 grain / 8 s, a mill eats 1 / 7 s: one farm ~ one mill served). Two
+waiting mills and a farm placed a moment ago: no card; a deep shortage (three or more waiting) still asks for the next
+one at once. The card's "n of m wait" keeps the plain mean. Tried first: silence the good for a whole window after a new
+producer (equivalently, restart its window) — farms fell to 8–10, but card-10's earned fell 20 % (25–26.5 k) and rank 5
+came 9 min later; 60–90 s silences cost 10–14 %. The discount keeps the pace. Measured (below). (decided)
+
+**D-393 — A granary "full" of loads on the way is filling, not full; no second granary while a fresh one fills (2026-11-08).**
+Same P2: card-10 built 30–45 granaries. Trace (seed 1303, 75–100 min): every new granary stood at once at 0 in stock +
+60 incoming — STORAGE_FULL by reservations — and, its loads being under a wagon load (`granaryLoads` null), it was the
+card's red stall with "Postaw spichlerz" by itself; the next look built another. `src/ui/stallKinds.ts`, free valley only:
+`granaryFilling` — STORAGE_FULL, stock under the cap, loads on the way, no market load lying there (that one still asks
+for a wagon): calm (`calmWhy` 'filling', "zapełnia się — wozy już wiozą tu towar", sheet hint `fix.filling`), no cure.
+`freshGranary` — a producer's full yard (OUTPUT_FULL.NO_DESTINATION, not a wagon load) while a filling granary holds
+under half its cap: calm 'granaryFilling', the sheet names that granary (one tap), `cureFor` drops the granary cure
+whichever end of the chain it came from; once the fresh one is half full the cure returns. Four new keys are
+`PENDING_KEYS` (pl/en; the other languages read English). `cureFor`'s cache key also takes the building count. (decided)
+
+**D-394 — A consumer cut off from the stable gets the gap finder's road (2026-11-08).**
+Found by the D-392 measurement (`--no-pairs` seed 1303, a different layout): from 69 min a brewery read NO_INPUT.UNREACHABLE
+(crit) for the rest of the game, its own gate off the stable's network (a later building cut its diagonal step), the link
+4 cells — but the chain ended at a working malthouse, so `gapTarget` offered nothing (36,5 dead minutes). Mirror of D-173's
+`cutOffProducer`: `cutOffConsumer` (`src/ui/stalls.ts`, free valley only) — the chain's own building waits for an
+unreachable input and the stable does not reach its gate: the gap finder's target is that building. No sim change in
+D-392..D-394 (mission hashes untouched). Tests `tests/card-pace.test.ts`.
+
+`tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304` (before -> after, per seed):
+
+| player | granaries (`granary`) | farms (`neck:farm`) | buildings | earned (k) | rank 5 (min) |
+|---|---|---|---|---|---|
+| card-10 | 43/41/45/30 -> 10/18/12/3 | 39/44/29/79 -> 36/27/30/21 | 159/151/155/194 -> 144/137/134/101 | 33,7/31,5/33,3/31,0 -> 32,4/31,5/30,8/34,1 | 86,2/88,2/87,4/87,1 -> 87,0/88,1/89,9/85,3 |
+| card-10 `--no-pairs` | 54/32/29/16 -> 12/7/9/0 | 59/66/65/50 -> 33/24/28/23 | 194/174/172/142 -> 137/111/121/95 | 30,5/29,4/29,0/28,1 -> 32,7/34,6/30,8/30,6 | 90,9/88,3/88,8/90,0 -> 88,9/84,6/89,8/89,5 |
+| card-30 | 15/10/6/14 -> 5/2/1/4 | 19/21/9/17 -> 14/9/12/14 | 83/79/65/77 -> 66/60/59/65 | 26,7/26,4/25,1/27,8 -> 27,6/26,2/25,1/28,7 | 96,7/97,7/96,8/93,7 -> 93,5/96,6/97,7/92,0 |
+| card-60 | 1/1/1/1 -> 0/0/0/0 | 3/14/19/17 -> 10/7/5/12 | 46/57/57/55 -> 51/46/44/49 | 20,0/18,4/20,0/19,5 -> 19,7/19,0/20,4/19,6 | 109,8/115,5/111,0/111,6 -> 111,7/113,4/109,4/112,4 |
+
+Means: card-10 earned 32,4 k -> 32,2 k, rank 5 87,2 -> 87,6 min; `--no-pairs` 29,3 k -> 32,2 k, 89,5 -> 88,2; card-30
+26,5 k -> 26,9 k, 96,2 -> 95,0; card-60 unchanged within a minute. Dead-card time stays 0 (one or two looks of "the quarry
+is still digging", as D-390). A player looking every 10 s still builds more than one every minute — about 20–36 farms and
+0–18 granaries in two hours, each one asked for by a real shortage, no longer by the same one twice. (decided)

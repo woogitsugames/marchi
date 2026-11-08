@@ -1,6 +1,6 @@
 // Which building statuses are stalls and which are critical: pure, no i18n or DOM (so headless tests
 // can rank stalls). Re-exported by format.ts.
-import { GOODS, MARKET, TICK_HZ, buildingById, capacityOf, inputGoods, isMarket, marketOpen, postOpen, reachable, tradePostOf, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
+import { BUILDINGS, GOODS, MARKET, TICK_HZ, buildingById, rankGated, capacityOf, inputGoods, isMarket, marketOpen, postOpen, reachable, tradePostOf, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
 
@@ -135,6 +135,43 @@ export function postWouldTake(world: World, granaryId: number): number {
     const cap = capacityOf(good);
     if (g.stock[good] - g.reservedOut[good] < cap) continue;
     if (MARKET.inflightPerGood - post.incoming[good] >= cap) return post.id;
+  }
+  return -1;
+}
+
+/**
+ * D-393: a free-valley granary that reads STORAGE_FULL only because wagons already carry goods to it: what lies
+ * there is under its cap, the rest is spoken for by loads on the way (a granary built a moment ago is "full" with 0
+ * in stock). It is filling, not full — the room it brought is being used; another granary is no cure until it holds
+ * its cap. Missions keep the plain reading.
+ */
+export function granaryFilling(world: World, granaryId: number): boolean {
+  const g = buildingById(world, granaryId);
+  if (!g || g.type !== 'warehouse' || g.status.k !== 'STORAGE_FULL' || !rankGated(world)) return false;
+  const cap = g.capOverride >= 0 ? g.capOverride : BUILDINGS.warehouse.storeCap;
+  let stock = 0, incoming = 0;
+  for (const good of GOODS) { stock += g.stock[good]; incoming += g.incoming[good]; }
+  // a load a market takes already lies there: that one still asks for a wagon (valley-3h proposal 2)
+  return incoming > 0 && stock < cap && granaryLoads(world, granaryId) !== 'wagon';
+}
+
+/**
+ * D-393: the free valley's granary a producer's full yard waits on (OUTPUT_FULL.NO_DESTINATION) while a fresh granary
+ * still takes its first loads: one that is filling (granaryFilling) with under half its cap in stock. The room the
+ * last granary brought is being taken right now; the card waits for it before naming another one (card-10 placed a
+ * granary every 10 s, each one "full" of reservations the moment it stood). Its id, or -1.
+ */
+export function freshGranary(world: World, b: { status: BuildingStatus }): number {
+  const s = b.status;
+  if (s.k !== 'OUTPUT_FULL' || s.cause !== 'NO_DESTINATION' || !rankGated(world)) return -1;
+  // a refusing granary full of loads a market takes needs a wagon (cureFor), not patience
+  if (s.blockedBy >= 0 && granaryLoads(world, s.blockedBy) === 'wagon') return -1;
+  const half = BUILDINGS.warehouse.storeCap / 2;
+  for (const g of world.state.buildings) {
+    if (g.type !== 'warehouse' || !granaryFilling(world, g.id)) continue;
+    let stock = 0;
+    for (const good of GOODS) stock += g.stock[good];
+    if (stock < half) return g.id;
   }
   return -1;
 }
