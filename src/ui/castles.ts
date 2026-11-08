@@ -2,7 +2,7 @@
 // north castle is getting the planks now") and the "this castle first" switch. Mission XVII (D-356..D-358) adds the
 // chain line ("Węglarnia stoi — drewno idzie na deski dla Zamku Wschodniego") and the "whole chain" switch. Pure reads
 // of the sim and of the UI's pace log; the switches only enqueue the castleFirst / chainFirst commands
-// (data-act="first:<id>" / "chain:<id>", -1 = share evenly).
+// (data-act="first:<id>" / "chainfirst:<id>", -1 = share evenly).
 import { MISSIONS, castleChainRival, castleNameKey, castleRival, contractsOf, type Building, type PaceLog, type World } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
@@ -128,7 +128,7 @@ function chainSwitchHtml(world: World, b: Building, firstTick: number, dueTick: 
   const leg = legOn ? even
     : `<button class="btn cf fix-btn" data-act="first:${b.id}">${iconSvg('wagon', 26)}<span>${esc(t('castle.first'))}</span></button>`;
   return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix fix-dock castle-switch castle-chain-switch">
-    <button class="btn primary cf fix-btn" data-act="chain:${b.id}">${iconSvg('first', 26)}<span>${esc(t('castle.chain'))}</span></button>
+    <button class="btn primary cf fix-btn" data-act="chainfirst:${b.id}">${iconSvg('first', 26)}<span>${esc(t('castle.chain'))}</span></button>
     <div class="fix-note" dir="auto"><div class="s-hint"><span>${why}</span></div></div>
     ${leg}
     <div class="fix-note" dir="auto"><div class="s-hint"><span>${esc(t(legOn ? 'castle.firstOn' : 'fix.castleLegNote'))}</span></div></div></div>`;

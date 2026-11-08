@@ -469,7 +469,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'chain') { openChain(el, (el.dataset.act ?? '').slice(6)); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'first') nav.castleFirst(Number(arg));
-    if (act === 'chain') nav.chainFirst(Number(arg));
+    if (act === 'chainfirst') nav.chainFirst(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
