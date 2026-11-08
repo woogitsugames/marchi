@@ -116,6 +116,10 @@
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
   `docs/shots/winter-trees-{before,after}-*` (np. `after-winter-high-915x412`, `after-winter-near-high-412x915`).
 
+### 8 XI przedpołudnie
+- **Ucięte tempo w prawym górnym rogu (zgłoszenie właściciela, Fold):** przy 720–879 px CSS (rozłożony Fold z powiększonym rozmiarem ekranu) i landscape < 820 px przełącznik tempa schodzi pod kafelki czasu/srebra. Nowy widok w layout-check: 772x854 (bez poprawki zgłasza „offscreen ×2/×4”). Zrzut: docs/shots/topbar-772x854-after.png.
+- **Scalone a11y follow-ups (D-353..D-355):** list przewozowy przy 200 % tekstu w krótkim landscape, forced-colors, fokus pomocy, codex XVI. Zostaje: ar + dwa zamki 915×412 200 % (ok. 10 px do przewinięcia); forced-colors sprawdzone tylko w emulacji Chromium.
+
 ### Decyzje na rano (8 XI) — rozstrzygnięte ~09:45: kosze scalone, S16 zostaje, dźwięki — właściciel posłucha i da znać
 1. **Dźwięki z własnej syntezy (D-350/D-351, scalone ~04:15):** awans rangi (dzwon), stuk karty, ciesielka „rozbuduj”,
    okiennica + dzwonek posterunku, pękający lód, monety, pętle: wiatr zimą, skrzypienie lodu, gwar targu. Nikt ich jeszcze
