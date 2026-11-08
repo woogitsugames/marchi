@@ -1,10 +1,11 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
+import { siteAnchor } from './site';
 
 /**
  * Free valley (research 2026-11-04, valley-3h proposal 2): a full granary that holds at least one wagon load
@@ -386,6 +387,45 @@ export function paveSpanFor(world: World, b: Building): { cells: number[]; held:
 }
 
 /**
+ * D-390: the pave cure's span needs paving stone and no quarry stands to dig it (free valley seed 1304: no rock by the
+ * castle, so the rank card never offered one) — the sheet's grey "Wyłóż most kamieniem" would stay the card's only
+ * cure for good. Instead the sheet offers the quarry: the building it opens the ghost by (this building, the castle,
+ * the stable, then any other with a site a road reaches), or -1 (stone on its way or being dug, rank, no site).
+ */
+export function quarryForPave(world: World, b: Building): number {
+  if (!rankGated(world)) return -1;
+  const h = paveSpanFor(world, b);
+  if (!h) return -1;
+  const ok = paveCheck(world, h);
+  if (ok.ok || ok.err.k !== 'NO_STONE' || ok.err.quarries > 0 || !canPlace(world, 'quarry').ok) return -1;
+  const st = world.state;
+  const ids = [b.id];
+  for (const t of ['castle', 'stable'] as const) for (const q of st.buildings) if (q.type === t) ids.push(q.id);
+  for (const q of st.buildings) if (!ids.includes(q.id)) ids.push(q.id);
+  return siteAnchor(world, 'quarry', ids);
+}
+
+/** The last building of a chain (its root), else `self`. */
+export function chainRoot(chain: readonly ReasonLink[], self: number): number {
+  const r = chain.length ? chain[chain.length - 1]! : null;
+  return r && r.kind === 'building' ? r.id : self;
+}
+
+/**
+ * D-391: where the sheet's "Postaw spichlerz" opens the ghost — by this building, then the chain's root (the full yard
+ * or granary), another granary, the castle, the stable: the first with a site a road reaches (siteAnchor), or -1. In
+ * the free valley a granary cure with no such site is not offered (the card would name a building the player cannot
+ * place); missions keep the building itself (their sites are authored or open).
+ */
+export function granaryAnchor(world: World, b: Building, root: number): number {
+  if (!rankGated(world)) return b.id;
+  const ids = [b.id];
+  if (root !== b.id) ids.push(root);
+  for (const t of ['warehouse', 'castle', 'stable'] as const) for (const q of world.state.buildings) if (q.type === t && !ids.includes(q.id)) ids.push(q.id);
+  return siteAnchor(world, 'warehouse', ids);
+}
+
+/**
  * A shared single producer outranks the long waits: its lesson state (CONTESTED) is too short-lived to reach the
  * card by duration (research P5), so once the workshop has waited 30 s (D-110) it counts as critical, ahead of a
  * 45 s stall.
@@ -548,6 +588,8 @@ export function cureFor(world: World, id: number): Cure {
   }
   // before the ice, one more wagon would leave too little silver for the stone bridge: the span first (day 8c)
   if (cure === 'wagon' && iceBeforeWagon(world)) cure = 'pave';
+  // D-391: no granary site a road reaches anywhere the ghost would look — nothing to offer
+  if (cure === 'granary' && granaryAnchor(world, b, chainRoot(chain, b.id)) < 0) cure = null;
   cureCache = { key, cure };
   return cure;
 }

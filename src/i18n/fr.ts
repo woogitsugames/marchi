@@ -641,6 +641,7 @@ export const fr: Dict = {
   "cause.heldIce": "{wagon} attend devant un pont gelé",
   "fix.pave": "Paver le pont en pierre",
   "fix.paveWhy": "{wagon} attend à un pont de bois. Un pont de pierre laisse passer les chariots dans les deux sens et la glace ne le ferme pas.",
+  "fix.paveQuarry": "Un pont de pierre demande de la pierre, et personne ne l’extrait. D’abord la carrière, puis le pont.",
   "fix.granaryHint": "Les marchandises n'ont nulle part où aller. Reliez par la route un grenier ou un acheteur.",
   "hud.speedHint": "À ×4, l'arrêt s'aggrave vite : {name}. Ralentissez pour le réparer à temps.",
   "menu.bestAria": "Meilleur résultat : {n} sceaux sur 3, temps {time}",

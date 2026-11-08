@@ -641,6 +641,7 @@ export const nl: Dict = {
   "cause.heldIce": "{wagon} staat voor een bevroren brug",
   "fix.pave": "Maak de brug van steen",
   "fix.paveWhy": "{wagon} wacht bij een houten brug. Een stenen brug laat wagens in beide richtingen door en ijs sluit haar niet.",
+  "fix.paveQuarry": "Een stenen brug vraagt steen, en niemand breekt die. Eerst de steengroeve, dan de brug.",
   "fix.granaryHint": "De goederen kunnen nergens heen. Verbind een graanschuur of afnemer met een weg.",
   "hud.speedHint": "Op ×4 groeit de stilstand snel: {name}. Vertraag om hem op tijd te verhelpen.",
   "menu.bestAria": "Beste resultaat: {n} van 3 zegels, tijd {time}",

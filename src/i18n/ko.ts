@@ -641,6 +641,7 @@ export const ko: Dict = {
   "cause.heldIce": "{wagon}이(가) 얼음에 막힌 다리 앞에서 대기 중",
   "fix.pave": "다리를 돌로 놓기",
   "fix.paveWhy": "{wagon}이(가) 나무다리에서 기다립니다. 돌다리는 양방향으로 수레가 지나가고 얼음에도 막히지 않습니다.",
+  "fix.paveQuarry": "돌다리에는 돌이 필요한데 아무도 캐지 않는다. 먼저 채석장, 그다음 다리.",
   "fix.granaryHint": "물건이 갈 곳이 없습니다. 받아 줄 곡물 창고나 수요처를 길로 연결하세요.",
   "hud.speedHint": "×4에서는 정체가 빨리 커집니다: {name}. 속도를 줄여 제때 고치세요.",
   "menu.bestAria": "최고 기록: 인장 {n}/3, 시간 {time}",

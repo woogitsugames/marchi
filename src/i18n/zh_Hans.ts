@@ -641,6 +641,7 @@ export const zh_Hans: Dict = {
   "cause.heldIce": "{wagon}停在被冰封闭的桥前",
   "fix.pave": "把桥改成石桥",
   "fix.paveWhy": "{wagon}在木桥处等待。石桥可双向通行，冰也封不住。",
+  "fix.paveQuarry": "石桥需要石料，却没人开采。先建采石场，再修桥。",
   "fix.granaryHint": "货物无处可去。用道路连接一座粮仓或愿意接收的买家。",
   "hud.speedHint": "×4时停滞恶化很快：{name}。放慢速度以便及时处理。",
   "menu.bestAria": "最佳成绩：{n}/3枚印章，用时{time}",

@@ -641,6 +641,7 @@ export const tr: Dict = {
   "cause.heldIce": "{wagon} buzla kapanmış köprünün önünde bekliyor",
   "fix.pave": "Köprüyü taştan yap",
   "fix.paveWhy": "{wagon} ahşap köprüde bekliyor. Taş köprü arabaları iki yönde geçirir ve buz onu kapatmaz.",
+  "fix.paveQuarry": "Taş köprü taş ister, ama kimse taş çıkarmıyor. Önce taş ocağı, sonra köprü.",
   "fix.granaryHint": "Malın gidecek yeri yok. Onu alacak bir ambarı ya da alıcıyı yolla bağla.",
   "hud.speedHint": "×4'te duraklama hızla büyür: {name}. Zamanında düzeltmek için yavaşla.",
   "menu.bestAria": "En iyi sonuç: 3 mühürden {n}, süre {time}",

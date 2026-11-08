@@ -641,6 +641,7 @@ export const ja: Dict = {
   "cause.heldIce": "{wagon}が氷で閉じた橋の前で止まっている",
   "fix.pave": "橋を石造りにする",
   "fix.paveWhy": "{wagon}が木の橋で待っている。石橋なら両方向に通れ、氷でも閉じない。",
+  "fix.paveQuarry": "石橋には石がいるが、誰も切り出していない。まず採石場、それから橋。",
   "fix.granaryHint": "品物の行き先がない。受け取る穀物倉庫か取引先を道でつなごう。",
   "hud.speedHint": "×4では停滞がすぐ悪化する：{name}。速度を落として間に合わせよう。",
   "menu.bestAria": "最高記録：封印{n}／3、時間{time}",
