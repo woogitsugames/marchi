@@ -13,6 +13,7 @@
   --clay: #8c4a2f;
   --ochre: #b8893a;
   --meadow: #56603f;
+  --meadow-dk: #3a4428; /* "on time" read-outs on the HUD panel, which paints darker than the sheet (D-347) */
   --mist: #c9c6bb;
 
   --ease: cubic-bezier(.2, .7, .2, 1);
@@ -1679,6 +1680,8 @@ body.mode-menu .sheet-paper, .sheet[data-kind='gamemenu'] .sheet-paper, .sheet[d
 .sheet[data-kind='valley'] .sheet-paper, .sheet[data-kind='missionsave'] .sheet-paper {
   border-image-source: url("/assets/ui/kit/frame-sheet-dim@2x.png");
   border-image-source: image-set(url("/assets/ui/kit/frame-sheet-dim@2x.png") 2x, url("/assets/ui/kit/frame-sheet-dim@3x.png") 3x);
+  /* the dim paper is darker: soft ink 3.43:1 there (settings hint, playtest screen; a11y 2026-11-08, D-347) -> ~4.8 */
+  --ink-soft: #352f27;
 }
 .build-shelf {
   border-image-source: url("/assets/ui/kit/panel-dim@2x.png");
@@ -1856,7 +1859,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-tr .tr-n { font-family: var(--font-head); font-weight: 600; font-size: 17px; color: var(--wine); min-width: 22px; }
 .wb-tr .tr-t { flex: 1; min-width: 0; }
 .wb-tr .kseal { width: 24px; height: 24px; }
-.wb-tr .tr-state { font-size: 13px; color: var(--meadow); padding-inline-start: 28px; line-height: 1.1; }
+.wb-tr .tr-state { font-size: 13px; color: var(--meadow-dk); padding-inline-start: 28px; line-height: 1.1; }
 .wb-tr.is-done, .wb-tr.is-later { cursor: pointer; min-height: 48px; }
 .wb-tr.is-late .tr-state { color: #6e3520; font-weight: 700; }
 .wb-tr.is-now { margin-inline: -6px; padding-inline: 4px 6px; border-inline-start: 3px solid var(--brass); background: rgb(160 122 58 / .14); }
@@ -1869,7 +1872,7 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-castles .wb-tr.is-now { background: none; border-inline-start-color: rgb(160 122 58 / .45); }
 .wb-castles .wb-tr.is-now.is-first { background: rgb(160 122 58 / .14); border-inline-start-color: var(--brass); }
 .wb-castles .wb-tr.is-now + .wb-tr.is-now { margin-top: 2px; }
-.wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--brass-dk); text-transform: lowercase; }
+.wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: #5a4117; text-transform: lowercase; }
 .wb-tr .tr-first svg { flex: none; }
 /* the tag never shrinks under a long castle line (it was cut to its pennant, ar 915x412 review); the line wraps */
 .wb-tr .tr-first { flex: none; }
@@ -1880,7 +1883,7 @@ body.is-landscape .wb-tr .tr-first > span {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
 /* the castle row's state is a read-out, not a control (the bar line above takes the tap) */
-.wb-castles .castle-eta { display: flex; align-items: center; min-height: 24px; font-weight: 700; color: var(--meadow); }
+.wb-castles .castle-eta { display: flex; align-items: center; min-height: 24px; font-weight: 700; color: var(--meadow-dk); }
 .wb-castles .castle-eta.late { color: var(--wine); }
 .castle-split { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 14px; color: var(--ink-soft); }
 .castle-split.is-first { color: var(--ink); font-weight: 700; }
@@ -2675,6 +2678,11 @@ body.is-short.is-bigtext .fix-dock .fix-note .s-hint, body.is-short.is-bigtext .
 body.is-short.is-bigtext .fix-dock .fix-note .s-hint { display: flex; }
 body.is-short.is-bigtext .fix-dock .fix-why > span { display: block; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
+/* the two-castle waybill (two rows of bars and read-outs) ran under the tool rail at 200 % text in short landscape
+   (a11y audit 2026-11-08, D-347): its panel scrolls in the room left above the rail (ribbon ~2 lines at this size) */
+body.mode-game.is-landscape.is-bigtext .waybill-wrap:not(.is-collapsed) .wb-panel {
+  max-height: calc(100dvh - var(--rail-h) - var(--safe-b) - 120px); overflow-y: auto; overscroll-behavior: contain;
+}
 
 /* ================================================================ player help (src/ui/help.ts, D-236)
    Six ruled folds, a woodcut glyph and the topic in the heading face; one answer open at a time. */
