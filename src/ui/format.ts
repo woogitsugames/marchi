@@ -120,6 +120,14 @@ export function buildingStatusText(s: BuildingStatus, world?: World, id = -1): s
   if (s.k === 'NO_INPUT' && s.cause === 'CONTESTED' && world && s.blockedBy >= 0 && buildingById(world, s.blockedBy)) {
     return capFirst(t('status.NO_INPUT.CONTESTED.to', { good: goodName(s.good), rival: buildingName(world, s.blockedBy) }));
   }
+  // mission XVII (D-356): the input goes to the first castle's chain ("Drewno → Tartak, dla Zamku Wschodniego")
+  if (s.k === 'NO_INPUT' && s.cause === 'CHAIN_FIRST' && world && s.blockedBy >= 0 && buildingById(world, s.blockedBy)) {
+    const first = world.state.mission.firstCastle ?? -1;
+    const named = first >= 0 ? castleNameKey(world, first) : null;
+    return capFirst(t('status.NO_INPUT.CHAIN_FIRST.to', {
+      good: goodName(s.good), rival: buildingName(world, s.blockedBy), forCastle: named ? t(`castle.for.${named}`) : buildingName(world, first),
+    }));
+  }
   let key = statusKey(s, world, id);
   const params: Record<string, string | number> = {};
   // "the supplier is making it now" only while it is: a supplier waiting for its own input says so (F5, D-44)
@@ -174,7 +182,7 @@ export { codexLink, isCritical, isStall, isStallLink, isWagonWait, statusKey } f
 export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof typeof BUILDINGS): string {
   switch (s.k) {
     case 'NO_ROAD': return iconSvg('no_road', size);
-    case 'NO_INPUT': return s.cause === 'CONTESTED' ? iconSvg('contested', size) : struckIconSvg(s.good, size);
+    case 'NO_INPUT': return s.cause === 'CONTESTED' || s.cause === 'CHAIN_FIRST' ? iconSvg('contested', size) : struckIconSvg(s.good, size);
     case 'NO_WAGON': return iconSvg('no_wagon', size);
     case 'OUTPUT_FULL': return iconSvg('output_full', size);
     case 'WAITING_PICKUP': return iconSvg('waiting', size);

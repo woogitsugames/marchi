@@ -3,15 +3,16 @@
 // or a castle line — a busy wagon due shortly (WAGON_DUE, D-156), a surplus nobody needs (D-160), a granary full at a
 // saturated market (D-174/D-180), the trading post waiting for its road (D-170), the build tutorial's cut-off hut
 // (D-259), and mission XVI's castles: the other castle taking the goods (castleRival, D-291), the even split and the
-// castle-first switch (D-289/D-290). For those the fold reads its own entry, translated into every language (i18n keys
+// castle-first switch (D-289/D-290), and mission XVII's shared input taken by the other castle's chain (castleChain,
+// D-358). For those the fold reads its own entry, translated into every language (i18n keys
 // `codex.s.<situation>.<field>`). Pure reads of the sim and of the UI's pace log; no i18n runtime, no DOM.
 import type { MessageKey } from '../i18n/index';
-import { buildingById, castleRival, type Building, type PaceLog, type ReasonLink, type World } from '../sim/index';
+import { MISSIONS, buildingById, castleChainRival, castleRival, type Building, type PaceLog, type ReasonLink, type World } from '../sim/index';
 import { calmWhy } from './stalls';
 import { castleForecastFor } from './paceCard';
 
 export const CODEX_SITUATIONS = [
-  'wagonDue', 'marketFull', 'surplus', 'postNoRoad', 'castleRival', 'castleEven', 'castleFirst', 'tutorialNoRoad',
+  'wagonDue', 'marketFull', 'surplus', 'postNoRoad', 'castleRival', 'castleEven', 'castleFirst', 'tutorialNoRoad', 'castleChain',
 ] as const;
 export type CodexSituation = (typeof CODEX_SITUATIONS)[number];
 
@@ -49,6 +50,8 @@ export function codexSituation(world: World, l: ReasonLink, hut = -1): CodexSitu
 export function castleCodexSituation(world: World, b: Building, log: PaceLog): CodexSituation | null {
   const fc = castleForecastFor(world, log, b.id);
   if (!fc || fc.done) return null;
+  // mission XVII (D-358): the castle's producer stands idle while the other castle's chain takes the shared input
+  if (MISSIONS[world.state.mission.id]?.chainPriority && castleChainRival(world, b.id)) return 'castleChain';
   if (fc.share !== 'first' && castleRival(world, b.id)) return 'castleRival';
   return fc.share === 'even' ? 'castleEven' : 'castleFirst';
 }

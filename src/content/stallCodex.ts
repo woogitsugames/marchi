@@ -165,6 +165,28 @@ const CONTENT = {
       "chain": "Woodcutter has wood → wagon takes it to the sawmill → charcoal burner waits."
     }
   },
+  "status.NO_INPUT.CHAIN_FIRST": {
+    "pl": {
+      "name": "Surowiec idzie najpierw na łańcuch drugiego zamku",
+      "meaning": "Jeden zamek jest pierwszy z całym łańcuchem, więc wspólny surowiec jedzie najpierw do jego warsztatu, a ten budynek czeka na swoją kolej.",
+      "check": "Dotknij budynku: łańcuch przyczyn pokazuje warsztat, który bierze surowiec, a karta zamku mówi, dla którego zamku pracuje.",
+      "fixes": [
+        "Zostaw tak, jeśli tamten zamek ma wcześniejszy termin; surowiec wróci, gdy jego zamówienie będzie miało swoje.",
+        "Na karcie zamku wybierz „Dziel po równo” albo daj pierwszeństwo temu łańcuchowi."
+      ],
+      "chain": "Drwal ma drewno → wóz wiezie je do tartaku (deski dla Zamku Wschodniego) → węglarnia czeka."
+    },
+    "en": {
+      "name": "Input goes to the other castle's chain first",
+      "meaning": "One castle goes first with its whole chain, so the shared input goes to its workshop first and this building waits its turn.",
+      "check": "Tap the building: the cause chain shows the workshop taking the input, and the castle card says which castle it works for.",
+      "fixes": [
+        "Leave it if that castle's deadline comes first; the input returns once its order is covered.",
+        "On the castle card choose \"Share evenly\" or put this chain first instead."
+      ],
+      "chain": "Woodcutter has logs → wagon takes them to the sawmill (planks for the East Castle) → charcoal burner waits."
+    }
+  },
   "status.WAITING_UPSTREAM": {
     "pl": {
       "name": "Czeka na dostawcę",
