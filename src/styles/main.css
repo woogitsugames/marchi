@@ -1344,7 +1344,8 @@ body.is-mini .build-ui, body.is-mini .build-float { display: none; }
 .ghost-tag .rotate-btn { width: 48px; min-width: 48px; height: 48px; padding: 0; --c: 5px; }
 .gt-text { display: flex; flex-direction: column; min-width: 0; }
 .gt-main { font-size: 15px; font-weight: 700; line-height: 1.15; }
-.gt-main > svg { flex: none; margin-inline-end: 4px; vertical-align: -4px; }
+.gt-main:has(> svg) { display: flex; align-items: center; gap: 4px; }
+.gt-main > svg { flex: none; }
 .gt-sub { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--meadow); font-weight: 500; }
 .gt-sub.is-warn { color: #6e3520; }
 .ghost-tag.is-bad { --frame: var(--clay); }
