@@ -4295,3 +4295,20 @@ Means: card-10 earned 32,4 k -> 32,2 k, rank 5 87,2 -> 87,6 min; `--no-pairs` 29
 26,5 k -> 26,9 k, 96,2 -> 95,0; card-60 unchanged within a minute. Dead-card time stays 0 (one or two looks of "the quarry
 is still digging", as D-390). A player looking every 10 s still builds more than one every minute — about 20–36 farms and
 0–18 granaries in two hours, each one asked for by a real shortage, no longer by the same one twice. (decided)
+
+**D-400 — The playtest trial records the whole-chain switch as the castle lever.** `onCommandResult` (`src/ui/app.ts`)
+recorded only `castleFirst` for S16's "which castle first, and when". Mission XVII's primary switch is `chainFirst`
+(D-356), so the same field now takes both commands (east/north by the main contract's castle). No sim change.
+(decided)
+
+**D-401 — No "przyda się drugi" where nothing can be built.** The consumer sheet's shared-input line
+(`sharedHtml`, `src/ui/pace.ts`) named the single supplier and added "przyda się drugi". In a mission whose
+`buildable` list is empty (XVII, and the other missions that forbid building) there is no second supplier to build, so
+the supplier line is dropped there; the shared-input line itself ("tu {n} / tam {n}") stays. Free valley and missions
+with a buildable list are unchanged. The HUD stall card's `cause.sharedOne` ("jedyny dostawca") only names the shortage, no advice, so it stays;
+`stalls.ts` was not touched. (decided)
+
+**D-402 — `tools/balance-night6.ts` knows the chain switch.** The `castle` card branch of the reasonable-player
+bot applies `chainFirst` in a `chainPriority` mission (the sheet's primary button there), `castleFirst` otherwise;
+`LESSON.m17` = east castle's chain first, `WRONG.m17` = the castle leg only. Rows of missions I–XVI are unchanged
+(the new branch and entries only fire for m17). (decided)

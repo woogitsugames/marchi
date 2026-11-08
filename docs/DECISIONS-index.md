@@ -311,3 +311,9 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-380 | 2026-11-08 | The free valley's card builds a chain step in one tap: producer + consumer (owner yes 2026-11-08, BACKLOG P2 from D-267) | decided | UI |
 | D-390 | 2026-11-08 | A valley card never names a building the build tool cannot place; the grey stone button gets a quarry (2026-11-08) | decided | UI |
 | D-391 | 2026-11-08 | The granary cure opens by an anchor with a site, and is not offered without one (2026-11-08) | decided | inne |
+| D-392 | 2026-11-08 | The bottleneck card counts a fresh producer as one workshop served (2026-11-08) | decided | UI |
+| D-393 | 2026-11-08 | A granary "full" of loads on the way is filling, not full; no second granary while a fresh one fills (2026-11-08) | decided | inne |
+| D-394 | 2026-11-08 | A consumer cut off from the stable gets the gap finder's road (2026-11-08) | decided | sim |
+| D-400 | — | The playtest trial records the whole-chain switch as the castle lever | decided | inne |
+| D-401 | — | No "przyda się drugi" where nothing can be built | decided | inne |
+| D-402 | — | `tools/balance-night6.ts` knows the chain switch | decided | inne |
