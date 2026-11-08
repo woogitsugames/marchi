@@ -1064,7 +1064,8 @@ export class App implements PanelNav {
     if (r.ok && this.mode === 'game') {
       this.trial?.command(cmd.t === 'road' ? `road:${cmd.surface === 2 ? 'cobble' : 'dirt'}` : cmd.t === 'place' ? `place:${cmd.type}` : cmd.t);
       // S16 (D-343): which castle the participant set first, and when in play (the main contract is the east castle)
-      if (cmd.t === 'castleFirst' && cmd.castle >= 0) {
+      // the whole-chain switch of mission XVII counts as the same lever (D-400)
+      if ((cmd.t === 'castleFirst' || cmd.t === 'chainFirst') && cmd.castle >= 0) {
         this.trial?.castleFirst(this.world.state.mission.contract?.castle === cmd.castle ? 'east' : 'north', this.world.state.tick);
       }
     }

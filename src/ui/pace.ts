@@ -1,7 +1,7 @@
 // Contract pace on the waybill and the castle card (F10), and the shared-input line on a consumer's
 // card (F3). Both read the sim (contractForecast, sharedInput); nothing here writes state.
 import {
-  TICK_HZ, buildingById, sharedInput, thinDelivery, type ContractForecast, type World,
+  TICK_HZ, buildingById, missionBuildable, sharedInput, thinDelivery, type ContractForecast, type World,
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
@@ -112,7 +112,8 @@ export function sharedHtml(world: World, id: number): string {
     .split(bdi('\u0001')).join(`<button class="linkish" data-go="building:${rival.id}">${esc(name)}</button>`);
   let one = '';
   const p = s.producers === 1 && s.consumers >= 2 ? buildingById(world, s.producer) : null;
-  if (p) one = `<br><small>${tHtml('why.sharedOne', { who: t(`building.${p.type}` as MessageKey), n: fmtInt(s.consumers) })}</small>`;
+  // no second supplier to suggest where nothing can be built (mission XVII, D-401)
+  if (p && missionBuildable(world.state.mission.id).length) one = `<br><small>${tHtml('why.sharedOne', { who: t(`building.${p.type}` as MessageKey), n: fmtInt(s.consumers) })}</small>`;
   return `<div class="s-hint shared-hint">${iconSvg('contested', 22)}<span>${text}${one}</span></div>`;
 }
 

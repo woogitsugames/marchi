@@ -4250,3 +4250,20 @@ the valley -> ghost at the screen centre); card-10 read `granary?fail` for 2–1
 (`src/ui/stalls.ts`): this building, the chain's root, another granary, the castle, the stable — the first with a site a
 road reaches; in the free valley `cureFor` drops the granary cure when none has one. Missions keep the building itself.
 The tool used the chain root, the game the building: both now use `granaryAnchor`. (decided)
+
+**D-400 — The playtest trial records the whole-chain switch as the castle lever.** `onCommandResult` (`src/ui/app.ts`)
+recorded only `castleFirst` for S16's "which castle first, and when". Mission XVII's primary switch is `chainFirst`
+(D-356), so the same field now takes both commands (east/north by the main contract's castle). No sim change.
+(decided)
+
+**D-401 — No "przyda się drugi" where nothing can be built.** The consumer sheet's shared-input line
+(`sharedHtml`, `src/ui/pace.ts`) named the single supplier and added "przyda się drugi". In a mission whose
+`buildable` list is empty (XVII, and the other missions that forbid building) there is no second supplier to build, so
+the supplier line is dropped there; the shared-input line itself ("tu {n} / tam {n}") stays. Free valley and missions
+with a buildable list are unchanged. The HUD stall card's `cause.sharedOne` ("jedyny dostawca") only names the shortage, no advice, so it stays;
+`stalls.ts` was not touched. (decided)
+
+**D-402 — `tools/balance-night6.ts` knows the chain switch.** The `castle` card branch of the reasonable-player
+bot applies `chainFirst` in a `chainPriority` mission (the sheet's primary button there), `castleFirst` otherwise;
+`LESSON.m17` = east castle's chain first, `WRONG.m17` = the castle leg only. Rows of missions I–XVI are unchanged
+(the new branch and entries only fire for m17). (decided)

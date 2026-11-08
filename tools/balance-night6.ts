@@ -60,6 +60,8 @@ export const LESSON: Record<string, (w: World) => Command[]> = {
   m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_GRANARY_SITE }, { t: 'road', surface: 1, cells: col(w, M15_GRANARY_SITE.x + 1, 40, 41) }],
   // XVI: the castle with the early deadline first (D-289)
   m16: (w) => [{ t: 'castleFirst', castle: w.state.mission.contract!.castle }],
+  // XVII: the east castle's whole chain first (chainFirst, D-356); the castle leg alone is the WRONG lever
+  m17: (w) => [{ t: 'chainFirst', castle: w.state.mission.contract!.castle }],
 };
 
 /** The tempting wrong fix of missions XIV-XV: the same building at the wrong end of the road. */
@@ -70,6 +72,8 @@ export const WRONG: Record<string, (w: World) => Command[]> = {
   m15: (w) => [{ t: 'place', type: 'warehouse', ...M15_WRONG_SITE }, { t: 'road', surface: 1, cells: col(w, M15_WRONG_SITE.x + 1, 40, 41) }],
   // XVI: the castle with the late deadline first
   m16: (w) => [{ t: 'castleFirst', castle: w.state.mission.extraContracts![0]!.castle }],
+  // XVII: the castle leg only, which "helps" nothing (no wagon is short)
+  m17: (w) => [{ t: 'castleFirst', castle: w.state.mission.contract!.castle }],
 };
 
 export interface Row {
@@ -263,7 +267,11 @@ function tapPace(w: World, pc: NonNullable<ReturnType<typeof paceCard>>): string
   // post (D-245, free valley only): never in a mission
   if (pc.k === 'post') return '';
   // two castles (D-290): the late castle's sheet holds the switch — one tap puts it first
-  if (pc.k === 'castle') return applyCommand(w, { t: 'castleFirst', castle: pc.producer }).ok ? 'castleFirst' : 'castleFirst?fail';
+  // XVII (chainPriority): the sheet's primary switch is the whole chain (D-356), else the castle leg
+  if (pc.k === 'castle') {
+    if (MISSIONS[w.state.mission.id]?.chainPriority) return applyCommand(w, { t: 'chainFirst', castle: pc.producer }).ok ? 'chainFirst' : 'chainFirst?fail';
+    return applyCommand(w, { t: 'castleFirst', castle: pc.producer }).ok ? 'castleFirst' : 'castleFirst?fail';
+  }
   // mud: the cobble button only when the forecast misses three seals; otherwise the sheet only says so
   if (!pc.risk) return '';
   const r = applyCommand(w, { t: 'road', surface: 2, cells: pc.cells });
