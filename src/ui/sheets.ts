@@ -17,6 +17,9 @@ export interface SheetContent {
   /** The help topic of this card's "?" when it differs from its kind's topic (the map below): a castle holding one of
    *  two castle orders opens "Several castles" (D-344). Read when the sheet opens and when "?" is pressed. */
   helpTopic?(): string | undefined;
+  /** Where keyboard and screen-reader focus lands when this content opens, instead of the sheet itself: help opened
+   *  from a card's "?" focuses the asked topic's heading (D-355). Read once, after the sheet is laid out. */
+  initialFocus?(sheet: Sheet): HTMLElement | null;
 }
 
 export interface Sheet {
@@ -177,6 +180,13 @@ export class Sheets {
     const topic = this.onHelp ? content.helpTopic?.() ?? HELP_TOPIC_OF_KIND[kind] : undefined;
     const help = sheet.el.querySelector<HTMLElement>('.sh-help');
     if (help) help.hidden = !topic;
+    // after the new sheet's own focus (one frame) and the content's first scroll: the second frame
+    if (content.initialFocus) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (sheet.content !== content || !this.stack.includes(sheet)) return;
+        content.initialFocus?.(sheet)?.focus({ preventScroll: true });
+      }));
+    }
     return sheet;
   }
 

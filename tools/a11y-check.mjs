@@ -36,7 +36,7 @@ const ok = (cond, what) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${what}`); i
 async function open(q, opts = {}) {
   const ctx = await browser.newContext({
     viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
-    ...(opts.forced ? { forcedColors: 'active', colorScheme: 'dark' } : {}),
+    ...(opts.forced ? { forcedColors: 'active', colorScheme: opts.forced === 'light' ? 'light' : 'dark' } : {}),
   });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -291,6 +291,24 @@ try {
     });
     ok(r.forced && r.icons > 0 && r.bare === 0, `forced: ${r.icons} icons on a Canvas plate (${r.bare} bare)`);
     ok(r.bars > 0 && r.outlined === r.bars, `forced: ${r.outlined}/${r.bars} contract bars outlined`);
+    await ctx.close();
+  }
+  // --- forced colors (light palette, D-354): the primary button keeps an edge, the focus ring is 3 px Highlight
+  {
+    const { ctx, page } = await open('play=m1&speed=0', { forced: 'light' });
+    await page.waitForSelector('.letter [data-a="start"]', { timeout: 30000 });
+    await page.waitForTimeout(600);
+    await page.focus('.letter [data-a="start"]');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    const r = await page.evaluate(() => {
+      const b = document.querySelector('.letter [data-a="start"]');
+      const cs = getComputedStyle(b);
+      return { focused: document.activeElement === b, border: parseFloat(cs.borderTopWidth), borderStyle: cs.borderTopStyle,
+        ring: parseFloat(cs.outlineWidth), ringStyle: cs.outlineStyle };
+    });
+    ok(r.border >= 2 && r.borderStyle === 'solid', `forced light: primary button border ${r.border}px ${r.borderStyle}`);
+    ok(r.focused && r.ring >= 3 && r.ringStyle === 'solid', `forced light: focus ring ${r.ring}px ${r.ringStyle} on the primary button`);
     await ctx.close();
   }
 } finally {
