@@ -46,11 +46,15 @@ export function waybillPaceHtml(world: World, f: ContractForecast | null): strin
   const eta = late
     ? tHtml('contract.pace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
     : tHtml('contract.pace.eta', { time: ticksClock(f.finishTick - tick) });
+  // the short form of the Flip cover's line (D-99), shown when the landscape card is short of room (D-353)
+  const short = late
+    ? tHtml('contract.sealPace.late', { time: ticksClock(f.finishTick - paceDueTick(world)) })
+    : tHtml('contract.sealPace.eta', { time: ticksClock(f.finishTick - tick) });
   const b = f.goods[f.bottleneck]!;
   const supply = tHtml('contract.pace.supply', { who: producerName(f, f.bottleneck), n: fmtInt(b.producers), rate: fmtDec(b.perMin, 1) });
   const go = b.producer >= 0 ? `data-wb="b:${b.producer}"` : 'data-wb="castle"';
   return `<div class="wb-pace${state ? ' ' + state : ''}">
-    <div class="wb-pace-eta" data-wb="castle" role="button" tabindex="0"><span>${eta}</span></div>
+    <div class="wb-pace-eta" data-wb="castle" role="button" tabindex="0"><span class="eta-full">${eta}</span><span class="eta-short" aria-hidden="true">${short}</span></div>
     <div class="wb-pace-sup" ${go} role="button" tabindex="0">${iconSvg(b.good, 18, goodName(b.good))}<span>${supply}</span><small class="sup-rate" aria-hidden="true">${tHtml('contract.pace.rate', { rate: fmtDec(b.perMin, 1) })}</small></div></div>`;
 }
 
