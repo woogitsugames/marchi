@@ -405,7 +405,7 @@ export class Hud {
       floor = Math.min(floor, r.top);
     }
     // never below two 48 px rows: a squeezed panel still shows its head and scrolls
-    wrap.style.setProperty('--wb-room', `${Math.max(96, Math.floor(floor - p.top - 4))}px`);
+    wrap.style.setProperty('--wb-room', `${Math.max(96, Math.floor(floor - p.top - 2))}px`);
     // short of room: the compact form (bare clock in the pill, the short pace line, the castles' head under the
     // list). Decided on the full form's height — measured with the class off, so the choice cannot flip-flop
     wrap.classList.remove('is-tight');

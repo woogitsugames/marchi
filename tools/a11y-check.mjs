@@ -293,16 +293,34 @@ try {
     ok(r.bars > 0 && r.outlined === r.bars, `forced: ${r.outlined}/${r.bars} contract bars outlined`);
     await ctx.close();
   }
-  // --- forced colors (light palette, D-354): the primary button keeps an edge, the focus ring is 3 px Highlight
+  // --- help from a card's "?" (D-355): focus lands on the asked topic's heading, expanded
   {
-    const { ctx, page } = await open('play=m1&speed=0', { forced: 'light' });
-    await page.waitForSelector('.letter [data-a="start"]', { timeout: 30000 });
-    await page.waitForTimeout(600);
-    await page.focus('.letter [data-a="start"]');
+    const { ctx, page } = await open('play=m16&speed=0&ff=150&openId=5', { viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.letter [data-a="start"]')?.click());
+    await page.waitForSelector('.sheet .sh-help:not([hidden])', { timeout: 30000 }).catch(() => {});
+    await page.evaluate(() => document.querySelector('.sheet .sh-help')?.click());
+    // focus moves two frames after the sheet is laid out: slow under swiftshader on a loaded machine
+    await page.waitForFunction(() => document.activeElement?.classList.contains('help-tog'), null, { timeout: 10000 }).catch(() => {});
+    const r = await page.evaluate(() => {
+      const a = document.activeElement;
+      return { topic: a?.dataset?.topic ?? a?.className ?? '', expanded: a?.getAttribute?.('aria-expanded') };
+    });
+    ok(r.topic === 'castles' && r.expanded === 'true', `help: "?" on the XVI castle card focuses the "castles" heading (${r.topic}, expanded=${r.expanded})`);
+    await ctx.close();
+  }
+  // --- forced colors (light palette, D-354): the primary button keeps an edge, the focus ring is 3 px Highlight
+  // (the XVI castle card's "Ten zamek pierwszy" is a primary button)
+  {
+    const { ctx, page } = await open('play=m16&speed=0&ff=150&openId=5', { forced: 'light', viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.letter [data-a="start"]')?.click());
+    await page.waitForSelector('.sheet .btn.primary', { timeout: 30000 });
+    await page.focus('.sheet .btn.primary');
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
     const r = await page.evaluate(() => {
-      const b = document.querySelector('.letter [data-a="start"]');
+      const b = document.querySelector('.sheet .btn.primary');
       const cs = getComputedStyle(b);
       return { focused: document.activeElement === b, border: parseFloat(cs.borderTopWidth), borderStyle: cs.borderTopStyle,
         ring: parseFloat(cs.outlineWidth), ringStyle: cs.outlineStyle };

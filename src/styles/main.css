@@ -2368,6 +2368,14 @@ body:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: max(45vh, mi
 body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+/* "Co to znaczy?" opened in a short landscape side sheet (D-355): the XVI castle card's body was ~200 px, so the
+   answer showed 3-4 lines under the lead lines and above the docked switch. While the fold is open the sheet runs
+   down over the rail on its side (the tools on the other side stay free) and is a little wider; closing the fold
+   or the sheet gives the rail back */
+body.mode-game.is-side.is-landscape.is-short:not(.is-flex) .sheet:has(.codex.is-open) {
+  max-height: calc(100% - var(--bar-b) - 6px - var(--safe-b) - 10px);
+  width: min(460px, 50vw);
+}
 /* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
 body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); bottom: auto; }
 /* ...and is only as tall as its content (D-145, ui audit day 9 P3-1): it hung from the bar down to the rail (the
