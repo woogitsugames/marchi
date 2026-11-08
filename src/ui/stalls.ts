@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -37,7 +37,7 @@ export const MIN_STALL_TICKS = 20;
 const W_CRIT = 3, W_NORMAL = 1, W_MINOR = 0.25;
 
 /** The tool that fixes the root of a stall chain (the HUD highlights that tool card). */
-export type Cure = 'wagon' | 'road' | 'granary' | 'producer' | 'pave' | null;
+export type Cure = 'wagon' | 'road' | 'granary' | 'producer' | 'pave' | 'demolish' | null;
 
 export interface StallEntry {
   id: number;
@@ -494,6 +494,33 @@ export function cutOffConsumer(world: World, chain: ReasonLink[]): number {
 }
 
 /**
+ * D-410: a building cut off later (cutOffProducer / cutOffConsumer) whose gate no road can reach any more — later
+ * neighbours boxed it in, so the gap finder has no link to offer (`suggestLinkToStable` null). The card used to stay
+ * red with an empty sheet for the rest of the game (card-10 seed 1305: a brewery, 41 min; seed 1307: a malthouse,
+ * 41 min). Free valley only (a mission's map keeps its links); never the castle, stable or trading post. Its id, or
+ * -1. The link search is a whole-grid Dijkstra: kept per building until the road network or the building count
+ * changes. Pure read.
+ */
+const noLinkCache = new Map<number, { key: string; none: boolean }>();
+export function cutOffNoLink(world: World, chain: ReasonLink[]): number {
+  if (!rankGated(world)) return -1;
+  let id = cutOffProducer(world, chain);
+  if (id < 0) id = cutOffConsumer(world, chain);
+  const b = id >= 0 ? buildingById(world, id) : undefined;
+  if (!b || !BUILDINGS[b.type].recipe || b.type === 'tradePost' || b.type === 'castle' || b.type === 'stable') return -1;
+  const key = `${world.state.netVersion}|${world.state.buildings.length}`;
+  let c = noLinkCache.get(id);
+  if (!c || c.key !== key) noLinkCache.set(id, (c = { key, none: !suggestLinkToStable(world, id) }));
+  return c.none ? id : -1;
+}
+
+/** D-410: what taking the cut-off building back returns right now (half its price once it has worked). */
+export function cutOffRefund(world: World, id: number): number {
+  const b = buildingById(world, id);
+  return b ? demolishQuote(world, b).refund : 0;
+}
+
+/**
  * Building whose missing link to the stable is the root of this chain, or -1 (the sheet's gap finder offers
  * the cheapest road from the stable to it). NO_WAGON.ALL_BUSY counts when no stable reaches any source of
  * the good (audit 2026-11-03, fix 5): the target is that source, as for NONE_CAN_REACH it is the consumer.
@@ -575,6 +602,11 @@ export function cureFor(world: World, id: number): Cure {
     return 'pave';
   }
   const chain = explainBuilding(world, id, 5, true);
+  // D-410: cut off with no road left to build — take it back (the gap finder would offer nothing)
+  if (cutOffNoLink(world, chain) >= 0) {
+    cureCache = { key, cure: 'demolish' };
+    return 'demolish';
+  }
   let cure: Cure = cutOffProducer(world, chain) >= 0 ? 'road' : null;
   for (let i = chain.length - 1; i >= 0 && !cure; i--) {
     const l = chain[i]!;

@@ -786,6 +786,10 @@ export const pl = {
   'fix.filling': 'Miejsce zajmują ładunki, które wozy już tu wiozą. Kolejny spichlerz dopiero wtedy, gdy ten naprawdę się zapełni.',
   'cause.granaryFilling': 'pełne podwórze — nowy spichlerz dopiero przyjmuje ładunki',
   'fix.granaryFilling': 'Nowy spichlerz właśnie przyjmuje pierwsze ładunki — zaczekaj, aż zacznie działać, zanim postawisz kolejny:',
+  // D-410: a building cut off later, no road can reach its gate any more
+  'cause.cutOff': 'bez dojazdu — do bramy nie da się już poprowadzić drogi',
+  'fix.cutOff': 'Rozbierz: {name}',
+  'fix.cutOffWhy': 'Sąsiednie budynki zamknęły dojazd do bramy i żadnej drogi nie da się już tu poprowadzić. Rozbierz ten budynek (wraca połowa ceny) i postaw go w innym miejscu przy drodze.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',
@@ -934,6 +938,8 @@ export type MessageKey = keyof typeof pl;
 export const PENDING_KEYS = [
   // D-393
   'cause.filling', 'fix.filling', 'cause.granaryFilling', 'fix.granaryFilling',
+  // D-410
+  'cause.cutOff', 'fix.cutOff', 'fix.cutOffWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

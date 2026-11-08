@@ -1,0 +1,58 @@
+// D-410: a free-valley building cut off later whose gate no road can reach any more (later neighbours boxed it in)
+// gets "Rozbierz" — never a red card whose sheet offers nothing. The box is synthetic: the ground around the gate is
+// raised past the steepest grade a road may climb, so the gap finder (suggestLinkToStable) finds no link.
+import { TICK_HZ, createWorld, explainBuilding, reachable, suggestLinkToStable, type Building, type BuildingStatus, type World } from '../src/sim/index';
+import { place } from '../src/sim/commands';
+import { cureFor, cutOffNoLink, cutOffRefund, gapTarget } from '../src/ui/stalls';
+import { assert, eq, test } from './harness';
+
+function boxed(type: 'brewery' | 'malthouse', mission = false): { w: World; b: Building; stable: Building } {
+  const w = createWorld(mission ? 'm1' : 'sandbox');
+  if (!mission) w.state.town.rank = 5;
+  const stable = w.state.buildings.find((q) => q.type === 'stable')!;
+  const r = place(w, type, 20, 40, 2, true);
+  assert(r.ok, `place ${type}: ${JSON.stringify(r)}`);
+  const b = w.state.buildings.at(-1)!;
+  assert(!reachable(w, stable.gate, b.gate), 'off the network');
+  assert(!!suggestLinkToStable(w, b.id), 'a link exists before the box');
+  // (the terrain is shared between worlds of one map: raise a copy)
+  (w as { terrain: World['terrain'] }).terrain = { ...w.terrain, cellH: w.terrain.cellH.slice() };
+  const W = w.terrain.w, gx = b.gate % W, gy = Math.floor(b.gate / W);
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dx || dy) w.terrain.cellH[(gy + dy) * W + gx + dx] = w.terrain.cellH[b.gate]! + 50;
+  w.state.netVersion++;
+  return { w, b, stable };
+}
+
+const fullYard: BuildingStatus = { k: 'OUTPUT_FULL', cause: 'NO_DESTINATION', blockedBy: -1 } as BuildingStatus;
+
+test('cut-off link: a producer cut off with no road left gets "Rozbierz", not an empty sheet (D-410)', () => {
+  const { w, b } = boxed('brewery');
+  assert(!suggestLinkToStable(w, b.id), 'no link once boxed in');
+  b.status = fullYard; b.stalledTicks = 120 * TICK_HZ; b.placedTick = 0; w.state.tick = 600 * TICK_HZ;
+  const chain = explainBuilding(w, b.id, 5, true);
+  eq(gapTarget(w, chain), b.id, 'the gap finder still names it');
+  eq(cutOffNoLink(w, chain), b.id, 'but no link is left');
+  eq(cureFor(w, b.id), 'demolish', 'the cure: take it back');
+  eq(cutOffRefund(w, b.id), 30, 'half the price back');
+});
+
+test('cut-off link: a consumer cut off with no road left gets "Rozbierz" too (D-410, mirror of D-394)', () => {
+  const { w, b } = boxed('malthouse');
+  const st = { k: 'NO_INPUT', good: 'grain', cause: 'UNREACHABLE', blockedBy: -1 } as BuildingStatus;
+  b.status = st; b.stalledTicks = 120 * TICK_HZ;
+  eq(cutOffNoLink(w, [{ kind: 'building', id: b.id, status: st }]), b.id, 'cut off, no link');
+  eq(cureFor(w, b.id), 'demolish', 'the cure: take it back');
+});
+
+test('cut-off link: with a link to build the cure stays the road; a mission keeps the road (D-410)', () => {
+  const w = createWorld('sandbox');
+  w.state.town.rank = 5;
+  place(w, 'brewery', 20, 40, 2, true);
+  const b = w.state.buildings.at(-1)!;
+  b.status = fullYard; b.stalledTicks = 120 * TICK_HZ;
+  eq(cutOffNoLink(w, explainBuilding(w, b.id, 5, true)), -1, 'a link exists');
+  eq(cureFor(w, b.id), 'road', 'the gap finder road (D-173)');
+  const m = boxed('brewery', true);
+  m.b.status = fullYard; m.b.stalledTicks = 120 * TICK_HZ;
+  eq(cutOffNoLink(m.w, explainBuilding(m.w, m.b.id, 5, true)), -1, 'not in a mission');
+});

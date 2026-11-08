@@ -16,7 +16,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { chainRoot, codexCalm, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -50,7 +50,10 @@ export interface PanelNav {
    * centre) in view too (D-245, the trading post's road across the river).
    */
   setGhost(cells: number[] | null, pave?: boolean, frameAt?: number): void;
-  /** Take back a building placed moments ago (full refund while lastUndoable names it). */
+  /**
+   * Take back a building placed moments ago (full refund while lastUndoable names it); also the sheet's "Rozbierz" for a
+   * building cut off with no road left (D-410, the plain demolish command: half the price back).
+   */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
   /** `then` (D-380): the build tool opens again with this type by the new building once `type` stands. */
@@ -309,6 +312,14 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
     return fixSection(btn, hint, !ok.ok);
   }
+  if (cure === 'demolish') {
+    // D-410: cut off later, no road can reach its gate any more — take it back and build it elsewhere
+    const id = cutOffNoLink(world, chain);
+    if (id < 0) return '';
+    const btn = `<button class="btn primary cf fix-btn" data-act="cutoff:${id}">${iconSvg('demolish', 26)}<span>${
+      esc(t('fix.cutOff', { name: buildingName(world, id) }))}</span>${bdi(`+${fmtInt(cutOffRefund(world, id))}`)}</button>`;
+    return fixSection(btn, `<div class="s-hint">${esc(t('fix.cutOffWhy'))}</div>`, false);
+  }
   if (cure === 'wagon') return wagonCureHtml(world, t('fix.wagonWhy'));
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
   if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
@@ -497,6 +508,11 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
     if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
+    if (act === 'cutoff') {
+      // D-410: recomputed now — only while that building is still cut off with no road to build
+      const b = buildingById(nav.world, Number(arg));
+      if (b && cutOffNoLink(nav.world, explainBuilding(nav.world, b.id, 5, true)) === b.id) nav.undoPlace(b.id);
+    }
     if (act === 'pave' && !el.classList.contains('is-disabled')) {
       const b = buildingById(nav.world, Number(arg));
       const h = b ? paveSpanFor(nav.world, b) : null;

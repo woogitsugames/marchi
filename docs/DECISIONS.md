@@ -4312,3 +4312,44 @@ with a buildable list are unchanged. The HUD stall card's `cause.sharedOne` ("je
 bot applies `chainFirst` in a `chainPriority` mission (the sheet's primary button there), `castleFirst` otherwise;
 `LESSON.m17` = east castle's chain first, `WRONG.m17` = the castle leg only. Rows of missions I–XVI are unchanged
 (the new branch and entries only fire for m17). (decided)
+
+**D-410 — A building cut off later with no road left gets "Rozbierz", not a red card with an empty sheet (2026-11-08).**
+Backlog P2 (D-390). D-173 (`cutOffProducer`) and D-394 (`cutOffConsumer`) send the gap finder to a building whose own
+gate fell off the stable's network; when later neighbours boxed that gate in, `suggestLinkToStable` has no link and the
+sheet offered nothing: the card (critical or plain) stayed for the rest of the game. The tool hid it by taking the
+building back on its own (D-390), so the dead-card counts read 0. Measured honestly (the tool's silent take-back off,
+`tools/sandbox-first30.ts --minutes 120`, card-10 / card-30, with and without `--no-pairs`): seeds 1301–1304 never hit
+the case any more after D-392..D-394 (0 min); seeds 1305–1308 do — card-10 seed 1305 a brewery from 78:30 (41,5 dead
+min, `OUTPUT_FULL.NO_DESTINATION -> road?none`), seed 1307 a malthouse from 74:40 (`NO_INPUT.UNREACHABLE`, the D-394
+mirror, 41 min) and a brewery (4 min). Two options were weighed: a calm card (the building is dead weight — a quiet pin
+hides a workshop that will never work again, and the chain behind it keeps waiting) or a cure. Chosen: the cure, the
+smaller one. `cutOffNoLink` (`src/ui/stalls.ts`, free valley only, not castle / stable / trading post): the cut-off
+building of the chain when no link is left (link search cached per network version and building count); `cureFor`
+returns the new `Cure` `'demolish'` there (before the road branch). The sheet's fix dock: "Rozbierz: {name}" with the
+refund (`demolishQuote`, half the price) and the hint `fix.cutOffWhy` ("rozbierz i postaw w innym miejscu przy drodze");
+the button re-checks the cut-off and enqueues the ordinary demolish command (`nav.undoPlace`). Moving (demolish + build
+ghost) was not added: the bottleneck / grow cards ask for the building again by an anchor with a site (D-390), so one
+tap stays one act. Missions keep the road cure (their maps keep their links). No sim change (mission hashes untouched).
+Tests `tests/cut-off-link.test.ts` (ground around the gate raised past `MAX_GRADE` on a copied terrain). (decided)
+
+**D-411 — The card says why, and the rail lights the demolish tool (2026-11-08).** When the card's own building is the
+cut-off one, its line reads `cause.cutOff` ("bez dojazdu — do bramy nie da się już poprowadzić drogi"), not "pełne
+podwórze" / "nie dojedzie", which pointed at a road the player cannot build; the rail lights the demolish tool for
+`'demolish'` as it lights the road tool for `'road'`. The card's signature takes the cure, so the line follows it.
+Three new keys (`cause.cutOff`, `fix.cutOff`, `fix.cutOffWhy`) are `PENDING_KEYS` (pl/en; the other languages read
+English, as D-393). (decided)
+
+**D-412 — The scripted card player presses the sheet's "Rozbierz", and no longer takes buildings back on its own.**
+`tools/sandbox-first30.ts`: the target path demolishes only when `cureFor` says `'demolish'` (act `cutoff:demolish`,
+the chain's cut-off building, which may not be the card's subject); the D-264 take-back stays for a building born with
+its gate boxed in (`NO_ROAD`, the build tool's undo). The per-second `actionable` count no longer counts a gap target
+with no link left. Dead-card time from a cut-off building with no link (minutes of 120, card-10; card-30 never hit it):
+
+| seed (card-10) | 1301–1304 | 1305 | 1306 | 1307 | 1308 |
+|---|---|---|---|---|---|
+| before (game, no silent take-back) | 0 / 0 / 0 / 0 | 41,5 | 0 | 45,0 | 0 |
+| after | 0 / 0 / 0 / 0 | 0 | 0 | 0 | 0 |
+
+(`--no-pairs`: 0 before and after on all eight seeds.) Earned and rank 5 within noise (1305 31,1 k -> 31,2 k, 87,3 ->
+87,1 min; 1307 29,9 k -> 30,6 k, 89,2 min both). What is left of dead-card time is the grey stone button while the
+quarry has not dug a load yet (`pave?NO_STONE`, 0–7,7 min, mostly seed 1307), backlog. (decided)

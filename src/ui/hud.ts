@@ -4,7 +4,7 @@
 // through the stalls, and the row of tool cards. Plus toasts, notices and the rank-up letter.
 // The DOM is built once; update() only writes text, widths and classes when a value changes.
 import {
-  GOODS, RANKS, WAGON_PRICE, buildingById, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
+  GOODS, RANKS, WAGON_PRICE, buildingById, explainBuilding, canSurface, isRaining, nextChange, stars, sandboxStatus, seasonAt, seasonal,
   thawing, timeOfDay, TICK_HZ, trancheNeed, yearAt,
   type BuildingType, type Command, type Contract, type Good, type GoodMap, type PaceLog, type SandboxStatus, type Season, type World,
   emptyGoods, TRADE_POST, tradePostOf,
@@ -17,7 +17,7 @@ import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmt
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, cutOffNoLink, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
@@ -621,7 +621,7 @@ export class Hud {
     b.setAttribute('aria-disabled', String(short > 0));
     setText(this.wagonLabel, short > 0 ? t('tool.wagonShort', { n: fmtInt(short) }) : t('tool.wagon'));
     b.setAttribute('aria-label', short > 0 ? `${t('tool.wagon')} — ${t('fix.short', { n: fmtInt(short) })}` : t('tool.wagon'));
-    for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road') || (id === 'build' && (this.cure === 'granary' || this.cure === 'producer')) || (id === 'cobble' && this.cure === 'pave'));
+    for (const [id, tb] of this.toolBtns) tb.classList.toggle('is-cure', (id === 'wagon' && this.cure === 'wagon' && short === 0) || (id === 'road' && this.cure === 'road') || (id === 'build' && (this.cure === 'granary' || this.cure === 'producer')) || (id === 'cobble' && this.cure === 'pave') || (id === 'demolish' && this.cure === 'demolish'));
   }
 
   /**
@@ -762,7 +762,7 @@ export class Hud {
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -778,7 +778,10 @@ export class Hud {
         ? t(held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
         : ice
           ? t('cause.iceAhead', { time: ticksClock(ice.startTick - world.state.tick), n: fmtInt(ice.price) })
-          : stallReason(world, b.id);
+          // D-410: cut off later with no road left to build — say so (the sheet offers taking it back)
+          : this.cure === 'demolish' && cutOffNoLink(world, explainBuilding(world, b.id, 5, true)) === b.id
+            ? t('cause.cutOff')
+            : stallReason(world, b.id);
     setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
     // a calm stall heading the list (no pace card for it): the plain panel, as the pace card (D-181)

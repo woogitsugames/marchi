@@ -17,7 +17,7 @@ import {
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
 import { linkedToStable } from '../src/sim/tradePost';
-import { calmWhy, chainRoot, cureFor, granaryAnchor, gapTarget, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, rankStalls, sampleInputWaits } from '../src/ui/stalls';
+import { calmWhy, chainRoot, cureFor, cutOffNoLink, granaryAnchor, gapTarget, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
 import { bottleneckCard } from '../src/ui/bottleneck';
@@ -276,10 +276,15 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
   if (target >= 0) {
     cure = 'road';
     const sug = suggestLinkToStable(w, target);
-    // D-264: a producer cut off with no road to offer (its gate boxed in by later neighbours): the card names it
-    // critical and offers nothing, so the player takes it back rather than read that card for the rest of the game
-    // (D-390: also a producer cut off later with a full yard — the gap finder's own target, no link left to build)
-    if (!sug && (b.status.k === 'NO_ROAD' || target === b.id) && BUILDINGS[b.type].recipe && b.type !== 'tradePost') act = applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) }).ok ? 'demolish' : 'road?none';
+    // D-264: a producer born with its gate boxed in (NO_ROAD, no link to build): the player takes it back (the build
+    // tool's undo) rather than read that card for the rest of the game
+    // D-410: a building cut off later with no link left — the game's sheet now offers "Rozbierz" (cureFor 'demolish',
+    // the target may be the producer or consumer down the chain); the player presses it, nothing more
+    const off = !sug ? cutOffNoLink(w, chain) : -1;
+    if (off >= 0 && cureFor(w, b.id) === 'demolish') {
+      const ob = buildingById(w, off)!;
+      act = applyCommand(w, { t: 'demolish', cell: at(w, ob.x, ob.y) }).ok ? 'cutoff:demolish' : 'cutoff?fail';
+    } else if (!sug && b.status.k === 'NO_ROAD' && BUILDINGS[b.type].recipe && b.type !== 'tradePost') act = applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) }).ok ? 'demolish' : 'road?none';
     else if (!sug) act = 'road?none';
     else { const res = applyCommand(w, { t: 'road', surface: 1, cells: sug.cells }); act = res.ok ? 'road' : 'road?' + res.err.k; }
   } else {
@@ -357,7 +362,8 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
         const kk = `${top.type}:${s.k}${s.cause ? '.' + s.cause : ''}${ranked[0]!.minor ? '(calm)' : ''}`;
         r.topSubjects[kk] = (r.topSubjects[kk] ?? 0) + 1;
         if (ranked[0]!.minor) r.calmSec++;
-        else if (cureFor(w, top.id) || gapTarget(w, explainBuilding(w, top.id, 5, true)) >= 0) r.actSec++;
+        // (D-410: a gap target with no link left is no cure — cureFor names the demolish then)
+        else if (cureFor(w, top.id) || (() => { const ch = explainBuilding(w, top.id, 5, true); return gapTarget(w, ch) >= 0 && cutOffNoLink(w, ch) < 0; })()) r.actSec++;
         else r.noCureSec++;
       }
       if (r.postMin < 0) {

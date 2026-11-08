@@ -781,6 +781,10 @@ export const en: FullDict = {
   'fix.filling': 'The room is taken by loads the wagons are already bringing. Another granary only once this one is really full.',
   'cause.granaryFilling': 'yard full — a new granary is still taking its first loads',
   'fix.granaryFilling': 'A new granary is taking its first loads right now — wait until it works before you build another:',
+  // D-410: a building cut off later, no road can reach its gate any more
+  'cause.cutOff': 'no way in — no road can reach its gate any more',
+  'fix.cutOff': 'Demolish: {name}',
+  'fix.cutOffWhy': 'Neighbouring buildings closed the way to its gate and no road can be laid here any more. Demolish it (half the price comes back) and build it elsewhere by a road.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Bottleneck',
   'neck.reason': 'on average {n} of {m} workshops wait',
