@@ -81,7 +81,8 @@ export function castleOrderHtml(world: World, b: Building, log: PaceLog): string
     out.push(`<div class="pace-fc castle-fc${late ? ' late' : ''}"><span dir="auto">${line}</span></div>`);
   }
   // mission XVII: the shared input goes to the other castle's chain (the producer here stands idle)
-  if (chained) out.push(castleChainHtml(world, b));
+  // (not once this castle goes first with its chain: the wood already at the other workshop is no longer the news)
+  if (chained && !(chainOn && m.firstCastle === b.id)) out.push(castleChainHtml(world, b));
   const r = castleRival(world, b.id);
   if (r && fc.share !== 'first') {
     const text = tHtml('castle.rival', { rival: '\u0001', goodAcc: t(`goodAcc.${r.good}` as MessageKey), n: r.wagons, short: r.short, time: ticksClock(fc.dueTick) });
