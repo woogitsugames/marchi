@@ -17,7 +17,7 @@ import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmt
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, cutOffNoLink, heldSpanFor, iceBeforeWagon, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneWait, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
@@ -756,13 +756,15 @@ export class Hud {
     const b = w ? buildingById(world, w.id) : null;
     // a calm stall heading the card never lights the rail's wagon (D-193): only the fleet card offers one
     const cure = b ? cureFor(world, b.id) : null;
-    this.cure = w?.minor && cure === 'wagon' ? null : cure;
+    // ...nor the cobble tool while the stone bridge only waits for stone being dug (D-420)
+    this.cure = w?.minor && (cure === 'wagon' || cure === 'pave') ? null : cure;
     const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
+    const stone = held && w!.minor ? paveStoneWait(world, b!) : null;
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${stone ? (stone.digTicks > 0 ? 'dig' : 'coming') : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -775,7 +777,8 @@ export class Hud {
     const reason = shared
       ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
       : held
-        ? t(held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
+        // D-420: the stone bridge waits for stone that is coming or being dug — the calm card says which
+        ? t(stone ? (stone.digTicks > 0 ? 'cause.stoneDig' : 'cause.stoneComing') : held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
         : ice
           ? t('cause.iceAhead', { time: ticksClock(ice.startTick - world.state.tick), n: fmtInt(ice.price) })
           // D-410: cut off later with no road left to build — say so (the sheet offers taking it back)

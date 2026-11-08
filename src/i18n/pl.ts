@@ -790,6 +790,11 @@ export const pl = {
   'cause.cutOff': 'bez dojazdu — do bramy nie da się już poprowadzić drogi',
   'fix.cutOff': 'Rozbierz: {name}',
   'fix.cutOffWhy': 'Sąsiednie budynki zamknęły dojazd do bramy i żadnej drogi nie da się już tu poprowadzić. Rozbierz ten budynek (wraca połowa ceny) i postaw go w innym miejscu przy drodze.',
+  // D-420: the stone bridge waits for stone a quarry is digging or wagons already bring
+  'cause.stoneDig': '{wagon} stoi przed mostem — kamieniołom jeszcze kopie kamień na bruk',
+  'cause.stoneComing': '{wagon} stoi przed mostem — kamień na bruk już jedzie',
+  'fix.stoneDig': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom wykopie go za ok. {time}, potem wóz zawiezie go do spichlerza i wtedy wyłożysz most. Nic więcej nie trzeba robić.',
+  'fix.stoneComing': 'Do kamiennego mostu brakuje kamienia: {n}. Jest już wykopany (w drodze: {incoming}, przy kamieniołomie: {quarry}) — gdy dotrze do spichlerza, wyłożysz most. Nic więcej nie trzeba robić.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',
@@ -940,6 +945,8 @@ export const PENDING_KEYS = [
   'cause.filling', 'fix.filling', 'cause.granaryFilling', 'fix.granaryFilling',
   // D-410
   'cause.cutOff', 'fix.cutOff', 'fix.cutOffWhy',
+  // D-420
+  'cause.stoneDig', 'cause.stoneComing', 'fix.stoneDig', 'fix.stoneComing',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

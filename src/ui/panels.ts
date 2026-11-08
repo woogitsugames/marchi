@@ -16,7 +16,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, paveStoneWait, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -298,6 +298,14 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : `<div class="s-hint">${esc(t('fix.paveQuarry'))}</div>`;
       return fixSection(btn, hint, off);
+    }
+    // D-420: the stone is coming or a quarry still digs it — no grey button, the wait and how long
+    const sw = paveStoneWait(world, b);
+    if (sw) {
+      const key: MessageKey = sw.digTicks > 0 ? 'fix.stoneDig' : 'fix.stoneComing';
+      const en = translated(key) ? '' : ' lang="en" dir="ltr"';
+      return `<div class="s-hint calm-hint">${iconSvg('quarry', 22)}<span${en}>${esc(t(key, {
+        n: fmtInt(sw.short), time: ticksClock(sw.digTicks), incoming: fmtInt(sw.incoming), quarry: fmtInt(sw.atQuarry) }))}</span></div>`;
     }
     const ok = paveCheck(world, h);
     let price = 0;

@@ -4353,3 +4353,45 @@ with no link left. Dead-card time from a cut-off building with no link (minutes 
 (`--no-pairs`: 0 before and after on all eight seeds.) Earned and rank 5 within noise (1305 31,1 k -> 31,2 k, 87,3 ->
 87,1 min; 1307 29,9 k -> 30,6 k, 89,2 min both). What is left of dead-card time is the grey stone button while the
 quarry has not dug a load yet (`pave?NO_STONE`, 0–7,7 min, mostly seed 1307), backlog. (decided)
+
+**D-420 — A stone bridge that only waits for stone being dug is a calm pin with the wait, not a grey button (2026-11-08).**
+Backlog P2 (D-412): with a quarry standing but its stone not yet in a granary, the red card for a wagon held at a wooden
+span opened a sheet whose only cure was a grey "Wyłóż most kamieniem" (`pave?NO_STONE`): 0–7,7 dead minutes per 120
+(card-10 seed 1307 7,7, `--no-pairs` 3,0; card-30 up to 2,0). The stone comes by itself; there is nothing to press.
+Two options were weighed: a live button that "reserves" the paving (a sim change, mission hashes at risk) or a calm
+card with the wait. Chosen: the calm card, the smaller one and readable at a glance. `paveStoneWait`
+(`src/ui/stalls.ts`, free valley only): the held span's pave fails on NO_STONE, a quarry stands, and the missing stone is
+already dug (on its way / lying at a quarry) or a working quarry digs the rest; `digTicks` = the rest of the shortest
+running cycle plus one cycle per further unit per working quarry (`cycleTicks`, the season counts), 0 when all of it is
+dug. A quarry that does not dig (full yard, no road) gives null: its own stall is the card, the red span card stays.
+`rankStalls`: such a held span is a minor pin (`W_MINOR`, never critical). `cureFor` stays `'pave'` (the sheet owns the
+span, its ghost still shows on the deck); the sheet's pave branch shows, after D-390's quarry offer, a calm hint with
+the quarry icon and no button: `fix.stoneDig` ("brakuje kamienia: {n}. Kamieniołom wykopie go za ok. {time}, potem wóz
+zawiezie go do spichlerza…") or `fix.stoneComing` ("jest już wykopany (w drodze: {incoming}, przy kamieniołomie:
+{quarry})…"). Haul time is not guessed. Once the stone is in a granary the pin is red again with a live button. No sim
+change (mission hashes untouched). Tests `tests/stone-wait.test.ts`. (decided)
+
+**D-421 — The calm stone card says which wait it is, and lights no tool.** The HUD card for a held span in D-420's
+wait reads `cause.stoneDig` ("{wagon} stoi przed mostem — kamieniołom jeszcze kopie kamień na bruk") or
+`cause.stoneComing` ("… kamień na bruk już jedzie") instead of `cause.heldJam`; no clock on the card (the sheet has it,
+the card would re-render every second). A calm card never lights the rail's cobble tool (as D-193 for the wagon): the
+card's cure is null while minor. The card's signature carries dig / coming. Four new keys (`cause.stoneDig`,
+`cause.stoneComing`, `fix.stoneDig`, `fix.stoneComing`) are `PENDING_KEYS` (pl/en; the other languages read English,
+as D-393/D-410). (decided)
+
+**D-422 — The scripted card player reads the calm stone wait (`pave:wait`), and measures it.** `tools/sandbox-first30.ts`:
+the pave branch logs `pave:wait` (not dead) when `paveStoneWait` holds; the leftover `DBG` stderr line is gone.
+Dead-card time (looks ending `?fail` / `?unhandled` / `?NO_STONE`, minutes of 120, seeds 1301–1308):
+
+| player | before | after |
+|---|---|---|
+| card-10 | 0 / 0 / 0 / 0,2 / 0 / 0 / 7,7 / 0 | 0 / 0 / 0 / 0 / 0 / 0 / 0,3* / 0 |
+| card-30 | 0 / 0 / 0 / 0,5 / 0 / 0 / 0,5 / 0 | 0 on all eight |
+| card-10 `--no-pairs` | 0 / 0 / 0 / 0,2 / 0 / 0 / 3,0 / 0 | 0 on all eight |
+| card-30 `--no-pairs` | 0 / 0 / 0 / 0 / 1,0 / 0 / 2,0 / 0 | 0 on all eight |
+
+(* two looks of `grow:malthouse+?fail`, the grow card's follow-up building, there before too — not this case.)
+`pave?NO_STONE` is 0 everywhere; the calm wait itself reached the card for 1,3 min (card-10 seed 1307), the rest of
+the time the slot went to other cards. Earned and rank 5 unchanged within noise (means: card-10 31,57 k -> 31,58 k,
+87,9 min both; card-30 26,32 k -> 26,35 k, 96,0 -> 96,1; `--no-pairs` card-10 30,84 k both, 89,4 both; card-30
+25,47 k -> 25,43 k, 98,0 both). (decided)

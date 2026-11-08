@@ -17,7 +17,7 @@ import {
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
 import { linkedToStable } from '../src/sim/tradePost';
-import { calmWhy, chainRoot, cureFor, cutOffNoLink, granaryAnchor, gapTarget, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, rankStalls, sampleInputWaits } from '../src/ui/stalls';
+import { calmWhy, chainRoot, cureFor, cutOffNoLink, granaryAnchor, gapTarget, paveCheck, paveSpanFor, paveStoneWait, postWouldTake, producerCure, quarryForPave, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
 import { bottleneckCard } from '../src/ui/bottleneck';
@@ -303,7 +303,9 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
       const qa = quarryForPave(w, b);
       if (qa >= 0) act = st.coins < BUILDINGS.quarry.price ? 'quarry?NO_COINS' : placeAtGhost(w, 'quarry', qa) ? 'pave:quarry' : 'pave:quarry?fail';
       else if (!h || !ok) act = 'pave?none';
-      else if (!ok.ok) { act = 'pave?' + ok.err.k; console.error('DBG', fmtT(st.tick/TICK_HZ), b.type, JSON.stringify(ok.err), JSON.stringify(h.held && { ...h.held, cells: h.cells.length }), JSON.stringify(st.wagons.find((q)=>q.id===h.held?.wagon)?.status), 'stone stocks', st.buildings.filter((q)=>q.type==='warehouse'||q.type==='quarry').map((q)=>q.type+':'+JSON.stringify(q.stock)).join(' ')); }
+      // D-420: the stone is coming or still being dug — the sheet's calm wait, nothing to press
+      else if (paveStoneWait(w, b)) act = 'pave:wait';
+      else if (!ok.ok) act = 'pave?' + ok.err.k;
       else { const res = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }); act = res.ok ? 'pave' : 'pave?' + res.err.k; }
     } else if (cure === 'producer') {
       // the sheet's "Postaw: …" (panels.ts act 'producer'): the shared producer's twin or the bottleneck card's producer

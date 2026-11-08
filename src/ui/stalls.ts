@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -409,6 +409,39 @@ export function quarryForPave(world: World, b: Building): number {
   return siteAnchor(world, 'quarry', ids);
 }
 
+/**
+ * D-420: the held span's stone bridge waits for stone that will come by itself (free valley, a quarry stands): the
+ * stone is on its way, lies at a quarry, or a working quarry is still digging it. Nothing to press — the card is
+ * calm and the sheet says how long, instead of a grey "Wyłóż most kamieniem" for minutes. `short`: stone missing;
+ * `incoming` / `atQuarry`: of it already dug; `digTicks`: until a working quarry has dug the rest (0 = all dug).
+ * null: not this case (stone in store, no quarry — D-390's quarry button — or no quarry digging the rest).
+ */
+export interface StoneWait { short: number; incoming: number; atQuarry: number; digTicks: number }
+export function paveStoneWait(world: World, b: Building): StoneWait | null {
+  if (!rankGated(world)) return null;
+  const h = heldSpanFor(world, b);
+  if (!h) return null;
+  const ok = paveCheck(world, h);
+  if (ok.ok || ok.err.k !== 'NO_STONE' || ok.err.quarries === 0) return null;
+  const { need, have, incoming, atQuarry } = ok.err;
+  const short = need - have;
+  const dig = short - incoming - atQuarry;
+  let digTicks = 0;
+  if (dig > 0) {
+    const cycle = cycleTicks(world, 'quarry', BUILDINGS.quarry.recipe!.ticks);
+    let working = 0, first = cycle;
+    for (const q of world.state.buildings) {
+      if (q.type !== 'quarry' || q.progress < 0) continue;
+      working++;
+      first = Math.min(first, Math.max(0, cycle - q.progress));
+    }
+    // no quarry digging: the quarry's own stall is the card (full yard, no road), not this wait
+    if (!working) return null;
+    digTicks = first + (Math.ceil(dig / working) - 1) * cycle;
+  }
+  return { short, incoming, atQuarry, digTicks };
+}
+
 /** The last building of a chain (its root), else `self`. */
 export function chainRoot(chain: readonly ReasonLink[], self: number): number {
   const r = chain.length ? chain[chain.length - 1]! : null;
@@ -446,7 +479,9 @@ export function rankStalls(world: World): StallEntry[] {
     }
     const held = heldSpanFor(world, b);
     if (held) {
-      out.push({ id: b.id, ticks: held.heldTicks, crit: true, minor: false, score: (held.heldTicks + SHARED_LEAD_TICKS) * W_CRIT });
+      // D-420: the stone bridge only waits for stone already coming or being dug — a calm pin, not the red card
+      if (paveStoneWait(world, b)) out.push({ id: b.id, ticks: held.heldTicks, crit: false, minor: true, score: held.heldTicks * W_MINOR });
+      else out.push({ id: b.id, ticks: held.heldTicks, crit: true, minor: false, score: (held.heldTicks + SHARED_LEAD_TICKS) * W_CRIT });
       continue;
     }
     if (!isStall(b.status) && b.status.k !== 'NO_INPUT') continue;

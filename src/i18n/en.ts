@@ -785,6 +785,11 @@ export const en: FullDict = {
   'cause.cutOff': 'no way in — no road can reach its gate any more',
   'fix.cutOff': 'Demolish: {name}',
   'fix.cutOffWhy': 'Neighbouring buildings closed the way to its gate and no road can be laid here any more. Demolish it (half the price comes back) and build it elsewhere by a road.',
+  // D-420: the stone bridge waits for stone a quarry is digging or wagons already bring
+  'cause.stoneDig': '{wagon} is held at a bridge — the quarry is still cutting the paving stone',
+  'cause.stoneComing': '{wagon} is held at a bridge — the paving stone is already on its way',
+  'fix.stoneDig': 'The stone bridge still lacks stone: {n}. The quarry will cut it in about {time}, then a wagon takes it to a granary and you can pave the bridge. Nothing else to do.',
+  'fix.stoneComing': 'The stone bridge still lacks stone: {n}. It is already cut (on the way: {incoming}, at the quarry: {quarry}) — once it reaches a granary you can pave the bridge. Nothing else to do.',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Bottleneck',
   'neck.reason': 'on average {n} of {m} workshops wait',
