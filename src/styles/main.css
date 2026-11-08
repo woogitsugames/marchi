@@ -876,6 +876,9 @@ body.is-narrow .menu-item { font-size: 22px; }
    cover's cameras cut into the bottom of the panel; no building tools, seal instead of waybill. */
 body.is-mini .sheet { max-height: calc(100% - var(--safe-t) - 6px); }
 body.is-mini .sheet-head h3 { font-size: 24px; }
+/* Ruslan Display is a wide capital face: in a short landscape side sheet "Восточный замок" broke into three lines
+   ("ВОСТОЧ-НЫЙ ЗАМОК") and pushed the chain under the dock (layout 17, 2026-11-08, D-349) */
+:root[data-script='cyrillic'] body.is-short .sheet-head h3 { font-size: 22px; }
 body.is-mini .menu-wrap { top: calc(var(--safe-t) + 4px); bottom: calc(var(--safe-b) + 4px); inset-inline-start: calc(var(--safe-s) + 4px); }
 body.is-mini .menu-frame { width: min(262px, 76vw); padding: 16px 8px 14px; }
 body.is-mini .menu-ribbon.ribbon { min-height: 48px; }
