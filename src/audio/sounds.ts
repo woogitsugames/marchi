@@ -27,6 +27,10 @@ export const SOUNDS = {
   'ambient.river': asset('ambient/river', 'ambient', 0.65, { loop: true }),
   'ambient.rain': asset('ambient/rain', 'ambient', 0.75, { loop: true }),
   'ambient.evening': asset('ambient/evening', 'ambient', 0.7, { loop: true }),
+  // own synthesis, 48 kHz, -23 LUFS seamless loops (D-350): winter, iced river, the trading post's distant market
+  'ambient.winterWind': asset('ambient/winter-wind', 'ambient', 0.75, { loop: true }),
+  'ambient.iceCreak': asset('ambient/ice-creak', 'ambient', 0.7, { loop: true }),
+  'ambient.market': asset('ambient/market', 'ambient', 0.45, { loop: true }),
 
   'cart.dirt': asset('sfx/cart-dirt', 'sfx', 0.53, { loop: true }),
   'cart.cobble': asset('sfx/cart-cobble', 'sfx', 0.48, { loop: true }),
@@ -62,6 +66,13 @@ export const SOUNDS = {
   'ui.wood': asset('ui/wood', 'ui', 0.4, { cooldown: 0.04 }),
   'ui.paper': asset('ui/paper', 'ui', 0.44, { cooldown: 0.04 }),
   'ui.error': asset('ui/error', 'ui', 0.36, { cooldown: 0.2 }),
+  // own synthesis, 48 kHz mono, -16 LUFS (D-350); triggers D-351
+  'ui.rankUp': asset('sfx/rank-up', 'ui', 0.4, { cooldown: 2 }),
+  'ui.rankCard': asset('sfx/rank-card', 'ui', 0.2, { cooldown: 8 }),
+  'ui.grow': asset('sfx/grow', 'ui', 0.22, { cooldown: 8 }),
+  'event.postOpen': asset('sfx/post-open', 'ui', 0.32, { cooldown: 2 }),
+  'world.iceCrack': asset('sfx/ice-crack', 'sfx', 0.3, { radius: 70, cooldown: 3 }),
+  'post.coins': asset('sfx/post-coins', 'sfx', 0.22, { radius: 70, cooldown: 1.5 }),
 } as const satisfies Record<string, SoundDefinition>;
 
 export type SoundId = keyof typeof SOUNDS;

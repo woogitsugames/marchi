@@ -121,6 +121,8 @@ function applyVolumes(p: Prefs): void {
 const MUSIC_FULL = 0.7;
 
 const AUTOSAVE_TICKS = 30 * TICK_HZ;
+/** The trading post's shutter and bell follow the rank-4 bell strokes (1.2 s cue) after a short breath (D-351). */
+const POST_OPEN_DELAY_MS = 1300;
 /** How often the no-road-to-victory check runs (game time). */
 const DEAD_END_EVERY = 5 * TICK_HZ;
 /** Window for the second tap that confirms demolishing a building a contract cannot replace. */
@@ -800,10 +802,14 @@ export class App implements PanelNav {
       openMarket: () => this.openMarket(),
       eventCommand: (cmd) => this.enqueue(cmd),
       rankUp: (r) => {
-        if (audio.ready) void audio.play('ui.paper');
-        this.hud?.showRankUp(r, 6000, rankPostLine(this.world, r));
+        const post = rankPostLine(this.world, r);
+        // two bell strokes (D-351); the rank that opens the trading post adds its shutter and shop bell after them
+        if (audio.ready) void audio.play('ui.rankUp');
+        if (post) window.setTimeout(() => { if (audio.ready && this.mode === 'game') void audio.play('event.postOpen'); }, POST_OPEN_DELAY_MS);
+        this.hud?.showRankUp(r, 6000, post);
         this.hud?.announce(t('town.rankUp', { name: t(`rank.${r}` as 'rank.0') }));
       },
+      cardCue: (k) => { if (audio.ready) void audio.play(k === 'rank' ? 'ui.rankCard' : 'ui.grow'); },
     }, this.prefs.waybillCollapsed);
     this.hud.setBuild(buildTypes(this.world).length > 0);
     this.build.relabel();
@@ -951,6 +957,7 @@ export class App implements PanelNav {
       const tr = this.world.terrain;
       observeSim(this.prevAudio, this.world.state, {
         x: l.x, z: l.z, yaw: l.yaw, mapWidth: tr.w, cellSize: tr.cellSize, water: tr.water, audibleRadius: 90,
+        seasons: this.world.seasons === true,
       });
     }
     this.prevAudio = captureAudioState(this.world.state, this.prevAudio);

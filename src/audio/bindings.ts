@@ -1,6 +1,7 @@
 import type { AudioCamera, AudioEngine, PlayOptions } from './audio';
 import type { SoundId } from './sounds';
-import { CELL_SIZE, DAY_TICKS, START_DAY_FRACTION, TICK_HZ } from '../sim/defs';
+import { CELL_SIZE, DAY_TICKS, START_DAY_FRACTION, TICK_HZ, TRADE_POST } from '../sim/defs';
+import { seasonAt, seasonIceUntilAt } from '../sim/seasons';
 import type { Building, Good, SimState, Wagon } from '../sim/types';
 
 /** Camera focus (not eye elevation) and a lightweight terrain view for spatial Foley. */
@@ -11,6 +12,8 @@ export interface SimAudioCamera extends AudioCamera {
   audibleRadius?: number;
   /** Overrides the automatic river-proximity probe (0..1). */
   riverLevel?: number;
+  /** The world runs the seasonal calendar (`World.seasons`, free valley): winter wind, winter ice (D-351). */
+  seasons?: boolean;
 }
 
 type BuildingAudio = Pick<Building, 'id' | 'type' | 'x' | 'y' | 'w' | 'h'> & { status: Building['status']['k'] };
@@ -23,6 +26,8 @@ type WagonAudio = Pick<Wagon, 'id' | 'at' | 'next' | 'odometer' | 'bridgeFrom' |
 export interface AudioSnapshot {
   readonly tick: number;
   readonly result: SimState['mission']['result'];
+  /** Silver the trading post has paid so far (hundredths): a rise is a sale at its counter (D-351). */
+  readonly postEarned: number;
   readonly buildings: readonly BuildingAudio[];
   readonly wagons: readonly WagonAudio[];
 }
@@ -33,9 +38,10 @@ export interface AudioSnapshot {
  */
 export function captureAudioState(state: Readonly<SimState>, reuse?: AudioSnapshot | null): AudioSnapshot {
   type Mut = { -readonly [K in keyof AudioSnapshot]: AudioSnapshot[K] };
-  const snap = (reuse ?? { tick: 0, result: state.mission.result, buildings: [], wagons: [] }) as Mut;
+  const snap = (reuse ?? { tick: 0, result: state.mission.result, postEarned: 0, buildings: [], wagons: [] }) as Mut;
   snap.tick = state.tick;
   snap.result = state.mission.result;
+  snap.postEarned = state.tradePost?.earnedCents ?? 0;
   const bs = snap.buildings as BuildingAudio[];
   const ws = snap.wagons as WagonAudio[];
   bs.length = Math.min(bs.length, state.buildings.length);
@@ -73,6 +79,14 @@ const WORK_SOUND: Partial<Record<Building['type'], readonly SoundId[]>> = {
   charcoalBurner: ['work.charcoal'], malthouse: ['work.malt'], brewery: ['work.brewery'],
 };
 const WORK_REPEAT_TICKS = 25 * TICK_HZ;
+/** Metres from the trading post at which its distant market murmur fades out (D-351). */
+const MARKET_RADIUS = 75;
+
+/** Wooden bridges iced at tick: authored ice (mission IV) or the free valley's winter windows (sim/seasons). */
+function icedAt(state: Readonly<SimState>, tick: number, seasons: boolean): boolean {
+  for (const w of state.ice ?? []) if (tick >= w.start && tick < w.end) return true;
+  return seasons && seasonIceUntilAt(tick) >= 0;
+}
 const ACTIVE_WAGON = new Set<Wagon['status']['k']>(['TO_PICKUP', 'TO_DROPOFF', 'RETURNING']);
 
 function cellPos(cell: number, camera: SimAudioCamera): PlayOptions {
@@ -125,13 +139,23 @@ export function observeSim(prevState: AudioSnapshot, state: Readonly<SimState>, 
   audio.setCamera(camera);
   const rain = state.rain.some((r) => r.start <= state.tick && state.tick < r.end);
   const day = (START_DAY_FRACTION + state.tick / DAY_TICKS) % 1;
-  audio.setAmbience(rain ? 'rain' : day > 0.70 || day < 0.16 ? 'evening' : 'morning', riverProximity(camera));
+  const seasons = camera.seasons === true;
+  const winter = seasons && seasonAt(state.tick) === 'winter';
+  const iced = icedAt(state, state.tick, seasons);
+  // winter: wind over the frozen river instead of the birds; while the bridges are iced the river creaks (D-351)
+  audio.setAmbience(rain ? 'rain' : winter ? 'winter' : day > 0.70 || day < 0.16 ? 'evening' : 'morning', riverProximity(camera), iced);
+  // the ice closing in cracks once, wherever the camera is (the HUD's notice says the same)
+  if (iced && state.tick > prevState.tick && !icedAt(state, prevState.tick, seasons)) play('world.iceCrack', { gain: 0.8 });
+  const tp = state.tradePost;
+  const postOpen = !!tp && tp.building >= 0 && state.market.open && state.mission.contract === null && state.town.rank >= TRADE_POST.rank;
+  let postAt: PlayOptions | null = null;
 
   const prevBuildings = new Map(prevState.buildings.map((b) => [b.id, b]));
   let stalledNow = false, workingMills = 0;
   for (const b of state.buildings) {
     const old = prevBuildings.get(b.id);
     const p = buildingPos(b, camera);
+    if (tp && b.id === tp.building) postAt = p;
     if (b.status.k === 'WORKING') {
       if (b.type === 'mill') {
         const range = camera.audibleRadius ?? 80;
@@ -154,6 +178,10 @@ export function observeSim(prevState: AudioSnapshot, state: Readonly<SimState>, 
     if (old && STALLED.has(b.status.k) && !STALLED.has(old.status)) stalledNow = true;
   }
   audio.setLoopLevel('work.mill', Math.min(0.85, Math.log1p(workingMills) / Math.log(5)));
+  // the open trading post: a quiet distant market near it, the coins of each sale at its counter (D-351)
+  const near = postOpen && postAt ? Math.max(0, 1 - Math.hypot(postAt.x! - camera.x, postAt.z! - camera.z) / MARKET_RADIUS) : 0;
+  audio.setLoopLevel('ambient.market', near * 0.7);
+  if (postAt && (tp?.earnedCents ?? 0) > prevState.postEarned) play('post.coins', postAt);
 
   const prevWagons = new Map(prevState.wagons.map((w) => [w.id, w]));
   const radius = camera.audibleRadius ?? 88;
@@ -184,6 +212,7 @@ export function observeSim(prevState: AudioSnapshot, state: Readonly<SimState>, 
         weightedCount += strength;
       }
     }
+    if (old && old.status !== 'BRIDGE_CLOSED' && wagon.status.k === 'BRIDGE_CLOSED') play('world.iceCrack', p);
     if (old && old.status !== 'NO_ROUTE' && old.status !== 'BRIDGE_JAM' &&
         (wagon.status.k === 'NO_ROUTE' || wagon.status.k === 'BRIDGE_JAM')) {
       // At most one stall alert per tick across both buildings and wagons (UI cooldown still applies).

@@ -1,6 +1,8 @@
 import { bindAudioEngine, captureAudioState, observeSim } from '../src/audio/bindings';
 import { AudioEngine } from '../src/audio/audio';
 import type { SoundId } from '../src/audio/sounds';
+import { TICK_HZ } from '../src/sim/defs';
+import { SEASON_TICKS } from '../src/sim/seasons';
 import type { SimState } from '../src/sim/types';
 import { assert, eq, test } from './harness';
 
@@ -8,8 +10,9 @@ class Recorder {
   played: SoundId[] = [];
   traffic: [number, number, number] = [0, 0, 1];
   levels = new Map<SoundId, number>();
+  ambience: [string, number, boolean] = ['', 0, false];
   setCamera(): void {}
-  setAmbience(): void {}
+  setAmbience(kind: string, river = 0, iced = false): void { this.ambience = [kind, river, iced]; }
   setTraffic(dirt: number, cobble: number, rate: number): void { this.traffic = [dirt, cobble, rate]; }
   setLoopLevel(id: SoundId, v: number): void { this.levels.set(id, v); }
   async play(id: SoundId): Promise<null> { this.played.push(id); return null; }
@@ -112,6 +115,56 @@ test('observer stays under 1 ms per call for 200 carts on a representative CPU',
   for (let i = 0; i < 1000; i++) observeSim(snap, curr, camera);
   const mean = (performance.now() - started) / 1000;
   assert(mean < 1, `observer mean ${mean.toFixed(3)} ms, 200 carts`);
+});
+
+test('winter: wind ambience in a seasonal world, one ice crack when the bridges ice over, river creaks (D-351)', () => {
+  const r = mock();
+  const winter = 3 * SEASON_TICKS, iceStart = winter + 3 * 60 * TICK_HZ;
+  const before = state(iceStart - 1), after = state(iceStart);
+  observeSim(captureAudioState(state(winter)), before, { ...camera, seasons: true });
+  eq(r.ambience[0], 'winter', 'winter wind replaces the day ambience');
+  eq(r.ambience[2], false, 'not iced yet');
+  r.played.length = 0;
+  observeSim(captureAudioState(before), after, { ...camera, seasons: true });
+  eq(r.played.filter((id) => id === 'world.iceCrack').length, 1, 'one crack as the ice closes the bridges');
+  eq(r.ambience[2], true, 'the river creaks while iced');
+  r.played.length = 0;
+  observeSim(captureAudioState(after), state(iceStart + 1), { ...camera, seasons: true });
+  eq(r.played.length, 0, 'no crack while the ice holds');
+  observeSim(captureAudioState(before), after, camera);
+  eq(r.ambience[0], 'morning', 'a contract world (no seasons) keeps its day ambience');
+});
+
+test('a wagon held at an iced bridge cracks the ice where it stands (D-351)', () => {
+  const r = mock(), prev = state(), curr = state(1);
+  prev.wagons.push(w(3, 'TO_DROPOFF', 22, 23, 4));
+  curr.wagons.push(w(3, 'BRIDGE_CLOSED', 22, 23, 4));
+  observeSim(captureAudioState(prev), curr, camera);
+  assert(r.played.includes('world.iceCrack'), 'ice crack at the held wagon');
+  r.played.length = 0;
+  observeSim(captureAudioState(curr), { ...curr, tick: 2 }, camera);
+  eq(r.played.length, 0, 'only on the transition');
+});
+
+test('trading post: market murmur near the open post, coins on each sale; silent while closed (D-351)', () => {
+  const r = mock();
+  const valley = (tick: number, rank: number, earned: number): SimState => {
+    const s = state(tick) as SimState & Record<string, unknown>;
+    s.buildings.push(b(9, 'IDLE', 'tradePost'));
+    Object.assign(s, { market: { open: true }, mission: { result: 'running', contract: null }, town: { rank },
+      tradePost: { building: 9, earnedCents: earned } });
+    return s;
+  };
+  const near = { ...camera, x: 50, z: 50, mapWidth: 40, cellSize: 10 };
+  observeSim(captureAudioState(valley(0, 3, 0)), valley(1, 3, 0), near);
+  eq(r.levels.get('ambient.market'), 0, 'closed before rank 4');
+  observeSim(captureAudioState(valley(1, 4, 0)), valley(2, 4, 0), near);
+  assert((r.levels.get('ambient.market') ?? 0) > 0.5, 'murmur at the open post');
+  eq(r.played.length, 0, 'no coins without a sale');
+  observeSim(captureAudioState(valley(2, 4, 0)), valley(3, 4, 1250), near);
+  assert(r.played.includes('post.coins'), 'coins on a sale');
+  observeSim(captureAudioState(valley(3, 4, 0)), valley(4, 4, 0), { ...near, x: 5000, z: 5000 });
+  eq(r.levels.get('ambient.market'), 0, 'far from the post: silent');
 });
 
 bindAudioEngine(null);

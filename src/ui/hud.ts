@@ -39,6 +39,8 @@ export interface HudActions {
   openMarket(): void;
   /** The town reached a new rank while playing (not on load). */
   rankUp(rank: number): void;
+  /** A new rank or grow suggestion took the card slot (not the one already up when the HUD was built; D-351). */
+  cardCue?(kind: 'rank' | 'grow'): void;
   /** Valley event card (D-54): accept / set aside an order, sell to / dismiss the merchant. */
   eventCommand(cmd: Command): void;
 }
@@ -182,6 +184,9 @@ export class Hud {
   private sealFc: unknown = null;
   private cure: Cure = null;
   private lastRank = -1;
+  /** The last rank/grow suggestion that sounded its cue, and whether the first card update has passed (D-351). */
+  private cueLast = '';
+  private cueReady = false;
   private plaqueWrap: HTMLElement;
   private plTitle: HTMLElement;
   private plBody: HTMLElement;
@@ -592,6 +597,16 @@ export class Hud {
     this.stalls = stalls;
     this.pace = pc;
     this.neck = pc ? null : neck;
+    // card cue (D-351): once per new suggestion (kind, building, rank), not again when the same one returns after
+    // a fleet card held the slot, never for the card already up when the HUD was built (a loaded game is quiet)
+    if (pc && (pc.k === 'rank' || pc.k === 'grow')) {
+      const cue = `${pc.k}|${pc.type}|${pc.rank}`;
+      if (cue !== this.cueLast) {
+        if (this.cueReady) this.act.cardCue?.(pc.k);
+        this.cueLast = cue;
+      }
+    }
+    this.cueReady = true;
     this.alarm.hidden = stalls.length === 0;
     // the seal is crimson wax only while a real stall stands; calm pins alone cycle on the brass seal (D-181)
     const calmOnly = stalls.length > 0 && stalls.every((s) => s.minor);

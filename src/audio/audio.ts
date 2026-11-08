@@ -176,11 +176,14 @@ export class AudioEngine {
     void this.startLoop(id);
   }
 
-  setAmbience(kind: 'morning' | 'evening' | 'rain', riverLevel = 0): void {
+  /** `iced`: the wooden bridges are iced — the river near the camera creaks instead of flowing (D-351). */
+  setAmbience(kind: 'morning' | 'evening' | 'rain' | 'winter', riverLevel = 0, iced = false): void {
     this.setLoopLevel('ambient.morning', kind === 'morning' ? 0.72 : 0);
     this.setLoopLevel('ambient.evening', kind === 'evening' ? 0.72 : 0);
     this.setLoopLevel('ambient.rain', kind === 'rain' ? 0.79 : 0);
-    this.setLoopLevel('ambient.river', cap(riverLevel) * 0.72);
+    this.setLoopLevel('ambient.winterWind', kind === 'winter' ? 0.72 : 0);
+    this.setLoopLevel('ambient.river', iced ? 0 : cap(riverLevel) * 0.72);
+    this.setLoopLevel('ambient.iceCreak', iced ? cap(riverLevel) * 0.72 : 0);
   }
 
   setTraffic(dirt: number, cobble: number, rate = 1): void {
