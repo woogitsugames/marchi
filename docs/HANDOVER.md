@@ -124,7 +124,9 @@
 2. **Scenariusz playtestu XVI nazwany S16, nie S10** (S10–S15 zajęte przez VII–XII, CSV grupuje po ID; D-343).
    Rekomendacja: zostawić S16.
 3. **Kosze chleba vs cebrzyki słodu na wozie** mylą się z bliska w skali szarości (D-342). Propozycja: podłużne kosze
-   chleba (zmiana modelu 3D + katalog D-331). Rekomendacja: tak, małe zadanie.
+   chleba (zmiana modelu 3D + katalog D-331). **Gotowe na gałęzi `claude/w-bread` (D-352):** podłużne tace, 3 długie
+   bochenki, 186 trójkątów/szt. (było 180), te same wywołania rysowania, 0 px poza ładunkiem chleba; porównanie w szarości
+   `docs/shots/bread-cargo-compare-gray.jpg` na gałęzi. Rekomendacja: scalić.
 4. **Zmierz na Foldzie:** start z katalogiem modeli (D-331), rozmiar APK; przytrzymanie tytułu 3 s w poziomie otwiera
    ekran prowadzącego? (w skrypcie zrzutów nie zadziałało).
 
