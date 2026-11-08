@@ -790,7 +790,7 @@ export const nl: Dict = {
   "castle.chainOn": "Eerst met de hele keten: de gedeelde grondstof gaat eerst naar de werkplaatsen van dit kasteel.",
   "castle.splitChainAfter": "{rival} gaat eerst met de hele keten — de gedeelde grondstof gaat eerst daarheen.",
   "castle.splitEvenChain": "Geen kasteel eerst: de werkplaatsen van beide kastelen delen de gedeelde grondstof gelijk.",
-  "castle.chainRival": "{producer} staat stil — de {input} worden {outAcc} {forCastle}.",
+  "castle.chainRival": "{producer} staat stil — {input} wordt gebruikt voor {outAcc} {forCastle}.",
   "fix.castleChainWhy": "Grondstof eerst hierheen: klaar ≈{time}.",
   "fix.castleChainLate": "Grondstof eerst hierheen, maar toch ≈{time} — na de termijn.",
   "fix.castleLegNote": "Alleen klare waren komen eerst hierheen — geen extra grondstof.",

@@ -790,7 +790,7 @@ export const uk: Dict = {
   "castle.chainOn": "Першим з усім ланцюгом: спільна сировина йде спершу до майстерень цього замку.",
   "castle.splitChainAfter": "{rival} першим з усім ланцюгом — спільна сировина йде спершу туди.",
   "castle.splitEvenChain": "Жоден замок не перший: майстерні обох замків ділять спільну сировину порівну.",
-  "castle.chainRival": "{producer} стоїть — {input} йдуть на {outAcc} {forCastle}.",
+  "castle.chainRival": "{producer} стоїть — {input} спрямовують на {outAcc} {forCastle}.",
   "fix.castleChainWhy": "Сировина спершу сюди: готово ≈{time}.",
   "fix.castleChainLate": "Сировина спершу сюди, але все одно ≈{time} — після терміну.",
   "fix.castleLegNote": "Сюди першим їде лише готовий товар — сировини не додасться.",

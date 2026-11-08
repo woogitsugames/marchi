@@ -790,7 +790,7 @@ export const fr: Dict = {
   "castle.chainOn": "Premier avec toute sa chaîne : la matière commune va d’abord aux ateliers de ce château.",
   "castle.splitChainAfter": "{rival} passe d’abord avec toute sa chaîne — la matière commune va d’abord là-bas.",
   "castle.splitEvenChain": "Aucune priorité : les ateliers des deux châteaux partagent la matière commune à parts égales.",
-  "castle.chainRival": "{producer} est à l’arrêt — les {input} deviennent des {outAcc} {forCastle}.",
+  "castle.chainRival": "{producer} : à l’arrêt — le stock de {input} sert à produire {outAcc} {forCastle}.",
   "fix.castleChainWhy": "La matière vient ici d’abord : prêt ≈{time}.",
   "fix.castleChainLate": "La matière vient ici d’abord, mais quand même ≈{time} — après l’échéance.",
   "fix.castleLegNote": "Seules les marchandises prêtes viennent ici d’abord — pas plus de matière.",
