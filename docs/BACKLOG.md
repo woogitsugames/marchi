@@ -10,6 +10,7 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 
 ## Do zrobienia
 
+- [x] P3 — (zrobione 2026-11-08, D-345, zlecenie 68 przejęte od GPT, `claude/w-icons68`) Ikony drzeworytowe nowych stanów: `wagon_due`, `market_full`, `grow`, `cut_road` w `src/ui/icons.ts` i podpięte (WAGON_DUE, spichlerz przy nasyconym rynku, pieczęć karty „rozbuduj”, duch przecinający drogę); `tradePost` i `bottleneck` już miały własne ikony (D-170/D-171) — zostają, pieczęć karty posterunku i jego linia „skupuje” dostały `tradePost`. Arkusz `docs/shots/icons68-sheet.png`, zrzuty `docs/shots/icons68-*`
 - [ ] P3 — (2026-11-07, D-342, zlecenie 81, `claude/w-rtlui`) Ładunki na wozie bez koloru: kosze chleba i kadzie słodu (D-201) to sześć okrągłych otwartych pojemników w siatce 2×3 — w skali szarości mylą się przy zbliżeniu. Propozycja: podłużne wiklinowe kosze chleba (~1 : 1,6 wzdłuż skrzyni); wymaga przepieczenia katalogu modeli (D-331) i zgody właściciela grafiki (źródło: claude, `docs/research/goods-shapes.md`, `docs/shots/goods-shapes-cargo-round-gray.jpg`)
 - [x] P2 — (zrobione 2026-11-07, D-340/D-341, `claude/w-rtlui`) Kod RTL z przeglądu arabskiego (`docs/research/gpt-rtl-ar.md`, punkty 1–7): ceny „−30” w `<bdi dir=ltr>`, `t()` sam izoluje parametry liczbowe w RTL, rączka `inspect` odbita, znacznik „أولًا” nie kurczy się (w poziomie celowo tylko dla czytnika, D-329), „؟” już odbity (D-284), cyfra rzymska w tytule rubrykowana, pole urządzenia `dir=auto`; zrzuty `docs/shots/rtlui-*-ar.jpg`
 

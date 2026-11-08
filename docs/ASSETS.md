@@ -303,6 +303,7 @@ Licence texts fetched from `github.com/google/fonts` (`ofl/grenzegotisch/OFL.txt
 |---|---|---|
 | Icon `tradePost` (steelyard on a post, D-170) | `src/ui/icons.ts` | woodcut on the 24×24 grid, drawn for this game |
 | Icon `bottleneck` (mill hopper on a trestle, D-171) | `src/ui/icons.ts` | woodcut on the 24×24 grid, drawn for this game |
+| Icons `wagon_due` (cart, rut trail, hourglass), `market_full` (tipped two-pan balance), `grow` (two houses + timber plus), `cut_road` (house across diagonal ruts) — order 68, D-345 | `src/ui/icons.ts` | woodcut on the 24×24 grid, drawn for this game; sheet `docs/shots/icons68-sheet.png` |
 | Trading post model (closed / open overlay, D-170) | `src/render/models/buildings.ts` (`tradePost`, `tradePostClosedParts`, `tradePostOpenParts`) | procedural, existing materials, 7.75k + 1.3k triangles |
 | Ice floes and deck frost on wooden bridges (D-170) | `src/render/bridgesView.ts` | procedural, `stone` material, visible only while ice closes the spans |
 

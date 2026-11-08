@@ -54,6 +54,12 @@ export type IconId =
   | 'storage_full'
   // free valley bottleneck card (D-171)
   | 'bottleneck'
+  // order 68 (D-345): a busy wagon due shortly (WAGON_DUE, D-156), a saturated market (D-174/D-180), one more
+  // producer of a standing chain (the grow card, D-192), a site that would cut a diagonal road (D-176)
+  | 'wagon_due'
+  | 'market_full'
+  | 'grow'
+  | 'cut_road'
   // tools / UI
   | 'road_dirt'
   | 'road_cobble'
@@ -1328,6 +1334,92 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
     d.inkFine(band(seg([3.4, 17.6], [8.8, 17.6], 2), 0.9), band(seg([15.6, 17.6], [20.6, 17.6], 2), 0.9));
   },
 
+  wagon_due(d) {
+    // a busy wagon due shortly (WAGON_DUE, D-156): the bare cart rolling forward, a rut trail breaking up behind it,
+    // a small hourglass over the trail. The cart runs with the reading direction, so it turns round in RTL (D-334)
+    d.with((p) => {
+      const q = scaleAt(0.78, 0, 22.4)(p);
+      return [24 - q[0], q[1]];
+    }, () => cart(d));
+    // the trail behind the wheel: three dashes, thinning and shortening away from the cart
+    d.layer();
+    for (const [a, b, w] of [[1, 3.2, 1.0], [4.4, 7.2, 1.25], [8.4, 11.6, 1.5]] as const) d.inkFine(band(seg([a, 21.9], [b, 21.9], 3), taper(w, w * 0.55)));
+    // hourglass: two plates and a glass narrow at the waist, the sand run mostly into the lower bulb
+    d.layer();
+    const gx = 1.0, gw = 7.2, gt = 1.0, gb = 12.6;
+    const cx = gx + gw / 2;
+    const mid = (gt + gb) / 2;
+    d.ink([[gx, gt], [gx + gw, gt], [gx + gw - 0.3, gt + 1.3], [gx + 0.3, gt + 1.3]]);
+    d.ink([[gx + 0.3, gb - 1.3], [gx + gw - 0.3, gb - 1.3], [gx + gw, gb], [gx, gb]]);
+    d.layer();
+    const g0 = gx + 0.9, g1 = gx + gw - 0.9;
+    d.ink([[g0, gt + 1], [g1, gt + 1], [cx + 0.55, mid], [g1, gb - 1], [g0, gb - 1], [cx - 0.55, mid]]);
+    // upper bulb emptied but for a little cone at its neck; lower bulb hollow above its heap
+    d.cut([[g0 + 0.85, gt + 2.1], [g1 - 0.85, gt + 2.1], [cx + 0.9, mid - 1.6], [cx - 0.9, mid - 1.6]]);
+    d.cut([[cx - 0.35, mid + 0.9], [cx + 0.35, mid + 0.9], [g1 - 1.2, gb - 3.4], [g0 + 1.2, gb - 3.4]]);
+    d.layer();
+    d.inkFine(band(seg([cx, mid - 0.4], [cx, gb - 3.0], 2), 0.42));
+  },
+
+  market_full(d) {
+    // a saturated market (D-174/D-180): a two-pan balance on a column, tipped hard — the pan heaped with goods sits
+    // low, the pan with one coin rides high. A centred column and two pans on cords, unlike the steelyard on a side
+    // post of 'tradePost' (which also leans the other way)
+    // foot and column
+    d.ink([[6.6, 23], [17.4, 23], [15, 20.4], [9, 20.4]]);
+    d.ink(band(seg([12, 20.6], [12, 5.4], 5), lerpW(2.1, 1.5)));
+    d.cut(gouge([11.6, 18.8], [11.6, 7.6], 0.45));
+    // the beam, low on the right
+    d.layer();
+    d.ink(band(seg([2.6, 2.2], [21.4, 8.4], 6), lerpW(1.4, 1.6)));
+    d.ink(circ(12, 5.3, 1.7));
+    d.cut(circ(12, 5.3, 0.55));
+    // light pan, high on the left: cords, a shallow dish, one coin standing in it
+    d.layer();
+    d.inkFine(band(seg([2.8, 2.6], [0.9, 9.6], 3), 0.5), band(seg([2.8, 2.6], [7.4, 9.6], 3), 0.5));
+    d.ink([[0.4, 9.4], [7.9, 9.4], [6.8, 11.2], [1.5, 11.2]]);
+    d.ink(circ(4.15, 7.9, 1.45));
+    d.cut(circ(4.15, 7.9, 0.5));
+    // heavy pan, low on the right: cords, a deep bowl, goods heaped over the rim
+    d.layer();
+    d.inkFine(band(seg([21.2, 8.8], [15.6, 17.2], 4), 0.55), band(seg([21.2, 8.8], [23.6, 17.2], 4), 0.55));
+    d.ink([[14.8, 17], [24, 17], [23.2, 19.8], [21.2, 21], [17.6, 21], [15.6, 19.8]]);
+    d.hatchCut([[19.8, 17.9], [23.1, 17.9], [22.6, 19.5], [20.4, 20.3]], -45, 1.3, 0.5);
+    d.layer();
+    for (const [x, y, r] of [[16.9, 15.3, 1.55], [19.6, 15.1, 1.6], [22.3, 15.3, 1.55], [18.3, 12.6, 1.5], [21, 12.5, 1.5]] as const) {
+      d.ink(circ(x, y, r));
+      d.cut(ell(x - r * 0.38, y - r * 0.4, r * 0.32, r * 0.2, -40));
+    }
+  },
+
+  grow(d) {
+    // one more producer of a standing chain (the grow card, D-192): two gabled houses of one trade on a common
+    // ground line, and a plus of two squared timbers with end grain over the smaller one (not the bare cross of
+    // 'buy_wagon', not the open frame of 'build')
+    d.ink(band(seg([0.8, 22.2], [23.2, 22.2], 8), lerpW(1.6, 1.3)));
+    // the older house, tall, on the left
+    d.layer();
+    const h1: Poly = [[1.4, 21.6], [1.4, 12.2], [0.6, 12.2], [6.2, 6.2], [11.8, 12.2], [11, 12.2], [11, 21.6]];
+    d.ink(h1);
+    d.cut([[4.9, 21.8], [4.9, 17.6], [7.5, 17.6], [7.5, 21.8]]);
+    d.cut(rect(3.2, 13.8, 1.8, 1.8));
+    d.hatchCut([[6.6, 8], [10, 11.6], [8.4, 11.6], [6.4, 9.6]], -45, 1.2, 0.5);
+    // the new house, lower, on the right
+    d.layer();
+    const h2: Poly = [[13, 21.6], [13, 15.6], [12.2, 15.6], [16.8, 11], [21.4, 15.6], [20.6, 15.6], [20.6, 21.6]];
+    d.ink(h2);
+    d.cut([[15.8, 21.8], [15.8, 18.2], [17.8, 18.2], [17.8, 21.8]]);
+    d.hatchCut([[17.2, 12.6], [19.8, 15.2], [18.4, 15.2], [17, 13.8]], -45, 1.2, 0.5);
+    // the timber plus, top right: the cross-beam laid over the upright (a paper gap where it passes under), each
+    // squared timber with a grain gouge and a shaded underside
+    d.layer();
+    d.ink(rect(17.4, 0.3, 3.4, 3.7), rect(17.4, 7.3, 3.4, 3.8));
+    d.cut(gouge([18.4, 8], [18.4, 10.4], 0.45));
+    d.ink([[13.8, 4.2], [24, 3.9], [23.8, 6.9], [14, 7.2]]);
+    d.cut(gouge([14.8, 5.1], [22.8, 4.9], 0.45));
+    d.hatchCut([[15, 6], [23, 5.8], [23, 6.6], [15, 6.8]], 0, 1, 0.4);
+  },
+
   // ---- stall reasons -----------------------------------------------------
   no_road(d) {
     dirtTrack(d);
@@ -1575,6 +1667,31 @@ const DEFS: Record<IconId, (d: Draw) => void> = {
   },
 
   // ---- tools / UI --------------------------------------------------------
+  cut_road(d) {
+    // a site that would cut a diagonal road (D-176): two wheel ruts run corner to corner, lower left to upper right
+    // (against the strike bar's slant, so it never reads as a crossed-out icon), and a gabled house stands across
+    // them in the middle; the ruts break off short of its walls with a paper gap, the ends chipped
+    // u = x - y runs along the road; the lower piece stops at u = -10.8, the upper one starts at u = 7.4
+    const piece = (p: Poly, lo: boolean): Poly => (lo ? clipHalf(p, 1, -1, -10.8) : clipHalf(p, -1, 1, -7.4));
+    for (const off of [-2.3, 2.3]) {
+      const rut = band(seg([-1.5 + off, 25.5 + off], [25.5 + off, -1.5 + off], 12), 2.1);
+      d.ink(piece(rut, true), piece(rut, false));
+    }
+    // the grassy crown between the ruts: short ink ticks across the way
+    for (const t of [0.13, 0.23, 0.73, 0.83]) {
+      const c: Pt = [-1.5 + 27 * t, 25.5 - 27 * t];
+      d.inkFine(gouge([c[0] - 0.75, c[1] - 0.75], [c[0] + 0.75, c[1] + 0.75], 0.6));
+    }
+    // chipped ends
+    d.cut(circ(4.5, 15.3, 0.5), circ(9.1, 19.9, 0.5), circ(13.2, 5.8, 0.5), circ(17.8, 10.4, 0.5));
+    // the house across the way
+    d.layer();
+    d.ink([[8, 17.6], [8, 11.4], [6.6, 11.4], [12, 5.8], [17.4, 11.4], [16, 11.4], [16, 17.6]]);
+    d.cut([[11, 17.8], [11, 14.4], [13, 14.4], [13, 17.8]]);
+    d.hatchCut([[12.5, 7.6], [15.9, 11.1], [13.2, 11.1], [12.4, 10.2]], -45, 1.3, 0.5);
+    d.hatchCut(rect(13.8, 12.2, 1.8, 5), -45, 1.5, 0.5);
+  },
+
   road_dirt(d) {
     dirtTrack(d);
   },
@@ -2217,7 +2334,7 @@ function escapeAttr(s: string): string {
  * turned by their call sites (`.rtl-flip`, or `.fwd` for the back arrow used as "go to"), since `.fwd` relies on
  * the unflipped glyph.
  */
-export const RTL_MIRROR: ReadonlySet<IconId> = new Set<IconId>(['first', 'no_route', 'inspect']);
+export const RTL_MIRROR: ReadonlySet<IconId> = new Set<IconId>(['first', 'no_route', 'inspect', 'wagon_due']);
 
 function wrap(inner: string, size: number, title?: string, id?: IconId): string {
   const a11y = title ? `aria-label="${escapeAttr(title)}"` : 'aria-hidden="true" focusable="false"';

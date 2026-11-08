@@ -4,7 +4,7 @@
 import { GOODS, TICK_HZ, wagonEta, type Good, type World } from '../sim/index';
 import type { WorldView } from '../render/api';
 import { h, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, fmtInt, goodName, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
+import { bdi, buildingName, buildingStateIcon, buildingStatusText, clock, fmtInt, goodName, iceWaitSec, isCritical, isStall, isWagonWait, wagonName, wagonStatusIcon, wagonStatusText } from './format';
 import { iconSvg } from './icons';
 import { t } from '../i18n/index';
 import { MIN_STALL_TICKS, calmStall } from './stalls';
@@ -142,7 +142,7 @@ export class Markers {
         const b = this.take('building:' + bd.id);
         shown.add(bd.id);
         b.el.classList.toggle('is-minor', (bd.status.k === 'WAITING_PICKUP' || calm) && !isWorst);
-        this.place(b, a.x, a.y, sig, () => buildingStatusIcon(bd.status, 24, bd.type), crit || isWorst, false,
+        this.place(b, a.x, a.y, sig, () => buildingStateIcon(world, bd.id, bd.status, 24), crit || isWorst, false,
           () => `${buildingName(world, bd.id)}: ${buildingStatusText(bd.status, world, bd.id)}`, isWorst ? 'worst' : crit ? 'critical' : '');
         // how long it has stood, from 20 s on (BACKLOG P2): a pin that keeps counting is the one to read first
         this.setTime(b, bd.stalledTicks >= PIN_TIME_TICKS ? Math.floor(bd.stalledTicks / TICK_HZ) : -1);
