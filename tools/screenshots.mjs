@@ -31,7 +31,7 @@ const SCREENS = [
   { name: 'game-3min', q: 'play=m1&bot=1&ff=180&speed=0' },
   { name: 'why-bakery', q: 'play=m1&ff=90&speed=0&open=bakery' },
   { name: 'wagon', q: 'play=m1&bot=1&ff=150&speed=0&wagon=1' },
-  { name: 'road-steep', q: 'play=m1&speed=0&tool=road', act: steepDraft },
+  { name: 'road-steep', q: 'play=m1&speed=0&tool=road&debug=1', act: steepDraft }, // debug: the helper is debug-only in a built page (D-51)
   { name: 'end', q: 'play=m1&bot=1&ff=600' },
   { name: 'settings', q: 'lang=en', act: openSettings },
   { name: 'end-lost', q: 'play=m1&ff=720&lang=en' },
@@ -39,7 +39,7 @@ const SCREENS = [
     { name: 'castle16', q: 'play=m16&speed=0&ff=150&openId=5' },
     { name: 'castle16-codex', q: 'play=m16&speed=0&ff=150&openId=5', act: (p) => clickIn(p, '.sheet .codex-tog') },
     { name: 'help-castles', q: 'play=m16&speed=0&ff=150&openId=5', act: (p) => clickIn(p, '.sheet .sh-help') },
-    { name: 'haul16', q: 'play=m16&speed=0', act: haul16 },
+    { name: 'haul16', q: 'play=m16&speed=0&debug=1', act: haul16 },
   ] : []),
 ];
 
