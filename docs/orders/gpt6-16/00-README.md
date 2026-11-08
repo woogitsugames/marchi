@@ -10,3 +10,7 @@ nie zmieniaj `.github/workflows`, zachowuj placeholdery i znaczniki ICU bez zmia
 | Nr | Plik | Temat |
 |---|---|---|
 | 106 | 106-i18n-pending-keys.md | Tłumaczenie 7 oczekujących kluczy (D-393, D-410) na 15 języków |
+| 107 | 107-i18n-review-xvii.md | Przegląd tłumaczeń misji XVII (listy + 22 klucze) |
+| 108 | 108-i18n-review-lists-xiv-xv.md | Przegląd list kasztelana XIV–XV w 15 językach |
+
+**Kolejność:** 106 → 107 → 108 (każde zlecenie to osobna gałąź `gpt/<nr>-…` i osobny PR).
