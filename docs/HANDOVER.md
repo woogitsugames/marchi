@@ -1,3 +1,46 @@
+# Handover — MARCHIA (stan 2026-11-08 ~12:30 Europe/Brussels) — koniec sesji `session_01V6ZttXS1AFjiGAx6Mvg1nL` (limit tygodniowy)
+
+## Start następnej sesji — najpierw to
+- Repo: **woogitsugames/marchi**, baza integracyjna **`claude/eager-cori-08wt8e`** = `main` (po każdym zielonym scaleniu
+  fast-forward `main`). Prompt startowy: `docs/START_PROMPT.md`.
+- Stan bazy: testy **662/0**, typecheck, build, smoke 0, `layout --quick` 138/0, 71 starych haszy misji bez zmian (+15 XVII).
+- Ostatnie APK: **cd4aa45** (8 XI ~12:20) — misja XVII, karta-para D-380, światła D-370, pasek tempa na Foldzie.
+- Cykl godzinny `trig_017HkVx1C3bfqf3vFDobFdnR` („42 * * * *”) **wyłączony** na koniec limitu — włączyć
+  (`update_trigger enabled=true`) albo założyć nowy w nowej sesji. Przypomnienie „Raport z testu Free.AI (24 h)”
+  `trig_01CrY9mMKNSZwrsvrEyTg76J` (8 XI 20:00) zostaje — wpadnie do tej sesji.
+
+## Scalone 8 XI
+- **Pasek tempa ucięty na Foldzie** (zgłoszenie właściciela): przy 720–879 px CSS (split) i < 820 px (landscape) tempo
+  schodzi pod kafelki; layout-check ma widok **772x854** (bez poprawki łapie „offscreen ×2/×4”).
+- **D-353..D-355** a11y: list przewozowy przy 200 % tekstu, forced-colors, fokus pomocy, codex XVI.
+- **D-352** podłużne kosze chleba (właściciel: tak).
+- **D-380** karta rangi/„rozbuduj” stawia **parę** (producent + odbiorca, np. Słodownia + Browar) jednym dotknięciem;
+  card-60 ranga 5 w 4/4 dolinach (108–118 min, wcześniej 2/4). Bez zmian w sim.
+- **D-370** światła: kolumny klatek kluczowych (bez domknięć), bramka `src/render/lightGate.ts` (natychmiast przy resize,
+  zmianie tempa/pauzie, nic w pauzie). Co-2.-klatkę było już od D-257.
+- **D-356..D-359 misja XVII „Drewno na dwa listy”** (prototyp): komenda `chainFirst` (cały łańcuch dla zamku, tylko
+  `chainPriority` w definicji misji), przyczyna `NO_INPUT.CHAIN_FIRST`, karta zamku „Tartak stoi — drewno idzie na węgiel
+  drzewny dla Zamku Północnego”, listy w 17 językach (15 do przeglądu natywnego), `tools/bot-m17.ts`.
+  Drabina: nic 2★, „Ten zamek pierwszy” 2★ (bez pomocy, nie gorzej), „Cały łańcuch” do 2:00 → 3★, za późno 2★, zły zamek 1★.
+
+## W toku przy zamknięciu
+- Agent `claude/w-neckfail` (worktree `/workspace/marchi-neckfail`): martwa karta „Wąskie gardło: postaw farmę”
+  (seed 1302 card-60, 97–119 min `neck?fail:farm`) i `tradePost:IDLE → pave?unhandled`. Jeśli nie oddał raportu —
+  sprawdzić gałąź (`git log claude/eager-cori-08wt8e..claude/w-neckfail`), dokończyć, zweryfikować i scalić (D-390+).
+
+## Decyzje dla właściciela (klikalnie w następnej sesji)
+1. XVII: „Ten zamek pierwszy” nie pomaga, ale nie szkodzi (wozów nie brakuje). Zostawić, czy szukać układu, w którym
+   szkodzi (margines 1–5 s, kruchy)? Rekomendacja: zostawić do playtestu.
+2. XVII: progi gwiazdek robocze (2★ za nic ma 19 s marginesu) — po playteście.
+3. Dźwięki z własnej syntezy (D-350/D-351): właściciel miał posłuchać i wskazać złe.
+4. Karta-para D-380: sprawdzić na telefonie, czy duch browaru pojawia się sam obok nowej słodowni.
+
+## Otwarte drobne (XVII)
+- Arkusz smolarni w XVII nadal podpowiada „przyda się drugi” (dostawca), choć w misji nic nie można budować.
+- `tools/balance-night6.ts` (rozsądny gracz) i scena playtestu typu S16 nie znają przełącznika łańcucha.
+
+---
+
 # Handover — MARCHIA (stan 2026-11-06 ~23:15 Europe/Brussels) — sesja `session_01V6ZttXS1AFjiGAx6Mvg1nL`
 
 ## Stan teraz (ta sesja)
