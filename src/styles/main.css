@@ -578,6 +578,10 @@ body.is-side .sheet-grip::before { display: none; }
 .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 4px; }
 .lang-grid .btn { font-size: 15px; padding: 0 8px; justify-content: flex-start; min-width: 0; white-space: normal; text-align: start; line-height: 1.1; }
 .lang-grid .btn > * { min-width: 0; }
+/* each native name in the game's body face first: under a CJK interface the stack starts with Noto Sans CJK, whose
+   Cyrillic is wide — "Українська" overran its cell by 2 px in ja (layout 2026-11-08). Latin and Cyrillic names now
+   read in Alegreya Sans everywhere; CJK, Arabic and Devanagari names fall through to the script's face */
+.lang-grid .btn { font-family: 'Alegreya Sans', var(--font-body); }
 .lang-grid .btn.is-on { --frame: var(--clay); --fill: var(--parchment-dim); color: var(--ink); font-weight: 700; }
 .lang-grid .btn.is-on::after { content: ''; width: 8px; height: 8px; background: var(--clay); transform: rotate(45deg); order: -1; flex: none; }
 .setting .s-label { font-size: 15px; font-weight: 700; margin-bottom: 6px; display: block; }
@@ -962,6 +966,11 @@ body.is-book.is-split:not(.is-flex) .toasts {
   svg[role="img"] { background: Canvas; border-radius: 3px; }
   .kbar { border: 1px solid CanvasText; }
   .kbar > i { background: Highlight; }
+  /* the wine primary button is painted with gradients, which forced colors drop: in a light theme it was a white
+     field with no edge. A system button border marks it (D-354); the focus ring loses its pale bands (box-shadows
+     are dropped too), so the ring itself grows to 3 px in the system highlight colour, apart from the border */
+  .btn.primary { border: 2px solid ButtonBorder; }
+  :focus-visible { outline-style: solid !important; outline-width: 3px !important; outline-color: Highlight !important; }
 }
 
 
@@ -2375,6 +2384,14 @@ body:not(.is-side):not(.is-mini):not(.is-flex) .sheet { max-height: max(45vh, mi
 body.has-sheet:not(.is-side) .rail { visibility: hidden; }
 body.is-side.is-landscape .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - var(--safe-b) - 14px); }
 body.mode-game.is-side.is-landscape .sheet { max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); }
+/* "Co to znaczy?" opened in a short landscape side sheet (D-355): the XVI castle card's body was ~200 px, so the
+   answer showed 3-4 lines under the lead lines and above the docked switch. While the fold is open the sheet runs
+   down over the rail on its side (the tools on the other side stay free) and is a little wider; closing the fold
+   or the sheet gives the rail back */
+body.mode-game.is-side.is-landscape.is-short:not(.is-flex) .sheet:has(.codex.is-open) {
+  max-height: calc(100% - var(--bar-b) - 6px - var(--safe-b) - 10px);
+  width: min(460px, 50vw);
+}
 /* tall unfolded screens (904x1000): the side sheet starts under the chips and speed bar it sits beside (layout check) */
 body.mode-game.is-side:not(.is-landscape):not(.is-flex) .sheet { top: calc(var(--bar-b) + 6px); max-height: calc(100% - var(--bar-b) - 6px - var(--rail-h) - var(--safe-b) - 12px); bottom: auto; }
 /* ...and is only as tall as its content (D-145, ui audit day 9 P3-1): it hung from the bar down to the rail (the
@@ -2699,12 +2716,58 @@ body.is-short.is-bigtext .fix-dock .fix-note .s-hint, body.is-short.is-bigtext .
 body.is-short.is-bigtext .fix-dock .fix-note .s-hint { display: flex; }
 body.is-short.is-bigtext .fix-dock .fix-why > span { display: block; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
-/* the two-castle waybill (two rows of bars and read-outs) ran under the tool rail at 200 % text in short landscape
-   (a11y audit 2026-11-08, D-347): its panel scrolls in the room left above the rail (ribbon ~2 lines at this size);
-   only the two-castle list — a single order's panel fits and must not be cut to its head */
-body.mode-game.is-landscape.is-bigtext .waybill-wrap:not(.is-collapsed) .wb-panel:has(.wb-castles) {
-  max-height: calc(100dvh - var(--rail-h) - var(--safe-b) - 120px); overflow-y: auto; overscroll-behavior: contain;
+/* the waybill above the rail (D-353; portrait too, where at 200 % the pace card covered its last row; D-347 did it for the two-castle list only, with a fixed height that
+   cut a single order's panel to its head): hud.ts measures --wb-room from the panel's top to the rail piece under it,
+   and the panel scrolls inside that room rather than run under the tool cards. With normal text it always fits. */
+body.mode-game .waybill-wrap:not(.is-collapsed) .wb-panel {
+  max-height: var(--wb-room, none); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
 }
+/* large text in landscape: a wider card (the ribbon and the pill keep one line where they can), and the rows that
+   carry the order — the goods and the pace line — stay whole above the rail (D-353) */
+body.is-landscape.is-bigtext .waybill-wrap:not(.is-collapsed) { width: clamp(272px, 36vw, 330px); }
+body.is-landscape.is-bigtext .wb-head { flex-wrap: wrap; row-gap: 2px; min-height: 0; }
+body.is-landscape.is-bigtext .wb-head .kseal { width: 20px; height: 20px; }
+body.is-landscape.is-bigtext .wb-head .snow-pill { padding-inline: 8px 10px; }
+/* the card hangs over the tools, not over the stall card: with the hand's side on the logical start (RTL, or the
+   left-handed setting) the stall card lies under the card's usual place and at 200 % it left one row of room;
+   there the card takes the bar's far end, above the tools (D-353) */
+body.is-landscape.is-bigtext.left-handed .hud-top {
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu chips speed . contract" ". . . . events";
+}
+body.is-landscape.is-bigtext.left-handed .waybill-wrap { justify-self: end; }
+/* the bar's three pieces sit together here, with no free column beside the menu: a little narrower */
+body.is-landscape.is-bigtext.left-handed .waybill-wrap:not(.is-collapsed) { width: clamp(260px, 33vw, 320px); }
+body.is-landscape.is-bigtext .wb-pace-eta { padding-block: 2px; line-height: 1.1; }
+/* two castles: each castle is its name row over one row of good, count and state (the bar slim under the count),
+   instead of three rows — both castles' progress and lateness stay above the rail */
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "h h" "g s"; column-gap: 10px; align-items: center;
+}
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .tr-h { grid-area: h; min-height: 0; line-height: 1; }
+body.is-landscape.is-bigtext .wb-castles .wb-tr { padding-block: 2px; }
+/* a landscape card short of room (.is-tight, set by hud.ts when the full form would scroll; D-353):
+   - the pill shows its icon and the bare clock (as the folded seal does); the full line stays for screen readers;
+   - the pace line takes the Flip cover's short form ("gotowe za 7:38", D-99), the full sentence for screen readers;
+   - two castles: the panel's head (seals, the clock to the nearest deadline) repeats what the castle rows say (each
+     its deadline and lateness), so it goes under the list and both castles' rows are what shows first.
+   What still does not fit scrolls inside the panel. */
+.snow-pill .sp-clock, .wb-pace-eta .eta-short { display: none; }
+.waybill-wrap.is-tight .wb-panel:not(:has(.wb-castles)) .snow-pill .sp-full,
+.waybill-wrap.is-tight .wb-pace-eta .eta-full {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.waybill-wrap.is-tight .wb-panel:not(:has(.wb-castles)) .snow-pill .sp-clock { display: inline; }
+.waybill-wrap.is-tight .wb-pace-eta .eta-short { display: inline; }
+body.is-landscape .waybill-wrap.is-tight .wb-panel { padding-block: 5px 0; }
+.waybill-wrap.is-tight .snow-pill { line-height: 1; }
+.waybill-wrap.is-tight .wb-panel:has(.wb-castles) { display: flex; flex-direction: column; }
+.waybill-wrap.is-tight .wb-panel:has(.wb-castles) > * { flex: none; }
+.waybill-wrap.is-tight .wb-panel:has(.wb-castles) > .wb-head { order: 1; padding-block: 4px 2px; }
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { grid-area: g; }
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > :is(.castle-eta, .tr-state) { grid-area: s; justify-self: end; justify-content: flex-end; text-align: end; line-height: 1.1; padding-inline-start: 0; min-width: 0; }
+/* the count takes its own width (it never yields to a long state, ar 200 %); the state wraps in the rest */
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { display: block; }
 
 /* ================================================================ player help (src/ui/help.ts, D-236)
    Six ruled folds, a woodcut glyph and the topic in the heading face; one answer open at a time. */

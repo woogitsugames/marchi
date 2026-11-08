@@ -26,6 +26,9 @@ export function helpSheet(topic?: string): SheetContent {
   if (asked) openTopic = topic!;
   return {
     key: 'help',
+    // opened on a topic from a card's "?": focus on that topic's heading (its fold, expanded), so a screen reader
+    // starts at the answer asked for, not at the close button above seven headings (a11y 2026-11-08, D-355)
+    initialFocus: asked ? (sheet: Sheet) => sheet.body.querySelector<HTMLElement>('.help-topic.is-open .help-tog') : undefined,
     update(sheet: Sheet) {
       setHtml(sheet.icon, iconSvg('inspect', 30));
       sheet.kicker.textContent = '';

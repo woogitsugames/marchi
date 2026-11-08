@@ -4032,3 +4032,52 @@ tray drops the outer bottom disc, which stands on the bed and is never seen, to 
 `tests/models-baked.test.ts` passes). Pixel checks: model preview `cargoChain` 0 px changed, `cargoBase` changes only
 on the bread wagon and the bakery yard pile; harness menu frame 1 and the other scenes in
 `docs/research/bread-diff.txt`. Reverting is the one commit. (decided — owner yes 2026-11-08)
+
+**D-353 — The landscape waybill keeps the order and its pace above the rail at any text size: a measured room, a
+compact form when short of it, and the card moves over the tools when the stall card would be under it (a11y
+follow-up of 8 XI, BACKLOG P2).** In short landscape at 200 % text the waybill hanging from the top bar met the rail
+growing from the bottom: with one order (IV winter, III autumn) the pace line ran under the tool cards; with two
+castles the D-347 scroll used a fixed height (screen − rail − 120 px, ~80 px at 915×412) and showed only the head.
+(1) `hud.ts` measures `--wb-room` from the panel's top to the highest rail piece *beneath the panel* (tool, stall
+card or alarm seal that overlaps it horizontally), on the existing ResizeObserver (now also the rail, the stall row,
+the panel body and the pill). The panel's `max-height` is that room in every layout but the Flip cover (portrait too: at 200 % the pace card
+covered the waybill's supplier row) and it scrolls inside it; with normal text it always fits (unchanged look). (2) When the full form would scroll, `.is-tight` (decided
+with the class off, so it cannot flip-flop) gives a compact form that hides no information: the pill shows its icon
+and the bare clock (as the folded seal and the Flip cover do) and the pace line the Flip cover's short form
+("gotowe za 7:38", `contract.sealPace.*`, D-99), both with the full sentence kept for screen readers; with two
+castles the panel's head (seals, clock to the nearest deadline — both repeat what the castle rows say) goes under
+the list. (3) At large text in landscape the card is wider (`clamp(272px, 36vw, 330px)`, the ribbon fits one line
+more often), the seals are 20 px, and a castle row is its name over one row of good, count and state (bar slim under
+the count; the count keeps its width, the state wraps in the rest) instead of three rows. (4) With the hand's side on the logical start (RTL right-handed, or LTR
+left-handed: `body.left-handed`) the stall card lies under the card's usual place and left one row of room at 200 %;
+there, at large text only, the bar keeps menu, chips and speed together at the start and the card takes the far end,
+above the tools. Chosen over folding the waybill to its seal at large text (the order is the one thing the player
+reads all the time) and over scrolling alone (the key rows would still be cut). Result at 915×412, 200 %: IV/III
+pl, de, ar — seals, clock, both goods and the pace line on screen; XVI pl, de — both castles' name, count and state on
+screen (head scrolls), ar — the castle names take two lines each, the second castle's count row is cut by ~10 px
+and scrolls; portrait 412×915 at 200 % — the whole card (compact) above the pace card in pl/ar, de: goods and pace
+line, the supplier row scrolls; 904×1000 and normal text unchanged; Flip cover (360×380)
+already shows clock + pace line + tempo (watch mode, D-99/D-155). UI only, mission hashes identical. (decided)
+
+**D-354 — Forced colors: the primary button gets a system border and focus a 3 px Highlight ring; language names in
+the game's body face first.** Forced colors drop gradients and box-shadows, so the wine primary button was a white
+field with no edge in a light theme and the two-tone focus ring lost its pale bands (2 px left, same colour as
+everything else). Under `@media (forced-colors: active)`: `.btn.primary` has `2px solid ButtonBorder`, every
+`:focus-visible` a `3px solid Highlight` outline (offsets unchanged, so the map pin keeps its inner ring).
+`npm run a11y` checks both in the light palette (start button of the mission letter). Separately (layout 8 XI, P4):
+the language grid sets `font-family: 'Alegreya Sans', var(--font-body)` — under a CJK interface the stack began with
+Noto Sans CJK, whose wide Cyrillic made "Українська" 2 px wider than its cell; Latin and Cyrillic names now read in
+the game face in every language, CJK, Arabic and Devanagari names fall through to their script's face. (decided)
+
+**D-355 — Help opened from a card's "?" focuses the asked topic's heading; an open "Co to znaczy?" fold gets the
+rail's height in a short landscape sheet.** (1) `SheetContent.initialFocus` (new, optional): `Sheets.open` focuses
+what it returns two frames after the sheet is laid out (after the sheet's own focus and the content's first
+scroll). Help opened on a topic (D-254/D-286/D-344) returns that topic's fold button (expanded), so a screen reader
+starts at "Kilka zamków, rozwinięte" with the answer next, not at the close button above seven headings; help
+from the menus still focuses the sheet. `npm run a11y` checks it on the XVI castle card. (2) The XVI castle card at
+915×412 is a side sheet between the bar and the rail (~200 px), so the opened fold showed 3–4 lines between the
+lead lines and the docked switch. While a codex fold is open in a short landscape side sheet, the sheet runs down
+over the rail on its own side (the tools on the other side stay free) and is wider (`min(460px, 50vw)`); closing the
+fold or the sheet gives the rail back. Chosen over folding the rival line (BACKLOG idea): the rival line is the
+card's own diagnosis and the fold explains it, so both stay; the room comes from the rail, which the reader is not
+using while reading. Applies to every codex fold (why sheet, wagon) in short landscape, not only XVI. (decided)

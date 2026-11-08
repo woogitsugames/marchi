@@ -101,6 +101,14 @@ function seals(n: number, label: string, dim = false): string {
   return `<span class="wb-seals${dim ? ' is-dim' : ''}" role="img" aria-label="${esc(label)}">${s}</span>`;
 }
 
+/**
+ * The slate pill: its icon and the full line ("10:42 do śniegu"), plus the bare clock for a landscape card short of
+ * room (D-353), which shows the clock beside the icon and keeps the full line for screen readers.
+ */
+function pillHtml(icon: IconId, line: string, time: string): string {
+  return `${iconSvg(icon, 18)}<span class="sp-full">${line}</span><bdi class="sp-clock" dir="ltr" aria-hidden="true">${esc(time)}</bdi>`;
+}
+
 /** The folded contract / plaque: a wax seal that fills with progress, a short value underneath. */
 function sealOnly(frac: number, text: string): string {
   const f = Math.max(0, Math.min(1, frac));
@@ -143,6 +151,8 @@ export class Hud {
   private wagonLabel: HTMLElement;
   private wagonCost: HTMLElement;
   private stallRow: HTMLElement;
+  /** The bottom rail (tools, stall card, alarm seal): the waybill's room in landscape ends at its top (D-353). */
+  private railEl: HTMLElement;
   private stallText: HTMLElement;
   private stallKick: HTMLElement;
   private stallEye: HTMLButtonElement;
@@ -327,6 +337,7 @@ export class Hud {
       this.toolBtns.set(id, b);
     }
     const rail = h('nav.rail', { 'aria-label': t('tool.menu') }, this.stallRow, tools);
+    this.railEl = rail;
 
     // ---- watch-mode tempo line (D-155): the pace card does not fit the Flip cover, its one-line gist does;
     // a tap opens the card's subject sheet with the cure, as the card's eye does
@@ -344,7 +355,7 @@ export class Hud {
     // notices sit under the top cluster: its height changes with folding, pace rows, layout
     try {
       this.topObserver = new ResizeObserver(() => this.measureTop());
-      for (const el of [top, this.waybillWrap, this.plaqueWrap, this.events.root, speed]) this.topObserver.observe(el);
+      for (const el of [top, this.waybillWrap, this.plaqueWrap, this.events.root, speed, rail, this.stallRow, this.wbBody, this.wbPill]) this.topObserver.observe(el);
     } catch { /* old WebView: CSS fallback */ }
   }
 
@@ -367,6 +378,39 @@ export class Hud {
     root.setProperty('--hud-top', `${Math.round(y)}px`);
     root.setProperty('--bar-b', `${Math.round(bar)}px`);
     root.setProperty('--ev-b', `${Math.round(ev)}px`);
+    this.measureWbRoom();
+  }
+
+  /**
+   * --wb-room (D-353): the waybill hangs from the top bar over the map, and the rail grows from the
+   * bottom (portrait: the pace card over the tools) — at 200 % text in a short screen they met and the pace line ran under the tool cards. The room is
+   * measured from the panel's top to the highest rail piece under it (tools, stall card or alarm seal, whichever
+   * lies beneath the panel: the tools in LTR right-handed, the stall card in RTL or left-handed). The panel never
+   * grows past it; what does not fit scrolls inside the panel (its key rows come first).
+   */
+  private measureWbRoom(): void {
+    const wrap = this.waybillWrap;
+    if (document.body.classList.contains('is-mini') || wrap.hidden || this.folded()) {
+      wrap.style.removeProperty('--wb-room');
+      wrap.classList.remove('is-tight');
+      return;
+    }
+    const p = this.wbPanel.getBoundingClientRect();
+    if (p.width === 0) return;
+    let floor = window.innerHeight;
+    for (const el of this.railEl.querySelectorAll<HTMLElement>('.tool, .stall-card, .alarm-seal')) {
+      if (el.hidden || el.offsetParent === null) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height === 0 || r.right <= p.left || r.left >= p.right) continue;
+      floor = Math.min(floor, r.top);
+    }
+    // never below two 48 px rows: a squeezed panel still shows its head and scrolls
+    wrap.style.setProperty('--wb-room', `${Math.max(96, Math.floor(floor - p.top - 2))}px`);
+    // short of room: the compact form (bare clock in the pill, the short pace line, the castles' head under the
+    // list). Decided on the full form's height — measured with the class off, so the choice cannot flip-flop
+    wrap.classList.remove('is-tight');
+    const panel = this.wbPanel;
+    wrap.classList.toggle('is-tight', panel.scrollHeight > panel.clientHeight + 1);
   }
 
   dispose(): void {
@@ -829,8 +873,8 @@ export class Hud {
     if (pillKey !== this.pillKey) {
       this.pillKey = pillKey;
       setHtml(this.wbPill, toTranche
-        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toTranche', { time: ticksClock(left), n: cur + 1 })}</span>`
-        : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+        ? pillHtml('waiting', tHtml('contract.toTranche', { time: ticksClock(left), n: cur + 1 }), ticksClock(left))
+        : pillHtml('snow', tHtml('contract.toSnow', { time: ticksClock(left) }), ticksClock(left)));
     }
     this.wbPill.classList.toggle('late', late);
 
@@ -928,8 +972,8 @@ export class Hud {
     if (pillKey !== this.pillKey) {
       this.pillKey = pillKey;
       setHtml(this.wbPill, due
-        ? `${iconSvg('waiting', 18)}<span>${tHtml('contract.toCastle', { time: ticksClock(left) })}</span>`
-        : `${iconSvg('snow', 18)}<span>${tHtml('contract.toSnow', { time: ticksClock(left) })}</span>`);
+        ? pillHtml('waiting', tHtml('contract.toCastle', { time: ticksClock(left) }), ticksClock(left))
+        : pillHtml('snow', tHtml('contract.toSnow', { time: ticksClock(left) }), ticksClock(left)));
     }
     this.wbPill.classList.toggle('late', late);
     const missed = orders.reduce((a, k) => a + k.tranches.filter((x) => x.missed).length, 0);

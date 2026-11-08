@@ -36,7 +36,7 @@ const ok = (cond, what) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${what}`); i
 async function open(q, opts = {}) {
   const ctx = await browser.newContext({
     viewport: opts.viewport ?? { width: 412, height: 915 }, reducedMotion: opts.reduced ? 'reduce' : 'no-preference',
-    ...(opts.forced ? { forcedColors: 'active', colorScheme: 'dark' } : {}),
+    ...(opts.forced ? { forcedColors: 'active', colorScheme: opts.forced === 'light' ? 'light' : 'dark' } : {}),
   });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -291,6 +291,42 @@ try {
     });
     ok(r.forced && r.icons > 0 && r.bare === 0, `forced: ${r.icons} icons on a Canvas plate (${r.bare} bare)`);
     ok(r.bars > 0 && r.outlined === r.bars, `forced: ${r.outlined}/${r.bars} contract bars outlined`);
+    await ctx.close();
+  }
+  // --- help from a card's "?" (D-355): focus lands on the asked topic's heading, expanded
+  {
+    const { ctx, page } = await open('play=m16&speed=0&ff=150&openId=5', { viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.letter [data-a="start"]')?.click());
+    await page.waitForSelector('.sheet .sh-help:not([hidden])', { timeout: 30000 }).catch(() => {});
+    await page.evaluate(() => document.querySelector('.sheet .sh-help')?.click());
+    // focus moves two frames after the sheet is laid out: slow under swiftshader on a loaded machine
+    await page.waitForFunction(() => document.activeElement?.classList.contains('help-tog'), null, { timeout: 10000 }).catch(() => {});
+    const r = await page.evaluate(() => {
+      const a = document.activeElement;
+      return { topic: a?.dataset?.topic ?? a?.className ?? '', expanded: a?.getAttribute?.('aria-expanded') };
+    });
+    ok(r.topic === 'castles' && r.expanded === 'true', `help: "?" on the XVI castle card focuses the "castles" heading (${r.topic}, expanded=${r.expanded})`);
+    await ctx.close();
+  }
+  // --- forced colors (light palette, D-354): the primary button keeps an edge, the focus ring is 3 px Highlight
+  // (the XVI castle card's "Ten zamek pierwszy" is a primary button)
+  {
+    const { ctx, page } = await open('play=m16&speed=0&ff=150&openId=5', { forced: 'light', viewport: { width: 915, height: 412 } });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => document.querySelector('.letter [data-a="start"]')?.click());
+    await page.waitForSelector('.sheet .btn.primary', { timeout: 30000 });
+    await page.focus('.sheet .btn.primary');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    const r = await page.evaluate(() => {
+      const b = document.querySelector('.sheet .btn.primary');
+      const cs = getComputedStyle(b);
+      return { focused: document.activeElement === b, border: parseFloat(cs.borderTopWidth), borderStyle: cs.borderTopStyle,
+        ring: parseFloat(cs.outlineWidth), ringStyle: cs.outlineStyle };
+    });
+    ok(r.border >= 2 && r.borderStyle === 'solid', `forced light: primary button border ${r.border}px ${r.borderStyle}`);
+    ok(r.focused && r.ring >= 3 && r.ringStyle === 'solid', `forced light: focus ring ${r.ring}px ${r.ringStyle} on the primary button`);
     await ctx.close();
   }
 } finally {
