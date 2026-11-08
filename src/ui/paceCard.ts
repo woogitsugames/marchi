@@ -82,6 +82,8 @@ export interface PaceFleet {
  */
 export interface PaceRank {
   k: 'rank'; producer: number; type: BuildingType; good: Good; rank: number; sold: number; goods: number;
+  /** D-380: the consumer that goes up right after `type` (one tap, two buildings), when silver covers both. */
+  then?: BuildingType;
 }
 
 /**
@@ -94,6 +96,8 @@ export interface PaceRank {
  */
 export interface PaceGrow {
   k: 'grow'; producer: number; type: BuildingType; good: Good; n: number; rank: number; renown: number; need: number;
+  /** D-380: the consumer that goes up right after `type` (one tap, two buildings), when silver covers both. */
+  then?: BuildingType;
   /**
    * D-264: what the next rank still lacks — 'renown', or 'flow' (silver per minute; `flow`/`flowNeed`: best flow so
    * far / for `rank`). Flow is named whenever it is short (the rarer gate; renown may be short too).
@@ -242,7 +246,11 @@ export function rankCard(world: World): PaceRank | null {
   const castle = st.buildings.find((b) => b.type === 'castle');
   if (!castle) return null;
   const next = newProducer(world, castle.id, sb.unlocked);
-  return next ? { k: 'rank', ...next, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods } : null;
+  if (!next) return null;
+  // D-380: the producer's own consumer, when the rank allows it and silver covers both (malthouse + brewery)
+  const after = RANK_ORDER.find(([t, needs]) => needs === next.type && sb.unlocked.includes(t) && !st.buildings.some((b) => b.type === t))?.[0];
+  const then = after && st.coins >= BUILDINGS[next.type].price + BUILDINGS[after].price ? after : undefined;
+  return { k: 'rank', ...next, rank: sb.next.rank, sold: sb.goodsSold, goods: sb.next.goods, ...(then ? { then } : {}) };
 }
 
 /**
@@ -332,10 +340,29 @@ export function growCard(world: World): PaceGrow | null {
   // price (the rank card's next producer, though the goods count is met: charcoal, malt, beer)
   if (!best) best = newProducer(world, castle.id, sb.unlocked);
   if (!best || st.coins < BUILDINGS[best.type].price + FLEET_FREE_KEEP) return null;
+  const then = growThen(best.type, n, sb.unlocked, st.coins);
   return {
+    ...(then ? { then } : {}),
     k: 'grow', producer: best.producer, type: best.type, good: best.good, n: n(best.type), rank: sb.next.rank, renown: sb.renown, need: sb.next.renown,
     short: sb.bestFlow < sb.next.flow ? 'flow' : 'renown', flow: sb.bestFlow, flowNeed: sb.next.flow,
   };
+}
+
+/**
+ * D-380 (BACKLOG P2 from D-267): the grow card's second building — the chain's consumer of `type` (the brewery after
+ * a malthouse, the mill after a farm), when one more `type` lets it grow by the same ratio rules and silver covers
+ * both with the fleet's reserve left. A player who acts once a minute then grows a chain step in one tap.
+ */
+export function growThen(type: BuildingType, n: (t: BuildingType) => number, unlocked: readonly BuildingType[], coins: number): BuildingType | undefined {
+  const next = GROW_FEEDS[type];
+  if (!next || !unlocked.includes(next) || GROW_FED_BY[next] !== type) return undefined;
+  // the consumer stays below its supplier after the supplier's +1 (brewery < malthouse)
+  if (n(next) >= n(type) + 1) return undefined;
+  // and the consumer's own consumer keeps up with it (mill <= bakery once a bakery stands)
+  const after = GROW_FEEDS[next];
+  if (after && unlocked.includes(after) && (n(after) > 0 ? n(next) > n(after) : n(next) > 0)) return undefined;
+  if (coins < BUILDINGS[type].price + BUILDINGS[next].price + FLEET_FREE_KEEP) return undefined;
+  return next;
 }
 
 let postLink: { world: World; key: string; s: RoadSuggestion | null } | null = null;

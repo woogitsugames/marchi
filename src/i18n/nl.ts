@@ -689,6 +689,7 @@ export const nl: Dict = {
   "cause.paceGrowFlow": "Voor rang {rank} ({rankName}) ontbreekt zilverstroom — bouw er nog een: {name}",
   "fix.growWhyFlow": "Stroom {flow} van {need} zilver per minuut voor {rankName}; de waren zijn er al. De stroom groeit met de verkoop: nog een gebouw ({name}) levert meer {goodGen}, en de markt betaalt nog een goede prijs.",
   "fix.rank": "Bouw: {name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "Verschillende waren verkocht: {sold} van de {goods} voor {rankName}. {good}: nog nooit op de markt — dit gebouw maakt die waar.",
   "fix.paceFleetWhy": "Een minuut lang stond geen wagen vrij. Prognose: {seals}; een nieuwe wagen haalt de lading eerder en verdient zich terug vóór het zegel.",
   "fix.paceFleetWhyFree": "Een minuut lang stond geen wagen vrij. Een nieuwe wagen haalt de lading eerder — verkochte waren zijn zilver en aanzien.",

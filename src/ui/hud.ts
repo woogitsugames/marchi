@@ -11,6 +11,7 @@ import {
 } from '../sim/index';
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
+import { cardBuild } from './cardBuild';
 import { deckle, esc, h, setHtml, setText } from './dom';
 import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, sentences, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -665,9 +666,9 @@ export class Hud {
         : pc.k === 'post'
         ? `pace|${pc.k}|${pc.producer}|${pc.bridge}|${stalls.length}|${getLang()}`
         : pc.k === 'rank'
-        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
+        ? `pace|${pc.k}|${pc.type}|${pc.then ?? ''}|${pc.rank}|${pc.sold}|${pc.goods}|${stalls.length}|${getLang()}`
         : pc.k === 'grow'
-        ? `pace|${pc.k}|${pc.type}|${pc.rank}|${pc.n}|${pc.short}|${stalls.length}|${getLang()}`
+        ? `pace|${pc.k}|${pc.type}|${pc.then ?? ''}|${pc.rank}|${pc.n}|${pc.short}|${stalls.length}|${getLang()}`
         : pc.k === 'producer'
         ? `pace|${pc.k}|${pc.producer}|${pc.seals}|${Math.round(pc.rate * 10)}|${Math.round(pc.need * 10)}|${stalls.length}|${getLang()}`
         : pc.k === 'fleet'
@@ -703,7 +704,7 @@ export class Hud {
         // ...or lacks only renown (D-192): name one more producer of a standing chain
         // ...or (D-264) lacks silver flow: the same producer, the card names the flow
         const key = pc.k === 'rank' ? 'cause.paceRank' : pc.short === 'flow' ? 'cause.paceGrowFlow' : 'cause.paceGrow';
-        const text = t(key, { rank: pc.rank, rankName: rankName(pc.rank), name: t(`building.${pc.type}` as MessageKey) });
+        const text = t(key, { rank: pc.rank, rankName: rankName(pc.rank), name: cardBuild(pc).name });
         // the whole line is this one text: .sc-text's own dir="auto" takes its direction (an English fallback in ar)
         setHtml(this.stallText, esc(text));
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));

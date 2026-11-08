@@ -689,6 +689,7 @@ export const ko: Dict = {
   "cause.paceGrowFlow": "등급 {rank}({rankName})에는 은 흐름이 부족 — 하나 더 건설: {name}",
   "fix.growWhyFlow": "흐름 {flow}/분당 은 {need}({rankName}에 필요). 물건은 갖췄습니다. 흐름은 판매로 오릅니다: {name} 하나 더면 {goodGen} 생산이 늘고, 시장은 아직 좋은 값을 쳐 줍니다.",
   "fix.rank": "건설: {name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "판매한 물건 종류: {sold}/{goods}({rankName}에 필요). {good}: 아직 시장에 나온 적 없음 — 이 건물이 만듭니다.",
   "fix.paceFleetWhy": "1분 동안 빈 수레가 없었습니다. 예측은 {seals}입니다. 새 수레가 짐을 더 빨리 가져가 인장 전에 본전을 뽑습니다.",
   "fix.paceFleetWhyFree": "1분 동안 빈 수레가 없었습니다. 새 수레가 짐을 더 빨리 가져갑니다 — 팔린 물건은 은과 명성입니다.",

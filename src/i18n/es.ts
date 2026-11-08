@@ -689,6 +689,7 @@ export const es: Dict = {
   "cause.paceGrowFlow": "Rango {rank} ({rankName}): falta flujo de plata — construye otro: {name}",
   "fix.growWhyFlow": "Flujo {flow} de {need} de plata por minuto para {rankName}; las mercancías ya están. El flujo crece con las ventas: otro edificio ({name}) da más {goodGen}, y el mercado aún paga un buen precio.",
   "fix.rank": "Construye: {name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "Mercancías distintas vendidas: {sold} de {goods} para {rankName}. {good}: aún no llegó al mercado — este edificio produce esa mercancía.",
   "fix.paceFleetWhy": "Ningún carro estuvo libre durante un minuto. El pronóstico da {seals}; un carro nuevo recoge antes la carga y se amortiza antes del sello.",
   "fix.paceFleetWhyFree": "Ningún carro estuvo libre durante un minuto. Un carro nuevo recoge antes la carga — lo vendido es plata y renombre.",

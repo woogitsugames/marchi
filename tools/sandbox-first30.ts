@@ -104,6 +104,7 @@ export interface Result {
 let safeSites = false;
 /** D-264: the card players also press the bottleneck card's cure (--no-neck: the D-251 player, blind to it). */
 let neckCards = true;
+let pairsOff = false;
 function cutsDiagonal(w: World, type: BuildingType, x0: number, y0: number): boolean {
   const W = w.terrain.w, def = BUILDINGS[type], roads = w.state.roads;
   const inFoot = (x: number, y: number): boolean => x >= x0 && x < x0 + def.w && y >= y0 && y < y0 + def.h;
@@ -179,6 +180,14 @@ function growPick(w: World, keep: number): BuildingType | null {
 
 export interface Trace { m: number; rank: number; renown: number; goods: number; best: number; flow: number; coins: number; wagons: number; bld: number; card: string; wh: string; sat: string }
 
+/** D-380: the card's pair — the consumer's ghost by the producer just placed, as the game's build tool reopens it. */
+function placeThen(w: World, type: BuildingType, then: BuildingType | undefined): string {
+  if (!then || pairsOff) return '';
+  const b = [...w.state.buildings].reverse().find((q) => q.type === type);
+  if (!b || suggestLinkToStable(w, b.id) || w.state.coins < BUILDINGS[then].price) return '';
+  return placeAtGhost(w, then, b.id) ? '+' + then : '+?fail';
+}
+
 /** One look: the slot (pace card if it would take it, else the worst stall) and the sheet's cure. */
 function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?: number; bits: number[] } | null, rk = false, game = false, growOpt: { keep: number } | null = null): Look {
   const st = w.state;
@@ -193,10 +202,10 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
       if (pc.k === 'fleet') { const res = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }); return { ...card, cure: 'wagon', act: res.ok ? 'wagon:card' : 'wagon?' + res.err.k }; }
       if (pc.k === 'rank') {
         if (st.coins < BUILDINGS[pc.type].price) return { ...card, cure: 'producer', act: 'producer?NO_COINS' };
-        return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'build:' + pc.type : 'build?fail:' + pc.type };
+        return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'build:' + pc.type + placeThen(w, pc.type, pc.then) : 'build?fail:' + pc.type };
       }
       // D-192: the game's grow card (the card exists only when the building is affordable)
-      if (pc.k === 'grow') return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'grow:' + pc.type : 'grow?fail:' + pc.type };
+      if (pc.k === 'grow') return { ...card, cure: 'producer', act: placeAtGhost(w, pc.type, pc.producer) ? 'grow:' + pc.type + placeThen(w, pc.type, pc.then) : 'grow?fail:' + pc.type };
       // D-245: the trading-post card — its sheet's gap finder road (with the bridge), one tap
       if (pc.k === 'post') {
         const sug = suggestLinkToStable(w, pc.producer);
@@ -401,6 +410,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const only = arg('--only');
   safeSites = args.includes('--safe-sites');
   neckCards = !args.includes('--no-neck');
+  pairsOff = args.includes('--no-pairs');
   // research valley-ranks-2-3: rank threshold overrides, e.g. --ranks 2:renown=700,3:renown=2000
   for (const part of (arg('--ranks') ?? '').split(',').filter(Boolean)) {
     const [rk, kv] = part.split(':'); const [key, val] = kv!.split('=');

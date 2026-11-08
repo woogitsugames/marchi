@@ -8,6 +8,7 @@ import {
   type Command, type CommandResult, type SimState, type SurfaceKind, type World,
   isRaining, newPaceLog, samplePace, type PaceLog,
   type BuildingType,
+  BUILDINGS,
 } from '../sim/index';
 import { GameLoop, type Speed } from '../game/loop';
 import type { PickResult, ScreenOffset, WorldView } from '../render/api';
@@ -166,6 +167,8 @@ export class App implements PanelNav {
   /** Build tool: shelf, placement ghost, undo (free valley and missions that allow building). */
   readonly build: BuildTool;
   private tool: Tool = 'none';
+  /** D-380: the rank / grow card's pair — after `after` stands, the build tool opens with `type` by it. */
+  private buildThen: { after: BuildingType; type: BuildingType } | null = null;
   private overlay = false;
   private selection: PickResult = null;
   private followId: number | null = null;
@@ -1097,6 +1100,14 @@ export class App implements PanelNav {
     this.hud?.toast(t('hud.placed', { name: t(`building.${type}` as 'building.farm'), n }), 'info', 'build', 2200);
     this.build.back();
     const b = this.world.state.buildings.find((q) => q.x === x && q.y === y && q.placedTick >= 0);
+    // D-380: the card's pair — the consumer's ghost by the producer that just went up (a gate cut off asks for its
+    // road first: the gap finder below, and the card names the consumer next)
+    const then = this.buildThen;
+    this.buildThen = null;
+    if (b && then && then.after === type && !suggestLinkToStable(this.world, b.id) && this.world.state.coins >= BUILDINGS[then.type].price) {
+      this.build.pick(then.type, b.id);
+      return;
+    }
     if (!b || b.type === 'stable' || !suggestLinkToStable(this.world, b.id)) return;
     this.go('building', b.id, false);
   }
@@ -1139,11 +1150,13 @@ export class App implements PanelNav {
   }
 
   /** PanelNav: "Naprawa" for a full output with nowhere to go — the build tool with the granary picked. */
-  pickBuild(type: BuildingType, near: number): void {
+  pickBuild(type: BuildingType, near: number, then?: BuildingType): void {
     if (!buildTypes(this.world).includes(type)) return;
     this.sheets.closeAll();
     this.setTool('build');
     if (this.tool === 'build') this.build.pick(type, near);
+    // D-380: the card's pair — the second building's ghost opens by the first once it stands
+    this.buildThen = this.tool === 'build' && then ? { after: type, type: then } : null;
   }
 
   go(kind: 'building' | 'wagon', id: number, focus = true): void {
@@ -1326,6 +1339,7 @@ export class App implements PanelNav {
       }
     }
     if (tl === 'build' && !buildTypes(this.world).length) tl = 'none';
+    if (tl !== 'build') this.buildThen = null;
     this.tool = tl;
     this.draft.cancel();
     this.build.setOpen(tl === 'build');

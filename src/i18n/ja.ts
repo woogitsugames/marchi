@@ -689,6 +689,7 @@ export const ja: Dict = {
   "cause.paceGrowFlow": "位階{rank}（{rankName}）には銀の流れが足りない — もう一つ建設：{name}",
   "fix.growWhyFlow": "流れ{flow}／毎分{need}銀（{rankName}に必要）。品物は足りている。流れは売るほど増える：もう一つの{name}で{goodGen}が増え、市場はまだ良い値で買う。",
   "fix.rank": "建設：{name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "売れた品物の種類：{sold}／{goods}（{rankName}に必要）。{good}はまだ市場に出ていない。この建物が作る。",
   "fix.paceFleetWhy": "1分間、空いた荷車が一台もなかった。予測は{seals}。新しい荷車なら早く荷を受け取り、封印の前に元が取れる。",
   "fix.paceFleetWhyFree": "1分間、空いた荷車が一台もなかった。新しい荷車なら早く荷を受け取れる。売れた品物は銀と名声になる。",

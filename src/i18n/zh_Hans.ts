@@ -689,6 +689,7 @@ export const zh_Hans: Dict = {
   "cause.paceGrowFlow": "等级{rank}（{rankName}）缺银两流量——再建一座：{name}",
   "fix.growWhyFlow": "流量{flow}／每分钟{need}银（{rankName}所需）；货物已够。流量随销售增长：再建一座{name}就多产{goodGen}，市场仍出好价。",
   "fix.rank": "建造：{name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "已卖出的不同货物：{sold}/{goods}（{rankName}所需）。{good}：市场上还没卖过——这座建筑能生产。",
   "fix.paceFleetWhy": "整整一分钟没有空闲货车。预测为{seals}；新货车能更早取货，并在盖印前回本。",
   "fix.paceFleetWhyFree": "整整一分钟没有空闲货车。新货车能更早取货——卖出的货物就是银子和声望。",

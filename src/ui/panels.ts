@@ -5,6 +5,7 @@ import {
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, translated, type MessageKey } from '../i18n/index';
+import { cardBuild } from './cardBuild';
 import { esc, setHtml } from './dom';
 import {
   bdi, buildingName, buildingStateIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
@@ -52,7 +53,8 @@ export interface PanelNav {
   /** Take back a building placed moments ago (full refund while lastUndoable names it). */
   undoPlace(building: number): void;
   /** Open the build tool with this building type already picked (the sheet closes). */
-  pickBuild(type: BuildingType, near: number): void;
+  /** `then` (D-380): the build tool opens again with this type by the new building once `type` stands. */
+  pickBuild(type: BuildingType, near: number, then?: BuildingType): void;
   /** Two castles (D-289): this castle's order first (castleFirst command); -1 shares evenly again. */
   castleFirst(castle: number): void;
 }
@@ -130,10 +132,9 @@ function paceCureHtml(world: World, pc: PaceCard, log: PaceLog): string {
  * brings one — the build tool opens with that type, the ghost by the castle. Disabled with the shortfall.
  */
 function rankCureHtml(world: World, pc: PaceRank): string {
-  const price = BUILDINGS[pc.type].price;
-  const short = price - world.state.coins;
+  const { name, price } = cardBuild(pc);
+  const short = BUILDINGS[pc.type].price - world.state.coins;
   const off = short > 0;
-  const name = t(`building.${pc.type}` as MessageKey);
   const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="rank:${pc.type}" aria-disabled="${off}">${
     iconSvg('build', 26)}<span>${esc(t('fix.rank', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const hint = off
@@ -148,8 +149,7 @@ function rankCureHtml(world: World, pc: PaceRank): string {
  * building is affordable with the reserve, so the button is never disabled for silver.
  */
 function growCureHtml(pc: PaceGrow): string {
-  const price = BUILDINGS[pc.type].price;
-  const name = t(`building.${pc.type}` as MessageKey);
+  const { name, price } = cardBuild(pc);
   const btn = `<button class="btn primary cf fix-btn" data-act="grow:${pc.type}" aria-disabled="false">${
     iconSvg('build', 26)}<span>${esc(t('fix.producer', { name }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
   const goodGen = t(`goodGen.${pc.good}` as MessageKey);
@@ -484,12 +484,12 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'rank' && !el.classList.contains('is-disabled')) {
       // the free valley's rank card (D-152), recomputed now: build that producer, the ghost by the castle
       const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace), nav.pace);
-      if (pc && pc.k === 'rank' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
+      if (pc && pc.k === 'rank' && pc.type === arg) nav.pickBuild(pc.type, pc.producer, pc.then);
     }
     if (act === 'grow') {
       // the free valley's grow card (D-192), recomputed now: one more producer, the ghost by the castle
       const pc = paceCard(nav.world, forecastFor(nav.world, nav.pace), nav.pace);
-      if (pc && pc.k === 'grow' && pc.type === arg) nav.pickBuild(pc.type, pc.producer);
+      if (pc && pc.k === 'grow' && pc.type === arg) nav.pickBuild(pc.type, pc.producer, pc.then);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
       const p = buildingById(nav.world, Number(arg));

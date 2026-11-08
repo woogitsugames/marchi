@@ -748,6 +748,7 @@ export const pl = {
   'cause.paceGrowFlow': 'Do rangi {rank} ({rankName}) brakuje przepływu srebra — postaw jeszcze: {name}',
   'fix.growWhyFlow': 'Przepływ {flow} z {need} srebra na minutę na rangę {rankName}; towary już są. Przepływ rośnie ze sprzedaży: jeszcze jeden budynek ({name}) da więcej {goodGen}, a targ wciąż płaci za nie dobrą cenę.',
   'fix.rank': 'Postaw: {name}',
+  'build.pair': '{a} + {b}',
   'fix.rankWhy': 'Różne sprzedane towary: {sold} z {goods} potrzebnych na rangę {rankName}. Tego towaru ({good}) targ jeszcze nie widział — ten budynek go dostarczy.',
   'fix.paceFleetWhy': 'Przez minutę żaden wóz nie stał wolny. Prognoza daje {seals}; nowy wóz odbierze ładunek szybciej i zdąży się zwrócić przed pieczęcią.',
   'fix.paceFleetWhyFree': 'Przez minutę żaden wóz nie stał wolny. Nowy wóz odbierze ładunek szybciej — sprzedany towar to srebro i sława.',

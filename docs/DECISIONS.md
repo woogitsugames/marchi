@@ -4081,3 +4081,27 @@ over the rail on its own side (the tools on the other side stay free) and is wid
 fold or the sheet gives the rail back. Chosen over folding the rival line (BACKLOG idea): the rival line is the
 card's own diagnosis and the fold explains it, so both stay; the room comes from the rail, which the reader is not
 using while reading. Applies to every codex fold (why sheet, wagon) in short landscape, not only XVI. (decided)
+
+**D-380 — The free valley's card builds a chain step in one tap: producer + consumer (owner yes 2026-11-08, BACKLOG P2 from D-267).**
+The card-60 player (one look a minute) did not reach rank 5 in two of four valleys: every malthouse and every brewery
+was its own minute, and silver piled up unspent (11–15 k at 120 min). The grow card (D-192) and the rank card (D-152) now
+carry an optional `then`: the chain consumer of the named producer (farm → mill, mill → bakery, woodcutter → sawmill,
+malthouse → brewery), when one more producer lets that consumer grow by the same ratio rules (`growThen` in
+`src/ui/paceCard.ts`: consumer < supplier after the +1, the consumer's own consumer keeps up, the consumer unlocked by
+rank — D-267) and silver covers both plus the fleet reserve (grow) / both (rank). The card and its button read
+"Postaw jeszcze: Słodownia + Browar" with the sum of both prices (`build.pair`, `src/ui/cardBuild.ts`). One tap opens
+the build tool with the producer's ghost as before; once it stands, the tool reopens at once with the consumer's ghost
+by it (`App.buildThen`). A producer whose gate is cut off gets the gap finder first, as before, and the card names the
+consumer next; leaving the build tool drops the pair. No sim change (mission hashes identical).
+Measured (`tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304 --only card-10,card-30,card-60`,
+`--no-pairs` for before), rank-5 minute:
+
+| player | before | after |
+|---|---|---|
+| card-10 | 89,1 / 90,0 / 91,7 / 90,2 | 89,4 / 86,6 / 90,6 / 88,4 |
+| card-30 | 96,4 / 95,5 / 95,8 / 99,9 | 95,7 / 97,6 / 99,6 / 93,7 |
+| card-60 | 119,9 / – (R4) / – (R4) / 118,2 | **108,2 / 117,9 / 113,7 / 113,2** |
+
+Card-10/30 within noise (they already had the minutes); card-60 now reaches rank 5 in every valley. Tests
+`tests/card-pair.test.ts`. (decided)
+

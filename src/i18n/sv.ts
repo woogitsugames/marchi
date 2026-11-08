@@ -689,6 +689,7 @@ export const sv: Dict = {
   "cause.paceGrowFlow": "För rang {rank} ({rankName}) saknas silverflöde — bygg fler: {name}",
   "fix.growWhyFlow": "Flöde {flow} av {need} silver per minut för {rankName}; varorna finns redan. Flödet växer med försäljningen: en byggnad till ({name}) ger mer {goodGen}, och marknaden betalar fortfarande ett bra pris.",
   "fix.rank": "Bygg: {name}",
+  "build.pair": "{a} + {b}",
   "fix.rankWhy": "Olika varor sålda: {sold} av {goods} för {rankName}. {good}: aldrig sålt på marknaden — den här byggnaden tillverkar varan.",
   "fix.paceFleetWhy": "Ingen vagn stod ledig på en minut. Prognos: {seals}; en ny vagn hämtar lasten tidigare och betalar sig före sigillet.",
   "fix.paceFleetWhyFree": "Ingen vagn stod ledig på en minut. En ny vagn hämtar lasten tidigare — sålda varor ger silver och anseende.",

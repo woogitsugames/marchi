@@ -303,3 +303,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-353 | — | The landscape waybill keeps the order and its pace above the rail at any text size: a measured room, a compact form when short of it, and the card moves over the tools when the stall card would be under it (a11y follow-up of 8 XI, BACKLOG P2) | decided | treść |
 | D-354 | — | Forced colors: the primary button gets a system border and focus a 3 px Highlight ring; language names in the game's body face first | decided | UI |
 | D-355 | — | Help opened from a card's "?" focuses the asked topic's heading; an open "Co to znaczy?" fold gets the rail's height in a short landscape sheet | decided | UI |
+| D-380 | 2026-11-08 | The free valley's card builds a chain step in one tap: producer + consumer (owner yes 2026-11-08, BACKLOG P2 from D-267) | decided | UI |
