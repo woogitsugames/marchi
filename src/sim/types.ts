@@ -40,9 +40,11 @@ export type BuildingStatus =
   | { k: 'NO_ROAD' }
   /**
    * Input missing and nothing on the way. cause tells what the dispatcher saw. CONTESTED: the good
-   * exists but goes to another kind of consumer; `blockedBy` is that consumer (free valley chains).
+   * exists but goes to another kind of consumer; `blockedBy` is that consumer (free valley chains). CHAIN_FIRST
+   * (mission XVII, D-356): the good goes first to `blockedBy`, a workshop on the supply chain of the castle marked first
+   * with its whole chain (`mission.chainFirst`); that castle is `mission.firstCastle`.
    */
-  | { k: 'NO_INPUT'; good: Good; cause: 'NONE_AVAILABLE' | 'UNREACHABLE' | 'CONTESTED'; blockedBy: number }
+  | { k: 'NO_INPUT'; good: Good; cause: 'NONE_AVAILABLE' | 'UNREACHABLE' | 'CONTESTED' | 'CHAIN_FIRST'; blockedBy: number }
   /** Input missing, but a reachable producer is making it right now: not a stall (start-up, slow supply). */
   | { k: 'WAITING_UPSTREAM'; good: Good; from: number }
   /** Input is on its way on a wagon. */
@@ -191,6 +193,13 @@ export interface MissionState {
    * every castle by fill, then id. Only ever set in a mission with `extraContracts`.
    */
   firstCastle?: number;
+  /**
+   * The first castle's whole supply chain goes first, not only its castle leg (the `chainFirst` command, mission XVII
+   * "Drewno na dwa listy", D-356): the workshops still short of input for that castle's missing goods ask before the
+   * other workshops. Only ever `true`, only with `firstCastle`, only in a mission whose def has `chainPriority`;
+   * absent everywhere else (same pattern as `firstCastle`).
+   */
+  chainFirst?: true;
 }
 
 export interface Ledger {

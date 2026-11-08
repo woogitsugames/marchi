@@ -11,6 +11,7 @@ import { PROPOSED_MISSIONS_10_12 } from './proposals/missions-10-12';
 import { M13_MISSION } from './proposals/m13';
 import { MISSIONS_14_15 } from './proposals/missions-14-15';
 import { M16_MISSION } from './proposals/m16';
+import { M17_MISSION } from './proposals/m17';
 import { freshMarket, freshTown } from './town';
 import { freshTradePost, placeTradePost } from './tradePost';
 import type { World } from './network';
@@ -127,6 +128,11 @@ export interface MissionDef {
    * with `tranches`.
    */
   castles?: CastleOrderDef[];
+  /**
+   * Chain priority (mission XVII, D-356): besides the castle-leg switch (castleFirst), the player may put a castle first
+   * with its whole supply chain (the chainFirst command). Read by the command and the UI only; never in the state.
+   */
+  chainPriority?: boolean;
   /** The castle buys goods (default: open when there is no contract). Test maps close it. */
   market?: boolean;
   /** Building types the player may place in this contract mission (D-28); omitted = none. Sandbox: rank-gated. */
@@ -277,6 +283,7 @@ MISSIONS.m13 = M13_MISSION;
 MISSIONS.m14 = MISSIONS_14_15.m14;
 MISSIONS.m15 = MISSIONS_14_15.m15;
 MISSIONS.m16 = M16_MISSION;
+MISSIONS.m17 = M17_MISSION;
 MISSIONS.lab!.buildings = MISSIONS.m1!.buildings;
 MISSIONS.lab!.roads = MISSIONS.m1!.roads;
 

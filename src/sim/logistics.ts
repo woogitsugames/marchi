@@ -36,6 +36,10 @@ type PushFail = { cause: 'NO_WAGON' | 'NO_DESTINATION'; blockedBy: number };
  */
 export const DISPATCH2 = { ruleA: true, fleetGate: 2, minFreeRunS: 50, ruleC: false };
 
+/** Demand priority of a workshop on the first castle's supply chain (chain priority, D-356): after the castles (−1, 0),
+ *  before every other workshop input (1). */
+export const CHAIN_PRIO = 0.5;
+
 /** A job left for a busy wagon that reaches the source sooner than any free one (rule A, D-155). */
 interface Held { wagon: number; at: number }
 
@@ -169,6 +173,11 @@ export function dispatch(world: World): void {
   // D-156: rules A and C act only with a fleet well above the authored one
   const gateOpen = st.wagons.length >= (MISSIONS[st.mission.id]?.wagons ?? 0) + DISPATCH2.fleetGate;
 
+  // chain priority (mission XVII, D-356): workshops still short of input for the first castle's missing goods; [] unless
+  // the castle was put first with its whole chain (every other mission: nothing changes)
+  const lift = chainLift(world);
+  // ... and every workshop on that castle's chain while its order still lacks goods in store (the diagnosis, D-356)
+  const chain = lift.length > 0 || world.state.mission.chainFirst ? chainShops(world) : [];
   // --- demands
   const demands: Demand[] = [];
   for (const b of st.buildings) {
@@ -189,9 +198,10 @@ export function dispatch(world: World): void {
     // are all delivered keeps pulling wood one unit at a time and takes wagons from the chains that are
     // still short (mission I: the bread chain lost the contract after a late extra wagon).
     if (DISPATCH2.ruleC && gateOpen && contract && !outputGoods(b.type).some((og) => stillWanted(world, contract, og))) continue;
+    const prio = lift.length > 0 && lift.includes(b.id) ? CHAIN_PRIO : 1;
     for (const g of inputGoods(b.type)) {
       const want = def.inCap - b.stock[g] - b.incoming[g];
-      if (want > 0) demands.push({ b, good: g, want, prio: 1, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
+      if (want > 0) demands.push({ b, good: g, want, prio, fill: (b.stock[g] + b.incoming[g]) / def.inCap });
     }
   }
   // free valley and missions with road stone (D-32): granaries keep a stone reserve for cobbles and
@@ -254,15 +264,21 @@ export function dispatch(world: World): void {
     return best;
   };
   const isHeldJob = (w: Wagon | Held | null): w is Held => w !== null && !('job' in w);
+  // chain priority (D-356): goods a lifted workshop asked for and could not get yet (not enough ready at any source);
+  // the other workshops do not take them meanwhile, so the next full load goes to the chain. Empty without a lift.
+  const chainHeld: Good[] = [];
 
   for (const d of demands) {
     // Full loads by default; a starving producer accepts a small first load to restart.
     const cap = capacityOf(d.good);
+    // a workshop's input (a lifted one on the first castle's chain too, D-356)
+    const shop = d.prio === 1 || d.prio === CHAIN_PRIO;
     // starving = cannot start one more cycle and nothing is on the way (input 1: an empty stock)
-    const starving = d.prio === 1 && d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1) && d.b.incoming[d.good] === 0;
+    const starving = shop && d.b.stock[d.good] < (BUILDINGS[d.b.type].recipe?.inputs[d.good] ?? 1) && d.b.incoming[d.good] === 0;
     // free valley (D-94): a workshop with input for a cycle waits until a fuller load fits (contract
     // missions keep the one-unit top-up their balance and golden hashes were built on)
-    if (d.prio === 1 && topUpHold(world, d.b, d.good) > 0) continue;
+    if (shop && topUpHold(world, d.b, d.good) > 0) continue;
+    if (d.prio === 1 && chainHeld.length > 0 && chainHeld.includes(d.good)) continue;
     const minQty = Math.min(d.want, starving ? 2 : cap);
     let best: Building | null = null, bestT = Infinity, anyAvail = -1;
     for (const s of st.buildings) {
@@ -278,6 +294,7 @@ export function dispatch(world: World): void {
       if (t < bestT) { bestT = t; best = s; }
     }
     const key = d.b.id + ':' + d.good;
+    if (!best && d.prio === CHAIN_PRIO && !chainHeld.includes(d.good)) chainHeld.push(d.good);
     if (!best) {
       unmet.set(key, anyAvail === -1
         ? { k: 'NO_INPUT', cause: 'NONE_AVAILABLE', blockedBy: upstreamOf(world, d.good, d.b.id) }
@@ -381,8 +398,82 @@ export function dispatch(world: World): void {
     }
   }
 
-  diagnose(world, unmet, pushFail, held, dc);
+  diagnose(world, unmet, pushFail, held, dc, lift, chain);
   dc.release();
+}
+
+/**
+ * Chain priority (D-356), for the diagnosis: every workshop on the supply chain of the castle put first with its chain
+ * whose goods (or whose goods' inputs, down the chain) that castle still lacks in store, lowest id first; [] without
+ * `mission.chainFirst`. Wider than `chainLift` (which lifts only the workshops still short of input for the order): a
+ * consumer of another kind waiting for a shared input while a wagon takes it to one of these reads CHAIN_FIRST — the
+ * input goes into the first castle's goods — instead of CONTESTED.
+ */
+export function chainShops(world: World): number[] {
+  const m = world.state.mission;
+  if (!m.chainFirst || m.firstCastle === undefined) return [];
+  const c = runningContractOf(m, m.firstCastle);
+  const castle = c ? buildingById(world, c.castle) : null;
+  if (!c || !castle) return [];
+  const goods: Good[] = [];
+  for (const g of GOODS) if (c.need[g] - castle.stock[g] > 0) goods.push(g);
+  const out: number[] = [];
+  for (let i = 0; i < goods.length; i++) {
+    for (const p of world.state.buildings) {
+      if (p.type === 'warehouse' || p.type === 'castle' || !outputGoods(p.type).includes(goods[i]!)) continue;
+      if (!out.includes(p.id)) out.push(p.id);
+      for (const ig of inputGoods(p.type)) if (!goods.includes(ig)) goods.push(ig);
+    }
+  }
+  return out.sort((a, c2) => a - c2);
+}
+
+/**
+ * Chain priority (mission XVII "Drewno na dwa listy", D-356): the workshops on the supply chain of the castle put first
+ * with its whole chain (`mission.chainFirst`) that are still short of input for that castle's missing goods, lowest
+ * id first; [] when no castle is first with its chain (every other mission and state).
+ *
+ * Walk down from the castle: a good it still lacks (order − stock − on the way) minus what its producers already hold
+ * or are making is what the chain must still make; that much, by the recipe, of each input minus what those producers
+ * hold or have on the way is what they still need — while that is above zero they are lifted, and the input goes on
+ * down (bread → flour → grain). So the lift asks only for what the order needs: once the sawmill holds the wood for the
+ * east castle's last planks, the wood is shared again and the other castle's chain is not starved for nothing.
+ */
+export function chainLift(world: World): number[] {
+  const m = world.state.mission;
+  if (!m.chainFirst || m.firstCastle === undefined) return [];
+  const c = runningContractOf(m, m.firstCastle);
+  const castle = c ? buildingById(world, c.castle) : null;
+  if (!c || !castle) return [];
+  const owed: Partial<Record<Good, number>> = {};
+  const queue: Good[] = [];
+  for (const g of GOODS) {
+    const n = contractTarget(c, g) - castle.stock[g] - castle.incoming[g];
+    if (n > 0) { owed[g] = n; queue.push(g); }
+  }
+  const lift: number[] = [];
+  for (let i = 0; i < queue.length; i++) {
+    const g = queue[i]!;
+    let rest = owed[g]!, type: Building['type'] | null = null;
+    const makers: Building[] = [];
+    for (const p of world.state.buildings) {
+      if (p.type === 'warehouse' || p.type === 'castle' || !outputGoods(p.type).includes(g)) continue;
+      const r = BUILDINGS[p.type].recipe!;
+      rest -= p.stock[g] - p.reservedOut[g] + (p.progress >= 0 ? r.outputs[g] ?? 0 : 0);
+      makers.push(p);
+      type ??= p.type;
+    }
+    if (rest <= 0 || !type) continue;
+    const r = BUILDINGS[type].recipe!;
+    for (const ig of inputGoods(type)) {
+      let need = rest * (r.inputs[ig] ?? 0) / (r.outputs[g] ?? 1);
+      for (const p of makers) need -= p.stock[ig] + p.incoming[ig];
+      if (need <= 0) continue;
+      for (const p of makers) if (!lift.includes(p.id)) lift.push(p.id);
+      if (owed[ig] === undefined) { owed[ig] = need; queue.push(ig); } else owed[ig] += need;
+    }
+  }
+  return lift.sort((a, c2) => a - c2);
 }
 
 /** A building that produces `good` (lowest id, not `except`), or -1. */
@@ -413,11 +504,11 @@ function pickupWagon(world: World, b: Building, g: Good): number {
   return -1;
 }
 
-function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache): void {
+function diagnose(world: World, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache, lift: readonly number[], chain: readonly number[]): void {
   const st = world.state;
   void net(world);
   for (const b of st.buildings) {
-    b.status = statusFor(world, b, unmet, pushFail, held, dc);
+    b.status = statusFor(world, b, unmet, pushFail, held, dc, lift, chain);
   }
 }
 
@@ -460,7 +551,7 @@ function upstreamReason(world: World, b: Building, g: Good, dc: DistCache): Buil
   return { k: 'NO_INPUT', good: g, cause: 'NONE_AVAILABLE', blockedBy: held >= 0 ? held : stalled >= 0 ? stalled : any };
 }
 
-function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, held: Map<string, Held>, dc: DistCache): BuildingStatus {
+function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unmet>, held: Map<string, Held>, dc: DistCache, lift: readonly number[], chain: readonly number[]): BuildingStatus {
   if (b.incoming[g] > 0) {
     const w = incomingWagon(world, b, g);
     if (w >= 0) return { k: 'WAITING_DELIVERY', good: g, wagon: w };
@@ -468,12 +559,36 @@ function inputReason(world: World, b: Building, g: Good, unmet: Map<string, Unme
   // the goods exist and a busy wagon will fetch them sooner than a free one could (rule A): not a wagon shortage
   const h = held.get(b.id + ':' + g);
   if (h) return { k: 'WAGON_DUE', good: g, wagon: h.wagon, at: h.at };
+  // chain priority (D-356): the input goes first to a workshop on the first castle's chain (only with chainFirst)
+  if (chain.length > 0 && !chain.includes(b.id)) {
+    const to = chainRival(world, b, g, lift, chain);
+    if (to >= 0) return { k: 'NO_INPUT', good: g, cause: 'CHAIN_FIRST', blockedBy: to };
+  }
   const u = unmet.get(b.id + ':' + g);
   if (u && u.k === 'NO_WAGON') return { k: 'NO_WAGON', good: g, cause: u.cause };
   if (u && u.k === 'NO_INPUT' && u.cause === 'UNREACHABLE') return { k: 'NO_INPUT', good: g, cause: u.cause, blockedBy: u.blockedBy };
   const rival = contestedBy(world, b, g, dc);
   if (rival >= 0) return { k: 'NO_INPUT', good: g, cause: 'CONTESTED', blockedBy: rival };
   return upstreamReason(world, b, g, dc);
+}
+
+/**
+ * Chain priority (D-356): a workshop of another kind on the first castle's chain that takes `g` before `b` — one a
+ * wagon brings `g` to now (first in wagon order), else the lowest-id lifted one still asking for `g`; −1 when none.
+ */
+function chainRival(world: World, b: Building, g: Good, lift: readonly number[], chain: readonly number[]): number {
+  for (const w of world.state.wagons) {
+    const j = w.job;
+    if (j && j.good === g && j.to !== b.id && chain.includes(j.to)) {
+      const to = buildingById(world, j.to);
+      if (to && to.type !== b.type) return to.id;
+    }
+  }
+  for (const id of lift) {
+    const c = buildingById(world, id);
+    if (c && c.type !== b.type && inputGoods(c.type).includes(g) && BUILDINGS[c.type].inCap - c.stock[g] - c.incoming[g] > 0) return c.id;
+  }
+  return -1;
 }
 
 /**
@@ -495,7 +610,7 @@ function contestedBy(world: World, b: Building, g: Good, dc: DistCache): number 
   return -1;
 }
 
-function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache): BuildingStatus {
+function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFail: Map<string, PushFail>, held: Map<string, Held>, dc: DistCache, lift: readonly number[], chain: readonly number[]): BuildingStatus {
   const def = BUILDINGS[b.type];
   if (b.type === 'stable') return gateConnected(world, b) ? { k: 'IDLE' } : { k: 'NO_ROAD' };
   if (b.type === 'warehouse') {
@@ -524,7 +639,7 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
       // with tranches only the goods of the letter currently due count
       const target = contractTarget(own, g);
       if (target - b.stock[g] <= 0) continue;
-      const r = inputReason(world, b, g, unmet, held, dc);
+      const r = inputReason(world, b, g, unmet, held, dc, lift, chain);
       if (r.k === 'WAITING_DELIVERY' || r.k === 'WAITING_UPSTREAM' || r.k === 'WAGON_DUE') { if (!waiting) waiting = r; continue; }
       if (target - b.stock[g] - b.incoming[g] > 0) return r;
     }
@@ -534,7 +649,7 @@ function statusFor(world: World, b: Building, unmet: Map<string, Unmet>, pushFai
   if (!gateConnected(world, b)) return { k: 'NO_ROAD' };
   const r = def.recipe!;
   for (const g of inputGoods(b.type)) {
-    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet, held, dc);
+    if (b.stock[g] < (r.inputs[g] ?? 0)) return inputReason(world, b, g, unmet, held, dc, lift, chain);
   }
   for (const g of outputGoods(b.type)) {
     if (b.stock[g] + (r.outputs[g] ?? 0) > def.outCap) {

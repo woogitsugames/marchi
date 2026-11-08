@@ -5,6 +5,7 @@ import {
 } from './defs';
 import { buildingById, upstreamOf } from './logistics';
 import { contractsOf } from './contract';
+import { MISSIONS } from './missions';
 import { grade, hasEdge, net, type World } from './network';
 import { cancelJob } from './wagons';
 import { acceptOrder, declineMerchant, declineOrder, sellToMerchant } from './events';
@@ -27,7 +28,13 @@ export type Command =
    * Two castles (mission XVI, D-289): wagons with finished goods serve this castle's order first (castle leg only);
    * `castle: -1` clears it (back to the even split by fill). Refused outside a running two-castle mission.
    */
-  | { t: 'castleFirst'; castle: number };
+  | { t: 'castleFirst'; castle: number }
+  /**
+   * Chain priority (mission XVII, D-356): this castle first with its whole supply chain — its castle leg and the
+   * workshops upstream of its missing goods (wood for the sawmill before the charcoal burner). `castle: -1` clears it
+   * (even split). Refused outside a running two-castle mission whose def has `chainPriority`.
+   */
+  | { t: 'chainFirst'; castle: number };
 
 export type CommandError =
   | { k: 'OUT_OF_BOUNDS' }
@@ -222,9 +229,22 @@ export function applyCommand(world: World, cmd: Command): CommandResult {
       const m = st.mission;
       if (!m.extraContracts || m.result !== 'running' || !Number.isInteger(cmd.castle)) return { ok: false, err: { k: 'BAD_TARGET' } };
       // the key is removed, not set to -1: a cleared switch serializes exactly like one never touched
-      if (cmd.castle === -1) { delete m.firstCastle; return { ok: true, cost: 0 }; }
+      if (cmd.castle === -1) { delete m.firstCastle; delete m.chainFirst; return { ok: true, cost: 0 }; }
       if (!contractsOf(m).some((c) => c.castle === cmd.castle)) return { ok: false, err: { k: 'BAD_TARGET' } };
       m.firstCastle = cmd.castle;
+      // the castle leg only (D-289): a chain lift set before is dropped (absent in every mission without chainPriority)
+      delete m.chainFirst;
+      return { ok: true, cost: 0 };
+    }
+    case 'chainFirst': {
+      const m = st.mission;
+      if (!m.extraContracts || m.result !== 'running' || !Number.isInteger(cmd.castle) || !MISSIONS[m.id]?.chainPriority) {
+        return { ok: false, err: { k: 'BAD_TARGET' } };
+      }
+      if (cmd.castle === -1) { delete m.firstCastle; delete m.chainFirst; return { ok: true, cost: 0 }; }
+      if (!contractsOf(m).some((c) => c.castle === cmd.castle)) return { ok: false, err: { k: 'BAD_TARGET' } };
+      m.firstCastle = cmd.castle;
+      m.chainFirst = true;
       return { ok: true, cost: 0 };
     }
   }

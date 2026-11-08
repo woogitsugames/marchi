@@ -1,5 +1,5 @@
 // Read-only helpers that turn state into explanations: cause chains, ETAs, time of day.
-import { DAY_TICKS, GOODS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
+import { BUILDINGS, DAY_TICKS, GOODS, LOAD_TICKS, RAIN_COBBLE, SPEED_COBBLE, START_DAY_FRACTION, STONE_COBBLE, STONE_RESERVE, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods, sumGoods } from './defs';
 import { buildingById } from './logistics';
 import { contractTarget, contractsOf, storeCapOf } from './contract';
 import { marketOpen } from './town';
@@ -524,4 +524,44 @@ export function castleRival(world: World, castleId: number): CastleRival | null 
     }
   }
   return best;
+}
+
+/**
+ * Two castles with different goods from one input (mission XVII "Drewno na dwa listy", D-358): this castle's producer
+ * stands idle short of `input`, while `rival` — a workshop of another kind on another castle's chain — holds or gets
+ * that input to make `good`, which `castle` still lacks. The castle card's line: "Węglarnia stoi — drewno idzie na deski
+ * dla Zamku Wschodniego." Read-only; null when no castle's producer is starved that way (always in mission XVI, whose
+ * castles share one good and one producer — castleRival names that case).
+ */
+export interface CastleChainRival { producer: number; input: Good; rival: number; good: Good; castle: number }
+
+export function castleChainRival(world: World, castleId: number): CastleChainRival | null {
+  const st = world.state, m = st.mission;
+  if (!m.extraContracts || m.result !== 'running') return null;
+  const b = buildingById(world, castleId);
+  const own = contractsOf(m).find((k) => k.castle === castleId);
+  if (!b || !own) return null;
+  for (const g of GOODS) {
+    if (own.need[g] - b.stock[g] <= 0) continue;
+    for (const p of st.buildings) {
+      if (p.type === 'warehouse' || p.type === 'castle' || p.progress >= 0 || !outputGoods(p.type).includes(g)) continue;
+      for (const ig of inputGoods(p.type)) {
+        if (p.stock[ig] >= (BUILDINGS[p.type].recipe!.inputs[ig] ?? 0)) continue;
+        let best: CastleChainRival | null = null, bestN = 0;
+        for (const q of st.buildings) {
+          if (q.type === p.type || q.type === 'warehouse' || q.type === 'castle' || !inputGoods(q.type).includes(ig)) continue;
+          const n = q.stock[ig] + q.incoming[ig] + (q.progress >= 0 ? 1 : 0);
+          if (n <= bestN) continue;
+          for (const k of contractsOf(m)) {
+            if (k === own) continue;
+            const c = buildingById(world, k.castle);
+            const og = c ? outputGoods(q.type).find((x) => k.need[x] - c.stock[x] > 0) : undefined;
+            if (og) { best = { producer: p.id, input: ig, rival: q.id, good: og, castle: k.castle }; bestN = n; break; }
+          }
+        }
+        if (best) return best;
+      }
+    }
+  }
+  return null;
 }
