@@ -2700,10 +2700,10 @@ body.is-short.is-bigtext .fix-dock .fix-note .s-hint, body.is-short.is-bigtext .
 body.is-short.is-bigtext .fix-dock .fix-note .s-hint { display: flex; }
 body.is-short.is-bigtext .fix-dock .fix-why > span { display: block; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
-/* the waybill above the rail in landscape (D-353; D-347 did it for the two-castle list only, with a fixed height that
+/* the waybill above the rail (D-353; portrait too, where at 200 % the pace card covered its last row; D-347 did it for the two-castle list only, with a fixed height that
    cut a single order's panel to its head): hud.ts measures --wb-room from the panel's top to the rail piece under it,
    and the panel scrolls inside that room rather than run under the tool cards. With normal text it always fits. */
-body.mode-game.is-landscape .waybill-wrap:not(.is-collapsed) .wb-panel {
+body.mode-game .waybill-wrap:not(.is-collapsed) .wb-panel {
   max-height: var(--wb-room, none); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
 }
 /* large text in landscape: a wider card (the ribbon and the pill keep one line where they can), and the rows that
@@ -2726,7 +2726,7 @@ body.is-landscape.is-bigtext .wb-pace-eta { padding-block: 2px; line-height: 1.1
 /* two castles: each castle is its name row over one row of good, count and state (the bar slim under the count),
    instead of three rows — both castles' progress and lateness stay above the rail */
 body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "h h" "g s"; column-gap: 8px; align-items: center;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "h h" "g s"; column-gap: 10px; align-items: center;
 }
 body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .tr-h { grid-area: h; min-height: 0; line-height: 1; }
 body.is-landscape.is-bigtext .wb-castles .wb-tr { padding-block: 2px; }
@@ -2748,8 +2748,10 @@ body.is-landscape .waybill-wrap.is-tight .wb-panel { padding-block: 5px 0; }
 .waybill-wrap.is-tight .wb-panel:has(.wb-castles) { display: flex; flex-direction: column; }
 .waybill-wrap.is-tight .wb-panel:has(.wb-castles) > * { flex: none; }
 .waybill-wrap.is-tight .wb-panel:has(.wb-castles) > .wb-head { order: 1; padding-block: 4px 2px; }
-body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { grid-area: g; min-width: 0; }
-body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > :is(.castle-eta, .tr-state) { grid-area: s; justify-self: end; text-align: end; line-height: 1.1; padding-inline-start: 0; }
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { grid-area: g; }
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > :is(.castle-eta, .tr-state) { grid-area: s; justify-self: end; justify-content: flex-end; text-align: end; line-height: 1.1; padding-inline-start: 0; min-width: 0; }
+/* the count takes its own width (it never yields to a long state, ar 200 %); the state wraps in the rest */
+body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { display: block; }
 
 /* ================================================================ player help (src/ui/help.ts, D-236)
    Six ruled folds, a woodcut glyph and the topic in the heading face; one answer open at a time. */

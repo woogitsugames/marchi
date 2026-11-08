@@ -299,3 +299,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-349 | 2026-11-08 | Layout in de, ru, ar, ja, hi (order 83, taken over from GPT): three shorter Japanese strings and a smaller Cyrillic sheet title in short landscape | decided | UI |
 | D-350 | — | Orders 69, 79, 80 (taken over from GPT): nine sounds of own synthesis, CC0, reproducible | decided | inne |
 | D-351 | — | Where the new sounds play (audio only reads state) | decided | inne |
+| D-353 | — | The landscape waybill keeps the order and its pace above the rail at any text size: a measured room, a compact form when short of it, and the card moves over the tools when the stall card would be under it (a11y follow-up of 8 XI, BACKLOG P2) | decided | treść |
+| D-354 | — | Forced colors: the primary button gets a system border and focus a 3 px Highlight ring; language names in the game's body face first | decided | UI |
+| D-355 | — | Help opened from a card's "?" focuses the asked topic's heading; an open "Co to znaczy?" fold gets the rail's height in a short landscape sheet | decided | UI |

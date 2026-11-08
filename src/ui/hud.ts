@@ -382,15 +382,15 @@ export class Hud {
   }
 
   /**
-   * --wb-room (D-353): in landscape the waybill hangs from the top bar over the map, and the rail grows from the
-   * bottom — at 200 % text in a short screen they met and the pace line ran under the tool cards. The room is
+   * --wb-room (D-353): the waybill hangs from the top bar over the map, and the rail grows from the
+   * bottom (portrait: the pace card over the tools) — at 200 % text in a short screen they met and the pace line ran under the tool cards. The room is
    * measured from the panel's top to the highest rail piece under it (tools, stall card or alarm seal, whichever
    * lies beneath the panel: the tools in LTR right-handed, the stall card in RTL or left-handed). The panel never
    * grows past it; what does not fit scrolls inside the panel (its key rows come first).
    */
   private measureWbRoom(): void {
     const wrap = this.waybillWrap;
-    if (!document.body.classList.contains('is-landscape') || wrap.hidden || this.folded()) {
+    if (document.body.classList.contains('is-mini') || wrap.hidden || this.folded()) {
       wrap.style.removeProperty('--wb-room');
       wrap.classList.remove('is-tight');
       return;
