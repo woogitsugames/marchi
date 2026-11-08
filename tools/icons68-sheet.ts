@@ -4,7 +4,7 @@
  * (IoU of ink masks) of every new icon against every other icon.
  * Run: npx tsx tools/icons68-sheet.ts [outPng]  (default docs/shots/icons68-sheet.png)
  */
-import { writeFileSync } from 'node:fs';
+import { unlinkSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -73,4 +73,5 @@ const page = await browser.newPage({ viewport: { width: 1100, height: 800 } });
 await page.goto(pathToFileURL(htmlPath).href);
 await page.screenshot({ path: outPng, fullPage: true });
 await browser.close();
+unlinkSync(htmlPath);
 console.log('wrote', outPng);

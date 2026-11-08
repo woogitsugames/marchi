@@ -293,3 +293,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-342 | — | Goods shape audit (order 81, taken over from GPT): the icons stay; bread vs malt on the wagon bed is a proposal | decided | sim |
 | D-343 | — | Playtest scene S16 "Two castles" (mission XVI): a decision fixture, its own CSV columns and hypothesis H6 (order 103, taken over from GPT) | decided | sim |
 | D-344 | — | Seventh help topic "Several castles", opened by the "?" of a two-castle castle card (order 104, taken over from GPT) | decided | UI |
+| D-345 | — | Order 68 (taken over from GPT): four new woodcut state icons; the trading post and the bottleneck keep the woodcuts they already had | decided | inne |

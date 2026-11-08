@@ -3921,3 +3921,33 @@ the existing woodcut `first` pennant (no new pack icon). Placed after "Granaries
 mapping stays by sheet kind (`HELP_TOPIC_OF_KIND`, D-254); `SheetContent` gains an optional `helpTopic()` that wins
 over it, and only the building card uses it: a castle holding one of two castle orders while the mission runs
 (`twoCastleOrder`) opens "castles", every other building card still "cause". Tests: tests/help-map.test.ts. (decided)
+
+**D-345 — Order 68 (taken over from GPT): four new woodcut state icons; the trading post and the bottleneck keep the
+woodcuts they already had.** The order listed six concepts. Two already had their own icon drawn for this game:
+`tradePost` (steelyard on a post, D-170) and `bottleneck` (mill hopper on a trestle, D-171). A second picture for
+the same thing would make the player learn two shapes, so they stay. Four new ones in `src/ui/icons.ts`, on the same
+kit (filled polygons only, hand-cut contour, gouge cuts, white-line hatching, `currentColor`, 24×24):
+`wagon_due` — the bare cart rolling forward over a rut trail that breaks up behind it, with a small hourglass above
+(not `wagon`'s horse, not `buy_wagon`'s plus, not `waiting`'s big hourglass); `market_full` — a two-pan balance on a
+column, tipped hard: the pan of goods heaped over the rim sits low, the pan with one coin rides high (a centred column
+and pans on cords, leaning the other way from the steelyard of `tradePost`); `grow` — two gabled houses of one
+trade on a ground line and a plus of two squared timbers, the cross-beam laid over the upright (not `build`'s open
+frame, not `buy_wagon`'s plain cross); `cut_road` — two wheel ruts running corner to corner from lower left to upper
+right, with a gabled house standing across them, the ruts breaking off before its walls (against the strike bar's
+slant, so it never reads as a crossed-out icon). At 18 px the closest silhouette (IoU of ink masks, from
+`tools/icons68-sheet.ts`) is 0.37 / 0.35 / 0.46 / 0.34 (brewery, mill, malthouse, follow). None of these is a
+near-identical shape (goods pairs run 0.5–0.6).
+Where they appear: `WAGON_DUE` status (pins, chain rows, building card status line; D-156) and the "pickup on its
+way, due in …" calm hint (D-193) → `wagon_due`. A granary full only of loads no market takes (D-174, the
+`status.STORAGE_FULL.saturated` text) → `market_full` on its pin, the worst-stall seal, the chain row and the status
+line (new `buildingStateIcon(world, id, status, size)` in `format.ts` reads the world; `buildingStatusIcon` stays
+world-free), plus the "market full" calm hint (D-180), which used the coin. The grow card (D-192) puts `grow` on the
+alarm seal, as the bottleneck card does with its hopper (the rank card keeps the first pin's icon: its missing good is
+read there). The trading-post pace card (D-245) puts `tradePost` on the seal, and the post's "buying" status line
+shows the post instead of the coin. A ghost refused because it would cut a diagonal road step (D-176,
+`place.cutsRoad`) leads its tag with `cut_road` (20 px). RTL (D-334): only `wagon_due` joins `RTL_MIRROR`, because
+the cart drives in the reading direction and its trail lies behind it. The balance, the houses with the plus and the
+road with the house are pictures of things, so they do not mirror. Sheet `docs/shots/icons68-sheet.png` (18/32/64 px
+on parchment and on oak, grayscale beside the nearest existing icons, the RTL row, the IoU table), shots
+`docs/shots/icons68-{market,grow,cut}-{412x915,915x412}.jpg` (`tools/icons68-shots.mjs`). UI only, no sim change.
+(decided)
