@@ -43,6 +43,8 @@ const CONTRACT_GOLDEN: Record<string, string> = {
   // mission XVI (D-288, two castles, state v10): recorded when it was added; the older entries did not change
   'm16|buy0': '2ba702620c39baa3,93c7d471412c5137,bd2a87bf801aa7c7',
   'm16|buy2': 'e0af8608a70ef4c0,97579744b486bb8f,535feb8d5bb4693f',
+  'm17|buy0': '802acf44a780667c,c1a1711ea4d4e897,8ee257de75a6a184',
+  'm17|buy2': '839d6650333c55c1,c203ec8e26a8177d,248a422e506ef655',
   'm2|buy0': 'b3acb2f7ad67ff52,b015a53f06f78528,79c49585665d1105',
   'm2|buy2': 'b57515a568fec6e7,e89c45171850e6c5,b439ab7698d72ac4',
   'm3|buy0': '19ee2ab5f4a5a6b1,037568dac6697773,2e74a70e8f3ee796',

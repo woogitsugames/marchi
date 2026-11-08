@@ -3,7 +3,7 @@
 // generated lazily from the live state (so they hit real roads / buildings) and recorded as
 // concrete commands, which can then be replayed and shrunk without the generator.
 import {
-  BUILDINGS, applyCommand, checkInvariants, createWorld, deserialize, hasEdge, lineCells, serialize,
+  BUILDINGS, MISSIONS, applyCommand, checkInvariants, createWorld, deserialize, hasEdge, lineCells, serialize,
   stateHash, step, unexplainedStalls, wagonEta, type BuildingType, type Command, type World,
 } from '../src/sim/index';
 import { nextFloat, nextInt, seedRng, type RngState } from '../src/sim/rng';
@@ -117,6 +117,8 @@ export function genCommand(w: World, rng: RngState): Command {
     const m = w.state.mission;
     if (m.extraContracts && roll >= 0.7) {
       const ids = [-1, ...w.state.buildings.filter((b) => b.type === 'castle').map((b) => b.id)];
+      // mission XVII (D-356): the chain switch too, drawn only where the mission offers it (XVI draws as before)
+      if (MISSIONS[m.id]?.chainPriority && roll >= 0.74) return { t: 'chainFirst', castle: pick(rng, ids)! };
       return { t: 'castleFirst', castle: pick(rng, ids)! };
     }
     const stables = w.state.buildings.filter((b) => b.type === 'stable');
@@ -143,7 +145,7 @@ export function genCommand(w: World, rng: RngState): Command {
 /** Missions the short fuzz in `npm test` uses (kept stable so its seeds keep their scenarios). */
 export const DEFAULT_FUZZ_MISSIONS = ['m1', 'sandbox'];
 /** Every playable map: the long mode (`tools/fuzz.ts`) fuzzes all of them by default. */
-export const ALL_FUZZ_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16', 'sandbox'];
+export const ALL_FUZZ_MISSIONS = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16', 'm17', 'sandbox'];
 
 export function generateScenario(
   fuzzSeed: number,

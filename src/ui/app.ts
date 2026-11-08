@@ -1088,6 +1088,11 @@ export class App implements PanelNav {
       this.hud.toast(cmd.castle < 0 ? t('hud.castleEven') : t('hud.castleFirst', { name: buildingName(this.world, cmd.castle) }), 'info', 'first', 1800);
       this.sheets.update();
     }
+    else if (cmd.t === 'chainFirst') {
+      // mission XVII (D-356): the whole chain of this castle goes first
+      this.hud.toast(cmd.castle < 0 ? t('hud.castleEven') : t('hud.castleChain', { name: buildingName(this.world, cmd.castle) }), 'info', 'first', 1800);
+      this.sheets.update();
+    }
     else if (cmd.t === 'place') this.afterPlace(cmd.type, cmd.x, cmd.y, n);
   }
 
@@ -1249,6 +1254,10 @@ export class App implements PanelNav {
 
   castleFirst(castle: number): void {
     this.enqueue({ t: 'castleFirst', castle });
+  }
+
+  chainFirst(castle: number): void {
+    this.enqueue({ t: 'chainFirst', castle });
   }
 
   sellWagon(wagon: number): void {

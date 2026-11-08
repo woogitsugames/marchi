@@ -612,7 +612,8 @@ function gateContract(c: Ctx, ct: Obj, cp: string, version: number, ids: Map<num
 /**
  * state v10 (D-288, D-289): mission XVI's further castle orders and the "this castle first" switch. Both keys are
  * optional and absent in every other mission. `extraContracts` needs a main contract, a castle per order (each castle
- * holds one order) and one tranche each; `firstCastle` must name a castle holding an order.
+ * holds one order) and one tranche each; `firstCastle` must name a castle holding an order; `chainFirst` (mission XVII,
+ * D-356) is only `true` and only beside `firstCastle`.
  */
 function gateCastles(c: Ctx, m: Obj, mp: string, version: number, ids: Map<number, string>): void {
   const e = c.e;
@@ -638,6 +639,11 @@ function gateCastles(c: Ctx, m: Obj, mp: string, version: number, ids: Map<numbe
     const f = int(c, m, 'firstCastle', mp, 1, LIMITS.maxInt);
     if (!has(m, 'extraContracts')) e.add('INCONSISTENT', `${mp}.firstCastle`, 'a castle first without two castle orders');
     else if (f !== null && !castles.includes(f)) e.add('DANGLING_REF', `${mp}.firstCastle`, `castle ${f} holds no order`);
+  }
+  // mission XVII (D-356): the whole chain first — only `true`, only with a castle first
+  if (has(m, 'chainFirst')) {
+    if (m.chainFirst !== true) e.add('BAD_TYPE', `${mp}.chainFirst`, `expected true, got ${show(m.chainFirst)}`);
+    if (!has(m, 'firstCastle')) e.add('INCONSISTENT', `${mp}.chainFirst`, 'a chain first without a castle first');
   }
 }
 

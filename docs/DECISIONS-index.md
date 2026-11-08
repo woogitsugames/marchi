@@ -302,6 +302,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-352 | 2026-11-08 | Bread rides in oblong trays (D-342's proposal, prepared for the owner's yes) | decided | inne |
 | D-353 | — | The landscape waybill keeps the order and its pace above the rail at any text size: a measured room, a compact form when short of it, and the card moves over the tools when the stall card would be under it (a11y follow-up of 8 XI, BACKLOG P2) | decided | treść |
 | D-354 | — | Forced colors: the primary button gets a system border and focus a 3 px Highlight ring; language names in the game's body face first | decided | UI |
-| D-355 | — | Help opened from a card's "?" focuses the asked topic's heading; an open "Co to znaczy?" fold gets the rail's height in a short landscape sheet | decided | UI |
+| D-355 | 2026-11-08 | Help opened from a card's "?" focuses the asked topic's heading; an open "Co to znaczy?" fold gets the rail's height in a short landscape sheet | decided | UI |
+| D-356 | 2026-11-07 | "Cały łańcuch dla tego zamku": the `chainFirst` command and the chain lift in the dispatcher | decided | inne |
+| D-357 | — | Mission XVII data, thresholds and ladder; the castle-leg switch is "no help", not "worse" | decided | sim |
+| D-358 | — | Diagnosis: NO_INPUT.CHAIN_FIRST, the castle card's chain line, the forecast's share of the shared input | decided | UI |
+| D-359 | — | Mission XVII content: menu, letters, 22 keys in 17 languages, screenshots | decided | treść |
 | D-370 | 2026-11-08 | Time-of-day lights: a pure refresh gate, nothing recomputed while paused, forced on resize and speed change; keyframes parsed into columns (owner approval 2026-11-08, follow-up of D-223/D-257) | decided | inne |
 | D-380 | 2026-11-08 | The free valley's card builds a chain step in one tap: producer + consumer (owner yes 2026-11-08, BACKLOG P2 from D-267) | decided | UI |

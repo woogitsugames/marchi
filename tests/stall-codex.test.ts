@@ -72,6 +72,7 @@ const SITUATION_WHERE: Record<CodexSituation, string> = {
   castleEven: 'XVI: towar dzielony po równo / goods shared evenly (D-290)',
   castleFirst: 'XVI: przełącznik pierwszeństwa włączony / castle-first switch on (D-289)',
   tutorialNoRoad: 'samouczek budowania: chata bez drogi / build tutorial: hut without a road (D-259)',
+  castleChain: 'XVII: wspólny surowiec idzie na łańcuch drugiego zamku / the shared input goes to the other castle\'s chain (D-358)',
 };
 
 function situationLocale(d: Record<string, string>, sit: CodexSituation): (typeof STALL_CODEX)[string]['pl'] {

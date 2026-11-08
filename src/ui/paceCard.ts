@@ -3,7 +3,7 @@
 // lesson only in the letter). When no real stall needs the card, it names what the forecast says holds the
 // order back and leads to the cure. Calm, never red. Pure read of the sim and of the UI's pace log.
 import {
-  BUILDINGS, GOODS, MARKET, cycleTicks, MAX_WAGONS, capacityOf, castleForecast, contractsOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
+  BUILDINGS, GOODS, MARKET, MISSIONS, cycleTicks, MAX_WAGONS, capacityOf, castleForecast, contractsOf, PACE_WINDOW_TICKS, WAGON_PRICE, inputGoods, isHeld, RAIN_COBBLE, SPEED_COBBLE, TICK_HZ, buildingById, canPlace, canSurface, cellSpeed, contractForecast,
   edgeLength, findPath, suggestLinkToStable, isRaining, missionBuildable, outputGoods, roadCellCost, sandboxStatus, thawing, trancheForecast, validateRoad,
   type Building, type BuildingType, type CastleForecast, type ContractForecast, type Good, type PaceLog, type RoadSuggestion, type World,
 } from '../sim/index';
@@ -173,7 +173,9 @@ export function castleCard(world: World, log: PaceLog): PaceCastle | null {
     if (!fc || fc.done || fc.share === 'first' || fc.finishTick < 0 || fc.finishTick <= fc.dueTick) continue;
     const castle = buildingById(world, c.castle)!;
     const good = GOODS.find((g) => c.need[g] > castle.stock[g]) ?? GOODS.find((g) => c.need[g] > 0)!;
-    const rival = fc.share === 'after' ? m.firstCastle! : orders.find((o) => o !== c && o.need[good] > 0)?.castle ?? -1;
+    // mission XVII (D-358): the other castle wants another good made from the same input — its chain is the rival
+    const rival = fc.share === 'after' ? m.firstCastle! : orders.find((o) => o !== c && o.need[good] > 0)?.castle
+      ?? (MISSIONS[m.id]?.chainPriority ? orders.find((o) => o !== c)?.castle ?? -1 : -1);
     if (rival < 0) continue;
     return { k: 'castle', producer: c.castle, rival, good, share: fc.share, lateTicks: fc.finishTick - fc.dueTick, firstTick: fc.firstTick, dueTick: fc.dueTick };
   }

@@ -94,6 +94,7 @@ export const COMMAND_FIELDS: CommandDecl = {
   merchantSell: { id: eventId('merchant') },
   merchantDecline: { id: eventId('merchant') },
   castleFirst: { castle: int(-1, REPORT_LIMITS.maxInt) },
+  chainFirst: { castle: int(-1, REPORT_LIMITS.maxInt) },
 };
 
 /**

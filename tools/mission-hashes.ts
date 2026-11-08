@@ -9,6 +9,7 @@ import { STRATEGIES as S1012, WRONG_FIXES, runProposed as run1012 } from './bot-
 import { M13_EXTRA, M13_STRATEGIES, runM13 } from './bot-m13';
 import { M14_EXTRA, M14_STRATEGIES, runSiteBot } from './bot-m14';
 import { M15_EXTRA, M15_STRATEGIES } from './bot-m15';
+import { M17_EXTRA, M17_STRATEGIES, runM17 } from './bot-m17';
 
 for (const id of Object.keys(plans)) for (const s of plans[id]!) {
   const r = runStrategy(id, s);
@@ -29,4 +30,9 @@ for (const s of [...M13_STRATEGIES, ...M13_EXTRA]) {
 for (const [id, list] of [['m14', [...M14_STRATEGIES, ...M14_EXTRA]], ['m15', [...M15_STRATEGIES, ...M15_EXTRA]]] as const) for (const s of list) {
   const r = runSiteBot(id, s);
   console.log(`${id} | ${s.name} | ${r.result} ${r.minutes.toFixed(2)} | ${r.seals} | ${r.hash}`);
+}
+// mission XVII (D-356): appended after the 71 rows of I-XV, so their diff stays literal
+for (const s of [...M17_STRATEGIES, ...M17_EXTRA]) {
+  const r = runM17(s);
+  console.log(`m17 | ${s.name} | ${r.result} ${r.minutes.toFixed(2)} | ${r.seals} | ${r.hash}`);
 }

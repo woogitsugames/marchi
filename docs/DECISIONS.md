@@ -4082,6 +4082,87 @@ fold or the sheet gives the rail back. Chosen over folding the rival line (BACKL
 card's own diagnosis and the fold explains it, so both stay; the room comes from the rail, which the reader is not
 using while reading. Applies to every codex fold (why sheet, wagon) in short landscape, not only XVI. (decided)
 
+## Mission XVII "Drewno na dwa listy": chain priority (owner approval 2026-11-08, research §3 C)
+
+**D-356 — "Cały łańcuch dla tego zamku": the `chainFirst` command and the chain lift in the dispatcher.**
+Research §3 C (`docs/research/2026-11-07-two-castles.md`) found that with two castles wanting *different* goods made
+from one input (planks from the sawmill, charcoal from the burner, both on the same wood), the XVI castle-leg switch
+does not help (the planks lack wood, not wagons) and a chain priority is needed. `{ t: 'chainFirst', castle }`
+(`src/sim/commands.ts`, in the replay allowlist) sets `mission.firstCastle` and the new optional `mission.chainFirst:
+true`; `castle: -1` deletes both keys, and `castleFirst` (the leg switch) deletes `chainFirst`, so a cleared or a
+leg-only state serializes exactly like one never touched. Refused (BAD_TARGET) unless the mission def has
+`chainPriority` (only m17; XVI keeps its one switch). The dispatcher (`src/sim/logistics.ts`) computes `chainLift`:
+walk down from the first castle — a good it still lacks (order − stock − on the way) minus what its producers hold or
+are making is what the chain must still make; by the recipe, that much input minus what those producers hold or have on
+the way is what they still need; while it is above zero they are *lifted* (input demands at `CHAIN_PRIO` 0.5: after
+the castles' −1/0, before every other workshop's 1) and the input goes on down. While a lifted workshop asks for a good
+and cannot get a full load yet, the other workshops do not take that good in this dispatch (`chainHeld`), so the next
+load goes to the chain instead of being nibbled away by the starving consumer's two-unit restarts. Why "only as much
+as the order needs": the prototype's strict lift (until the castle holds everything) starved the other castle (research
+§1.4: B 7:42 → 9:22, C 6:45 → 8:42); measured here, the lift ends at ~0:50 once the sawmill holds the wood for the east
+castle's last planks, and the wood is split again. `saveGate` checks the key (only `true`, only with `firstCastle`);
+the fuzzer draws `chainFirst` only where the mission offers it. Everything is behind `mission.chainFirst` /
+`MissionDef.chainPriority`: `npx tsx tools/mission-hashes.ts` — the 71 rows of I–XV identical before and after (new m17
+rows appended after them), `tools/bot-m16.ts` output identical, `CONTRACT_GOLDEN` gains m17 only. (decided)
+
+**D-357 — Mission XVII data, thresholds and ladder; the castle-leg switch is "no help", not "worse".**
+Dry valley (`valley-m3`), no rain, no building: **one** woodcutter (22,37) for the sawmill (38,42) and the charcoal
+burner (52,42) (4 wood each), stable, east castle (84,42) = main contract, north castle (62,27) on the spur; 60 silver,
+6 wagons. East 24 planks by 5:30, north 6 charcoal by 8:00, end 12:00; 3 seals by 7:30, 2 by 9:30 (working
+thresholds). Research C as written (2 woodcutters, 4 wagons, 30 planks by 5:00, 10 charcoal by 8:00) is wagon-bound,
+not wood-bound: there the chain lever only reorders wagons, a bought wagon fixes everything (+1 wagon: 3★) and the
+results are chaotic (chain @0:00 east 6:31, @1:00 5:50). A sweep (~1300 configurations: woodcutters 1–2 and their
+position, wagons 3–6, both orders, starting wood) picked the shape where wood is the shared bottleneck and wagons are
+plenty, with the widest margins. Ladder (`npx tsx tools/bot-m17.ts`):
+
+| Strategy | End | East | North | Late | Seals |
+|---|---:|---:|---:|---|---:|
+| nothing (even split) | 7:11 | 7:11 | 3:33 | east | 2 |
+| east castle leg first @0:00 (XVI switch) | 7:11 | 7:11 | 3:33 | east | 2 |
+| **east whole chain first @0:00** | **6:18** | **3:51** | 6:18 | — | **3** |
+| east chain @1:00 / @1:30 / @2:00 | 4:59 / 4:59 / 5:16 | same | 4:22 / 3:39 / 3:33 | — | 3 |
+| east chain @3:00 (too late) | 6:17 | 6:17 | 3:33 | east | 2 |
+| north chain first @0:00 (wrong castle) | 7:51 | 7:51 | 3:31 | east | 1 |
+| +1 / +2 wagons @0:30, no switch | 7:11 | 7:11 | 3:33 | east | 2 |
+| east chain + 1 wagon | 7:02 | 3:51 | 7:02 | — | 3 |
+
+Margins: nothing 19 s under the 3-seal line (so 2★, not 1★), the chain 72 s under it, the east letter 99 s early with
+the chain at 0:00 and 14 s at 2:00 (decision window ~2:00, as XVI's ~1:40). The castle-leg switch gives the **same run**
+as doing nothing (every row: wagons are never short here, so the order of the plank wagons changes nothing) — wrong
+because it does not help and costs the decision window, but it does not cost a seal. A config where it is strictly
+worse in seals exists only with a 1–5 s margin (2 woodcutters, 3–4 wagons) where the chain itself is fragile; I chose
+the robust ladder and leave this to the owner (BACKLOG, question 1). Mission page `docs/missions/m17.md`, tests
+`tests/m17-chain.test.ts`. (decided — thresholds working, owner to confirm)
+
+**D-358 — Diagnosis: NO_INPUT.CHAIN_FIRST, the castle card's chain line, the forecast's share of the shared input.**
+(1) New stall cause `NO_INPUT.CHAIN_FIRST` (data, `blockedBy` = the workshop on the first castle's chain; the castle is
+`mission.firstCastle`): read by a consumer outside that chain waiting for an input that a wagon takes to a workshop on it
+(`chainShops`: every producer of what the first castle still lacks in store, and of their inputs) or that a lifted
+workshop still asks for; checked after WAITING_DELIVERY and WAGON_DUE, before NO_WAGON and CONTESTED. Status line
+"Drewno → Tartak, dla Zamku Wschodniego"; the cause chain goes burner → sawmill; stall codex entry (pl/en,
+`docs/content/stall-codex.md`). With the chain on, the burner reads it for 35 s of the ladder run; never without
+`chainFirst` (test). (2) `castleChainRival(world, castle)` (read-only, `src/sim/diagnose.ts`): this castle's producer
+stands idle short of an input another castle's workshop holds or gets for a good that castle still lacks. The castle
+card line (`src/ui/castles.ts`): "Tartak stoi — drewno idzie na węgiel drzewny dla Zamku Północnego." at the even split
+from 0:41 (the lesson's first read: the east castle's own card says why its planks are late) and "Węglarnia stoi —
+drewno idzie na deski dla Zamku Wschodniego." with the east chain first; the producer is a link. Codex situation
+`castleChain` (17 languages). Never in XVI (one good, one producer; `castleRival` names that case). (3) The XVI castle
+forecast took the sawmill's full wood for each castle (east "on time" at the even split). `castleForecast` and the
+two-castle `contractForecast` now give a chain `inputShare` of the input capacity: 1 when it goes first with its chain
+or nobody else's chain takes the input, else 1/(1 + rivals) — 0 rivals in XVI, so its forecasts are unchanged. At 0:30
+the even split now forecasts east 5:48 (late; real 7:11) and "first with the chain" 3:51 (real 3:51). (4) The card's
+switch dock (XVII only): "Cały łańcuch dla tego zamku" (primary, note "gotowe ok. …") above "Ten zamek pierwszy" (note:
+"Tylko gotowy towar jedzie najpierw tutaj — surowca nie przybędzie."), then "Dziel po równo" once
+on; both ≥ 48 px dock buttons; a toast confirms. (decided)
+
+**D-359 — Mission XVII content: menu, letters, 22 keys in 17 languages, screenshots.**
+Appended to the menu as XVII after XVI (no renumbering): "XVII. Drewno na dwa listy" / "Jedno drewno, dwa łańcuchy".
+The castellan's letters (opening with both orders and times, the hint "Wozów masz dość — brakuje drewna. Na karcie
+zamku dasz pierwszeństwo samym wozom albo całemu łańcuchowi. Zdecyduj od razu.", 1–3 seals, loss) in 17 languages;
+pl/en authored, the other 15 letters and the 22 new UI keys (status/cause lines, castle-card lines, switch notes,
+toast, menu, codex situation) are agent translations, flagged in BACKLOG for native review. Screenshots
+`docs/shots/m17-{letter,card,castle,chain,burner}-{412x915,915x412,904x1000}.jpg` (`tools/m17-shots.mjs`). (decided)
+
 **D-370 — Time-of-day lights: a pure refresh gate, nothing recomputed while paused, forced on resize and speed change; keyframes parsed into columns (owner approval 2026-11-08, follow-up of D-223/D-257).**
 The every-2nd-frame refresh itself already shipped as D-257; this closes what it left. (1) The decision moved out of
 `view.frame` into `src/render/lightGate.ts` (`lightsDue`, allocation-free, `tests/light-gate.test.ts`): refresh on

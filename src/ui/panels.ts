@@ -57,6 +57,8 @@ export interface PanelNav {
   pickBuild(type: BuildingType, near: number, then?: BuildingType): void;
   /** Two castles (D-289): this castle's order first (castleFirst command); -1 shares evenly again. */
   castleFirst(castle: number): void;
+  /** Mission XVII (D-356): this castle first with its whole supply chain (-1 = share evenly). */
+  chainFirst(castle: number): void;
 }
 
 // ---------------------------------------------------------------- gap finder
@@ -467,6 +469,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'chain') { openChain(el, (el.dataset.act ?? '').slice(6)); return; }
     if (act === 'buy') nav.buyWagon(Number(arg));
     if (act === 'first') nav.castleFirst(Number(arg));
+    if (act === 'chainfirst') nav.chainFirst(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
     if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));

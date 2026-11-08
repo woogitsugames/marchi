@@ -133,6 +133,26 @@ Dla prawidłowych stanów „Naprawy / działania” to działania zapobiegawcze
   3. Demolish or move the less important customer.
 - **Chain:** Woodcutter has wood → wagon takes it to the sawmill → charcoal burner waits.
 
+## `status.NO_INPUT.CHAIN_FIRST`
+
+### PL — Surowiec idzie najpierw na łańcuch drugiego zamku
+
+- **Co to znaczy:** Jeden zamek jest pierwszy z całym łańcuchem, więc wspólny surowiec jedzie najpierw do jego warsztatu, a ten budynek czeka na swoją kolej.
+- **Jak sprawdzić:** Dotknij budynku: łańcuch przyczyn pokazuje warsztat, który bierze surowiec, a karta zamku mówi, dla którego zamku pracuje.
+- **Naprawy / działania:**
+  1. Zostaw tak, jeśli tamten zamek ma wcześniejszy termin; surowiec wróci, gdy jego zamówienie będzie miało swoje.
+  2. Na karcie zamku wybierz „Dziel po równo” albo daj pierwszeństwo temu łańcuchowi.
+- **Łańcuch:** Drwal ma drewno → wóz wiezie je do tartaku (deski dla Zamku Wschodniego) → węglarnia czeka.
+
+### EN — Input goes to the other castle's chain first
+
+- **Meaning:** One castle goes first with its whole chain, so the shared input goes to its workshop first and this building waits its turn.
+- **How to check:** Tap the building: the cause chain shows the workshop taking the input, and the castle card says which castle it works for.
+- **Fixes / next steps:**
+  1. Leave it if that castle's deadline comes first; the input returns once its order is covered.
+  2. On the castle card choose "Share evenly" or put this chain first instead.
+- **Chain:** Woodcutter has logs → wagon takes them to the sawmill (planks for the East Castle) → charcoal burner waits.
+
 ## `status.WAITING_UPSTREAM`
 
 ### PL — Czeka na dostawcę
@@ -741,4 +761,24 @@ Stany, które karta czyta po swojemu (spokojna linia, linia zamku, samouczek), m
   1. Build the road the card offers, or draw one with the Road tool from the gate to a road that leads to the stable.
   2. Once the road joins the hut to the stable, a wagon takes the logs and the hut starts again.
 - **Chain:** Woodcutter's hut without a road → yard full of logs → the hut stands.
+
+## `castleChain` — XVII: wspólny surowiec idzie na łańcuch drugiego zamku / the shared input goes to the other castle's chain (D-358)
+
+### PL — Wspólny surowiec idzie na drugi łańcuch
+
+- **Co to znaczy:** Warsztaty obu zamków żyją z tego samego surowca; teraz bierze go warsztat drugiego zamku, więc producent tego zamku stoi.
+- **Jak sprawdzić:** Dotknij zamku: linia w karcie mówi, który warsztat stoi i dla którego zamku idzie surowiec. Porównaj terminy w liście przewozowym.
+- **Naprawy / działania:**
+  1. Jeśli ten zamek ma wcześniejszy termin, dotknij „Cały łańcuch dla tego zamku” — samo „Ten zamek pierwszy” nie doda surowca.
+  2. Decyduj wcześnie: surowiec zużyty w pierwszych minutach już nie wróci.
+- **Łańcuch:** Drwal ma drewno → wozy wiozą je do tartaku (deski dla Zamku Wschodniego) → węglarnia stoi.
+
+### EN — Shared input goes to the other chain
+
+- **Meaning:** Both castles' workshops live on the same input; the other castle's workshop is taking it now, so this castle's producer stands idle.
+- **How to check:** Tap the castle: the card line says which workshop stands idle and which castle the input goes to. Compare the deadlines on the waybill.
+- **Fixes / next steps:**
+  1. If this castle's deadline comes first, tap “Whole chain for this castle” — “This castle first” alone adds no input.
+  2. Decide early: input used up in the first minutes does not come back.
+- **Chain:** Woodcutter has logs → wagons take them to the sawmill (planks for the East Castle) → charcoal burner stands idle.
 

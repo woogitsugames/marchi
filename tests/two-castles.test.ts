@@ -25,7 +25,7 @@ test('m16: registered, two castles on the dry valley, the east castle holds the 
   eq(MISSIONS.m16, M16_MISSION, 'm16 registered');
   // the menu module needs the browser i18n loader: read its list as text (appended as XVI, no renumbering)
   const menu = readFileSync(new URL('../src/ui/menu.ts', import.meta.url), 'utf8');
-  assert(/MENU_MISSIONS = \[[^\]]*'m14', 'm15', 'm16'\] as const/.test(menu) && /'XIV', 'XV', 'XVI'\]/.test(menu), 'appended as XVI (D-288)');
+  assert(/MENU_MISSIONS = \[[^\]]*'m14', 'm15', 'm16'[,\]]/.test(menu) && /'XIV', 'XV', 'XVI'[,\]]/.test(menu), 'appended as XVI (D-288)');
   const w = createWorld('m16');
   const m = w.state.mission;
   eq(w.state.mapId, 'valley-m3', 'reuses the dry valley');
@@ -55,9 +55,9 @@ test('m16: registered, two castles on the dry valley, the east castle holds the 
 
 test('m16: every other mission keeps a single castle order and no new keys', () => {
   for (const id of Object.keys(MISSIONS)) {
-    if (id === 'm16') continue;
+    if (MISSIONS[id]!.castles) continue;
     const m = createWorld(id).state.mission;
-    assert(!('extraContracts' in m) && !('firstCastle' in m), `${id}: no two-castle keys`);
+    assert(!('extraContracts' in m) && !('firstCastle' in m) && !('chainFirst' in m), `${id}: no two-castle keys`);
   }
 });
 

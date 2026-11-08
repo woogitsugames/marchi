@@ -2,7 +2,7 @@
 // A slower supply is not a stall (design/seasons.md §3), so no building carries a StallReason for
 // it; the waybill and the castle card read this instead. Read-only on the state: the pace log is
 // owned by the caller (the UI samples it every tick), never part of SimState, never hashed.
-import { BUILDINGS, GOODS, LOAD_TICKS, TICK_HZ, UNLOAD_TICKS, capacityOf, outputGoods } from './defs';
+import { BUILDINGS, GOODS, LOAD_TICKS, TICK_HZ, UNLOAD_TICKS, capacityOf, inputGoods, outputGoods } from './defs';
 import { contractsOf } from './contract';
 import { wagonEta } from './diagnose';
 import { buildingById } from './logistics';
@@ -247,8 +247,8 @@ export const CHAIN_SHARE = 0.85;
  * inputs allow) plus `lag` (the last drive), and the fleet finishing its current jobs and a round trip of every leg
  * per unit owed (unitHaulTicks), shared by the wagons at CHAIN_SHARE. −1 when a leg has no route.
  */
-function chainTicks(world: World, g: Good, owed: readonly (readonly [number, number])[], toMake: number, lag: number, cap: number, type: BuildingType | null): number {
-  const prod = CHAIN_SHARE * Math.min(cap, inputCapPerMin(world, type, g));
+function chainTicks(world: World, g: Good, owed: readonly (readonly [number, number])[], toMake: number, lag: number, cap: number, type: BuildingType | null, inShare = 1): number {
+  const prod = CHAIN_SHARE * Math.min(cap, inputCapPerMin(world, type, g) * inShare);
   if (lag < 0 || prod <= 0) return -1;
   let haul = busyTicks(world);
   for (const [q, n] of owed) {
@@ -366,8 +366,10 @@ export function contractForecast(world: World, log: PaceLog, needOf: GoodMap | n
     shorts.push(short);
     // two castles (D-313): what the chain can deliver from here (the measured pace still carries the start-up wait
     // for wood in the first minutes, and the producer's waits for wagons later)
+    // mission XVII (D-358): the share of a shared input this good's chain gets (1 in every other mission)
+    const inShare = two ? castles.reduce((a, q) => (contractsOf(st.mission).find((o) => o.castle === q.id)!.need[g] > 0 ? Math.min(a, inputShare(world, producerType, q.id, false)) : a), 1) : 1;
     const model = two && short > 0
-      ? chainTicks(world, g, castles.map((q) => [q.id, Math.max(0, contractsOf(st.mission).find((o) => o.castle === q.id)!.need[g] - q.stock[g] - q.incoming[g])] as const), toMake, lag, cap, producerType)
+      ? chainTicks(world, g, castles.map((q) => [q.id, Math.max(0, contractsOf(st.mission).find((o) => o.castle === q.id)!.need[g] - q.stock[g] - q.incoming[g])] as const), toMake, lag, cap, producerType, inShare)
       : -1;
     models.push(model);
   }
@@ -424,6 +426,41 @@ export function trancheForecast(world: World, log: PaceLog): ContractForecast | 
   if (cur < 0) return null;
   if (world.state.tick - (cur > 0 ? c.tranches[cur - 1]!.doneTick : 0) < PACE_WINDOW_TICKS) return null;
   return contractForecast(world, log, trancheNeed(world, cur));
+}
+
+/**
+ * Two castles with different goods from one input (mission XVII, D-358): the workshops of another kind that use one
+ * of `type`'s inputs and make a good another castle's running order still lacks — the charcoal burner beside the
+ * sawmill, both on the one woodcutter's wood. 0 in every other mission (mission XVI: one sawmill, nobody else takes
+ * the wood), so its forecasts are unchanged.
+ */
+function inputRivals(world: World, type: BuildingType | null, castleId: number): number {
+  if (!type) return 0;
+  const m = world.state.mission;
+  const ins = inputGoods(type);
+  let n = 0;
+  for (const q of world.state.buildings) {
+    if (q.type === type || q.type === 'warehouse' || q.type === 'castle' || !inputGoods(q.type).some((ig) => ins.includes(ig))) continue;
+    const feeds = contractsOf(m).some((k) => {
+      if (k.castle === castleId) return false;
+      const c = buildingById(world, k.castle);
+      return !!c && outputGoods(q.type).some((og) => k.need[og] - c.stock[og] > 0);
+    });
+    if (feeds) n++;
+  }
+  return n;
+}
+
+/**
+ * The share of the shared input this castle's chain gets (D-358): all of it when the castle goes first with its whole
+ * chain (chainFirst) or nobody else's chain takes it, else an even split with the other castles' chains (the
+ * dispatcher splits a shared input by fill, and the castle-leg switch does not change that).
+ */
+function inputShare(world: World, type: BuildingType | null, castleId: number, asFirst: boolean): number {
+  const n = inputRivals(world, type, castleId);
+  if (n === 0) return 1;
+  const m = world.state.mission;
+  return asFirst || (m.chainFirst && m.firstCastle === castleId) ? 1 : 1 / (1 + n);
 }
 
 /**
@@ -500,12 +537,14 @@ export function castleForecast(world: World, _log: PaceLog, castleId: number): C
     if (lag < 0 || arrive < 0) return { ...base, share, done, finishTick: -1, firstTick: -1 };
     // D-306: the last load waits for a wagon of the busy fleet before its drive
     lag += wagonWait(world, lag);
-    const eta = (list: (readonly [number, number])[]): number => {
+    // mission XVII (D-358): a shared input splits between the castles' chains unless this one goes first with its chain
+    // ("first" in such a mission is the chain switch); 1 in every other mission
+    const eta = (list: (readonly [number, number])[], asFirst: boolean): number => {
       if (own[0]![1] <= 0) return arrive;
-      const t = chainTicks(world, g, list, Math.max(0, list.reduce((a, o) => a + o[1], 0) - spare), lag, cap, type);
+      const t = chainTicks(world, g, list, Math.max(0, list.reduce((a, o) => a + o[1], 0) - spare), lag, cap, type, inputShare(world, type, castleId, asFirst));
       return t < 0 ? -1 : Math.max(arrive, t);
     };
-    const tp = eta(pool), to = eta(own);
+    const tp = eta(pool, false), to = eta(own, true);
     if (tp < 0 || to < 0) return { ...base, share, done, finishTick: -1, firstTick: -1 };
     worst = Math.max(worst, tp);
     worstFirst = Math.max(worstFirst, to);
