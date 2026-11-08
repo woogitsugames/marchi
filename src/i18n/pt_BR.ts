@@ -641,6 +641,7 @@ export const pt_BR: Dict = {
   "cause.heldIce": "{wagon} parou diante de uma ponte congelada",
   "fix.pave": "Refaça a ponte em pedra",
   "fix.paveWhy": "{wagon} espera numa ponte de madeira. Uma ponte de pedra deixa passar carroças nos dois sentidos e o gelo não a fecha.",
+  "fix.paveQuarry": "Uma ponte de pedra precisa de pedra, e ninguém a extrai. Primeiro a pedreira, depois a ponte.",
   "fix.granaryHint": "A mercadoria não tem para onde ir. Ligue por estrada um celeiro ou um comprador.",
   "hud.speedHint": "Em ×4 a paralisação cresce rápido: {name}. Desacelere para resolver a tempo.",
   "menu.bestAria": "Melhor resultado: {n} de 3 selos, tempo {time}",

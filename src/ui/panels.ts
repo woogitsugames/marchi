@@ -16,7 +16,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { codexCalm, quietStall, cureFor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, recentWagonWait } from './stalls';
+import { chainRoot, codexCalm, quietStall, cureFor, granaryAnchor, gapTarget, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -248,7 +248,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const gate = canPlace(world, 'warehouse');
     const short = BUILDINGS.warehouse.price - world.state.coins;
     const off = !gate.ok || short > 0;
-    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="granary:${b.id}" aria-disabled="${off}">${
+    // D-391: the ghost opens by the first building with a site a road reaches (cureFor offers no granary without one)
+    const near = granaryAnchor(world, b, chainRoot(chain, b.id));
+    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="granary:${near >= 0 ? near : b.id}" aria-disabled="${off}">${
       iconSvg('warehouse', 26)}<span>${esc(t('fix.granary'))}</span>${bdi(`−${fmtInt(BUILDINGS.warehouse.price)}`)}</button>`;
     const hint = !gate.ok
       ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
@@ -267,7 +269,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     const price = BUILDINGS[sh.type].price;
     const short = price - world.state.coins;
     const off = !gate.ok || short > 0;
-    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${sh.producer}" aria-disabled="${off}">${
+    const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${sh.producer}:${sh.type}" aria-disabled="${off}">${
       iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t(`building.${sh.type}` as MessageKey) }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
     const hint = !gate.ok
       ? `<div class="s-hint fix-why">${iconSvg('build', 18)}<span dir="auto">${esc(errorText(gate.err))}</span></div>`
@@ -283,6 +285,17 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     // (day 8c): pave the span in stone
     const h = paveSpanFor(world, b);
     if (!h) return '';
+    // D-390: no stone and no quarry to dig it — the quarry first (the grey stone button would be a dead end)
+    const qa = quarryForPave(world, b);
+    if (qa >= 0) {
+      const price = BUILDINGS.quarry.price, short = price - world.state.coins, off = short > 0;
+      const btn = `<button class="btn primary cf fix-btn${off ? ' is-disabled' : ''}" data-act="producer:${qa}:quarry" aria-disabled="${off}">${
+        iconSvg('build', 26)}<span>${esc(t('fix.producer', { name: t('building.quarry') }))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
+      const hint = off
+        ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
+        : `<div class="s-hint">${esc(t('fix.paveQuarry'))}</div>`;
+      return fixSection(btn, hint, off);
+    }
     const ok = paveCheck(world, h);
     let price = 0;
     for (const c of h.cells) price += roadCellCost(world, c, 2);
@@ -495,8 +508,10 @@ function wire(sheet: Sheet, nav: PanelNav): void {
       if (pc && pc.k === 'grow' && pc.type === arg) nav.pickBuild(pc.type, pc.producer, pc.then);
     }
     if (act === 'producer' && !el.classList.contains('is-disabled')) {
+      // D-390: the type rides along — the bottleneck card's ghost may open by a consumer, the castle or the stable
       const p = buildingById(nav.world, Number(arg));
-      if (p) nav.pickBuild(p.type, p.id);
+      const type = (el.dataset.act ?? '').split(':')[2] as BuildingType | undefined;
+      if (p) nav.pickBuild(type ?? p.type, p.id);
     }
     if (act === 'fix' && !el.classList.contains('is-disabled')) {
       const s = gapSuggestion(nav.world, Number(arg));

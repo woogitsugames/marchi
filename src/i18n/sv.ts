@@ -641,6 +641,7 @@ export const sv: Dict = {
   "cause.heldIce": "{wagon} står vid en isstängd bro",
   "fix.pave": "Bygg bron i sten",
   "fix.paveWhy": "{wagon} väntar vid ett träspann. En stenbro tar vagnar åt båda hållen och isen stänger den inte.",
+  "fix.paveQuarry": "En stenbro kräver sten, och ingen bryter den. Först stenbrottet, sedan bron.",
   "fix.granaryHint": "Varorna har ingenstans att ta vägen. Anslut ett magasin eller en köpare med väg.",
   "hud.speedHint": "På ×4 växer stoppet fort: {name}. Sakta ner för att hinna åtgärda det.",
   "menu.bestAria": "Bästa resultat: {n} av 3 sigill, tid {time}",

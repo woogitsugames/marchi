@@ -641,6 +641,7 @@ export const de: Dict = {
   "cause.heldIce": "{wagon} steht vor einer vereisten Brücke",
   "fix.pave": "Brücke in Stein ausbauen",
   "fix.paveWhy": "{wagon} wartet an einer Holzbrücke. Eine Steinbrücke trägt Wagen in beide Richtungen, und Eis sperrt sie nicht.",
+  "fix.paveQuarry": "Eine Steinbrücke braucht Stein, und niemand bricht ihn. Erst der Steinbruch, dann die Brücke.",
   "fix.granaryHint": "Die Ware hat kein Ziel. Verbinde einen Kornspeicher oder Abnehmer per Weg.",
   "hud.speedHint": "Auf ×4 wächst der Stillstand schnell: {name}. Bremse, um ihn zu beheben.",
   "menu.bestAria": "Bestes Ergebnis: {n} von 3 Siegeln, Zeit {time}",

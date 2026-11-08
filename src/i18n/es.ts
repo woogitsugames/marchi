@@ -641,6 +641,7 @@ export const es: Dict = {
   "cause.heldIce": "{wagon} espera ante un puente helado",
   "fix.pave": "Haz el puente de piedra",
   "fix.paveWhy": "{wagon} espera en un puente de madera. Uno de piedra deja pasar carros en ambos sentidos y el hielo no lo cierra.",
+  "fix.paveQuarry": "Un puente de piedra necesita piedra y nadie la extrae. Primero la cantera, luego el puente.",
   "fix.granaryHint": "La mercancía no tiene adónde ir. Conecta por camino un granero o un comprador.",
   "hud.speedHint": "A ×4 el atasco crece rápido: {name}. Frena para arreglarlo a tiempo.",
   "menu.bestAria": "Mejor resultado: {n} de 3 sellos, tiempo {time}",

@@ -9,6 +9,7 @@ import {
 } from '../sim/index';
 import { inputWaitTicks, waitsForInput } from './stalls';
 import { chainEndGood, goodSaturated } from './saturation';
+import { siteAnchor } from './site';
 
 export const NECK_WINDOW = 180; // samples, one per sim second
 export const NECK_SHOW_X100 = 150; // mean waiting consumers x100 to show
@@ -23,7 +24,10 @@ export interface BottleneckCard {
   meanX100: number;
   consumers: number;
   cure: 'producer' | 'wagon';
-  /** Building type to build (producerOf(good)), and the producer to build next to (id) — the one nearest by road to `focus`. */
+  /**
+   * Building type to build (producerOf(good)), and the building to build next to (id): the producer nearest by road to
+   * `focus` with a site a road reaches, else another anchor (D-390, neckAnchor); -1 only for a 'wagon' cure.
+   */
   build: BuildingType | null;
   near: number;
   /** The consumer that has waited longest (inputWaitTicks) — the eye button's target; for 'fleet': the stable. */
@@ -39,9 +43,12 @@ interface Log {
   wait: Record<Good, number[]>;
   noWagon: Record<Good, number[]>;
   starved: Record<Good, number[]>;
+  /** D-390: producers of the good sitting on a full yard (OUTPUT_FULL) in that second. */
+  full: Record<Good, number[]>;
   sumW: GoodNums;
   sumN: GoodNums;
   sumS: GoodNums;
+  sumF: GoodNums;
   /** 1 when no wagon stood idle in that second. */
   busy: number[];
   sumBusy: number;
@@ -57,7 +64,7 @@ const rings = (): Record<Good, number[]> => Object.fromEntries(GOODS.map((g) => 
 
 function freshLog(tick: number): Log {
   return {
-    n: 0, tick, wait: rings(), noWagon: rings(), starved: rings(), sumW: zeros(), sumN: zeros(), sumS: zeros(),
+    n: 0, tick, wait: rings(), noWagon: rings(), starved: rings(), full: rings(), sumW: zeros(), sumN: zeros(), sumS: zeros(), sumF: zeros(),
     busy: new Array<number>(NECK_WINDOW).fill(0), sumBusy: 0, shown: null, cardTick: -1, card: null,
   };
 }
@@ -76,8 +83,9 @@ export function sampleBottleneck(world: World): void {
   if (log.n > 0 && st.tick === log.tick) return;
   log.tick = st.tick;
   const i = log.n % NECK_WINDOW;
-  const cw = zeros(), cn = zeros(), cs = zeros();
+  const cw = zeros(), cn = zeros(), cs = zeros(), cf = zeros();
   for (const b of st.buildings) {
+    if (b.status.k === 'OUTPUT_FULL') for (const o of outputGoods(b.type)) cf[o]++;
     if (!waitsForInput(b)) continue;
     const g = (b.status as { good: Good }).good;
     cw[g]++;
@@ -89,6 +97,7 @@ export function sampleBottleneck(world: World): void {
     log.sumW[g] += cw[g] - log.wait[g][i]!; log.wait[g][i] = cw[g];
     log.sumN[g] += cn[g] - log.noWagon[g][i]!; log.noWagon[g][i] = cn[g];
     log.sumS[g] += cs[g] - log.starved[g][i]!; log.starved[g][i] = cs[g];
+    log.sumF[g] += cf[g] - log.full[g][i]!; log.full[g][i] = cf[g];
   }
   const busy = st.wagons.some((w) => w.status.k === 'IDLE') ? 0 : 1;
   log.sumBusy += busy - log.busy[i]!; log.busy[i] = busy;
@@ -99,16 +108,23 @@ function consumersOf(world: World, g: Good): Building[] {
   return world.state.buildings.filter((b) => inputGoods(b.type).includes(g));
 }
 
-/** The producer of g nearest by road to `to` (loaded travel time); -1 when there is none. */
-function nearestProducer(world: World, g: Good, to: Building): number {
-  let best = -1, bestT = Infinity;
+/**
+ * Where the card's ghost opens (D-390): the producers of g by loaded travel time to `to` (nearest first, unreachable
+ * last), then the waiting consumer, the other consumers, the castle and the stable — the first one by which the build
+ * tool finds a site a road reaches (siteAnchor). -1 when none has one: the card must not name the building (D-175).
+ */
+function neckAnchor(world: World, g: Good, type: BuildingType, to: Building, consumers: readonly Building[]): number {
+  const prod: { id: number; tt: number }[] = [];
   for (const p of world.state.buildings) {
     if (!outputGoods(p.type).includes(g)) continue;
     const path = findPath(world, p.gate, to.gate, true);
-    const tt = path ? pathTime(world, p.gate, path, true) : Infinity;
-    if (best < 0 || tt < bestT) { best = p.id; bestT = tt; }
+    prod.push({ id: p.id, tt: path ? pathTime(world, p.gate, path, true) : Infinity });
   }
-  return best;
+  // stable sort: ties keep the building order (as the old nearest-producer scan)
+  prod.sort((a, b) => (a.tt === b.tt ? 0 : a.tt < b.tt ? -1 : 1));
+  const ids = [...prod.map((p) => p.id), to.id, ...consumers.filter((c) => c.id !== to.id).map((c) => c.id)];
+  for (const t of ['castle', 'stable'] as const) for (const b of world.state.buildings) if (b.type === t) ids.push(b.id);
+  return siteAnchor(world, type, ids);
 }
 
 /** The chain a building of `type` works in ends in a good the markets no longer pay a fair price for (D-174, D-268). */
@@ -126,7 +142,7 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
   if (log.n < NECK_WINDOW) { log.shown = null; return null; }
   const st = world.state;
   const dead = new Map<BuildingType, boolean>();
-  let best: { g: Good; mean: number; consumers: Building[]; cure: 'producer' | 'wagon'; type: BuildingType } | null = null;
+  const cands: { g: Good; mean: number; consumers: Building[]; cure: 'producer' | 'wagon'; type: BuildingType }[] = [];
   for (const g of GOODS) {
     const mean = Math.floor((log.sumW[g] * 100) / NECK_WINDOW);
     if (mean < (log.shown === g ? NECK_HIDE_X100 : NECK_SHOW_X100)) continue;
@@ -140,11 +156,15 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
     // further up the chain: half of the good's producers (on average) wait for their own input themselves
     const producers = st.buildings.filter((b) => outputGoods(b.type).includes(g)).length;
     if (producers > 0 && log.sumS[g] * 2 >= producers * NECK_WINDOW) continue;
+    // D-390: half of them (on average) sit on a full yard — the good is there, the consumers wait for the haul
+    // (deliveries on the way); one more producer would only add a full yard (card-10: a hundred farms, grain still "short")
+    if (producers > 0 && log.sumF[g] * 2 >= producers * NECK_WINDOW) continue;
     const cure = log.sumN[g] * 2 >= log.sumW[g] ? 'wagon' : 'producer';
-    if (!best || mean > best.mean) best = { g, mean, consumers, cure, type };
+    cands.push({ g, mean, consumers, cure, type });
   }
-  log.shown = best?.g ?? null;
-  if (best) {
+  // the worst good first (ties: GOODS order)
+  cands.sort((a, b) => b.mean - a.mean);
+  for (const best of cands) {
     // the eye: the consumer that has waited longest for the good (inputWaitTicks), else the first one waiting
     let focus: Building | null = null, longest = -1;
     for (const b of best.consumers) {
@@ -153,11 +173,16 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
       if (w > longest) { longest = w; focus = b; }
     }
     focus ??= best.consumers[0]!;
+    const near = neckAnchor(world, best.g, best.type, focus, best.consumers);
+    // D-390: "Postaw: …" only with a site the build tool can open (D-175); else the next good, then the fleet
+    if (best.cure === 'producer' && near < 0) continue;
+    log.shown = best.g;
     return {
       kind: 'good', good: best.g, meanX100: best.mean, consumers: best.consumers.length, cure: best.cure,
-      build: best.type, near: nearestProducer(world, best.g, focus), focus: focus.id,
+      build: best.type, near, focus: focus.id,
     };
   }
+  log.shown = null;
   // the fleet: from rank 2, not one wagon stood idle in any second of the window
   if (st.town.rank >= NECK_FLEET_RANK && log.sumBusy >= NECK_WINDOW) {
     const stable = st.buildings.find((b) => b.type === 'stable');

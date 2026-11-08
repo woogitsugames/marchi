@@ -687,6 +687,7 @@ export const pl = {
   'cause.heldIce': '{wagon} stoi przed mostem zamkniętym przez krę',
   'fix.pave': 'Wyłóż most kamieniem',
   'fix.paveWhy': '{wagon} czeka na drewnianym przęśle. Kamienny most mieści wozy w obie strony i kra go nie zamyka.',
+  'fix.paveQuarry': 'Kamienny most potrzebuje kamienia, a nikt go nie wydobywa. Najpierw kamieniołom, potem most.',
   'fix.granaryHint': 'Towar nie ma dokąd jechać. Połącz drogą spichlerz albo odbiorcę, który go przyjmie.',
   // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): localized
   'hud.speedHint': 'Na ×4 przestój rośnie szybko: {name}. Zwolnij, żeby zdążyć go naprawić.',

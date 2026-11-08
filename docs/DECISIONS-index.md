@@ -309,3 +309,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-359 | — | Mission XVII content: menu, letters, 22 keys in 17 languages, screenshots | decided | treść |
 | D-370 | 2026-11-08 | Time-of-day lights: a pure refresh gate, nothing recomputed while paused, forced on resize and speed change; keyframes parsed into columns (owner approval 2026-11-08, follow-up of D-223/D-257) | decided | inne |
 | D-380 | 2026-11-08 | The free valley's card builds a chain step in one tap: producer + consumer (owner yes 2026-11-08, BACKLOG P2 from D-267) | decided | UI |
+| D-390 | 2026-11-08 | A valley card never names a building the build tool cannot place; the grey stone button gets a quarry (2026-11-08) | decided | UI |
+| D-391 | 2026-11-08 | The granary cure opens by an anchor with a site, and is not offered without one (2026-11-08) | decided | inne |

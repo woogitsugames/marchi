@@ -112,6 +112,16 @@ export function siteExists(world: World, type: BuildingType, near: number): bool
 }
 
 /**
+ * D-390: the first of `ids` (buildings, in the caller's order of preference) by which the build ghost of `type` finds
+ * a site (siteExists: in the free valley, one a road reaches), or -1. A card that names a building opens the ghost
+ * there; with no such anchor it must not name it (D-175).
+ */
+export function siteAnchor(world: World, type: BuildingType, ids: Iterable<number>): number {
+  for (const id of ids) if (siteExists(world, type, id)) return id;
+  return -1;
+}
+
+/**
  * Which plain-words reason a BLOCKED placement at `cell` gets (the `place.*` key suffix). D-176: the corner of a
  * diagonal road step the footprint would cut (D-172) is told apart by the same pure check the sim runs, so the
  * ghost says "would cut the road" instead of the generic building/obstacle text. `rect`: x, y, w, h of the footprint.

@@ -684,6 +684,7 @@ export const en: FullDict = {
   'cause.heldIce': '{wagon} is held at a bridge closed by ice',
   'fix.pave': 'Pave the bridge in stone',
   'fix.paveWhy': '{wagon} waits at a wooden span. A stone bridge takes wagons both ways and ice does not close it.',
+  'fix.paveQuarry': 'A stone bridge needs stone, and nobody quarries it. The quarry first, then the bridge.',
   'fix.granaryHint': 'The goods have nowhere to go. Link a granary or a buyer that takes them by road.',
   // speed hint at ×4 while a critical stall grows (day 1, owner decision 7): see PENDING_KEYS
   'hud.speedHint': 'At ×4 the stall grows fast: {name}. Slow down to fix it in time.',
