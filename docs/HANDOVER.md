@@ -3,8 +3,8 @@
 ## Start następnej sesji — najpierw to
 - Repo: **woogitsugames/marchi**, baza integracyjna **`claude/eager-cori-08wt8e`** = `main` (po każdym zielonym scaleniu
   fast-forward `main`). Prompt startowy: `docs/START_PROMPT.md`.
-- Stan bazy: testy **662/0**, typecheck, build, smoke 0, `layout --quick` 138/0, 71 starych haszy misji bez zmian (+15 XVII).
-- Ostatnie APK: **cd4aa45** (8 XI ~12:20) — misja XVII, karta-para D-380, światła D-370, pasek tempa na Foldzie.
+- Stan bazy: testy **667/0**, typecheck, build, smoke 0, `layout --quick` 138/0, 71 starych haszy misji bez zmian (+15 XVII).
+- Ostatnie APK: **d49a64a** (8 XI ~12:45, z D-390/D-391) — misja XVII, karta-para D-380, światła D-370, pasek tempa na Foldzie.
 - Cykl godzinny `trig_017HkVx1C3bfqf3vFDobFdnR` („42 * * * *”) **wyłączony** na koniec limitu — włączyć
   (`update_trigger enabled=true`) albo założyć nowy w nowej sesji. Przypomnienie „Raport z testu Free.AI (24 h)”
   `trig_01CrY9mMKNSZwrsvrEyTg76J` (8 XI 20:00) zostaje — wpadnie do tej sesji.
@@ -24,9 +24,11 @@
   Drabina: nic 2★, „Ten zamek pierwszy” 2★ (bez pomocy, nie gorzej), „Cały łańcuch” do 2:00 → 3★, za późno 2★, zły zamek 1★.
 
 ## W toku przy zamknięciu
-- Agent `claude/w-neckfail` (worktree `/workspace/marchi-neckfail`): martwa karta „Wąskie gardło: postaw farmę”
-  (seed 1302 card-60, 97–119 min `neck?fail:farm`) i `tradePost:IDLE → pave?unhandled`. Jeśli nie oddał raportu —
-  sprawdzić gałąź (`git log claude/eager-cori-08wt8e..claude/w-neckfail`), dokończyć, zweryfikować i scalić (D-390+).
+- Nic — wszyscy agenci oddali pracę i są scaleni. Ostatnie: **D-390/D-391** martwe karty doliny (karta „Wąskie gardło”
+  nie nazywa budynku bez miejsca, „Postaw” buduje właściwy typ, kamieniołom dla bruku mostu, kotwica spichlerza);
+  martwe minuty kart 7–55 → ≤ 1 na 120 min. Nowe P2 w BACKLOG: card-10 stawia 30–45 spichlerzy i do 79 farm (każda
+  karta wykonalna, nic nie czeka na rozruch nowego budynku); producent odcięty później bez drogi — karta krytyczna bez
+  naprawy.
 
 ## Decyzje dla właściciela (klikalnie w następnej sesji)
 1. XVII: „Ten zamek pierwszy” nie pomaga, ale nie szkodzi (wozów nie brakuje). Zostawić, czy szukać układu, w którym

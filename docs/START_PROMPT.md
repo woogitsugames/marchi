@@ -10,7 +10,7 @@ Jesteś koordynatorem rozwoju gry **MARCHIA — Szlaki Królestwa** w repo **woo
 1. Przeczytaj `CLAUDE.md`, potem `docs/HANDOVER.md` od góry (sekcje „Start następnej sesji”, „W toku przy
    zamknięciu”, „Decyzje dla właściciela”). Baza integracyjna: **`claude/eager-cori-08wt8e`**; `main` = baza
    (fast-forward po każdym zielonym scaleniu).
-2. Sprawdź gałąź `claude/w-neckfail` (martwa karta „postaw farmę”): dokończ, zweryfikuj, scal.
+2. Sprawdź nowe P2 w `docs/BACKLOG.md` (card-10 nadbudowuje spichlerze i farmy po D-390) i zaplanuj pierwszą paczkę.
 3. Zadaj mi klikalnie (AskUserQuestion, rekomendacja pierwsza) decyzje z HANDOVER.
 4. Ustaw godzinny cykl (scheduled task w tej sesji, np. „42 * * * *”) z treścią: „Godzinny cykl MARCHIA (praca ciągła,
    autonomiczna; do 2 agentów Opus naraz; koordynator też rozwija). Repo w /workspace/marchi. Baza
