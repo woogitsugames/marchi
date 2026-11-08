@@ -103,8 +103,10 @@
   audyt kształtów (D-342: ikony OK; kosze chleba vs cebrzyki słodu na wozie mylą się z bliska → P3) ‖ 103 jako **S16** (S10–S15
   zajęte przez VII–XII; D-343) z fixturą i kolumnami CSV + 104 pomoc „Kilka zamków” (D-344). Do sprawdzenia na telefonie:
   przytrzymanie tytułu 3 s w poziomie nie otworzyło ekranu prowadzącego w skrypcie zrzutów.
-  4) **w toku od ~02:00:** 68 ikony wdrożone (`claude/w-icons68`) ‖ 82 audyt a11y z poprawkami + 83 zrzuty de/ru/ar/ja/hi
-  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) 69/79/80 dźwięki CC0.
+  4) **scalone ~03:30:** 68 ikony (D-345: wagon_due, market_full, grow, cut_road; posterunek i wąskie gardło już miały) ‖
+  **w toku:** 82 audyt a11y z poprawkami + 83 zrzuty de/ru/ar/ja/hi
+  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) **w toku:** 69/79/80 dźwięki — własna synteza (`claude/w-audio`). Agenci stanęli ~01:30 na limicie, wznowieni
+  ~03:45.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
