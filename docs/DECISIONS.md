@@ -3933,12 +3933,12 @@ states are plain action buttons now (the lead line and the toast say the state);
 4.1:1 on the HUD panel, which paints darker than a sheet: new token `--meadow-dk #3a4428` for `.castle-eta` and
 `.tr-state`, the tag in `#5a4117`. Soft ink on `frame-sheet-dim` (settings hint, the moderator's screen) 3.43:1 →
 `--ink-soft #352f27` inside dim-frame sheets. (4) At 200 % text in short landscape the second castle row ran under
-the tool rail; `body.is-landscape.is-bigtext` lets the waybill panel scroll above the rail (a better layout stays
+the tool rail; `body.is-landscape.is-bigtext` lets the two-castle waybill panel (`:has(.wb-castles)`) scroll above the rail (a better layout stays
 BACKLOG P2). (5) Opening "Co to znaczy?" under the docked fix showed nothing new on screen; the fold now scrolls the
 answer's first line into view (the body's scroll-padding keeps it above the dock) and has `aria-controls`. (6) A
 playtest start's accessible name carries its tags ("S16: XVI. …, decision, no stall"). Source tests
 `tests/a11y-markup.test.ts` (i18n cannot load under tsx). Audit before → after on the new scenes: low contrast
-12 → 0 (412×915), 8 → 1 (915×412, a 1 px sr-only word), clipped at 200 % 6–8 → 0–1. UI only, mission hashes
+8 → 1 (412×915), 9 → 3 (915×412: a 1 px sr-only word, text by the dim frame's ornament on the moderator's screen), clipped at 200 % 6–8 → 0–1. UI only, mission hashes
 identical. (decided)
 
 **D-348 — Forced colors: woodcut icons on a Canvas plate, the progress bar outlined.** In forced-colors / high-contrast
