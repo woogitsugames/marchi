@@ -2,6 +2,8 @@
 // Usage: npm run shots            (starts its own Vite server on :5175, or reuses one)
 //        SHOTS_URL=http://localhost:5173/ npm run shots
 //        npm run shots -- menu why  (only screens whose name contains one of the args)
+//        SHOTS_LANG=de SHOTS_OUT=/tmp/x npm run shots   one language for every screen (files ui-<screen>-<w>x<h>-<lang>.png),
+//                                   plus the screens of UI since 5 XI (castle card XVI, codex, help "castles", haul card)
 //        npm run shots -- --fold [class...]  foldable set -> docs/shots/fold-<class>-<screen>.png
 //                                            plus the live fold/unfold sequence fold-seq-<n>-<state>.png
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -12,7 +14,8 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = resolve(root, 'docs/shots');
+const outDir = resolve(root, process.env.SHOTS_OUT ?? 'docs/shots');
+const LANG = process.env.SHOTS_LANG ?? '';
 mkdirSync(outDir, { recursive: true });
 
 const SIZES = [
@@ -32,7 +35,29 @@ const SCREENS = [
   { name: 'end', q: 'play=m1&bot=1&ff=600' },
   { name: 'settings', q: 'lang=en', act: openSettings },
   { name: 'end-lost', q: 'play=m1&ff=720&lang=en' },
+  ...(LANG ? [
+    { name: 'castle16', q: 'play=m16&speed=0&ff=150&openId=5' },
+    { name: 'castle16-codex', q: 'play=m16&speed=0&ff=150&openId=5', act: (p) => clickIn(p, '.sheet .codex-tog') },
+    { name: 'help-castles', q: 'play=m16&speed=0&ff=150&openId=5', act: (p) => clickIn(p, '.sheet .sh-help') },
+    { name: 'haul16', q: 'play=m16&speed=0', act: haul16 },
+  ] : []),
 ];
+
+async function clickIn(page, sel) {
+  await page.evaluate((s) => document.querySelector(s)?.click(), sel);
+  await page.waitForTimeout(600);
+}
+
+/** Mission XVI, east castle first, run to 1:30: the haul card (as layout-check haulAt). */
+async function haul16(page) {
+  await page.evaluate(() => {
+    document.querySelector('.letter [data-a="start"]')?.click();
+    const A = window.__marchia.app;
+    A.loop.enqueue({ t: 'castleFirst', castle: 5 }); A.loop.flushCommands();
+    while (A.world.state.tick < 900) A.loop.tickOnce();
+  });
+  await page.waitForFunction(() => !document.querySelector('.toast'), null, { timeout: 15000 }).catch(() => {});
+}
 
 async function steepDraft(page) {
   const d = await page.evaluate(() => window.__marchia.findSteepDraft());
@@ -80,13 +105,15 @@ async function shoot(s, size) {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(`${s.name} ${size.w}x${size.h}: ${e.message}`));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(`${s.name} ${size.w}x${size.h}: ${m.text()}`); });
-    const q = [s.q, s.q.includes('lang=') ? '' : 'lang=pl', extra].filter(Boolean).join('&');
+    const q = LANG
+      ? [s.q.replace(/(^|&)lang=[^&]*/, ''), `lang=${LANG}`, extra].filter(Boolean).join('&')
+      : [s.q, s.q.includes('lang=') ? '' : 'lang=pl', extra].filter(Boolean).join('&');
     await page.goto(url + (q ? '?' + q : ''), { waitUntil: 'load' });
     await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 90000 });
     await page.waitForTimeout(Number(process.env.SHOTS_SETTLE ?? 1500));
     const after = s.act ? await s.act(page) : null;
     await page.waitForTimeout(300);
-    const file = resolve(outDir, `ui-${s.name}-${size.w}x${size.h}.png`);
+    const file = resolve(outDir, `ui-${s.name}-${size.w}x${size.h}${LANG ? '-' + LANG : ''}.png`);
     await page.screenshot({ path: file, timeout: 180000 });
     if (typeof after === 'function') await after();
     console.log('shot', file.replace(root + '/', ''));
