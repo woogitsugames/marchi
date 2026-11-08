@@ -113,6 +113,7 @@ function collectText() {
     if (!nodes.length) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility === 'hidden' || el.closest('[hidden], .sr-only, [aria-hidden="true"]')) continue;
+    { let sr = false; for (let p = el; p && !sr; p = p.parentElement) sr = getComputedStyle(p).clipPath === 'inset(50%)'; if (sr) continue; }
     // HUD under a letter's scrim: inert (modal.ts), out of the AX tree, dimmed on purpose; measured but not counted
     const inert = !!el.closest('[inert]');
     let hidden = false, op = 1;
@@ -207,7 +208,10 @@ function scaleIssues() {
     let scroller = false;
     for (let p = el.parentElement; p; p = p.parentElement) { const c = getComputedStyle(p); if (/(auto|scroll)/.test(c.overflowY + c.overflowX) && (p.scrollHeight > p.clientHeight + 1 || p.scrollWidth > p.clientWidth + 1)) { scroller = true; break; } }
     const off = interactive && !scroller && (r.right > innerWidth + 1 || r.left < -1 || r.top > innerHeight - 4 || r.bottom < 0);
+    // screen-reader-only text (the .sr-only class, or the same clip used in place, e.g. the landscape waybill's supplier
+    // name and the compact pill/pace forms, D-53/D-353) is not clipped text
     if (el.closest('.sr-only')) continue;
+    { let sr = false; for (let p = el; p && !sr; p = p.parentElement) sr = getComputedStyle(p).clipPath === 'inset(50%)'; if (sr) continue; }
     if ((own && (clipX || clipY)) || off) {
       issues.push({ scroller, sel: `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 3).join('.')}`, text: el.textContent.replace(/\s+/g, ' ').trim().slice(0, 40), clipX, clipY, off, w: Math.round(r.width), x: Math.round(r.left), y: Math.round(r.top) });
     }
