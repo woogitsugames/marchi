@@ -108,6 +108,20 @@ export interface PlaytestActions {
   exit(): void;
 }
 
+/** One start row of the moderator's list: a button named "<id>: <mission>, <tags>". */
+export function playtestStartHtml(s: PlaytestStart): string {
+  const tags = [s.fixture ? t('playtest.fixture') : '', s.decision ? t('playtest.decision') : ''].filter(Boolean);
+  const tag = tags.map((x) => `<span class="pt-tag">${esc(x)}</span>`).join('');
+  // the name read aloud carries the tags too ("prepared state", "decision, no stall"; D-343, D-347)
+  const label = [`${s.id}: ${missionTitle(s.mission)}`, ...tags].join(', ');
+  return `<li class="slot-row is-empty"><button class="slot-new pt-start" data-a="go" data-id="${esc(s.id)}"
+      aria-label="${esc(label)}">
+    <span class="slot-no" aria-hidden="true">${esc(s.id)}</span>
+    <span class="slot-main"><span class="slot-name">${esc(missionTitle(s.mission))}</span>
+      <span class="slot-sub"><bdi class="pt-q" dir="ltr">${esc(s.query)}</bdi>${tag}</span></span>
+    <span class="slot-go fwd" aria-hidden="true">${iconSvg('back', 20)}</span></button></li>`;
+}
+
 export function playtestSheet(act: PlaytestActions): SheetContent {
   const saved = readPlaytestPrefs();
   let pid = act.trial()?.record.pid || saved.pid;
@@ -142,17 +156,6 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
       <button class="btn primary cf pt-copy" data-a="copy">${esc(t('playtest.copy'))}</button>${status}</div>`;
   }
 
-  function startHtml(s: PlaytestStart): string {
-    const tag = (s.fixture ? `<span class="pt-tag">${esc(t('playtest.fixture'))}</span>` : '')
-      + (s.decision ? `<span class="pt-tag">${esc(t('playtest.decision'))}</span>` : '');
-    return `<li class="slot-row is-empty"><button class="slot-new pt-start" data-a="go" data-id="${esc(s.id)}"
-        aria-label="${esc(`${s.id}: ${missionTitle(s.mission)}`)}">
-      <span class="slot-no" aria-hidden="true">${esc(s.id)}</span>
-      <span class="slot-main"><span class="slot-name">${esc(missionTitle(s.mission))}</span>
-        <span class="slot-sub"><bdi class="pt-q" dir="ltr">${esc(s.query)}</bdi>${tag}</span></span>
-      <span class="slot-go fwd" aria-hidden="true">${iconSvg('back', 20)}</span></button></li>`;
-  }
-
   function html(): string {
     const codes = PARTICIPANT_CODES.map((c) =>
       `<button class="btn cf${c === pid ? ' is-on' : ''}" data-a="pid" data-v="${c}" aria-pressed="${c === pid}">${c}</button>`).join('');
@@ -162,7 +165,7 @@ export function playtestSheet(act: PlaytestActions): SheetContent {
       <div class="setting"><label class="s-label" for="pt-dev">${esc(t('playtest.device'))}</label>
         <input class="pt-dev" id="pt-dev" type="text" dir="auto" maxlength="60" autocomplete="off" spellcheck="false"></div>
       <div class="pt-starts-h">${esc(t('playtest.starts'))}</div>
-      <ol class="slots pt-starts">${PLAYTEST_STARTS.map(startHtml).join('')}</ol>
+      <ol class="slots pt-starts">${PLAYTEST_STARTS.map(playtestStartHtml).join('')}</ol>
       <button class="btn paper cf pt-exit" data-a="exit">${esc(t('playtest.exit'))}</button>`;
   }
 

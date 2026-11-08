@@ -1877,7 +1877,7 @@ body.is-landscape .wb-tr .tr-first > span {
 .castle-split.is-first { color: var(--ink); font-weight: 700; }
 .castle-split svg, .castle-rival svg { flex: none; }
 .castle-fc small { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); }
-.castle-switch .btn[aria-pressed="true"] svg { opacity: .8; }
+.castle-switch.is-on .btn svg { opacity: .8; }
 .castle-rival { font-weight: 500; color: var(--ink); }
 /* valley plaque */
 .plaque { cursor: pointer; padding-top: 12px; }

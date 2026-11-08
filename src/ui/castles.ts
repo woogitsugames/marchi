@@ -63,13 +63,15 @@ export function castleSwitchHtml(world: World, b: Building, log: PaceLog): strin
   const fc = castleForecastFor(world, log, b.id);
   if (!fc || fc.done) return '';
   if (fc.share === 'first') {
-    // on: no heading (the lead line above says it is first); the dock holds the way back to the even split
+    // on: no heading (the lead line above says it is first); the dock holds the way back to the even split.
+    // Both states are plain action buttons: the label changes with the state, so aria-pressed would read
+    // "Share evenly, pressed" while the castle is first (a11y audit 2026-11-08, D-347)
     return `<div class="fix fix-dock castle-switch is-on">
-      <button class="btn cf fix-btn" data-act="first:-1" aria-pressed="true">${iconSvg('contested', 26)}<span>${esc(t('castle.even'))}</span></button></div>`;
+      <button class="btn cf fix-btn" data-act="first:-1">${iconSvg('contested', 26)}<span>${esc(t('castle.even'))}</span></button></div>`;
   }
   const late = fc.firstTick >= 0 && fc.firstTick > fc.dueTick;
   const why = fc.firstTick < 0 ? '' : tHtml(late ? 'fix.castleFirstLate' : 'fix.castleFirstWhy', { time: ticksClock(fc.firstTick) });
   return `<div class="section-h">${esc(t('fix.title'))}</div><div class="fix fix-dock castle-switch">
-    <button class="btn primary cf fix-btn" data-act="first:${b.id}" aria-pressed="false">${iconSvg('first', 26)}<span>${esc(t('castle.first'))}</span></button>
+    <button class="btn primary cf fix-btn" data-act="first:${b.id}">${iconSvg('first', 26)}<span>${esc(t('castle.first'))}</span></button>
     <div class="fix-note" dir="auto"><div class="s-hint"><span>${why}</span></div></div></div>`;
 }
