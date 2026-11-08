@@ -40,12 +40,30 @@ const SCENES = [
   { id: 'night', q: 'play=m1&ff=90&speed=0', act: async (p) => { await p.evaluate(() => { window.__marchia.app.view.debug.forceTime = 0.1; }); await p.waitForTimeout(800); } },
   { id: 'winter', q: 'play=m4&ff=108&speed=0' },
   { id: 'autumn', q: 'play=m3&ff=200&speed=0' },
+  // UI since 5 XI (audit 2026-11-08): XVI castle card + switch (D-290), its codex fold (D-339), the "?" into the
+  // help topic "castles" (D-344), the haul card (D-307), the moderator's playtest screen with S16 (D-343)
+  { id: 'castle16', q: 'play=m16&speed=0&ff=150&openId=5' },
+  { id: 'castle16-codex', q: 'play=m16&speed=0&ff=150&openId=5', act: async (p) => { await clickFirst(p, '.sheet .codex-tog'); } },
+  { id: 'help-castles', q: 'play=m16&speed=0&ff=150&openId=5', act: async (p) => { await clickFirst(p, '.sheet .sh-help'); } },
+  { id: 'haul16', q: 'play=m16&speed=0', act: async (p) => { await haulAt(p, 90); } },
+  { id: 'playtest', q: '', act: async (p) => { await p.evaluate(() => window.__marchia.app.openPlaytest()); await p.waitForTimeout(600); } },
 ].filter((s) => !process.env.SCENES || process.env.SCENES.split(',').includes(s.id));
 
 async function clickFirst(page, sel) {
   const ok = await page.evaluate((s) => { const el = document.querySelector(s); if (!el) return false; el.click(); return true; }, sel);
   await page.waitForTimeout(600);
   return ok;
+}
+
+/** Mission XVI, east castle first, the app's own loop run to `sec` (as tools/layout-check.mjs haulAt). */
+async function haulAt(page, sec) {
+  await page.evaluate((s) => {
+    const A = window.__marchia.app;
+    A.loop.enqueue({ t: 'castleFirst', castle: 5 }); A.loop.flushCommands();
+    while (A.world.state.tick < s * 10) A.loop.tickOnce();
+  }, sec);
+  await page.waitForSelector('.stall-row.is-pace', { state: 'attached', timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(() => !document.querySelector('.toast'), null, { timeout: 15000 }).catch(() => {});
 }
 
 // ---------------------------------------------------------------- in-page collectors (serialised into the page)

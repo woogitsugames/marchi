@@ -3922,6 +3922,44 @@ mapping stays by sheet kind (`HELP_TOPIC_OF_KIND`, D-254); `SheetContent` gains 
 over it, and only the building card uses it: a castle holding one of two castle orders while the mission runs
 (`twoCastleOrder`) opens "castles", every other building card still "cause". Tests: tests/help-map.test.ts. (decided)
 
+**D-347 — A11y fixes after the 8 XI audit: the castle switch is two action buttons, castle bars and playtest starts
+are named in full, AA contrast on the two-castle waybill and the dim frame, the codex fold scrolls into view (order 82,
+taken over from GPT).** Report `docs/research/a11y-2026-11-08.md`; `tools/a11y-audit.mjs` gains the scenes of UI since
+5 XI (castle16, castle16-codex, help-castles, haul16, playtest). (1) The XVI switch had `aria-pressed` while its label
+changes with the state, so with the castle first a screen reader said "Share evenly, pressed" — the opposite. Both
+states are plain action buttons now (the lead line and the toast say the state); the icon dim moved to
+`.castle-switch.is-on`. (2) The two-castle waybill bars were "planks 0/24" and "planks 0/30"; each carries
+"<castle>: <good> n/need" as its name. (3) "on time" (`--meadow`, 15 px) measured 3.4–3.7:1 and "first" (12 px)
+4.1:1 on the HUD panel, which paints darker than a sheet: new token `--meadow-dk #3a4428` for `.castle-eta` and
+`.tr-state`, the tag in `#5a4117`. Soft ink on `frame-sheet-dim` (settings hint, the moderator's screen) 3.43:1 →
+`--ink-soft #352f27` inside dim-frame sheets. (4) At 200 % text in short landscape the second castle row ran under
+the tool rail; `body.is-landscape.is-bigtext` lets the two-castle waybill panel (`:has(.wb-castles)`) scroll above the rail (a better layout stays
+BACKLOG P2). (5) Opening "Co to znaczy?" under the docked fix showed nothing new on screen; the fold now scrolls the
+answer's first line into view (the body's scroll-padding keeps it above the dock) and has `aria-controls`. (6) A
+playtest start's accessible name carries its tags ("S16: XVI. …, decision, no stall"). Source tests
+`tests/a11y-markup.test.ts` (i18n cannot load under tsx). Audit before → after on the new scenes: low contrast
+8 → 1 (412×915), 9 → 3 (915×412: a 1 px sr-only word, text by the dim frame's ornament on the moderator's screen), clipped at 200 % 6–8 → 0–1. UI only, mission hashes
+identical. (decided)
+
+**D-348 — Forced colors: woodcut icons on a Canvas plate, the progress bar outlined.** In forced-colors / high-contrast
+mode the browser keeps the painted kit (url images) and puts a backplate behind text, but the icons draw in
+`currentColor` = the system text colour straight onto the parchment — white on paper in a dark theme — and the
+bar's groove (gradients, inset shadows) disappears. Under `@media (forced-colors: active)` every `svg[role=img]`
+gets `background: Canvas` (the same plate as text), `.kbar` a 1 px `CanvasText` border and its fill `Highlight`.
+Chosen over `forced-color-adjust: none` on the kit, which would keep the authored colours and ignore the user's theme.
+`npm run a11y` checks it (dark palette: every visible icon plated, every contract bar outlined). Shots
+`docs/shots/a11y82-forced-colors-before-after.jpg`. (decided)
+
+**D-349 — Layout in de, ru, ar, ja, hi (order 83, taken over from GPT): three shorter Japanese strings and a smaller
+Cyrillic sheet title in short landscape.** `npm run shots` gains `SHOTS_LANG` / `SHOTS_OUT` (one language for every
+screen, plus the XVI screens), and `road-steep` / `haul16` pass `debug=1` (their helpers are debug-only on a built
+preview, D-51). 195 shots (flat map) and a DOM clipping probe over 180 runs: no clipped text. Fixed: ja
+`cause.NO_WAGON.NONE_CAN_REACH` 「届く荷車なし」, `cause.paceCastleEven` 「{late}遅れ — 均等に分配中」,
+`cause.paceCastleAfter` 「{late}遅れ — {rival}が優先」 (each left a one-character orphan line on the stall card or
+the pace card); ru "Восточный замок" broke into three lines in Ruslan Display in a short side sheet —
+`:root[data-script='cyrillic'] body.is-short .sheet-head h3` 22 px (two lines). de "Wa-gen kaufen" on the tool
+card stays (readable; a shorter label loses the verb). The full `npm run layout` stays with the coordinator.
+Report `docs/research/layout-17-2026-11-08.md`. (decided)
 **D-345 — Order 68 (taken over from GPT): four new woodcut state icons; the trading post and the bottleneck keep the
 woodcuts they already had.** The order listed six concepts. Two already had their own icon drawn for this game:
 `tradePost` (steelyard on a post, D-170) and `bottleneck` (mill hopper on a trestle, D-171). A second picture for
