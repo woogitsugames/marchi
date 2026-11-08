@@ -4081,3 +4081,26 @@ over the rail on its own side (the tools on the other side stay free) and is wid
 fold or the sheet gives the rail back. Chosen over folding the rival line (BACKLOG idea): the rival line is the
 card's own diagnosis and the fold explains it, so both stay; the room comes from the rail, which the reader is not
 using while reading. Applies to every codex fold (why sheet, wagon) in short landscape, not only XVI. (decided)
+
+**D-370 — Time-of-day lights: a pure refresh gate, nothing recomputed while paused, forced on resize and speed change; keyframes parsed into columns (owner approval 2026-11-08, follow-up of D-223/D-257).**
+The every-2nd-frame refresh itself already shipped as D-257; this closes what it left. (1) The decision moved out of
+`view.frame` into `src/render/lightGate.ts` (`lightsDue`, allocation-free, `tests/light-gate.test.ts`): refresh on
+even frames, at once on a snap (world, menu, weather/season snap at load), a quality switch, a **resize** (new), a
+**speed or pause change** (new, `WorldView.noteSpeed` from `App.frame`), a long frame (> 100 ms) and while the clock
+catches up a jump (> 0,002 day); on even frames only if the smoothed clock or rain moved since the last refresh
+(> 1e-7 / 1e-6), so a settled pause recomputes nothing. Skipped frames touch no light, fog, sky or shadow value;
+`fitShadow` still re-fits only when the sun direction moved, i.e. on refresh frames (shadow cadence as in D-257).
+(2) `Lighting.update` read the keyframes through 11 `(k) => k.field` closures per call (closure objects and boxed
+return values in unoptimised code); the keys are now parsed once into one Color / Float64Array column per field and
+the segment is found once per update. Output bit-identical (60 000 (time, rain) pairs swept against the old code: 0
+differences). Measured: Node microbench `update` 0,41–0,48 → 0,17–0,23 µs (heap growth ≈ 0 before and after: TurboFan
+already escape-analysed the closures); in the page (production build, m12 high): refreshes per 40 frames 20 at ×4,
+20 at ×1, 1 on pausing, then **0** while paused (D-257: 20). `frame9-cost` m12 high, 2 runs each: total allocation
+near 2,88 / 2,88 → 2,84 / 2,88 MB/s, mid 2,27 / 2,26 → 2,26 / 2,27 (unchanged within noise); `lighting.ts` near
+49 / 50 KB/s → below the report's top-14 cut in both runs; the rest of the light cost is three.js `setValueV3f`
+(~320 KB/s near, mostly the probe's own GL-call wrapper, identical before/after); frame CPU not comparable (SwiftShader
+shared with another agent's browser). Visual (412×915, dusk 0,742 at the ×4 clock rate, synthetic frames, warm state):
+frame-to-frame change every-frame lights 4,6–15,6 k px (mean 0,017–0,051 /255) vs gated 3,0–20,9 k px (0,012–0,067) —
+same order, dominated by water/foliage animation, no stepping; same frame gated vs every-frame 18–25 k px of 377 k
+(mean 0,08–0,10), only on shadow edges (one-frame sun lag, as D-257). Shots
+`docs/shots/d370-dusk-412x915-every-frame.jpg` / `-every-2nd-frame.jpg`. Render only, hashes unchanged. (decided)
