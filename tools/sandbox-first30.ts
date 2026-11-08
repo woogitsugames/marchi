@@ -17,7 +17,7 @@ import {
 } from '../src/sim/index';
 import { sandboxStatus } from '../src/sim/town';
 import { linkedToStable } from '../src/sim/tradePost';
-import { calmWhy, cureFor, gapTarget, postWouldTake, rankStalls, sampleInputWaits } from '../src/ui/stalls';
+import { calmWhy, chainRoot, cureFor, granaryAnchor, gapTarget, paveCheck, paveSpanFor, postWouldTake, producerCure, quarryForPave, rankStalls, sampleInputWaits } from '../src/ui/stalls';
 import { fleetCueFor, forecastFor, paceCard, sampleFleet } from '../src/ui/paceCard';
 import { buildSite } from '../src/ui/site';
 import { bottleneckCard } from '../src/ui/bottleneck';
@@ -278,7 +278,8 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
     const sug = suggestLinkToStable(w, target);
     // D-264: a producer cut off with no road to offer (its gate boxed in by later neighbours): the card names it
     // critical and offers nothing, so the player takes it back rather than read that card for the rest of the game
-    if (!sug && b.status.k === 'NO_ROAD' && BUILDINGS[b.type].recipe && b.type !== 'tradePost') act = applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) }).ok ? 'demolish' : 'road?none';
+    // (D-390: also a producer cut off later with a full yard — the gap finder's own target, no link left to build)
+    if (!sug && (b.status.k === 'NO_ROAD' || target === b.id) && BUILDINGS[b.type].recipe && b.type !== 'tradePost') act = applyCommand(w, { t: 'demolish', cell: at(w, b.x, b.y) }).ok ? 'demolish' : 'road?none';
     else if (!sug) act = 'road?none';
     else { const res = applyCommand(w, { t: 'road', surface: 1, cells: sug.cells }); act = res.ok ? 'road' : 'road?' + res.err.k; }
   } else {
@@ -286,9 +287,24 @@ function look(w: World, log: PaceLog, r: Result, sb: { keep: number; maxWagons?:
     if (cure === 'wagon') { const res = applyCommand(w, { t: 'buyWagon', stable: stableOf(w) }); act = res.ok ? 'wagon' : 'wagon?' + res.err.k; }
     else if (cure === 'granary') {
       // the sheet's "Postaw spichlerz" opens the build tool with the ghost by the root (nav.pickBuild)
-      const root = chain.length ? chain[chain.length - 1]! : null;
-      const rb = root && root.kind === 'building' ? root.id : b.id;
-      act = placeAtGhost(w, 'warehouse', rb) ? 'granary' : 'granary?fail';
+      // D-391: by the sheet's own anchor (granaryAnchor: this building, the root, a granary, the castle, the stable)
+      const rb = granaryAnchor(w, b, chainRoot(chain, b.id));
+      act = rb >= 0 && placeAtGhost(w, 'warehouse', rb) ? 'granary' : 'granary?fail';
+    } else if (cure === 'pave') {
+      // D-390: the sheet's "Wyłóż kamieniem" (panels.ts act 'pave'): the held span in stone, when the button is live
+      const h = paveSpanFor(w, b);
+      const ok = h ? paveCheck(w, h) : null;
+      // no stone and no quarry: the sheet offers the quarry instead (quarryForPave)
+      const qa = quarryForPave(w, b);
+      if (qa >= 0) act = st.coins < BUILDINGS.quarry.price ? 'quarry?NO_COINS' : placeAtGhost(w, 'quarry', qa) ? 'pave:quarry' : 'pave:quarry?fail';
+      else if (!h || !ok) act = 'pave?none';
+      else if (!ok.ok) { act = 'pave?' + ok.err.k; console.error('DBG', fmtT(st.tick/TICK_HZ), b.type, JSON.stringify(ok.err), JSON.stringify(h.held && { ...h.held, cells: h.cells.length }), JSON.stringify(st.wagons.find((q)=>q.id===h.held?.wagon)?.status), 'stone stocks', st.buildings.filter((q)=>q.type==='warehouse'||q.type==='quarry').map((q)=>q.type+':'+JSON.stringify(q.stock)).join(' ')); }
+      else { const res = applyCommand(w, { t: 'road', surface: 2, cells: h.cells }); act = res.ok ? 'pave' : 'pave?' + res.err.k; }
+    } else if (cure === 'producer') {
+      // the sheet's "Postaw: …" (panels.ts act 'producer'): the shared producer's twin or the bottleneck card's producer
+      const pc = producerCure(w, b);
+      act = !pc ? 'producer?none' : st.coins < BUILDINGS[pc.type].price ? 'producer?NO_COINS'
+        : placeAtGhost(w, pc.type, pc.producer) ? 'producer:' + pc.type : 'producer?fail:' + pc.type;
     } else if (cure) act = cure + '?unhandled';
   }
   return { ...base, kind, calm: e.minor, crit: e.crit, calmWhy: calmWhy(w, b), cure, act };
