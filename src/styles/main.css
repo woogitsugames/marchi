@@ -1770,6 +1770,9 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
   text-shadow: 0 1px 0 rgb(43 10 12 / .55);
 }
 .ribbon .rb-t { text-wrap: balance; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
+/* RTL: the contract numeral is rubricated so a lone "I." is not read as an alef (D-341) */
+:root[dir='rtl'] .ribbon .roman { color: #e6c27a; }
+:root[dir='rtl'] .letter h2 .roman { color: var(--wine); }
 .wb-panel {
   position: relative;
   margin-top: -8px;
@@ -1859,6 +1862,9 @@ button.seg.is-on::before { content: ''; position: absolute; inset-block: 3px; in
 .wb-castles .wb-tr.is-now + .wb-tr.is-now { margin-top: 2px; }
 .wb-tr .tr-first { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--brass-dk); text-transform: lowercase; }
 .wb-tr .tr-first svg { flex: none; }
+/* the tag never shrinks under a long castle line (it was cut to its pennant, ar 915x412 review); the line wraps */
+.wb-tr .tr-first { flex: none; }
+.wb-tr .tr-h > .tr-t { min-width: 0; }
 /* the short landscape card (D-53) keeps the pennant and the row's brass tint; the tag's word is for screen readers
    only, so a long castle line ("Château de l'Est — avant 5:00") stays on one row and the card clears the tools (D-329) */
 body.is-landscape .wb-tr .tr-first > span {

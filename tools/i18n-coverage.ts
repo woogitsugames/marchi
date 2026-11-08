@@ -14,7 +14,7 @@ import { en } from '../src/i18n/en';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const I18N = join(ROOT, 'src/i18n');
-const SKIP = new Set(['pl', 'en', 'index', 'plural', 'pseudo']);
+const SKIP = new Set(['pl', 'en', 'index', 'plural', 'pseudo', 'bidi']);
 const args = process.argv.slice(2);
 const packDir = args.includes('--pack') ? args[args.indexOf('--pack') + 1] : null;
 

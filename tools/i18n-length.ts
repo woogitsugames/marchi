@@ -13,7 +13,7 @@ const enDict: Dictionary = en, plDict: Dictionary = pl;
 const languages: { code: string; dict: Dictionary }[] = [{ code: 'pl', dict: plDict }, { code: 'en', dict: enDict }];
 for (const name of readdirSync(join(root, 'src/i18n')).filter(f => f.endsWith('.ts')).sort()) {
   const code = name.slice(0, -3);
-  if (['pl', 'en', 'index', 'plural', 'pseudo'].includes(code)) continue;
+  if (['pl', 'en', 'index', 'plural', 'pseudo', 'bidi'].includes(code)) continue;
   const mod = await import(join(root, 'src/i18n', name)) as Record<string, unknown>;
   const dict = mod[code];
   if (!dict || typeof dict !== 'object') throw new Error(`Missing dictionary export: ${code}`);

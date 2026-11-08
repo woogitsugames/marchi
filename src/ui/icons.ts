@@ -2208,7 +2208,8 @@ function escapeAttr(s: string): string {
 
 /**
  * Icons whose drawing points along the reading direction and so turn round under `dir=rtl` (D-334): the pennant
- * flying from its pole ('first', and the destination pennant at the end of the broken way in 'no_route'). The SVG
+ * flying from its pole ('first', and the destination pennant at the end of the broken way in 'no_route') and the
+ * manicule ('inspect': a hand pointing at the start of a line — help, "what does this mean?", D-340). The SVG
  * gets `class="ico-rtl"`; the stylesheet mirrors it with `scale` (composes with `:active` translate transforms).
  * Never mirrored: goods and buildings (shapes are their identity), wagon / no_wagon / buy_wagon (a picture of a
  * cart, the 3D wagons keep their real heading), rotate (a physical clockwise turn), speed1/2/4 (playback speed,
@@ -2216,7 +2217,7 @@ function escapeAttr(s: string): string {
  * turned by their call sites (`.rtl-flip`, or `.fwd` for the back arrow used as "go to"), since `.fwd` relies on
  * the unflipped glyph.
  */
-export const RTL_MIRROR: ReadonlySet<IconId> = new Set<IconId>(['first', 'no_route']);
+export const RTL_MIRROR: ReadonlySet<IconId> = new Set<IconId>(['first', 'no_route', 'inspect']);
 
 function wrap(inner: string, size: number, title?: string, id?: IconId): string {
   const a11y = title ? `aria-label="${escapeAttr(title)}"` : 'aria-hidden="true" focusable="false"';

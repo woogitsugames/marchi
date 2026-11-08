@@ -11,7 +11,7 @@ import { hutConnected, hutIds, hutStalled, newHut } from '../src/ui/tutorialBuil
 import { assert, eq, test } from './harness';
 
 const I18N = fileURLToPath(new URL('../src/i18n/', import.meta.url));
-const SKIP = new Set(['index', 'plural', 'pseudo']);
+const SKIP = new Set(['index', 'plural', 'pseudo', 'bidi']);
 
 test('D-339: every situational entry is complete in all 17 languages, at most 220 characters a field', async () => {
   const files = readdirSync(I18N).filter((f) => f.endsWith('.ts') && !SKIP.has(f.replace(/\.ts$/, '')));

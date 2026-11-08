@@ -10,6 +10,9 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 
 ## Do zrobienia
 
+- [ ] P3 — (2026-11-07, D-342, zlecenie 81, `claude/w-rtlui`) Ładunki na wozie bez koloru: kosze chleba i kadzie słodu (D-201) to sześć okrągłych otwartych pojemników w siatce 2×3 — w skali szarości mylą się przy zbliżeniu. Propozycja: podłużne wiklinowe kosze chleba (~1 : 1,6 wzdłuż skrzyni); wymaga przepieczenia katalogu modeli (D-331) i zgody właściciela grafiki (źródło: claude, `docs/research/goods-shapes.md`, `docs/shots/goods-shapes-cargo-round-gray.jpg`)
+- [x] P2 — (zrobione 2026-11-07, D-340/D-341, `claude/w-rtlui`) Kod RTL z przeglądu arabskiego (`docs/research/gpt-rtl-ar.md`, punkty 1–7): ceny „−30” w `<bdi dir=ltr>`, `t()` sam izoluje parametry liczbowe w RTL, rączka `inspect` odbita, znacznik „أولًا” nie kurczy się (w poziomie celowo tylko dla czytnika, D-329), „؟” już odbity (D-284), cyfra rzymska w tytule rubrykowana, pole urządzenia `dir=auto`; zrzuty `docs/shots/rtlui-*-ar.jpg`
+
 - [ ] P3 — (2026-11-07, zlecenie 67, `claude/w-letters`) Listy VIII (otwierający, porażka), XIII (otwierający, 1 pieczęć) i list otwierający Wolnej doliny (`letter.valleyOpening`) zredagowane w pl/en i od razu przetłumaczone na 15 języków przez agenta (`docs/reviews/letters-67.md`) — do przeglądu natywnego (**właściciel**: native speakerzy).
 
 - [ ] P1 — (D-331/D-332) Na Foldzie / średnim Androidzie zmierzyć `ready` i `first-frame` z katalogiem modeli i z `?baked=0` (chrome://inspect, znaczniki `marchia:*`, także `marchia:baked-models` − `marchia:app` — czy plik 6 MB z APK zdąży przed `app.start()`); sprawdzić rozmiar APK po `npm run apk` (oczekiwane ~54 MB z 51,6) (**właściciel**: urządzenie).

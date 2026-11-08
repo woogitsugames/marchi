@@ -3,6 +3,7 @@
 import { en } from './en';
 import { pl, type Dict, type MessageKey } from './pl';
 import { pluralize } from './plural';
+import { isolateNumberParams } from './bidi';
 import { pseudoize } from './pseudo';
 
 /** Supported languages (owner's list, D-18). Order = order in the settings list. */
@@ -139,6 +140,8 @@ export function t(key: MessageKey, params?: Record<string, string | number>): st
   }
   if (params) {
     if (s.includes(', plural,')) s = formatPlural(s, params);
+    // right-to-left: number parameters keep their digit order without marks in the translation (D-340)
+    if (RTL_LANGS.has(current)) s = isolateNumberParams(s, params);
     for (const [k, v] of Object.entries(params)) s = s.split('{' + k + '}').join(String(v));
   }
   return s;

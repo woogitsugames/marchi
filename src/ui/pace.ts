@@ -5,7 +5,7 @@ import {
 } from '../sim/index';
 import { t, type MessageKey } from '../i18n/index';
 import { esc } from './dom';
-import { capFirst, fmtDec, fmtInt, goodName, tHtml, ticksClock } from './format';
+import { bdi, capFirst, fmtDec, fmtInt, goodName, tHtml, ticksClock } from './format';
 import { iconSvg } from './icons';
 
 export { forecastFor } from './paceCard';
@@ -105,7 +105,7 @@ export function sharedHtml(world: World, id: number): string {
   if (!rival) return '';
   const name = t(`building.${rival.type}` as MessageKey);
   const text = tHtml('why.shared', { good: capFirst(goodName(s.good)), rival: '\u0001', there: fmtInt(s.there), here: fmtInt(s.here) })
-    .split(`<bdi class="num">\u0001</bdi>`).join(`<button class="linkish" data-go="building:${rival.id}">${esc(name)}</button>`);
+    .split(bdi('\u0001')).join(`<button class="linkish" data-go="building:${rival.id}">${esc(name)}</button>`);
   let one = '';
   const p = s.producers === 1 && s.consumers >= 2 ? buildingById(world, s.producer) : null;
   if (p) one = `<br><small>${tHtml('why.sharedOne', { who: t(`building.${p.type}` as MessageKey), n: fmtInt(s.consumers) })}</small>`;
@@ -123,7 +123,7 @@ export function thinHtml(world: World, id: number): string {
   if (!src) return '';
   const name = t(`building.${src.type}` as MessageKey);
   const text = tHtml('why.thin', { wagon: fmtInt(d.wagon), qty: fmtInt(d.qty), full: fmtInt(d.full), source: '\u0001' })
-    .split(`<bdi class="num">\u0001</bdi>`).join(`<button class="linkish" data-go="building:${src.id}">${esc(name)}</button>`);
+    .split(bdi('\u0001')).join(`<button class="linkish" data-go="building:${src.id}">${esc(name)}</button>`);
   return `<div class="s-hint thin-hint">${iconSvg(d.good, 22)}<span dir="auto">${text}</span></div>`;
 }
 

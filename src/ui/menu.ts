@@ -27,6 +27,16 @@ export function missionTitle(id: string): string {
   return isMissionKey(id) ? t(id === 'sandbox' ? 'menu.sandbox' : `menu.${id}` as MessageKey) : t('menu.m1');
 }
 
+/**
+ * The mission title as HTML with its leading contract numeral in a span (`.roman`, "IV."): in Arabic a lone "I" in the
+ * display face read as an alef, so the RTL stylesheet rubricates the numeral (D-341). Bidi order is unchanged.
+ */
+export function missionTitleHtml(id: string): string {
+  const full = missionTitle(id);
+  const m = /^([IVXLC]+\.)( .*)$/s.exec(full);
+  return m ? `<span class="roman">${m[1]}</span>${esc(m[2]!)}` : esc(full);
+}
+
 function missionSub(id: MissionKey): string {
   if (id === 'sandbox') return t('menu.valleySub');
   // its own line: 'menu.contractSub' repeated the title ("Chleb i deski / Chleb i deski dla zamku...")
@@ -548,7 +558,7 @@ export function buildOpeningLetter(missionId: string, onClose: () => void): HTML
   const letter = h('div.letter.l-opening' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'opening-title' });
   letter.innerHTML = `${letterSeal(true)}
     <div class="l-kicker">${esc(t('contract.kicker'))}</div>
-    <h2 id="opening-title">${esc(missionTitle(missionId))}</h2>
+    <h2 id="opening-title">${missionTitleHtml(missionId)}</h2>
     <div class="l-body">${letterHtml(text)}</div>
     <div class="actions"><button class="btn primary cf" data-a="start">${esc(t('letter.start'))}</button></div>`;
   letter.style.clipPath = deckle('bottom', 57, 6, 30);
