@@ -116,7 +116,7 @@
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
   `docs/shots/winter-trees-{before,after}-*` (np. `after-winter-high-915x412`, `after-winter-near-high-412x915`).
 
-### Decyzje na rano (8 XI)
+### Decyzje na rano (8 XI) — rozstrzygnięte ~09:45: kosze scalone, S16 zostaje, dźwięki — właściciel posłucha i da znać
 1. **Dźwięki z własnej syntezy (D-350/D-351, scalone ~04:15):** awans rangi (dzwon), stuk karty, ciesielka „rozbuduj”,
    okiennica + dzwonek posterunku, pękający lód, monety, pętle: wiatr zimą, skrzypienie lodu, gwar targu. Nikt ich jeszcze
    nie słyszał — **posłuchaj w porannym APK na telefonie**. Rekomendacja: zostawić; jeśli któryś brzmi źle, cofnę tylko jego

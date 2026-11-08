@@ -4031,4 +4031,4 @@ tray drops the outer bottom disc, which stands on the bed and is never seen, to 
 `src/render/models/cargo.ts`; the catalogue is re-baked by the build as for any model change (D-331,
 `tests/models-baked.test.ts` passes). Pixel checks: model preview `cargoChain` 0 px changed, `cargoBase` changes only
 on the bread wagon and the bakery yard pile; harness menu frame 1 and the other scenes in
-`docs/research/bread-diff.txt`. Reverting is the one commit. (proposed — awaiting the owner's yes, per D-342)
+`docs/research/bread-diff.txt`. Reverting is the one commit. (decided — owner yes 2026-11-08)
