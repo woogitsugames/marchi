@@ -2064,7 +2064,7 @@ export const CONTRACT_LETTERS = {
       opening: "Le forgeron veut 30 mesures de charbon de bois avant 14:00. Le bois est coupé à l'ouest, et l'unique charbonnière y fume aussi, mais seule elle est trop lente. Deux bûches font une mesure : un chariot de bois vaut un demi-chariot de charbon. Si vous bâtissez une seconde charbonnière, demandez-vous ce qui doit faire la longue route : le bois, ou déjà le charbon.\n— Wszebor",
       won: {
         1: "Le charbon est arrivé, mais le forgeron a longtemps attendu devant un foyer froid. Un sceau ; une seconde charbonnière près des bois aurait hâté l'ouvrage.\n— Wszebor",
-        2: "Le charbon est arrivé avant l'échéance. Deux sceaux ; cuit près des bois, il fait la longue route en moitié moins de charges.\n— Wszebor",
+        2: "Le charbon est arrivé avant l'échéance. Deux sceaux ; produit près des bois, il parcourt la longue route en moitié moins de chargements.\n— Wszebor",
         3: "Deux charbonnières fumaient près des bois et seul le charbon roulait sur la route, en chariots pleins. Trois sceaux pour le bon endroit.\n— Wszebor",
       },
       lost: "L'échéance est passée, le forgeron attend encore. Une charbonnière ne suffit pas : bâtissez la seconde près des bûcherons, que la route porte du charbon.\n— Wszebor",
@@ -2082,7 +2082,7 @@ export const CONTRACT_LETTERS = {
       opening: "Il fabbro vuole 30 misure di carbone di legna entro le 14:00. La legna si taglia a ovest e lì fuma anche l'unica carbonaia, ma da sola non basta. Due tronchi fanno una misura: un carro di legna è mezzo carro di carbone. Se costruisci una seconda carbonaia, pensa a cosa deve percorrere la strada lunga: la legna o già il carbone.\n— Wszebor",
       won: {
         1: "Il carbone è arrivato, ma il fabbro ha atteso a lungo davanti alla forgia fredda. Un sigillo; una seconda carbonaia vicino al bosco avrebbe accelerato il lavoro.\n— Wszebor",
-        2: "Il carbone è arrivato prima della scadenza. Due sigilli; cotto vicino al bosco, fa la strada lunga in metà dei carichi.\n— Wszebor",
+        2: "Il carbone è arrivato prima della scadenza. Due sigilli; prodotto vicino al bosco, percorre la lunga strada con metà dei carichi.\n— Wszebor",
         3: "Due carbonaie fumavano vicino al bosco e sulla strada viaggiava solo carbone, a carri pieni. Tre sigilli per il posto giusto.\n— Wszebor",
       },
       lost: "La scadenza è passata e il fabbro aspetta ancora. Una carbonaia non basta: costruisci la seconda presso i taglialegna, così la strada porta carbone, non legna.\n— Wszebor",
@@ -2100,7 +2100,7 @@ export const CONTRACT_LETTERS = {
       opening: "De smid wil 30 maten houtskool vóór 14:00. Het hout wordt in het westen gekapt, en daar rookt ook de enige kolenbrander, maar alleen is hij te traag. Twee stammen geven één maat: een wagen hout is een halve wagen houtskool. Bouw je een tweede kolenbrander, bedenk dan wat de lange weg moet afleggen: het hout of al de houtskool.\n— Wszebor",
       won: {
         1: "De houtskool kwam aan, al wachtte de smid lang bij een koud vuur. Eén zegel; een tweede kolenbrander bij het bos had het werk versneld.\n— Wszebor",
-        2: "De houtskool kwam vóór de termijn. Twee zegels; bij het bos gebrand, gaat ze de lange weg in de helft van de vrachten.\n— Wszebor",
+        2: "De houtskool kwam vóór de termijn. Twee zegels; bij het bos gemaakt, legt het de lange weg af met de helft van de vrachten.\n— Wszebor",
         3: "Twee kolenbranders rookten bij het bos en over de weg ging alleen houtskool, in volle wagens. Drie zegels voor de juiste plek.\n— Wszebor",
       },
       lost: "De termijn verstreek en de smid wacht nog. Eén kolenbrander is te traag: bouw de tweede bij de houthakkers, dan rijdt er houtskool, geen hout.\n— Wszebor",
@@ -2219,7 +2219,7 @@ export const CONTRACT_LETTERS = {
       opening: "D'abord 30 mesures de grain de semence avant 5:30, puis sans tarder 40 cordes de bûches pour la palissade avant 8:30 ; le tout avant 12:00. Les bûcherons sont au bout de la vallée, et leur petit entrepôt est plein de poisson dont personne ne veut. Bâtissez un grenier pour qu'ils continuent — et que le bois de la seconde lettre attende à ma porte, pas en forêt.\n— Wszebor",
       won: {
         1: "Grain et bûches sont arrivés, mais la palissade a longtemps attendu. Un sceau ; un grenier près du château garde le bois là où il servira.\n— Wszebor",
-        2: "Les deux lettres ont été honorées avant l'échéance. Deux sceaux ; du bois qui attend à la porte aurait abrégé la seconde.\n— Wszebor",
+        2: "Les deux lettres ont été honorées avant l'échéance. Deux sceaux ; du bois déjà à la porte aurait accéléré la seconde livraison.\n— Wszebor",
         3: "Le bois attendait déjà à la porte quand la seconde lettre est venue. Trois sceaux pour le stock au bon endroit.\n— Wszebor",
       },
       lost: "L'échéance est passée, la palissade n'est pas dressée. Les bûcherons avaient la cour pleine : un grenier près du château les aurait fait travailler.\n— Wszebor",
@@ -2237,7 +2237,7 @@ export const CONTRACT_LETTERS = {
       opening: "Prima 30 misure di grano da semina entro le 5:30, poi senza indugio 40 cataste di tronchi per la palizzata entro le 8:30; tutto prima delle 12:00. I taglialegna stanno all'altro capo della valle e il loro piccolo deposito è pieno di pesce che nessuno vuole. Costruisci un granaio perché continuino a tagliare, e che il legname della seconda lettera aspetti alla mia porta, non nel bosco.\n— Wszebor",
       won: {
         1: "Grano e tronchi sono arrivati, ma la palizzata ha atteso a lungo. Un sigillo; un granaio presso il castello tiene il legname dove servirà.\n— Wszebor",
-        2: "Entrambe le lettere evase prima della scadenza. Due sigilli; il legname in attesa alla porta avrebbe accorciato la seconda.\n— Wszebor",
+        2: "Entrambe le lettere evase prima della scadenza. Due sigilli; il legname già alla porta avrebbe accelerato la seconda consegna.\n— Wszebor",
         3: "Il legname aspettava già alla porta quando è giunta la seconda lettera. Tre sigilli per la scorta al posto giusto.\n— Wszebor",
       },
       lost: "La scadenza è passata e la palizzata non c'è. I taglialegna avevano il cortile pieno: un granaio presso il castello li avrebbe fatti lavorare.\n— Wszebor",
