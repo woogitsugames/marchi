@@ -6,7 +6,7 @@
   `.gitignore` ma teraz `node_modules` bez ukośnika). Preview bazy: `npx vite preview --port 5193`.
 - Cykl godzinny: **`trig_017HkVx1C3bfqf3vFDobFdnR`** („42 * * * *”); stary `trig_01PAgKEUo171oE4A99BXL74i` już nie istnieje.
 - Baza = `main` = **D-284..D-286 scalone** (7 XI ~04:00): testy **585/0**, build, smoke 0, layout 114/0. `setup:android` OK.
-  Ostatnie APK: **d359249** (7 XI ~18:50, wysłane; kupiec przy ladzie, szybsze menu). Następne: jedno rano.
+  Ostatnie APK: **12981ad** (8 XI ~06:00, wysłane; 55,1 MB — katalog modeli + dźwięki; wszystkie zlecenia GPT przejęte).
 - Scalone wieczorem 6 XI: **D-254** „?” na kartach → pomoc; **D-250/D-251** karta rangi zna węglarnię/słodownię/browar,
   „rozbuduj” rośnie te łańcuchy (card-10 ranga 5 po 104–109 min, wcześniej nigdy; DECENT i hasze bez zmian); **D-255..D-258**
   budowa świata menu −23…−28 % CPU (geometria bit w bit), leniwe LOD-y wozów, **światła co 2. klatkę** (decyzja właściciela),
@@ -104,8 +104,8 @@
   zajęte przez VII–XII; D-343) z fixturą i kolumnami CSV + 104 pomoc „Kilka zamków” (D-344). Do sprawdzenia na telefonie:
   przytrzymanie tytułu 3 s w poziomie nie otworzyło ekranu prowadzącego w skrypcie zrzutów.
   4) **scalone ~03:30:** 68 ikony (D-345: wagon_due, market_full, grow, cut_road; posterunek i wąskie gardło już miały) ‖
-  **w toku:** 82 audyt a11y z poprawkami + 83 zrzuty de/ru/ar/ja/hi
-  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) **scalone ~04:15:** 69/79/80 dźwięki — własna synteza, 9 plików, podpięte (D-350/D-351). Agenci stanęli ~01:30 na limicie, wznowieni
+  **scalone ~06:00:** 82 audyt a11y z poprawkami (D-347..D-349: przełącznik zamku bez sprzecznego aria-pressed, nazwy pasków
+  z zamkiem, kontrast, forced colors) + 83 zrzuty de/ru/ar/ja/hi (ja/ru skrócone); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) **scalone ~04:15:** 69/79/80 dźwięki — własna synteza, 9 plików, podpięte (D-350/D-351). Agenci stanęli ~01:30 na limicie, wznowieni
   ~03:45.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
