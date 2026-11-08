@@ -13,7 +13,8 @@ BASE = Path(__file__).resolve().parents[1]
 SR = 48000
 BUS = {'ambient': 0.55, 'sfx': 0.65, 'ui': 0.7}  # defaults in AudioEngine / app.ts
 LOOP_LEVEL = {'ambient.morning': .72, 'ambient.evening': .72, 'ambient.rain': .79, 'ambient.river': .72,
-              'cart.dirt': .72, 'cart.cobble': .63, 'work.mill': .85}  # max level the bindings/engine pass
+              'cart.dirt': .72, 'cart.cobble': .63, 'work.mill': .85,
+              'ambient.winterWind': .72, 'ambient.iceCreak': .72, 'ambient.market': .7}  # max level the bindings/engine pass
 
 def decode(path, mono=True):
     out = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-f', 'f32le', '-ac', '1' if mono else '2',

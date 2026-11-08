@@ -490,6 +490,15 @@
     "ui/stall",
     "ui/wood",
     "ui/paper",
-    "ui/error"
+    "ui/error",
+    "sfx/rank-up",
+    "sfx/rank-card",
+    "sfx/grow",
+    "sfx/post-open",
+    "sfx/ice-crack",
+    "sfx/post-coins",
+    "ambient/winter-wind",
+    "ambient/ice-creak",
+    "ambient/market"
   ]
 }
