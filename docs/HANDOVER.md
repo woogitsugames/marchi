@@ -9,6 +9,15 @@
   (`update_trigger enabled=true`) albo założyć nowy w nowej sesji. Przypomnienie „Raport z testu Free.AI (24 h)”
   `trig_01CrY9mMKNSZwrsvrEyTg76J` (8 XI 20:00) zostaje — wpadnie do tej sesji.
 
+## Scalone 8 XI (wieczór, sesja `session_01QWRid74YcFi21Wc62DrCAR`)
+- **D-392..D-394** card-10 nie zabudowuje doliny (świeży producent liczy się jako obsłużony, spichlerz „zapełnia się”, droga dla odciętego browaru); spichlerze 30–45 → 3–18, zarobek bez zmian.
+- **D-400..D-402** smolarnia w XVII bez „przyda się drugi”; `balance-night6` i scena S16 znają `chainFirst`.
+- **D-410..D-412** odcięty później budynek bez możliwej drogi: arkusz „Rozbierz”, karta „bez dojazdu”; martwe minuty 41–45 → 0 (seedy 1305, 1307).
+- Stan bazy `d669e1d`: testy 674/0, smoke 0, layout 138/0. APK z `e67bc4a` (bez D-410..D-412).
+- Cykl godzinny: nowy `trig_01UncL4peHHBWyuGYZWSvvWK`. Decyzje XVII (zostawić do playtestu) podjęte.
+- Nowe: P3 tłumaczenia kluczy z D-393/D-410 na 15 języków; P2 szary „Wyłóż most kamieniem” przy `pave?NO_STONE`.
+- Uwaga: layout z `npm run layout` na worktree dawał 403 (node_modules poza katalogiem) — użyć `LAYOUT_URL=http://127.0.0.1:5193/` z `vite preview`.
+
 ## Scalone 8 XI
 - **Pasek tempa ucięty na Foldzie** (zgłoszenie właściciela): przy 720–879 px CSS (split) i < 820 px (landscape) tempo
   schodzi pod kafelki; layout-check ma widok **772x854** (bez poprawki łapie „offscreen ×2/×4”).
