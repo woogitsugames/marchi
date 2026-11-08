@@ -4,7 +4,8 @@
  *  - planks : flat stacked boards with spacer sticks, fresh-sawn colour
  *  - grain  : upright round sacks with tied necks (straw colour)
  *  - flour  : pale square sacks lying flat, stacked in two layers
- *  - bread  : wide wicker baskets heaped with ochre loaves
+ *  - bread  : long oval wicker trays lying along the bed, three long loaves each (D-352: oblong, so the load
+ *             reads apart from the round malt tubs in grayscale)
  *  - fish   : tall narrow wicker creels with fish tails sticking out of the open tops
  *  - stone  : rough grey blocks, low and heavy (a wagon carries 4), two-by-two on the floor
  *  - charcoal: black sacks standing open, heaped with dull lumps
@@ -71,8 +72,14 @@ export function cargoSlots(good: CargoGood): Matrix4[] {
     case 'planks':
       for (let i = 0; i < CARGO_MAX; i++) out.push(trs(0, Y + i * 0.125, -0.5));
       break;
+    case 'bread': {
+      // D-352: oblong trays keep one heading, along the bed (a random spin would turn the long ovals into a jumble
+      // and push their ends over the side boards); only a slight skew per tray
+      const zs = [-1.18, -0.42, 0.34];
+      for (let i = 0; i < CARGO_MAX; i++) out.push(trs(i % 2 ? 0.31 : -0.31, Y, zs[Math.floor(i / 2)], 0, ((i * 5) % 3 - 1) * 0.04));
+      break;
+    }
     case 'grain':
-    case 'bread':
     case 'fish':
     case 'charcoal': {
       const zs = [-1.18, -0.42, 0.34];
@@ -194,11 +201,14 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
       break;
     }
     case 'bread': {
-      // wide wicker basket (open lathe with a rolled rim) heaped with ochre loaves
-      const prof = [[0.001, 0.0], [0.22, 0.0], [0.28, 0.27], [0.31, 0.3], [0.26, 0.29], [0.001, 0.12]].map(([r, y]) => new Vector2(r, y));
-      b.add('wood', new LatheGeometry(prof, 9), {
+      // long oval wicker tray (D-352): an open lathe with a rolled rim, squeezed to about 1 : 1.6 along the bed, low
+      // enough that three long loaves lying lengthwise show over the rim; seen from above a row of long ovals with
+      // ridged filling, never a round tub. No outer bottom disc: it stands on the bed and is never seen (keeps the
+      // load near the old basket's triangle count with a smoother 12-sided oval)
+      const prof = [[0.24, 0.0], [0.29, 0.17], [0.31, 0.2], [0.27, 0.19], [0.001, 0.08]].map(([r, y]) => new Vector2(r, y));
+      b.add('wood', new LatheGeometry(prof, 12), {
         color: '#7a6242',
-        m,
+        m: m.clone().multiply(trs(0, 0, 0, 0, 0, 0, 0.74, 1, 1.18)),
         noise: 0.18,
         noiseFreq: 14,
         ao: 0,
@@ -206,11 +216,12 @@ function addUnit(b: PartBuilder, good: CargoGood, m: Matrix4): void {
         jitter: 0.008,
         jitterFreq: 8,
       });
-      const loaves: [number, number, number, number][] = [[-0.1, 0.22, 0.07, 0.16], [0.12, 0.22, -0.05, 0.15], [0.02, 0.3, 0.0, 0.14]];
-      for (const [x, y, z, r] of loaves) {
+      // two loaves side by side, a third laid on top between them; each a long half-ellipsoid with a darker underside
+      const loaves: [number, number, number, number][] = [[-0.085, 0.13, -0.02, 0.27], [0.085, 0.13, 0.03, 0.26], [0.0, 0.2, 0.0, 0.23]];
+      for (const [x, y, z, len] of loaves) {
         b.add('cloth', prim(SphereGeometry, 1, 6, 3, 0, Math.PI * 2, 0, Math.PI * 0.55), {
           color: '#a67a3d',
-          m: m.clone().multiply(trs(x, y, z, b.r(-0.25, 0.25), b.r(0, 3), b.r(-0.25, 0.25), r, r * 0.72, r * 1.2)),
+          m: m.clone().multiply(trs(x, y, z, b.r(-0.08, 0.08), b.r(-0.06, 0.06), b.r(-0.08, 0.08), 0.085, 0.075, len)),
           ao: 0,
           dirt: 0,
           noise: 0.12,
