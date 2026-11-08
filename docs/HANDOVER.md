@@ -99,9 +99,12 @@
   2) **scalone ~01:45:** 66+105 i18n ru/uk/ja/ko/zh_Hans/ar/hi (132 zmiany, `docs/reviews/i18n-66-105-other.md`) + 100 RTL
   (`docs/research/gpt-rtl-ar.md`, 7 uwag do kodu UI) ‖ 72+102 księga przestojów: 8 wpisów sytuacyjnych w 17 językach (D-339);
   70 opisy sklepu — koordynator (17 języków, App Store pl/en);
-  3) **w toku od ~01:50:** poprawki RTL w UI (7 uwag) + 81 audyt kształtów towarów (`claude/w-rtlui`) ‖ 103 S10 + 104 pomoc
-  „Kilka zamków” wdrożone (`claude/w-s10help`);
-  4) 68 ikony ‖ 82/83/84 audyty (częściowo zrobione QA 7 XI); 5) 69/79/80 dźwięki CC0.
+  3) **scalone ~02:50:** RTL w UI (D-340/D-341: ceny „−30”, ☛ odbita, rzymskie liczby, izolacja liczb w `t()` dla ar) + 81
+  audyt kształtów (D-342: ikony OK; kosze chleba vs cebrzyki słodu na wozie mylą się z bliska → P3) ‖ 103 jako **S16** (S10–S15
+  zajęte przez VII–XII; D-343) z fixturą i kolumnami CSV + 104 pomoc „Kilka zamków” (D-344). Do sprawdzenia na telefonie:
+  przytrzymanie tytułu 3 s w poziomie nie otworzyło ekranu prowadzącego w skrypcie zrzutów.
+  4) **w toku od ~02:00:** 68 ikony wdrożone (`claude/w-icons68`) ‖ 82 audyt a11y z poprawkami + 83 zrzuty de/ru/ar/ja/hi
+  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) 69/79/80 dźwięki CC0.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
 - Scalone ~11:30: **D-296..D-298** chunki terenu poza kadrem po 1. klatce (menu klatki 1–5 0 px różnicy), bez wymuszonego
