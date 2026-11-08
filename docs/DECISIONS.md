@@ -4128,3 +4128,44 @@ Measured (`tools/sandbox-first30.ts --minutes 120 --seeds 1301,1302,1303,1304 --
 Card-10/30 within noise (they already had the minutes); card-60 now reaches rank 5 in every valley. Tests
 `tests/card-pair.test.ts`. (decided)
 
+
+**D-390 — A valley card never names a building the build tool cannot place; the grey stone button gets a quarry (2026-11-08).**
+Coordinator's measurement (`tools/sandbox-first30.ts --minutes 120 --seeds 1302 --only card-60 --no-pairs`): from 97:00
+to 119:00 the bottleneck card (D-171, D-264) read "Postaw: farm" every minute and the tool could not place it, with 14 k
+silver in hand. Cause, in the game, not the tool: `computeCard` anchored the ghost at the nearest farm and never asked
+whether the build tool finds a site there (D-175 `siteExists` guarded the rank card only) — `buildSite` returned null
+(the farms walled in by later buildings), so the game's build tool would have opened the ghost at the screen centre.
+Fixes (`src/ui/bottleneck.ts`, `src/ui/site.ts` `siteAnchor`):
+1. The anchor (`neckAnchor`) is the first, in order, of: the producers by loaded travel time to the waiting consumer,
+   that consumer, the other consumers, the castle, the stable — with a site a road reaches (`siteExists`, D-266). None:
+   the card skips the good (next good, then the fleet card). The sheet's "Postaw: …" button now carries the type
+   (`producer:<anchor>:<type>`), since the anchor may be a mill or the castle (it used to build the anchor's own type).
+2. A good whose producers sit on a full yard (OUTPUT_FULL) half the window on average is no shortage (new `full` ring,
+   like the D-171 "starved" rule): the consumers wait for the haul, not for grain. Without it the now-live card had the
+   card-10 player build a farm every 10 s (a hundred farms OUTPUT_FULL.NO_DESTINATION, grain still "short").
+3. Trading post `IDLE (crit) -> pave?unhandled`: a tool gap in 3 of 4 valleys — the sheet's "Wyłóż most kamieniem" is
+   live and the tool now presses it (the span paves, the card goes). Seed 1304 was a real dead end: no quarry (no rock
+   within 10 cells of the castle, so the rank card never offered one, D-175), the stone button grey with "postaw
+   kamieniołom" for ~20 min. `quarryForPave` (`src/ui/stalls.ts`, free valley only): held span + NO_STONE + no quarry ->
+   the sheet's button is "Postaw: Kamieniołom" by the first building with a quarry site (this one, castle, stable, any),
+   hint `fix.paveQuarry` (17 languages); once a quarry stands the stone button returns.
+Tool (`tools/sandbox-first30.ts`): presses the sheet's pave / producer / quarry cures, opens the granary ghost by the
+sheet's anchor (D-391), and takes back a producer cut off later with no link left (as D-264 for NO_ROAD). No sim change.
+Dead-card time (looks ending `?fail` / `?unhandled` / `?NO_STONE`, in minutes of 120, seeds 1301–1304):
+
+| player | before | after | before `--no-pairs` | after `--no-pairs` |
+|---|---|---|---|---|
+| card-10 | 54,8 / 19,2 / 34,5 / 13,5 | 0 / 0 / 0 / 0 | 33,8 / 27,7 / 38,8 / 14,2 | 0 / 0 / 0 / 0 |
+| card-30 | 17,0 / 9,5 / 0 / 15,0 | 0 / 0 / 0 / 0,5 | 31,0 / 10,5 / 10,5 / 13,5 | 0 / 0 / 0 / 0,5 |
+| card-60 | 15,0 / 7,0 / 13,0 / 9,0 | 0 / 0 / 0 / 1,0 | 12,0 / 23,0 / 15,0 / 12,0 | 0 / 0 / 0 / 0 |
+
+(the rest: one look of "the quarry is still digging" after the quarry went up.) Rank-5 minute card-60: 108,2 / 117,9 /
+113,7 / 113,2 -> 109,8 / 115,5 / 111,0 / 111,6; `--no-pairs` seed 1302 now reaches rank 5 (118,9; before rank 4).
+Earned at 120 min up for every player (card-10 28–30 k -> 31–34 k). Tests `tests/dead-cards.test.ts`. (decided)
+
+**D-391 — The granary cure opens by an anchor with a site, and is not offered without one (2026-11-08).**
+Same class as D-390: the sheet's "Postaw spichlerz" opened the ghost by the building itself (`buildSite` null late in
+the valley -> ghost at the screen centre); card-10 read `granary?fail` for 2–17 min per valley. `granaryAnchor`
+(`src/ui/stalls.ts`): this building, the chain's root, another granary, the castle, the stable — the first with a site a
+road reaches; in the free valley `cureFor` drops the granary cure when none has one. Missions keep the building itself.
+The tool used the chain root, the game the building: both now use `granaryAnchor`. (decided)
