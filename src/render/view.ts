@@ -31,6 +31,7 @@ import { CameraRig } from './cameraRig';
 import { Effects } from './fx';
 import { GroundCover } from './groundCover';
 import { CELL, Heightfield } from './heightfield';
+import { createLightGate, lightsDue, noteLightSpeed } from './lightGate';
 import { Lighting } from './lighting';
 import { PartBuilder } from './models/kit';
 import { applyTextures, foliageLift, frostUniform, type MatKey, materialKinds, materialsFor, modelMaterial, setTreeQuality, texturedVariant, treeQualityVariants } from './models/materials';
@@ -157,8 +158,8 @@ class View implements WorldView {
   private menu = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
-  /** Frame parity for the time-of-day light refresh (D-257); 1 = the next frame refreshes. */
-  private lightTick = 0;
+  /** When the time-of-day lights are recomputed (D-257, D-370). */
+  private readonly lightGate = createLightGate();
   private lastStats = { calls: 0, triangles: 0 };
   /** Shader pre-warm (research 2026-11-02): runs after the next rendered frame when set. */
   private warm: ShaderPrewarm | null = null;
@@ -447,11 +448,10 @@ class View implements WorldView {
     // time, and a jump of the clock (load, fast-forward) then re-bakes the far trees once, not at every quarter step
     this.bare = seasons ? bareAt(w.state.tick) : 0;
     this.spring = seasons ? springAt(w.state.tick) : 0;
-    // time-of-day lights every 2nd frame (D-257, owner 2026-11-06): they drift over game minutes, and each change
-    // re-sends the light uniforms (three's setValueV3f, the largest allocator left after D-223). Fresh at once after a
-    // world or quality change (snap), a stall or resume (long frame), and while the clock catches up a jump.
-    this.lightTick = (this.lightTick + 1) & 1;
-    if (snap || this.lightTick === 0 || dtMs > 100 || Math.abs(d) > 0.002) {
+    // time-of-day lights every 2nd frame (D-257, D-370): they drift over game minutes, and each change re-sends the
+    // light uniforms (three's setValueV3f). Fresh at once after a world/quality/size/speed change, a stall, while the
+    // clock catches up a jump; skipped while paused once clock and rain settled (lightGate.ts).
+    if (lightsDue(this.lightGate, this.tod, this.rain, dtMs, d, snap)) {
       this.lighting.update(this.tod, this.rain);
       foliageLift.value.copy(this.lighting.hemi.color).multiplyScalar(this.lighting.hemi.intensity * 0.17);
       r.toneMappingExposure = this.lighting.env.exposure * 1.3;
@@ -607,11 +607,17 @@ class View implements WorldView {
     d.odo = u + span;
   }
 
+  /** The loop's speed (0 = paused) before each frame: a change refreshes the lights at once (D-370). */
+  noteSpeed(speed: number): void {
+    noteLightSpeed(this.lightGate, speed);
+  }
+
   resize(cssW: number, cssH: number, dpr: number): void {
     this.cssW = Math.max(1, cssW);
     this.cssH = Math.max(1, cssH);
     this.dpr = dpr;
     this.rig.resize(this.cssW, this.cssH);
+    this.lightGate.force = true; // no stale lights on the first frame at the new size (D-370)
     if (!this.renderer) return;
     this.renderer.setPixelRatio(Math.min(dpr, DPR_CAP[this.quality] ?? 2));
     this.renderer.setSize(this.cssW, this.cssH, false);
@@ -780,7 +786,7 @@ class View implements WorldView {
       this.resize(this.cssW, this.cssH, this.dpr);
       this.loadTextures();
       this.warmPending = true;
-      this.lightTick = 1; // the next frame refreshes the lights (D-257)
+      this.lightGate.force = true; // the next frame refreshes the lights (D-257)
     };
     // Compile the programs the new tier needs (tree A2C/blend variants, low terrain) on clones
     // first, so the frame after the switch links nothing; the switch lands once they are ready.

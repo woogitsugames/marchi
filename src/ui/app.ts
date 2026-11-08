@@ -905,6 +905,7 @@ export class App implements PanelNav {
     const t0 = this.diagPanel ? performance.now() : 0;
     const alpha = this.loop.advance(dt);
     const t1 = this.diagPanel ? performance.now() : 0;
+    this.view.noteSpeed?.(this.mode === 'game' ? this.loop.speed : 1);
     this.view.frame(alpha, dt);
     if (this.diagPanel && document.visibilityState === 'visible') {
       const key = this.mode !== 'game' ? 'menu' : this.loop.speed === 0 ? 'pause' : `x${this.loop.speed}`;

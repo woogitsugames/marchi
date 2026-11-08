@@ -78,6 +78,8 @@ export interface WorldView {
   setWorld(world: World): void;
   /** Request the shader programs of the current scene off the main thread, where the driver can (absent = no-op). */
   precompile?(): void;
+  /** The loop's speed (0 = paused), told before each frame; a change refreshes the time-of-day lights (absent = no-op). */
+  noteSpeed?(speed: number): void;
   /** Render a frame. alpha = interpolation between the previous and current sim tick (0..1). */
   frame(alpha: number, dtMs: number): void;
   /** Call after every sim tick so the view can snapshot previous positions for interpolation. */
