@@ -2106,6 +2106,22 @@ body.is-landscape .hud-top, body.is-split .hud-top {
   grid-template-columns: auto auto minmax(0, 1fr) auto auto;
   grid-template-areas: "menu contract . chips speed" ". events . . .";
 }
+/* too narrow for one row (unfolded Fold with display size raised, ~720–880 CSS px; small landscape phones):
+   the speed seal drops under the weather chips instead of running off the right edge */
+@media (max-width: 879px) {
+  body.is-split .hud-top {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas: "menu contract . chips" ". contract . speed" ". contract . ." ". events . .";
+  }
+}
+@media (max-width: 819px) {
+  body.is-landscape .hud-top {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas: "menu contract . chips" ". contract . speed" ". contract . ." ". events . .";
+  }
+}
 body.is-landscape .waybill-wrap:not(.is-collapsed), body.is-split .waybill-wrap:not(.is-collapsed) { width: 330px; }
 body.is-landscape .chips, body.is-split .chips { flex-wrap: nowrap; }
 body.is-landscape .rail, body.is-split .rail { flex-direction: row-reverse; align-items: flex-end; justify-content: space-between; gap: 16px; }

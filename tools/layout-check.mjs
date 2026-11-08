@@ -45,6 +45,8 @@ export const VIEWS = [
   { id: '412x915', w: 412, h: 915 },
   { id: '915x412', w: 915, h: 412 },
   { id: '904x1000', w: 904, h: 1000 },
+  // an unfolded Fold with the system display size raised: the one-row top bar ran off the right edge
+  { id: '772x854', w: 772, h: 854 },
   { id: '360x740', w: 360, h: 740 },
   { id: 'flip360x380', w: 360, h: 380 },
 ];
