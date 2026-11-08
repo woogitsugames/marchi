@@ -293,3 +293,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-342 | — | Goods shape audit (order 81, taken over from GPT): the icons stay; bread vs malt on the wagon bed is a proposal | decided | sim |
 | D-343 | — | Playtest scene S16 "Two castles" (mission XVI): a decision fixture, its own CSV columns and hypothesis H6 (order 103, taken over from GPT) | decided | sim |
 | D-344 | — | Seventh help topic "Several castles", opened by the "?" of a two-castle castle card (order 104, taken over from GPT) | decided | UI |
+| D-347 | 2026-11-08 | A11y fixes after the 8 XI audit: the castle switch is two action buttons, castle bars and playtest starts are named in full, AA contrast on the two-castle waybill and the dim frame, the codex fold scrolls into view (order 82, taken over from GPT) | decided | inne |
+| D-348 | — | Forced colors: woodcut icons on a Canvas plate, the progress bar outlined | decided | inne |
+| D-349 | 2026-11-08 | Layout in de, ru, ar, ja, hi (order 83, taken over from GPT): three shorter Japanese strings and a smaller Cyrillic sheet title in short landscape | decided | UI |

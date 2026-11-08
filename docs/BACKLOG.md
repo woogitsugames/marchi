@@ -10,6 +10,14 @@ Zrobione przenoś do sekcji „Zrobione” z datą i commitem.
 
 ## Do zrobienia
 
+- [x] P2 — (zrobione 2026-11-08, D-347/D-348, `claude/w-a11y82`, zlecenie 82) Audyt dostępności UI od 5 XI (`docs/research/a11y-2026-11-08.md`): przełącznik zamku bez sprzecznego `aria-pressed`, paski listu XVI z nazwą zamku, kontrast „na czas”/„pierwszy” i miękkiego atramentu na przyciemnionej ramie, list XVI przewijany przy 200 % w poziomie, „Co to znaczy?” przewija odpowiedź do widoku, starty S16 z tagami dla czytnika, wymuszone kolory (ikony na płytce `Canvas`, obrys paska; `npm run a11y` sprawdza).
+- [x] P3 — (zrobione 2026-11-08, D-349, zlecenie 83) Layout de/ru/ar/ja/hi (`docs/research/layout-17-2026-11-08.md`): 0 przyciętych tekstów w sondzie; ja 3 klucze skrócone (sieroty jednego znaku), tytuł arkusza cyrylicą 22 px w krótkim poziomie.
+- [ ] P2 — (a11y 2026-11-08, D-347) XVI w poziomie przy 200 % tekstu: list przewozowy przewija się nad szyną, ale mieści głównie nagłówek (pieczęcie + termin) — zwinąć do pieczęci albo pokazać jeden wiersz na zamek (nazwa + stan) bez pasków (`src/styles/main.css` `is-bigtext .wb-panel`, `src/ui/hud.ts`).
+- [ ] P3 — (a11y 2026-11-08, D-348) Wymuszone kolory: przyciski główne (wino) w jasnym motywie to białe pola bez obrysu, pierścień fokusu w tym samym kolorze systemowym — `ButtonBorder` + grubszy pierścień `Highlight` na `:focus-visible`; sprawdzić na Androidzie „tekst o dużym kontraście” i Windows HC.
+- [ ] P3 — (a11y 2026-11-08) Pomoc otwarta z „?” na temacie („Kilka zamków”): fokus na otwartym temacie zamiast na „Zamknij” (`src/ui/help.ts`, `sheets.ts`).
+- [ ] P3 — (a11y 2026-11-08) Karta zamku XVI w 915×412: ciało arkusza ~200 px, po rozwinięciu „Co to znaczy?” widać 3–4 linie — składać linię rywala, gdy fold otwarty.
+- [ ] P4 — (layout 2026-11-08) ja: „Українська” w ustawieniach o 2 px szersza niż komórka (cyrylica z zapasowego fontu CJK).
+
 - [ ] P3 — (2026-11-07, D-342, zlecenie 81, `claude/w-rtlui`) Ładunki na wozie bez koloru: kosze chleba i kadzie słodu (D-201) to sześć okrągłych otwartych pojemników w siatce 2×3 — w skali szarości mylą się przy zbliżeniu. Propozycja: podłużne wiklinowe kosze chleba (~1 : 1,6 wzdłuż skrzyni); wymaga przepieczenia katalogu modeli (D-331) i zgody właściciela grafiki (źródło: claude, `docs/research/goods-shapes.md`, `docs/shots/goods-shapes-cargo-round-gray.jpg`)
 - [x] P2 — (zrobione 2026-11-07, D-340/D-341, `claude/w-rtlui`) Kod RTL z przeglądu arabskiego (`docs/research/gpt-rtl-ar.md`, punkty 1–7): ceny „−30” w `<bdi dir=ltr>`, `t()` sam izoluje parametry liczbowe w RTL, rączka `inspect` odbita, znacznik „أولًا” nie kurczy się (w poziomie celowo tylko dla czytnika, D-329), „؟” już odbity (D-284), cyfra rzymska w tytule rubrykowana, pole urządzenia `dir=auto`; zrzuty `docs/shots/rtlui-*-ar.jpg`
 
