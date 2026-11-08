@@ -942,7 +942,9 @@ export class Hud {
         return `<li class="wb-tr is-done${x.missed ? ' is-late' : ''}" data-wb="b:${k.castle}"><div class="tr-h">${head}<i class="kseal${x.missed ? '' : ' on'}"></i></div>
           <div class="tr-state">${esc(t(x.missed ? 'castle.late' : 'contract.trancheDone'))}</div></li>`;
       }
-      const goods = (GOODS.filter((g) => k.need[g] > 0) as Good[]).map((g) => `<div class="wb-line" data-wb="b:${k.castle}" data-g="${g}" role="button" tabindex="0">
+      // the castle's name in each bar's accessible name: two rows read "deski 0/24", "deski 0/30" alike (a11y 2026-11-08, D-347)
+      const goods = (GOODS.filter((g) => k.need[g] > 0) as Good[]).map((g) => `<div class="wb-line" data-wb="b:${k.castle}" data-g="${g}" role="button" tabindex="0"
+        aria-label="${esc(`${name}: ${goodName(g)} ${fmtInt(Math.min(stock[g], k.need[g]))}/${fmtInt(k.need[g])}`)}">
         <span class="wb-gi">${iconSvg(g, 22, goodName(g))}</span>${bar(Math.min(stock[g], k.need[g]) / Math.max(1, k.need[g]))}
         <bdi class="count num">${fmtInt(Math.min(stock[g], k.need[g]))}<small>/${fmtInt(k.need[g])}</small></bdi></div>`).join('');
       const f = fcs[i];

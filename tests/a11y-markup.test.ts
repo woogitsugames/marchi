@@ -21,3 +21,10 @@ test('a11y: a playtest start is named "<id>: <mission>" plus its tags (S16 decis
   assert(fn.includes("t('playtest.fixture')") && fn.includes("t('playtest.decision')"), 'both tags');
   assert(fn.includes('aria-label="${esc(label)}"'), 'the button is named by the label');
 });
+
+test('a11y: each bar of the two-castle waybill names its castle', () => {
+  const hud = src('ui/hud.ts');
+  const i = hud.indexOf('class="wb-line" data-wb="b:${k.castle}"');
+  assert(i > 0, 'castle bar found');
+  assert(/aria-label="\$\{esc\(`\$\{name\}: \$\{goodName\(g\)\}/.test(hud.slice(i, i + 300)), 'aria-label = "<castle>: <good> n/need"');
+});
