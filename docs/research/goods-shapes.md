@@ -98,3 +98,10 @@ BACKLOG entry P3 added.
 
 Stale comment found: the header of `src/render/models/cargo.ts` still describes malt as "small pale tied bags lying
 in pairs". Since D-201 malt is a tub, as the code below that header draws it. The comment was fixed with this audit.
+
+## Follow-up 2026-11-08 (D-352, branch `claude/w-bread`)
+
+The oblong-basket proposal is built and waits for the owner's yes: long oval wicker trays (~1 : 1.6 along the bed),
+three long loaves each, fixed heading along the bed. Grayscale comparison old bread / new bread / malt:
+`docs/shots/bread-cargo-compare-gray.jpg`; in game at 412×915: `bread-game-crop-412x915.jpg`. Pixel checks in
+`docs/research/bread-diff.txt`.

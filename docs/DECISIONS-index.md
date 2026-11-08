@@ -296,3 +296,4 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-345 | — | Order 68 (taken over from GPT): four new woodcut state icons; the trading post and the bottleneck keep the woodcuts they already had | decided | inne |
 | D-350 | — | Orders 69, 79, 80 (taken over from GPT): nine sounds of own synthesis, CC0, reproducible | decided | inne |
 | D-351 | — | Where the new sounds play (audio only reads state) | decided | inne |
+| D-352 | — | Bread rides in oblong trays (D-342's proposal, prepared for the owner's yes) | proposed | inne |

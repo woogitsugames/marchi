@@ -3979,3 +3979,18 @@ level through a 300 Hz phone model): rank-up -26.5 dB (the loudest UI cue, as be
 open -30.2, ice crack -30.4, grow -31.6, rank card -31.9 (stall alert -33.4), coins -36.4 at the post (load sounds
 -35…-50). All go through the existing sfx/ui/ambient buses, so the effects slider and mute apply. Tests in
 `tests/audio.test.ts`. (decided)
+**D-352 — Bread rides in oblong trays (D-342's proposal, prepared for the owner's yes).** In grayscale the bread
+baskets and the malt tubs (D-201) were the one confusable load pair: six round open containers in the same 2×3 grid.
+Bread now rides in long oval wicker trays, about 1 : 1.6 along the bed (a 12-sided open lathe with a rolled rim,
+squeezed to 0.46 × 0.73 m, 0.2 m high), each holding three long loaves lying lengthwise (two side by side, one on
+top). Seen from above and from the game camera the load is a row of long ovals with ridged filling against malt's
+round domed tubs, grain's upright sacks and flour's flat pale pillows (`docs/shots/bread-cargo-compare-gray.jpg`:
+old bread, new bread, malt). The trays keep one heading along the bed (slot yaw ±0.04 instead of the random spin the
+round baskets had), so the ovals never turn crosswise or poke over the side boards; slots, unit count (qty 1..6) and
+the yard pile placement (D-71, from the unit's bounding box) are unchanged. Cost: the same two parts per unit (wood +
+cloth, so the same instanced draws per good), 186 triangles per unit instead of 180 (full load 1116 vs 1080; the
+tray drops the outer bottom disc, which stands on the bed and is never seen, to pay for the smoother oval). Only
+`src/render/models/cargo.ts`; the catalogue is re-baked by the build as for any model change (D-331,
+`tests/models-baked.test.ts` passes). Pixel checks: model preview `cargoChain` 0 px changed, `cargoBase` changes only
+on the bread wagon and the bakery yard pile; harness menu frame 1 and the other scenes in
+`docs/research/bread-diff.txt`. Reverting is the one commit. (proposed — awaiting the owner's yes, per D-342)
