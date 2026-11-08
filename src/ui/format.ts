@@ -3,7 +3,7 @@ import { BUILDINGS, RANKS, TICK_HZ, buildingById, castleNameKey, type BuildingSt
 import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
 import { bridgeJamCause, type BridgeJamCause } from './bridgeJam';
 import { esc } from './dom';
-import { statusKey } from './stallKinds';
+import { granaryLoads, statusKey } from './stallKinds';
 
 export function isRtl(): boolean {
   return RTL_LANGS.has(getLang());
@@ -178,7 +178,7 @@ export function buildingStatusIcon(s: BuildingStatus, size: number, type?: keyof
     case 'NO_WAGON': return iconSvg('no_wagon', size);
     case 'OUTPUT_FULL': return iconSvg('output_full', size);
     case 'WAITING_PICKUP': return iconSvg('waiting', size);
-    case 'WAGON_DUE': return iconSvg('wagon', size);
+    case 'WAGON_DUE': return iconSvg('wagon_due', size);
     case 'WAITING_DELIVERY': return iconSvg(s.good, size);
     case 'WAITING_UPSTREAM': return iconSvg('waiting', size);
     case 'STORAGE_FULL': return iconSvg('storage_full', size);
@@ -202,6 +202,15 @@ export function iceWaitSec(world: World, s: WagonStatus): number {
 
 export function linkIcon(world: World, l: ReasonLink, size: number): string {
   if (l.kind === 'wagon') return wagonStatusIcon(l.status, size);
-  const b = buildingById(world, l.id);
-  return buildingStatusIcon(l.status, size, b?.type);
+  return buildingStateIcon(world, l.id, l.status, size);
+}
+
+/**
+ * A building's status icon read against the world: a granary full only of loads no market takes now (D-174, the
+ * status text 'status.STORAGE_FULL.saturated') shows the tipped balance of 'market_full' (D-345), not the packed
+ * storehouse of a full granary a wagon would empty.
+ */
+export function buildingStateIcon(world: World, id: number, s: BuildingStatus, size: number): string {
+  if (s.k === 'STORAGE_FULL' && granaryLoads(world, id) === 'saturated') return iconSvg('market_full', size);
+  return buildingStatusIcon(s, size, buildingById(world, id)?.type);
 }

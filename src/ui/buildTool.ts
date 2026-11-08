@@ -138,9 +138,9 @@ export function siteCells(world: World, type: BuildingType): number[] {
 }
 
 /** Why a placement is refused, in plain words (water / road / building / gate / cut road) when the sim names a cell. */
-function placeError(world: World, err: CommandError, gate: number, foot: Set<number>, rect: readonly [number, number, number, number]): string {
+function placeError(world: World, err: CommandError, gate: number, foot: Set<number>, rect: readonly [number, number, number, number]): { text: string; cutsRoad: boolean } {
   const why = err.k === 'BLOCKED' ? blockedWhy(world, err.cell, gate, foot, rect) : null;
-  return why ? t(`place.${why}`) : errorText(err);
+  return { text: why ? t(`place.${why}`) : errorText(err), cutsRoad: why === 'cutsRoad' };
 }
 
 export class BuildTool {
@@ -299,7 +299,7 @@ export class BuildTool {
     this.revalidate();
     const r = this.result;
     if (!r || !r.ok) {
-      if (r && !r.ok) this.host.toast(this.errText(r.err), 'err', 'build');
+      if (r && !r.ok) this.host.toast(this.errText(r.err).text, 'err', 'build');
       return;
     }
     this.pending = { type: this.type, x: this.gx, y: this.gy };
@@ -381,7 +381,7 @@ export class BuildTool {
     return cells;
   }
 
-  private errText(err: CommandError): string {
+  private errText(err: CommandError): { text: string; cutsRoad: boolean } {
     const world = this.host.world();
     const def = BUILDINGS[this.type!];
     return placeError(world, err, this.gateOf(world, this.facing), new Set(this.footprint(world)), [this.gx, this.gy, def.w, def.h]);
@@ -421,7 +421,11 @@ export class BuildTool {
     const road = !onRoad && this.linkCost > 0 ? this.linkCost : 0;
     if (r.ok && road) setHtml(this.tagMain, tHtml('build.costRoad', { n: fmtInt(price), road: fmtInt(road), have: fmtInt(coins) }));
     else if (r.ok) setHtml(this.tagMain, tHtml('build.cost', { n: fmtInt(price), have: fmtInt(coins) }));
-    else setHtml(this.tagMain, esc(this.errText(r.err)));
+    else {
+      // a site that would cut a diagonal road (D-176) leads with its own icon (D-345): the house across the ruts
+      const e = this.errText(r.err);
+      setHtml(this.tagMain, e.cutsRoad ? `${iconSvg('cut_road', 20)}<span>${esc(e.text)}</span>` : esc(e.text));
+    }
     this.tagSub.classList.toggle('is-warn', !onRoad);
     setHtml(this.tagSub, `${iconSvg(onRoad ? 'road_dirt' : 'no_road', 16)}<span>${esc(t(onRoad ? 'build.gateRoad' : 'build.gateNoRoad'))}</span>`);
     const place = this.shelf.querySelector<HTMLButtonElement>('.pb-place');

@@ -7,7 +7,7 @@ import {
 import { t, translated, type MessageKey } from '../i18n/index';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStatusIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
+  bdi, buildingName, buildingStateIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -327,7 +327,7 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
     const wagon = b.status.wagon;
     const eta = wagonEta(world, wagon);
     const key: MessageKey = eta && eta.destBuilding === b.id ? 'fix.pickupDue' : 'fix.pickupOnWay';
-    return `<div class="s-hint calm-hint">${iconSvg('wagon', 22)}<span${en(key)}>${
+    return `<div class="s-hint calm-hint">${iconSvg('wagon_due', 22)}<span${en(key)}>${
       esc(t(key, { wagon: wagonName(world, wagon), time: eta ? clock(eta.toDest) : '' }))}</span></div>`;
   }
   // D-174: a granary full of loads no market takes now (or a yard it refuses): no "Kup wóz", the plain reason
@@ -335,7 +335,7 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
     // D-245: ...unless the open trading post across the river would take them: lead to its road (the fix below)
     // (the reason docks with the fix button, postWhy)
     if (postWhy(world, b)) return '';
-    return `<div class="s-hint calm-hint">${iconSvg('coin', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
+    return `<div class="s-hint calm-hint">${iconSvg('market_full', 22)}<span${en('fix.marketFull')}>${esc(t('fix.marketFull'))}</span></div>`;
   }
   // D-212: a granary full of goods nothing wants now (mission XV's fish): no repair, no wagon
   if (granaryUnwanted(world, b.id)) {
@@ -674,7 +674,7 @@ function postStatusHtml(world: World, b: Building): string | null {
   const ps = tradePostStatus(world);
   if (!ps || b.status.k !== 'IDLE') return null;
   if (!ps.open) return `<div class="status-line">${iconSvg('seal', 28)}<span>${esc(t('post.closed', { rank: rankName(TRADE_POST.rank) }))}</span></div>`;
-  return `<div class="status-line ok">${iconSvg('coin', 28)}<span>${esc(t('post.open'))}</span></div>`;
+  return `<div class="status-line ok">${iconSvg('tradePost', 28)}<span>${esc(t('post.open'))}</span></div>`;
 }
 
 /**
@@ -782,7 +782,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
         top = `<div class="section-h chain-h${calm ? ' is-calm' : ''}">${esc(t('why.chain'))}${since}</div>${chainHtml(world, chain, 'building', id, b.stalledTicks > 0 ? `<bdi class="num">${esc(ticksClock(b.stalledTicks))}</bdi>` : '')}`;
       } else {
         const cls = stalled ? (calm ? 'calm' : 'bad') : b.status.k === 'WORKING' || b.status.k === 'CONTRACT_DONE' ? 'ok' : '';
-        top = `<div class="status-line ${cls}">${buildingStatusIcon(b.status, 28, b.type)}<span>${esc(buildingStatusText(b.status, world, id))}</span>${since}</div>`;
+        top = `<div class="status-line ${cls}">${buildingStateIcon(world, b.id, b.status, 28)}<span>${esc(buildingStatusText(b.status, world, id))}</span>${since}</div>`;
       }
       // the trading post (D-170): "closed until rank 4" / "buying" instead of the plain idle line
       if (b.type === 'tradePost') top = postStatusHtml(world, b) ?? top;

@@ -12,7 +12,7 @@ import {
 import type { Speed } from '../game/loop';
 import { getLang, t, type MessageKey } from '../i18n/index';
 import { deckle, esc, h, setHtml, setText } from './dom';
-import { bdi, buildingName, buildingStatusIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, sentences, tHtml, ticksClock, wagonName } from './format';
+import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmtDec, fmtInt, fmtPercent, goodName, joinList, lateTicks10, rankName, sentences, tHtml, ticksClock, wagonName } from './format';
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
@@ -632,8 +632,9 @@ export class Hud {
         const text = t(pc.bridge ? 'cause.pacePost' : 'cause.pacePostRoad');
         setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(text)}</span>`);
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
-        const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
-        if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+        // the seal: the card's own icon, the trading post (D-345, as the bottleneck card's hopper, D-171); its badge
+        // still counts the pins
+        setHtml(this.alarmIcon, iconSvg('tradePost', 34));
         setText(this.alarmBadge, fmtInt(stalls.length));
         this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
         return;
@@ -647,8 +648,11 @@ export class Hud {
         // the whole line is this one text: .sc-text's own dir="auto" takes its direction (an English fallback in ar)
         setHtml(this.stallText, esc(text));
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
+        // the grow card's own seal icon (D-345): two houses of one chain and a timber plus; the rank card keeps the
+        // first pin's icon (its missing good is read on that pin)
         const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
-        if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+        if (pc.k === 'grow') setHtml(this.alarmIcon, iconSvg('grow', 34));
+        else if (first) setHtml(this.alarmIcon, buildingStateIcon(world, first.id, first.status, 34));
         setText(this.alarmBadge, fmtInt(stalls.length));
         this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
         return;
@@ -662,7 +666,7 @@ export class Hud {
         setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(text)}</span>`);
         this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
         const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
-        setHtml(this.alarmIcon, first ? buildingStatusIcon(first.status, 34, first.type) : iconSvg('first', 34));
+        setHtml(this.alarmIcon, first ? buildingStateIcon(world, first.id, first.status, 34) : iconSvg('first', 34));
         setText(this.alarmBadge, fmtInt(stalls.length));
         this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
         return;
@@ -681,7 +685,7 @@ export class Hud {
       this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
       // calm pins stay on the alarm seal beside the pace card
       const first = stalls[0] ? buildingById(world, stalls[0].id) : null;
-      if (first) setHtml(this.alarmIcon, buildingStatusIcon(first.status, 34, first.type));
+      if (first) setHtml(this.alarmIcon, buildingStateIcon(world, first.id, first.status, 34));
       setText(this.alarmBadge, fmtInt(stalls.length));
       this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
       return;
@@ -722,7 +726,7 @@ export class Hud {
     // ...and a calm kicker: nothing to fix, it only waits (D-184)
     setText(this.stallKick, t(w.minor ? 'hud.calmStall' : 'hud.worst'));
     this.stallEye.setAttribute('aria-label', t('hud.worstShow', { name }));
-    setHtml(this.alarmIcon, buildingStatusIcon(b.status, 34, b.type));
+    setHtml(this.alarmIcon, buildingStateIcon(world, b.id, b.status, 34));
     setText(this.alarmBadge, fmtInt(stalls.length));
     this.alarm.setAttribute('aria-label', t('hud.stallsNext', { n: stalls.length }));
   }
