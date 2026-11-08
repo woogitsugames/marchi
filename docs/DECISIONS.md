@@ -3951,3 +3951,31 @@ road with the house are pictures of things, so they do not mirror. Sheet `docs/s
 on parchment and on oak, grayscale beside the nearest existing icons, the RTL row, the IoU table), shots
 `docs/shots/icons68-{market,grow,cut}-{412x915,915x412}.jpg` (`tools/icons68-shots.mjs`). UI only, no sim change.
 (decided)
+
+**D-350 — Orders 69, 79, 80 (taken over from GPT): nine sounds of own synthesis, CC0, reproducible.** GPT delivered no
+files. Downloading CC0 recordings again would mean a licence check per page; synthesis has no licence question, so
+all nine are own work, rendered by `tools/synth-sfx.py` (numpy + ffmpeg, fixed seeds; method and numbers per file in
+`docs/ASSETS.md`). Format per the orders, not the older 24 kHz pipeline: 48 kHz, cues mono at -16 LUFS (true peak
+<= -0.9 dBTP, silent first sample, faded last), loops stereo at -23 LUFS (the catalogue checker wants stereo under
+`ambient/`). A sub-second cue reads 1–2 LU differently per codec in ebur128 (400 ms block alignment, AAC pre-echo),
+so each codec file gets its own gain trim to its decoded reading. Loops are built circularly — events wrap, noise is
+shaped in a circular STFT, reverb is a circular convolution — so the OGG seam is continuous (jump/p99 0.3–0.9).
+The coin exchange (order 80) is a one-shot, mastered like the cues; "as 79" read as format and licence rules.
+Cue energy in 600–2500 Hz: 70–98 % (phone speaker). New runtime size ~0.92 MB, catalogue 2.55 of 4 MiB.
+Not yet heard on a phone: the owner listens before the merge (BACKLOG). (decided)
+
+**D-351 — Where the new sounds play (audio only reads state).** `ui.rankUp` (two bell strokes) replaces `ui.paper` on
+a rank-up; when that rank opens the trading post (the rank letter carries the post line), `event.postOpen` follows
+1.3 s later, after the bell. `ui.rankCard` / `ui.grow`: the HUD calls `cardCue` once per new rank/grow suggestion
+(kind, building type, rank) — not when the same suggestion returns after a fleet card held the slot, never for the
+card already up when the HUD is built (a loaded game stays quiet); 8 s cooldown on top. `world.iceCrack`: once,
+unpositioned, when the wooden bridges ice over (authored ice or the free valley's winter windows), and positionally
+where a wagon becomes `BRIDGE_CLOSED`. Winter in a seasonal world (`World.seasons`, passed in the audio camera)
+swaps morning/evening for `ambient.winterWind` (rain still wins); while the bridges are iced the river loop yields
+to `ambient.iceCreak` at the same river-proximity level. The open trading post (rank >= 4, market open, no
+contract) plays `ambient.market` within 75 m of it (level 0.7 × proximity, gain 0.45: quiet), and `post.coins` at
+the post on every rise of `tradePost.earnedCents` (a sale). Gains put the cues in the existing mix (audit, effective
+level through a 300 Hz phone model): rank-up -26.5 dB (the loudest UI cue, as befits a rank; paper -28.8), post
+open -30.2, ice crack -30.4, grow -31.6, rank card -31.9 (stall alert -33.4), coins -36.4 at the post (load sounds
+-35…-50). All go through the existing sfx/ui/ambient buses, so the effects slider and mute apply. Tests in
+`tests/audio.test.ts`. (decided)

@@ -453,6 +453,33 @@ returns to 0.38 after removal of the temporary +3.2 dB workaround; new
 bandwidth, rather than simply louder bass, makes it audible on phone speakers.
 `ui.error` gain remains 0.36. All other assets are unchanged.
 
+### Orders 69, 79, 80 — own synthesis (D-350, 2026-11-08)
+
+**Own work, CC0.** Nine sounds computed by `tools/synth-sfx.py` (numpy + ffmpeg, fixed seeds) from sines, noise and
+simple physical models — no recordings, samples, sound libraries or instruments, nothing downloaded. 48 kHz, OGG
+Vorbis + AAC/M4A; cues mono, -16 LUFS (each codec file trimmed to its own decoded reading), true peak <= -0.9 dBTP,
+2 ms raised-cosine fade-in from a silent first sample, raised-cosine fade-out to 0; loops stereo, -23 LUFS,
+synthesized circularly (events wrap, noise shaped in a circular STFT, reverb by circular convolution), so the OGG
+seam is continuous. Regenerate: `python3 tools/synth-sfx.py` (all) or `--only <id>`; `--report` measures. Then
+update the 18 hashes in `docs/audio-provenance.json` and run `python3 tools/process_audio.py --check`
+(the ids are in `synthetic_retained` of `tools/audio_sources.json`). **Not yet heard on a phone** (BACKLOG).
+
+| File | Runtime id | Synthesis | Length | LUFS (ogg/m4a) | 600–2500 Hz | Bytes ogg + m4a |
+|---|---|---|---|---|---|---|
+| `sfx/rank-up` | `ui.rankUp` | two bronze-bell strokes falling a fourth (D5 → A4): hum/prime/minor-third tierce/quint/nominal partials, beating doublets, clapper noise, light church reverb | 1.20 s | -16.0 / -16.0 | 72 % | 10 385 + 15 442 |
+| `sfx/rank-card` | `ui.rankCard` | one soft knuckle knock on a hollow oak box: 5 damped modes 214–2470 Hz, 2 ms soft exciter | 0.45 s | -15.9 / -16.1 | 98 % | 5 042 + 6 159 |
+| `sfx/grow` | `ui.grow` | three mallet-on-chisel blows into a beam (timber modes 520–2700 Hz + tock), the last lower and heaviest | 0.95 s | -16.0 / -16.1 | 70 % | 10 327 + 12 448 |
+| `sfx/post-open` | `event.postOpen` | shutter on a dry hinge: stick-slip pulse train (95→245 Hz) through a wooden-plate modal IR, the stop knock, then a small brass shop bell struck twice | 1.20 s | -16.0 / -15.8 | 90 % | 12 030 + 15 387 |
+| `sfx/ice-crack` | `world.iceCrack` | six ice snaps: high-passed noise bursts + dispersive falling "pew" chirps (3.4→0.6 kHz) + a pier knock, open-valley reverb | 1.10 s | -15.9 / -16.1 | 76 % | 12 761 + 14 469 |
+| `sfx/post-coins` | `post.coins` | purse set on an oak counter, silver counted out (inharmonic coin modes 2.0–7.4 kHz, edge ticks on wood), the last coins swept up | 1.05 s | -16.1 / -16.0 | 74 % | 11 394 + 13 848 |
+| `ambient/winter-wind` | `ambient.winterWind` | wind over the frozen river: gusting band-limited rush + two narrow whistles drifting 0.6–1.6 kHz, dry snow hiss; shared gusts, decorrelated channels | 20.0 s loop | -23.0 | 64 % | 158 401 + 164 999 |
+| `ambient/ice-creak` | `ambient.iceCreak` | strained ice: slow stick-slip groans through ice-sheet modes, distant singing chirps and ticks, big reverb, low wind bed | 16.0 s loop | -23.1 | 39 % | 102 338 + 132 004 |
+| `ambient/market` | `ambient.market` | distant crowd: 16 unintelligible "voices" (pulse trains with pitch contours shaped by random vowel formants, phrase/pause rhythm), far mallet knocks, a coin, heavy reverb, low-passed at 2 kHz | 15.0 s loop | -23.2 | 65 % | 98 479 + 124 793 |
+
+Total for the nine sounds ~0.92 MB (both codecs); the runtime catalogue is now 2 548 580 B of the 4 MiB budget
+(90 files). Known limit: the M4A loops (Safari/iOS) keep the AAC seam the older loops have (`audio-mix-audit`
+jump/p99 2.3 wind, 2.8 market vs 0.3 / 0.9 for the OGG).
+
 ### Reproducing and validating
 
 1. Install Python 3.10+, FFmpeg and FFprobe.
