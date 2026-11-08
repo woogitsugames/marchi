@@ -2682,8 +2682,9 @@ body.is-short.is-bigtext .fix-dock .fix-note .s-hint { display: flex; }
 body.is-short.is-bigtext .fix-dock .fix-why > span { display: block; }
 body.is-side.is-landscape.is-bigtext .sheet-body .section-h { margin-block: 2px; }
 /* the two-castle waybill (two rows of bars and read-outs) ran under the tool rail at 200 % text in short landscape
-   (a11y audit 2026-11-08, D-347): its panel scrolls in the room left above the rail (ribbon ~2 lines at this size) */
-body.mode-game.is-landscape.is-bigtext .waybill-wrap:not(.is-collapsed) .wb-panel {
+   (a11y audit 2026-11-08, D-347): its panel scrolls in the room left above the rail (ribbon ~2 lines at this size);
+   only the two-castle list — a single order's panel fits and must not be cut to its head */
+body.mode-game.is-landscape.is-bigtext .waybill-wrap:not(.is-collapsed) .wb-panel:has(.wb-castles) {
   max-height: calc(100dvh - var(--rail-h) - var(--safe-b) - 120px); overflow-y: auto; overscroll-behavior: contain;
 }
 
