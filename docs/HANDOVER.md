@@ -105,7 +105,7 @@
   przytrzymanie tytułu 3 s w poziomie nie otworzyło ekranu prowadzącego w skrypcie zrzutów.
   4) **scalone ~03:30:** 68 ikony (D-345: wagon_due, market_full, grow, cut_road; posterunek i wąskie gardło już miały) ‖
   **w toku:** 82 audyt a11y z poprawkami + 83 zrzuty de/ru/ar/ja/hi
-  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) **w toku:** 69/79/80 dźwięki — własna synteza (`claude/w-audio`). Agenci stanęli ~01:30 na limicie, wznowieni
+  (`claude/w-a11y82`); 84 pomiar wydajności — zrobione przez agentów 7 XI (PERF.md dni 14–17). 5) **scalone ~04:15:** 69/79/80 dźwięki — własna synteza, 9 plików, podpięte (D-350/D-351). Agenci stanęli ~01:30 na limicie, wznowieni
   ~03:45.
   Gdy GPT odda coś później — porównać i wziąć lepsze.
 - Rano: APK (katalog modeli + tańsza symulacja), raport Free.AI 8 XI 20:00.
@@ -115,6 +115,18 @@
   liście opadają w ostatnich 6 min jesieni, wracają wiosną; iglaste zielone; dalekie drzewa i cienie też gołe. Draw calls i
   alokacje bez zmian, trójkąty +0,6…0,9 %, 0 nowych kompilacji przy zmianie pory. Zrzuty przed/po na gałęzi:
   `docs/shots/winter-trees-{before,after}-*` (np. `after-winter-high-915x412`, `after-winter-near-high-412x915`).
+
+### Decyzje na rano (8 XI)
+1. **Dźwięki z własnej syntezy (D-350/D-351, scalone ~04:15):** awans rangi (dzwon), stuk karty, ciesielka „rozbuduj”,
+   okiennica + dzwonek posterunku, pękający lód, monety, pętle: wiatr zimą, skrzypienie lodu, gwar targu. Nikt ich jeszcze
+   nie słyszał — **posłuchaj w porannym APK na telefonie**. Rekomendacja: zostawić; jeśli któryś brzmi źle, cofnę tylko jego
+   podpięcie (stary dźwięk wraca).
+2. **Scenariusz playtestu XVI nazwany S16, nie S10** (S10–S15 zajęte przez VII–XII, CSV grupuje po ID; D-343).
+   Rekomendacja: zostawić S16.
+3. **Kosze chleba vs cebrzyki słodu na wozie** mylą się z bliska w skali szarości (D-342). Propozycja: podłużne kosze
+   chleba (zmiana modelu 3D + katalog D-331). Rekomendacja: tak, małe zadanie.
+4. **Zmierz na Foldzie:** start z katalogiem modeli (D-331), rozmiar APK; przytrzymanie tytułu 3 s w poziomie otwiera
+   ekran prowadzącego? (w skrypcie zrzutów nie zadziałało).
 
 ### Decyzje na rano (7 XI) — rozstrzygnięte ~09:45 (wyżej)
 
