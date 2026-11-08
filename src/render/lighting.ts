@@ -76,26 +76,34 @@ void main() {
 
 const tmpA = new Color();
 const _right = new Vector3(), _up = new Vector3(), _snap = new Vector3();
-function lerpKey(f: number, pick: (k: Key) => string, out: Color): Color {
+const RAIN_HEMI = new Color('#b8bab6');
+
+/**
+ * Keyframes as columns, parsed once at load: one Color per key colour, one Float64Array per number (D-370). The
+ * old per-call `(k) => k.field` pickers made 11 closures per update and boxed the numbers they returned.
+ */
+const keyF = Float64Array.from(KEYS, (k) => k.f);
+const numCol = (pick: (k: Key) => number): Float64Array => Float64Array.from(KEYS, pick);
+const colCol = (pick: (k: Key) => string): Color[] => KEYS.map((k) => new Color().set(pick(k)));
+const K_SUN = colCol((k) => k.sun), K_HEMI_SKY = colCol((k) => k.hemiSky), K_HEMI_GROUND = colCol((k) => k.hemiGround);
+const K_SKY_H = colCol((k) => k.skyH), K_SKY_Z = colCol((k) => k.skyZ), K_FOG = colCol((k) => k.fog);
+const K_SUN_I = numCol((k) => k.sunI), K_HEMI_I = numCol((k) => k.hemiI), K_EXPOSURE = numCol((k) => k.exposure);
+const K_MIST = numCol((k) => k.mist);
+
+/** Current keyframe segment, set by `segment(f)` once per update and read by `lerpCol`/`lerpNum`. */
+let segI = 0, segT = 0;
+function segment(f: number): void {
   let i = 0;
-  while (i < KEYS.length - 2 && KEYS[i + 1]!.f <= f) i++;
-  const a = KEYS[i]!, b = KEYS[i + 1]!;
-  const t = Math.min(1, Math.max(0, (f - a.f) / (b.f - a.f)));
-  return out.copy(parsed(pick(a))).lerp(parsed(pick(b)), t);
+  while (i < keyF.length - 2 && keyF[i + 1]! <= f) i++;
+  segI = i;
+  segT = Math.min(1, Math.max(0, (f - keyF[i]!) / (keyF[i + 1]! - keyF[i]!)));
 }
-/** Key colours parsed once (D-223): `Color.set(string)` parsed two hex strings per call, six calls per frame. */
-const parsedKeys = new Map<string, Color>();
-function parsed(hex: string): Color {
-  let c = parsedKeys.get(hex);
-  if (!c) { c = new Color().set(hex); parsedKeys.set(hex, c); }
-  return c;
+function lerpCol(col: readonly Color[], out: Color): Color {
+  return out.copy(col[segI]!).lerp(col[segI + 1]!, segT);
 }
-function lerpNum(f: number, pick: (k: Key) => number): number {
-  let i = 0;
-  while (i < KEYS.length - 2 && KEYS[i + 1]!.f <= f) i++;
-  const a = KEYS[i]!, b = KEYS[i + 1]!;
-  const t = Math.min(1, Math.max(0, (f - a.f) / (b.f - a.f)));
-  return pick(a) + (pick(b) - pick(a)) * t;
+function lerpNum(col: Float64Array): number {
+  const a = col[segI]!;
+  return a + (col[segI + 1]! - a) * segT;
 }
 
 export interface EnvState {
@@ -196,25 +204,26 @@ export class Lighting {
     } else {
       e.sunDir.set(-0.35, 0.62, 0.45).normalize(); // moon
     }
-    lerpKey(f, (k) => k.sun, e.sunColor);
-    let sunI = lerpNum(f, (k) => k.sunI);
-    const hemiI = lerpNum(f, (k) => k.hemiI);
-    lerpKey(f, (k) => k.skyH, e.skyH);
-    lerpKey(f, (k) => k.skyZ, e.skyZ);
-    lerpKey(f, (k) => k.fog, e.fogColor);
-    e.exposure = lerpNum(f, (k) => k.exposure);
-    e.mist = lerpNum(f, (k) => k.mist) * (1 - rain * 0.4);
+    segment(f);
+    lerpCol(K_SUN, e.sunColor);
+    let sunI = lerpNum(K_SUN_I);
+    const hemiI = lerpNum(K_HEMI_I);
+    lerpCol(K_SKY_H, e.skyH);
+    lerpCol(K_SKY_Z, e.skyZ);
+    lerpCol(K_FOG, e.fogColor);
+    e.exposure = lerpNum(K_EXPOSURE);
+    e.mist = lerpNum(K_MIST) * (1 - rain * 0.4);
     // rain: flat grey sky, weak diffuse sun
     const dayK = day ? 1 : 0.35;
-    e.skyH.lerp(tmpA.copy(RAIN_SKY_H).multiplyScalar(day ? 1 : 0.35), rain * 0.85);
-    e.skyZ.lerp(tmpA.copy(RAIN_SKY_Z).multiplyScalar(day ? 1 : 0.35), rain * 0.85);
+    e.skyH.lerp(tmpA.copy(RAIN_SKY_H).multiplyScalar(dayK), rain * 0.85);
+    e.skyZ.lerp(tmpA.copy(RAIN_SKY_Z).multiplyScalar(dayK), rain * 0.85);
     e.fogColor.lerp(tmpA.copy(RAIN_FOG).multiplyScalar(dayK), rain * 0.7);
     sunI *= 1 - 0.7 * rain;
     this.sun.color.copy(e.sunColor);
     this.sun.intensity = sunI;
-    lerpKey(f, (k) => k.hemiSky, this.hemi.color);
-    lerpKey(f, (k) => k.hemiGround, this.hemi.groundColor);
-    this.hemi.color.lerp(tmpA.copy(parsed('#b8bab6')).multiplyScalar(dayK), rain * 0.5);
+    lerpCol(K_HEMI_SKY, this.hemi.color);
+    lerpCol(K_HEMI_GROUND, this.hemi.groundColor);
+    this.hemi.color.lerp(tmpA.copy(RAIN_HEMI).multiplyScalar(dayK), rain * 0.5);
     this.hemi.intensity = hemiI * (1 + 0.1 * rain);
     e.light = Math.min(1, (hemiI * 0.6 + sunI * 0.15) / 1.2);
     this.fog.color.copy(e.fogColor);
