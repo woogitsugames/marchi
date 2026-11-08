@@ -294,3 +294,5 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-343 | — | Playtest scene S16 "Two castles" (mission XVI): a decision fixture, its own CSV columns and hypothesis H6 (order 103, taken over from GPT) | decided | sim |
 | D-344 | — | Seventh help topic "Several castles", opened by the "?" of a two-castle castle card (order 104, taken over from GPT) | decided | UI |
 | D-345 | — | Order 68 (taken over from GPT): four new woodcut state icons; the trading post and the bottleneck keep the woodcuts they already had | decided | inne |
+| D-350 | — | Orders 69, 79, 80 (taken over from GPT): nine sounds of own synthesis, CC0, reproducible | decided | inne |
+| D-351 | — | Where the new sounds play (audio only reads state) | decided | inne |
