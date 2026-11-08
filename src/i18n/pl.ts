@@ -936,10 +936,6 @@ export type MessageKey = keyof typeof pl;
  * once every language has it.
  */
 export const PENDING_KEYS = [
-  // D-393
-  'cause.filling', 'fix.filling', 'cause.granaryFilling', 'fix.granaryFilling',
-  // D-410
-  'cause.cutOff', 'fix.cutOff', 'fix.cutOffWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
