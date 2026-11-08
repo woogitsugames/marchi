@@ -797,7 +797,7 @@ export const pt_BR: Dict = {
   "castle.chainOn": "Primeiro com a cadeia inteira: a matéria comum vai primeiro às oficinas deste castelo.",
   "castle.splitChainAfter": "{rival} vem primeiro com a cadeia inteira — a matéria comum vai antes para lá.",
   "castle.splitEvenChain": "Nenhum castelo vem primeiro: as oficinas dos dois castelos dividem a matéria comum igualmente.",
-  "castle.chainRival": "{producer} está parada — as {input} viram {outAcc} {forCastle}.",
+  "castle.chainRival": "{producer}: sem atividade — uso de {input} para produzir {outAcc} {forCastle}.",
   "fix.castleChainWhy": "A matéria vem para cá primeiro: pronto ≈{time}.",
   "fix.castleChainLate": "A matéria vem para cá primeiro, mas ainda ≈{time} — fora do prazo.",
   "fix.castleLegNote": "Só a mercadoria pronta vem primeiro para cá — sem mais matéria.",

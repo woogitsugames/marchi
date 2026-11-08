@@ -2519,7 +2519,7 @@ export const CONTRACT_LETTERS = {
       lost: "Noon has passed and the letters are still unfilled. Next time, see which workshop stands without logs, and give the more urgent castle its whole chain at once.\n— Wszebor",
     },
     de: {
-      opening: "Zwei Briefe, ein Holzfäller. Die Ostburg will 24 Bretter bis 5:30, die Nordburg 6 Holzkohle bis 8:00; alles vor 12:00. Sägewerk und Köhlerei nehmen Holz vom selben Holzfäller, und die Fuhrleute teilen es gleich auf. Wagen habt Ihr genug — es fehlt an Holz. Auf der Burgkarte gebt Ihr den Wagen den Vorrang oder der ganzen Kette. Entscheidet sofort.\n— Wszebor",
+      opening: "Zwei Briefe, ein Holzfäller. Die Ostburg will 24 Bretter bis 5:30, die Nordburg 6 Einheiten Holzkohle bis 8:00; alles vor 12:00. Sägewerk und Köhlerei nehmen Holz vom selben Holzfäller, und die Fuhrleute teilen es gleich auf. Wagen habt Ihr genug — es fehlt an Holz. Auf der Burgkarte gebt Ihr den Wagen den Vorrang oder der ganzen Kette. Entscheidet sofort.\n— Wszebor",
       won: {
         1: "Beide Burgen haben ihre Ware, doch eine bekam sie zu spät. Ein Siegel; das Holz hätte sofort an den dringenderen Brief gehen müssen.\n— Wszebor",
         2: "Beide Briefe sind erfüllt. Zwei Siegel; Holz, das von Anfang an zu Brettern für die Ostburg wurde, hätte das dritte gebracht.\n— Wszebor",
@@ -2528,7 +2528,7 @@ export const CONTRACT_LETTERS = {
       lost: "Mittag ist vorbei, und die Briefe sind noch offen. Seht nächstes Mal, welche Werkstatt ohne Holz steht, und gebt der dringenderen Burg sofort die ganze Kette.\n— Wszebor",
     },
     fr: {
-      opening: "Deux lettres, un bûcheron. Le Château de l’Est veut 24 planches avant 5:30, le Château du Nord 6 charbon de bois avant 8:00 ; le tout avant 12:00. Scierie et charbonnière vivent du même bûcheron, et les charretiers partageront à parts égales. Les chariots ne manquent pas — le bois, si. Sur la carte du château, priorité aux seuls chariots ou à toute la chaîne. Décidez tout de suite.\n— Wszebor",
+      opening: "Deux lettres, un bûcheron. Le Château de l’Est veut 24 planches avant 5:30, le Château du Nord 6 unités de charbon de bois avant 8:00 ; le tout avant 12:00. Scierie et charbonnière vivent du même bûcheron, et les charretiers partageront à parts égales. Chariots suffisants — bois insuffisant. Sur la carte du château, priorité aux seuls chariots ou à toute la chaîne. Décidez tout de suite.\n— Wszebor",
       won: {
         1: "Les deux châteaux sont servis, mais l’un en retard. Un sceau ; il fallait envoyer le bois tout de suite vers la lettre la plus pressée.\n— Wszebor",
         2: "Les deux lettres sont honorées. Deux sceaux ; du bois changé dès la première minute en planches pour l’Est aurait valu le troisième.\n— Wszebor",
@@ -2537,7 +2537,7 @@ export const CONTRACT_LETTERS = {
       lost: "Midi est passé et les lettres restent en souffrance. La prochaine fois, voyez quel atelier manque de bois et donnez aussitôt toute la chaîne au château le plus pressé.\n— Wszebor",
     },
     nl: {
-      opening: "Twee brieven, één houthakker. Het Oostkasteel wil 24 planken vóór 5:30, het Noordkasteel 6 houtskool vóór 8:00; alles vóór 12:00. De zagerij en de kolenbrander halen hout bij dezelfde houthakker, en de voerlieden verdelen het gelijk. Wagens genoeg — hout is schaars. Op de kasteelkaart geef je voorrang aan alleen de wagens of aan de hele keten. Beslis meteen.\n— Wszebor",
+      opening: "Twee brieven, één houthakker. Het Oostkasteel wil 24 planken vóór 5:30, het Noordkasteel 6 eenheden houtskool vóór 8:00; alles vóór 12:00. De zagerij en de kolenbrander halen hout bij dezelfde houthakker, en de voerlieden verdelen het gelijk. Wagens genoeg — hout is schaars. Op de kasteelkaart geef je voorrang aan alleen de wagens of aan de hele keten. Beslis meteen.\n— Wszebor",
       won: {
         1: "Beide kastelen hebben hun waren, maar één kreeg ze te laat. Eén zegel; het hout had meteen naar de dringendste brief gemoeten.\n— Wszebor",
         2: "Beide brieven zijn vervuld. Twee zegels; hout dat vanaf de eerste minuut planken voor het Oosten werd, had de derde opgeleverd.\n— Wszebor",
@@ -2546,7 +2546,7 @@ export const CONTRACT_LETTERS = {
       lost: "Het middaguur is voorbij en de brieven staan nog open. Kijk volgende keer welke werkplaats zonder hout staat, en geef het dringendste kasteel meteen de hele keten.\n— Wszebor",
     },
     es: {
-      opening: "Dos cartas, un leñador. El Castillo del Este quiere 24 tablas antes de las 5:30, el Castillo del Norte 6 carbón vegetal antes de las 8:00; todo antes de las 12:00. El aserradero y la carbonera viven del mismo leñador, y los carreteros repartirán por igual. Carros sobran; falta madera. En la carta del castillo darás prioridad solo a los carros o a toda la cadena. Decide ya.\n— Wszebor",
+      opening: "Dos cartas, un leñador. El Castillo del Este quiere 24 tablas antes de las 5:30, el Castillo del Norte 6 unidades de carbón vegetal antes de las 8:00; todo antes de las 12:00. El aserradero y la carbonera viven del mismo leñador, y los carreteros repartirán por igual. Carros sobran; falta madera. En la carta del castillo darás prioridad solo a los carros o a toda la cadena. Decide ya.\n— Wszebor",
       won: {
         1: "Ambos castillos tienen lo suyo, pero uno lo recibió tarde. Un sello; la madera debía ir enseguida a la carta más urgente.\n— Wszebor",
         2: "Ambas cartas cumplidas. Dos sellos; madera convertida desde el primer minuto en tablas para el Este te habría dado el tercero.\n— Wszebor",
@@ -2555,7 +2555,7 @@ export const CONTRACT_LETTERS = {
       lost: "Pasó el mediodía y las cartas siguen sin cumplir. La próxima vez, mira qué taller está sin madera y da enseguida toda la cadena al castillo más urgente.\n— Wszebor",
     },
     it: {
-      opening: "Due lettere, un taglialegna. Il Castello Est vuole 24 assi entro le 5:30, il Castello Nord 6 carbone di legna entro le 8:00; tutto prima delle 12:00. Segheria e carbonaia prendono tronchi dallo stesso taglialegna, e i carrettieri li divideranno a metà. I carri bastano: manca la legna. Sulla scheda del castello darai la precedenza ai soli carri o a tutta la catena. Decidi subito.\n— Wszebor",
+      opening: "Due lettere, un taglialegna. Il Castello Est vuole 24 assi entro le 5:30, il Castello Nord 6 unità di carbone di legna entro le 8:00; tutto prima delle 12:00. Segheria e carbonaia prendono tronchi dallo stesso taglialegna, e i carrettieri li divideranno a metà. I carri bastano: manca la legna. Sulla scheda del castello darai la precedenza ai soli carri o a tutta la catena. Decidi subito.\n— Wszebor",
       won: {
         1: "Entrambi i castelli hanno la merce, ma uno l’ha avuta in ritardo. Un sigillo; la legna doveva andare subito alla lettera più urgente.\n— Wszebor",
         2: "Entrambe le lettere sono evase. Due sigilli; legna mutata fin dal primo minuto in assi per l’Est ti avrebbe dato il terzo.\n— Wszebor",
@@ -2564,7 +2564,7 @@ export const CONTRACT_LETTERS = {
       lost: "È passato mezzogiorno e le lettere restano inevase. La prossima volta guarda quale bottega è senza legna e dai subito tutta la catena al castello più urgente.\n— Wszebor",
     },
     "pt-BR": {
-      opening: "Duas cartas, um lenhador. O Castelo Leste quer 24 tábuas até 5:30, o Castelo Norte 6 carvão vegetal até 8:00; tudo antes de 12:00. A serraria e a carvoaria tiram toras do mesmo lenhador, e os carroceiros vão dividi-las por igual. Carroças não faltam — falta madeira. No cartão do castelo você dá prioridade só às carroças ou à cadeia inteira. Decida já.\n— Wszebor",
+      opening: "Duas cartas, um lenhador. O Castelo Leste quer 24 tábuas até 5:30, o Castelo Norte 6 unidades de carvão vegetal até 8:00; tudo antes de 12:00. A serraria e a carvoaria tiram toras do mesmo lenhador, e os carroceiros vão dividi-las por igual. Carroças não faltam — falta madeira. No cartão do castelo você dá prioridade só às carroças ou à cadeia inteira. Decida já.\n— Wszebor",
       won: {
         1: "Os dois castelos têm o que pediram, mas um recebeu tarde. Um selo; a madeira devia ir logo para a carta mais urgente.\n— Wszebor",
         2: "As duas cartas cumpridas. Dois selos; madeira virando tábuas para o Leste desde o primeiro minuto teria rendido o terceiro.\n— Wszebor",
@@ -2573,7 +2573,7 @@ export const CONTRACT_LETTERS = {
       lost: "Passou o meio-dia e as cartas seguem sem cumprir. Da próxima vez, veja qual oficina está sem madeira e dê logo a cadeia inteira ao castelo mais urgente.\n— Wszebor",
     },
     sv: {
-      opening: "Två brev, en huggare. Östra slottet vill ha 24 plankor till 5:30, Norra slottet 6 träkol till 8:00; allt före 12:00. Sågverket och kolbränneriet tar stockar från samma huggare, och kuskarna delar dem lika. Vagnar har du nog av — det är virket som fattas. På slottskortet ger du företräde åt bara vagnarna eller åt hela kedjan. Bestäm genast.\n— Wszebor",
+      opening: "Två brev, en huggare. Östra slottet vill ha 24 plankor till 5:30, Norra slottet 6 mått träkol till 8:00; allt före 12:00. Sågverket och kolbränneriet tar stockar från samma huggare, och kuskarna delar dem lika. Vagnar har du nog av — det är virket som fattas. På slottskortet ger du företräde åt bara vagnarna eller åt hela kedjan. Bestäm genast.\n— Wszebor",
       won: {
         1: "Båda slotten har sitt, men ett fick det för sent. Ett sigill; virket borde genast ha gått till det brådskande brevet.\n— Wszebor",
         2: "Båda breven är uppfyllda. Två sigill; virke som från första minuten blev plankor åt Östra hade gett det tredje.\n— Wszebor",
@@ -2582,7 +2582,7 @@ export const CONTRACT_LETTERS = {
       lost: "Middagen har passerat och breven är fortfarande ouppfyllda. Se nästa gång vilken verkstad som står utan virke, och ge genast det brådskande slottet hela kedjan.\n— Wszebor",
     },
     tr: {
-      opening: "İki mektup, tek oduncu. Doğu Kalesi 5:30’a kadar 24 kalas, Kuzey Kalesi 8:00’e kadar 6 odun kömürü istiyor; hepsi 12:00’den önce. Bıçkıhane ve kömürcü aynı oduncudan kütük alıyor; arabacılar onu eşit paylaştıracak. Araba yeterli — eksik olan odun. Kale kartında önceliği yalnız arabalara ya da bütün zincire verebilirsin. Hemen karar ver.\n— Wszebor",
+      opening: "İki mektup, tek oduncu. Doğu Kalesi 5:30’a kadar 24 kalas, Kuzey Kalesi 8:00’e kadar 6 birim odun kömürü istiyor; hepsi 12:00’den önce. Bıçkıhane ve kömürcü aynı oduncudan kütük alıyor; arabacılar onu eşit paylaştıracak. Araba yeterli — eksik olan odun. Kale kartında önceliği yalnız arabalara ya da bütün zincire verebilirsin. Hemen karar ver.\n— Wszebor",
       won: {
         1: "İki kale de malını aldı ama biri geç aldı. Bir mühür; odun hemen daha acil mektuba gitmeliydi.\n— Wszebor",
         2: "İki mektup da yerine geldi. İki mühür; ilk dakikadan Doğu için kalasa dönen odun üçüncüyü getirirdi.\n— Wszebor",
@@ -2591,7 +2591,7 @@ export const CONTRACT_LETTERS = {
       lost: "Öğle geçti, mektuplar hâlâ yerine gelmedi. Gelecek sefer hangi atölyenin odunsuz durduğuna bak ve daha acil kaleye hemen bütün zinciri ver.\n— Wszebor",
     },
     ru: {
-      opening: "Два письма, один лесоруб. Восточный замок ждёт 24 доски к 5:30, Северный — 6 древесного угля к 8:00; всё до 12:00. Лесопилка и углежог берут брёвна у одного лесоруба, а возчики поделят их поровну. Повозок хватает — не хватает дерева. На карточке замка дайте первенство только повозкам или всей цепочке. Решайте сразу.\n— Wszebor",
+      opening: "Два письма, один лесоруб. Восточный замок ждёт 24 доски к 5:30, Северный — 6 мер древесного угля к 8:00; всё до 12:00. Лесопилка и углежог берут брёвна у одного лесоруба, а возчики поделят их поровну. Повозок хватает — не хватает дерева. На карточке замка дайте первенство только повозкам или всей цепочке. Решайте сразу.\n— Wszebor",
       won: {
         1: "Оба замка получили своё, но один — после срока. Одна печать; дерево надо было сразу направить на более срочное письмо.\n— Wszebor",
         2: "Оба письма исполнены. Две печати; дерево, с первой минуты шедшее на доски для Восточного, дало бы третью.\n— Wszebor",
@@ -2600,7 +2600,7 @@ export const CONTRACT_LETTERS = {
       lost: "Полдень миновал, а письма не исполнены. В следующий раз посмотрите, какая мастерская стоит без дерева, и сразу отдайте более срочному замку всю цепочку.\n— Wszebor",
     },
     uk: {
-      opening: "Два листи, один лісоруб. Східний замок чекає 24 дошки до 5:30, Північний — 6 деревного вугілля до 8:00; усе до 12:00. Лісопильня і вугляр беруть колоди в одного лісоруба, а візники поділять їх порівну. Возів досить — бракує дерева. На картці замку дайте першість лише возам або всьому ланцюгу. Вирішуйте одразу.\n— Wszebor",
+      opening: "Два листи, один лісоруб. Східний замок чекає 24 дошки до 5:30, Північний — 6 мір деревного вугілля до 8:00; усе до 12:00. Лісопильня і вугляр беруть колоди в одного лісоруба, а візники поділять їх порівну. Возів досить — бракує дерева. На картці замку дайте першість лише возам або всьому ланцюгу. Вирішуйте одразу.\n— Wszebor",
       won: {
         1: "Обидва замки отримали своє, але один — після терміну. Одна печатка; дерево треба було одразу спрямувати на нагальніший лист.\n— Wszebor",
         2: "Обидва листи виконано. Дві печатки; дерево, що з першої хвилини йшло на дошки для Східного, дало б третю.\n— Wszebor",
@@ -2645,7 +2645,7 @@ export const CONTRACT_LETTERS = {
       lost: "مضى الظهر والرسالتان لم تُستوفيا. في المرة القادمة انظر أي ورشة تقف بلا خشب، وأعطِ القلعة الأعجل السلسلة كلها فورًا.\n— Wszebor",
     },
     hi: {
-      opening: "दो पत्र, एक लकड़हारा। पूर्वी किले को 5:30 तक 24 तख्ते चाहिए, उत्तरी किले को 8:00 तक 6 लकड़ी का कोयला; सब 12:00 से पहले। चीरघर और कोयला भट्ठी एक ही लकड़हारे से लट्ठे लेते हैं, और गाड़ीवान उन्हें बराबर बाँट देंगे। गाड़ियाँ काफ़ी हैं — लकड़ी कम है। किले के कार्ड पर केवल गाड़ियों को या पूरी कड़ी को पहले रख सकते हैं। तुरंत तय करें।\n— Wszebor",
+      opening: "दो पत्र, एक लकड़हारा। पूर्वी किले को 5:30 तक 24 तख्ते चाहिए, उत्तरी किले को 8:00 तक 6 माप लकड़ी का कोयला; सब 12:00 से पहले। चीरघर और कोयला भट्ठी एक ही लकड़हारे से लट्ठे लेते हैं, और गाड़ीवान उन्हें बराबर बाँट देंगे। गाड़ियाँ काफ़ी हैं — लकड़ी कम है। किले के कार्ड पर केवल गाड़ियों को या पूरी कड़ी को पहले रख सकते हैं। तुरंत तय करें।\n— Wszebor",
       won: {
         1: "दोनों किलों को माल मिला, पर एक को देर से। एक मुहर; लकड़ी तुरंत ज़्यादा ज़रूरी पत्र की ओर जानी चाहिए थी।\n— Wszebor",
         2: "दोनों पत्र पूरे हुए। दो मुहरें; पहले ही मिनट से पूर्वी के लिए तख्ते बनती लकड़ी तीसरी दिलाती।\n— Wszebor",

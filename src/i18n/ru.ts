@@ -797,7 +797,7 @@ export const ru: Dict = {
   "castle.chainOn": "Первым со всей цепочкой: общее сырьё идёт сначала в мастерские этого замка.",
   "castle.splitChainAfter": "{rival} первым со всей цепочкой — общее сырьё идёт сначала туда.",
   "castle.splitEvenChain": "Ни один замок не первый: мастерские обоих замков делят общее сырьё поровну.",
-  "castle.chainRival": "{producer} стоит — {input} идут на {outAcc} {forCastle}.",
+  "castle.chainRival": "{producer} стоит — {input} направляют на {outAcc} {forCastle}.",
   "fix.castleChainWhy": "Сырьё сначала сюда: готово ≈{time}.",
   "fix.castleChainLate": "Сырьё сначала сюда, но всё равно ≈{time} — после срока.",
   "fix.castleLegNote": "Сюда первым едет только готовый товар — сырья не прибавится.",
