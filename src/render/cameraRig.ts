@@ -168,6 +168,65 @@ export class CameraRig implements CameraControl {
     this.glide = { fx: this.target.x, fz: this.target.z, t: 0 };
   }
 
+  /**
+   * Closest view at `yaw` that shows the ground points (x, y, z in metres) inside the free part of the canvas
+   * (`free`: fractions of the canvas, l/t/r/b), with the points' box centred in it (D-542: the opening framing of a
+   * mission). Bisects the distance (the pitch follows it, as in play); the target is solved by a few screen-space
+   * corrections. Null when even MAX_DIST cannot show them. Does not move the camera.
+   */
+  fitGround(pts: readonly Vector3[], free: { l: number; t: number; r: number; b: number }, yaw: number): { x: number; z: number; dist: number } | null {
+    if (!pts.length) return null;
+    const c = _scratch;
+    c.fov = this.camera.fov;
+    c.aspect = this.camera.aspect;
+    c.near = 0.5;
+    c.far = this.camera.far;
+    c.updateProjectionMatrix();
+    let cx = 0, cz = 0;
+    for (const p of pts) { cx += p.x / pts.length; cz += p.z / pts.length; }
+    const fl = free.l * this.cssW, fr = free.r * this.cssW, ft = free.t * this.cssH, fb = free.b * this.cssH;
+    const box = { l: 0, r: 0, t: 0, b: 0 };
+    const project = (tx: number, tz: number, dist: number): boolean => {
+      const ty = this.hf ? this.hf.height(tx, tz) : 0;
+      orbit(c, tx, ty, tz, dist, yaw, pitchFor(dist));
+      c.lookAt(tx, ty + Math.min(2, dist * 0.02), tz);
+      c.updateMatrixWorld();
+      box.l = box.t = Infinity;
+      box.r = box.b = -Infinity;
+      for (const p of pts) {
+        _f.copy(p).project(c);
+        if (_f.z > 1) return false;
+        const sx = (_f.x + 1) * 0.5 * this.cssW, sy = (1 - _f.y) * 0.5 * this.cssH;
+        box.l = Math.min(box.l, sx); box.r = Math.max(box.r, sx);
+        box.t = Math.min(box.t, sy); box.b = Math.max(box.b, sy);
+      }
+      return true;
+    };
+    const place = (dist: number, out: { x: number; z: number }): boolean => {
+      // aim so the box centre lands at the free area's centre: start from the screen offset of that centre, then
+      // correct by the measured error (the box is not symmetric about its ground centre in perspective)
+      const off = { x: (fl + fr) / 2 - this.cssW / 2, y: (ft + fb) / 2 - this.cssH / 2 };
+      for (let i = 0; i < 4; i++) {
+        const d = this.screenShift(cx, cz, off, dist, yaw, _g);
+        out.x = cx - d.x; out.z = cz - d.z;
+        if (!project(out.x, out.z, dist)) return false;
+        off.x += (fl + fr) / 2 - (box.l + box.r) / 2;
+        off.y += (ft + fb) / 2 - (box.t + box.b) / 2;
+      }
+      return box.r - box.l <= fr - fl && box.b - box.t <= fb - ft;
+    };
+    const at = { x: 0, z: 0 };
+    if (!place(MAX_DIST, at)) return null;
+    let lo = Math.log(MIN_DIST), hi = Math.log(MAX_DIST);
+    for (let i = 0; i < 18; i++) {
+      const mid = (lo + hi) / 2;
+      if (place(Math.exp(mid), at)) hi = mid; else lo = mid;
+    }
+    const dist = Math.exp(hi);
+    place(dist, at);
+    return { x: at.x, z: at.z, dist };
+  }
+
   settled(): boolean {
     return !this.glide && Math.abs(this.dist - this.goalDist) <= this.goalDist * 0.01 &&
       Math.abs(this.target.x - this.goal.x) + Math.abs(this.target.z - this.goal.z) <= 0.5;
