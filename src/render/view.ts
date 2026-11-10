@@ -81,6 +81,8 @@ const _v = new Vector3();
 const _v2 = new Vector3();
 const _ray = new Ray();
 const _frustum = new Frustum();
+const _cullView = new Frustum();
+const _cull: Frustum[] = [_cullView];
 const _viewProj = new Matrix4();
 
 export interface WorldViewDebug {
@@ -507,7 +509,19 @@ class View implements WorldView {
     this.bridges.update(this.time, env.light, env.skyH);
     this.deckGhost.update(env.light);
 
-    this.buildings!.update(w, dt);
+    // yard workers outside the view and the shadow camera are not drawn (D-571); the shadow camera as the shadow
+    // pass will place it (updateMatrices is what WebGLShadowMap calls, with the same light and target)
+    cam.updateMatrixWorld();
+    _cullView.setFromProjectionMatrix(_viewProj.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+    const sun = this.lighting.sun;
+    _cull.length = 1;
+    if (r.shadowMap.enabled && sun.castShadow) {
+      sun.updateMatrixWorld();
+      sun.target.updateMatrixWorld();
+      sun.shadow.updateMatrices(sun);
+      _cull.push(sun.shadow.getFrustum());
+    }
+    this.buildings!.update(w, dt, _cull);
     this.vegetation!.setBare(this.bare, this.spring);
     this.vegetation!.update(cam.position);
     this.vegetation!.tick(this.time);

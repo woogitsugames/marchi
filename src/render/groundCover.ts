@@ -62,6 +62,8 @@ function bladeClump(n: number, h0: number, h1: number, spread: number, lean: num
 interface Item { x: number; y: number; z: number; rot: number; s: number; kind: 0 | 1; tint: number }
 
 const TILE = 8;
+/** Ground tile (m) of the reed batches (D-572), as the building tiles (D-570). */
+const REED_TILE = 64;
 const _m = new Matrix4();
 const _q = new Quaternion();
 const _p = new Vector3();
@@ -72,7 +74,9 @@ const TINTS = [new Color('#ffffff'), new Color('#e2d6aa'), new Color('#b9c2a6'),
 
 export class GroundCover {
   readonly group = new Group();
-  private reeds: InstancedMesh | null = null;
+  /** One batch per REED_TILE ground tile (D-572), each culled on its own; one shared blade geometry. */
+  private reeds: InstancedMesh[] = [];
+  private reedGeo: BufferGeometry | null = null;
   private tufts: InstancedMesh;
   private shrubs: InstancedMesh[];
   private tiles = new Map<number, Item[]>();
@@ -118,7 +122,10 @@ export class GroundCover {
 
   private buildReeds(roads: RoadField): void {
     const hf = this.hf;
-    if (this.reeds) { this.group.remove(this.reeds); this.reeds.dispose(); this.reeds.geometry.dispose(); }
+    for (const m of this.reeds) { this.group.remove(m); m.dispose(); }
+    this.reeds = [];
+    this.reedGeo?.dispose();
+    this.reedGeo = null;
     // every test but the road clearance depends on the ground alone: the candidates are kept per ground (D-311), so a
     // road change or a world on the same ground (menu -> mission I) only filters them by the road field
     const cand = groundMemo('reed-candidates', hf.t, () => reedCandidates(hf));
@@ -129,21 +136,33 @@ export class GroundCover {
     }
     const n = items.length / 5;
     const g = bladeClump(30, 0.7, 1.6, 0.45, 0.28, '#3a3a29', '#8c7b50', 9, '#5b5e3c');
-    const m = new InstancedMesh(g, modelMaterial('grass') as Material, Math.max(1, n));
+    this.reedGeo = g;
+    // the reeds line every bank of the map: one batch drew all of them whenever any bank was in view (D-572)
+    const byTile = new Map<number, number[]>();
     for (let i = 0; i < n; i++) {
-      const k = i * 5;
-      _q.setFromAxisAngle(_up, items[k + 3]!);
-      const sc = items[k + 4]!;
-      _m.compose(_p.set(items[k]!, items[k + 1]!, items[k + 2]!), _q, _s.set(sc, sc * (0.8 + (i % 7) * 0.06), sc));
-      m.setMatrixAt(i, _m);
+      const key = Math.floor(items[i * 5 + 2]! / REED_TILE) * 4096 + Math.floor(items[i * 5]! / REED_TILE);
+      let l = byTile.get(key);
+      if (!l) byTile.set(key, (l = []));
+      l.push(i);
     }
-    m.count = n;
-    m.castShadow = false;
-    m.receiveShadow = true;
-    m.name = 'reeds';
-    m.computeBoundingSphere();
-    this.reeds = m;
-    this.group.add(m);
+    for (const list of byTile.values()) {
+      const m = new InstancedMesh(g, modelMaterial('grass') as Material, list.length);
+      for (let j = 0; j < list.length; j++) {
+        const i = list[j]!, k = i * 5;
+        _q.setFromAxisAngle(_up, items[k + 3]!);
+        const sc = items[k + 4]!;
+        _m.compose(_p.set(items[k]!, items[k + 1]!, items[k + 2]!), _q, _s.set(sc, sc * (0.8 + (i % 7) * 0.06), sc));
+        m.setMatrixAt(j, _m);
+      }
+      m.count = list.length;
+      m.castShadow = false;
+      m.receiveShadow = true;
+      m.name = 'reeds';
+      m.matrixAutoUpdate = false;
+      m.computeBoundingSphere();
+      this.reeds.push(m);
+      this.group.add(m);
+    }
   }
 
   private tile(tx: number, tz: number): Item[] {
@@ -228,7 +247,7 @@ export class GroundCover {
       const m = c as InstancedMesh;
       m.dispose();
     }
-    this.reeds?.geometry.dispose();
+    this.reedGeo?.dispose();
     this.tufts.geometry.dispose();
   }
 }

@@ -5,10 +5,12 @@ import {
   Box3,
   BoxGeometry,
   BufferGeometry,
+  type Frustum,
   Group,
   Matrix4,
   Mesh,
   type Material,
+  Sphere,
   Vector3,
 } from 'three';
 import { castleLevel, postOpen, type Building, type World } from '../sim/index';
@@ -95,6 +97,13 @@ function modelBounds(parts: ModelPart[]): Box3 {
 }
 
 const KEEP: ReadonlySet<string> = new Set(['position', 'normal', 'uv', 'color']);
+/**
+ * Ground tile (m) of the per-tile building meshes (D-570): a building goes to the tile of its footprint centre. 64 m
+ * keeps a close or mid camera on 1-4 tiles while the valley's buildings spread over ~350 m.
+ */
+export const CHUNK_M = 64;
+/** A material with fewer triangles than this over all buildings stays one mesh (D-570). */
+export const CHUNK_MIN_TRIS = 4000;
 const _m = new Matrix4();
 
 export interface FootprintTransform {
@@ -191,18 +200,24 @@ export class BuildingsView {
     this.clear();
     // per material: the model geometries and where each stands; merged with the transforms baked in one pass (no
     // per-building clones, D-255)
-    const byMat = new Map<MatKey, { geos: BufferGeometry[]; mats: Matrix4[] }>();
+    // and, for the heavy materials, per ground tile (D-570): each tile's mesh is culled on its own in the main and the
+    // shadow pass, instead of every building on the map being drawn whenever one of them is in view
+    const byMat = new Map<MatKey, { geos: BufferGeometry[]; mats: Matrix4[]; tiles: number[]; tris: number }>();
+    let tile = 0;
     const add = (parts: ModelPart[], m: Matrix4) => {
       for (const p of parts) {
         let l = byMat.get(p.material);
-        if (!l) byMat.set(p.material, (l = { geos: [], mats: [] }));
+        if (!l) byMat.set(p.material, (l = { geos: [], mats: [], tiles: [], tris: 0 }));
         l.geos.push(p.geometry);
         l.mats.push(m);
+        l.tiles.push(tile);
+        l.tris += p.geometry.index ? p.geometry.index.count / 3 : 0;
       }
     };
     for (const b of world.state.buildings) {
       const model = buildingModel(b.type as BuildingKind);
       const { m, cx, cz, baseY, lo, angle, sx, sz } = footprintTransform(this.hf, model, b.x, b.y, b.w, b.h, b.facing);
+      tile = Math.floor(cz / CHUNK_M) * 4096 + Math.floor(cx / CHUNK_M);
       add(model.parts, m);
       // castle level 1 (free valley rank 5): the extra corner tower with its pennant
       if (b.type === 'castle' && lvl >= 1) add(castleUpgradeParts(), m);
@@ -283,14 +298,29 @@ export class BuildingsView {
     }
     this.placeFieldWorkers(world);
     for (const [mat, list] of byMat) {
-      const g = mergeIndexed(list.geos, list.mats, KEEP);
-      g.computeBoundingSphere();
-      const mesh = new Mesh(g, modelMaterial(mat) as Material);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.name = `buildings-${mat}`;
-      this.meshes.push(mesh);
-      this.group.add(mesh);
+      // a light material (a few hundred triangles over the whole map) stays one mesh: a draw per tile would cost
+      // more than drawing it all
+      const groups = new Map<number, { geos: BufferGeometry[]; mats: Matrix4[] }>();
+      const split = list.tris >= CHUNK_MIN_TRIS;
+      for (let i = 0; i < list.geos.length; i++) {
+        const k = split ? list.tiles[i]! : 0;
+        let gr = groups.get(k);
+        if (!gr) groups.set(k, (gr = { geos: [], mats: [] }));
+        gr.geos.push(list.geos[i]!);
+        gr.mats.push(list.mats[i]!);
+      }
+      for (const gr of groups.values()) {
+        const g = mergeIndexed(gr.geos, gr.mats, KEEP);
+        g.computeBoundingSphere();
+        const mesh = new Mesh(g, modelMaterial(mat) as Material);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.name = `buildings-${mat}`;
+        // static: the transforms are baked into the vertices
+        mesh.matrixAutoUpdate = false;
+        this.meshes.push(mesh);
+        this.group.add(mesh);
+      }
     }
     return true;
   }
@@ -355,10 +385,14 @@ export class BuildingsView {
     }
   }
 
-  update(world: World, dt: number): void {
+  /**
+   * `seen` (D-571): the frusta a yard worker must touch to be drawn (the camera's and the sun's shadow camera's); a
+   * worker outside all of them is left out of the instance batches. Without it every worker is drawn.
+   */
+  update(world: World, dt: number, seen?: readonly Frustum[]): void {
     this.time += dt;
     if (world.state.netVersion !== this.fieldNet && this.fieldWorkers.length) this.placeFieldWorkers(world);
-    this.updateWorkers(world, dt);
+    this.updateWorkers(world, dt, seen);
     if (!this.wheels.length) return;
     for (const w of this.wheels) {
       const b = world.state.buildings.find((x) => x.id === w.buildingId);
@@ -374,7 +408,7 @@ export class BuildingsView {
   }
 
   /** Yard workers: chop / carry / bake while the building is WORKING, stand at rest otherwise. */
-  private updateWorkers(world: World, dt: number): void {
+  private updateWorkers(world: World, dt: number, seen?: readonly Frustum[]): void {
     for (const b of this.bodyParts.values()) { b.legs.begin(); b.torso.begin(); }
     for (const p of this.workerParts.values()) { p.arms.begin(); p.tool?.begin(); }
     const bs = world.state.buildings;
@@ -405,6 +439,8 @@ export class BuildingsView {
       }
       const p = this.workerParts.get(w.kind)!;
       if (p.torso.count >= WORKER_CAP || p.arms.count >= WORKER_CAP) continue;
+      // the pose clocks above ran either way, so a worker coming into view is where he would have been
+      if (seen && !inAny(seen, base)) continue;
       if (!w.noLegs) p.legs.push(base);
       _wt.copy(base).multiply(_t.makeTranslation(0, WORKER_HIP_Y, 0)).multiply(ROT.makeRotationX(_pose.bend));
       p.torso.push(_wt);
@@ -437,6 +473,17 @@ export class BuildingsView {
     this.workerParts.clear();
     this.bodyParts.clear();
   }
+}
+
+/** A sphere holding a yard worker with his tool (feet at `base`, ~1.9 m tall, arms and tools reach < 1.5 m). */
+const WORKER_R = 3;
+const _ws = new Sphere();
+function inAny(seen: readonly Frustum[], base: Matrix4): boolean {
+  const e = base.elements;
+  _ws.center.set(e[12]!, e[13]! + 1, e[14]!);
+  _ws.radius = WORKER_R;
+  for (const f of seen) if (f.intersectsSphere(_ws)) return true;
+  return false;
 }
 
 const ROT = new Matrix4();
