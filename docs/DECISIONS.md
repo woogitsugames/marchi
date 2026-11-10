@@ -4694,3 +4694,55 @@ closer opening costs nothing measurable); low, 2 rounds: close-up +1,0 %, `m1-fi
 rounds) −0,2 % — load drift of the shared container, not the change. The first look (pow + smoothstep toe) read +7,6 %
 (close-up high) and +9,7 % (`m1-bot` high) and was replaced by the cubic. No new program, pass, texture or uniform.
 (decided)
+
+## Render frame cost: culling per ground tile (BACKLOG P1, research `docs/research/2026-11-10-render-frame-cost.md`)
+
+**D-570 — Merged building meshes are split per 64 m ground tile for the heavy materials.** GL-level counters
+(`tools/rperf-probe.mjs`) on the free valley with the bench network showed the merged building meshes (one per
+material for the whole map, D-255) as the largest triangle source: 180 k of 404 k main-pass triangles and 175 k of
+223 k per shadow refresh at low, while only 7 of 38 buildings were in the 110 m view and 18 in the shadow camera.
+`BuildingsView.sync` now keys each part by (material, tile of the footprint centre) when the material has ≥ 4000
+triangles over all buildings (`CHUNK_M = 64`, `CHUNK_MIN_TRIS = 4000`); light materials stay one mesh. three culls each
+tile mesh on its own in the main and the shadow pass. Same vertices, matrices and materials — only the buffers are cut
+differently — so the picture is the same (D-573). The meshes are static (`matrixAutoUpdate = false`). A 96 m tile with
+an 8000 threshold was measured too: worse in the valley (296 k vs 268 k main triangles at the same draw count), six
+shadow draws fewer in mission I; 64 m stays. Cost: +4..+11 main draws and +12..+19 per shadow refresh (tiles the sun
+sees), against −130 k main and −50..−90 k shadow triangles in the valley. (decided)
+
+**D-571 — Yard workers outside the view and the shadow camera are not drawn.** The worker batches (`Parts`) have
+`frustumCulled = false` because their instances spread over every building; ~45 workers in the bench valley cost
+~32 k main and ~16 k shadow triangles wherever the camera looked. `BuildingsView.update(world, dt, seen)` takes the
+camera frustum and the sun's shadow-camera frustum (computed in `WorldView.frame` with `sun.shadow.updateMatrices(sun)`,
+the call `WebGLShadowMap` makes with the same light and target, so it is the frustum the shadow pass uses) and skips a
+worker whose 3 m sphere touches neither. Pose clocks (the hoeing walk, the trader's gesture) run before the test, so a
+worker entering the view is where he would have been. No shader reads the instance index. (decided)
+
+**D-572 — Reeds: one instanced batch per 64 m tile.** The reeds (776 clumps along every bank, one `InstancedMesh`)
+were drawn whole whenever any bank was in view: 23 k triangles. `GroundCover.buildReeds` now makes one batch per tile
+with a shared blade geometry; instance matrices are computed exactly as before (the per-reed `i % 7` height factor
+keeps the global index). (decided)
+
+**D-573 — Pixel identity: frozen-clock shots, 15 of 18 at 0 px, the other 3 differ between two runs of the old build
+the same way.** `tools/rperf-shots.mjs` (new): `speed=0` in the URL (with `speed=1` the sim ran a varying number of
+ticks before the scene was set up, so worker poses and wagons differed between two runs of one build), the game loop
+stopped, the view / worker / mill-wheel / farmer-walk / trader clocks fixed, 4 frames at dt = 0. 18 shots (valley
+summer / winter / close 38 m / far 230 m and mission I; low and high; 412×915 for all, 915×412 and 904×1000 for valley
+summer and mission I) before (`a10af8b`) vs after: 15 shots 0 px. Valley close, far (412×915) and summer 915×412 at
+high differ by 0.20 / 0.22 / 0.37 % of pixels in one corner — and a second run of the old build differs from the first
+by 768 / 828 / 1302 px in the same rectangles (after vs that second run: 0 / 0 / 1484 px): run-to-run noise of the
+high shots (tree wind and near trees), not this change. (decided)
+
+**D-574 — Measurement method and what was not done.** `tools/rperf-probe.mjs` (new) wraps the WebGL draw calls in an
+init script and reports per frame the main pass (default framebuffer) and per shadow refresh (the map refreshes every
+2nd frame, D-150 — averaging per frame made the counts jump by ±15 with the parity of the window) the draws and
+triangles, `useProgram` / `bindTexture` / `uniform*` calls, buffer upload bytes, the bytes of all live GL textures
+(ASTC / ETC2 counted compressed), `renderer.info` programs / geometries / textures, rAF and `App.frame` JS ms;
+`RP_SPLIT=1` splits draws and triangles per object. It waits for `view.texturesReady` (high KTX2 transcodes take
+> 12 s under SwiftShader; without the wait high was measured without its PBR textures). Results (A/B interleaved, 3
+rounds, median; valley 110 m summer / winter, 50 / 200 wagons at 160 m, mission I; low and high): valley main triangles
+−33 %, shadow −18..−41 %, mission I main −20 %; programs (46 / 48), texture memory (33.8 / 175.8 MB), program switches,
+texture binds and uniforms unchanged. SwiftShader time −5.5 % median over 10 pairs, spread ±10 % (fill-bound: toggling
+the terrain off saves 45 % of the frame, trees 40 %, buildings 22 %, the shadow pass 11 %). Not done because they change
+the picture: terrain LOD, fewer tree cards, a smaller or rarer shadow map; not done because they are not measurable
+here: front-to-back `renderOrder` for early-z (same draws and triangles), `BatchedMesh` for buildings (another program,
+matrices from a texture — float differences in positions). Next: the device bench on the Fold (BACKLOG). (decided)

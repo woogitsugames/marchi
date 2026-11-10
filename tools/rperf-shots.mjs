@@ -34,7 +34,7 @@ for (const [name, sc] of Object.entries(SCENES)) {
       const ctx = await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
       const page = await ctx.newPage();
       page.on('pageerror', (e) => { errors++; console.log(`  error ${name} ${quality} ${vp}: ${e.message}`); });
-      await page.goto(`${base}?${sc.q}&speed=1&quality=${quality}&dynres=0&debug=1&lang=pl`, { waitUntil: 'load' });
+      await page.goto(`${base}?${sc.q}&speed=0&quality=${quality}&dynres=0&debug=1&lang=pl`, { waitUntil: 'load' });
       await page.waitForFunction(() => window.__marchia && window.__marchia.ready === true, null, { timeout: 180000 });
       await page.evaluate(new Function('sc', `
         const a = window.__marchia.app, w = a.world;

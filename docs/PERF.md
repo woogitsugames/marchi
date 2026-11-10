@@ -284,3 +284,23 @@ rozstrzyga liczba instrukcji na tick (cachegrind, stan z migawki, start i rozgrz
 4 procesy: 0,045 / 0,044, 0,052 / 0,063, 0,061 / 0,053, dolina 0,027 / 0,023). Do powtórzenia na spokojnej maszynie.
 Mikrobenchmark przeszukań (bench 200): do pamięci 45,9 → 37,0 µs, `findPath` 11,6 → 10,1 µs. Scavenge w
 `perf:sim` 50 → 42.
+
+## 2026-11-10 — koszt klatki 3D: odcinanie po kaflach terenu (D-570..D-574)
+
+Raport: `docs/research/2026-11-10-render-frame-cost.md`. Narzędzia: `tools/rperf-probe.mjs` (liczniki GL na klatkę i
+na odświeżenie mapy cieni, programy, pamięć tekstur, przeplatane A/B; `RP_SPLIT=1` — rozbicie na obiekty) i
+`tools/rperf-shots.mjs` (zrzuty z zamrożonymi zegarami do porównania piksel w piksel, `tools/render5-diff.py`).
+Największe źródło trójkątów: budynki scalone w jedną siatkę na materiał dla całej mapy — rysowane w całości w obu
+przebiegach, choć w kadrze z 110 m jest 7 z 38 budynków. Poprawki: kafle 64 m dla ciężkich materiałów budynków
+(D-570), robotnicy poza kadrem i ramą cieni pominięci w partiach instancji (D-571), trzcina partią na kafel (D-572).
+Wygląd: 15 z 18 ujęć 0 px, 3 ujęcia high różnią się tak samo między dwoma przebiegami starej wersji (D-573).
+
+| scena (low / high) | trójkąty główny | trójkąty cienie (na odświeżenie) | wywołania główny / cienie |
+|---|---:|---:|---:|
+| dolina lato 110 m | 404 → 268 k / 461 → 325 k | 223 → 134 k / 319 → 230 k | 47→51, 30→42 / 60→64, 55→67 |
+| dolina 200 wozów 160 m | 400 → 270 k / 438 → 307 k | 224 → 176 k / 271 → 223 k | 54→59, 31→50 / 55→60, 40→59 |
+| misja I 200 m | 242 → 192 k / 278 → 229 k | 60 → 60 k / 97 → 97 k | 47→51, 27→43 / 52→56, 36→52 |
+
+Programy 46 / 48, pamięć tekstur 33,8 / 175,8 MB, przesył buforów — bez zmian. Czas SwiftShadera (mediana 3
+przeplatanych powtórzeń) −5,5 % mediana z 10 par, rozrzut ±10 %: SwiftShader jest ograniczony wypełnianiem (teren
+45 % klatki, drzewa 40 %), więc to trójkąty są miarą; zysk na telefonie do potwierdzenia `tools/device-bench.html`.
