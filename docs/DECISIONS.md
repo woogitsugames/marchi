@@ -4604,3 +4604,71 @@ Style findings that need the owner (BACKLOG P3 questions): summer shows the late
 contrast (the flat, milky look of the whole scene); mission I opens on an empty meadow with wagons a few pixels long;
 the portrait main menu hides the whole scene; autumn crowns are the most saturated thing in the frame and compete with
 the clay/ochre "warm = problem" rule; dawn is dark and green rather than misty. (decided)
+
+**D-540 — Graphics: green summer crowns, rust only in autumn (owner, graphics audit 12, 2026-11-10).** The owner's
+answer to the D-502 question: the deciduous crowns are green in summer and rust/warm only in autumn (warm stays the
+sign of a problem, art direction "Warm marks the problem"), fresh green in spring. The crown-green factor of D-303
+(`springAt`, `src/render/leafFall.ts`) now runs 0 … 2 instead of 0 … 1: 0 the late-autumn palette, 1 the young spring
+green, 2 a darker, muted summer green (`SUMMER_COL` / `SUMMER_COL2`, sRGB #4f5a38 … #47553a, HSL S ≈ 23 %: inside the
+terrain's middle band, a little darker than the leaf it replaces). Spring as before (0 → 1 with the returning leaves,
+15–55 %); summer matures 1 → 2 over its first 35 %; autumn turns 2 → 0 over its first 60 % — through the yellow-green
+of 1, as real leaves lose their green — so the crowns are rust exactly when they start to fall (D-260, 60 %); winter 0
+(bare). ≤ 0,028 per 5 s of game time (test). In `springLeaf` (shared by the leaf material, its depth material and the
+far-card bake, so near and far trees match) the summer colour is luminance-matched like the spring one (×0,9 instead
+of ×1,05) and almost every card takes it (92–100 % instead of 78–100 %); the per-tree russet/ochre tint spread is
+damped a little more in summer. Cost: no new uniform, program or pass — the same `uSpring` / bake `spring` value, a
+few ALU in the vertex shader. The far-card atlas is still re-baked in quarter steps of the factor (now over 0 … 2): 4
+more bakes in early summer and 8 over the first 60 % of autumn (one every ~40–70 s of game time, into the same
+targets, D-260). Contract missions have no seasons and keep factor 0: their autumn look is bit for bit unchanged.
+Shots `docs/shots/gfx12-{before,after}-valley-{spring,summer,autumn}-high-*` (spring and autumn unchanged, summer
+green). (decided)
+
+**D-541 — Graphics: a gentle contrast look inside AgX (owner, graphics audit 12).** The owner's answer to the D-502
+question "AgX flattens the whole scene": raise the contrast carefully. `src/render/toneLook.ts` patches three's AgX
+tone-mapping chunk once at mount (before any program is built) with a look step right after the AgX sigmoid, where the
+AgX reference has its unused `agxLook`: a contrast curve on the luminance of the sigmoid output (≈ display value)
+around a pivot of 0,30 (near the frames' mean), each side a cubic x + c·x²·(x − 1) in the normalised distance from its
+end — slope 1,30 below and 1,25 above the pivot, slope 1 and value fixed at black and at white, so the deep shadows of
+dusk / night and the dark forest beside the HUD keep their value and gradation, and the sky cannot clip. The three
+channels are scaled together (contrast, not saturation: the art direction's S < 35 % holds, `gfx11-sat.mjs` S within
+±0,5 pt). Exposure unchanged. Measured on the shots (luminance over the whole frame, before → after): noon valley mean
+29,2 → 29,0 % (summer) and 31,2 → 31,2 % (autumn), sd +11 … +13 %, 5th percentile −1,3 pt, 99,9th +2,2 pt (≈ 62 %, far
+from clipping); castle close-up sd +12/+13 %; mission XIII's scene (HUD cropped) mean −0,7 pt, sd +9/+10 %; dusk mean
+14,1 → 13,2 %, sd unchanged. Rejected on the way: a plain power curve (pivot 0,32, powers 1,25 / 1,15) took dusk's
+mean from 14,1 % to 11,7 % (the dark scene sank); the same with a smoothstep toe and pow() cost +7,6 % frame time at
+the castle close-up on SwiftShader (D-543) — the cubic has no pow and no measurable cost. The road ruts against the
+meadow, the wagons' shadows and the stone/thatch stains of D-500 read more clearly; the HUD is DOM and untouched. No
+new program (the chunk is in every lit material already; the program count of D-325 stays), no new pass. Stronger or
+brighter variants are a BACKLOG question. Shots `gfx12-{before,after}-*`. (decided)
+
+**D-542 — Mission I opens on the river crossing (owner, graphics audit 12).** The owner's answer to the D-502
+question: frame the start closer, on the crossing and the nearest buildings. Render-only (`src/render/opening.ts`,
+`View.frameOpening`, `CameraRig.fitGround`; no sim change): leaving the menu for a mission with an entry in
+`OPENING_FRAMES` (only `m1`) glides — or jumps, on a new terrain — to the closest view that shows its cell box whole
+inside the part of the canvas the contract HUD leaves free (`openingFree`: portrait under the waybill and above the
+stall row / rail; landscape and the near-square foldable either right of the waybill or the band under it, whichever
+is closer), the box centred in that part. `fitGround` bisects the distance (the pitch follows it as in play) and
+solves the target with a few screen-space corrections. Mission I's box: the stable (the wagons start there) with the
+north road's junction, the gap the player has to bridge and the mill on the south bank (cells 41–49 × 19–39), looking
+straight north (yaw 0 instead of the overview's −0,3: the north–south crossing then runs up the screen). Distances:
+412×915 168 m, 915×412 151 m, 904×1000 150 m (before: the 200 m glide target from the menu, 230 m on a direct start;
+always the map's middle). The wagons at the stable are now 1,2–1,5× larger and the stable and the mill are in the free
+part of the screen (before, the stable was behind the waybill in portrait and the lower half was empty meadow). Not
+the whole chain: the 70 × 42-cell layout (woodcutter … castle) needs ~370 m in a portrait with the HUD, farther than
+the old overview that already cut it; the stable–crossing–mill box is what the first minutes are about, the rest is a
+pan away. A landscape view turned by 90° would be 103 m instead of 151 m, but with another north than portrait and the
+menu — BACKLOG question, as is a fly-over of the chain. The other missions keep the generic overview. Shots
+`gfx12-{before,after}-m1-open-*` (first seconds), `gfx12-{before,after}-m1-*` (bot, 150 s). (decided)
+
+**D-543 — Graphics audit 12: method and cost.** Shots with `tools/gfx11-shots.mjs` (now `GFX_PREFIX=gfx12` and a
+`m1-open` scene: mission I in its first seconds without the bot), before = the build of `9fddad7` served from a copy,
+after = this branch; high, 412×915 and 915×412 (and 904×1000 for the opening): missions I (open + bot), XIII, the free
+valley in spring / summer / autumn at noon, autumn dusk and the castle close-up. Frame cost: new
+`tools/gfx12-frame-ab.mjs`, SwiftShader rAF frame time, A/B interleaved, same camera in both builds (the valley rig
+set by hand; `m1-fixed` the old overview camera, `m1-bot` each build's own camera); summer valley (green crowns on).
+Final build, high, 3 rounds: valley 110 m −4,1 %, castle close-up −1,4 %, `m1-fixed` −0,4 %, `m1-bot` −0,4 % (the
+closer opening costs nothing measurable); low, 2 rounds: close-up +1,0 %, `m1-fixed` −0,8 %; valley 110 m low read
++8,0 / +8,4 % in two runs, then before → build without the look +1,0 %, that → final −0,7 % and a fresh direct A/B (4
+rounds) −0,2 % — load drift of the shared container, not the change. The first look (pow + smoothstep toe) read +7,6 %
+(close-up high) and +9,7 % (`m1-bot` high) and was replaced by the cubic. No new program, pass, texture or uniform.
+(decided)
