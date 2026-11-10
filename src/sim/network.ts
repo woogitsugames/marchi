@@ -301,7 +301,21 @@ export interface PathScratch {
   heapKey: Float64Array;
   stamp: Uint32Array;
   curStamp: number;
+  /** Cells the last search into `dist` / `prev` wrote (D-471): only these need resetting before the next one. */
+  touched: Touched;
 }
+
+/**
+ * The cells a search wrote into a distance array (and its `prev`, a subset: never the start). `n` = -1: unknown
+ * (a fresh array, or written by someone else), so the next search fills the whole array as before. Derived, never saved.
+ */
+interface Touched {
+  cells: Int32Array;
+  n: number;
+}
+
+/** Touched lists of memoized distance arrays (`dijkstraMemo`), by array: they move between memo generations. */
+const memoTouched = new WeakMap<Float64Array, Touched>();
 
 function scratch(world: World): PathScratch {
   const n = world.terrain.w * world.terrain.h;
@@ -309,7 +323,7 @@ function scratch(world: World): PathScratch {
     world.scratch = {
       dist: new Float64Array(n), prev: new Int32Array(n),
       heapNode: new Int32Array(n * 8 + 16), heapKey: new Float64Array(n * 8 + 16),
-      stamp: new Uint32Array(n), curStamp: 0,
+      stamp: new Uint32Array(n), curStamp: 0, touched: { cells: new Int32Array(0), n: -1 },
     };
   }
   return world.scratch;
@@ -348,14 +362,37 @@ export function dijkstra(world: World, start: number, reverse: boolean, loaded: 
   if (pp && pp.length !== n) pp = undefined;
   const dist = reuse ? sc.dist : pd ?? new Float64Array(n);
   const prev = reuse ? sc.prev : pp ?? new Int32Array(n);
-  search(world, sc, start, reverse, loaded, stopAt, dist, prev);
+  // the scratch pair is written only by searches (its list is exact); pooled arrays are filled whole
+  search(world, sc, start, reverse, loaded, stopAt, dist, prev, reuse ? sc.touched : null);
   return { dist, prev };
 }
 
-/** The search itself, into `dist` / `prev` (filled here: Infinity / -1 before the start). */
-function search(world: World, sc: PathScratch, start: number, reverse: boolean, loaded: boolean, stopAt: number, dist: Float64Array, prev: Int32Array): void {
-  dist.fill(Infinity);
-  prev.fill(-1);
+/**
+ * The search itself, into `dist` / `prev` (Infinity / -1 everywhere before the start). `prev` null: not wanted (the
+ * memo keeps distances only). `track` (D-471): the cells written by the previous search into these same arrays, so only
+ * they are reset (a few hundred road cells instead of the whole map: the same contents as a full fill); this search's
+ * cells are recorded in it. null: full fill, nothing recorded.
+ */
+function search(world: World, sc: PathScratch, start: number, reverse: boolean, loaded: boolean, stopAt: number, dist: Float64Array, prev: Int32Array | null, track: Touched | null): void {
+  if (track && track.n >= 0) {
+    const cells = track.cells;
+    for (let i = 0; i < track.n; i++) {
+      const c = cells[i]!;
+      dist[c] = Infinity;
+      if (prev) prev[c] = -1;
+    }
+  } else {
+    dist.fill(Infinity);
+    if (prev) prev.fill(-1);
+  }
+  let tc: Int32Array | null = null, tn = 0;
+  if (track) {
+    // a cell enters the list on its first write (dist was Infinity); every write is the start or a listed neighbour
+    const need = adjacency(world, net(world)).node.length + 1;
+    if (track.cells.length < need) track.cells = new Int32Array(need);
+    tc = track.cells;
+    track.n = 0;
+  }
   if (!world.state.roads[start]) return;
   const hn = sc.heapNode, hk = sc.heapKey;
   let size = 0;
@@ -393,6 +430,7 @@ function search(world: World, sc: PathScratch, start: number, reverse: boolean, 
   const iceLeft = until >= 0 ? (until - world.state.tick) / TICK_HZ : 0;
   const spans = pen.size > 0 || iceLeft > 0;
   dist[start] = 0;
+  if (tc) tc[tn++] = start;
   push(start, 0);
   sc.curStamp = (sc.curStamp + 1) >>> 0 || 1;
   const done = sc.stamp, mark = sc.curStamp;
@@ -421,13 +459,16 @@ function search(world: World, sc: PathScratch, start: number, reverse: boolean, 
         }
       }
       const nd = du + cost;
-      if (nd < dist[v]!) {
+      const dv = dist[v]!;
+      if (nd < dv) {
+        if (tc && dv === Infinity) tc[tn++] = v;
         dist[v] = nd;
-        prev[v] = u;
+        if (prev) prev[v] = u;
         push(v, nd);
       }
     }
   }
+  if (track) track.n = tn;
 }
 
 /**
@@ -487,8 +528,10 @@ export function dijkstraMemo(world: World, start: number, reverse: boolean, load
   const n = world.terrain.w * world.terrain.h;
   let out = memo.spare.pop();
   if (!out || out.length !== n) out = new Float64Array(n);
-  // distances straight into the memo array; `prev` goes to the shared scratch (nobody reads it)
-  search(world, scratch(world), start, reverse, loaded, -1, out, scratch(world).prev);
+  let track = memoTouched.get(out);
+  if (!track) { track = { cells: new Int32Array(0), n: -1 }; memoTouched.set(out, track); }
+  // distances straight into the memo array, no `prev` (nobody reads it; D-471: the scratch pair is left alone)
+  search(world, scratch(world), start, reverse, loaded, -1, out, null, track);
   memo.maps.set(key, out);
   return out;
 }

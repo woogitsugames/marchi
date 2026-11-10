@@ -149,7 +149,9 @@ export const SITE_RULE: Partial<Record<BuildingType, 'NEAR_WATER' | 'ON_ROCK'>> 
 };
 
 // Recipes are constants: the input/output lists are built once per type (hot in produce/dispatch, no GC churn).
-// Callers get a shared frozen array and must not mutate it.
+// Callers get a shared array and must not mutate it (`readonly` in the type). Not `Object.freeze`d (D-470): V8 has no
+// fast path for `for...of` over a frozen array, so a loop over one may allocate an iterator and its result objects
+// (2.4x slower and ~400x the minor GCs in a micro-benchmark).
 const inCache = new Map<BuildingType, readonly Good[]>();
 const outCache = new Map<BuildingType, readonly Good[]>();
 
@@ -157,7 +159,7 @@ export function inputGoods(type: BuildingType): readonly Good[] {
   let v = inCache.get(type);
   if (!v) {
     const r = BUILDINGS[type].recipe;
-    v = Object.freeze(r ? (GOODS.filter((g) => (r.inputs[g] ?? 0) > 0) as Good[]) : []);
+    v = r ? (GOODS.filter((g) => (r.inputs[g] ?? 0) > 0) as Good[]) : [];
     inCache.set(type, v);
   }
   return v;
@@ -167,7 +169,7 @@ export function outputGoods(type: BuildingType): readonly Good[] {
   let v = outCache.get(type);
   if (!v) {
     const r = BUILDINGS[type].recipe;
-    v = Object.freeze(r ? (GOODS.filter((g) => (r.outputs[g] ?? 0) > 0) as Good[]) : []);
+    v = r ? (GOODS.filter((g) => (r.outputs[g] ?? 0) > 0) as Good[]) : [];
     outCache.set(type, v);
   }
   return v;

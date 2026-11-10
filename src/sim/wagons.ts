@@ -139,7 +139,9 @@ function movingStatus(w: Wagon): void {
 }
 
 function idleStatus(w: Wagon): void {
-  w.status = { k: 'IDLE' };
+  // a wagon parked at home with nothing to do lands here every tick (D-472: 140 of 200 wagons in the bench); its
+  // status already reads IDLE, a field-less object, so it is kept (same JSON, same hash) instead of a new one per tick
+  if (w.status.k !== 'IDLE') w.status = { k: 'IDLE' };
 }
 
 function enterEdge(world: World, w: Wagon, to: number): void {
@@ -213,14 +215,15 @@ function bridgeBlocker(world: World, w: Wagon, to: number): { span: number; wago
   let count = 0, opposing = -1, anyOn = -1;
   // longest waiter at the other side of this span
   let rival: Wagon | null = null;
+  // every queued wagon asks this each tick, over every wagon (D-472): the cheapest tests go first — most wagons are
+  // on no bridge (bridgeFrom -1) and on the move (next >= 0); the same pure conditions, so the same answer
   for (const o of st.wagons) {
     if (o === w) continue;
-    const onSpan = c.span[o.at] === span || (o.next >= 0 && c.span[o.next] === span);
-    if (onSpan && o.bridgeFrom >= 0) {
+    if (o.bridgeFrom >= 0 && (c.span[o.at] === span || (o.next >= 0 && c.span[o.next] === span))) {
       count++;
       if (anyOn === -1) anyOn = o.id;
       if (o.bridgeFrom !== w.at && opposing === -1) opposing = o.id;
-    } else if (o.status.k === 'BRIDGE_JAM' && o.status.span === span && o.at !== w.at && o.next < 0) {
+    } else if (o.next < 0 && o.status.k === 'BRIDGE_JAM' && o.status.span === span && o.at !== w.at) {
       if (!rival || (rival.status as { since: number }).since > o.status.since ||
         ((rival.status as { since: number }).since === o.status.since && rival.id > o.id)) rival = o;
     }

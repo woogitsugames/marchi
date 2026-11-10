@@ -4495,3 +4495,44 @@ covered: "Produkuje" over a body that scrolled beneath the dock (a scroll positi
 **D-492 — Tests.** `tests/sheet-labels.test.ts`: stable numbers by id independent of the listed subset, a lone name plain,
 and the CSS rule present. (decided)
 
+
+**D-470 — Recipe input/output lists are no longer `Object.freeze`d (sim cost round 2,
+`docs/research/2026-11-10-sim-cost-2.md`).** `inputGoods`/`outputGoods` hand out one cached array per building type,
+iterated with `for...of` in `produce`, `dispatch`, the diagnosis and the forecast. V8 has no fast path for `for...of` over
+a frozen array: a micro-benchmark of the same loop ran 2.4× slower and did 4036 minor GCs instead of 10. The arrays keep
+their contents and the `readonly` type (callers still must not mutate them); `npm run perf:sim` does 44 scavenges
+instead of 50. A plain object keyed by type instead of the `Map` was tried and was slower (622–698 vs 454–509 ms in a
+micro-benchmark) — not taken. (decided)
+
+**D-471 — A path search resets only the cells the previous search wrote.** After D-336/D-337 the search itself was the
+largest item (bench 22 % of the tick, late valley 15 %), and 12.5 % of it was `dist.fill(Infinity)` over the whole
+96×72 map for a network of ~360 road cells. An array written only by `search` — the scratch pair of `findPath` and
+`alternativeDestination`, and the memo arrays of D-336 (their list sits in a `WeakMap` keyed by the array, so it moves
+with the array between memo generations) — carries the list of cells the last search wrote (a cell is listed on its
+first write, when `dist` was Infinity; every write is the start or a listed neighbour, so the list fits
+`adj.node.length + 1`). The next search resets just those cells, which gives the same contents as the full fill. A new
+array, or one from the `releaseDistMap` pool (its holder may have read it), is still filled whole. Memo searches no
+longer write `prev` at all (no memo reader walks it; before, they scribbled into the scratch `prev`). Memo-miss search
+45.9 → 37.0 µs, `findPath` 11.6 → 10.1 µs on the 200-wagon bench. Test: one world whose network grows and is cut, whole
+scratch and memo arrays equal the reference search; it fails on either deliberate bug (no `prev` reset, truncated list).
+(decided)
+
+**D-472 — Cheapest test first in the per-wagon and per-source loops; a parked wagon keeps its IDLE status object.**
+`bridgeBlocker` runs for every queued wagon every tick over every wagon (865 loop turns per tick at 200 wagons): the
+same pure conditions now test `bridgeFrom >= 0` (most wagons are on no bridge) and `next < 0` (most are moving) first.
+`dispatch`'s `isSource` tests the unreserved stock before the recipe lookup (most buildings hold none of the good).
+`idleStatus` kept allocating `{ k: 'IDLE' }` every tick for every wagon parked at home (141 of 200 in the bench); a
+status that already reads IDLE (a field-less object) is kept — same JSON, same hash, and the UI's identity caches see no
+change where nothing changed. (decided)
+
+**D-473 — Sim cost round 2: measured, and what stays.** New `tools/perf-late.ts`: the DECENT valley player to minute
+100, then 20 minutes of `step` timed (24 buildings, 30 wagons: 0.02–0.03 ms/tick — cheaper than the bench, which stays
+the stress case). The container was loaded by another agent (load 4–8) during the night, so wall times scattered by up to
+±50 % between runs of the same build; the deciding measure is instructions per tick (cachegrind, state loaded from a
+snapshot, start-up and JIT warm-up subtracted): bench 50/100/200 518 780 / 777 718 / 857 488 → 500 291 / 715 272 /
+780 500 (−4 / −8 / −9 %), late valley 431 789 → 422 843 (−2 %). Proof of identical results: `tools/mission-hashes.ts` byte-identical
+(86 rows), bench and late-valley end hashes identical, 8 fuzz scenarios with end hashes (incl. the valley through the
+winter ice) identical old vs new, `npm test` 679/0. Not done, and why: incremental Dijkstra after a bridge penalty
+change (equal-length routes could differ in the last float bit), a per-span wagon index for `bridgeBlocker` (array-order
+semantics, ~2–3 % of the bench), caching edge length/grade (indexing costs as much as the formula). The replan budget
+(BACKLOG P3) stays unneeded. (decided)

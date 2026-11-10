@@ -331,3 +331,10 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-453 | — | "Rozbierz" keeps its whole reason in a short landscape sheet | decided | UI |
 | D-454 | — | A filling granary's sheet says "zapełnia się", not "pełny" | decided | UI |
 | D-455 | — | A wagon held by ice reads the ice on the card, not the quarry | decided | UI |
+| D-470 | 2026-11-10 | Recipe input/output lists are no longer `Object.freeze`d (sim cost round 2, `docs/research/2026-11-10-sim-cost-2.md`) | decided | sim |
+| D-471 | — | A path search resets only the cells the previous search wrote | decided | inne |
+| D-472 | — | Cheapest test first in the per-wagon and per-source loops; a parked wagon keeps its IDLE status object | decided | sim |
+| D-473 | — | Sim cost round 2: measured, and what stays | decided | sim |
+| D-490 | 2026-11-10 | Repeated building names in one sheet are numbered (owner, 2026-11-10; answers the D-450 question) | decided | UI |
+| D-491 | 2026-11-10 | A section header with nothing under it hides (owner, 2026-11-10; answers the D-450 question) | decided | inne |
+| D-492 | — | Tests | decided | inne |
