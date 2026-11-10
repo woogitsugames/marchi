@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.WebView;
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.util.Consumer;
@@ -21,6 +22,11 @@ import java.util.Locale;
  * to the page as window.__marchiaFold and a 'marchia:fold' CustomEvent, in CSS px relative to
  * the WebView. The page decides the layout (src/ui/layout.ts). Everything here is best effort:
  * if androidx.window or the device's window extensions are missing, the game simply runs flat.
+ *
+ * System back (D-522): Capacitor's BridgeActivity has no back handling of its own (that lives in the
+ * @capacitor/app plugin, not used here), so back always left the game — also with a card or the pause
+ * menu open. It is offered to the page first (window.__marchiaBack: close the top sheet, put a tool
+ * away, open the pause menu); only when the page does not take it does Android's default run.
  */
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MarchiaFold";
@@ -35,6 +41,35 @@ public class MainActivity extends BridgeActivity {
         // Required by androidx.core:core-splashscreen; install before super.onCreate.
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                offerBackToPage(this);
+            }
+        });
+    }
+
+    /** The page answers "true" when it used the back (src/ui/app.ts systemBack); otherwise Android's default. */
+    private void offerBackToPage(OnBackPressedCallback self) {
+        WebView wv = webView();
+        if (wv == null) {
+            defaultBack(self);
+            return;
+        }
+        try {
+            wv.evaluateJavascript(
+                "(function(){try{return !!(window.__marchiaBack&&window.__marchiaBack());}catch(e){return false;}})()",
+                (res) -> { if (!"true".equals(res)) defaultBack(self); });
+        } catch (Throwable t) {
+            Log.i(TAG, "back dispatch failed: " + t);
+            defaultBack(self);
+        }
+    }
+
+    private void defaultBack(OnBackPressedCallback self) {
+        self.setEnabled(false);
+        getOnBackPressedDispatcher().onBackPressed();
+        self.setEnabled(true);
     }
 
     @Override

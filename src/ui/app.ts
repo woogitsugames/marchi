@@ -32,6 +32,7 @@ import {
 } from './menu';
 import { deadEnd } from './deadEnd';
 import { BuildTool, buildTypes } from './buildTool';
+import { MenuPause } from './menuPause';
 import { SpeedHint } from './speedHint';
 import { pressSeal } from './sealPress';
 import { modalOpen, showModal } from './modal';
@@ -196,7 +197,7 @@ export class App implements PanelNav {
   private best: Record<string, BestResult> = {};
   /** The slot "Continue" failed to load (shown as damaged in the menu): wiped when that contract starts afresh. */
   private brokenSlot: string | null = null;
-  private speedBeforeMenu: Speed = 1;
+  private readonly menuPause = new MenuPause();
   /** Demolish tool: the contract building a first tap warned about (second tap within the window demolishes). */
   private demolishArm: { id: number; until: number } | null = null;
   private input: InputHandle;
@@ -314,6 +315,8 @@ export class App implements PanelNav {
       cameraTouched: () => this.stopFollow(),
     });
     window.addEventListener('keydown', (e) => this.onKey(e));
+    // the Android system back is offered to the page first (MainActivity, D-522): true = used here
+    (window as unknown as { __marchiaBack?: () => boolean }).__marchiaBack = () => this.systemBack();
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') void this.autosave(); });
     window.addEventListener('pagehide', () => void this.autosave());
     onLangChange(() => { this.applyHand(); this.rebuildUi(); });
@@ -1357,14 +1360,26 @@ export class App implements PanelNav {
     this.hud?.setTool(tl, this.overlay);
   }
 
+  /**
+   * Escape and the Android system back (D-522, via window.__marchiaBack from MainActivity): one step back —
+   * the top sheet, the build shelf from placement, the tool, else the pause menu. False when there was nothing to
+   * step back from (a letter holds the screen, the main menu, the end of a mission): Android then does its default.
+   */
+  private systemBack(): boolean {
+    if (modalOpen()) return false;
+    if (this.sheets.count) this.sheets.closeTop();
+    else if (this.tool === 'build' && this.build.placing) this.build.back();
+    else if (this.tool !== 'none') this.setTool('none');
+    else if (this.mode === 'game' && !this.endShown) this.openGameMenu();
+    else return false;
+    return true;
+  }
+
   private onKey(e: KeyboardEvent): void {
     // a letter holds the screen (src/ui/modal.ts): it handles its own keys, the game under it stays still
     if (modalOpen()) return;
     if (e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack') {
-      if (this.sheets.count) this.sheets.closeTop();
-      else if (this.tool === 'build' && this.build.placing) this.build.back();
-      else if (this.tool !== 'none') this.setTool('none');
-      else if (this.mode === 'game' && !this.endShown) this.openGameMenu();
+      this.systemBack();
       e.preventDefault();
       return;
     }
@@ -1425,10 +1440,16 @@ export class App implements PanelNav {
   }
 
   private openGameMenu(): void {
-    this.speedBeforeMenu = this.loop.speed === 0 ? 1 : this.loop.speed;
+    // D-521: the speed is taken once per pause (a double tap on the menu button resumed at ×1, not ×2 / ×4)
+    this.menuPause.hold(this.loop.speed);
     this.loop.speed = 0;
     this.hud?.setSpeed(0);
-    const resume = (): void => { this.loop.speed = this.speedBeforeMenu; this.hud?.setSpeed(this.loop.speed); };
+    const resume = (): void => {
+      const s = this.menuPause.release();
+      if (s === null) return;
+      this.loop.speed = s;
+      this.hud?.setSpeed(s);
+    };
     const content = gameMenuSheet({
       resume: () => { this.sheets.closeTop(); },
       settings: () => this.openSettings(),
