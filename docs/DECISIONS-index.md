@@ -347,10 +347,20 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-540 | 2026-11-10 | Graphics: green summer crowns, rust only in autumn (owner, graphics audit 12, 2026-11-10) | decided | render |
 | D-541 | — | Graphics: a gentle contrast look inside AgX (owner, graphics audit 12) | decided | render |
 | D-542 | — | Mission I opens on the river crossing (owner, graphics audit 12) | decided | render |
-| D-543 | — | Graphics audit 12: method and cost | decided | render |
+| D-543 | 2026-11-10 | Graphics audit 12: method and cost | decided | render |
 | D-560 | 2026-11-10 | A game the player paused stays paused after the pause menu closes (owner decision 2026-11-10) | decided | UI |
 | D-561 | — | A held pause is tracked by "holding", not by the speed | decided | inne |
 | D-562 | — | Settings and Help opened from the menu behave the same | decided | UI |
 | D-563 | — | The system back is consistent | decided | inne |
 | D-564 | — | Test | decided | inne |
 | D-565 | — | BACKLOG | decided | inne |
+| D-570 | — | Merged building meshes are split per 64 m ground tile for the heavy materials | decided | inne |
+| D-571 | — | Yard workers outside the view and the shadow camera are not drawn | decided | render |
+| D-572 | — | Reeds: one instanced batch per 64 m tile | decided | inne |
+| D-573 | — | Pixel identity: frozen-clock shots, 15 of 18 at 0 px, the other 3 differ between two runs of the old build the same way | decided | inne |
+| D-574 | — | Measurement method and what was not done | decided | inne |
+| D-590 | 2026-11-10 | A leaving sheet or letter takes no taps; "Sprzedaj" works once (2026-11-10) | decided | treść |
+| D-591 | — | Paving stone dug but stuck in a quarry yard no wagon collects: "Kup wóz", not the grey stone button | decided | UI |
+| D-592 | — | A full yard refused by a full granary while another granary has room reads calm | decided | inne |
+| D-593 | — | UI read caches hold their world | decided | UI |
+| D-594 | 2026-11-10 | Bug hunt 2026-11-10 (stall cards): what was left | decided | inne |

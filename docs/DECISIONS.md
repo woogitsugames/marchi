@@ -4746,3 +4746,54 @@ the terrain off saves 45 % of the frame, trees 40 %, buildings 22 %, the shadow 
 the picture: terrain LOD, fewer tree cards, a smaller or rarer shadow map; not done because they are not measurable
 here: front-to-back `renderOrder` for early-z (same draws and triangles), `BatchedMesh` for buildings (another program,
 matrices from a texture — float differences in positions). Next: the device bench on the Fold (BACKLOG). (decided)
+
+**D-590 — A leaving sheet or letter takes no taps; "Sprzedaj" works once (2026-11-10).** A closed sheet stayed on
+the page for its 240 ms fade (`.sheet.is-leaving`) and kept `pointer-events: auto` (`#ui .sheet`): a second tap on
+"Sprzedaj" in the closing wagon sheet (or in the open one before its 250 ms refresh) sold a wagon that no longer
+existed and showed a red toast; the fading opening letter (220 ms) and rank letter swallowed the next tap meant for
+the map. `src/ui/retire.ts` (new): `retire(el, cls, ms)` sets `inert` at once (hit-testing passes through, as
+`pointer-events: none`, also for children that set `auto`; no keyboard focus) and removes the element after the
+fade; `sheets.closeTop` (after its focus hand-back — an inert sheet would drop focus first), the opening letter and
+the rank letter use it, plus a CSS rule for the three leaving states. `pressOnce(el)` greys the sell button on its
+first press. No look change (the fade is the same). Test `tests/retire.test.ts`. (decided)
+
+**D-591 — Paving stone dug but stuck in a quarry yard no wagon collects: "Kup wóz", not the grey stone button.**
+The rest of D-430: the trading post's red card (a wagon held at a wooden span) offered only the grey "Wyłóż most
+kamieniem" for 9–11 s while the quarry's yard was full (OUTPUT_FULL.NO_WAGON, every wagon busy; seeds 1310 / 1317
+`card-60`, 110:37–110:45, 8 of 9 stone at the quarry), and for 1–2 s more while a wagon was already driving there
+(WAGON_DUE, progress -1). Now (`src/ui/stalls.ts`, UI only): `paveStoneWait` counts a quarry in WAGON_DUE as digging
+(as WAITING_PICKUP, D-430) — the calm wait; `paveStoneHaul` names a quarry whose unbooked stone waits for a free
+wagon when no calm wait holds, and then `cureFor` gives 'wagon': the card reads "{wagon} stoi przed mostem — kamień
+na bruk czeka w kamieniołomie na wolny wóz", the rail lights the wagon and the sheet offers "Kup wóz" with the reason
+("Kamieniołom ma już {quarry} na placu, ale wszystkie wozy są zajęte — … Kup wóz albo zaczekaj"). The `cureFor`
+cache key now holds the quarries' statuses (the post's own status does not change when the quarry's does) and its
+world (a second world with the same counters got the first one's cure — the new test showed it). Seeds 1310 / 1317:
+9–10 s -> 0 (the 1 s at 109:00 is the tool's look tick). New keys pending translation. Test
+`tests/stone-wait.test.ts`. (decided)
+
+**D-592 — A full yard refused by a full granary while another granary has room reads calm.** D-431's half second:
+a producer OUTPUT_FULL.NO_DESTINATION blocked by a full granary while another granary its road reaches has just got
+room (a new one, or loads left) read as the red card with no cure until the next dispatch (≤ 6 ticks). It is the
+producer side of 'storeRoom' (audit fix 3): `yardStoreRoom` (the granary of `granaryRelief(blockedBy)` when the
+producer's gate reaches it) makes it a calm stall (`calmStall`), `calmWhy` 'yardRoom' — the card "pełne podwórze —
+towar pojedzie do spichlerza, który ma miejsce", the sheet's calm line "Inny spichlerz ma jeszcze miejsce — nowy
+towar pojedzie tam:" with one tap to it. Valley seeds 1309–1330 × card-10/30/60, 120 min (`tools/dead-seconds.ts`):
+OUTPUT_FULL.NO_DESTINATION dead-card seconds 229 -> 2 (all dead seconds 387 -> 135); look player (`sandbox-first30`):
+no failed look, rank 5 in 66/66, earned card-10 / 60 identical, card-30 +27. `calmStall`'s cache is now per world
+(two worlds with the same id, status and second shared one answer). Test `tests/yard-room.test.ts`. (decided)
+
+**D-593 — UI read caches hold their world.** Three module-level caches keyed only by ids and counters answered a new
+game with the last game's result when building id, network version and building count matched: `cutOffNoLink`
+(D-410: "Rozbierz" offered — or withheld — from the old map's link search), the sheet's gap road `gapSuggestion`
+(moved from `panels.ts` to `stalls.ts`; its "fix" button laid the old map's cells) and `calmStall` / `cureFor`
+(D-591, D-592). Each is now per world (WeakMap or a `world` field). Tests in `tests/cut-off-link.test.ts` fail
+without the fix. (decided)
+
+**D-594 — Bug hunt 2026-11-10 (stall cards): what was left.** Valley seeds 1309–1330 × card-10/30/60, 120 min, per
+second (`tools/dead-seconds.ts`), and missions I–XVII with no input, 10 min: 135 dead seconds left — NO_INPUT.CONTESTED
+with nothing to press 82 s (longest 20 s, a charcoal burner beside the sawmill; the card names the cause, the producer
+cure comes with the bottleneck card after 3 min, D-171, and in missions after 30 s, D-110 — left for the playtest),
+one-second `pave-grey` readings on the tool's look ticks and from `cureFor`'s 2 s key, and a 1 s red flash of a
+producer at a saturated granary while a wagon takes a load from it (seed 1322 card-10 30:11). Missions: IX / X / XVII
+CONTESTED waits as in D-431, II bakery NO_INPUT with nothing built. Mission hashes 86/86 unchanged (no sim change).
+BACKLOG P4. (decided)
