@@ -258,3 +258,29 @@ Mediany 5 przebiegów, osobny proces na liczbę wozów (ms/tick):
 
 Telefon (założenie ×4–6): ×4 przy 200 wozach ≈ 40–55 → 11–16 ms symulacji na sekundę głównego wątku; najgorszy tick
 dispatchu (zmiana kolejki na moście) ≈ 6–10 → 2,5–4 ms. Pamięć: do 64 map × 55 KB (≈ 3,5 MB, bench ≤ 50).
+
+## 2026-11-10 — noc: koszt ticku symulacji, runda 2 (D-470..D-473)
+
+Raport: `docs/research/2026-11-10-sim-cost-2.md`. Profil pętli `step` po D-336..D-338: Dijkstra (`search`) nadal
+największa (bench 22 %, późna dolina 15 %), w niej `dist.fill` całej mapy dla ~360 dróg; GC; `bridgeBlocker`
+O(wozy²) przy kolejce na moście; 141 z 200 wozów benchu dostawało co tick nowy obiekt IDLE. Zmiany (wynik bit w bit):
+listy receptur bez `Object.freeze` (D-470), przeszukanie zeruje tylko komórki zapisane poprzednio, pamięć map bez
+`prev` (D-471), najtańszy test najpierw w `bridgeBlocker`/`isSource` i stały obiekt IDLE (D-472). Nowe narzędzie
+`npx tsx tools/perf-late.ts [--from 100] [--min 20] [--reps 3]` — koszt ticku późnej wolnej doliny (bot DECENT,
+24 budynki / 30 wozów: 0,02–0,03 ms/tick).
+
+Kontener był obciążony przez drugiego agenta (load 4–8): czasy ścienne tej samej wersji różniły się do ±50 %, więc
+rozstrzyga liczba instrukcji na tick (cachegrind, stan z migawki, start i rozgrzewka JIT odjęte):
+
+| scenariusz | Ir/tick przed | Ir/tick po | zmiana |
+|---|---:|---:|---:|
+| bench 50 wozów | 518 780 | 500 291 | −4 % |
+| bench 100 wozów | 777 718 | 715 272 | −8 % |
+| bench 200 wozów | 857 488 | 780 500 | −9 % |
+| późna dolina 100→120 min | 431 789 | 422 843 | −2 % |
+
+`npm run perf:sim` (3 przebiegi naprzemiennie, mediana avg ms/tick, obciążony kontener): 50 → 0,108 / 0,151,
+100 → 0,067 / 0,078, 200 → 0,064 / 0,084 (przed / po) — w granicach szumu (ten sam pomiar z migawki, czas CPU,
+4 procesy: 0,045 / 0,044, 0,052 / 0,063, 0,061 / 0,053, dolina 0,027 / 0,023). Do powtórzenia na spokojnej maszynie.
+Mikrobenchmark przeszukań (bench 200): do pamięci 45,9 → 37,0 µs, `findPath` 11,6 → 10,1 µs. Scavenge w
+`perf:sim` 50 → 42.
