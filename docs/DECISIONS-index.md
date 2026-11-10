@@ -317,3 +317,17 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-400 | — | The playtest trial records the whole-chain switch as the castle lever | decided | inne |
 | D-401 | — | No "przyda się drugi" where nothing can be built | decided | inne |
 | D-402 | — | `tools/balance-night6.ts` knows the chain switch | decided | inne |
+| D-410 | 2026-11-08 | A building cut off later with no road left gets "Rozbierz", not a red card with an empty sheet (2026-11-08) | decided | UI |
+| D-411 | 2026-11-08 | The card says why, and the rail lights the demolish tool (2026-11-08) | decided | UI |
+| D-412 | — | The scripted card player presses the sheet's "Rozbierz", and no longer takes buildings back on its own | decided | UI |
+| D-420 | 2026-11-08 | A stone bridge that only waits for stone being dug is a calm pin with the wait, not a grey button (2026-11-08) | decided | UI |
+| D-421 | — | The calm stone card says which wait it is, and lights no tool | decided | UI |
+| D-422 | — | The scripted card player reads the calm stone wait (`pave:wait`), and measures it | decided | UI |
+| D-430 | 2026-11-10 | A quarry whose full yard waits for a booked wagon still counts as digging for the calm stone wait (2026-11-10) | decided | sim |
+| D-431 | 2026-11-10 | Bug hunt 2026-11-10: what was searched, and what was found clean | decided | inne |
+| D-450 | 2026-11-10 | Readability audit of the recent stall cards: real game states, three sizes (2026-11-10) | decided | inne |
+| D-451 | — | A saturated market outranks "zapełnia się" on the card, as on the sheet | decided | UI |
+| D-452 | — | In-text link buttons in sheet hints are at least 48 px wide | decided | treść |
+| D-453 | — | "Rozbierz" keeps its whole reason in a short landscape sheet | decided | UI |
+| D-454 | — | A filling granary's sheet says "zapełnia się", not "pełny" | decided | UI |
+| D-455 | — | A wagon held by ice reads the ice on the card, not the quarry | decided | UI |

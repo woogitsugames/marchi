@@ -760,7 +760,9 @@ export class Hud {
     this.cure = w?.minor && (cure === 'wagon' || cure === 'pave') ? null : cure;
     const shared = b ? sharedOneCard(world, b) : null;
     const held = b && !shared ? heldSpanFor(world, b) : null;
-    const stone = held && w!.minor ? paveStoneWait(world, b!) : null;
+    // D-455: ice on the span is what holds the wagon now (it clears by itself; the sheet's chain says "Kra na
+    // moście"), so the card names the ice; the stone wait is the sheet's longer answer (its quarry hint stays)
+    const stone = held && w!.minor && held.kind !== 'BRIDGE_CLOSED' ? paveStoneWait(world, b!) : null;
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;

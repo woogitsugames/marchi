@@ -80,15 +80,18 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
+  // D-451: a saturated market outranks both D-393 waits below — the sheet's title ("rynek nasycony") and hint
+  // (sell another good) say so, and the card must not promise that waiting for loads or a fresh granary helps
+  const saturated = marketSaturated(world, b);
   // D-393: a free-valley granary "full" of loads still on the way (a fresh one reads 0 in stock)
-  if (granaryFilling(world, b.id)) return 'filling';
+  if (!saturated && granaryFilling(world, b.id)) return 'filling';
   // D-393: a full yard while a fresh granary takes its first loads
-  if (freshGranary(world, b) >= 0) return 'granaryFilling';
+  if (!saturated && freshGranary(world, b) >= 0) return 'granaryFilling';
   if (contractFilled(world, b.id)) return 'orderFilled';
   // D-95: the granary already holds stone to pave with (mission VIII's quarry)
   if (stoneInStore(world, b.id) > 0) return 'stoneStored';
   // D-174: the markets take no more of what the granary holds; another wagon would only wait
-  if (marketSaturated(world, b)) return 'marketFull';
+  if (saturated) return 'marketFull';
   // D-212: a granary full of goods nothing wants now (mission XV's fish)
   if (granaryUnwanted(world, b.id)) return 'unwanted';
   return null;

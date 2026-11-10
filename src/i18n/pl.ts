@@ -51,6 +51,8 @@ export const pl = {
   'status.STORAGE_FULL': 'Spichlerz pełny',
   'status.STORAGE_FULL.saturated': 'Spichlerz pełny — rynek nasycony',
   'status.STORAGE_FULL.unwanted': 'Spichlerz pełny — tego towaru nikt teraz nie potrzebuje',
+  // D-454: a granary filling with loads on the way (D-393)
+  'status.STORAGE_FULL.filling': 'Spichlerz zapełnia się — ładunki w drodze',
   'status.CONTRACT_DONE': 'Kontrakt wykonany',
 
   'wagon.IDLE': 'Stoi w stajni',
@@ -170,6 +172,7 @@ export const pl = {
   'why.full.out': '{count} {goodGen} — brak miejsca na nowy towar',
   'why.full.outBatch': '{count} {goodGen} — następna partia ({n}) się nie zmieści',
   'why.full.store': '{count} — brak miejsca na odbiór',
+  'why.full.storeFilling': '{count} — leży tu {stock}, w drodze {incoming}',
   'why.full.halted': 'Skutek: produkcja stoi, dopóki towar nie wyjedzie.',
   'why.full.refuses': 'Skutek: spichlerz nie przyjmie nic więcej.',
   'why.full.waiting': 'Na {goodAcc} czeka:',
@@ -943,6 +946,8 @@ export type MessageKey = keyof typeof pl;
 export const PENDING_KEYS = [
   // D-420
   'cause.stoneDig', 'cause.stoneComing', 'fix.stoneDig', 'fix.stoneComing',
+  // D-454
+  'status.STORAGE_FULL.filling', 'why.full.storeFilling',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

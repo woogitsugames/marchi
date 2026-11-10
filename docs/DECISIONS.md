@@ -4433,3 +4433,48 @@ critical with no cure until the next dispatch (≤ 6 ticks, e.g. seed 1320 `card
 filling 255 s, store room 150 s, market full 132 s, post without road 147 s — each with the goods really moving, no
 card found saying something false. New tool `tools/dead-seconds.ts` (per-second dead-card reading of one player).
 (decided)
+
+**D-450 — Readability audit of the recent stall cards: real game states, three sizes (2026-11-10).** The cards of
+D-393 ("zapełnia się", "nowy spichlerz dopiero przyjmuje ładunki"), D-410/D-411 ("bez dojazdu", "Rozbierz") and
+D-420/D-421 ("kamieniołom jeszcze kopie") were only seen in tests. `tools/read-states.ts` runs the card-10 player of
+`tools/sandbox-first30.ts` (seeds 1301–1308, 120 min) and writes the world (state + terrain) the first second each card
+holds the HUD slot (a calm top entry only when no pace / bottleneck card takes it); `tools/read-shots.mjs` stages each
+world in a built page (`window.__marchia.app.enterGame`, speed 0), shoots the card and the sheet its eye opens at
+412×915, 915×412, 904×1000, and lists buttons under 48 px and clipped text in both. Shots `docs/shots/read-*` (the
+`read-before-*` ones show the defects). Checked: cause + one next step, 48 dp, nothing cut or covered, plain words,
+calm cards apart from red ones (plain panel and kicker "Postój" vs wine bar, "Najgorszy zastój" and the red seal —
+clear on all three sizes), contrast, the CLAUDE.md list (no emoji, no SaaS look). Found and fixed D-451..D-455; owner
+questions in BACKLOG. The plain stone wait (no ice) never reached the card in 8×120 min of card-10 (every hit was under
+ice, D-455), so it has no shot. (decided)
+
+**D-451 — A saturated market outranks "zapełnia się" on the card, as on the sheet.** Seed 1301 at 26:40: the card read
+"Spichlerz: zapełnia się — wozy już wiozą tu towar", the sheet below it "Spichlerz pełny — rynek nasycony" and "Rynek
+bierze tyle, ile zje … Sprzedaj inny towar" (seed 1303 at 89:10 the same for a charcoal burner's "nowy spichlerz dopiero
+przyjmuje ładunki"): two causes and two opposite next steps (wait vs. sell something else). `calmStall`/`calmHtml`/the
+status title already put the saturated market first; `calmWhy` (`src/ui/stalls.ts`) checked D-393's two waits before it.
+Now neither wait is the card's reason while `marketSaturated` holds (the rest of the order unchanged). The other
+readers of `calmWhy` only compare it with null and the scripted players only log it, so pins, cures and D-392..D-394's
+measurements stand. Tests
+`tests/read-cards.test.ts`. (decided)
+
+**D-452 — In-text link buttons in sheet hints are at least 48 px wide.** "Nie mogą oddać towaru: Tartak" measured
+39 × 48 px; `.calm-hint`, `.shared-hint`, `.thin-hint`, `.full-hint` links get `min-width: 48px` (as `.kv` had). (decided)
+
+**D-453 — "Rozbierz" keeps its whole reason in a short landscape sheet.** At 915×412 the docked hint beside "Rozbierz:
+Słodownia +22" was clamped to three lines and lost "Rozbierz ten budynek (wraca połowa ceny) i postaw go w innym
+miejscu przy drodze" — the next step. The demolish fix is a wide dock (D-270): the reason wraps in full. (decided)
+
+**D-454 — A filling granary's sheet says "zapełnia się", not "pełny".** Seed 1307 at 62:50 (after D-451): the card
+"zapełnia się", the sheet title "Spichlerz pełny" and "60/60 — brak miejsca na odbiór" above "W spichlerzu: 11/60".
+`statusKey` (`src/ui/stallKinds.ts`) returns `status.STORAGE_FULL.filling` ("Spichlerz zapełnia się — ładunki w
+drodze"; the card's longer line wrapped the title under its icon at 412 px) while `granaryFilling` holds (after the saturated and unwanted titles), and the full hint's count line reads
+`why.full.storeFilling` ("60/60 — leży tu 11, w drodze 49"). Two new keys are `PENDING_KEYS` (pl/en; the other
+languages read English, as D-393). (decided)
+
+**D-455 — A wagon held by ice reads the ice on the card, not the quarry.** Seed 1307 at 108:30: the calm card said
+"Wóz 68 stoi przed mostem — kamieniołom jeszcze kopie kamień na bruk" while the sheet's chain said "Kra na moście —
+otwarcie za 1:27" and the notice "Za 1:27 kra ustąpi". D-421 chose the stone text whenever `paveStoneWait` held, ice
+or not; the wagon waits for the ice, which clears by itself, long before the stone could help. The HUD now takes the
+stone text only for a span that is not `BRIDGE_CLOSED`; under ice the card reads `cause.heldIce` ("… stoi przed
+mostem zamkniętym przez krę"), still calm (`rankStalls` unchanged), and the sheet keeps D-420's stone hint. No sim
+change. (decided)

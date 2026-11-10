@@ -2612,6 +2612,9 @@ body.is-mini .letter.l-parts .ledger li:nth-child(n + 2) { display: none; }
 .full-hint .fh-effect { margin-top: 2px; font-size: 13px; color: var(--ink-soft); }
 .full-hint .fh-wait { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; font-size: 13px; color: var(--ink-soft); }
 .full-hint .fh-wait .linkish { min-height: 48px; font-size: 15px; font-weight: 700; color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+/* D-452 (readability audit): a short building name ("Tartak", "Młyn") left the in-text link 39 px wide — every
+   in-sheet link button is at least 48 px both ways, as .kv's */
+.calm-hint .linkish, .shared-hint .linkish, .thin-hint .linkish, .full-hint .linkish { min-width: 48px; }
 
 /* ---- D-111: the cause chain on a short landscape side sheet. The fix dock (D-100) covers about half of the
    ~136 px body, so the chain shows its subject on one line (with the stall clock; the "Łańcuch przyczyn" header
