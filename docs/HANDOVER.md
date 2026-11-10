@@ -9,6 +9,14 @@
   (`update_trigger enabled=true`) albo założyć nowy w nowej sesji. Przypomnienie „Raport z testu Free.AI (24 h)”
   `trig_01CrY9mMKNSZwrsvrEyTg76J` (8 XI 20:00) zostaje — wpadnie do tej sesji.
 
+## Scalone 10 XI (sesja `session_01QWRid74YcFi21Wc62DrCAR`)
+- **D-430/D-431** fuzz 1 100 przebiegów (0 błędów sim); naprawiona martwa karta mostu (kamieniołom czeka na wóz); `tools/dead-seconds.ts`.
+- **D-450..D-455** audyt czytelności kart (spichlerz „zapełnia się”, „Rozbierz”, kamieniołom, kra na moście); `tools/read-states.ts`, `tools/read-shots.mjs`, zrzuty `docs/shots/read-*`.
+- **D-470..D-473** sim 2–9 % mniej instrukcji na tick, hasze misji bez zmian (86/86), `tools/perf-late.ts`.
+- **D-490..D-492** numeracja budynków o tej samej nazwie, pusty nagłówek „NAPRAWA” ukryty (decyzje właściciela).
+- GPT 106–108 scalone; 109 (4 klucze kamienia, D-420) czeka u GPT. APK `858e3b5`. Stan bazy: testy 684/0, smoke 0, layout 138/0.
+- Uwaga: layout na worktree wymaga `LAYOUT_URL=http://127.0.0.1:<port>/` z `vite preview`.
+
 ## Scalone 8 XI (wieczór, sesja `session_01QWRid74YcFi21Wc62DrCAR`)
 - **D-392..D-394** card-10 nie zabudowuje doliny (świeży producent liczy się jako obsłużony, spichlerz „zapełnia się”, droga dla odciętego browaru); spichlerze 30–45 → 3–18, zarobek bez zmian.
 - **D-400..D-402** smolarnia w XVII bez „przyda się drugi”; `balance-night6` i scena S16 znają `chainFirst`.
