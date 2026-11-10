@@ -18,7 +18,7 @@ import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmt
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneHaul, paveStoneWait, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, cutOffConsumer, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneHaul, paveStoneWait, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
@@ -789,7 +789,10 @@ export class Hud {
           // D-410: cut off later with no road left to build — say so (the sheet offers taking it back)
           : this.cure === 'demolish' && cutOffNoLink(world, explainBuilding(world, b.id, 5, true)) === b.id
             ? t('cause.cutOff')
-            : stallReason(world, b.id);
+            // D-611: cut off from the stable's roads while no source holds a full load — the road is missing, not stock
+            : this.cure === 'road' && b.status.k === 'NO_INPUT' && b.status.cause === 'NONE_AVAILABLE' && cutOffConsumer(world, explainBuilding(world, b.id, 5, true)) === b.id
+              ? t('cause.NO_INPUT.UNREACHABLE')
+              : stallReason(world, b.id);
     setHtml(this.stallText, `<b>${esc(name)}:</b> <span dir="auto">${esc(reason)}</span>`);
     this.stallRow.classList.toggle('is-crit', w.crit);
     // a calm stall heading the list (no pace card for it): the plain panel, as the pace card (D-181)

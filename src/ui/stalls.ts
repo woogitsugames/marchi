@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
+import { BUILDINGS, MISSIONS, TICK_HZ, contractsOf, outputGoods, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -64,11 +64,57 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
-  const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
-    granaryRelief(world, b.id)?.k === 'ROOM' || yardStoreRoom(world, b) >= 0 || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
+  const calm = b.type === 'tradePost' || chainSwitchStall(world, b) || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
+    granaryRelief(world, b.id)?.k === 'ROOM' || yardStoreRoom(world, b) >= 0 || contractFilled(world, b.id) !== null || inputOrderFilled(world, b) || starvedForGood(world, b) || stoneInStore(world, b.id) > 0 ||
     marketSaturated(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
   calmCache.set(b.id, { key, calm });
   return calm;
+}
+
+/**
+ * D-614: a workshop short of its input whose every product the castles already hold in full, and which no other
+ * building uses as an input (mission XIII's sawmill once the planks are in and the granary's wood is gone): nothing
+ * needs it any more — calm "zamówienie wypełnione", not a red card with nothing to press. Missions only. Pure read.
+ */
+export function inputOrderFilled(world: World, b: Building): boolean {
+  if (b.status.k !== 'NO_INPUT') return false;
+  const m = world.state.mission;
+  if (!m.contract || m.result !== 'running') return false;
+  const outs = outputGoods(b.type);
+  if (!outs.length) return false;
+  const orders = contractsOf(m);
+  let ordered = false;
+  for (const g of outs) {
+    for (const k of orders) {
+      if (k.need[g] <= 0) continue;
+      ordered = true;
+      if ((buildingById(world, k.castle)?.stock[g] ?? 0) < k.need[g]) return false;
+    }
+    if (world.state.buildings.some((q) => q.type !== 'warehouse' && q.type !== 'castle' && inputGoods(q.type).includes(g))) return false;
+  }
+  return ordered;
+}
+
+/**
+ * D-610: mission XVII — a workshop short of the shared input because a workshop of another castle's chain takes it
+ * (NO_INPUT.CONTESTED at the even split or with the castle leg only, NO_INPUT.CHAIN_FIRST with the other chain first).
+ * Its cure is the castles' chain switch, not anything on this workshop: a brass pin, so the castle pace card (late
+ * castle, rival, the switch on its sheet) keeps the HUD slot instead of a red card with nothing to press. Only in a
+ * mission with `chainPriority`; the waiting workshop's own sheet still names the rival. Pure read.
+ */
+export function chainSwitchStall(world: World, b: Building): boolean {
+  const s = b.status;
+  if (s.k !== 'NO_INPUT') return false;
+  const m = world.state.mission;
+  if (!m.extraContracts || m.result !== 'running' || !MISSIONS[m.id]?.chainPriority) return false;
+  // ...and the castle (or workshop) that has nothing to fetch because its producer is that workshop
+  if (s.cause === 'NONE_AVAILABLE') {
+    const p = buildingById(world, s.blockedBy);
+    return !!p && p.id !== b.id && p.status.k === 'NO_INPUT' && p.status.cause !== 'NONE_AVAILABLE' && chainSwitchStall(world, p);
+  }
+  if (s.cause !== 'CONTESTED' && s.cause !== 'CHAIN_FIRST') return false;
+  const rival = buildingById(world, s.blockedBy);
+  return !!rival && rival.type !== b.type && inputGoods(rival.type).includes(s.good);
 }
 
 /**
@@ -92,7 +138,7 @@ export function calmWhy(world: World, b: Building): CalmWhy {
   if (!saturated && granaryFilling(world, b.id)) return 'filling';
   // D-393: a full yard while a fresh granary takes its first loads
   if (!saturated && freshGranary(world, b) >= 0) return 'granaryFilling';
-  if (contractFilled(world, b.id)) return 'orderFilled';
+  if (contractFilled(world, b.id) || inputOrderFilled(world, b)) return 'orderFilled';
   // D-95: the granary already holds stone to pave with (mission VIII's quarry)
   if (stoneInStore(world, b.id) > 0) return 'stoneStored';
   // D-174: the markets take no more of what the granary holds; another wagon would only wait
@@ -225,13 +271,40 @@ export function sharedOneProducer(world: World, b: Building): SharedOne | null {
  * The producer cure of a waiting workshop's sheet: the shared single producer (D-110, missions) or the free valley's
  * bottleneck card (D-171). `producer` is the building to build next to, `type` the one to build.
  */
-export interface ProducerCure { producer: number; type: BuildingType; consumers: number; source: 'shared' | 'neck'; good: Good }
+export interface ProducerCure { producer: number; type: BuildingType; consumers: number; source: 'shared' | 'neck' | 'missing'; good: Good }
 export function producerCure(world: World, b: Building): ProducerCure | null {
   const sh = sharedOneProducer(world, b);
   if (sh) return { ...sh, source: 'shared', good: (b.status as { good: Good }).good };
+  const mp = missingProducer(world, b);
+  if (mp) return mp;
   const n = bottleneckFor(world, b);
   if (!n || !n.good || !n.build) return null;
   return { producer: n.near >= 0 ? n.near : n.focus, type: n.build, consumers: n.consumers, source: 'neck', good: n.good };
+}
+
+/**
+ * D-615: no building on the map makes the good this building's chain waits for (NO_INPUT.NONE_AVAILABLE with no
+ * producer to blame — its last one was taken down, e.g. a charcoal burner rebuilt elsewhere in mission XIV), and the
+ * mission's build list has a type that makes it: the cure is that building. The ghost opens by a producer of its own
+ * input (the woodcutter for a burner), else by the waiting building. Missions with a build list only (the free
+ * valley has its bottleneck card). Pure read.
+ */
+export function missingProducer(world: World, b: Building): ProducerCure | null {
+  const can = missionBuildable(world.state.mission.id);
+  if (can === 'ranked' || can.length === 0 || (!isStall(b.status) && b.status.k !== 'NO_INPUT')) return null;
+  const chain = explainBuilding(world, b.id, 5, true);
+  const links: { id: number; status: Building['status'] }[] = [{ id: b.id, status: b.status }];
+  for (const l of chain) if (l.kind === 'building') links.push({ id: l.id, status: l.status });
+  for (const l of links) {
+    const s = l.status;
+    if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy >= 0) continue;
+    const type = can.find((t) => outputGoods(t).includes(s.good));
+    if (!type) continue;
+    const ins = inputGoods(type);
+    const near = world.state.buildings.find((q) => ins.some((g) => outputGoods(q.type).includes(g)));
+    return { producer: near ? near.id : l.id, type, consumers: 1, source: 'missing', good: s.good };
+  }
+  return null;
 }
 
 /**
@@ -280,7 +353,25 @@ export function inputWaitTicks(world: World, b: Building): number {
 /** The shared-supply card for this building: one producer for two workshops, after 30 s of waiting (D-110). */
 export function sharedOneCard(world: World, b: Building): SharedOne | null {
   const sh = sharedOneProducer(world, b);
-  return sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
+  const on = sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
+  if (on) {
+    let seen = sharedSeen.get(world);
+    if (!seen) sharedSeen.set(world, (seen = new Set()));
+    seen.add(b.id);
+  }
+  return on;
+}
+
+/** Buildings whose shared-supply card has been up once in this world (UI memory, never in the state). */
+const sharedSeen = new WeakMap<World, Set<number>>();
+
+/**
+ * D-616: after the shared-supply card has shown for this workshop once, a later moment where the other workshop
+ * takes the input (NO_INPUT.CONTESTED, between deliveries — mission X, 20 s at a time) keeps its cure, the second
+ * producer, instead of a red card with nothing to press until the 30 s wait has built up again. Pure read.
+ */
+export function sharedContested(world: World, b: Building): boolean {
+  return b.status.k === 'NO_INPUT' && b.status.cause === 'CONTESTED' && !!sharedSeen.get(world)?.has(b.id) && !!sharedOneProducer(world, b);
 }
 
 /**
@@ -574,10 +665,45 @@ export function cutOffProducer(world: World, chain: ReasonLink[]): number {
  */
 export function cutOffConsumer(world: World, chain: ReasonLink[]): number {
   const head = chain[0];
-  if (!head || head.kind !== 'building' || head.status.k !== 'NO_INPUT' || head.status.cause !== 'UNREACHABLE' || !rankGated(world)) return -1;
+  if (!head || head.kind !== 'building' || head.status.k !== 'NO_INPUT') return -1;
+  // D-611: a mission building cut off from the stable's roads (a castle whose last road cell was taken back) reads
+  // NONE_AVAILABLE when its source holds less than a load (or UNREACHABLE when it holds one): either way the cure is
+  // the road to it, in a mission as in the free valley
+  // (NONE_AVAILABLE only with a producer of the good on the map: with none, a road alone brings nothing)
+  if (head.status.cause !== 'UNREACHABLE' && !(head.status.cause === 'NONE_AVAILABLE' && head.status.blockedBy >= 0)) return -1;
   const stable = world.state.buildings.find((q) => q.type === 'stable');
   const b = buildingById(world, head.id);
   return stable && b && !reachable(world, stable.gate, b.gate) ? b.id : -1;
+}
+
+/**
+ * D-611: the chain's own building waits for a good its only producer holds less than a load of (NO_INPUT.NONE_AVAILABLE
+ * blamed on it), and that producer's gate is off the stable's road network (mission XIV: the burner's road taken back):
+ * its loads will never come — the road to the producer is the cure. Its id, or -1. Pure read.
+ */
+export function cutOffSource(world: World, chain: ReasonLink[]): number {
+  const head = chain[0];
+  if (!head || head.kind !== 'building' || head.status.k !== 'NO_INPUT' || head.status.cause !== 'NONE_AVAILABLE') return -1;
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  const p = buildingById(world, head.status.blockedBy);
+  return stable && p && p.id !== head.id && !reachable(world, p.gate, stable.gate) ? p.id : -1;
+}
+
+/**
+ * D-617: a building short of a good nothing can bring any more — no producer of it on the map, none in the mission's
+ * build list, not a unit left in any yard, granary or wagon (mission XIII's mill once the granary's grain is gone).
+ * Nothing to press: if the castles still needed it, the dead-end letter (D-613) says so; otherwise it is idle for good.
+ * Missions only. Pure read.
+ */
+export function starvedForGood(world: World, b: Building): boolean {
+  const s = b.status;
+  if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy >= 0) return false;
+  const can = missionBuildable(world.state.mission.id);
+  if (can === 'ranked' || !world.state.mission.contract) return false;
+  const g = s.good;
+  if (can.some((t) => outputGoods(t).includes(g))) return false;
+  for (const q of world.state.buildings) if (q.type !== 'castle' && (q.stock[g] > 0 || outputGoods(q.type).includes(g))) return false;
+  return !world.state.wagons.some((w) => w.cargoGood === g && w.cargoQty > 0);
 }
 
 /**
@@ -636,14 +762,43 @@ export function gapTarget(world: World, chain: ReasonLink[]): number {
   if (cut >= 0) return cut;
   const off = cutOffConsumer(world, chain);
   if (off >= 0) return off;
+  const src = cutOffSource(world, chain);
+  if (src >= 0) return src;
   if (root.kind === 'building') {
     const s = root.status;
-    if (s.k === 'NO_ROAD' || (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH')) return root.id;
+    if (s.k === 'NO_ROAD') return root.id;
+    // D-618: no wagon can reach a building that is on the stable's network — the wagons are the ones stranded (the
+    // only wagon left on a castle whose road was taken back): link their road piece instead
+    if (s.k === 'NO_WAGON' && s.cause === 'NONE_CAN_REACH') return strandedTarget(world, root.id) ?? root.id;
     if (s.k === 'NO_WAGON' && s.cause === 'ALL_BUSY') return busyOutOfReach(world, root.id);
     return -1;
   }
-  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0 && buildingById(world, root.status.target)) return root.status.target;
+  if (root.status.k === 'NO_ROUTE' && root.status.target >= 0) {
+    const to = buildingById(world, root.status.target);
+    if (!to) return -1;
+    // D-618: the target is on the stable's network — the wagon is the one stranded (its road piece cut off with a
+    // producer, e.g. a farm whose link was taken back): the gap finder links that producer, not the target, which
+    // needs no road (an empty suggestion left the sheet without a fix while the rail lit the road tool)
+    const wg = world.state.wagons.find((v) => v.id === root.id);
+    return (wg ? strandedTarget(world, to.id, [wg]) : null) ?? to.id;
+  }
   return -1;
+}
+
+/**
+ * D-618: when `id` is on the stable's road network but wagons stand on a road piece cut off from it, a building on
+ * that piece (the gap finder links it to the stable), or null. `wagons` defaults to every wagon. Pure read.
+ */
+function strandedTarget(world: World, id: number, wagons = world.state.wagons): number | null {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  const b = buildingById(world, id);
+  if (!stable || !b || !reachable(world, b.gate, stable.gate)) return null;
+  for (const wg of wagons) {
+    if (reachable(world, wg.at, stable.gate)) continue;
+    const strand = world.state.buildings.find((q) => q.type !== 'stable' && reachable(world, wg.at, q.gate));
+    if (strand) return strand.id;
+  }
+  return null;
 }
 
 /** How long after a wagon shortage resolves its sheet still offers the wagon (first-10-e N8, D-161): 20 s. */
@@ -697,14 +852,19 @@ function quarryKey(world: World): string {
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}|${quarryKey(world)}`;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${sharedContested(world, b)}|${world.state.coins}|${bottleneckKey(world)}|${quarryKey(world)}`;
   if (cureCache?.key === key && cureCache.world === world) return cureCache.cure;
-  if (sharedOneCard(world, b)) {
+  if (sharedOneCard(world, b) || sharedContested(world, b)) {
     cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (bottleneckFor(world, b)) {
     // the free valley's bottleneck card (D-171): this workshop waits for the card's good; one more producer
+    cureCache = { world, key, cure: 'producer' };
+    return 'producer';
+  }
+  if (missingProducer(world, b)) {
+    // D-615: nobody makes the good any more and the mission lets the player build its producer
     cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
@@ -720,7 +880,7 @@ export function cureFor(world: World, id: number): Cure {
     cureCache = { world, key, cure: 'demolish' };
     return 'demolish';
   }
-  let cure: Cure = cutOffProducer(world, chain) >= 0 ? 'road' : null;
+  let cure: Cure = cutOffProducer(world, chain) >= 0 || cutOffConsumer(world, chain) >= 0 || cutOffSource(world, chain) >= 0 ? 'road' : null;
   for (let i = chain.length - 1; i >= 0 && !cure; i--) {
     const l = chain[i]!;
     if (l.kind === 'building') {

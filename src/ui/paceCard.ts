@@ -168,16 +168,23 @@ export function castleCard(world: World, log: PaceLog): PaceCastle | null {
   const m = world.state.mission;
   if (!m.extraContracts || m.result !== 'running') return null;
   const orders = [...contractsOf(m)].sort((a, b) => (a.tranches[0]?.deadlineTick ?? a.deadlineTick) - (b.tranches[0]?.deadlineTick ?? b.deadlineTick) || a.castle - b.castle);
+  const chained = !!MISSIONS[m.id]?.chainPriority;
   for (const c of orders) {
     const fc = castleForecastFor(world, log, c.castle);
-    if (!fc || fc.done || fc.share === 'first' || fc.finishTick < 0 || fc.finishTick <= fc.dueTick) continue;
+    // D-612: in a chain mission (XVII) only the whole chain first exempts a castle — its castle leg alone does not
+    // move the shared input (the forecast's finish already says the even split), so the late castle keeps its card
+    const first = chained ? !!m.chainFirst && m.firstCastle === c.castle : fc?.share === 'first';
+    if (!fc || fc.done || first || fc.finishTick < 0 || fc.finishTick <= fc.dueTick) continue;
     const castle = buildingById(world, c.castle)!;
     const good = GOODS.find((g) => c.need[g] > castle.stock[g]) ?? GOODS.find((g) => c.need[g] > 0)!;
+    // D-612: the other castle's chain goes first — "pierwszy jest …" even when it wants another good (the forecast's
+    // share reads 'after' only when both castles want the same good), never "dzielony po równo"
+    const share: 'after' | 'even' = chained ? (m.chainFirst && m.firstCastle !== undefined ? 'after' : 'even') : fc.share === 'after' ? 'after' : 'even';
     // mission XVII (D-358): the other castle wants another good made from the same input — its chain is the rival
-    const rival = fc.share === 'after' ? m.firstCastle! : orders.find((o) => o !== c && o.need[good] > 0)?.castle
-      ?? (MISSIONS[m.id]?.chainPriority ? orders.find((o) => o !== c)?.castle ?? -1 : -1);
+    const rival = share === 'after' ? m.firstCastle! : orders.find((o) => o !== c && o.need[good] > 0)?.castle
+      ?? (chained ? orders.find((o) => o !== c)?.castle ?? -1 : -1);
     if (rival < 0) continue;
-    return { k: 'castle', producer: c.castle, rival, good, share: fc.share, lateTicks: fc.finishTick - fc.dueTick, firstTick: fc.firstTick, dueTick: fc.dueTick };
+    return { k: 'castle', producer: c.castle, rival, good, share, lateTicks: fc.finishTick - fc.dueTick, firstTick: fc.firstTick, dueTick: fc.dueTick };
   }
   return null;
 }

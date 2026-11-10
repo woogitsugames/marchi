@@ -586,7 +586,10 @@ export interface DeadEndActions { again(): void; menu(): void; watch(): void }
 /** "No road to victory" (D-48): the cause and the numbers, instead of waiting for the deadline. */
 export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement {
   const letter = h('div.letter.lost' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'deadend-title' });
-  const why = d.cost < 0
+  // D-613: the castle's good can no longer be made (its last producer taken down, none can be built here)
+  const why = d.k === 'NO_SOURCE'
+    ? esc(t('deadEnd.noSource', { goodGen: t(`goodGen.${d.good}` as MessageKey), need: fmtInt(d.need), left: fmtInt(d.left) }))
+    : d.cost < 0
     ? esc(t('deadEnd.none'))
     : tHtml('deadEnd.text', { cost: fmtInt(d.cost), coins: fmtInt(d.coins), raise: fmtInt(d.raise) });
   letter.innerHTML = `${letterSeal(false)}

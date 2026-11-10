@@ -455,6 +455,8 @@ export const en: FullDict = {
   'deadEnd.text': 'The castle is cut off from the wagons. The cheapest link costs {cost} silver and you have {coins} — even selling the spare wagons (+{raise}) is not enough.',
   'deadEnd.none': 'The castle is cut off from the wagons and no road can be built to it any more.',
   'deadEnd.watch': 'Keep watching',
+  // D-613: the castle's good cannot be made any more
+  'deadEnd.noSource': 'Nobody can make {goodGen} any more: the last workshop was taken down and no new one can be built here. The castle still lacks {need}; the whole valley holds at most {left}.',
   // valley events (D-54): event card, orders, fair, merchant: see PENDING_KEYS
   'events.card.title': 'News from the valley',
   'events.card.fold': 'Fold the valley news',
@@ -793,6 +795,8 @@ export const en: FullDict = {
   'cause.stoneComing': '{wagon} is held at a bridge — the paving stone is already on its way',
   'fix.stoneDig': 'The stone bridge still lacks stone: {n}. The quarry will cut it in about {time}, then a wagon takes it to a granary and you can pave the bridge. Nothing else to do.',
   'fix.stoneComing': 'The stone bridge still lacks stone: {n}. It is already cut (on the way: {incoming}, at the quarry: {quarry}) — once it reaches a granary you can pave the bridge. Nothing else to do.',
+  // D-615: nobody makes the good any more; the mission's build list has its producer
+  'fix.producerMissing': 'Nothing on the map makes {goodGen} any more, so there is nothing to fetch. Build a new workshop — the wagons set off once there are goods.',
   // D-591: the stone is dug, but lies in a quarry's full yard no wagon collects
   'cause.stoneWagon': '{wagon} is held at a bridge — the paving stone waits at the quarry for a free wagon',
   'fix.stoneWagon': 'The stone bridge still lacks stone: {n}. The quarry already has {quarry} in its yard, but every wagon is busy — nobody hauls it, and the full yard stops the digging. Buy a wagon or wait until one is free.',

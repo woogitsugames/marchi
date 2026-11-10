@@ -458,6 +458,8 @@ export const pl = {
   'deadEnd.text': 'Zamek nie ma drogi do stajni. Najtańsze połączenie kosztuje {cost} srebra, a masz {coins} — nawet sprzedaż zbędnych wozów (+{raise}) nie wystarczy.',
   'deadEnd.none': 'Zamek nie ma drogi do stajni i nie da się już jej zbudować.',
   'deadEnd.watch': 'Patrz dalej',
+  // D-613: the castle's good cannot be made any more
+  'deadEnd.noSource': 'Nikt już nie wyrobi {goodGen}: ostatni warsztat rozebrany, a tu nowego nie postawisz. Zamkowi brakuje {need}, a w całej dolinie zostało najwyżej {left}.',
   // valley events (D-54): event card, orders, fair, merchant: localized
   'events.card.title': 'Wieści z doliny',
   'events.card.fold': 'Zwiń wieści z doliny',
@@ -798,6 +800,8 @@ export const pl = {
   'cause.stoneComing': '{wagon} stoi przed mostem — kamień na bruk już jedzie',
   'fix.stoneDig': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom wykopie go za ok. {time}, potem wóz zawiezie go do spichlerza i wtedy wyłożysz most. Nic więcej nie trzeba robić.',
   'fix.stoneComing': 'Do kamiennego mostu brakuje kamienia: {n}. Jest już wykopany (w drodze: {incoming}, przy kamieniołomie: {quarry}) — gdy dotrze do spichlerza, wyłożysz most. Nic więcej nie trzeba robić.',
+  // D-615: nobody makes the good any more; the mission's build list has its producer
+  'fix.producerMissing': 'Nikt na mapie nie wyrabia już {goodGen}, więc nie ma czego przywieźć. Postaw nowy warsztat — wozy ruszą, gdy pojawi się towar.',
   // D-591: the stone is dug, but lies in a quarry's full yard no wagon collects
   'cause.stoneWagon': '{wagon} stoi przed mostem — kamień na bruk czeka w kamieniołomie na wolny wóz',
   'fix.stoneWagon': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom ma już {quarry} na placu, ale wszystkie wozy są zajęte — nikt go nie wiezie, a pełny plac wstrzymuje wydobycie. Kup wóz albo zaczekaj, aż któryś się zwolni.',
@@ -955,6 +959,8 @@ export const PENDING_KEYS = [
   'status.STORAGE_FULL.filling', 'why.full.storeFilling',
   // D-591, D-592
   'cause.stoneWagon', 'fix.stoneWagon', 'cause.yardRoom',
+  // D-613, D-615
+  'deadEnd.noSource', 'fix.producerMissing',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

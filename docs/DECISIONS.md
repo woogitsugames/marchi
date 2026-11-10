@@ -4797,3 +4797,77 @@ one-second `pave-grey` readings on the tool's look ticks and from `cureFor`'s 2 
 producer at a saturated granary while a wagon takes a load from it (seed 1322 card-10 30:11). Missions: IX / X / XVII
 CONTESTED waits as in D-431, II bakery NO_INPUT with nothing built. Mission hashes 86/86 unchanged (no sim change).
 BACKLOG P4. (decided)
+
+**D-610 — Mission XVII: the workshop starved by the other castle's chain is a calm pin.** Bug hunt 2026-11-10 (late
+missions): at the even split (and with the castle leg only, the "wrong" lever) the sawmill read
+NO_INPUT.CONTESTED from 2:09 and became critical at 2:53 — a red card with nothing to press for 76 s, which also took
+the HUD slot from the castle pace card that carries the lesson and the chain switch (D-358). With the east chain first
+(the right answer) the charcoal burner read NO_INPUT.CHAIN_FIRST as a red card for 33 s (and the north castle's
+NONE_AVAILABLE behind it). `chainSwitchStall` (`src/ui/stalls.ts`): in a mission with `chainPriority`, NO_INPUT
+CONTESTED / CHAIN_FIRST whose rival is a workshop of another kind on the same input, and a castle or workshop
+NO_INPUT.NONE_AVAILABLE whose producer is such a workshop, are calm (`calmStall`), so the castle card keeps the slot;
+the sheet still names the rival. XVI (one good) keeps its red contest. XVII red cards with nothing to press: 76 s ->
+0 over every bot strategy. No sim change. Test `tests/late-mission-cards.test.ts`. (decided)
+
+**D-611 — A building cut off from the stable's roads gets the road even when it reads NONE_AVAILABLE.** Fuzz in
+missions X–XVII (seeded random commands, mission build lists respected): a castle whose last road cell was taken back
+read NO_INPUT.NONE_AVAILABLE ("brak zapasów do przywiezienia") while the sawmill held planks below a full load —
+critical, no cure, for up to 8 min (XIII). `cutOffConsumer` (D-394) now also takes NONE_AVAILABLE with a producer on
+the map and works in missions; new `cutOffSource`: the head waits on a producer whose gate is off the network (XIV:
+the burner's road taken back) — the gap finder links that producer. The card says "brak dojazdu do zapasów"
+(`cause.NO_INPUT.UNREACHABLE`) for the cut-off consumer; `cureFor` returns 'road'. No sim change (the sim's status
+stays; changing it would move the mission hashes). (decided)
+
+**D-612 — XVII castle card: "pierwszy jest …" with the other chain first; the castle leg alone does not hide the
+card.** `castleCard` read the forecast's share, which says 'after' only when both castles want the same good — with
+the north chain first the east castle's card said "towar dzielony po równo" (wrong), and with the east castle leg on
+(no chain) the late east castle had no card at all (share 'first'), though the leg does not move the wood (D-357).
+In a `chainPriority` mission the card now exempts only the castle first with its whole chain, and its share is
+'after' (rival: the first castle) while any chain is first, else 'even'. XVI unchanged. (decided)
+
+**D-613 — Dead-end letter for an order nobody can make any more.** After the "cannot be rebuilt" warning (second tap)
+the player may take down the only mill of mission XIII; the castle's bread was then lost for good, but the card stayed
+red ("brak zapasów") until the deadline, up to 10 min. `deadEnd` (`src/ui/deadEnd.ts`) now also returns
+`NO_SOURCE` (castle, good, need, left): the most the map can still bring — stock in yards, granaries and wagons, plus
+what the remaining or buildable workshops can make from inputs left (endless when a producer of the chain's raw good
+stands or can be built) — is below what the castles still lack. Generous bound on purpose: never reported in the
+60 bot / no-input runs of missions I–XVII; in 204 fuzz runs reported 13 times and none of those games was won. The
+letter is the same D-48 letter with the text `deadEnd.noSource` (new key, pending translation). (decided)
+
+**D-614 — A workshop starving after its whole order is in is calm ("zamówienie wypełnione").** XIII: once the castle
+holds its 24 planks and the granary's wood is gone, the sawmill read NO_INPUT.NONE_AVAILABLE as a critical red card
+while the bread was still on its way. `inputOrderFilled`: NO_INPUT, every product ordered by a castle that holds it
+in full, and no building uses it as an input — calm, `calmWhy` 'orderFilled'. (decided)
+
+**D-615 — A producer taken down that the mission can rebuild is offered on the card.** XIV's lesson is the burner's
+site; a player who takes the first burner down to rebuild it by the forest saw the castle's red "brak zapasów" with
+nothing to press (fuzz: up to 7 min). `missingProducer`: a chain link NO_INPUT.NONE_AVAILABLE with no producer to blame
+and a type in the mission's build list that makes the good — cure 'producer' (`producerCure` source 'missing'), the
+ghost by a producer of its input (the woodcutter), hint `fix.producerMissing` (new key, pending). Also X (woodcutter).
+(decided)
+
+**D-616 — Mission X: once the shared-supply card has shown, a later contest keeps the second-producer cure.** The
+shared card waits 30 s of uninterrupted waiting (D-110, owner: do not give the lesson away). Later in the game the
+sawmill read NO_INPUT.CONTESTED between deliveries for up to 20 s at a time with no cure (the wait counter had
+restarted). `sharedContested`: after the card has shown once for the workshop (UI memory per world), CONTESTED keeps
+cure 'producer'. Before the first card nothing changes (the opening 2–20 s stay the lesson). (decided)
+
+**D-617 — Starved for a good nothing can bring is calm.** A workshop NO_INPUT.NONE_AVAILABLE with no producer of the
+good on the map or in the build list and not a unit left anywhere (XIII's mill once the granary's grain is used) can
+never work again: if the castles still needed it, D-613's letter says so; otherwise it is idle for good — calm
+(`starvedForGood`). (decided)
+
+**D-618 — Stranded wagons: the gap finder links their road piece.** A wagon NO_ROUTE to a target that is on the
+stable's network (its own road piece cut off with a farm), or every workshop NO_WAGON.NONE_CAN_REACH while the only
+wagon stands on a castle whose road was taken back: the gap target was the connected building, so the sheet had no
+road while the rail lit the road tool. `strandedTarget` returns a building on a stranded wagon's piece (the castle
+allowed), and the gap finder links it. (decided)
+
+**D-619 — Bug hunt 2026-11-10 (late missions, free valley): results.** `tools/fuzz.ts` 300 runs (m1–m17 + valley)
+and `tools/fuzz-late.ts` 60 runs: 0 failures (invariants, unexplained stalls, NaN, stuck wagons, save/load, rerun).
+Bots m10–m17: ladders unchanged, no invariant or command errors. Mission dead-card scan (every bot strategy plus 25
+fuzz runs per mission, X–XVII, red card with nothing to press and no dead-end letter): longest stretches 641 s
+(cut-off castle), 629 s (stranded wagon), 544 s (XVII), 467 s (XIV burner taken down) -> remaining ≤ 19 s, all the X
+opening contest kept by D-110, plus 1–7 s flashes. Valley `tools/dead-seconds.ts` card-10 1303/1305, card-30 1314,
+card-60 1328: unchanged (card-60 1328's 11 s trading post `pave-grey:NO_STONE` at 110:37 predates this hunt, BACKLOG).
+No sim change; mission hashes unchanged. (decided)

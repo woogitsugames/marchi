@@ -364,3 +364,13 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-592 | — | A full yard refused by a full granary while another granary has room reads calm | decided | inne |
 | D-593 | — | UI read caches hold their world | decided | UI |
 | D-594 | 2026-11-10 | Bug hunt 2026-11-10 (stall cards): what was left | decided | inne |
+| D-610 | 2026-11-10 | Mission XVII: the workshop starved by the other castle's chain is a calm pin | decided | sim |
+| D-611 | — | A building cut off from the stable's roads gets the road even when it reads NONE_AVAILABLE | decided | sim |
+| D-612 | — | XVII castle card: "pierwszy jest …" with the other chain first; the castle leg alone does not hide the card | decided | UI |
+| D-613 | — | Dead-end letter for an order nobody can make any more | decided | treść |
+| D-614 | — | A workshop starving after its whole order is in is calm ("zamówienie wypełnione") | decided | inne |
+| D-615 | — | A producer taken down that the mission can rebuild is offered on the card | decided | UI |
+| D-616 | — | Mission X: once the shared-supply card has shown, a later contest keeps the second-producer cure | decided | UI |
+| D-617 | — | Starved for a good nothing can bring is calm | decided | inne |
+| D-618 | — | Stranded wagons: the gap finder links their road piece | decided | sim |
+| D-619 | 2026-11-10 | Bug hunt 2026-11-10 (late missions, free valley): results | decided | inne |

@@ -276,6 +276,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
         : sh.source === 'neck'
           ? `<div class="s-hint">${esc(t('neck.why', { goodAcc: t(`goodAcc.${sh.good}` as MessageKey), n: neckN(world), m: fmtInt(sh.consumers) }))}</div>`
+        // D-615: nobody makes the good any more — the build list has its producer
+        : sh.source === 'missing'
+          ? `<div class="s-hint">${esc(t('fix.producerMissing', { goodGen: t(`goodGen.${sh.good}` as MessageKey) }))}</div>`
           : `<div class="s-hint">${esc(t('fix.producerWhy', { who: buildingName(world, sh.producer), n: fmtInt(sh.consumers) }))}</div>`;
     return fixSection(btn, hint, off);
   }
