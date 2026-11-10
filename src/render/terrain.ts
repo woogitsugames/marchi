@@ -538,7 +538,9 @@ const FRAG_MAIN = /* glsl */ `
   if (uWinter > 0.001) {
     float lum = dot(A, vec3(0.3, 0.59, 0.11));
     // roads keep their colour (they carry the diagnosis) and the river bed stays dark
-    float frost = uWinter * 0.42 * (1.0 - roadCover) * smoothstep(0.3, 1.2, hW);
+    // patchy, not a flat sheet (D-501): thick in broad drifts and on the tussocks, thin in the wet hollows; mean ~ as before
+    float frostP = clamp(0.3 + 1.5 * nzM.g + (nzS.b - 0.5) * 1.2 - wetP * 0.45, 0.15, 1.6);
+    float frost = uWinter * 0.42 * frostP * (1.0 - roadCover) * smoothstep(0.3, 1.2, hW);
     A = mix(A, vec3(lum * 0.9 + 0.28, lum * 0.92 + 0.29, lum * 0.95 + 0.31), frost);
     RO.x = mix(RO.x, RO.x * 0.85, frost);
   }
