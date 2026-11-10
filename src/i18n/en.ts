@@ -52,6 +52,8 @@ export const en: FullDict = {
   'status.STORAGE_FULL': 'Granary is full',
   'status.STORAGE_FULL.saturated': 'Granary full — the market is saturated',
   'status.STORAGE_FULL.unwanted': 'Granary full — nobody needs these goods now',
+  // D-454: a granary filling with loads on the way (D-393)
+  'status.STORAGE_FULL.filling': 'Granary filling — loads on the way',
   'status.CONTRACT_DONE': 'Contract fulfilled',
 
   'wagon.IDLE': 'At the stable',
@@ -171,6 +173,7 @@ export const en: FullDict = {
   'why.full.out': '{count} {goodGen} — no room for new output',
   'why.full.outBatch': '{count} {goodGen} — the next batch ({n}) will not fit',
   'why.full.store': '{count} — no room to take deliveries',
+  'why.full.storeFilling': '{count} — {stock} here, {incoming} on the way',
   'why.full.halted': 'Effect: production stops until goods leave.',
   'why.full.refuses': 'Effect: the granary takes nothing more.',
   'why.full.waiting': 'Meanwhile short of {goodGen}:',

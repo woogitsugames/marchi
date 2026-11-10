@@ -76,6 +76,9 @@ export function statusKey(s: BuildingStatus, world?: World, id = -1): MessageKey
   if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryLoads(world, id) === 'saturated') return 'status.STORAGE_FULL.saturated';
   // a granary full of goods nobody wants now (D-212): calm "Spichlerz pełny — tego towaru nikt teraz nie potrzebuje"
   if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryUnwanted(world, id)) return 'status.STORAGE_FULL.unwanted';
+  // D-454: a free-valley granary "full" of loads still on the way (D-393): the card says "zapełnia się", so the
+  // sheet's title must not say "Spichlerz pełny" over "W spichlerzu: 11/60"
+  if (s.k === 'STORAGE_FULL' && world && id >= 0 && granaryFilling(world, id)) return 'status.STORAGE_FULL.filling';
   if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_WAGON' && world && id >= 0 && outputSurplus(world, id) === 'SPARE') return 'status.OUTPUT_FULL.surplus';
   const cause = 'cause' in s ? s.cause : null;
   return (cause ? `status.${s.k}.${cause}` : `status.${s.k}`) as MessageKey;

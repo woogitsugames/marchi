@@ -326,7 +326,9 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     if (id < 0) return '';
     const btn = `<button class="btn primary cf fix-btn" data-act="cutoff:${id}">${iconSvg('demolish', 26)}<span>${
       esc(t('fix.cutOff', { name: buildingName(world, id) }))}</span>${bdi(`+${fmtInt(cutOffRefund(world, id))}`)}</button>`;
-    return fixSection(btn, `<div class="s-hint">${esc(t('fix.cutOffWhy'))}</div>`, false);
+    // D-453: wide (D-270) — the reason's second half ("postaw go w innym miejscu przy drodze") is the next step, so
+    // a short landscape sheet wraps it in full instead of clamping it to three lines beside the button
+    return fixSection(btn, `<div class="s-hint">${esc(t('fix.cutOffWhy'))}</div>`, false, true);
   }
   if (cure === 'wagon') return wagonCureHtml(world, t('fix.wagonWhy'));
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
@@ -436,8 +438,12 @@ function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
     line = `${iconSvg(s.good, 26, goodName(s.good))}<span${en(key)}>${tHtml(key, { count: fmtRatio(have, cap), goodGen: t(`goodGen.${s.good}` as MessageKey), n: fmtInt(batch) })}</span>`;
   } else if (s.k === 'STORAGE_FULL') {
     const cap = subject.capOverride >= 0 ? subject.capOverride : BUILDINGS[subject.type].storeCap ?? 0;
+    const stock = GOODS.reduce((a, g) => a + subject.stock[g], 0);
     const held = GOODS.reduce((a, g) => a + subject.stock[g] + subject.incoming[g], 0);
-    line = `${iconSvg('storage_full', 26)}<span${en('why.full.store')}>${tHtml('why.full.store', { count: fmtRatio(held, cap) })}</span>`;
+    // D-454: a granary filling with loads on the way (D-393) says how the count splits, so "60/60" does not read as
+    // sixty units lying there above "W spichlerzu: 11/60"
+    const key: MessageKey = granaryFilling(world, subject.id) ? 'why.full.storeFilling' : 'why.full.store';
+    line = `${iconSvg('storage_full', 26)}<span${en(key)}>${tHtml(key, { count: fmtRatio(held, cap), stock: fmtInt(stock), incoming: fmtInt(held - stock) })}</span>`;
   } else return '';
   const named = subject.id !== b.id
     ? `<button class="linkish" data-go="building:${subject.id}">${esc(buildingName(world, subject.id))}</button>` : '';
