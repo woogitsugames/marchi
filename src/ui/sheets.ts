@@ -4,6 +4,7 @@
 import { h, isRtl } from './dom';
 import { iconSvg } from './icons';
 import { t } from '../i18n/index';
+import { SheetHistory } from './sheetHistory';
 
 export interface SheetContent {
   /** Stable identity, e.g. 'b:12', 'w:3', 'settings'. Re-opening the same key refreshes in place. */
@@ -149,7 +150,11 @@ function revealRoot(sheet: Sheet): void {
 
 export class Sheets {
   private stack: Sheet[] = [];
-  private suppressPop = 0;
+  /** The system back closes the top sheet: one history entry per open sheet (D-520). */
+  private readonly nav = new SheetHistory<Sheet>({
+    push: (depth) => history.pushState({ marchiaSheet: depth }, ''),
+    back: () => history.back(),
+  }, () => this.stack);
   private gestureCancels = new WeakMap<Sheet, () => void>();
   /** Removes the window-level swipe listeners of a sheet once it is closed. */
   private detachers = new WeakMap<Sheet, () => void>();
@@ -157,8 +162,7 @@ export class Sheets {
 
   constructor(private host: HTMLElement) {
     window.addEventListener('popstate', () => {
-      if (this.suppressPop > 0) { this.suppressPop--; return; }
-      this.closeTop(true);
+      if (this.nav.popped()) this.closeTop(true);
     });
   }
 
@@ -228,7 +232,7 @@ export class Sheets {
     syncDock(sheet, true);
     revealRoot(sheet);
     requestAnimationFrame(() => requestAnimationFrame(() => sheet.el.classList.remove('is-entering')));
-    try { history.pushState({ marchiaSheet: this.stack.length }, ''); } catch { /* sandboxed */ }
+    this.nav.opened(sheet);
     // keyboard and screen-reader focus into the sheet (the dialog itself: announced by its title, no ring on the
     // close button for touch players; Tab reaches the close button next)
     requestAnimationFrame(() => sheet.el.focus({ preventScroll: true }));
@@ -239,10 +243,7 @@ export class Sheets {
   closeTop(fromPop = false): boolean {
     const s = this.stack.pop();
     if (!s) return false;
-    if (!fromPop) {
-      this.suppressPop++;
-      try { history.back(); } catch { this.suppressPop--; }
-    }
+    this.nav.closed(s, fromPop);
     s.content.onClose?.();
     for (const f of s.deferred.splice(0)) f();
     this.detachers.get(s)?.();
