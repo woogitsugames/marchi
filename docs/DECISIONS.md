@@ -4553,8 +4553,8 @@ the sheet owns (so close / open / close before the back lands goes back once, no
 again from Settings, or Escape after the HUD's button) ran `openGameMenu` twice: the second run read the speed the first
 had just set to 0, mapped it to ×1, and the same-key refresh dropped the first content's `onClose` — "Resume" came back at
 ×1 instead of ×2 / ×4. `src/ui/menuPause.ts` holds the speed until the menu releases it (idempotent: the deferred
-`onClose` of a menu replaced by Settings or a card may run twice). Unchanged on purpose: a game the player had paused
-resumes at ×1 when the menu closes (pre-existing behaviour, asked in BACKLOG). Test `tests/menu-pause.test.ts`. (decided)
+`onClose` of a menu replaced by Settings or a card may run twice). Unchanged then: a game the player had paused
+resumed at ×1 when the menu closed (asked in BACKLOG; decided in D-560). Test `tests/menu-pause.test.ts`. (decided)
 
 **D-522 — The Android system back is offered to the page first.** Capacitor's `BridgeActivity` has no back handling of
 its own (it lives in the `@capacitor/app` plugin, which the game does not use; checked in `node_modules/@capacitor/android`
@@ -4604,3 +4604,25 @@ Style findings that need the owner (BACKLOG P3 questions): summer shows the late
 contrast (the flat, milky look of the whole scene); mission I opens on an empty meadow with wagons a few pixels long;
 the portrait main menu hides the whole scene; autumn crowns are the most saturated thing in the frame and compete with
 the clay/ochre "warm = problem" rule; dawn is dark and green rather than misty. (decided)
+
+**D-560 — A game the player paused stays paused after the pause menu closes (owner decision 2026-11-10).** The menu used
+to map a paused game to ×1 on close (`speedBeforeMenu = 0 ? 1`, D-521 kept it and asked). Now `MenuPause.hold(current)`
+stores the speed as it is, 0 included; `release()` gives it back, so a player pause stays a pause and a menu opened over
+×1/×2/×4 still returns that speed (D-521). Only `src/ui/menuPause.ts` changed; no sim change. (decided)
+
+**D-561 — A held pause is tracked by "holding", not by the speed.** `held` is `Speed | null`; 0 is a valid held value,
+so a second `hold` (double tap, menu reopened from Settings) while the first holds the game never overwrites it, and
+`release()` stays idempotent (the deferred `onClose` may run twice). (decided)
+
+**D-562 — Settings and Help opened from the menu behave the same.** Settings replace the menu content in the same sheet
+(`closeWithSheet`) and Help is a sheet over it; neither calls `hold` or `release`, so the speed taken at menu open
+(0 or ×N) comes back when the sheet closes. Settings opened from the HUD never paused the game and are unchanged. (decided)
+
+**D-563 — The system back is consistent.** `App.systemBack()` (D-522) opens the menu through the same `openGameMenu()`, and
+closes it through the sheet stack, whose `onClose` is `release`; so Escape/back on a player-paused game opens the menu and
+the next back leaves it paused. No change needed in `app.ts`. (decided)
+
+**D-564 — Test.** `tests/menu-pause.test.ts`: paused stays paused (also double open and a second release), ×4 returns ×4,
+the first take wins. (decided)
+
+**D-565 — BACKLOG.** The P4 question on the paused game after the menu is ticked off. (decided)

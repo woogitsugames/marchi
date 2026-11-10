@@ -1,4 +1,4 @@
-// The pause menu holds the game paused and gives the speed back when it closes (D-521).
+// The pause menu holds the game paused and gives the speed back when it closes (D-521, D-560).
 // Kept apart from the DOM so it is tested headless (tests/menu-pause.test.ts).
 import type { Speed } from '../game/loop';
 
@@ -9,10 +9,10 @@ export class MenuPause {
   /**
    * The menu opens with the game at `current`. Taken once per pause: a second open while the menu already holds
    * the game (a double tap on the menu button, the menu opened again from Settings) finds the game paused by the
-   * first one and must not take that pause for the player's speed. A game the player had paused resumes at ×1.
+   * first one and must not take that pause for the player's speed. A game the player had paused stays paused (D-560).
    */
   hold(current: Speed): void {
-    if (this.held === null) this.held = current === 0 ? 1 : current;
+    if (this.held === null) this.held = current;
   }
 
   /** The menu closed: the speed to set, or null when it had already given it back. */
