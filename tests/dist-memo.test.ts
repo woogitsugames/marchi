@@ -137,3 +137,36 @@ test('distance memo returns exactly a fresh search at every dispatch tick (queue
   assert(hits > 0 && declined > 0, `memo used (${hits}) and declined under ice (${declined})`);
   eq(w.distMemo !== undefined, true, 'memo built');
 });
+
+test('D-471: searches reset only the cells the last search wrote — whole arrays still equal a fresh search across network growth and cuts', () => {
+  // one world, so the shared scratch pair and the memo arrays carry cells written under an earlier network
+  const rng = seedRng(20261110);
+  const w = createWorld('lab');
+  const { w: W, h: H } = w.terrain;
+  const roads = w.state.roads;
+  for (let round = 0; round < 8; round++) {
+    if (round % 3 === 2) { // cut: clear a random band (written cells of the old network are now off the roads)
+      const y0 = nextInt(rng, 0, H - 6);
+      for (let y = y0; y < y0 + 5; y++) for (let x = 0; x < W; x++) roads[y * W + x] = 0;
+    } else { // growth: more random roads (more cells than the previous lists held)
+      for (let s = nextInt(rng, 10, 40); s > 0; s--) {
+        let x = nextInt(rng, 0, W - 1), y = nextInt(rng, 0, H - 1);
+        const dx = nextInt(rng, -1, 1), dy = nextInt(rng, -1, 1), len = nextInt(rng, 3, 50);
+        for (let i = 0; i < len && x >= 0 && y >= 0 && x < W && y < H; i++, x += dx, y += dy) roads[y * W + x] = nextInt(rng, 1, 2);
+      }
+    }
+    w.state.netVersion++;
+    const roadCells: number[] = [];
+    for (let i = 0; i < W * H; i++) if (roads[i]) roadCells.push(i);
+    const starts = [...w.state.buildings.map((b) => b.gate), nextInt(rng, 0, W * H - 1)];
+    for (let s = 0; s < 5; s++) starts.push(roadCells[nextInt(rng, 0, roadCells.length - 1)]!);
+    for (const s of starts) for (const reverse of [false, true]) for (const loaded of [false, true]) {
+      const stopAt = nextInt(rng, 0, 2) === 0 ? roadCells[nextInt(rng, 0, roadCells.length - 1)]! : -1;
+      const ref = reference(w, s, reverse, loaded, stopAt);
+      const got = dijkstra(w, s, reverse, loaded, stopAt, true);
+      assert(same(got.dist, ref.dist) && same(got.prev, ref.prev), `scratch round ${round} start ${s} reverse=${reverse} loaded=${loaded} stopAt=${stopAt}`);
+      const m = dijkstraMemo(w, s, reverse, loaded);
+      assert(m !== null && same(m, reference(w, s, reverse, loaded).dist), `memo round ${round} start ${s} reverse=${reverse} loaded=${loaded}`);
+    }
+  }
+});

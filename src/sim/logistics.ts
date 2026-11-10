@@ -220,9 +220,10 @@ export function dispatch(world: World): void {
   demands.sort((a, c) => a.prio - c.prio || a.fill - c.fill || (fair ? c.b.stalledTicks - a.b.stalledTicks : 0) ||
     a.b.id - c.b.id || GOODS.indexOf(a.good) - GOODS.indexOf(c.good));
 
-  // a source holds unreserved stock of g (read inline in the loops below: no array per demand)
+  // a source holds unreserved stock of g (read inline in the loops below: no array per demand). The stock test goes
+  // first (D-472): most buildings hold none of g, and the recipe lookup is the dearer half of the same pure condition
   const isSource = (s: Building, g: Good): boolean =>
-    (s.type === 'warehouse' || outputGoods(s.type).includes(g)) && s.stock[g] - s.reservedOut[g] > 0;
+    s.stock[g] - s.reservedOut[g] > 0 && (s.type === 'warehouse' || outputGoods(s.type).includes(g));
 
   // Dispatcher 2, rule A (D-155) — arrival before dispatch. The nearest FREE wagon is not always the one
   // that gets to `source` first: a wagon still delivering close by (rest of its loaded run + unloading +
