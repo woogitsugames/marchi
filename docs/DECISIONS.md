@@ -4536,3 +4536,41 @@ winter ice) identical old vs new, `npm test` 679/0. Not done, and why: increment
 change (equal-length routes could differ in the last float bit), a per-span wagon index for `bridgeBlocker` (array-order
 semantics, ~2–3 % of the bench), caching edge length/grade (indexing costs as much as the formula). The replan budget
 (BACKLOG P3) stays unneeded. (decided)
+
+**D-500 — Graphics: weathering stains on the buildings (graphics audit 11, 2026-11-10).** The audit
+(`tools/gfx11-shots.mjs`, D-502) found the buildings' plain materials the most "toy" thing in the frame: albedo lives in
+vertex colours, one flat tone per part, so up close the castle read as painted clay (grey-beige, S 17 %, luminance sd
+4.9/255 over a wall). The shared frost hook of the plain building kinds (`wood`, `bark`, `thatch`, `stone`, `plaster`;
+`src/render/models/materials.ts`) now also multiplies the albedo by a world-space stain from the shared noise texture
+(`noiseTex.ts`, one mipmapped fetch, so it fades to its mean from afar instead of shimmering): broad damp patches
+(~1 m), rain streaks stretched down the walls (world y squeezed 0.42×) and fine mottling (~0.2 m), centred on the
+channel means; darker spots also go a little greyer (lichen, soot, wet). Amplitude ±40 % albedo (1 sd), clamped to
+−55 %/+50 %: a ±20 % stain was invisible after AgX (sd 4.9 → 6.9), the final one gives 4.9 → 9.9 on the castle wall
+and visible streaks on the roofs at 110 m; frame brightness unchanged (mean L 31.4 → 30.4 % close up, 28.5 → 28.3 %
+at 110 m). Instanced users (wagons, cargo, yard piles, workers) skip it like the frost
+(a moving wagon would drag stains through world space). One program as before (cache key `frost1` → `frost2`), one
+more sampler in it. Shots `docs/shots/gfx11-{before,after}-valley-close-*`, `-valley-autumn-*`, missions. (decided)
+
+**D-501 — Graphics: patchy winter hoarfrost on the ground.** In the free valley's winter the terrain frost (D-203) laid
+one flat pale sheet over the meadow (valley S 14–17 %, all the meadow's wet/dry patches gone): "jednolita tekstura". The
+frost amount is now modulated by the meadow noise already sampled in the terrain shader (`nzM.g` broad drifts, `nzS.b`
+tussocks, less in the wet hollows `wetP`), 0.15–1.6× around the old mean; roads and the river bed unchanged (they carry
+the diagnosis). Three ALU lines, no new fetch. Shots `gfx11-{before,after}-valley-winter-*`. (decided)
+
+**D-502 — Graphics audit 11: method, measurements, what was not changed.** New `tools/gfx11-shots.mjs` (built game,
+`vite preview --port 5199`): menu; missions I (menu bot + 150 s), VII, XIII, XVII (60 s) with the HUD; the free valley
+with the bench network (`tools/frame-cost-bench.json`, cobble laid as dirt: the sandbox has no stone and the failed
+cobble rows left 31 lone road cells that drew as round mud discs) at noon in each season, in autumn at dawn / morning /
+dusk / night, and at 230 m and 38 m — 412×915 and 915×412, low and high (60 shots per tag, `gfx11-before-*`,
+`gfx11-after-*`). `tools/gfx11-sat.mjs` prints mean HSL saturation and the share of pixels above the art direction's
+S 35 %: the meadow samples at S 21–27 %, the water is grey (S 3–7 %, not blue), the above-35 % share comes from the
+autumn crowns (rust, S 37–40 %) and is 2–5 % in the valley, 17–41 % in the mission openings. Cost: SwiftShader rAF
+frame time, A/B interleaved against a build without D-500/D-501 (the container shared with another agent, ±8 %
+between runs): castle close-up high 1901 → 1768 ms, winter 110 m high 1690 → 1595 ms, close-up low 769 → 794 ms
+(+3 %) — no regression above the noise; < 5 % by the instruction count (one fetch + ~12 ALU on building pixels only).
+Pixel regressions: no committed pixel baselines exist (the `0 px` checks of earlier rounds — `jam-diff.mjs`,
+`render5-diff.py` — are ad hoc); `terrain-golden` hashes sim terrain and is unaffected; nothing to update.
+Style findings that need the owner (BACKLOG P3 questions): summer shows the late-autumn crowns; AgX squeezes all albedo
+contrast (the flat, milky look of the whole scene); mission I opens on an empty meadow with wagons a few pixels long;
+the portrait main menu hides the whole scene; autumn crowns are the most saturated thing in the frame and compete with
+the clay/ochre "warm = problem" rule; dawn is dark and green rather than misty. (decided)

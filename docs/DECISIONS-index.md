@@ -338,3 +338,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-490 | 2026-11-10 | Repeated building names in one sheet are numbered (owner, 2026-11-10; answers the D-450 question) | decided | UI |
 | D-491 | 2026-11-10 | A section header with nothing under it hides (owner, 2026-11-10; answers the D-450 question) | decided | inne |
 | D-492 | — | Tests | decided | inne |
+| D-500 | 2026-11-10 | Graphics: weathering stains on the buildings (graphics audit 11, 2026-11-10) | decided | render |
+| D-501 | — | Graphics: patchy winter hoarfrost on the ground | decided | render |
+| D-502 | — | Graphics audit 11: method, measurements, what was not changed | decided | render |
