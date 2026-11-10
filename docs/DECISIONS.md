@@ -4536,3 +4536,33 @@ winter ice) identical old vs new, `npm test` 679/0. Not done, and why: increment
 change (equal-length routes could differ in the last float bit), a per-span wagon index for `bridgeBlocker` (array-order
 semantics, ~2–3 % of the bench), caching edge length/grade (indexing costs as much as the formula). The replan budget
 (BACKLOG P3) stays unneeded. (decided)
+
+**D-520 — A sheet opened while our own `history.back()` is in flight gets its history entry when that back lands.**
+UI bug hunt (Playwright, `claude/w-uibug`): close a card (X, Escape, a tap on the map) and open another in the same
+turn, or before the asynchronous back traversal arrives — the new sheet pushed its entry at once, and the pending
+traversal (Chromium aims it at the entry below the one current when `back()` was called) went back over that new entry
+too. The sheet stayed open without an entry; its popstate was swallowed as "ours", and the next system back left the
+game page. Same-turn paths in the game: the damaged valley ledger (`closeAll` + `openValley`), any close + `go()`.
+The bookkeeping moved to `src/ui/sheetHistory.ts` (no DOM): an open while one of our backs is pending does not push;
+when the last pending popstate lands, every open sheet without an entry gets one; a close goes back only over an entry
+the sheet owns (so close / open / close before the back lands goes back once, not twice). Test
+`tests/sheet-history.test.ts` with a Chromium-like fake history (the old code fails three of its four cases);
+`tools/back-probe.mjs` checks it in the built game. (decided)
+
+**D-521 — The pause menu takes the player's speed once per pause.** A double tap on the menu button (or the menu opened
+again from Settings, or Escape after the HUD's button) ran `openGameMenu` twice: the second run read the speed the first
+had just set to 0, mapped it to ×1, and the same-key refresh dropped the first content's `onClose` — "Resume" came back at
+×1 instead of ×2 / ×4. `src/ui/menuPause.ts` holds the speed until the menu releases it (idempotent: the deferred
+`onClose` of a menu replaced by Settings or a card may run twice). Unchanged on purpose: a game the player had paused
+resumes at ×1 when the menu closes (pre-existing behaviour, asked in BACKLOG). Test `tests/menu-pause.test.ts`. (decided)
+
+**D-522 — The Android system back is offered to the page first.** Capacitor's `BridgeActivity` has no back handling of
+its own (it lives in the `@capacitor/app` plugin, which the game does not use; checked in `node_modules/@capacitor/android`
+8.6): on the APK the system back always closed the activity — also with a card, the pause menu or a tool open — and the
+per-sheet history entries (and the `GoBack` key branch) were never reached. `MainActivity` registers an
+`OnBackPressedCallback` that evaluates `window.__marchiaBack()`; `App.systemBack()` is the former Escape branch (top sheet →
+build shelf from placement → tool away → pause menu) and returns false when there was nothing to step back from (a letter
+holds the screen, the main menu with no sheet, the end of a mission): Android's default then runs (the root activity goes
+to the background; pagehide/visibilitychange autosave as before). Chosen over adding `@capacitor/app` (a new dependency
+and native plugin for one listener). Java compiled (`gradlew :app:compileDebugJavaWithJavac` after `cap sync`); not yet
+run on a device — BACKLOG. (decided)
