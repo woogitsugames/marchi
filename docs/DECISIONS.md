@@ -4478,3 +4478,20 @@ or not; the wagon waits for the ice, which clears by itself, long before the sto
 stone text only for a span that is not `BRIDGE_CLOSED`; under ice the card reads `cause.heldIce` ("… stoi przed
 mostem zamkniętym przez krę"), still calm (`rankStalls` unchanged), and the sheet keeps D-420's stone hint. No sim
 change. (decided)
+
+**D-490 — Repeated building names in one sheet are numbered (owner, 2026-11-10; answers the D-450 question).** "Nie mogą
+oddać towaru: Chata rybaka Chata rybaka Chata rybaka" gave three links nobody could tell apart. The full-yard hint's
+list of blocked buildings now goes through `buildingLabels` (`src/ui/format.ts`, pure part `numberRepeats` in
+`src/ui/buildingLabels.ts`): when two or more share a name each reads "Chata rybaka 1 / 2 / 3". The number is the
+building's rank among buildings of its type by id, so it does not depend on which of them are listed; a name that appears
+once stays plain, castles keep their own names. No new i18n key (name + number). No sim change. (decided)
+
+**D-491 — A section header with nothing under it hides (owner, 2026-11-10; answers the D-450 question).** The docked fix
+(D-162) is absolute at the sheet's bottom edge, so "Naprawa" stayed in the flow above an empty gap. `.section-h:has(+
+.fix-dock) { display: none }` (`main.css`): the header returns by itself where the dock is in the flow after it. Covers
+fixSection, castle switches and the dock-based hints alike. Seen in `read-cutOffCrit-sheet-412x915.jpg` (after). Not
+covered: "Produkuje" over a body that scrolled beneath the dock (a scroll position, not markup) - left as is. No sim change. (decided)
+
+**D-492 — Tests.** `tests/sheet-labels.test.ts`: stable numbers by id independent of the listed subset, a lone name plain,
+and the CSS rule present. (decided)
+

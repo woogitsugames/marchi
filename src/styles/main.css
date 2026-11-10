@@ -471,6 +471,9 @@ body.is-side .sheet-grip::before { display: none; }
 .section-h::after { content: ''; flex: 1; height: 1px; background: rgb(74 72 67 / .45); order: 1; }
 .section-h .since { order: 2; margin-inline-start: 0; text-transform: none; letter-spacing: 0; font-size: 13px; color: #6e3520; font-weight: 700; }
 .section-h.is-calm .since { color: var(--ink-soft); }
+/* D-491: "Naprawa" over the docked fix: the dock sits at the sheet's bottom edge, so its header stayed in the flow above an
+   empty gap. It hides; a header followed by content in the flow keeps showing */
+.section-h:has(+ .fix-dock) { display: none; }
 
 .goods { display: flex; flex-wrap: wrap; gap: 6px; }
 .good-chip {

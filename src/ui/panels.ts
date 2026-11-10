@@ -8,7 +8,7 @@ import { t, translated, type MessageKey } from '../i18n/index';
 import { cardBuild } from './cardBuild';
 import { esc, setHtml } from './dom';
 import {
-  bdi, buildingName, buildingStateIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
+  bdi, buildingLabels, buildingName, buildingStateIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
   wagonName, wagonStatusText,
 } from './format';
 import { iconSvg, type IconId } from './icons';
@@ -462,7 +462,8 @@ function fullHtml(world: World, b: Building, chain: ReasonLink[]): string {
       if (short || explainBuilding(world, c.id, 5, true).some((l, i) => i > 0 && l.kind === 'building' && l.id === b.id)) hit.push(c);
     }
     const effectKey: MessageKey = s.k === 'OUTPUT_FULL' ? 'why.full.halted' : 'why.full.refuses';
-    const names = hit.slice(0, 3).map((c) => `<button class="linkish" data-go="building:${c.id}">${esc(buildingName(world, c.id))}</button>`).join('');
+    const shown = hit.slice(0, 3), labels = buildingLabels(world, shown.map((c) => c.id));
+    const names = shown.map((c) => `<button class="linkish" data-go="building:${c.id}">${esc(labels.get(c.id)!)}</button>`).join('');
     const lead = g !== null
       ? t('why.full.waiting', { goodAcc: t(`goodAcc.${g}` as MessageKey), goodGen: t(`goodGen.${g}` as MessageKey) })
       : t('why.full.blocked');

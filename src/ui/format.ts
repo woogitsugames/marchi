@@ -2,6 +2,7 @@
 import { BUILDINGS, RANKS, TICK_HZ, buildingById, castleNameKey, type BuildingStatus, type Good, type ReasonLink, type WagonStatus, type World } from '../sim/index';
 import { RTL_LANGS, getLang, onLangChange, t, type MessageKey } from '../i18n/index';
 import { bridgeJamCause, type BridgeJamCause } from './bridgeJam';
+import { numberRepeats } from './buildingLabels';
 import { esc } from './dom';
 import { granaryLoads, statusKey } from './stallKinds';
 
@@ -97,6 +98,11 @@ export function buildingName(world: World, id: number): string {
   // two castles (D-288): each castle by its own name ("Zamek Wschodni", "Zamek Północny")
   const named = b.type === 'castle' ? castleNameKey(world, id) : null;
   return named ? t(`castle.name.${named}`) : t(`building.${b.type}` as MessageKey);
+}
+
+/** Names for buildings listed together in one sheet, repeated names numbered (D-490, buildingLabels.ts). */
+export function buildingLabels(world: World, ids: readonly number[]): Map<number, string> {
+  return numberRepeats(world, ids, (id) => buildingName(world, id));
 }
 
 /** Fleet number of a wagon ("Wóz 3", D-44), or null when it is gone (sold). */
