@@ -9,6 +9,10 @@
   (`update_trigger enabled=true`) albo założyć nowy w nowej sesji. Przypomnienie „Raport z testu Free.AI (24 h)”
   `trig_01CrY9mMKNSZwrsvrEyTg76J` (8 XI 20:00) zostaje — wpadnie do tej sesji.
 
+## Scalone 10 XI wieczór (ta sama sesja)
+- Scalone i na `main`: D-500..502, D-520..522, D-540..543 (grafika 12), D-560..565, **D-570..574** (render: culling kafli 64 m, −33 % trójkątów w dolinie, bez zmiany obrazu; P1 do sprawdzenia na telefonie, bo +wywołania rysowania), **D-590..594** (arkusz zamykany nie przyjmuje tapnięć, szary kamień, pełne podwórze producenta, cache UI między grami). Testy 701/0, layout 138/0, hashe misji bez zmian.
+- Ostatnie APK: **8c2caef** (10 XI ~22:30). Otwarte: test Androida „Wstecz” (D-522) na prawdziwym urządzeniu; pytanie o LOD/cienie na low (BACKLOG); 3 klucze (`cause.stoneWagon`, `fix.stoneWagon`, `cause.yardRoom`) do tłumaczenia; sprawa desaturacji rdzawych koron jesienią.
+
 ## Scalone 10 XI (sesja `session_01QWRid74YcFi21Wc62DrCAR`)
 - **D-430/D-431** fuzz 1 100 przebiegów (0 błędów sim); naprawiona martwa karta mostu (kamieniołom czeka na wóz); `tools/dead-seconds.ts`.
 - **D-450..D-455** audyt czytelności kart (spichlerz „zapełnia się”, „Rozbierz”, kamieniołom, kra na moście); `tools/read-states.ts`, `tools/read-shots.mjs`, zrzuty `docs/shots/read-*`.
