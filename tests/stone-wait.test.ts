@@ -72,3 +72,23 @@ test('stone wait: a quarry that does not dig, stone in store, a mission -> no wa
   const m = createWorld('m1');
   eq(paveStoneWait(m, m.state.buildings[0]!), null, 'mission');
 });
+
+test('stone wait: a quarry whose full yard waits for a booked wagon still digs -> calm, not a grey button (D-430)', () => {
+  // valley seed 1314 card-30, 96:01-101:22: the quarry's 8 stone booked by wagons for the trading post (WAITING_PICKUP,
+  // progress -1), 1 stone short in the granaries — the red trading-post card's only cure was the grey stone button
+  const { w, post, quarry, need } = heldPost();
+  const cycle = cycleTicks(w, 'quarry', BUILDINGS.quarry.recipe!.ticks);
+  quarry.progress = -1;
+  quarry.stock.stone = 8;
+  quarry.reservedOut.stone = 8;
+  quarry.status = { k: 'WAITING_PICKUP', good: 'stone', wagon: w.state.wagons[0]!.id };
+  const sw = paveStoneWait(w, post);
+  assert(!!sw, 'a stone wait');
+  eq(sw!.atQuarry, 0, 'the yard is booked for elsewhere');
+  eq(sw!.digTicks, need * cycle, 'one whole cycle per missing unit (the pickup is not guessed)');
+  const e = entry(w, post.id);
+  assert(!!e && e.minor && !e.crit, `calm pin: ${JSON.stringify(e)}`);
+  // a full yard with no wagon booked (OUTPUT_FULL) is the quarry's own stall: the red card stays
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
+  eq(paveStoneWait(w, post), null, 'a quarry stalled on its own yard: no wait');
+});

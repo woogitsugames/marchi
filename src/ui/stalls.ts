@@ -431,7 +431,14 @@ export function paveStoneWait(world: World, b: Building): StoneWait | null {
     const cycle = cycleTicks(world, 'quarry', BUILDINGS.quarry.recipe!.ticks);
     let working = 0, first = cycle;
     for (const q of world.state.buildings) {
-      if (q.type !== 'quarry' || q.progress < 0) continue;
+      if (q.type !== 'quarry') continue;
+      // D-430: a yard full of stone a wagon is already booked to fetch (WAITING_PICKUP — often loads the trading post
+      // buys) is no stall: the quarry digs again once the wagon comes. A whole cycle from now (pickup not guessed).
+      if (q.progress < 0) {
+        if (q.status.k !== 'WAITING_PICKUP') continue;
+        working++;
+        continue;
+      }
       working++;
       first = Math.min(first, Math.max(0, cycle - q.progress));
     }

@@ -4395,3 +4395,41 @@ Dead-card time (looks ending `?fail` / `?unhandled` / `?NO_STONE`, minutes of 12
 the time the slot went to other cards. Earned and rank 5 unchanged within noise (means: card-10 31,57 k -> 31,58 k,
 87,9 min both; card-30 26,32 k -> 26,35 k, 96,0 -> 96,1; `--no-pairs` card-10 30,84 k both, 89,4 both; card-30
 25,47 k -> 25,43 k, 98,0 both). (decided)
+
+**D-430 — A quarry whose full yard waits for a booked wagon still counts as digging for the calm stone wait (2026-11-10).**
+Found by the bug hunt of 2026-11-10 (D-431): the trading post's red card (a wagon held at a wooden span, D-420) opened a
+sheet whose only cure was a grey "Wyłóż most kamieniem" (`pave?NO_STONE`) while a quarry stood. Repro: valley seed 1314,
+`card-30`, 96:01–101:22 (37 s in three spells); seed 1329 `card-60` 44 s; 1328 / 1317 / 1310 / 1326 `card-60` 14–29 s. The
+granaries held 4–8 of the 9 stone needed; the quarry's yard (8) was all booked by wagons, mostly for the trading post,
+which buys stone (status WAITING_PICKUP, `progress` -1). `paveStoneWait` counted only quarries with `progress >= 0` as
+digging, so with nothing left unreserved at the quarry it returned null — "the quarry's own stall is the card" — but a
+yard waiting for a booked pickup is no stall (a calm pin), so nothing on the HUD said why the stone button was grey.
+Fix (`src/ui/stalls.ts` `paveStoneWait`, UI only): a quarry in WAITING_PICKUP counts as working, its next unit a whole
+cycle away (the pickup time is not guessed, as D-420 does not guess the haul). A quarry stalled on its own yard
+(OUTPUT_FULL, no wagon booked) still gives null and the red card. No sim change (mission hashes untouched), no new key.
+Grey-button seconds (red card, cure `pave`, NO_STONE, no quarry offer, no calm wait; `tools/dead-seconds.ts`, seeds
+1309–1330 × card-10 / card-30 / card-60, 120 min): 243 -> 70 s in 66 runs; what is left is one-second readings on the
+tool's look ticks (the look's command lands before the step) plus 9–11 s spells while a quarry's full yard waits for a
+free wagon (OUTPUT_FULL.NO_WAGON, the D-420 case, seeds 1310 / 1317 / 1318 / 1328 `card-60`). Look-based dead-card time
+(`tools/sandbox-first30.ts`, looks ending `?fail` / `?unhandled` / `?NO_STONE`, the same 22 seeds, card-10/30/60 and
+card-10/30 `--no-pairs`, 110 runs): 4,7 min in 7 runs (15 looks) -> 0. Earned unchanged (card-30 `--no-pairs` mean
+25 102 -> 25 090, the rest identical); rank 5 in all 110 runs before and after. Test `tests/stone-wait.test.ts`. (decided)
+
+**D-431 — Bug hunt 2026-11-10: what was searched, and what was found clean.** New seeds, none used before (earlier runs:
+1–500, 1000+, 7001+, 9001+; late 1–100, 501+). Sim invariants (goods conservation, StallReason consistency, NaN, stuck
+wagons incl. BRIDGE_JAM / NO_ROUTE deadlocks, save/load clone, rerun hash determinism) every tick, `tools/fuzz.ts`:
+`--runs 400 --ticks 8000 --seed 31001` (m1–m17 + sandbox, 8,0 M ticks), `--runs 200 --ticks 9000 --seed 32001 --missions
+m14,m15,m16,m17,sandbox@5` (4,5 M), `--runs 60 --ticks 33000 --seed 41001 --missions sandbox,sandbox@5` (through winter,
+4,9 M), `--runs 300 --ticks 12000 --seed 51001` (8,9 M); `tools/fuzz-late.ts --runs 80 --seed 4001` and `--runs 60
+--ticks 12000 --seed 6001` (valley from 75/100/120 min; 73 k units sold at the post, 61 k wagon-ticks at an iced span):
+1 100 runs, ~27 M ticks, **0 failures**. Mission bots: `npm run bot`, `bot-m2..m17`, `bot-missions-7-9`, `-10-12` — every
+row as before, no violations; `tools/balance-night6.ts --no-search` (eye / eye+ / scan / letter players, I–XVII): no
+card whose cure fails (`?` acts other than no-coins); plain cards with nothing to press are the readable waits
+(XIII mill NO_INPUT, IX/X CONTESTED, XVII CHAIN_FIRST). Valley seeds 1309–1330 (D-430's table, 110 runs × 120 min):
+0 invariant / unexplained-stall violations, rank 5 everywhere. Besides D-430, one sub-second reading, not fixed: a
+producer's full yard (OUTPUT_FULL.NO_DESTINATION) blocked by a granary while another granary has just got room reads
+critical with no cure until the next dispatch (≤ 6 ticks, e.g. seed 1320 `card-30` tick 30 000); the sheet's
+"Postaw spichlerz" blinks out for that half second. Longest calm readings (seeds 1311 / 1318, `card-30`): granary
+filling 255 s, store room 150 s, market full 132 s, post without road 147 s — each with the goods really moving, no
+card found saying something false. New tool `tools/dead-seconds.ts` (per-second dead-card reading of one player).
+(decided)
