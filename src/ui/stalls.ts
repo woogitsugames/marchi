@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type World } from '../sim/index';
+import { BUILDINGS, TICK_HZ, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -55,14 +55,17 @@ export interface StallEntry {
  * critical one. outputCustomer runs a path search, so the answer is kept per building until its
  * status, the road network or the second changes.
  */
-const calmCache = new Map<number, { key: string; calm: boolean }>();
+// per world (D-592): two worlds with the same building id, status and second shared one answer
+const calmCaches = new WeakMap<World, Map<number, { key: string; calm: boolean }>>();
 export function calmStall(world: World, b: Building, sig: string): boolean {
   const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
+  let calmCache = calmCaches.get(world);
+  if (!calmCache) calmCaches.set(world, (calmCache = new Map()));
   const c = calmCache.get(b.id);
   if (c && c.key === key) return c.calm;
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
-    granaryRelief(world, b.id)?.k === 'ROOM' || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
+    granaryRelief(world, b.id)?.k === 'ROOM' || yardStoreRoom(world, b) >= 0 || contractFilled(world, b.id) !== null || stoneInStore(world, b.id) > 0 ||
     marketSaturated(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
   calmCache.set(b.id, { key, calm });
   return calm;
@@ -74,12 +77,14 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
  * 'orderFilled' — the contract castle already holds this whole good (fix 6).
  * null: the status text says it right.
  */
-export type CalmWhy = 'surplus' | 'storeRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | 'unwanted' | 'filling' | 'granaryFilling' | null;
+export type CalmWhy = 'surplus' | 'storeRoom' | 'yardRoom' | 'orderFilled' | 'stoneStored' | 'postNoRoad' | 'marketFull' | 'unwanted' | 'filling' | 'granaryFilling' | null;
 export function calmWhy(world: World, b: Building): CalmWhy {
   // D-170: the trading post across the river waits for a road with a bridge (cause.postNoRoad)
   if (b.type === 'tradePost' && b.status.k === 'NO_ROAD') return 'postNoRoad';
   if (outputSurplus(world, b.id) === 'SPARE') return 'surplus';
   if (granaryRelief(world, b.id)?.k === 'ROOM') return 'storeRoom';
+  // D-592: a full yard refused by a full granary while another one has room (the next dispatch sends it there)
+  if (yardStoreRoom(world, b) >= 0) return 'yardRoom';
   // D-451: a saturated market outranks both D-393 waits below — the sheet's title ("rynek nasycony") and hint
   // (sell another good) say so, and the card must not promise that waiting for loads or a fresh granary helps
   const saturated = marketSaturated(world, b);
@@ -437,8 +442,9 @@ export function paveStoneWait(world: World, b: Building): StoneWait | null {
       if (q.type !== 'quarry') continue;
       // D-430: a yard full of stone a wagon is already booked to fetch (WAITING_PICKUP — often loads the trading post
       // buys) is no stall: the quarry digs again once the wagon comes. A whole cycle from now (pickup not guessed).
+      // D-591: likewise a yard a wagon is already driving to (WAGON_DUE, the booking lands when it arrives)
       if (q.progress < 0) {
-        if (q.status.k !== 'WAITING_PICKUP') continue;
+        if (q.status.k !== 'WAITING_PICKUP' && q.status.k !== 'WAGON_DUE') continue;
         working++;
         continue;
       }
@@ -450,6 +456,42 @@ export function paveStoneWait(world: World, b: Building): StoneWait | null {
     digTicks = first + (Math.ceil(dig / working) - 1) * cycle;
   }
   return { short, incoming, atQuarry, digTicks };
+}
+
+/**
+ * D-591: the held span's stone bridge lacks stone, and the stone it needs is dug: it lies in a quarry's full yard
+ * that no wagon collects (OUTPUT_FULL.NO_WAGON — every wagon busy), so the quarry cannot dig the rest either. Not a
+ * calm wait (paveStoneWait is null) and not a grey stone button: what is missing is a free wagon to haul the stone,
+ * so the cure is "Kup wóz". Returns that quarry (the fullest one), or -1. Pure read.
+ */
+export function paveStoneHaul(world: World, b: Building): number {
+  if (!rankGated(world)) return -1;
+  const h = heldSpanFor(world, b);
+  if (!h) return -1;
+  const ok = paveCheck(world, h);
+  if (ok.ok || ok.err.k !== 'NO_STONE' || ok.err.quarries === 0 || paveStoneWait(world, b)) return -1;
+  let best = -1, most = 0;
+  for (const q of world.state.buildings) {
+    if (q.type !== 'quarry' || q.status.k !== 'OUTPUT_FULL' || q.status.cause !== 'NO_WAGON') continue;
+    const free = q.stock.stone - q.reservedOut.stone;
+    if (free > most) { most = free; best = q.id; }
+  }
+  return best;
+}
+
+/**
+ * D-592: a producer's full yard refused by a full granary (OUTPUT_FULL.NO_DESTINATION) while another granary its
+ * road reaches has room: the next dispatch (≤ 6 ticks) sends the load there. The yard is no fault (as the full
+ * granary next to one with room, calmWhy 'storeRoom'), so it reads calm instead of a red card with no cure.
+ * Returns the granary with room, or -1. Pure read.
+ */
+export function yardStoreRoom(world: World, b: Building): number {
+  const s = b.status;
+  if (s.k !== 'OUTPUT_FULL' || s.cause !== 'NO_DESTINATION' || s.blockedBy < 0) return -1;
+  const r = granaryRelief(world, s.blockedBy);
+  if (r?.k !== 'ROOM') return -1;
+  const g = buildingById(world, r.granary);
+  return g && reachable(world, b.gate, g.gate) ? g.id : -1;
 }
 
 /** The last building of a chain (its root), else `self`. */
@@ -546,7 +588,9 @@ export function cutOffConsumer(world: World, chain: ReasonLink[]): number {
  * -1. The link search is a whole-grid Dijkstra: kept per building until the road network or the building count
  * changes. Pure read.
  */
-const noLinkCache = new Map<number, { key: string; none: boolean }>();
+// per world (D-593): a new valley game ("Jeszcze raz", another seed) reuses building ids, network versions and
+// counts — one shared map answered the new game's building with the old game's link search
+const noLinkCaches = new WeakMap<World, Map<number, { key: string; none: boolean }>>();
 export function cutOffNoLink(world: World, chain: ReasonLink[]): number {
   if (!rankGated(world)) return -1;
   let id = cutOffProducer(world, chain);
@@ -554,9 +598,24 @@ export function cutOffNoLink(world: World, chain: ReasonLink[]): number {
   const b = id >= 0 ? buildingById(world, id) : undefined;
   if (!b || !BUILDINGS[b.type].recipe || b.type === 'tradePost' || b.type === 'castle' || b.type === 'stable') return -1;
   const key = `${world.state.netVersion}|${world.state.buildings.length}`;
+  let noLinkCache = noLinkCaches.get(world);
+  if (!noLinkCache) noLinkCaches.set(world, (noLinkCache = new Map()));
   let c = noLinkCache.get(id);
   if (!c || c.key !== key) noLinkCache.set(id, (c = { key, none: !suggestLinkToStable(world, id) }));
   return c.none ? id : -1;
+}
+
+/**
+ * The gap finder's road for the sheet (suggestLinkToStable runs a whole-grid Dijkstra: once per road network
+ * version). D-593: the cache holds its world — a game started after another one (another mission, a new valley)
+ * with the same target id, network version and building count showed the old map's road, and its "fix" button
+ * laid the old map's cells.
+ */
+let gapCache: { world: World; key: string; s: RoadSuggestion | null } | null = null;
+export function gapSuggestion(world: World, target: number): RoadSuggestion | null {
+  const key = `${target}:${world.state.netVersion}:${world.state.buildings.length}`;
+  if (gapCache?.key !== key || gapCache.world !== world) gapCache = { world, key, s: suggestLinkToStable(world, target) };
+  return gapCache.s;
 }
 
 /** D-410: what taking the cut-off building back returns right now (half its price once it has worked). */
@@ -620,7 +679,14 @@ export function recentWagonWait(world: World, id: number): number {
   return ago >= 0 && ago <= BUSY_MEMO_TICKS ? ago : -1;
 }
 
-let cureCache: { key: string; cure: Cure } | null = null;
+let cureCache: { world: World; key: string; cure: Cure } | null = null;
+
+/** The quarries' status kinds (D-591: the stone haul cure follows a quarry's yard, not the stalled building's status). */
+function quarryKey(world: World): string {
+  let k = '';
+  for (const q of world.state.buildings) if (q.type === 'quarry') k += `${q.status.k}${'cause' in q.status ? q.status.cause : ''},`;
+  return k;
+}
 /**
  * What the player can buy or build against the root of a building's stall chain: a wagon when the
  * root waits for a free wagon, a road when it lacks one, a granary when its output has nowhere to go
@@ -631,25 +697,27 @@ let cureCache: { key: string; cure: Cure } | null = null;
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}`;
-  if (cureCache?.key === key) return cureCache.cure;
+  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${world.state.coins}|${bottleneckKey(world)}|${quarryKey(world)}`;
+  if (cureCache?.key === key && cureCache.world === world) return cureCache.cure;
   if (sharedOneCard(world, b)) {
-    cureCache = { key, cure: 'producer' };
+    cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (bottleneckFor(world, b)) {
     // the free valley's bottleneck card (D-171): this workshop waits for the card's good; one more producer
-    cureCache = { key, cure: 'producer' };
+    cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (heldSpanFor(world, b)) {
-    cureCache = { key, cure: 'pave' };
-    return 'pave';
+    // D-591: the stone is dug but lies in a quarry's yard no wagon collects — a wagon, not the grey stone button
+    const c: Cure = paveStoneHaul(world, b) >= 0 ? 'wagon' : 'pave';
+    cureCache = { world, key, cure: c };
+    return c;
   }
   const chain = explainBuilding(world, id, 5, true);
   // D-410: cut off with no road left to build — take it back (the gap finder would offer nothing)
   if (cutOffNoLink(world, chain) >= 0) {
-    cureCache = { key, cure: 'demolish' };
+    cureCache = { world, key, cure: 'demolish' };
     return 'demolish';
   }
   let cure: Cure = cutOffProducer(world, chain) >= 0 ? 'road' : null;
@@ -692,7 +760,7 @@ export function cureFor(world: World, id: number): Cure {
   if (cure === 'granary' && freshGranary(world, b) >= 0) cure = null;
   // D-391: no granary site a road reaches anywhere the ghost would look — nothing to offer
   if (cure === 'granary' && granaryAnchor(world, b, chainRoot(chain, b.id)) < 0) cure = null;
-  cureCache = { key, cure };
+  cureCache = { world, key, cure };
   return cure;
 }
 

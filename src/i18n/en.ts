@@ -793,6 +793,11 @@ export const en: FullDict = {
   'cause.stoneComing': '{wagon} is held at a bridge — the paving stone is already on its way',
   'fix.stoneDig': 'The stone bridge still lacks stone: {n}. The quarry will cut it in about {time}, then a wagon takes it to a granary and you can pave the bridge. Nothing else to do.',
   'fix.stoneComing': 'The stone bridge still lacks stone: {n}. It is already cut (on the way: {incoming}, at the quarry: {quarry}) — once it reaches a granary you can pave the bridge. Nothing else to do.',
+  // D-591: the stone is dug, but lies in a quarry's full yard no wagon collects
+  'cause.stoneWagon': '{wagon} is held at a bridge — the paving stone waits at the quarry for a free wagon',
+  'fix.stoneWagon': 'The stone bridge still lacks stone: {n}. The quarry already has {quarry} in its yard, but every wagon is busy — nobody hauls it, and the full yard stops the digging. Buy a wagon or wait until one is free.',
+  // D-592: a full yard refused by a full granary while another granary has room
+  'cause.yardRoom': 'full yard — the goods will go to a granary with room',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Bottleneck',
   'neck.reason': 'on average {n} of {m} workshops wait',

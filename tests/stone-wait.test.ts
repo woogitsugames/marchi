@@ -2,7 +2,8 @@
 // bring) is a calm pin with the wait, not the red card with a grey "Wyłóż most kamieniem". A quarry that does not dig
 // keeps the red card (its own stall is the cause). Synthetic statuses on a real valley (as dead-cards.test.ts).
 import { BUILDINGS, TICK_HZ, applyCommand, createWorld, cycleTicks, net, suggestLinkToStable, type Building, type World } from '../src/sim/index';
-import { HELD_SPAN_TICKS, cureFor, paveCheck, paveSpanFor, paveStoneWait, quarryForPave, rankStalls } from '../src/ui/stalls';
+import { readFileSync } from 'node:fs';
+import { HELD_SPAN_TICKS, cureFor, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, quarryForPave, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 function heldPost(): { w: World; post: Building; quarry: Building; need: number } {
@@ -91,4 +92,45 @@ test('stone wait: a quarry whose full yard waits for a booked wagon still digs -
   // a full yard with no wagon booked (OUTPUT_FULL) is the quarry's own stall: the red card stays
   quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
   eq(paveStoneWait(w, post), null, 'a quarry stalled on its own yard: no wait');
+});
+
+test('stone wait: a quarry whose yard a wagon is already driving to (WAGON_DUE) still digs -> calm (D-591)', () => {
+  // valley seed 1310 card-60, 110:44-110:45: the quarry's 8 stone not booked yet, wagon 7 on its way (progress -1)
+  const { w, post, quarry, need } = heldPost();
+  const cycle = cycleTicks(w, 'quarry', BUILDINGS.quarry.recipe!.ticks);
+  quarry.progress = -1;
+  quarry.stock.stone = need - 1;
+  quarry.status = { k: 'WAGON_DUE', good: 'stone', wagon: w.state.wagons[0]!.id, at: w.state.tick + 50 };
+  const sw = paveStoneWait(w, post);
+  assert(!!sw, 'a stone wait');
+  eq(sw!.atQuarry, need - 1, 'the dug stone lies there');
+  eq(sw!.digTicks, cycle, 'the last unit one cycle after the pickup');
+  assert(entry(w, post.id)!.minor, 'calm pin');
+  eq(paveStoneHaul(w, post), -1, 'no haul cure: a wagon comes');
+});
+
+test('stone wait: dug stone in a quarry yard no wagon collects -> red card with "Kup wóz", not the grey stone button (D-591)', () => {
+  // valley seeds 1310 / 1317 card-60, 110:37-110:45: OUTPUT_FULL.NO_WAGON, 8 of 9 stone at the quarry, every wagon
+  // busy — the trading post's only cure was the grey "Wyłóż most kamieniem" for 9-11 s
+  const { w, post, quarry, need } = heldPost();
+  quarry.progress = -1;
+  quarry.stock.stone = need - 1;
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
+  eq(paveStoneWait(w, post), null, 'no calm wait: the quarry cannot dig the rest');
+  eq(paveStoneHaul(w, post), quarry.id, 'the stone waits for a wagon at this quarry');
+  const e = entry(w, post.id);
+  assert(!!e && e.crit, 'red card: something to do');
+  eq(cureFor(w, post.id), 'wagon', 'the cure is a wagon (the rail lights it, the sheet offers it)');
+  eq(quarryForPave(w, post), -1, 'no quarry offer');
+  // all of the yard booked already (WAITING_PICKUP) is D-430's calm wait, not this cure
+  quarry.reservedOut.stone = need - 1;
+  quarry.status = { k: 'WAITING_PICKUP', good: 'stone', wagon: w.state.wagons[0]!.id };
+  eq(paveStoneHaul(w, post), -1, 'booked: no haul cure');
+  eq(cureFor(w, post.id), 'pave', 'the calm stone wait again');
+});
+
+test('stone wait: the HUD card and the sheet name the missing wagon (D-591)', () => {
+  const src = (f: string): string => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
+  assert(/haul \? 'cause\.stoneWagon'/.test(src('ui/hud.ts')), 'card reason: the stone waits for a free wagon');
+  assert(/paveStoneHaul\(world, b\) >= 0[\s\S]{0,300}t\('fix\.stoneWagon'/.test(src('ui/panels.ts')), 'sheet hint beside "Kup wóz"');
 });

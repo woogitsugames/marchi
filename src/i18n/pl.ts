@@ -798,6 +798,11 @@ export const pl = {
   'cause.stoneComing': '{wagon} stoi przed mostem — kamień na bruk już jedzie',
   'fix.stoneDig': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom wykopie go za ok. {time}, potem wóz zawiezie go do spichlerza i wtedy wyłożysz most. Nic więcej nie trzeba robić.',
   'fix.stoneComing': 'Do kamiennego mostu brakuje kamienia: {n}. Jest już wykopany (w drodze: {incoming}, przy kamieniołomie: {quarry}) — gdy dotrze do spichlerza, wyłożysz most. Nic więcej nie trzeba robić.',
+  // D-591: the stone is dug, but lies in a quarry's full yard no wagon collects
+  'cause.stoneWagon': '{wagon} stoi przed mostem — kamień na bruk czeka w kamieniołomie na wolny wóz',
+  'fix.stoneWagon': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom ma już {quarry} na placu, ale wszystkie wozy są zajęte — nikt go nie wiezie, a pełny plac wstrzymuje wydobycie. Kup wóz albo zaczekaj, aż któryś się zwolni.',
+  // D-592: a full yard refused by a full granary while another granary has room
+  'cause.yardRoom': 'pełne podwórze — towar pojedzie do spichlerza, który ma miejsce',
   // free valley bottleneck card (D-171)
   'hud.bottleneck': 'Wąskie gardło',
   'neck.reason': 'czeka średnio {n} z {m} warsztatów',
@@ -948,6 +953,8 @@ export const PENDING_KEYS = [
   'cause.stoneDig', 'cause.stoneComing', 'fix.stoneDig', 'fix.stoneComing',
   // D-454
   'status.STORAGE_FULL.filling', 'why.full.storeFilling',
+  // D-591, D-592
+  'cause.stoneWagon', 'fix.stoneWagon', 'cause.yardRoom',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

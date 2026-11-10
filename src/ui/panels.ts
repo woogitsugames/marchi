@@ -1,12 +1,13 @@
 // Sheet contents: "Dlaczego stoi?" (building), wagon card, and their cause chains.
 import {
   BUILDINGS, GOODS, buildingById, contractsOf, roadCellCost, cycleTicks, contractFilled, explainBuilding, explainWagon, granaryRelief, inputGoods, lastUndoable, outputGoods, outputSurplus, seasonAt, seasonNote, seasonal, seasonalSupplier, stoneInStore, topUpHold, STONE_COBBLE,
-  suggestLinkToStable, wagonEta, wagonSlowdown, type SeasonNote, TRADE_POST, MARKET, tradePostStatus,
+  wagonEta, wagonSlowdown, type SeasonNote, TRADE_POST, MARKET, tradePostStatus,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
 import { t, translated, type MessageKey } from '../i18n/index';
 import { cardBuild } from './cardBuild';
 import { esc, setHtml } from './dom';
+import { pressOnce } from './retire';
 import {
   bdi, buildingLabels, buildingName, buildingStateIcon, buildingStatusText, clock, codexLink, fmtDec, fmtInt, fmtPercent, fmtRatio, iceWaitSec, goodName, isStall, isStallLink, isWagonWait, linkIcon, linkSubject, linkText, rankName, sentences, tHtml, ticksClock,
   wagonName, wagonStatusText,
@@ -16,7 +17,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, paveCheck, paveSpanFor, paveStoneWait, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { gapSuggestion, chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, yardStoreRoom, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -66,13 +67,8 @@ export interface PanelNav {
 
 // ---------------------------------------------------------------- gap finder
 
-let gapCache: { key: string; s: RoadSuggestion | null } | null = null;
-/** suggestLinkToStable runs a whole-grid Dijkstra: compute once per road network version. */
-export function gapSuggestion(world: World, target: number): RoadSuggestion | null {
-  const key = `${target}:${world.state.netVersion}:${world.state.buildings.length}`;
-  if (gapCache?.key !== key) gapCache = { key, s: suggestLinkToStable(world, target) };
-  return gapCache.s;
-}
+// gapSuggestion lives in stalls.ts (D-593: cached per world, tested headless)
+export { gapSuggestion };
 
 function fixHtml(world: World, target: number, s: RoadSuggestion, why: MessageKey | null = null): string {
   const short = s.cost - world.state.coins;
@@ -330,7 +326,17 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
     // a short landscape sheet wraps it in full instead of clamping it to three lines beside the button
     return fixSection(btn, `<div class="s-hint">${esc(t('fix.cutOffWhy'))}</div>`, false, true);
   }
-  if (cure === 'wagon') return wagonCureHtml(world, t('fix.wagonWhy'));
+  if (cure === 'wagon') {
+    // D-591: the stone bridge's stone lies dug in a quarry's full yard no wagon collects — say so beside "Kup wóz"
+    if (paveStoneHaul(world, b) >= 0) {
+      const h = paveSpanFor(world, b);
+      const ok = h ? paveCheck(world, h) : null;
+      if (ok && !ok.ok && ok.err.k === 'NO_STONE') {
+        return wagonCureHtml(world, t('fix.stoneWagon', { n: fmtInt(ok.err.need - ok.err.have), quarry: fmtInt(ok.err.atQuarry) }));
+      }
+    }
+    return wagonCureHtml(world, t('fix.wagonWhy'));
+  }
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
   if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
     const text = canSurface(world, 2).ok ? t('fix.jamStone') : t('fix.jam');
@@ -386,6 +392,12 @@ function calmHtml(world: World, b: Building, chain: ReasonLink[], fleet: boolean
   if (fresh >= 0) {
     return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.granaryFilling')}>${esc(t('fix.granaryFilling'))} <button class="linkish" data-go="building:${fresh}">${
       esc(buildingName(world, fresh))}</button></span></div>`;
+  }
+  // D-592: a full yard refused by a full granary while another one has room — one tap to that granary
+  const room = yardStoreRoom(world, b);
+  if (room >= 0) {
+    return `<div class="s-hint calm-hint">${iconSvg('warehouse', 22)}<span${en('fix.storeRoom')}>${esc(t('fix.storeRoom'))} <button class="linkish" data-go="building:${room}">${
+      esc(buildingName(world, room))}</button></span></div>`;
   }
   if (chain.length > 1) return '';
   const s = b.status;
@@ -520,7 +532,8 @@ function wire(sheet: Sheet, nav: PanelNav): void {
     if (act === 'first') nav.castleFirst(Number(arg));
     if (act === 'chainfirst') nav.chainFirst(Number(arg));
     if (act === 'follow') nav.toggleFollow(Number(arg));
-    if (act === 'sell' && !el.classList.contains('is-disabled')) nav.sellWagon(Number(arg));
+    // D-590: the wagon is gone after the first press; a second one before the sheet closes would sell nothing
+    if (act === 'sell' && pressOnce(el)) nav.sellWagon(Number(arg));
     if (act === 'undo') nav.undoPlace(Number(arg));
     if (act === 'granary' && !el.classList.contains('is-disabled')) nav.pickBuild('warehouse', Number(arg));
     if (act === 'cutoff') {
