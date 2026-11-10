@@ -53,6 +53,8 @@ import {
   type TextureName,
 } from './textures';
 import { bareAt, bareBakeLevel, springAt } from './leafFall';
+import { OPENING_FRAMES, openingFree } from './opening';
+import { installToneLook } from './toneLook';
 import { VegetationView } from './vegetation';
 import { WaterView } from './water';
 import { WagonsView } from './wagonsView';
@@ -131,7 +133,7 @@ class View implements WorldView {
   private winter = 0;
   /** 0..1 bare deciduous crowns (free valley seasons, D-260): `bareAt(tick)`. */
   private bare = 0;
-  /** 0..1 young spring green of the deciduous crowns (free valley seasons, D-303): `springAt(tick)`. */
+  /** 0..2 green of the deciduous crowns (free valley seasons, D-303, D-540: 1 young spring, 2 summer): `springAt(tick)`. */
   private spring = 0;
   private tod = MENU_TIME;
   private fps = 60;
@@ -156,6 +158,8 @@ class View implements WorldView {
   /** The build of the terrain pieces outside the first frame is queued (D-296). */
   private terrainRestQueued = false;
   private menu = false;
+  /** The menu was just left: the next setWorld applies the mission's opening frame (D-542). */
+  private openingDue = false;
   /** Jump environment (time of day, rain) to the sim state on the next frame. */
   private snapEnv = true;
   /** When the time-of-day lights are recomputed (D-257, D-370). */
@@ -191,6 +195,8 @@ class View implements WorldView {
   }
 
   mount(canvas: HTMLCanvasElement): void {
+    // the game's contrast look inside AgX (D-541), before any program is built
+    if (!installToneLook()) console.warn('[view] AgX look slot not found: plain AgX');
     const r = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     r.outputColorSpace = SRGBColorSpace;
     r.toneMapping = typeof AgXToneMapping === 'number' ? AgXToneMapping : ACESFilmicToneMapping;
@@ -297,6 +303,8 @@ class View implements WorldView {
       this.applyQuality();
       if (!this.menu) this.rig.set(hf.sizeX * 0.45, hf.sizeZ * 0.5, 230, -0.3);
     }
+    if (this.openingDue && !this.menu) this.frameOpening(world, !sameTerrain);
+    this.openingDue = false;
     this.wagons!.reset();
     this.snapEnv = true;
     this.netVer = -1;
@@ -522,8 +530,8 @@ class View implements WorldView {
     // (2 x 7 MB), the full 256 px atlas only on ultra (2 x 28 MB)
     const cell = this.quality === 'ultra' ? 256 : 128;
     // and per bare level of the deciduous crowns (D-260): a season change re-bakes into the same targets
-    // and per spring green level (D-303, same quarter steps; the rise coincides with the leaves' return, so it adds
-    // only the 4 steps of the summer fade)
+    // and per green level (D-303, same quarter steps over 0..2; the spring rise coincides with the leaves' return, so
+    // it adds the 4 steps of the summer maturing and the 8 of the autumn turn, D-540: once per few game minutes)
     const bareLvl = bareBakeLevel(this.bare), springLvl = bareBakeLevel(this.spring);
     if (this.vegetation && (this.bakedCell !== cell || this.bakedBare !== bareLvl || this.bakedSpring !== springLvl)) {
       this.vegetation.bake(r, cell, bareLvl, springLvl);
@@ -824,6 +832,28 @@ class View implements WorldView {
     }
   }
 
+  /**
+   * Opening view of a mission (D-542): the closest view at its yaw that shows its opening cell box whole
+   * in the part of the canvas the HUD leaves free. `jump`: a new terrain was just built (no glide from the menu).
+   */
+  private frameOpening(world: World, jump: boolean): void {
+    const box = OPENING_FRAMES[world.state.mission.id];
+    const hf = this.hf;
+    if (!box || !hf) return;
+    const pts: Vector3[] = [];
+    const xs = [box.x0 * CELL, (box.x0 + box.x1 + 1) * CELL * 0.5, (box.x1 + 1) * CELL];
+    const zs = [box.y0 * CELL, (box.y0 + box.y1 + 1) * CELL * 0.5, (box.y1 + 1) * CELL];
+    for (const x of xs) for (const z of zs) pts.push(new Vector3(x, hf.height(x, z), z));
+    let best: { x: number; z: number; dist: number } | null = null;
+    for (const free of openingFree(this.rig.camera.aspect)) {
+      const f = this.rig.fitGround(pts, free, box.yaw);
+      if (f && (!best || f.dist < best.dist)) best = f;
+    }
+    if (!best) return;
+    if (jump) this.rig.set(best.x, best.z, best.dist, box.yaw);
+    else this.rig.setGoal(best.x, best.z, best.dist, box.yaw);
+  }
+
   setMenuMode(on: boolean): void {
     const was = this.menu;
     this.menu = on;
@@ -832,6 +862,8 @@ class View implements WorldView {
       // leaving the menu: glide out to a working view of the valley
       this.rig.setGoal(this.hf.sizeX * 0.45, this.hf.sizeZ * 0.5, 200, -0.3);
     }
+    // the game's world comes right after (setWorld): a mission with an opening frame glides there instead (D-542)
+    this.openingDue = !on;
     this.rig.menu = on;
     if (on) {
       this.rig.follow(null);

@@ -344,3 +344,13 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-520 | — | A sheet opened while our own `history.back()` is in flight gets its history entry when that back lands | decided | UI |
 | D-521 | — | The pause menu takes the player's speed once per pause | decided | UI |
 | D-522 | — | The Android system back is offered to the page first | decided | inne |
+| D-540 | 2026-11-10 | Graphics: green summer crowns, rust only in autumn (owner, graphics audit 12, 2026-11-10) | decided | render |
+| D-541 | — | Graphics: a gentle contrast look inside AgX (owner, graphics audit 12) | decided | render |
+| D-542 | — | Mission I opens on the river crossing (owner, graphics audit 12) | decided | render |
+| D-543 | — | Graphics audit 12: method and cost | decided | render |
+| D-560 | 2026-11-10 | A game the player paused stays paused after the pause menu closes (owner decision 2026-11-10) | decided | UI |
+| D-561 | — | A held pause is tracked by "holding", not by the speed | decided | inne |
+| D-562 | — | Settings and Help opened from the menu behave the same | decided | UI |
+| D-563 | — | The system back is consistent | decided | inne |
+| D-564 | — | Test | decided | inne |
+| D-565 | — | BACKLOG | decided | inne |

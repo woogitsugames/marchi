@@ -1,7 +1,7 @@
 // Graphics audit 11 (D-500..): the main scenes against docs/ART_DIRECTION.md, before / after.
 // Built game: npm run build; npx vite preview --port 5199 --strictPort.
 //   node tools/gfx11-shots.mjs <baseUrl> <tag> [scene,...] [quality,...] [viewport,...]
-// -> docs/shots/gfx11-<tag>-<scene>-<quality>-<w>x<h>.jpg
+// -> docs/shots/<prefix>-<tag>-<scene>-<quality>-<w>x<h>.jpg (prefix: env GFX_PREFIX, default gfx11; audit 12 uses gfx12)
 // Scenes: menu; missions I, VII, XIII, XVII at their opening (I with the menu bot's bridge and wagons, so the roads
 // carry traffic); the free valley with the bench road network (tools/frame-cost-bench.json) in each season at noon,
 // and in autumn at dawn / morning / dusk / night. Valley shots hide the HUD (the scene is judged), missions keep it.
@@ -15,6 +15,7 @@ const { chromium } = require('playwright');
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'docs/shots');
 mkdirSync(outDir, { recursive: true });
+const prefix = process.env.GFX_PREFIX || 'gfx11';
 const [base = 'http://127.0.0.1:5199/', tag = 'before', only = '', qualS = 'low,high', vpS = '412x915,915x412'] = process.argv.slice(2);
 
 // season ticks (TICK_HZ 10, 15 min seasons, spring first); spring after the thaw so the ground is not wet
@@ -23,6 +24,8 @@ const valley = (tick, time, dist = 110, yaw = 0.9) => ({ q: 'play=sandbox&ff=30'
 const SCENES = {
   menu: { q: '', menu: true },
   m1: { q: 'play=m1&bot=1&ff=150' },
+  // mission I in its first seconds, no bot (what a player sees under / right after the letter, D-542)
+  'm1-open': { q: 'play=m1&ff=2' },
   m7: { q: 'play=m7&ff=60' },
   m13: { q: 'play=m13&ff=60' },
   m17: { q: 'play=m17&ff=60' },
@@ -80,7 +83,7 @@ for (const [name, sc] of Object.entries(SCENES)) {
       `), { ...sc, cmds: sc.valley ? benchCmds : [] });
       await page.waitForTimeout(sc.menu ? 5000 : 4000);
       if (await page.evaluate(() => { if (!window.__gfxCam) return false; const v = window.__marchia.app.view; v.rig.set(...window.__gfxCam); v.snapEnv = true; return true; })) await page.waitForTimeout(1500);
-      const f = resolve(outDir, `gfx11-${tag}-${name}-${quality}-${vp}.jpg`);
+      const f = resolve(outDir, `${prefix}-${tag}-${name}-${quality}-${vp}.jpg`);
       await page.screenshot({ path: f, type: 'jpeg', quality: 80, timeout: 600000 });
       console.log(`${name} ${quality} ${vp}: ${JSON.stringify(info)} -> ${f.replace(root + '/', '')}`);
       await ctx.close();

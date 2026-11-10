@@ -560,7 +560,7 @@ let atlasCell = 0;
 /** Bare factor the atlas pair holds (D-260); the bake materials read it from `bakeBare`. */
 let atlasBare = -1;
 const bakeBare = { value: 0 };
-/** Spring green level the atlas pair holds (D-303); the bake materials read it from `bakeSpring`. */
+/** Crown green level (0..2, D-303 / D-540) the atlas pair holds; the bake materials read it from `bakeSpring`. */
 let atlasSpring = -1;
 const bakeSpring = { value: 0 };
 

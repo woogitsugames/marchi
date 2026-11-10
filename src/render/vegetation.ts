@@ -91,7 +91,7 @@ export class VegetationView {
   }
 
   /**
-   * Deciduous crowns 0 (in leaf) … 1 (bare) (D-260) and 0 … 1 young spring green (D-303) for the near trees, the
+   * Deciduous crowns 0 (in leaf) … 1 (bare) (D-260) and 0 … 2 crown green (D-303, D-540: 1 young spring, 2 summer) for the near trees, the
    * ground-cover shrubs and the far cards' per-tree tint: two numbers written into shared uniforms.
    */
   setBare(bare: number, spring = 0): void {

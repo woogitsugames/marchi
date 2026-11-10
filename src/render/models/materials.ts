@@ -95,7 +95,7 @@ export const treeUniforms = {
   uBbNormal: { value: null as Texture | null },
   /** 0 … 1 deciduous crowns bare (D-260): a leaf card whose `aTree.z` is below it shows the twig spray. */
   uBare: { value: 0 },
-  /** 0 … 1 young spring green on the deciduous leaf cards (D-303, `springAt`); 0 keeps the late-autumn palette. */
+  /** 0 … 2 green of the deciduous leaf cards (D-303, D-540, `springAt`): 0 late autumn, 1 young spring, 2 summer. */
   uSpring: { value: 0 },
 };
 
@@ -118,13 +118,20 @@ vec2 twigUv(vec2 uv, float sel, float h) {
 // birch leaves under an overcast sky: desaturated, a little yellow), so the baked clump occlusion and the per-clump
 // value spread stay; each card has its own shade (olive-green … yellow-green) and its own strength from its hash, so
 // a crown does not go one flat colour. Linear albedo; s = 0 returns the colour unchanged (contract missions, autumn).
+// s 1 … 2 (D-540): the young green matures into the summer green (#4f5a38 … #47553a in sRGB, S ≈ 23 %: muted, in the
+// terrain's middle band), a little darker than the autumn leaf, and almost every card takes it (a few keep a hint of
+// their own hue), so summer no longer shows the autumn rust.
 #define SPRING_COL vec3(0.165, 0.25, 0.07)
 #define SPRING_COL2 vec3(0.215, 0.255, 0.065)
+#define SUMMER_COL vec3(0.078, 0.102, 0.040)
+#define SUMMER_COL2 vec3(0.064, 0.091, 0.042)
 vec3 springLeaf(vec3 c, float s, float h) {
-  vec3 g = mix(SPRING_COL, SPRING_COL2, fract(h * 7.0));
+  float hs = fract(h * 7.0), hk = fract(h * 29.0);
+  float m = clamp(s - 1.0, 0.0, 1.0);
+  vec3 g = mix(mix(SPRING_COL, SPRING_COL2, hs), mix(SUMMER_COL, SUMMER_COL2, hs), m);
   const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
-  g *= dot(c, lw) / dot(g, lw) * 1.05;
-  return mix(c, g, s * (0.78 + 0.22 * fract(h * 29.0)));
+  g *= dot(c, lw) / dot(g, lw) * (1.05 - 0.15 * m);
+  return mix(c, g, min(s, 1.0) * mix(0.78 + 0.22 * hk, 0.92 + 0.08 * hk, m));
 }
 `;
 
@@ -242,7 +249,7 @@ const TREE_VERT_BODY = /* glsl */ `
     vTint = mix(cool, warm, tH2) * tVal;
     // spring (D-303): most of the russet/ochre hue spread goes (it would brown the young green), the value spread stays;
     // the far cards follow with the exact factor
-    vTint = mix(vTint, vec3(tVal), 0.6 * uSpring);
+    vTint = mix(vTint, vec3(tVal), 0.6 * min(uSpring, 1.0) + 0.2 * clamp(uSpring - 1.0, 0.0, 1.0));
   } else {
     // conifers: value and a slight blue-green / yellow-green shift
     vTint = mix(vec3(0.95, 1.0, 1.0), vec3(1.05, 1.02, 0.92), tH2) * (0.9 + 0.2 * tH1);
