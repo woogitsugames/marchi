@@ -20,6 +20,7 @@ import {
   SRGBColorSpace,
   type Texture,
 } from 'three';
+import { noiseTexture } from '../noiseTex';
 
 export type MatKey =
   | 'wood' // sawn and hewn timber, wagon, boards, shingles, wicker
@@ -403,8 +404,31 @@ const FROST_KEYS = new Set<MatKey>(['wood', 'bark', 'thatch', 'stone', 'plaster'
 const FROST_VERT = `
 #ifdef USE_INSTANCING
   vFrostUp = -1.0;
+  vWeaPos = vec3(0.0);
 #else
   vFrostUp = normalize(mat3(modelMatrix) * objectNormal).y;
+  vWeaPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+#endif
+`;
+/**
+ * Weathering (D-500): the vertex colours give every wall, roof and beam one flat tone per part, which read as painted
+ * clay up close (the castle most). A world-space stain from the shared noise texture (one fetch, mipmapped, so it
+ * fades to its mean from afar instead of shimmering): broad damp patches (~1 m), rain streaks stretched down the
+ * walls and fine mottling (~0.2 m); darker spots also go a little greyer (lichen, soot, wet). Plain meshes only, like
+ * the frost: an instanced wagon would drag the stains through world space. Mean brightness is kept (±0 on average).
+ */
+const WEATHER_FRAG = `
+#ifndef USE_INSTANCING
+{
+  vec2 wq = vec2(vWeaPos.x + vWeaPos.z * 0.73, vWeaPos.y * 0.42 + (vWeaPos.z - vWeaPos.x) * 0.21);
+  vec4 wn = texture2D(tWeather, wq / 26.0 + 0.17);
+  // centred on the channel means (0.43 / 0.52 / 0.55, sd ~0.14): about ±40 % albedo (1 sd), which AgX squeezes to a
+  // few percent of display brightness (a ±20 % stain barely showed); clamped so no spot goes black or chalky
+  float wea = clamp((wn.r - 0.43) * 2.2 + (wn.b - 0.52) * 1.4 + (wn.a - 0.55) * 1.0, -0.55, 0.5);
+  diffuseColor.rgb *= 1.0 + wea;
+  float weaL = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(weaL), clamp(-wea * 0.8, 0.0, 0.35));
+}
 #endif
 `;
 const FROST_FRAG = `
@@ -419,14 +443,17 @@ const FROST_FRAG = `
 // program (and one for the instanced mirrors) as before the frost; a per-kind key would add a program per kind
 function frostHook(sh: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }): void {
   sh.uniforms.uFrost = frostUniform;
+  weatherTex.value ??= noiseTexture();
+  sh.uniforms.tWeather = weatherTex;
   sh.vertexShader = sh.vertexShader
-    .replace('#include <common>', '#include <common>\nvarying float vFrostUp;')
+    .replace('#include <common>', '#include <common>\nvarying float vFrostUp;\nvarying vec3 vWeaPos;')
     .replace('#include <project_vertex>', '#include <project_vertex>\n' + FROST_VERT);
   sh.fragmentShader = sh.fragmentShader
-    .replace('#include <common>', '#include <common>\nuniform float uFrost;\nvarying float vFrostUp;')
-    .replace('#include <color_fragment>', '#include <color_fragment>\n' + FROST_FRAG);
+    .replace('#include <common>', '#include <common>\nuniform float uFrost;\nuniform sampler2D tWeather;\nvarying float vFrostUp;\nvarying vec3 vWeaPos;')
+    .replace('#include <color_fragment>', '#include <color_fragment>\n' + WEATHER_FRAG + FROST_FRAG);
 }
-const frostKey = (): string => 'frost1';
+const weatherTex: { value: DataTexture | null } = { value: null };
+const frostKey = (): string => 'frost2';
 
 function addFrost(m: MeshStandardMaterial): void {
   m.onBeforeCompile = frostHook;
