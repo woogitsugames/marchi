@@ -28,12 +28,15 @@ test('winter trees: bare factor 0 in summer, 1 in winter, leaf fall and spring l
   eq(bareBakeLevel(0.5), 0.5, 'quarter steps');
 });
 
-test('spring trees: young green rises with the leaves, fades in early summer, 0 in autumn and winter (D-303)', () => {
+test('crown green: young green rises with the leaves, summer green, rust from mid-autumn, 0 in winter (D-303, D-540)', () => {
   const S = SEASON_TICKS;
   eq(springAt(0), 0, 'spring starts bare, no green');
   eq(springAt(S * 0.8), 1, 'late spring fully green');
-  eq(springAt(S + S * 0.5), 0, 'mid summer back to the normal palette');
-  eq(springAt(2 * S + 10), 0, 'autumn');
+  eq(springAt(S + S * 0.5), 2, 'mid summer: summer green, not the autumn palette (D-540)');
+  assert(springAt(2 * S + 10) > 1.99, 'autumn starts in summer green');
+  eq(springAt(2 * S + S * 0.6), 0, 'rust by the time the leaves fall (60 % of autumn)');
+  eq(bareAt(2 * S + S * 0.6), 0, '... which is when they start to fall');
+  eq(springAt(3 * S - 10), 0, 'late autumn');
   eq(springAt(3 * S + 10), 0, 'winter');
   // a returning leaf card is already young green: the rise mirrors the bare factor exactly
   for (let t = 0; t < S; t += 37) assert(Math.abs(springAt(t) - (1 - bareAt(t))) < 1e-9, `spring rise = leaf return at ${t}`);
