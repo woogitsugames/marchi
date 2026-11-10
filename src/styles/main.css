@@ -2793,3 +2793,6 @@ body.is-landscape.is-bigtext .wb-castles .wb-tr.is-now > .wb-goods { display: bl
 
 /* build tutorial (D-235): the offer's one action under the note's text */
 .tut-act { margin-top: 10px; min-height: 48px; padding: 0 18px; font-weight: 700; }
+
+/* D-590: a sheet or letter on its way out takes no taps (also set inert in JS: children with pointer-events: auto) */
+#ui .sheet.is-leaving, #ui .letter-scrim.is-out, #ui .rank-letter-wrap.is-out { pointer-events: none; }

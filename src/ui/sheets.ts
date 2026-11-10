@@ -2,6 +2,7 @@
 // Closes with: close button, swipe down (or sideways on side sheets), Escape, Android back
 // (history entry per open sheet), tap on the empty map (handled by the app).
 import { h, isRtl } from './dom';
+import { SHEET_LEAVE_MS, retire } from './retire';
 import { iconSvg } from './icons';
 import { t } from '../i18n/index';
 import { SheetHistory } from './sheetHistory';
@@ -248,8 +249,6 @@ export class Sheets {
     for (const f of s.deferred.splice(0)) f();
     this.detachers.get(s)?.();
     dropDock(s);
-    s.el.classList.add('is-leaving');
-    window.setTimeout(() => s.el.remove(), 240);
     // onChange first: it drops body.has-sheet, which hides the rail in portrait — focus() on the worst-stall eye
     // or a rail button that is still visibility:hidden silently fails and focus stayed in the closing sheet
     this.onChange?.();
@@ -259,6 +258,9 @@ export class Sheets {
       if (back) back.focus({ preventScroll: true });
       if (!back || document.activeElement !== back) (document.activeElement as HTMLElement).blur();
     }
+    // D-590: inert from the first frame of the fade — a tap on a closing sheet reaches the map, not its buttons
+    // (after the focus hand-back above: an inert sheet would drop its focus before we could return it)
+    retire(s.el, 'is-leaving', SHEET_LEAVE_MS);
     return true;
   }
 

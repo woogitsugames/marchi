@@ -3,6 +3,7 @@
 import { LANG_NAMES, availableLangs, getLang, setLang, t, type Lang, type MessageKey } from '../i18n/index';
 import { GOODS, MISSIONS, contractsOf, type World } from '../sim/index';
 import { deckle, esc, h, setHtml } from './dom';
+import { retire } from './retire';
 import { bdi, buildingName, clock, fmtInt, fmtRatio, goodName, iso, rankName, tHtml, ticksClock, wagonName } from './format';
 import { lossActionKey } from './stallKinds';
 import { lossCauses } from './stalls';
@@ -569,8 +570,8 @@ export function buildOpeningLetter(missionId: string, onClose: () => void): HTML
     closed = true;
     window.removeEventListener('keydown', onKey);
     if (!scrim.isConnected) return; // removed with the game (back to the menu): nothing to resume
-    scrim.classList.add('is-out');
-    window.setTimeout(() => scrim.remove(), 220);
+    // D-590: the fading letter lets the next tap through to the map
+    retire(scrim, 'is-out', 220);
     onClose();
   };
   const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); close(); } };
