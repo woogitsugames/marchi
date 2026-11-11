@@ -43,21 +43,34 @@ export function deadEnd(world: World): DeadEnd | null {
   if (!c || st.mission.result !== 'running') return null;
   const src = noSource(world);
   if (src) return src;
-  const castle = st.buildings.find((b) => b.id === c.castle);
   const stable = st.buildings.find((b) => b.type === 'stable');
-  if (!castle || !stable) return null;
-  const link = suggestConnection(world, stable.gate, castle.gate);
-  if (link && link.newCells.length === 0) return null; // connected: still winnable as far as roads go
-  const cost = link ? link.cost : -1;
-  const raise = Math.max(0, st.wagons.length - 1) * WAGON_REFUND;
-  if (cost >= 0 && st.coins + raise >= cost) return null;
-  return { k: 'NO_ROUTE_TO_CASTLE', castle: castle.id, cost, coins: st.coins, raise };
+  if (!stable) return null;
+  // D-635: every castle with an order (XVI / XVII: the second castle too), the main one first
+  for (const k of contractsOf(st.mission)) {
+    const castle = st.buildings.find((b) => b.id === k.castle);
+    if (!castle || !GOODS.some((g) => k.need[g] > castle.stock[g])) continue; // gone, or its order is in
+    const link = suggestConnection(world, stable.gate, castle.gate);
+    if (link && link.newCells.length === 0) continue; // connected: still winnable as far as roads go
+    const cost = link ? link.cost : -1;
+    const raise = Math.max(0, st.wagons.length - 1) * WAGON_REFUND;
+    if (cost >= 0 && st.coins + raise >= cost) continue;
+    return { k: 'NO_ROUTE_TO_CASTLE', castle: castle.id, cost, coins: st.coins, raise };
+  }
+  return null;
 }
 
-/** Units of g on the map: every yard and granary (not the castles) and every wagon's cargo. */
+/**
+ * Units of g on the map: every yard and granary (not the castles), every wagon's cargo, and (D-636) the output of a
+ * cycle already running — its inputs left the yard when it started, so without it the bound fell short by one cycle
+ * (fuzz m17 seed 104: the letter at 4:40 cleared at 5:01 when the sawmill's last cycle came out).
+ */
 function onMap(world: World, g: Good): number {
   let n = 0;
-  for (const b of world.state.buildings) if (b.type !== 'castle') n += b.stock[g];
+  for (const b of world.state.buildings) {
+    if (b.type === 'castle') continue;
+    n += b.stock[g];
+    if (b.progress >= 0) n += BUILDINGS[b.type].recipe?.outputs[g] ?? 0;
+  }
   for (const w of world.state.wagons) if (w.cargoGood === g) n += w.cargoQty;
   return n;
 }
