@@ -232,6 +232,12 @@ export const pl = {
   'fix.bridge': 'Zbuduj drogę i most: {n} srebra',
   'fix.shown': 'Brakujący odcinek zaznaczono na mapie.',
   'fix.short': 'Brakuje {n} srebra',
+  // D-712
+  'fix.shortNoIncome': 'Brakuje {n} srebra, a w tej misji srebro nie przybywa.',
+  'fix.shortSell': 'Sprzedaj wolne wozy: {n} (+{refund} srebra za każdy).',
+  'fix.shortWagonFree': '{wagon} skończy kurs za ok. {time}.',
+  'fix.shortIce': 'Kra ustąpi sama za {time}.',
+  'fix.shortJam': 'Most zwolni się, gdy przejadą wozy z naprzeciwka.',
   'fix.wagon': 'Kup wóz',
   'fix.wagonWhy': 'Wszystkie wozy są zajęte: nowy wóz ruszy ze stajni do najpilniejszej dostawy.',
   'fix.wagonLately': 'Przed chwilą czekano tu na wolny wóz — wszystkie były w trasie. Kolejny wóz skróci następne takie czekanie.',
@@ -695,6 +701,8 @@ export const pl = {
   'cause.heldJam': '{wagon} stoi przed wąskim mostem',
   'cause.heldIce': '{wagon} stoi przed mostem zamkniętym przez krę',
   'cause.routeLost': '{wagon} nie ma drogi do celu',
+  // D-710
+  'cause.inputDue': '{wagon} po obecnym kursie przywiezie towar dla: {who}',
   'fix.pave': 'Wyłóż most kamieniem',
   'fix.paveWhy': '{wagon} czeka na drewnianym przęśle. Kamienny most mieści wozy w obie strony i kra go nie zamyka.',
   'fix.paveQuarry': 'Kamienny most potrzebuje kamienia, a nikt go nie wydobywa. Najpierw kamieniołom, potem most.',
@@ -800,6 +808,8 @@ export const pl = {
   'cause.cutOff': 'bez dojazdu — do bramy nie da się już poprowadzić drogi',
   'fix.cutOff': 'Rozbierz: {name}',
   'fix.cutOffWhy': 'Sąsiednie budynki zamknęły dojazd do bramy i żadnej drogi nie da się już tu poprowadzić. Rozbierz ten budynek (wraca połowa ceny) i postaw go w innym miejscu przy drodze.',
+  // D-713
+  'fix.routeBlockedWhy': '{wagon} nie ma drogi do celu, a nowej nie da się poprowadzić: {name} zamyka przejście. Rozbierz go (wraca połowa ceny), potem zbuduj drogę.',
   // D-420: the stone bridge waits for stone a quarry is digging or wagons already bring
   'cause.stoneDig': '{wagon} stoi przed mostem — kamieniołom jeszcze kopie kamień na bruk',
   'cause.stoneComing': '{wagon} stoi przed mostem — kamień na bruk już jedzie',
@@ -974,6 +984,10 @@ export const PENDING_KEYS = [
   'deadEnd.noSilver', 'deadEnd.late',
   // D-653
   'cause.routeLost',
+  // D-710, D-712
+  'cause.inputDue', 'fix.shortNoIncome', 'fix.shortSell', 'fix.shortWagonFree', 'fix.shortIce', 'fix.shortJam',
+  // D-713
+  'fix.routeBlockedWhy',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

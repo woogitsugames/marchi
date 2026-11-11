@@ -1,12 +1,13 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, MISSIONS, TICK_HZ, contractsOf, outputGoods, reachable, suggestConnection, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
+import { BUILDINGS, MISSIONS, blockingBuilding, TICK_HZ, contractsOf, outputGoods, reachable, suggestConnection, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, marketOpen, wagonEta, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 import { siteAnchor } from './site';
 import { memoryWorld } from './readWorld';
+import { WAGON_REFUND } from './deadEnd';
 
 /**
  * Free valley (research 2026-11-04, valley-3h proposal 2): a full granary that holds at least one wagon load
@@ -82,9 +83,66 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || chainSwitchStall(world, b) || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || yardStoreRoom(world, b) >= 0 || contractFilled(world, b.id) !== null || inputOrderFilled(world, b) || starvedForGood(world, b) || stoneInStore(world, b.id) > 0 ||
-    marketSaturated(world, b) || granaryPending(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
+    marketSaturated(world, b) || granaryPending(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0 ||
+    inputDueUpstream(world, b) >= 0 || briefHold(world, b) !== null;
   calmCache.set(b.id, { key, calm });
   return calm;
+}
+
+/**
+ * D-710: a building short of an input (NO_INPUT.NONE_AVAILABLE) blamed on its producer, whose own input a busy wagon
+ * is already booked to bring (the producer reads WAGON_DUE: the goods exist and that wagon comes sooner than a free one).
+ * The sim's upstream reason treats only WAITING_DELIVERY / WAITING_UPSTREAM as a healthy producer, so the castle read
+ * "brak dostępnych zapasów" as the critical card with nothing to press for the 6–35 s until the wagon set off (II, IX
+ * players; I and III fuzz). Nothing to buy: a calm pin that names the wagon. Its wagon, or -1 (none, or that wagon is
+ * itself held at a span or cut off — those have their own cards). Pure read.
+ */
+export function inputDueUpstream(world: World, b: Building): number {
+  const s = b.status;
+  if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === b.id) return -1;
+  const p = buildingById(world, s.blockedBy);
+  if (!p || p.status.k !== 'WAGON_DUE' || !inputGoods(p.type).includes(p.status.good)) return -1;
+  const id = p.status.wagon;
+  const w = world.state.wagons.find((q) => q.id === id);
+  return w && !isWagonWait(w.status) ? w.id : -1;
+}
+
+/**
+ * D-711: a wagon of this building's job (or, as D-652, of its NONE_AVAILABLE producer's job) stands at a wooden span,
+ * but not yet long enough for the held-span card (`heldSpanFor`: 20 s of a hold, or ice open 20 s that holds it 20 s
+ * more) or with no stone bridge to offer there (cobbles locked, a span that is no single walk). Ice clears by itself
+ * (D-455), so it always reads calm; a jam only in its first 20 s. Those
+ * first seconds read calm — the wagon waits at the bridge, the existing "stoi przed mostem" text — instead of a red
+ * card with nothing to press (IV: the castle behind the sawmill whose wood waits at the ice, up to 91 s because the
+ * wagons' hold restarts on every retry; II: a one-lane jam, 13 s). Null when no such wagon or the held-span card
+ * applies. Pure read.
+ */
+export function briefHold(world: World, b: Building): { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED' } | null {
+  if (heldSpanFor(world, b)) return null;
+  // either leg of its own job too: the wagon that will bring its input may be held on its way to the pickup
+  const own = briefHoldOf(world, b, true);
+  if (own) return own;
+  const s = b.status;
+  if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === b.id) return null;
+  const p = buildingById(world, s.blockedBy);
+  return p ? briefHoldOf(world, p, true) : null;
+}
+
+function briefHoldOf(world: World, b: Building, anyLeg: boolean): { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED' } | null {
+  // only a building that waits on that wagon: an input or a pickup (a WORKING producer is no stall)
+  const k = b.status.k;
+  if (k !== 'NO_INPUT' && k !== 'WAITING_DELIVERY' && k !== 'WAITING_PICKUP' && k !== 'WAGON_DUE' && k !== 'NO_WAGON') return null;
+  let best: { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED' } | null = null;
+  for (const w of world.state.wagons) {
+    const s = w.status;
+    if ((s.k !== 'BRIDGE_JAM' && s.k !== 'BRIDGE_CLOSED') || !w.job) continue;
+    // a jam only in its first 20 s (after that, with no stone bridge to offer, it stays the card it was); ice clears
+    // by itself (D-455)
+    if (s.k === 'BRIDGE_JAM' && world.state.tick - s.since >= HELD_SPAN_TICKS) continue;
+    if ((w.job.phase === 'pickup' ? w.job.from : w.job.to) !== b.id && !(anyLeg && w.job.to === b.id)) continue;
+    if (!best || w.id < best.wagon) best = { wagon: w.id, kind: s.k };
+  }
+  return best;
 }
 
 /**
@@ -410,7 +468,11 @@ function heldSpanOf(world: World, b: Building, anyLeg = false): HeldSpan | null 
   for (const w of st.wagons) {
     const s = w.status;
     if (s.k !== 'BRIDGE_JAM' && s.k !== 'BRIDGE_CLOSED') continue;
-    const held = st.tick - s.since;
+    // D-711: ice that has closed the span for 20 s and holds it 20 s more counts at once — a wagon's own `since`
+    // restarts whenever it re-plans at the bridgehead (IV fuzz: 3722 -> 4105 -> 4676 under one window), so the card
+    // never came, and ice lasts minutes (a wagon arriving under it waits the rest of the window)
+    let held = st.tick - s.since;
+    if (s.k === 'BRIDGE_CLOSED' && held < HELD_SPAN_TICKS && s.until - st.tick >= HELD_SPAN_TICKS) held = Math.max(held, iceOnTicks(world));
     if (held < HELD_SPAN_TICKS || !w.job) continue;
     if ((w.job.phase === 'pickup' ? w.job.from : w.job.to) !== b.id && !(anyLeg && w.job.to === b.id)) continue;
     if (!best || held > best.heldTicks || (held === best.heldTicks && w.id < best.wagon)) {
@@ -420,6 +482,13 @@ function heldSpanOf(world: World, b: Building, anyLeg = false): HeldSpan | null 
   if (!best || !canSurface(world, 2).ok) return null;
   best.cells = spanCells(world, best.span);
   return best.cells.length ? best : null;
+}
+
+/** Ticks the authored ice window now open has lasted (0 with none: the valley's winter keeps the wagon's own hold). */
+function iceOnTicks(world: World): number {
+  const st = world.state;
+  for (const w of st.ice) if (w.start <= st.tick && st.tick < w.end) return st.tick - w.start;
+  return 0;
 }
 
 /** The cells of a span, ordered end to end (a contiguous list for the road command). */
@@ -864,6 +933,37 @@ function strandLink(world: World, id: number): RoadSuggestion | null {
 }
 
 /**
+ * D-713: the wagon of this building's delivery has no road (D-653) and no road can be built to it either
+ * (`gapSuggestion` null: later buildings closed every way between the wagon and the target) — the sheet offered only
+ * the road tool. The building to take back so a road fits: the first one the cheapest way crosses (castle, stable,
+ * trading post and the target itself are never offered). Its id, or -1. Pure read (one whole-grid Dijkstra each
+ * for the gap finder and this; kept per network version and building count).
+ */
+const blockerCaches = new WeakMap<World, Map<number, { key: string; id: number }>>();
+export function routeBlocker(world: World, b: Building): number {
+  const lost = routeLostFor(world, b);
+  if (!lost) return -1;
+  const wg = world.state.wagons.find((q) => q.id === lost.wagon);
+  if (!wg) return -1;
+  const key = `${world.state.netVersion}|${world.state.buildings.length}|${wg.at}`;
+  let cache = blockerCaches.get(world);
+  if (!cache) blockerCaches.set(world, (cache = new Map()));
+  const hit = cache.get(b.id);
+  if (hit && hit.key === key) return hit.id;
+  let id = -1;
+  const chain = explainBuilding(world, b.id, 5, true);
+  const tgt = gapTarget(world, chain.length ? chain : [{ kind: 'building', id: b.id, status: b.status }]);
+  if (tgt < 0 || !gapSuggestion(world, tgt)) {
+    id = blockingBuilding(world, wg.at, b.gate, (q) => {
+      const o = buildingById(world, q);
+      return !!o && q !== b.id && o.type !== 'castle' && o.type !== 'stable' && o.type !== 'tradePost';
+    });
+  }
+  cache.set(b.id, { key, id });
+  return id;
+}
+
+/**
  * D-651: the stable itself off the roads (NO_ROAD: the cell at its gate taken back). `suggestLinkToStable` links a
  * building *to* the stable's network, so for the stable it offered nothing and the card stayed critical with an
  * empty sheet (missions III and IX in the early-mission scan, up to 4.5 min) while a bought wagon had nowhere to go.
@@ -1024,7 +1124,8 @@ function cureOf(world: World, b: Building): Cure {
   }
   const chain = explainBuilding(world, id, 5, true);
   // D-410: cut off with no road left to build — take it back (the gap finder would offer nothing)
-  if (cutOffNoLink(world, chain) >= 0) {
+  // D-713: ...or the building that closes every way to a delivery wagon with no road
+  if (cutOffNoLink(world, chain) >= 0 || routeBlocker(world, b) >= 0) {
     return 'demolish';
   }
   let cure: Cure = cutOffProducer(world, chain) >= 0 || cutOffConsumer(world, chain) >= 0 || cutOffSource(world, chain) >= 0 || cutOffGranary(world, chain) >= 0 ? 'road' : null;
@@ -1069,6 +1170,42 @@ function cureOf(world: World, b: Building): Cure {
   // D-391: no granary site a road reaches anywhere the ghost would look — nothing to offer
   if (cure === 'granary' && granaryAnchor(world, b, chainRoot(chain, b.id)) < 0) cure = null;
   return cure;
+}
+
+/**
+ * D-712: a grey "Kup wóz" / "Wyłóż most kamieniem" (silver short) as the red card's only cure — up to 124 s for the
+ * mission I players who spent their silver, 190 s at IV's ice. "Brakuje N srebra" alone read as "earn it", but a
+ * contract mission pays nothing before its end (no market; D-638's silver bound): what the sheet can honestly add.
+ * `noIncome`: a contract mission (no market) — say that no silver comes in. `sell`: idle wagons to sell (half their
+ * price each, one wagon always kept) that cover the shortfall, else 0. `free`: the busy wagon that finishes its run
+ * first (wagon cure) and in how many ticks. `iceTicks`: ticks until the ice on the held span clears (pave cure, >0);
+ * `jam`: the held span is a one-lane jam (pave cure). Null outside a contract mission. Pure read.
+ */
+export interface SilverShort { noIncome: true; sell: number; free: { wagon: number; ticks: number } | null; iceTicks: number; jam: boolean }
+export function silverShort(world: World, b: Building, short: number, cure: 'wagon' | 'pave'): SilverShort | null {
+  const st = world.state;
+  if (short <= 0 || !st.mission.contract || st.mission.result !== 'running' || marketOpen(world)) return null;
+  let idle = 0;
+  for (const w of st.wagons) if (!w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0) idle++;
+  const k = Math.min(idle, st.wagons.length - 1);
+  const sell = k > 0 && k * WAGON_REFUND >= short ? Math.ceil(short / WAGON_REFUND) : 0;
+  let free: SilverShort['free'] = null;
+  let iceTicks = 0, jam = false;
+  if (cure === 'wagon') {
+    for (const w of st.wagons) {
+      if (!w.job || isWagonWait(w.status)) continue;
+      const eta = wagonEta(world, w.id);
+      if (!eta) continue;
+      const ticks = Math.ceil(eta.toFinish * TICK_HZ);
+      if (!free || ticks < free.ticks || (ticks === free.ticks && w.id < free.wagon)) free = { wagon: w.id, ticks };
+    }
+  } else {
+    const h = heldSpanFor(world, b);
+    const w = h ? st.wagons.find((q) => q.id === h.wagon) : undefined;
+    if (w && w.status.k === 'BRIDGE_CLOSED') iceTicks = Math.max(0, w.status.until - st.tick);
+    else if (w && w.status.k === 'BRIDGE_JAM') jam = true;
+  }
+  return { noIncome: true, sell, free, iceTicks, jam };
 }
 
 /**

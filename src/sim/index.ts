@@ -15,7 +15,7 @@ export {
   thawing, yearAt, type Season, type SeasonChange, type SeasonChangeKind, type SeasonEffects,
 } from './seasons';
 export { hashState } from './hash';
-export { suggestConnection, suggestLinkForSite, suggestLinkToStable, type RoadSuggestion } from './repair';
+export { blockingBuilding, suggestConnection, suggestLinkForSite, suggestLinkToStable, type RoadSuggestion } from './repair';
 export {
   canPlace, canSurface, castleLevel, demolishQuote, flowPerMinute, goodsSold, isMarket, lastUndoable, marketOpen, pricePct, quoteCents,
   rankGated, sandboxStatus, surfaceRank, unitCents, unlockRank,

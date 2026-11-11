@@ -94,6 +94,52 @@ export function suggestConnection(world: World, from: number, to: number): RoadS
   return { cells, cost, newCells, bridgeCells };
 }
 
+/**
+ * D-713: when `suggestConnection(from, to)` finds nothing, the building whose footprint closes the way: the same road
+ * rules, but a cell of a building `removable` accepts is passable at a high price (taking it back is the last resort),
+ * so the cheapest such path crosses as few buildings as it can. The first such building from `from`, or -1 (a
+ * connection exists, or none even through the removable buildings). Read-only; a whole-grid Dijkstra.
+ */
+export function blockingBuilding(world: World, from: number, to: number, removable: (id: number) => boolean): number {
+  const t = world.terrain, st = world.state, c = net(world);
+  const W = t.w, H = t.h, n = W * H;
+  if (from < 0 || to < 0 || from >= n || to >= n) return -1;
+  const THROUGH = 1000;
+  const open = (i: number): boolean => c.occupied[i] === -1 || removable(c.occupied[i]!);
+  const cellCost = (i: number): number =>
+    (c.occupied[i] !== -1 ? THROUGH : 0) + (st.roads[i] ? EXISTING_ROAD : t.water[i] ? COST_WOOD_BRIDGE : COST_DIRT);
+  const dist = new Float64Array(n).fill(Infinity);
+  const prev = new Int32Array(n).fill(-1);
+  const done = new Uint8Array(n);
+  const heap = new Heap();
+  dist[from] = 0;
+  heap.push(from, 0);
+  while (heap.size > 0) {
+    const u = heap.pop();
+    if (done[u]) continue;
+    done[u] = 1;
+    if (u === to) break;
+    const ux = u % W, uy = (u - ux) / W;
+    for (let d = 0; d < 8; d++) {
+      const vx = ux + DX[d]!, vy = uy + DY[d]!;
+      if (vx < 0 || vy < 0 || vx >= W || vy >= H) continue;
+      const v = vy * W + vx;
+      if (done[v] || !open(v)) continue;
+      // never past a building's corner (as suggestConnection): the path goes through the building, which is named
+      if (d >= 4 && (c.occupied[uy * W + vx] !== -1 || c.occupied[vy * W + ux] !== -1)) continue;
+      if (Math.abs(grade(t, u, v)) > MAX_GRADE + 1e-9) continue;
+      const nd = dist[u]! + cellCost(v);
+      if (nd < dist[v]!) { dist[v] = nd; prev[v] = u; heap.push(v, nd); }
+    }
+  }
+  if (dist[to] === Infinity) return -1;
+  const cells: number[] = [];
+  for (let x = to; x !== -1; x = prev[x]!) cells.push(x);
+  cells.reverse();
+  for (const i of cells) if (c.occupied[i] !== -1) return c.occupied[i]!;
+  return -1;
+}
+
 /** Min-heap of (node, key), ties broken by the lower node index (deterministic order). */
 class Heap {
   private hn: number[] = [];

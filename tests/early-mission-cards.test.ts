@@ -75,7 +75,9 @@ test('D-652: IV — a castle short of planks behind the sawmill whose wood stand
   ];
   for (const [at, cells] of roads) { runTo(w, at); applyCommand(w, { t: 'road', surface: 1, cells }); }
   runTo(w, 410);
-  eq(cureFor(w, typeOf(w, 'castle').id), null, 'before 20 s at the ice: the wait (HELD_SPAN_TICKS)');
+  // D-711: the ice has closed the span since 3:00 and holds it to 8:00 — a wagon arriving under it gets the stone
+  // bridge at once (before: the first 20 s of its own hold were the wait, with nothing to press)
+  eq(cureFor(w, typeOf(w, 'castle').id), 'pave', 'under long ice: the stone bridge at once');
   runTo(w, 416);
   const castle = typeOf(w, 'castle'), saw = typeOf(w, 'sawmill');
   assert(castle.status.k === 'NO_INPUT' && castle.status.cause === 'NONE_AVAILABLE' && castle.status.blockedBy === saw.id, `castle waits for the sawmill: ${JSON.stringify(castle.status)}`);

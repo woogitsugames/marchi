@@ -232,6 +232,12 @@ export const en: FullDict = {
   'fix.bridge': 'Build road and bridge: {n} silver',
   'fix.shown': 'The missing stretch is marked on the map.',
   'fix.short': 'Short by {n} silver',
+  // D-712
+  'fix.shortNoIncome': 'Short by {n} silver, and no silver comes in on this mission.',
+  'fix.shortSell': 'Sell idle wagons: {n} (+{refund} silver each).',
+  'fix.shortWagonFree': '{wagon} finishes its run in about {time}.',
+  'fix.shortIce': 'The ice clears by itself in {time}.',
+  'fix.shortJam': 'The bridge frees up once the wagons from the other side have crossed.',
   'fix.wagon': 'Buy a wagon',
   'fix.wagonWhy': 'Every wagon is busy: a new one leaves the stable for the most urgent delivery.',
   'fix.wagonLately': 'A moment ago this waited for a free wagon — every one was on the road. Another wagon shortens the next such wait.',
@@ -692,6 +698,8 @@ export const en: FullDict = {
   'cause.heldJam': '{wagon} is held at a narrow bridge',
   'cause.heldIce': '{wagon} is held at a bridge closed by ice',
   'cause.routeLost': '{wagon} has no road to its destination',
+  // D-710
+  'cause.inputDue': '{wagon} brings the supply for {who} after its current run',
   'fix.pave': 'Pave the bridge in stone',
   'fix.paveWhy': '{wagon} waits at a wooden span. A stone bridge takes wagons both ways and ice does not close it.',
   'fix.paveQuarry': 'A stone bridge needs stone, and nobody quarries it. The quarry first, then the bridge.',
@@ -795,6 +803,8 @@ export const en: FullDict = {
   'cause.cutOff': 'no way in — no road can reach its gate any more',
   'fix.cutOff': 'Demolish: {name}',
   'fix.cutOffWhy': 'Neighbouring buildings closed the way to its gate and no road can be laid here any more. Demolish it (half the price comes back) and build it elsewhere by a road.',
+  // D-713
+  'fix.routeBlockedWhy': '{wagon} has no road to its destination and no new one fits: {name} closes the way. Take it down (half its price back), then build the road.',
   // D-420: the stone bridge waits for stone a quarry is digging or wagons already bring
   'cause.stoneDig': '{wagon} is held at a bridge — the quarry is still cutting the paving stone',
   'cause.stoneComing': '{wagon} is held at a bridge — the paving stone is already on its way',

@@ -18,7 +18,7 @@ import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmt
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, cutOffConsumer, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneHaul, paveStoneWait, paveStoneYard, routeLostFor, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { briefHold, calmWhy, cureFor, cutOffConsumer, cutOffNoLink, heldSpanFor, iceBeforeWagon, inputDueUpstream, paveStoneHaul, paveStoneWait, paveStoneYard, routeLostFor, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
@@ -763,6 +763,10 @@ export class Hud {
     const held = b && !shared ? heldSpanFor(world, b) : null;
     // D-653: the delivery's wagon has no road to its target — the card names the wagon, not "w drodze"
     const lost = b && !shared && !held ? routeLostFor(world, b) : null;
+    // D-711: the first seconds of a wagon at a span (or under ice that clears by itself) — the calm pin names it
+    const brief = b && !shared && !held && !lost && w!.minor ? briefHold(world, b) : null;
+    // D-710: the producer's input is already booked on a busy wagon — the calm pin names that wagon
+    const due = b && !shared && !held && !lost && !brief && w!.minor ? inputDueUpstream(world, b) : -1;
     // D-455: ice on the span is what holds the wagon now (it clears by itself; the sheet's chain says "Kra na
     // moście"), so the card names the ice; the stone wait is the sheet's longer answer (its quarry hint stays)
     const stone = held && w!.minor && held.kind !== 'BRIDGE_CLOSED' ? paveStoneWait(world, b!) : null;
@@ -773,7 +777,7 @@ export class Hud {
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${lost ? 'lost' + lost.wagon : ''}|${stone ? (stone.digTicks > 0 ? 'dig' : 'coming') : haul ? 'haul' : yard ? 'yard' : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${lost ? 'lost' + lost.wagon : ''}|${brief ? brief.kind + brief.wagon : ''}|${due}|${stone ? (stone.digTicks > 0 ? 'dig' : 'coming') : haul ? 'haul' : yard ? 'yard' : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -787,6 +791,10 @@ export class Hud {
       ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
       : lost
         ? t('cause.routeLost', { wagon: wagonName(world, lost.wagon) })
+      : brief
+        ? t(brief.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, brief.wagon) })
+      : due >= 0 && b.status.k === 'NO_INPUT'
+        ? t('cause.inputDue', { wagon: wagonName(world, due), who: buildingName(world, b.status.blockedBy) })
       : held
         // D-420: the stone bridge waits for stone that is coming or being dug — the calm card says which
         ? t(stone ? (stone.digTicks > 0 ? 'cause.stoneDig' : 'cause.stoneComing') : haul ? 'cause.stoneWagon' : yard ? 'cause.stoneYard' : held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })

@@ -17,7 +17,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { gapSuggestion, chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, yardStoreRoom, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, paveStoneYard, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { gapSuggestion, chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, yardStoreRoom, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, paveStoneYard, postWouldTake, producerCure, quarryForPave, recentWagonWait, routeBlocker, routeLostFor, silverShort } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -218,17 +218,37 @@ function haulCureHtml(world: World, pc: PaceHaul): string {
   return fixSection(btn, hint, short > 0, true);
 }
 
+/**
+ * D-712: the disabled cure's silver line. In a contract mission (no market) it says that no silver comes in and what
+ * will do instead — idle wagons to sell that cover it, the busy wagon that frees first, the ice clearing, the jam —
+ * never "earn it". Elsewhere (the free valley's market pays) the plain "Brakuje N srebra". `wide` (D-270): the two
+ * sentences take their own row on a short landscape sheet.
+ */
+function shortHint(world: World, b: Building | null, short: number, cure: 'wagon' | 'pave'): { html: string; wide: boolean } {
+  const why = b ? silverShort(world, b, short, cure) : null;
+  if (!why) return { html: `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`, wide: false };
+  const next: [MessageKey, string] | null = why.sell > 0
+    ? ['fix.shortSell', t('fix.shortSell', { n: why.sell, refund: fmtInt(WAGON_REFUND) })]
+    : why.free
+      ? ['fix.shortWagonFree', t('fix.shortWagonFree', { wagon: wagonName(world, why.free.wagon), time: ticksClock(why.free.ticks) })]
+      : why.iceTicks > 0
+        ? ['fix.shortIce', t('fix.shortIce', { time: ticksClock(why.iceTicks) })]
+        : why.jam ? ['fix.shortJam', t('fix.shortJam')] : null;
+  const en = !translated('fix.shortNoIncome') || (next && !translated(next[0])) ? ' lang="en" dir="ltr"' : ' dir="auto"';
+  const text = sentences(t('fix.shortNoIncome', { n: fmtInt(short) }), next ? next[1] : '');
+  return { html: `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span${en}>${esc(text)}</span></div>`, wide: true };
+}
+
 /** "Kup wóz" from the stable, with its reason (or the silver short of it). */
-function wagonCureHtml(world: World, why: string): string {
+function wagonCureHtml(world: World, why: string, b: Building | null = null): string {
   const stable = world.state.buildings.find((q) => q.type === 'stable');
   if (!stable) return '';
   const short = WAGON_PRICE - world.state.coins;
   const btn = `<button class="btn primary cf fix-btn${short > 0 ? ' is-disabled' : ''}" data-act="buy:${stable.id}" aria-disabled="${short > 0}">${
     iconSvg('buy_wagon', 26)}<span>${esc(t('fix.wagon'))}</span>${bdi(`−${fmtInt(WAGON_PRICE)}`)}</button>`;
-  const hint = short > 0
-    ? `<div class="s-hint fix-why">${iconSvg('coin', 18)}<span dir="auto">${tHtml('fix.short', { n: fmtInt(short) })}</span></div>`
-    : `<div class="s-hint">${esc(why)}</div>`;
-  return fixSection(btn, hint, short > 0);
+  const sh = short > 0 ? shortHint(world, b, short, 'wagon') : null;
+  const hint = sh ? sh.html : `<div class="s-hint">${esc(why)}</div>`;
+  return fixSection(btn, hint, short > 0, !!sh?.wide);
 }
 
 /**
@@ -316,7 +336,7 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
         esc(buildingName(world, yard))}</button></span></div>`;
     }
     const ok = paveCheck(world, h);
-    let price = 0;
+    let price = 0, sh: { html: string; wide: boolean } | null = null;
     for (const c of h.cells) price += roadCellCost(world, c, 2);
     const btn = `<button class="btn primary cf fix-btn${ok.ok ? '' : ' is-disabled'}" data-act="pave:${b.id}" aria-disabled="${!ok.ok}">${
       iconSvg('road_cobble', 26)}<span>${esc(t('fix.pave'))}</span>${bdi(`−${fmtInt(price)}`)}</button>`;
@@ -324,14 +344,25 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       ? `<div class="s-hint">${esc(h.held
         ? t('fix.paveWhy', { wagon: wagonName(world, h.held.wagon) })
         : t('fix.iceAheadWhy', { time: ticksClock(h.ice!.startTick - world.state.tick), n: fmtInt(price) }))}</div>`
-      : `<div class="s-hint fix-why">${iconSvg(ok.err.k === 'NO_COINS' ? 'coin' : 'road_cobble', 18)}<span dir="auto">${
-        ok.err.k === 'NO_COINS' ? tHtml('fix.short', { n: fmtInt(ok.err.need - ok.err.have) }) : esc(errorText(ok.err))}</span></div>`;
-    return fixSection(btn, hint, !ok.ok);
+      : ok.err.k === 'NO_COINS'
+        // D-712: in a contract mission, also that no silver comes in and what will do instead
+        ? (sh = shortHint(world, h.held ? b : null, ok.err.need - ok.err.have, 'pave')).html
+        : `<div class="s-hint fix-why">${iconSvg('road_cobble', 18)}<span dir="auto">${esc(errorText(ok.err))}</span></div>`;
+    return fixSection(btn, hint, !ok.ok, !!sh?.wide);
   }
   if (cure === 'demolish') {
     // D-410: cut off later, no road can reach its gate any more — take it back and build it elsewhere
     const id = cutOffNoLink(world, chain);
-    if (id < 0) return '';
+    if (id < 0) {
+      // D-713: the building that closes every way to the delivery wagon with no road — take it back, then the road
+      const blk = routeBlocker(world, b);
+      const lost = blk >= 0 ? routeLostFor(world, b) : null;
+      if (!lost) return '';
+      const btn = `<button class="btn primary cf fix-btn" data-act="unblock:${b.id}">${iconSvg('demolish', 26)}<span>${
+        esc(t('fix.cutOff', { name: buildingName(world, blk) }))}</span>${bdi(`+${fmtInt(cutOffRefund(world, blk))}`)}</button>`;
+      const en = translated('fix.routeBlockedWhy') ? '' : ' lang="en" dir="ltr"';
+      return fixSection(btn, `<div class="s-hint"${en}>${esc(t('fix.routeBlockedWhy', { wagon: wagonName(world, lost.wagon), name: buildingName(world, blk) }))}</div>`, false, true);
+    }
     const btn = `<button class="btn primary cf fix-btn" data-act="cutoff:${id}">${iconSvg('demolish', 26)}<span>${
       esc(t('fix.cutOff', { name: buildingName(world, id) }))}</span>${bdi(`+${fmtInt(cutOffRefund(world, id))}`)}</button>`;
     // D-453: wide (D-270) — the reason's second half ("postaw go w innym miejscu przy drodze") is the next step, so
@@ -344,10 +375,10 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       const h = paveSpanFor(world, b);
       const ok = h ? paveCheck(world, h) : null;
       if (ok && !ok.ok && ok.err.k === 'NO_STONE') {
-        return wagonCureHtml(world, t('fix.stoneWagon', { n: fmtInt(ok.err.need - ok.err.have), quarry: fmtInt(ok.err.atQuarry) }));
+        return wagonCureHtml(world, t('fix.stoneWagon', { n: fmtInt(ok.err.need - ok.err.have), quarry: fmtInt(ok.err.atQuarry) }), b);
       }
     }
-    return wagonCureHtml(world, t('fix.wagonWhy'));
+    return wagonCureHtml(world, t('fix.wagonWhy'), b);
   }
   // a wagon in the chain waits at a one-lane bridge (also behind the wagon it waits for, audit fix 2)
   if (chain.some((l) => l.kind === 'wagon' && l.status.k === 'BRIDGE_JAM')) {
@@ -552,6 +583,12 @@ function wire(sheet: Sheet, nav: PanelNav): void {
       // D-410: recomputed now — only while that building is still cut off with no road to build
       const b = buildingById(nav.world, Number(arg));
       if (b && cutOffNoLink(nav.world, explainBuilding(nav.world, b.id, 5, true)) === b.id) nav.undoPlace(b.id);
+    }
+    if (act === 'unblock' && pressOnce(el)) {
+      // D-713: recomputed now — only while that wagon still has no road and the same building closes the way
+      const b = buildingById(nav.world, Number(arg));
+      const blk = b ? routeBlocker(nav.world, b) : -1;
+      if (blk >= 0) nav.undoPlace(blk);
     }
     if (act === 'pave' && !el.classList.contains('is-disabled')) {
       const b = buildingById(nav.world, Number(arg));
