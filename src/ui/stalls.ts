@@ -499,9 +499,22 @@ function iceOnTicks(world: World): number {
   return 0;
 }
 
-/** The cells of a span, ordered end to end (a contiguous list for the road command). */
+/**
+ * The cells of a span, ordered end to end (a contiguous list for the road command). D-732: a whole-map scan and an
+ * O(n²) walk, asked per building per tick by the ranking while a wagon stands at a span — kept per network cache (its
+ * `span` array is rebuilt with every network version) and span; each caller gets its own copy.
+ */
+const spanMemo = new WeakMap<Int32Array, Map<number, number[]>>();
 function spanCells(world: World, span: number): number[] {
-  const sp = net(world).span, W = world.terrain.w;
+  const sp = net(world).span;
+  let m = spanMemo.get(sp);
+  if (!m) spanMemo.set(sp, (m = new Map()));
+  let cells = m.get(span);
+  if (!cells) m.set(span, (cells = spanWalk(sp, world.terrain.w, span)));
+  return cells.slice();
+}
+
+function spanWalk(sp: Int32Array, W: number, span: number): number[] {
   const set: number[] = [];
   for (let i = 0; i < sp.length; i++) if (sp[i] === span) set.push(i);
   if (set.length < 2) return set;

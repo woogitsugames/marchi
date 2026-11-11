@@ -11,6 +11,7 @@ export function setFmtLang(l: string): void {
   if (l === lang) return;
   lang = l;
   cache.clear();
+  dayMins = -1;
 }
 
 /** Until the first setFmtLang: the document language (index.html sets it before the first paint), else English. */
@@ -51,15 +52,20 @@ export function fmtDuration(sec: number): string {
   return `${one.format(m)}:${two.format(r)}`;
 }
 
+// the HUD's clock asks every frame; the text changes once a game minute (D-731): the last answer, dropped with the cache
+let dayMins = -1, dayText = '';
 /** Time of day for a day fraction (0 = midnight) on a 24 h cycle: 6:05 (pl, de), 06:05 (en, hi, ar). */
 export function fmtDayTime(f: number): string {
   const mins = Math.floor(f * 24 * 60);
+  if (mins === dayMins) return dayText;
   let df = cache.get('day') as Intl.DateTimeFormat | undefined;
   if (!df) {
     df = new Intl.DateTimeFormat(`${getLang()}-u-nu-latn`, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
     cache.set('day', df);
   }
-  return df.format(new Date(Date.UTC(2000, 0, 1, Math.floor(mins / 60) % 24, mins % 60)));
+  dayText = df.format(new Date(Date.UTC(2000, 0, 1, Math.floor(mins / 60) % 24, mins % 60)));
+  dayMins = mins;
+  return dayText;
 }
 
 /** "have/need" counter with both numbers formatted. */
