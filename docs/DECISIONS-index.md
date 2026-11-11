@@ -402,3 +402,11 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-712 | — | A grey cure for silver in a contract mission says that no silver comes in, and what will do instead | decided | sim |
 | D-713 | — | A delivery wagon whose road cannot be rebuilt: the card names the building to take back | decided | UI |
 | D-714 | — | P4 stall readings: measurements, and what was left | decided | inne |
+| D-730 | 2026-11-11 | Cost of the UI stall-card readings, measured headless (`tools/ui-read-cost.ts`) | decided | UI |
+| D-731 | — | Plural numbers reuse one formatter; the HUD clock formats once a game minute | decided | UI |
+| D-732 | — | Span cells kept per network | decided | inne |
+| D-733 | — | The paused reading copies the state without JSON text and borrows the network cache and distance memo | decided | treść |
+| D-734 | — | UI reading budget test (`tests/ui-read-budget.test.ts`) | decided | UI |
+| D-735 | — | The ranking skips the held-span scan with no wagon at a span; the dead-end link once per network version | decided | sim |
+| D-736 | — | The shared-producer card checks the cheap conditions first | decided | UI |
+| D-737 | — | The ranking reads only the wagons standing at a span | decided | inne |

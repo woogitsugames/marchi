@@ -5141,3 +5141,59 @@ card-30 1314 (120 min): 0 dead seconds before and after. Left: (e) D-611's sim s
 the river UNREACHABLE (critical) from the first second and change every saved status, so it stays deferred; IX's
 opening contest (sawmill vs charcoal burner, 0:05–0:20 for the balance players; no shared-producer cure there)
 is D-670's ground and stays as it is. (decided)
+
+**D-730 — Cost of the UI stall-card readings, measured headless (`tools/ui-read-cost.ts`).** Nobody had measured what
+the reading code of D-590..D-714 costs per frame. New probe (`node tools/ui-read-cost-run.mjs [scenes] [--no-digest]
+[--spikes] [--json f]`, bundled through `tools/diagnosis-audit-run.mjs` because i18n uses `import.meta.glob`): the real
+`Hud`, `Markers` and panels.ts building / wagon sheets run on a minimal DOM stand-in (`tools/fake-dom.ts`); the sim is
+driven by the winning strategies of XIV–XVII (whole contract), the free valley's DECENT player (minutes 100–110, 24
+buildings, 30 wagons, 134 road cells) and the 50/100/200-wagon bench. Per tick it times App.onTick's samplers, the
+first frame after the tick (ranking + HUD + pins), one frame between ticks, both open sheets, `deadEnd` every 5 s and,
+every 30 s, a command in pause (D-672: the reading copy, then ranking + HUD + pins + sheets on it, then the sheets
+again). It prints p50/p95/p99/max per call and an FNV digest of everything the readings produced (the HUD's, the pins'
+and both sheets' DOM text, HTML and classes; the ranking; every building's cure; the dead-end verdict) — the pins'
+wall-clock stamps and delivery tags are left out. Two checkouts must print the same digests. Results: docs/PERF.md
+"2026-11-11 — koszt odczytu kart zastojów". (decided)
+
+**D-731 — Plural numbers reuse one formatter; the HUD clock formats once a game minute.** `pluralize` built a new
+`Intl.NumberFormat` for every plural block (~20 µs, a fifth of a sheet update's `t()` time): one per language now
+(`src/i18n/plural.ts`). `fmtDayTime` (the HUD's day clock, every frame) keeps its last minute and text, dropped with the
+formatter cache on a language switch (`src/ui/fmt.ts`). Same text. (decided)
+
+**D-732 — Span cells kept per network.** `spanCells` scanned the whole map and walked the span in O(n²) for every
+building every tick while a wagon stood at a wooden span (ranking → `heldSpanFor`); now kept per network cache `span`
+array (new with every network version) and span, each caller gets its own copy (`src/ui/stalls.ts`, counter
+`readStats.spanWalks`). (decided)
+
+**D-733 — The paused reading copies the state without JSON text and borrows the network cache and distance memo.**
+`pausedReading` (D-672) took 0.5–2.5 ms in the container: `JSON.parse(JSON.stringify(state))` plus a dispatch with cold
+caches that repeated every Dijkstra the world had memoized. Now `jsonCopy` (`src/sim/sim.ts`: the same result as the
+JSON round trip for plain data — keys in order, `undefined` dropped / null in arrays, -0 → 0, non-finite → null —
+2–3× faster) and `borrowNetMemo` (`src/sim/network.ts`): the copy gets a shallow copy of the world's `NetCache` (its
+typed arrays are only written when built; lazily built cost tables, components and adjacency of the copy go into the
+copy's own object) and a memo object over the world's maps marked `borrowed` (a flush drops them instead of recycling
+them into `spare`; the memo key — network, rain, thaw, bridge penalties by content — is checked as for any world). The
+world itself is not touched (same hash, same memo and cache objects, no entry added); the copy may read the shared
+maps only until the world steps again, which is what the app does (the reading is dropped on the next tick). Test:
+the reading equals a cold copy's at 222 pauses in IV, XVI and the valley, and repeats 1 of the 43 searches a cold copy
+ran. Mission hashes 86/86 identical. (decided)
+
+**D-734 — UI reading budget test (`tests/ui-read-budget.test.ts`).** Work counts, never time: the paused reading equals
+a cold one and runs at most a tenth of its searches; span cells are walked once per span and network version (II,
+IV); the HUD clock reads `DateTimeFormat.format` once for 100 frames of one game minute; 50 plural texts construct at
+most one `NumberFormat`. (decided)
+
+**D-735 — The ranking skips the held-span scan with no wagon at a span; the dead-end link once per network version.**
+`rankStalls` called `heldSpanFor` (a scan of every wagon, twice with the D-652 producer) for every building every tick;
+with no wagon at a span the answer is null for all. `deadEnd` (every 5 s of game time) ran `suggestConnection` (a
+whole-grid search) for each castle every time; it reads only roads, footprints and terrain, which all bump the network
+version, so it is kept per world and network version (`src/ui/deadEnd.ts`). `tools/dead-end-scan.ts` (30 runs) and
+the digests identical. (decided)
+
+**D-736 — The shared-producer card checks the cheap conditions first.** `sharedOneCard` asks the 30 s wait (a map
+lookup) before `sharedOneProducer`, and that asks the build list before `sharedInput` (a scan of every building, per
+building per tick: O(buildings²) in the free valley, where it always answered null). Same answers. (decided)
+
+**D-737 — The ranking reads only the wagons standing at a span.** With wagons at a span (the bench's overloaded
+bridges: always) `rankStalls` now filters them once and passes that list to `heldSpanFor` / `heldSpanOf` (optional
+argument, fleet order kept, so ties break as before). Bench ranking per tick 0.063 → 0.009 ms (p50). (decided)

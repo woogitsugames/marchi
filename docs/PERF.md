@@ -304,3 +304,53 @@ Wygląd: 15 z 18 ujęć 0 px, 3 ujęcia high różnią się tak samo między dwo
 Programy 46 / 48, pamięć tekstur 33,8 / 175,8 MB, przesył buforów — bez zmian. Czas SwiftShadera (mediana 3
 przeplatanych powtórzeń) −5,5 % mediana z 10 par, rozrzut ±10 %: SwiftShader jest ograniczony wypełnianiem (teren
 45 % klatki, drzewa 40 %), więc to trójkąty są miarą; zysk na telefonie do potwierdzenia `tools/device-bench.html`.
+
+## 2026-11-11 — koszt odczytu kart zastojów w UI (D-730..D-737)
+
+Narzędzie: `node tools/ui-read-cost-run.mjs [m14 m15 m16 m17 valley bench50 bench100 bench200] [--no-digest] [--spikes]
+[--json plik]` (D-730). Prawdziwe `Hud`, `Markers` i arkusze budynku / wozu z `panels.ts` na zastępczym DOM
+(`tools/fake-dom.ts`), symulację prowadzą zwycięskie strategie XIV–XVII (cały kontrakt), gracz DECENT w dolinie
+(minuty 100–110: 24 budynki, 30 wozów, 134 komórki drogi) i bench 50/100/200 wozów. Co tick: próbki `App.onTick`,
+pierwsza klatka po ticku (ranking + HUD + pinezki), jedna klatka między tickami, oba otwarte arkusze (wybór co 10 s:
+najgorszy zastój albo zamek, czekający wóz), `deadEnd` co 5 s gry; co 30 s komenda w pauzie (kopia do odczytu, potem
+ranking + HUD + pinezki + arkusze na kopii, potem arkusze jeszcze raz). Digest wszystkiego, co odczyty wypisały (tekst,
+HTML i klasy HUD-u, pinezek i arkuszy, ranking, lekarstwo każdego budynku, werdykt „nie do uratowania”) — **identyczny
+przed i po** dla wszystkich 8 scen oraz dla II, IV, IX, X, XI, XIII; hashe misji 86/86 identyczne; `dead-end-scan`
+(30 gier) identyczny.
+
+Kontener (Node 22, ms na wywołanie, mediana 5 przebiegów naprzemiennie przed/po; „klatka” = pierwsza klatka po
+ticku; przy ×4 i 60 Hz prawie każda klatka jest taką klatką):
+
+| scena | klatka p50 | klatka p95 | klatka p99 | arkusz budynku p95 / p99 | arkusz wozu p95 | pauza: 1. klatka p50 / p95 | `deadEnd` p95 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| XIV | 0,023 → 0,020 | 0,087 → 0,084 | 0,21 → 0,21 | 0,27 / 0,54 → 0,17 / 0,51 | 0,071 → 0,070 | 1,56 / 5,87 → 0,73 / 3,40 | 0,59 → 0,27 |
+| XV | 0,041 → 0,046 | 0,129 → 0,133 | 0,19 → 0,20 | 0,18 / 0,59 → 0,19 / 0,55 | 0,061 → 0,070 | 1,36 / 2,16 → 0,64 / 1,42 | 0,16 → 0,11 |
+| XVI | 0,041 → 0,038 | 0,123 → 0,130 | 0,37 → 0,38 | 0,22 / 0,62 → 0,18 / 0,59 | 0,048 → 0,051 | 2,18 / 4,28 → 0,89 / 1,81 | 0,21 → 0,12 |
+| XVII | 0,026 → 0,026 | 0,093 → 0,081 | 0,33 → 0,30 | 0,18 / 0,46 → 0,15 / 0,41 | 0,049 → 0,047 | 2,33 / 3,80 → 0,90 / 1,84 | 0,20 → 0,09 |
+| dolina 100–110 min | 0,074 → 0,073 | 0,256 → 0,205 | 0,47 → 0,38 | 0,38 / 0,71 → 0,29 / 0,64 | 0,090 → 0,089 | 2,79 / 6,59 → 1,36 / 3,87 | — |
+| bench 50 | 0,068 → 0,038 | 0,161 → 0,102 | 0,40 → 0,20 | 0,17 / 0,31 → 0,15 / 0,24 | 0,111 → 0,108 | 2,73 / 4,08 → 0,99 / 1,61 | — |
+| bench 100 | 0,075 → 0,035 | 0,168 → 0,093 | 0,43 → 0,17 | 0,17 / 0,38 → 0,15 / 0,28 | 0,094 → 0,094 | 2,83 / 4,35 → 1,18 / 1,75 | — |
+| bench 200 | 0,092 → 0,038 | 0,174 → 0,101 | 0,46 → 0,23 | 0,16 / 0,30 → 0,15 / 0,31 | 0,082 → 0,088 | 2,81 / 3,45 → 1,23 / 1,67 | — |
+
+Pozostałe pozycje: klatka między tickami (HUD + pinezki, wszystko z pamięci) p95 ≤ 0,006 ms (było ≤ 0,011, zegar
+dnia); próbki `onTick` p95 ≤ 0,034 ms (dolina); sam ranking p50 bench 200 0,063 → 0,009 ms; kopia do odczytu
+w pauzie p50 0,48–2,54 → 0,23–0,87 ms. Pauza p95 to 6–20 próbek na scenę (prawie maksimum). Pojedyncze maksima 2–12 ms
+we wszystkich wierszach i obu wersjach to pierwsza klatka po rozgrzewce (zimny JIT, tick 601) i odśmiecanie — nie
+powtarzają się w tym samym stanie (`--spikes`: bez związku ze zmianą sieci).
+
+Co było gorące (profil `--cpu-prof`) i co zrobiono, wynik bit w bit: nowy `Intl.NumberFormat` przy każdym bloku liczby
+mnogiej i formatowanie zegara dnia co klatkę (D-731); `spanCells` — skan całej mapy i spacer O(n²) dla każdego
+budynku w każdym ticku, gdy wóz stoi przy moście (D-732); kopia w pauzie przez tekst JSON i dyspozytor z zimną pamięcią
+powtarzający wszystkie Dijkstry świata (D-733: `jsonCopy` 2–3× szybszy, pożyczona read-only pamięć sieci i map
+odległości — kopia powtarza 1 z 43 przeszukań); `heldSpanFor` skanujący wszystkie wozy dla każdego budynku (D-735,
+D-737); `suggestConnection` (cała siatka) w `deadEnd` co 5 s mimo tej samej sieci (D-735); `sharedInput` O(budynki²)
+w dolinie, gdzie zawsze dawał null (D-736). Test blokujący regresję liczy pracę, nie czas: `tests/ui-read-budget.test.ts`
+(D-734).
+
+**Telefon (konserwatywnie ×4–6 względem kontenera):** klatka po ticku p95 ≤ 0,21 ms → **0,8–1,2 ms** (dolina; misje
+i bench 0,3–0,8 ms), p99 ≤ 0,38 → 1,5–2,3 ms; arkusz budynku (4×/s, tylko gdy otwarty) p95 ≤ 0,29 → 1,2–1,7 ms;
+arkusz wozu p95 ≤ 0,11 → 0,4–0,7 ms; `deadEnd` (co 5 s gry, przy ×4 co 1,25 s) p95 ≤ 0,27 → 1,1–1,6 ms; pierwsza
+klatka po komendzie w pauzie p50 0,6–1,4 → **2,5–8 ms**, p95 ≤ 3,9 → do ~23 ms — raz na dotknięcie w pauzie (mieści
+się w jednej–dwóch klatkach 60 Hz). Cel „najgorszy odczyt < 1 ms na telefonie” spełniony dla klatki między tickami
+i prawie dla klatki po ticku (dolina przy ×6: 1,2 ms); nie dla arkusza budynku p95 przy ×6 i jednorazowej klatki po
+komendzie w pauzie — co dalej: BACKLOG P1 (2026-11-11, D-730).
