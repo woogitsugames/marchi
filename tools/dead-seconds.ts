@@ -2,7 +2,8 @@
 // second, reads the HUD's red card (rankStalls()[0], not minor) and whether its sheet offers anything to press: no cure
 // (`nocure`), a gap road with no link (`road-none`), or a grey stone button with no quarry offer and no calm stone wait
 // (`pave-grey`). Prints seconds and intervals per building and kind; `dumpSec` prints the chain at that second.
-// Note: the look's command is applied before the step, so a one-second flash right on a look tick is the tool's order.
+// Read before the look's command (D-637): the state the running game shows — a command is stepped before the next
+// frame, so the earlier read after the command (a one-second flash on every look tick) was the tool's order.
 //   npx tsx tools/dead-seconds.ts card-30 1314 [minutes=120] [dumpSec]
 import { run } from './sandbox-first30';
 import { TICK_HZ, buildingById, explainBuilding, suggestLinkToStable } from '../src/sim/index';
@@ -10,7 +11,7 @@ import { paveStoneWait, paveSpanFor, paveCheck, rankStalls, cureFor, quarryForPa
 const [player, seedS, minS, dumpAt] = process.argv.slice(2);
 const eye = Number(player!.split('-')[1]);
 const runs: Record<string, number[]> = {};
-run(player!, { plan: null, eye, events: false, game: true, onSecond: (w) => {
+run(player!, { plan: null, eye, events: false, game: true, secondBeforeLook: true, onSecond: (w) => {
   const s = w.state.tick / TICK_HZ;
   const r = rankStalls(w)[0];
   if (!r || r.minor) return;

@@ -74,6 +74,11 @@ export interface Opts {
   sbGrow?: { keep: number };
   /** Research hook (valley-fame-gap): called once per game second, after the look, read only. */
   onSecond?: (w: World, log: PaceLog) => void;
+  /**
+   * D-637: call `onSecond` before the look's command instead — the state as the running game shows it (a command is
+   * applied at a tick boundary and stepped before the next frame; only a paused game shows it unstepped).
+   */
+  secondBeforeLook?: boolean;
 }
 
 export interface Look {
@@ -387,12 +392,13 @@ export function run(name: string, o: Opts, seed: number | undefined, minutes = 3
       fleetBits.push(w.state.wagons.some((q) => (q.status.k === 'IDLE' && !q.job) || isHeld(q.status)) ? 0 : 1);
       if (fleetBits.length > 60) fleetBits.shift();
     }
+    if (o.onSecond && o.secondBeforeLook && t % TICK_HZ === 0) o.onSecond(w, log);
     if (o.eye > 0 && t > 0 && t % (o.eye * TICK_HZ) === 0) {
       const l = look(w, log, r, o.sbFleet ? { ...o.sbFleet, bits: fleetBits } : null, !!o.sbRank, !!o.game, o.sbGrow ?? null);
       r.looks.push(l);
       if (l.act && !l.act.includes('?')) r.actions[l.act] = (r.actions[l.act] ?? 0) + 1;
     }
-    if (o.onSecond && t % TICK_HZ === 0) o.onSecond(w, log);
+    if (o.onSecond && !o.secondBeforeLook && t % TICK_HZ === 0) o.onSecond(w, log);
     step(w);
     sampleInputWaits(w);
     samplePace(log, w);
