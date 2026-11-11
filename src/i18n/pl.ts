@@ -460,6 +460,10 @@ export const pl = {
   'deadEnd.watch': 'Patrz dalej',
   // D-613: the castle's good cannot be made any more
   'deadEnd.noSource': 'Nikt już nie wyrobi {goodGen}: ostatni warsztat rozebrany, a tu nowego nie postawisz. Zamkowi brakuje {need}, a w całej dolinie zostało najwyżej {left}.',
+  // D-638: the workshop is on the build list, but no silver can pay for it any more
+  'deadEnd.noSilver': 'Nikt już nie wyrobi {goodGen}: ostatni warsztat rozebrany, a na nowy ({price} srebra) nie starczy, nawet gdybyś sprzedał zbędne wozy i rozebrał resztę. Zamkowi brakuje {need}, a w całej dolinie zostało najwyżej {left}.',
+  // D-639: the order can be filled, but not by the deadline
+  'deadEnd.late': 'Przed terminem nie powstanie dość {goodGen}: zamkowi brakuje {need}, a nawet gdyby każdy warsztat pracował bez przerwy, a wozy nie traciły ani chwili, do terminu powstanie najwyżej {left}. Nowego warsztatu już tu nie postawisz.',
   // valley events (D-54): event card, orders, fair, merchant: localized
   'events.card.title': 'Wieści z doliny',
   'events.card.fold': 'Zwiń wieści z doliny',
@@ -965,6 +969,8 @@ export const PENDING_KEYS = [
   'deadEnd.noSource', 'fix.producerMissing',
   // D-633
   'cause.stoneYard', 'fix.stoneYard',
+  // D-638, D-639
+  'deadEnd.noSilver', 'deadEnd.late',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

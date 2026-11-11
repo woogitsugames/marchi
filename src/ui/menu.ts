@@ -588,7 +588,11 @@ export function buildDeadEndLetter(d: DeadEnd, act: DeadEndActions): HTMLElement
   const letter = h('div.letter.lost' as 'div.letter', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'deadend-title' });
   // D-613: the castle's good can no longer be made (its last producer taken down, none can be built here)
   const why = d.k === 'NO_SOURCE'
-    ? esc(t('deadEnd.noSource', { goodGen: t(`goodGen.${d.good}` as MessageKey), need: fmtInt(d.need), left: fmtInt(d.left) }))
+    // D-638: a new workshop would make it, but no silver can pay for it
+    ? esc(t(d.price !== undefined ? 'deadEnd.noSilver' : 'deadEnd.noSource', { goodGen: t(`goodGen.${d.good}` as MessageKey), need: fmtInt(d.need), left: fmtInt(d.left), price: fmtInt(d.price ?? 0) }))
+    // D-639: not by the deadline
+    : d.k === 'TOO_LATE'
+    ? esc(t('deadEnd.late', { goodGen: t(`goodGen.${d.good}` as MessageKey), need: fmtInt(d.need), left: fmtInt(d.left) }))
     : d.cost < 0
     ? esc(t('deadEnd.none'))
     : tHtml('deadEnd.text', { cost: fmtInt(d.cost), coins: fmtInt(d.coins), raise: fmtInt(d.raise) });

@@ -457,6 +457,10 @@ export const en: FullDict = {
   'deadEnd.watch': 'Keep watching',
   // D-613: the castle's good cannot be made any more
   'deadEnd.noSource': 'Nobody can make {goodGen} any more: the last workshop was taken down and no new one can be built here. The castle still lacks {need}; the whole valley holds at most {left}.',
+  // D-638: the workshop is on the build list, but no silver can pay for it any more
+  'deadEnd.noSilver': 'Nobody can make {goodGen} any more: the last workshop was taken down, and a new one ({price} silver) is beyond reach even if you sold the spare wagons and took the rest down. The castle still lacks {need}; the whole valley holds at most {left}.',
+  // D-639: the order can be filled, but not by the deadline
+  'deadEnd.late': 'Not enough {goodGen} can be made in time: the castle still lacks {need}, and even if every workshop worked without a pause and no wagon lost a moment, at most {left} can be made by the deadline. No new workshop can be built here any more.',
   // valley events (D-54): event card, orders, fair, merchant: see PENDING_KEYS
   'events.card.title': 'News from the valley',
   'events.card.fold': 'Fold the valley news',

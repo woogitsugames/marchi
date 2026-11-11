@@ -1,5 +1,5 @@
 // Early "no road to victory" (D-48).
-import { BUILDINGS, applyCommand, createWorld } from '../src/sim/index';
+import { BUILDINGS, GOODS, applyCommand, createWorld, demolishQuote } from '../src/sim/index';
 import { bridgeA, stableId } from '../tools/bot';
 import { WAGON_REFUND, deadEnd, type DeadEndRoute, type DeadEndSource } from '../src/ui/deadEnd';
 import { assert, eq, test } from './harness';
@@ -80,4 +80,49 @@ test('D-636: a cycle already running counts toward what the map can still bring 
   assert(d !== null && d.k === 'NO_SOURCE' && d.left === need - per, `one cycle short: ${JSON.stringify(d)}`);
   bakery.progress = 3;
   eq(deadEnd(w), null, 'the running cycle brings the last loaves');
+});
+
+test('D-638: the producer on the build list costs more than all the silver left -> NO_SOURCE with its price', () => {
+  const w = createWorld('m14');
+  const st = w.state;
+  // little left to sell or take back: one wagon, no road, the castle, the stable and the woodcutter (its wood)
+  st.buildings = st.buildings.filter((b) => b.type === 'castle' || b.type === 'stable' || b.type === 'woodcutter');
+  st.roads = st.roads.map(() => 0);
+  st.wagons.length = 1;
+  const price = BUILDINGS.charcoalBurner.price;
+  let refund = 0;
+  for (const b of st.buildings) if (b.type === 'woodcutter') refund += demolishQuote(w, b).refund;
+  st.coins = price - 1 - refund;
+  const d = deadEnd(w) as DeadEndSource | null;
+  assert(d !== null && d.k === 'NO_SOURCE' && d.good === 'charcoal', `NO_SOURCE charcoal: ${JSON.stringify(d)}`);
+  eq(d!.price, price, 'the burner it cannot pay for');
+  st.coins = price - refund;
+  const e = deadEnd(w);
+  assert(!e || e.k !== 'NO_SOURCE', `silver for the burner: not a missing source (${JSON.stringify(e)})`);
+});
+
+test('D-639: the standing workshops cannot make the rest before the deadline -> TOO_LATE; with time left, none', () => {
+  const w = createWorld('m1');
+  const st = w.state;
+  const c = st.mission.contract!;
+  const castle = st.buildings.find((b) => b.id === c.castle)!;
+  const bakery = st.buildings.find((b) => b.type === 'bakery')!;
+  const r = BUILDINGS.bakery.recipe!;
+  eq(deadEnd(w), null, 'the start: plenty of time');
+  for (const b of st.buildings) b.stock.flour = b.type === 'bakery' ? 99 : 0;
+  // three bakery cycles left before the deadline, four needed
+  const per = r.outputs.bread!;
+  for (const g of GOODS) castle.stock[g] = c.need[g];
+  castle.stock.bread = c.need.bread - 4 * per;
+  st.tick = c.deadlineTick - 3 * r.ticks - 1;
+  const d = deadEnd(w);
+  assert(d !== null && d.k === 'TOO_LATE' && d.good === 'bread', `TOO_LATE: ${JSON.stringify(d)}`);
+  eq((d as { left: number }).left, 3 * per, 'three cycles by the deadline');
+  st.tick = c.deadlineTick - 4 * r.ticks - 1;
+  eq(deadEnd(w), null, 'four cycles fit: still winnable');
+  // a cycle running now that ends after the deadline brings nothing by then
+  st.tick = c.deadlineTick - 3 * r.ticks - 1;
+  bakery.progress = 0;
+  const e = deadEnd(w);
+  assert(e !== null && e.k === 'TOO_LATE', `running cycle: ${JSON.stringify(e)}`);
 });
