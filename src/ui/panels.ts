@@ -4,7 +4,7 @@ import {
   wagonEta, wagonSlowdown, type SeasonNote, TRADE_POST, MARKET, tradePostStatus,
   STONE_RESERVE, UNDO_TICKS, WAGON_PRICE, canPlace, canSurface, validateRoad, type BuildingType, rankGated, stoneAvailable, type Building, type Good, type PaceLog, type ReasonLink, type RoadSuggestion, type World,
 } from '../sim/index';
-import { t, translated, type MessageKey } from '../i18n/index';
+import { getLang, t, translated, type MessageKey } from '../i18n/index';
 import { cardBuild } from './cardBuild';
 import { esc, setHtml } from './dom';
 import { pressOnce } from './retire';
@@ -63,6 +63,77 @@ export interface PanelNav {
   castleFirst(castle: number): void;
   /** Mission XVII (D-356): this castle first with its whole supply chain (-1 = share evenly). */
   chainFirst(castle: number): void;
+}
+
+// ---------------------------------------------------------------- unchanged readings (D-750)
+
+/**
+ * D-750: the building and wagon sheets re-render ~4×/s, also in pause, where nothing they read changes: the whole HTML
+ * (t(), formatting, the chain) was rebuilt only for setHtml to find the same string. A sheet now keeps a mark of what
+ * its update read — the world and state objects, the tick, silver, the network version, the building and wagon counts
+ * (the HUD's key, D-158), the language, the pace log, the tutorial, the followed wagon — plus `sheetRev`, bumped by
+ * every tap on a sheet (codex, castle fold and chain unfolds are module state shared by all sheets) and by a closing
+ * sheet. With the same mark the update skips the rebuild and only repeats its ghost calls (the app's ghost is shared
+ * with other sheets and tools). Running, the tick moves between updates, so every update still rebuilds. A command
+ * in pause swaps the reading copy (D-672), a load swaps the world: both change the mark.
+ */
+let sheetRev = 0;
+
+type GhostCall = [cells: number[] | null, pave?: boolean, frameAt?: number];
+
+interface ReadMark {
+  world: World | null;
+  state: object | null;
+  tick: number;
+  coins: number;
+  net: number;
+  nb: number;
+  nw: number;
+  lang: string;
+  pace: PaceLog | null;
+  tut: boolean;
+  hut: number;
+  follow: number | null;
+  rev: number;
+  /** The body's first part: a body emptied by Sheets.place for other content is rebuilt from scratch. */
+  part: Element | null;
+  /** The ghost calls of the last full update, repeated by a skipped one. */
+  ghosts: GhostCall[];
+}
+
+/** Work counters for tests/ui-read-budget.test.ts (D-750). */
+export const sheetStats = { built: 0, skipped: 0 };
+
+function readMark(): ReadMark {
+  return { world: null, state: null, tick: -1, coins: 0, net: -1, nb: -1, nw: -1, lang: '', pace: null, tut: false, hut: -1, follow: null, rev: -1, part: null, ghosts: [] };
+}
+
+/** True when nothing the sheet reads changed since the last full update (the mark is then left as is); else the mark
+ *  takes the new values and its ghost list is emptied for the update to fill. */
+function unchanged(m: ReadMark, nav: PanelNav, sheet: Sheet, follow: number | null): boolean {
+  const world = nav.world, st = world.state;
+  const lang = getLang(), pace = nav.pace, tut = !!nav.tutorialRunning?.(), hut = nav.tutorialHut?.() ?? -1;
+  const part = sheet.body.firstElementChild;
+  if (m.world === world && m.state === st && m.tick === st.tick && m.coins === st.coins && m.net === st.netVersion &&
+    m.nb === st.buildings.length && m.nw === st.wagons.length && m.lang === lang && m.pace === pace && m.tut === tut &&
+    m.hut === hut && m.follow === follow && m.rev === sheetRev && m.part !== null && m.part === part) return true;
+  m.world = world; m.state = st; m.tick = st.tick; m.coins = st.coins; m.net = st.netVersion; m.nb = st.buildings.length;
+  m.nw = st.wagons.length; m.lang = lang; m.pace = pace; m.tut = tut; m.hut = hut; m.follow = follow; m.rev = sheetRev;
+  m.part = null;
+  m.ghosts = [];
+  return false;
+}
+
+/** After a full update: the parts it wrote (the mark is valid only for these). */
+function marked(m: ReadMark, sheet: Sheet): void {
+  m.part = sheet.body.firstElementChild;
+  sheetStats.built++;
+}
+
+/** A skipped update: the same ghost calls as the full one (another sheet or tool may have set the ghost since). */
+function replay(m: ReadMark, nav: PanelNav): void {
+  for (const g of m.ghosts) nav.setGhost(...g);
+  sheetStats.skipped++;
 }
 
 // ---------------------------------------------------------------- gap finder
@@ -561,6 +632,7 @@ function wire(sheet: Sheet, nav: PanelNav): void {
   body.addEventListener('click', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-go],[data-act]');
     if (!el) return;
+    sheetRev++; // D-750: unfolds and commands change what the sheets read
     const go = el.dataset.go;
     if (go) {
       const [kind, id] = go.split(':');
@@ -874,6 +946,8 @@ function iceHtml(world: World, chain: ReasonLink[]): string {
 }
 
 export function buildingSheet(nav: PanelNav, id: number): SheetContent {
+  const mark = readMark();
+  const setGhost = (...g: GhostCall): void => { mark.ghosts.push(g); nav.setGhost(...g); };
   return {
     key: 'building:' + id,
     // "?" on a castle holding one of two castle orders opens "Several castles" (D-344); every other card "Find the cause"
@@ -887,6 +961,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       if (!b) return false;
       wire(sheet, nav);
       if (pressed(sheet)) return true;
+      if (unchanged(mark, nav, sheet, null)) { replay(mark, nav); return true; }
       const stalled = isStall(b.status) || b.status.k === 'NO_INPUT';
       // a stall with nothing to fix (calmWhy) reads calm: ink title, no clay (D-180); so does every other stall the
       // HUD pins in brass — a pickup on its way, a customer that still takes it, a season (D-193)
@@ -916,7 +991,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       const fix = target >= 0 ? gapSuggestion(world, target) : null;
       // the road to the trading post crosses the river, mostly off screen: framed once, as the sett ghost (D-144/D-245)
       const far = fix ? buildingById(world, target) : undefined;
-      nav.setGhost(fix ? fix.cells : null, false, far?.type === 'tradePost' ? (far.y + (far.h >> 1)) * world.terrain.w + far.x + (far.w >> 1) : -1);
+      setGhost(fix ? fix.cells : null, false, far?.type === 'tradePost' ? (far.y + (far.h >> 1)) * world.terrain.w + far.x + (far.w >> 1) : -1);
       // just placed: the same undo as the floating button, here because the sheet covers it
       const u = lastUndoable(world);
       const undo = u && u.building === id
@@ -958,11 +1033,11 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       // longer replaces the fix button under the player's finger (first-10-minutes-b, item 4)
       const [pLead, pFix, pRest] = sheetParts(sheet.body, 3);
       setHtmlKeep(pLead!, lead + seasonHtml(world, b.id) + iceHtml(world, chain));
-      if (pcHere?.k === 'mud') nav.setGhost(pcHere.cells, true);
+      if (pcHere?.k === 'mud') setGhost(pcHere.cells, true);
       // the stone-span cure ("Wyłóż most kamieniem"): the same sett ghost, on the wooden deck (D-134)
       else if (!fix && !pcHere && (stalled || carded) && cureFor(world, b.id) === 'pave') {
         const span = paveSpanFor(world, b);
-        if (span) nav.setGhost(span.cells, true);
+        if (span) setGhost(span.cells, true);
       }
       // the card said "wszystkie wozy zajęte" but a wagon took the job while the sheet opened (×4): the same cure,
       // with the wait it answers (first-10-e N8, D-161)
@@ -970,13 +1045,16 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix, postWhy(world, b)) : two ? castleSwitchHtml(world, b, nav.pace) : pcHere ? paceCureHtml(world, pcHere, nav.pace) : (stalled && !(calm && own === 'wagon')) || carded ? cureHtml(world, b, chain)
         : ago >= 0 ? wagonCureHtml(world, t('fix.wagonLately')) : '');
       setHtmlKeep(pRest!, undo + stockHtml(world, b, nav.pace, fold));
+      marked(mark, sheet);
       return true;
     },
-    onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); },
+    onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); sheetRev++; },
   };
 }
 
 export function wagonSheet(nav: PanelNav, id: number): SheetContent {
+  const mark = readMark();
+  const setGhost = (...g: GhostCall): void => { mark.ghosts.push(g); nav.setGhost(...g); };
   return {
     key: 'wagon:' + id,
     update(sheet) {
@@ -985,6 +1063,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       if (!w) return false;
       wire(sheet, nav);
       if (pressed(sheet)) return true;
+      if (unchanged(mark, nav, sheet, nav.following())) { replay(mark, nav); return true; }
       setHtml(sheet.icon, iconSvg('wagon', 36));
       sheet.kicker.textContent = t('wagon.kicker');
       sheet.title.textContent = wagonName(world, id);
@@ -1040,7 +1119,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
           html += `<div class="s-hint ice-hint">${iconSvg('road_cobble', 18)}<span>${esc(t('wagon.iceHint') + winter)}</span></div>`;
         }
       }
-      nav.setGhost(fix ? fix.cells : null);
+      setGhost(fix ? fix.cells : null);
       // same rule as the sim's sellWagon: no job, no cargo, not loading, standing still
       const canSell = !w.job && w.cargoQty === 0 && w.busyTicks === 0 && w.next < 0;
       html += `<div class="sheet-actions"><button class="btn cf${follow ? ' is-on' : ''}" data-act="follow:${id}">${iconSvg('follow', 26)}<span>${esc(t(follow ? 'wagon.unfollow' : 'wagon.follow'))}</span></button>` +
@@ -1054,9 +1133,10 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       setHtmlKeep(pLead!, html.slice(0, cut));
       setHtmlKeep(pFix!, fix ? fixHtml(world, target, fix) : '');
       setHtmlKeep(pRest!, html.slice(cut));
+      marked(mark, sheet);
       return true;
     },
-    onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); },
+    onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); sheetRev++; },
   };
 }
 
