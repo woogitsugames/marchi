@@ -17,6 +17,8 @@
 
 - (11 XI rano) Scalone D-650..D-655 (karty misji I–IX; najważniejsze: wóz z rybami bez drogi w VII dostaje czerwoną kartę `cause.routeLost`). Testy 725/0, layout 138/0, sim nietknięty. Dodatkowe pytanie: misja IX na otwarciu (0:02–0:21) pokazuje spór o drewno bez przycisku jak lekcja X — „Postaw drwala” od razu czy zostawić (D-110)? 7 kluczy `PENDING_KEYS` do tłumaczenia. APK 12b3af3 jest przed D-650.
 
+- (11 XI przed południem) Wdrożone decyzje właściciela: D-670 (IX/X „Postaw drwala” od razu przy sporze o drewno), D-671 (list „za późno” w I bez zmian), D-672 (komenda w pauzie odświeża karty na kopii świata; `pausedReading` w sim to tylko odczyt, hasze identyczne). Testy 730/0, layout 138/0. Do obejrzenia na telefonie: budowa drogi w pauzie. Wszystkie wcześniejsze „Decyzje na rano” zamknięte.
+
 ## Scalone 10 XI wieczór (ta sama sesja)
 - Scalone i na `main`: D-500..502, D-520..522, D-540..543 (grafika 12), D-560..565, **D-570..574** (render: culling kafli 64 m, −33 % trójkątów w dolinie, bez zmiany obrazu; P1 do sprawdzenia na telefonie, bo +wywołania rysowania), **D-590..594** (arkusz zamykany nie przyjmuje tapnięć, szary kamień, pełne podwórze producenta, cache UI między grami). Testy 701/0, layout 138/0, hashe misji bez zmian.
 - Ostatnie APK: **8c2caef** (10 XI ~22:30). Otwarte: test Androida „Wstecz” (D-522) na prawdziwym urządzeniu; pytanie o LOD/cienie na low (BACKLOG); 3 klucze (`cause.stoneWagon`, `fix.stoneWagon`, `cause.yardRoom`) do tłumaczenia; sprawa desaturacji rdzawych koron jesienią.
