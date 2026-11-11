@@ -340,12 +340,14 @@ export function codexCalm(world: World, l: ReasonLink): boolean {
  */
 export interface SharedOne { producer: number; type: BuildingType; consumers: number }
 export function sharedOneProducer(world: World, b: Building): SharedOne | null {
+  // D-736: the build list first — the free valley has none, and sharedInput scans every building (per building, per tick)
+  const can = missionBuildable(world.state.mission.id);
+  if (can === 'ranked') return null;
   const sh = sharedInput(world, b.id);
   if (!sh || sh.producers !== 1 || sh.consumers < 2 || sh.producer < 0) return null;
   const p = buildingById(world, sh.producer);
   if (!p) return null;
-  const can = missionBuildable(world.state.mission.id);
-  if (can === 'ranked' || !can.includes(p.type)) return null;
+  if (!can.includes(p.type)) return null;
   return { producer: p.id, type: p.type, consumers: sh.consumers };
 }
 
@@ -434,8 +436,9 @@ export function inputWaitTicks(world: World, b: Building): number {
 
 /** The shared-supply card for this building: one producer for two workshops, after 30 s of waiting (D-110). */
 export function sharedOneCard(world: World, b: Building): SharedOne | null {
-  const sh = sharedOneProducer(world, b);
-  return sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
+  // D-736: the 30 s wait first (a map lookup), the producer scan only for a building that has waited that long
+  if (inputWaitTicks(world, b) < SHARED_CARD_WAIT_TICKS) return null;
+  return sharedOneProducer(world, b);
 }
 
 /**
