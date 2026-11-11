@@ -384,3 +384,9 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-637 | — | `tools/dead-seconds.ts` reads the state the running game shows | decided | inne |
 | D-638 | — | Dead-end letter: a workshop on the build list no silver can pay for counts as none | decided | treść |
 | D-639 | — | Dead-end letter: too late for an order that can still be filled | decided | treść |
+| D-650 | 2026-11-11 | A granary cut off from a producer that is still on the stable's roads gets the road | decided | sim |
+| D-651 | — | The stable's own road taken back: the sheet links the stable | decided | UI |
+| D-652 | — | A castle behind a workshop whose input wagon stands at the ice gets the stone bridge | decided | sim |
+| D-653 | — | A building whose delivery wagon has no road is a red card | decided | UI |
+| D-654 | — | A wagon stranded on a road piece with no building: the cheapest road from the wagon | decided | sim |
+| D-655 | 2026-11-11 | Bug hunt 2026-11-11 (missions I–IX): results | decided | inne |

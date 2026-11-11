@@ -4930,3 +4930,51 @@ no new workshop can be built (not on the list, or D-638's silver). Missing sourc
 first. Seasons skip the bound (cycles vary). `tools/dead-end-scan.ts` (bots XVI/XVII, every balance-night6 player
 I–XVII with `--balance`, 3 000+ fuzz games with and without the mission's own silver, up to 30 min): 0 letters in a
 game won or cleared later. Example: the m1 players that never bridge get it at 10:01 of 12:00. Key `deadEnd.late` (pending). (decided)
+
+**D-650 — A granary cut off from a producer that is still on the stable's roads gets the road.** Bug hunt 2026-11-11
+(missions I–IX, own scanner: HUD red card with nothing to press and no dead-end letter, every game second, 360 fuzz
+games with 4 000 silver, 360 with the mission's silver, every balance-night6 player I–IX). The sim names the first
+granary a full producer cannot reach (`OUTPUT_FULL.NO_DESTINATION`, `blockedBy`); `cutOffProducer` (D-173) only
+covered the producer itself off the stable's network. Mission IV: one artery cell taken back left the stable and the
+woodcutters on one piece, the sawmill and the granary on the other — the woodcutters' card stayed critical with nothing
+to press for up to 8 min (also I, before the bridge, 42–91 s). `cutOffGranary` (`src/ui/stalls.ts`): the producer
+reaches the stable, the named granary (not full) does not — the gap finder links the granary, `cureFor` 'road'. Card
+text unchanged ("pełny magazyn, nie ma dokąd wieźć"). No sim change. (decided)
+
+**D-651 — The stable's own road taken back: the sheet links the stable.** The road cell in front of the stable's gate
+taken back (III, IX): the stable read NO_ROAD as the critical card, but `suggestLinkToStable` links a building *to* the
+stable's network and returned nothing for the stable itself — an empty sheet for up to 4.5 min while a bought wagon had
+nowhere to go. `gapSuggestion` now answers the stable with `stableLink`: the cheapest road from its gate to the
+castle (no contract: the first building whose gate is on a road), the same `fix:` button. (decided)
+
+**D-652 — A castle behind a workshop whose input wagon stands at the ice gets the stone bridge.** IV: the castle short
+of planks (`NO_INPUT.NONE_AVAILABLE` blamed on the sawmill) while the sawmill's wood wagon stood at the ice was the
+critical card with nothing to press for up to 87 s; the held-span cure (research P4) looked only at wagons of the
+building's own job. `heldSpanFor` now follows `NONE_AVAILABLE`'s producer one level (either leg of the producer's
+job: the wagon may be held on its way to the pickup). Not for CONTESTED / CHAIN_FIRST (`blockedBy` is a rival
+consumer). The first 20 s of a hold stay the wait (HELD_SPAN_TICKS, as before). (decided)
+
+**D-653 — A building whose delivery wagon has no road is a red card.** VII: the fisher taken down while its wagon
+loaded, then the road behind the wagon: the castle read WAITING_DELIVERY (six fish on a wagon NO_ROUTE) for the rest
+of the game — no stall in the sim, so the HUD had **no card at all** and the order was lost silently (the wagon's own
+red pin on the map was the only sign). `routeLostFor`: WAITING_DELIVERY / WAITING_PICKUP whose wagon has been NO_ROUTE
+for MIN_STALL_TICKS — a critical card "{wagon} nie ma drogi do celu" (new key `cause.routeLost`, pending), cure 'road'
+from the chain. Never shown in any balance-night6 player I–IX (only after roads or producers taken back). (decided)
+
+**D-654 — A wagon stranded on a road piece with no building: the cheapest road from the wagon.** D-618's
+`strandedTarget` links a building on the stranded wagon's piece; with none there (the producer it loaded at taken down,
+or two cells around it taken back) the target needed no road of its own and the sheet had nothing. `gapSuggestion`
+falls back to `strandLink`: a NO_ROUTE wagon of the target's job → `suggestConnection(wagon cell, target gate)`. After
+the delivery the castle reads NONE_AVAILABLE and D-615 offers the new fisher. Test `tests/early-mission-cards.test.ts`
+(D-650..D-654). (decided)
+
+**D-655 — Bug hunt 2026-11-11 (missions I–IX): results.** `tools/fuzz.ts` 300 runs (m1–m9): 0 failures. Bots I–IX
+(`mission-bot`, `bot-m2/3/4/7/8/9`): ladders unchanged, no invariant or command errors. Own scanner (scratchpad, after
+`tools/dead-end-scan.ts` / `dead-seconds.ts`): longest red card with nothing to press 479 s (IV cut-off granary),
+276 s (IX stable), 151 s (III stable), 124/87 s (IV castle at the ice) -> remaining ≤ 20 s, all the first 20 s of a
+held span (by design) or a castle whose input wagon is due (≤ 7 s). Not counted as "nothing to press": a grey "Kup wóz"
+or stone-bridge button with "brakuje N srebra" (the reason is on the button). Lost games without a dead-end letter: a
+repair bot (gap roads, stone bridge, missing producer, wagons) from 30 s snapshots wins most of them — the losses are
+play, not dead ends the letter misses; VII after the fisher was taken down and the stable cut from the castle stays in
+BACKLOG. Mission I's "too late" letter (D-639) unchanged, owner's decision pending. No sim change; mission hashes
+unchanged. (decided)
