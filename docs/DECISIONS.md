@@ -4978,3 +4978,41 @@ repair bot (gap roads, stone bridge, missing producer, wagons) from 30 s snapsho
 play, not dead ends the letter misses; VII after the fisher was taken down and the stable cut from the castle stays in
 BACKLOG. Mission I's "too late" letter (D-639) unchanged, owner's decision pending. No sim change; mission hashes
 unchanged. (decided)
+
+**D-670 — IX / X opening: the wood contest offers "Postaw drwala" at once (owner 2026-11-11; amends D-110, D-616).**
+Owner's decision on the BACKLOG questions (D-616, D-655): the red "surowiec zabiera inny odbiorca" card of the
+sawmill (NO_INPUT.CONTESTED) at the opening of missions IX and X (0:02–0:21, every game) no longer waits for the
+30 s shared-supply card with nothing to press. `sharedContested` (`src/ui/stalls.ts`) drops D-616's "after the card
+has shown once" memory: NO_INPUT.CONTESTED with one shared producer the mission can build (`sharedOneProducer`) has
+cure 'producer' from the first second — the sheet's "Postaw drwala" with the ghost by the shared woodcutter, the
+build tool lit. The card's text stays the contest; the shared-supply card itself ("{woodcutter} zaopatruje {n}
+warsztaty", D-104) still waits 30 s of waiting (D-110 otherwise unchanged: every other input wait keeps its 30 s).
+It generalises cleanly: `sharedOneProducer` exists only in IX and X (shared-card test: no other mission offers it;
+the free valley is 'ranked'). Scan (scratch, missions I–XVII, no input + 8 fuzz games each, 10 min): contested
+seconds with nothing to press IX 161 → 11 (contests with two producers left after fuzz), X 216 → 0, every other
+mission and every dead-card count unchanged. Valley `tools/dead-seconds.ts` card-10 1321 / card-30 1323 (60 min)
+and `tools/sandbox-first30.ts`: output identical. Balance (`balance-night6 m9 m10`): only the 10 s eye moves — IX
+8,04 → 7,82 min, X 8,88 → 9,04 min, both 3★ (X margin to 3★ +25 → +15 s); 30 / 60 s eyes, scan and letter players
+unchanged. Tests `tests/shared-card.test.ts` (opening contest cure in IX and X, card still after 30 s),
+`tests/late-mission-cards.test.ts` (D-616/D-670: every contest of X offers the woodcutter). No sim change. (decided)
+
+**D-671 — Mission I keeps the "too late" dead-end letter (owner 2026-11-11).** The D-639 TOO_LATE letter in the
+tutorial mission (players who never bridge get it at 10:01 of 12:00) stays as it is. No change. (decided)
+
+**D-672 — A command in pause refreshes the cards and sheets at once; the sim does not tick (owner 2026-11-11).**
+Statuses are taken only by `dispatch` inside `step`, so a command applied in pause (applied at once) left the
+old reading on screen: seed 1321 card-10 73:10, the road to a cut-off brewery built in pause kept its red
+"nieosiągalny" card with nothing to press until the game ran (D-637, BACKLOG P4). New sim read helper
+`pausedReading(world)` (`src/sim/sim.ts`): a JSON copy of the state, terrain shared, `dispatch` run on the copy at
+the same tick — the real world is untouched (no tick, no RNG draw, same hash). The app (`onCommandResult`, only with
+speed 0 and an accepted command) keeps that copy as `reading` until the next tick (`onTick` drops it, a new world
+too); the HUD card, the ranking, the map pins and the building / wagon sheets (`sheetNav`, a PanelNav whose `world`
+is `readWorld()`) read it, while commands, tools, the tutorial, saves and the scene keep the real world. UI memory
+sampled per tick (input waits D-110, fleet bits D-127, bottleneck windows D-171, wagon-wait memo D-161, calm costs
+D-335, market load memory D-630) is keyed by the real world: `memoryWorld` (`src/ui/readWorld.ts`) maps the copy
+back. On a dispatch tick the copy equals the state after the next step (test); on other ticks it is the dispatcher's
+answer a few ticks early — the reading the running game shows within 0,5 s. Cost: one state copy and one dispatch per
+command in pause. Mission hashes 86/86 identical (`tools/mission-hashes.ts`, also against the base before D-670).
+Test `tests/pause-reading.test.ts` (seed 1321 card-10 73:10: stale card in the paused state, none in the reading,
+same statuses as after the next tick; IV road in pause: hash untouched, readings never reach a replay; X: the
+shared card reads through the copy). (decided)

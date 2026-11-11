@@ -390,3 +390,6 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-653 | — | A building whose delivery wagon has no road is a red card | decided | UI |
 | D-654 | — | A wagon stranded on a road piece with no building: the cheapest road from the wagon | decided | sim |
 | D-655 | 2026-11-11 | Bug hunt 2026-11-11 (missions I–IX): results | decided | inne |
+| D-670 | 2026-11-11 | IX / X opening: the wood contest offers "Postaw drwala" at once (owner 2026-11-11; amends D-110, D-616) | decided | inne |
+| D-671 | 2026-11-11 | Mission I keeps the "too late" dead-end letter (owner 2026-11-11) | decided | treść |
+| D-672 | 2026-11-11 | A command in pause refreshes the cards and sheets at once; the sim does not tick (owner 2026-11-11) | decided | sim |
