@@ -13,5 +13,6 @@ nie zmieniaj `.github/workflows`, zachowuj placeholdery i znaczniki ICU bez zmia
 | 107 | 107-i18n-review-xvii.md | Przegląd tłumaczeń misji XVII (listy + 22 klucze) |
 | 108 | 108-i18n-review-lists-xiv-xv.md | Przegląd list kasztelana XIV–XV w 15 językach |
 | 109 | 109-i18n-stone-keys.md | Tłumaczenie 4 kluczy D-420 (kamieniołom) na 15 języków |
+| 110 | 110-i18n-card-keys-xi.md | Tłumaczenie 11 kluczy kart zastojów (D-454, D-591..D-639) na 15 języków |
 
-**Kolejność:** 106 → 107 → 108 → 109 (każde zlecenie to osobna gałąź `gpt/<nr>-…` i osobny PR).
+**Kolejność:** 106 → 107 → 108 → 109 → 110 (każde zlecenie to osobna gałąź `gpt/<nr>-…` i osobny PR).
