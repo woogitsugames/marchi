@@ -4,8 +4,8 @@
 // whole fleet has been on the road all that time, one more wagon). UI only: samples live outside the state (like
 // D-110), one per sim second, in a WeakMap per world; nothing here writes the sim state.
 import {
-  GOODS, TICK_HZ, canPlace, findPath, inputGoods, marketOpen, outputGoods, pathTime, producerOf, rankGated,
-  type Building, type BuildingType, type Good, type World,
+  GOODS, TICK_HZ, bridgeIceUntil, canPlace, findPath, inputGoods, isRaining, marketOpen, outputGoods, pathTime, producerOf, rankGated,
+  spanPenalties, thawing, type Building, type BuildingType, type Good, type World,
 } from '../sim/index';
 import { inputWaitTicks, waitsForInput } from './stalls';
 import { chainEndGood, goodSaturated } from './saturation';
@@ -133,9 +133,56 @@ function consumersOf(world: World, g: Good): Building[] {
  * tool finds a site a road reaches (siteAnchor). -1 when none has one: the card must not name the building (D-175).
  */
 function neckAnchor(world: World, g: Good, type: BuildingType, to: Building, consumers: readonly Building[]): number {
+  const memo = anchorMemo(world);
+  const q = memo ? `${g}|${type}|${to.id}|${consumers.map((c) => c.id).join(',')}` : '';
+  const hit = memo?.get(q);
+  if (hit !== undefined) return hit;
+  const near = anchorNow(world, g, type, to, consumers);
+  if (memo && memo.size < ANCHOR_MEMO_MAX) memo.set(q, near);
+  return near;
+}
+
+/** Work counters for tests/ui-read-budget.test.ts (D-752): anchors computed and the road searches they ran. */
+export const neckStats = { anchors: 0, paths: 0 };
+
+const ANCHOR_MEMO_MAX = 64;
+/** Weather and queue states kept at once: a wagon on the valley's busy bridge flips the penalties between ~20 states. */
+const ANCHOR_GENS_MAX = 32;
+const anchorMemos = new WeakMap<World, { base: string; gens: Map<string, Map<string, number>> }>();
+
+/**
+ * D-752: the card is computed every tick (bottleneckCard caches per tick) and its anchor ran a loaded road search from
+ * every producer of the good (~13 % of the valley's frame after a tick). The anchor reads the roads and buildings (the
+ * network version and the building count), the rank (siteExists), rain and thaw (edge costs, pathTime) and the wooden
+ * spans' queue penalties (by content, as the sim's distance memo, D-336); everything else it reads is static. Kept per
+ * world under that key — the network part drops everything, the weather and queue part keeps up to 32 states side by
+ * side (the penalties come and go with every wagon crossing). Not kept at all while bridge ice lasts (the search
+ * charges the remaining ice window: the answer moves with the tick). null: no memo now.
+ */
+function anchorMemo(world: World): Map<string, number> | null {
+  const st = world.state;
+  const ice = bridgeIceUntil(world);
+  if (ice >= 0 && ice - st.tick > 0) return null;
+  const base = `${st.netVersion}|${st.buildings.length}|${st.town.rank}`;
+  let memo = anchorMemos.get(world);
+  if (!memo || memo.base !== base) anchorMemos.set(world, (memo = { base, gens: new Map() }));
+  const pen = spanPenalties(world);
+  let key = `${isRaining(st) ? 1 : 0}${thawing(world) ? 1 : 0}`;
+  if (pen.size > 0) for (const sp of [...pen.keys()].sort((a, b) => a - b)) key += sp + ':' + pen.get(sp) + ';';
+  let m = memo.gens.get(key);
+  if (!m) {
+    if (memo.gens.size >= ANCHOR_GENS_MAX) memo.gens.clear();
+    memo.gens.set(key, (m = new Map()));
+  }
+  return m;
+}
+
+function anchorNow(world: World, g: Good, type: BuildingType, to: Building, consumers: readonly Building[]): number {
+  neckStats.anchors++;
   const prod: { id: number; tt: number }[] = [];
   for (const p of world.state.buildings) {
     if (!outputGoods(p.type).includes(g)) continue;
+    neckStats.paths++;
     const path = findPath(world, p.gate, to.gate, true);
     prod.push({ id: p.id, tt: path ? pathTime(world, p.gate, path, true) : Infinity });
   }
