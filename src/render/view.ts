@@ -491,7 +491,8 @@ class View implements WorldView {
     const tu = this.terrain.uniforms;
     tu.uWet!.value = this.wet;
     tu.uWinter!.value = this.winter;
-    frostUniform.value = this.winter * 0.6;
+    // walls and roofs: winter frost, and rain wetness (D-691) — in winter the spell falls as snow, so no soaking
+    frostUniform.value.set(this.winter * 0.6, this.rain * (1 - this.winter));
     (tu.uSky!.value as Color).copy(env.skyH).multiplyScalar(env.light);
     tu.uTime!.value = this.time;
     tu.uMotion!.value = reducedMotion() ? 0 : 1;

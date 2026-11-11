@@ -19,6 +19,7 @@ import {
   RGBADepthPacking,
   SRGBColorSpace,
   type Texture,
+  Vector2,
 } from 'three';
 import { noiseTexture } from '../noiseTex';
 
@@ -410,8 +411,10 @@ function addFoliageLift(m: MeshStandardMaterial, key: MatKey): void {
  * pale toward the same frost colour the terrain shader uses, so the roofs no longer stay summer-brown on a white valley.
  * Only plain meshes (buildings, bridges, props): the instanced users (wagons, cargo, yard piles, workers) skip it.
  * One shared uniform, set per frame by the view; the code is always in the program, so a season change links nothing.
+ * `x` is the frost amount, `y` the rain wetness of the walls and roofs (D-691): one vec2 uniform, so the wet look adds
+ * no uniform upload to the frost's.
  */
-export const frostUniform = { value: 0 };
+export const frostUniform = { value: new Vector2() };
 const FROST_KEYS = new Set<MatKey>(['wood', 'bark', 'thatch', 'stone', 'plaster']);
 const FROST_VERT = `
 #ifdef USE_INSTANCING
@@ -440,12 +443,17 @@ const WEATHER_FRAG = `
   diffuseColor.rgb *= 1.0 + wea;
   float weaL = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(weaL), clamp(-wea * 0.8, 0.0, 0.35));
+  // rain (D-691): soaked walls and roofs go darker, the roofs and wall tops most, the stain's damp spots and streaks
+  // more than the dry ones (wet stone, thatch and wood lose a quarter to a third of their albedo); the instanced
+  // wagons and cargo stay as they are (the goods keep their read)
+  float wetK = uFrost.y * mix(0.7, 1.0, smoothstep(0.4, 0.8, vFrostUp));
+  diffuseColor.rgb *= 1.0 - wetK * (0.24 + 0.14 * clamp(-wea * 2.0, 0.0, 1.0));
 }
 #endif
 `;
 const FROST_FRAG = `
 {
-  float frostK = uFrost * smoothstep(0.4, 0.8, vFrostUp);
+  float frostK = uFrost.x * smoothstep(0.4, 0.8, vFrostUp);
   float frostL = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(frostL * 0.9 + 0.28, frostL * 0.92 + 0.29, frostL * 0.95 + 0.31), frostK);
 }
@@ -461,11 +469,11 @@ function frostHook(sh: { uniforms: Record<string, unknown>; vertexShader: string
     .replace('#include <common>', '#include <common>\nvarying float vFrostUp;\nvarying vec3 vWeaPos;')
     .replace('#include <project_vertex>', '#include <project_vertex>\n' + FROST_VERT);
   sh.fragmentShader = sh.fragmentShader
-    .replace('#include <common>', '#include <common>\nuniform float uFrost;\nuniform sampler2D tWeather;\nvarying float vFrostUp;\nvarying vec3 vWeaPos;')
+    .replace('#include <common>', '#include <common>\nuniform vec2 uFrost;\nuniform sampler2D tWeather;\nvarying float vFrostUp;\nvarying vec3 vWeaPos;')
     .replace('#include <color_fragment>', '#include <color_fragment>\n' + WEATHER_FRAG + FROST_FRAG);
 }
 const weatherTex: { value: DataTexture | null } = { value: null };
-const frostKey = (): string => 'frost2';
+const frostKey = (): string => 'frost3';
 
 function addFrost(m: MeshStandardMaterial): void {
   m.onBeforeCompile = frostHook;
