@@ -1,8 +1,11 @@
-// UI reading cost budget (D-730..D-734): the stall cards' reading code must not redo work the state has not changed.
+// UI reading cost budget (D-730..D-734, D-750..D-753): the stall cards' reading code must not redo work the state has not changed.
 // Counts work (searches, map scans, formatter constructions), never time. The cost itself: tools/ui-read-cost.ts.
-import { TICK_HZ, applyCommand, createWorld, jsonCopy, net, pausedReading, stateHash, step, type World } from '../src/sim/index';
+import { TICK_HZ, applyCommand, bridgeIceUntil, createWorld, jsonCopy, net, pausedReading, stateHash, step, type World } from '../src/sim/index';
 import { dispatch } from '../src/sim/logistics';
-import { heldSpanFor, rankStalls, readStats } from '../src/ui/stalls';
+import { heldSpanFor, rankStalls, readStats, sampleInputWaits } from '../src/ui/stalls';
+import { siteExists, siteStats } from '../src/ui/site';
+import { bottleneckCard, neckAnchorCold, neckStats } from '../src/ui/bottleneck';
+import { readingAfterCommand } from '../src/ui/readWorld';
 import { fmtDayTime, setFmtLang } from '../src/ui/fmt';
 import { pluralize } from '../src/i18n/plural';
 import { valleyDriver } from '../tools/robustness';
@@ -108,4 +111,85 @@ test('D-731: the HUD clock formats once a game minute, plural numbers reuse one 
   } finally {
     (Intl as { NumberFormat: unknown }).NumberFormat = Real;
   }
+});
+
+/** Bundles a tools/ module with esbuild (i18n reads Vite's import.meta.glob, unavailable under tsx) and imports it. */
+async function bundled<T>(entry: string): Promise<T> {
+  const { build } = await import('esbuild');
+  const { readFileSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { pathToFileURL, fileURLToPath } = await import('node:url');
+  const out = join(tmpdir(), `marchia-${entry.replace(/\W/g, '_')}-${process.pid}.mjs`);
+  await build({
+    entryPoints: [fileURLToPath(new URL(`../${entry}`, import.meta.url))], bundle: true, platform: 'node', format: 'esm', outfile: out,
+    external: ['three', 'node:*'], logLevel: 'warning',
+    plugins: [{
+      name: 'no-import-meta-glob',
+      setup(b) {
+        b.onLoad({ filter: /src[\\/]i18n[\\/]index\.ts$/ }, (a) => ({
+          contents: readFileSync(a.path, 'utf8').replace(/import\.meta\.glob<[\s\S]*?\]\)/, '({} as Record<string, () => Promise<any>>)'), loader: 'ts',
+        }));
+        b.onResolve({ filter: /\.(css|png|svg|ogg|mp3|woff2?)(\?.*)?$/ }, (a) => ({ path: a.path, namespace: 'stub' }));
+        b.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({ contents: 'export default ""', loader: 'js' }));
+      },
+    }],
+  });
+  return (await import(pathToFileURL(out).href)) as T;
+}
+
+test('D-750: a sheet update with nothing changed rebuilds nothing and shows what a fresh sheet shows', async () => {
+  const m = await bundled<typeof import('../tools/sheet-mark-check')>('tools/sheet-mark-check.ts');
+  const r = m.checkSheetMarks(['m4', 'm16', 'sandbox'], 12);
+  eq(r.mismatches.slice(0, 5).join('\n'), '', 'every update equals a fresh sheet (DOM and ghost calls)');
+  assert(r.shouldSkip > 500 && r.shouldBuild > 1000, `enough updates (${r.shouldSkip} unchanged, ${r.shouldBuild} changed)`);
+  eq(r.skipped, r.shouldSkip, 'every update with nothing changed skipped the rebuild');
+  eq(r.built, r.shouldBuild, 'every update after a tick, a command in pause or back on the world rebuilt');
+  console.log(`     checks=${r.checks} skipped=${r.skipped} built=${r.built}`);
+});
+
+test('D-751: a paused reading copy takes the world\'s site answers under the same key, never writing them', () => {
+  const w = createWorld('sandbox');
+  const drive = valleyDriver();
+  let copies = 0, asked = 0;
+  while (w.state.tick < 25 * 60 * TICK_HZ) {
+    for (const c of drive(w)) applyCommand(w, c);
+    step(w);
+    if (w.state.tick % (30 * TICK_HZ) !== 0) continue;
+    const types = ['farm', 'woodcutter', 'mill'] as const;
+    const pairs = w.state.buildings.flatMap((b) => types.map((t) => [t, b.id] as const));
+    const answers = pairs.map(([t, id]) => siteExists(w, t, id));
+    const s0 = siteStats.sites, l0 = siteStats.links;
+    const copy = readingAfterCommand(w);
+    for (let i = 0; i < pairs.length; i++) eq(siteExists(copy, pairs[i]![0], pairs[i]![1]), answers[i], 'the copy reads the same answer');
+    eq(siteStats.sites - s0 + siteStats.links - l0, 0, 'no site searched again on the copy');
+    // a cold copy (no owner) answers the same by its own searches
+    const cold = pausedReading(w);
+    for (let i = 0; i < pairs.length; i++) eq(siteExists(cold, pairs[i]![0], pairs[i]![1]), answers[i], 'a cold copy agrees');
+    assert(siteStats.sites - s0 >= pairs.length, 'the cold copy searched');
+    copies++; asked += pairs.length;
+  }
+  assert(copies >= 40 && asked > 500, `enough copies (${copies}) and answers (${asked})`);
+});
+
+test('D-752: the bottleneck anchor is searched once per network, weather and queue state, not every tick', () => {
+  const w = createWorld('sandbox');
+  const drive = valleyDriver();
+  let cards = 0, calm = 0, calmAnchors = 0;
+  while (w.state.tick < 110 * 60 * TICK_HZ) {
+    for (const c of drive(w)) applyCommand(w, c);
+    step(w);
+    sampleInputWaits(w);
+    const ice = bridgeIceUntil(w) > w.state.tick;
+    const a0 = neckStats.anchors;
+    const c = bottleneckCard(w);
+    const computed = neckStats.anchors - a0;
+    if (!c || c.kind !== 'good') continue;
+    cards++;
+    if (!ice) { calm++; calmAnchors += computed; }
+    if (w.state.tick % 7 === 0) eq(neckAnchorCold(w, c), c.near, `@${w.state.tick}: the memoized anchor equals a fresh one`);
+  }
+  assert(cards > 300 && calm > 300, `enough cards (${cards}, ${calm} without bridge ice)`);
+  assert(calmAnchors * 10 <= calm, `${calmAnchors} anchors searched for ${calm} card ticks without ice`);
+  console.log(`     cards=${cards} without ice=${calm} anchors searched there=${calmAnchors}`);
 });

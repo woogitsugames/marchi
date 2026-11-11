@@ -289,6 +289,12 @@ export function bottleneckKey(world: World): string {
   return c ? `${c.kind}:${c.good ?? ''}:${c.cure}:${c.near}` : '';
 }
 
+/** Test hook (D-752): the anchor of a 'good' card computed afresh, without the memo. */
+export function neckAnchorCold(world: World, c: BottleneckCard): number {
+  const g = c.good!, to = world.state.buildings.find((b) => b.id === c.focus)!;
+  return anchorNow(world, g, c.build!, to, consumersOf(world, g));
+}
+
 /** Test hook: forget the samples of a world. */
 export function resetBottleneck(world: World): void {
   logs.delete(world);

@@ -72,8 +72,8 @@ export interface PanelNav {
  * (t(), formatting, the chain) was rebuilt only for setHtml to find the same string. A sheet now keeps a mark of what
  * its update read — the world and state objects, the tick, silver, the network version, the building and wagon counts
  * (the HUD's key, D-158), the language, the pace log, the tutorial, the followed wagon — plus `sheetRev`, bumped by
- * every tap on a sheet (codex, castle fold and chain unfolds are module state shared by all sheets) and by a closing
- * sheet. With the same mark the update skips the rebuild and only repeats its ghost calls (the app's ghost is shared
+ * every tap on a sheet (codex, castle fold and chain unfolds are module state shared by all sheets; a closing sheet
+ * forgets only its own unfold, and its key is open once). With the same mark the update skips the rebuild and only repeats its ghost calls (the app's ghost is shared
  * with other sheets and tools). Running, the tick moves between updates, so every update still rebuilds. A command
  * in pause swaps the reading copy (D-672), a load swaps the world: both change the mark.
  */
@@ -1048,7 +1048,7 @@ export function buildingSheet(nav: PanelNav, id: number): SheetContent {
       marked(mark, sheet);
       return true;
     },
-    onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); sheetRev++; },
+    onClose() { nav.setGhost(null); chainOpen.delete('building:' + id); },
   };
 }
 
@@ -1136,7 +1136,7 @@ export function wagonSheet(nav: PanelNav, id: number): SheetContent {
       marked(mark, sheet);
       return true;
     },
-    onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); sheetRev++; },
+    onClose() { nav.setGhost(null); chainOpen.delete('wagon:' + id); },
   };
 }
 
