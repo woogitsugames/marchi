@@ -368,25 +368,18 @@ export function inputWaitTicks(world: World, b: Building): number {
 /** The shared-supply card for this building: one producer for two workshops, after 30 s of waiting (D-110). */
 export function sharedOneCard(world: World, b: Building): SharedOne | null {
   const sh = sharedOneProducer(world, b);
-  const on = sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
-  if (on) {
-    let seen = sharedSeen.get(world);
-    if (!seen) sharedSeen.set(world, (seen = new Set()));
-    seen.add(b.id);
-  }
-  return on;
+  return sh && inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS ? sh : null;
 }
 
-/** Buildings whose shared-supply card has been up once in this world (UI memory, never in the state). */
-const sharedSeen = new WeakMap<World, Set<number>>();
-
 /**
- * D-616: after the shared-supply card has shown for this workshop once, a later moment where the other workshop
- * takes the input (NO_INPUT.CONTESTED, between deliveries — mission X, 20 s at a time) keeps its cure, the second
- * producer, instead of a red card with nothing to press until the 30 s wait has built up again. Pure read.
+ * The other workshop takes this one's input (NO_INPUT.CONTESTED) and a second producer would end the contest: the
+ * cure is that producer from the first second. D-616 kept it only after the shared-supply card had shown once;
+ * D-670 (owner 2026-11-11): also the opening contest of missions IX and X (0:02–0:21) — a red card that names the
+ * contest offers "Postaw drwala" at once instead of nothing until the 30 s card (D-110). The card's text stays the
+ * contest; the shared-supply card itself still waits 30 s. Missions only (the valley has no shared producer). Pure read.
  */
 export function sharedContested(world: World, b: Building): boolean {
-  return b.status.k === 'NO_INPUT' && b.status.cause === 'CONTESTED' && !!sharedSeen.get(world)?.has(b.id) && !!sharedOneProducer(world, b);
+  return b.status.k === 'NO_INPUT' && b.status.cause === 'CONTESTED' && !!sharedOneProducer(world, b);
 }
 
 /**

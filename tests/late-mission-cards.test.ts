@@ -176,7 +176,7 @@ test('D-614/D-617: a workshop starving after its order is in, or for a good noth
   assert(!calmStall(w, mill, 'starved-2'), 'grain left in the granary: still a stall');
 });
 
-test('D-616: X — once the shared card has shown, a later contest keeps its cure (the second woodcutter)', () => {
+test('D-616/D-670: X — every contest, before and after the shared card, offers the second woodcutter', () => {
   const w = createWorld('m10');
   const saw = typeOf(w, 'sawmill');
   let early = 0, shown = false, contested = 0;
@@ -185,8 +185,9 @@ test('D-616: X — once the shared card has shown, a later contest keeps its cur
     if (sharedOneCard(w, saw)) shown = true;
     const c = saw.status.k === 'NO_INPUT' && saw.status.cause === 'CONTESTED';
     if (!c || w.state.tick % TICK_HZ) continue;
-    if (!shown) { early++; eq(cureFor(w, saw.id), null, 'before the card: the lesson is not given away (D-110)'); }
-    else { contested++; assert(sharedContested(w, saw), 'contest after the card'); eq(cureFor(w, saw.id), 'producer', 'cure: second woodcutter'); }
+    if (!shown) early++; else contested++;
+    assert(sharedContested(w, saw), `contest at ${w.state.tick / TICK_HZ} s`);
+    eq(cureFor(w, saw.id), 'producer', `cure at ${w.state.tick / TICK_HZ} s: second woodcutter (owner 2026-11-11, D-670)`);
   }
   assert(early > 0 && contested > 0, `contest before (${early} s) and after (${contested} s) the card`);
 });
