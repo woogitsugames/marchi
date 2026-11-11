@@ -4,6 +4,7 @@ import {
   BUILDINGS, MAX_GRADE, cutsDiagonalRoad, gateCell, grade, missionSiteHint, net, rankGated, reachable, suggestLinkForSite, validatePlace,
   type BuildingType, type World,
 } from '../sim/index';
+import { memoryWorld } from './readWorld';
 
 export interface Site { x: number; y: number; facing: number; /** The mission's authored site (D-107). */ hint: boolean }
 
@@ -48,6 +49,9 @@ export function buildSite(world: World, type: BuildingType, near: number, anyCoi
  * D-266: a road can reach this site's gate — a road cell next to it (the gate is laid as road on placement), or a link
  * the gap finder would build (suggestLinkForSite). Pure read.
  */
+/** Work counters for tests/ui-read-budget.test.ts (D-751): siteExists and siteLinked answers computed, not memoized. */
+export const siteStats = { sites: 0, links: 0 };
+
 const linkMemo = new WeakMap<World, { key: string; m: Map<string, boolean> }>();
 export function siteLinked(world: World, type: BuildingType, s: { x: number; y: number; facing: number }): boolean {
   // kept until the network or the building count changes (the cards ask every frame, the ghost on every pick)
@@ -55,11 +59,25 @@ export function siteLinked(world: World, type: BuildingType, s: { x: number; y: 
   let memo = linkMemo.get(world);
   if (!memo || memo.key !== key) linkMemo.set(world, (memo = { key, m: new Map() }));
   const q = `${type}|${s.x}|${s.y}|${s.facing}`;
-  const hit = memo.m.get(q);
-  if (hit !== undefined) return hit;
+  const hit = memo.m.get(q) ?? ownerLinked(world, key, q);
+  if (hit !== undefined) { memo.m.set(q, hit); return hit; }
+  siteStats.links++;
   const ok = linkedNow(world, type, s);
   memo.m.set(q, ok);
   return ok;
+}
+
+/**
+ * D-751: a paused reading copy (D-672) starts with empty memos, so the first frame after a command in pause redid every
+ * site search the world had answered (the grow / rank cards' anchors: 0.1–0.9 ms in the valley). The answer depends only
+ * on what the key holds — roads and buildings (both bump the network version), the building count, the terrain — so the
+ * real world's entry under the same key is the copy's answer too. Read only: the copy never writes the world's memo.
+ */
+function ownerLinked(world: World, key: string, q: string): boolean | undefined {
+  const owner = memoryWorld(world);
+  if (owner === world) return undefined;
+  const m = linkMemo.get(owner);
+  return m && m.key === key ? m.m.get(q) : undefined;
 }
 
 function linkedNow(world: World, type: BuildingType, s: { x: number; y: number; facing: number }): boolean {
@@ -102,9 +120,16 @@ export function siteExists(world: World, type: BuildingType, near: number): bool
   let m = siteMemo.get(world);
   if (!m) siteMemo.set(world, (m = new Map()));
   const q = `${type}|${near}`, key = `${world.state.netVersion}|${world.state.buildings.length}|${world.state.town.rank}`;
-  const c = m.get(q);
+  let c = m.get(q);
+  // D-751: the real world's answer under the same key (network, building count, rank) for a paused reading copy
+  if (!(c && c.key === key)) {
+    const owner = memoryWorld(world);
+    const oc = owner !== world ? siteMemo.get(owner)?.get(q) : undefined;
+    if (oc && oc.key === key) m.set(q, (c = oc));
+  }
   if (c && c.key === key) return c.ok;
   // D-266: in the free valley only a site a road can reach counts (the card would name a building born cut off)
+  siteStats.sites++;
   const s = buildSite(world, type, near, true);
   const ok = s !== null && (!rankGated(world) || s.hint || siteLinked(world, type, s));
   m.set(q, { key, ok });
