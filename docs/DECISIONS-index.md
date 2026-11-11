@@ -393,3 +393,7 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-670 | 2026-11-11 | IX / X opening: the wood contest offers "Postaw drwala" at once (owner 2026-11-11; amends D-110, D-616) | decided | inne |
 | D-671 | 2026-11-11 | Mission I keeps the "too late" dead-end letter (owner 2026-11-11) | decided | treść |
 | D-672 | 2026-11-11 | A command in pause refreshes the cards and sheets at once; the sim does not tick (owner 2026-11-11) | decided | sim |
+| D-690 | — | Graphics: no washed-out mint birch crowns in spring and summer | decided | render |
+| D-691 | — | Graphics: walls and roofs darken in the rain | decided | render |
+| D-692 | — | Graphics: the autumn rust crowns stay as they are (open D-502 question, audit 13) | decided | render |
+| D-693 | — | Graphics audit 13: method, findings, what was not changed, cost | decided | render |

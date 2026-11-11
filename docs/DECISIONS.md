@@ -5016,3 +5016,64 @@ command in pause. Mission hashes 86/86 identical (`tools/mission-hashes.ts`, als
 Test `tests/pause-reading.test.ts` (seed 1321 card-10 73:10: stale card in the paused state, none in the reading,
 same statuses as after the next tick; IV road in pause: hash untouched, readings never reach a replay; X: the
 shared card reads through the copy). (decided)
+
+## Graphics audit 13: late missions and the valley in seasons and weather (2026-11-11)
+
+**D-690 — Graphics: no washed-out mint birch crowns in spring and summer.** Audit 13 (D-693) found the one pastel
+thing in the summer valley: the birch crowns in the forest read as pale grey-mint blotches (sRGB ≈ 112/113/84, HSL
+S 15 %, L 39 % against the forest's L ≈ 22 %; `gfx13-before-valley-summer-*`, crop `gfx13-ab-birch-summer-crop.jpg`).
+Cause: `springLeaf` (D-303, D-540) luminance-matches the green to the leaf's autumn colour, and the birch's pale yellow
+leaf (#a08a45 … #b39a4f, linear luminance 0,26–0,33; the oaks 0,12–0,20) became a pale green. The matched luminance is
+now compressed above a knee of 0,14 to 25 % of the excess while the leaf is green (`min(s, 1)`): birch 0,26 → 0,17,
+the brightest oak 0,20 → 0,155, everything at or below 0,14 unchanged. The first try (knee 0,15, 40 %) took the patches
+only from L 39 to 35 %; the final one gives 39 → 33 %, S unchanged (15–17 %), whole-frame mean L and S within ±0,1 pt
+(`gfx11-sat.mjs`: summer S 23,2 / L 26,2 → 23,2 / 26,1 %; spring 23,6 / 26,3 → 23,6 / 26,2 %). The rest of the
+brightness comes from the sparse, sunlit birch cards themselves; making it darker would darken the oaks too — not done.
+Contract missions and late autumn (`s = 0`) are untouched (the formula returns the colour unchanged, the autumn
+look bit for bit as before). Shared by the leaf material, its depth material and the far-card bake as before; a few
+ALU in the vertex shader, no uniform, no program. Shots `gfx13-{before,after}-valley-{summer,spring}-high-*`,
+`gfx13-ab-valley-spring-915x412.jpg`. (decided)
+
+**D-691 — Graphics: walls and roofs darken in the rain.** In a rain spell the ground went dark and wet (puddles in
+the ruts) but the castle and the houses stayed dry, chalky pale — the most "diorama" thing in the rain
+shots (`gfx13-before-valley-rain-*`): the eye reads a painted model set on a wet board. The building hook shared by
+the plain kinds (`wood`, `bark`, `thatch`, `stone`, `plaster`; the D-500 stain block) now darkens the albedo by
+`wet × (0,24 + 0,14 × damp spot)`: the stain's dark spots and streaks soak more, the roofs and wall tops fully, the
+walls at 70 % — wet stone, thatch and wood lose a quarter to a third of their albedo. `wet` is the view's eased rain
+(the same value that drives the rain streaks and the grey sky) × (1 − winter): in winter the spell falls as snow
+(D-203), so the walls do not soak. It rides in the frost uniform, now a `vec2` (x frost, y wet): no new uniform,
+upload or program (cache key `frost2` → `frost3`, the same one program per kind group). The instanced users
+(wagons, cargo, yard piles, workers) skip it as they skip the stains: the goods keep their read. The roughness is
+not touched (a glossier wall risks the plastic look the brief forbids; not tried). Castle wall in the rain (412×915, mean sRGB
+luminance) 76 → 67; whole-frame rain L 21,3 → 20,8 %, S 21,0 → 21,1 %; roads still read darker than the walls and
+meadow. Shots `gfx13-{before,after}-valley-rain{,-autumn}-high-*`, `gfx13-ab-valley-rain-915x412.jpg`. (decided)
+
+**D-692 — Graphics: the autumn rust crowns stay as they are (open D-502 question, audit 13).** Measured on the late
+missions X–XVII (60 s, high, scene only — HUD cropped, 412×915 y 420–750): mean S 26,4–27,5 %, L 23–24 %; pixels above
+the art direction's S 35 % 7,5–11,2 %, of them orange 4,8–6,5 % of the frame. On mission XV 904×1000 the orange pixels
+above S 35 % are 4,5 % of the scene with mean S 41 %, L 28 % and hue 20–35° (rust-brown, no pink): dark, not candy.
+In the valley at the rust peak (58 % of autumn, `gfx13-before-valley-autumn-late-*`) the share is 3,3–6,4 %, mean S
+23,7–24,2 %. Not clearly overdone → no change (the instruction: change only if clearly exaggerated). The lit sides of a
+few crowns lean salmon at 904×1000; that and the cream autumn birches (pale crown on a white trunk, "lollipop" up
+close) stay a question to the owner in BACKLOG with these shots. (decided)
+
+**D-693 — Graphics audit 13: method, findings, what was not changed, cost.** Shots with `tools/gfx11-shots.mjs`
+(`GFX_PREFIX=gfx13`; new scenes: missions X–XII and XIV–XVI at 60 s next to XIII / XVII, `valley-rain` and
+`valley-rain-autumn` — a rain spell pushed into the shot's state at summer / autumn noon —, `valley-fog` at the morning
+mist peak 0,27, `valley-autumn-late` at 58 % of autumn, the rust peak), high, 412×915, 915×412 and 904×1000; before =
+the build of `dd303db` served from a copy (port 5261), after = this branch (5262). 48 shots before, 15 after
+(`docs/shots/gfx13-{before,after}-*`, side by side `gfx13-ab-*`). Judged against the CLAUDE.md "Forbidden" list and
+`docs/UI_STYLE.md`, with `gfx11-sat.mjs` for saturation. Findings: (1) summer / spring birch crowns pale mint —
+fixed, D-690; (2) walls and roofs dry in the rain — fixed, D-691; (3) autumn rust crowns — measured, not overdone, no
+change, D-692; (4) the "fog" is only the river mist: at 0,27 the land has none and the frame is dark and warm (S 33 %,
+41 % of pixels above S 35 %, L 17 %) — the open D-502 dawn question, numbers added there, no change; (5) the late
+missions' meadow at ~200 m is one smooth olive field with soft shadow blobs, and the summer castle is clean pale grey
+— both large look changes, new BACKLOG question; (6) rain stays readable: roads darker than the meadow, wagons and
+pins visible, streaks faint (S 21 %, L 21 %); winter frost patchy (D-501) — no change; (7) HUD: parchment kit, wine,
+Grenze Gotisch / Alegreya Sans, no gradients, glass, neon or emoji, nothing generic — no UI / CSS change. No pastel,
+candy, low-poly, cel or pixel look found beyond (1). Cost (`tools/rperf-probe.mjs`, A/B interleaved, v-summer and
+mission I, low and high): main / shadow draws and triangles, programs (46 / 48), textures (33,8 / 175,8 MB) identical
+(one v-summer high window read 69 draws in two runs and 64 in two others, for both builds alike — window timing, not
+the change); SwiftShader rAF (`tools/gfx12-frame-ab.mjs`, 3 rounds): valley 110 m high −3,4 %, 38 m high −4,8 %,
+`m1-fixed` high −4,5 %, low −8,5 / −0,6 / 0,0 % — no regression above the shared container's noise (a few ALU on
+building pixels and leaf vertices, no fetch, uniform, pass or program). (decided)
