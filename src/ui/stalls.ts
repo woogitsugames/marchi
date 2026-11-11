@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, MISSIONS, blockingBuilding, TICK_HZ, contractsOf, outputGoods, reachable, suggestConnection, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, marketOpen, wagonEta, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
+import { BUILDINGS, MISSIONS, blockingBuilding, TICK_HZ, contractsOf, outputGoods, reachable, suggestConnection, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, marketOpen, wagonEta, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type Wagon, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -460,8 +460,8 @@ export function sharedContested(world: World, b: Building): boolean {
  */
 export interface HeldSpan { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED'; span: number; heldTicks: number; cells: number[] }
 export const HELD_SPAN_TICKS = 20 * TICK_HZ;
-export function heldSpanFor(world: World, b: Building): HeldSpan | null {
-  const own = heldSpanOf(world, b);
+export function heldSpanFor(world: World, b: Building, atSpans: readonly Wagon[] = world.state.wagons): HeldSpan | null {
+  const own = heldSpanOf(world, b, false, atSpans);
   if (own) return own;
   // D-652: a building short of an input its producer waits for (NO_INPUT blamed on it) is held by that producer's
   // wagon too — mission IV: the castle "brak zapasów" behind the sawmill whose wood stood at the ice read critical
@@ -470,13 +470,14 @@ export function heldSpanFor(world: World, b: Building): HeldSpan | null {
   if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === b.id) return null;
   const p = buildingById(world, s.blockedBy);
   // (either leg of the producer's job: its input's wagon may be held on the way to the pickup)
-  return p ? heldSpanOf(world, p, true) : null;
+  return p ? heldSpanOf(world, p, true, atSpans) : null;
 }
 
-function heldSpanOf(world: World, b: Building, anyLeg = false): HeldSpan | null {
+/** `atSpans`: the wagons to look at, in fleet order — every wagon, or (D-737, the ranking) those standing at a span. */
+function heldSpanOf(world: World, b: Building, anyLeg = false, atSpans: readonly Wagon[] = world.state.wagons): HeldSpan | null {
   const st = world.state;
   let best: HeldSpan | null = null;
-  for (const w of st.wagons) {
+  for (const w of atSpans) {
     const s = w.status;
     if (s.k !== 'BRIDGE_JAM' && s.k !== 'BRIDGE_CLOSED') continue;
     // D-711: ice that has closed the span for 20 s and holds it 20 s more counts at once — a wagon's own `since`
@@ -779,14 +780,14 @@ export function routeLostFor(world: World, b: Building): { wagon: number; ticks:
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];
   // D-735: with no wagon standing at a span there is no held span anywhere — heldSpanFor would scan every wagon for
-  // every building (200 wagons × 41 buildings a tick on the bench) to say so
-  const bridged = world.state.wagons.some((w) => w.status.k === 'BRIDGE_JAM' || w.status.k === 'BRIDGE_CLOSED');
+  // every building (200 wagons × 41 buildings a tick on the bench) to say so; D-737: with some, only those are read
+  const atSpans = world.state.wagons.filter((w) => w.status.k === 'BRIDGE_JAM' || w.status.k === 'BRIDGE_CLOSED');
   for (const b of world.state.buildings) {
     if (sharedOneCard(world, b)) {
       out.push({ id: b.id, ticks: b.stalledTicks, crit: true, minor: false, score: (b.stalledTicks + SHARED_LEAD_TICKS) * W_CRIT });
       continue;
     }
-    const held = bridged ? heldSpanFor(world, b) : null;
+    const held = atSpans.length ? heldSpanFor(world, b, atSpans) : null;
     if (held) {
       // D-420: the stone bridge only waits for stone already coming or being dug — a calm pin, not the red card
       // D-633: ...or for stone dug into a quarry yard a full granary refuses (the quarry's own card leads)
