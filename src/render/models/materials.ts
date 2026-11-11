@@ -130,7 +130,12 @@ vec3 springLeaf(vec3 c, float s, float h) {
   float m = clamp(s - 1.0, 0.0, 1.0);
   vec3 g = mix(mix(SPRING_COL, SPRING_COL2, hs), mix(SUMMER_COL, SUMMER_COL2, hs), m);
   const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
-  g *= dot(c, lw) / dot(g, lw) * (1.05 - 0.15 * m);
+  // D-690: the birch's pale yellow leaf (linear luminance ~0.26, the oaks 0.10-0.17) matched into a pale, washed mint
+  // (S 13 %, L 47 % on screen beside a forest at L ~25 %): luminance above a knee of 0.15 is compressed to 40 % while
+  // the leaf is green; s = 0 (contract missions, late autumn) is untouched
+  float lc = dot(c, lw);
+  lc -= min(s, 1.0) * 0.6 * max(lc - 0.15, 0.0);
+  g *= lc / dot(g, lw) * (1.05 - 0.15 * m);
   return mix(c, g, min(s, 1.0) * mix(0.78 + 0.22 * hk, 0.92 + 0.08 * hk, m));
 }
 `;
