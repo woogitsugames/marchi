@@ -67,6 +67,13 @@ test('D-711: a one-lane jam reads calm only in its first 20 s', () => {
   assert(!!e && e.minor, `a calm pin: ${JSON.stringify(e)}`);
   const h = briefHold(w, bakery);
   assert(!!h && h.kind === 'BRIDGE_JAM', `jam: ${JSON.stringify(h)} ${JSON.stringify(bakery.status)}`);
+  // ...and the castle behind the bakery (castle <- bakery <- mill, whose grain is the jammed wagon's): calm too
+  const castle = typeOf(w, 'castle');
+  assert(castle.status.k === 'NO_INPUT' && castle.status.cause === 'NONE_AVAILABLE' && castle.status.blockedBy === bakery.id, `castle: ${JSON.stringify(castle.status)}`);
+  const hc = briefHold(w, castle);
+  assert(!!hc && hc.kind === 'BRIDGE_JAM', `two levels up: ${JSON.stringify(hc)}`);
+  const ec = entry(w, castle.id);
+  assert(!!ec && ec.minor, `the castle is a calm pin: ${JSON.stringify(ec)}`);
   const wg = w.state.wagons.find((q) => q.id === h!.wagon)!;
   assert(wg.status.k === 'BRIDGE_JAM' && w.state.tick - wg.status.since < 20 * TICK_HZ, 'within its first 20 s');
   // past 20 s with no stone bridge to offer (II has no cobbles) the jam is no longer the brief reading

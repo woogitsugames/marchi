@@ -122,10 +122,18 @@ export function briefHold(world: World, b: Building): { wagon: number; kind: 'BR
   // either leg of its own job too: the wagon that will bring its input may be held on its way to the pickup
   const own = briefHoldOf(world, b, true);
   if (own) return own;
-  const s = b.status;
-  if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === b.id) return null;
-  const p = buildingById(world, s.blockedBy);
-  return p ? briefHoldOf(world, p, true) : null;
+  // up the NONE_AVAILABLE chain (II: castle <- bakery <- mill whose grain stands in a jam), a few levels
+  let cur = b;
+  for (let depth = 0; depth < 4; depth++) {
+    const s = cur.status;
+    if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === cur.id) return null;
+    const p = buildingById(world, s.blockedBy);
+    if (!p || p.id === b.id) return null;
+    const h = briefHoldOf(world, p, true);
+    if (h) return h;
+    cur = p;
+  }
+  return null;
 }
 
 function briefHoldOf(world: World, b: Building, anyLeg: boolean): { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED' } | null {
