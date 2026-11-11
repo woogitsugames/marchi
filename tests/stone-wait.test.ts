@@ -156,6 +156,8 @@ test('stone wait: dug stone in a quarry yard a full granary refuses -> calm pin,
   // stone booked or a wagon short: the earlier readings stay
   quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
   eq(paveStoneYard(w, post), -1, 'NO_WAGON is the haul cure (D-591)');
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_DESTINATION', blockedBy: -1 };
+  eq(paveStoneYard(w, post), -1, 'no granary refusing it: not this reading');
   assert(entry(w, post.id)!.crit, 'red card with "Kup wóz"');
 });
 

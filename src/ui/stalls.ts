@@ -608,7 +608,8 @@ export function paveStoneYard(world: World, b: Building): number {
   if (ok.ok || ok.err.k !== 'NO_STONE' || ok.err.quarries === 0 || paveStoneWait(world, b)) return -1;
   let best = -1, most = 0;
   for (const q of world.state.buildings) {
-    if (q.type !== 'quarry' || q.status.k !== 'OUTPUT_FULL' || q.status.cause !== 'NO_DESTINATION') continue;
+    // a granary that refuses it (blockedBy): the texts say "the granary will not take it"
+    if (q.type !== 'quarry' || q.status.k !== 'OUTPUT_FULL' || q.status.cause !== 'NO_DESTINATION' || q.status.blockedBy < 0) continue;
     const free = q.stock.stone - q.reservedOut.stone;
     if (free > most) { most = free; best = q.id; }
   }
