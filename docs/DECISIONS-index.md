@@ -396,4 +396,9 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-690 | — | Graphics: no washed-out mint birch crowns in spring and summer | decided | render |
 | D-691 | — | Graphics: walls and roofs darken in the rain | decided | render |
 | D-692 | — | Graphics: the autumn rust crowns stay as they are (open D-502 question, audit 13) | decided | render |
-| D-693 | — | Graphics audit 13: method, findings, what was not changed, cost | decided | render |
+| D-693 | 2026-11-11 | Graphics audit 13: method, findings, what was not changed, cost | decided | render |
+| D-710 | — | A castle whose producer's input is booked on a busy wagon is a calm pin naming that wagon | decided | sim |
+| D-711 | — | The first seconds of a wagon at a span read calm; ice open 20 s offers the stone bridge at once | decided | sim |
+| D-712 | — | A grey cure for silver in a contract mission says that no silver comes in, and what will do instead | decided | sim |
+| D-713 | — | A delivery wagon whose road cannot be rebuilt: the card names the building to take back | decided | UI |
+| D-714 | — | P4 stall readings: measurements, and what was left | decided | inne |

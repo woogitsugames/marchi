@@ -5077,3 +5077,67 @@ mission I, low and high): main / shadow draws and triangles, programs (46 / 48),
 the change); SwiftShader rAF (`tools/gfx12-frame-ab.mjs`, 3 rounds): valley 110 m high −3,4 %, 38 m high −4,8 %,
 `m1-fixed` high −4,5 %, low −8,5 / −0,6 / 0,0 % — no regression above the shared container's noise (a few ALU on
 building pixels and leaf vertices, no fetch, uniform, pass or program). (decided)
+
+## P4 stall readings: castle due inputs, span holds, silver short, blocked roads (2026-11-11)
+
+**D-710 — A castle whose producer's input is booked on a busy wagon is a calm pin naming that wagon.** BACKLOG P4
+(D-655): the castle (`NO_INPUT.NONE_AVAILABLE` blamed on the bakery) read as the critical card with nothing to press
+while the bakery's flour was already booked on a busy wagon (`WAGON_DUE`, rule A: it comes sooner than a free one).
+The sim's `upstreamReason` counts only `WAITING_DELIVERY` / `WAITING_UPSTREAM` as a healthy producer, so the castle
+stayed NONE_AVAILABLE for the 6–35 s until that wagon set off (I fuzz 58: 35 s, III 25 s, IX players 6 s).
+`inputDueUpstream` (`src/ui/stalls.ts`): NONE_AVAILABLE whose producer reads WAGON_DUE for one of its own inputs and
+whose booked wagon is not itself held at a span or cut off — `calmStall` (brass pin, sheet calm). The HUD card names
+it: `cause.inputDue` ("{wagon} po obecnym kursie przywiezie towar dla: {who}" — WAGON_DUE is always a busy wagon, so
+"after its current run", no "zaraz"). No sim change. (decided)
+
+**D-711 — The first seconds of a wagon at a span read calm; ice open 20 s offers the stone bridge at once.** BACKLOG
+P4 (D-652). Two findings in the scan: (1) under IV's ice a waiting wagon's own `since` restarts whenever it re-plans
+at the bridgehead (fuzz 27: 3722 → 4105 → 4676 under one window), so `heldSpanFor`'s 20 s were never reached and the
+castle behind the sawmill stayed red with nothing to press for up to 91 s; (2) the first 20 s of any hold (and ice on
+a span that is no single walk, where no stone bridge can be offered) had the same empty red card. Now:
+`heldSpanOf` counts a `BRIDGE_CLOSED` wagon as held when the authored ice window has been open 20 s and still holds
+the span 20 s more (`until`) — ice lasts minutes, so a wagon arriving under it gets "Wyłóż most kamieniem" at once
+(the D-652 test now expects the cure at 6:50, under ice since 3:00); the first 20 s of the ice itself and of a jam
+remain the wait. `briefHold`: a wagon of the building's job (either leg) or of a producer up the NONE_AVAILABLE chain
+(up to four levels: II castle ← bakery ← mill whose grain is in a jam) stands at a span and the held-span card does
+not apply — calm, with the existing card text `cause.heldIce` / `cause.heldJam`. Ice always (it clears by itself,
+D-455), a jam only in its first 20 s (after that, without cobbles, it stays the card it was). The valley's winter ice
+(not in `st.ice`) keeps the wagon's own hold. No sim change. (decided)
+
+**D-712 — A grey cure for silver in a contract mission says that no silver comes in, and what will do instead.**
+BACKLOG P4 (D-655): a grey "Kup wóz" / "Wyłóż most kamieniem" with only "Brakuje N srebra" was the red card's sole
+cure for up to 124 s (I balance players), 190 s (IV ice, balance), 260 s (I fuzz with the mission's silver). In a
+contract mission nothing pays before the end (no market; D-638's silver bound), so "Brakuje N srebra" read as
+"earn it" with no way to. `silverShort` (`src/ui/stalls.ts`) and the sheet's `shortHint` (`src/ui/panels.ts`): the
+hint now reads "Brakuje {n} srebra, a w tej misji srebro nie przybywa." plus one honest next step — idle wagons to sell
+when their refunds (15 each, one wagon kept) cover the shortfall ("Sprzedaj wolne wozy: {n}"), else for the wagon cure
+the busy wagon that finishes its run first ("{wagon} skończy kurs za ok. {time}", `wagonEta.toFinish`), for the stone
+bridge the ice clearing ("Kra ustąpi sama za {time}") or the jam ("Most zwolni się, gdy przejadą wozy z
+naprzeciwka"). No promise of income; the free valley (market pays) keeps the plain line. The button, icon and dock
+are unchanged (the two sentences take the existing wide row, D-270). Keys pending. (decided)
+
+**D-713 — A delivery wagon whose road cannot be rebuilt: the card names the building to take back.** BACKLOG P4
+(D-653/D-654): when `strandLink` / the gap finder found no road at all (later buildings closed every way between the
+wagon and its target), the "{wagon} nie ma drogi do celu" card's cure was the road tool with no proposal. New sim pure
+read `blockingBuilding(world, from, to, removable)` (`src/sim/repair.ts`: the gap finder's rules, a removable
+building's cells passable at +1000, never past a corner; returns the first building on the cheapest such way).
+`routeBlocker` (`src/ui/stalls.ts`, cached per network version): only when `routeLostFor` holds and no gap road
+exists; castle, stable, trading post and the target are never offered. `cureFor` 'demolish'; the sheet's existing
+"Rozbierz: {name}" button (`data-act="unblock:{building}"`, recomputed on press) with `fix.routeBlockedWhy`. The card
+text stays `cause.routeLost`. Never seen outside fuzz; test with a fixture wall in mission VII. Mission hashes 86/86
+identical (`tools/mission-hashes.ts`, before / after). (decided)
+
+**D-714 — P4 stall readings: measurements, and what was left.** Own scanner (scratchpad `p4scan.mts`, from D-655's
+method: every game second the HUD's top non-calm card, classified "nothing to press" — no cure, gap road with no
+link, producer cure with no producer — and grey buttons; seconds under a dead-end letter not counted): 720 fuzz games
+I–IX (60 % with 4 000 silver) + every balance-night6 player I–IX, and 720 fuzz games with the mission's silver.
+Before → after: longest card with nothing to press 91 s → 19 s and 44 s → 12 s; grey silver button with only "Brakuje N
+srebra" 190 s / 260 s → 0 (every one now explains itself, D-712); seconds of a red card with nothing to press or
+an unexplained grey button 14 316 → 358 (6 410 games) and 9 627 → 66 (720 games). What remains is ≤ 19 s: IX's opening
+contest (19 s), a castle behind a bakery whose mill waits (I fuzz 13, 17 s) and 1–4 s flashes.
+`tools/dead-end-scan.ts` I–IX (200 fuzz + balance): letters 96 before and after, 0 false alarms. `tools/dead-seconds.ts`
+card-30 1314 (120 min): 0 dead seconds before and after. Left: (e) D-611's sim status for a cut-off castle — making
+`upstreamReason` answer UNREACHABLE when no producer reaches the building would also turn mission I's castle across
+the river UNREACHABLE (critical) from the first second and change every saved status, so it stays deferred; IX's
+opening contest (sawmill vs charcoal burner, 0:05–0:20 for the balance players; no shared-producer cure there)
+is D-670's ground and stays as it is. (decided)
