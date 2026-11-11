@@ -489,6 +489,11 @@ interface DistMemo {
   maps: Map<number, Float64Array>;
   /** Arrays of flushed generations, reused for new entries. */
   spare: Float64Array[];
+  /**
+   * D-733: a reading copy's memo (`borrowNetMemo`) — its first maps belong to the world it was copied from. A flush
+   * drops them instead of recycling them into `spare` (a later search would overwrite the other world's distances).
+   */
+  borrowed?: boolean;
 }
 
 /** Keep at most this many memoized maps (55 KB each on a 96x72 map); beyond it callers compute their own. */
@@ -540,9 +545,27 @@ export function dijkstraMemo(world: World, start: number, reverse: boolean, load
 function flushMemo(world: World): Float64Array[] {
   const memo = world.distMemo;
   if (!memo) return [];
+  if (memo.borrowed) { world.distMemo = null; return []; }
   for (const m of memo.maps.values()) memo.spare.push(m);
   world.distMemo = null;
   return memo.spare;
+}
+
+/**
+ * D-733: the network cache and the distance memo of `from` for a copy of its state at the same moment (`pausedReading`):
+ * the cache's arrays are only ever written when built, so the copy shares them read-only (cost tables and component
+ * labels it builds itself go into its own copy of the object); the memo's maps are shared read-only too (`borrowed`:
+ * never recycled by the copy). The copy then repeats none of the searches `from` already ran — the memo's key (network,
+ * rain, thaw, bridge penalties by content) is checked as for any world, so a stale memo is dropped as usual. `from`
+ * itself is not touched. The copy may read the shared maps only until `from` steps again.
+ */
+export function borrowNetMemo(from: World, to: World): void {
+  const c = from.cache;
+  if (!c || c.ver !== to.state.netVersion) return;
+  const own: NetCache = { ...c, costs: c.costs.slice() };
+  to.cache = own;
+  const m = from.distMemo;
+  if (m && m.net === c) to.distMemo = { net: own, rain: m.rain, thaw: m.thaw, pen: m.pen, penMap: m.penMap, maps: new Map(m.maps), spare: [], borrowed: true };
 }
 
 /** Node list from `from` (exclusive) to `to` (inclusive), or null if unreachable. */

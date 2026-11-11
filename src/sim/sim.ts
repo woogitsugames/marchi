@@ -6,7 +6,7 @@ import { dispatch } from './logistics';
 import { contractsOf, trancheCovered } from './contract';
 import { explainBuilding } from './diagnose';
 import { buildMission, missionSeasons, terrainFor } from './missions';
-import type { World } from './network';
+import { borrowNetMemo, type World } from './network';
 import { stepWagons } from './wagons';
 import { stepTown } from './town';
 import { EVENT_CHECK_TICKS, stepValleyEvents } from './events';
@@ -51,10 +51,39 @@ export function stateHash(world: World): string {
  * or saved. Terrain is shared (read-only).
  */
 export function pausedReading(world: World): World {
-  const state = JSON.parse(JSON.stringify(world.state)) as SimState;
+  const state = jsonCopy(world.state) as SimState;
   const copy: World = { terrain: world.terrain, state, cache: null, scratch: null, seasons: world.seasons };
+  // D-733: the network cache and the distance memo of this very moment, read-only — the copy's dispatch repeats no search
+  borrowNetMemo(world, copy);
   dispatch(copy);
   return copy;
+}
+
+/**
+ * D-733: what `JSON.parse(JSON.stringify(v))` returns for plain JSON data, two to three times faster: the same keys in
+ * the same order, `undefined` and functions left out of objects (null in arrays), -0 as 0, NaN and ±Infinity as null.
+ */
+export function jsonCopy(v: unknown): unknown {
+  if (typeof v !== 'object' || v === null) {
+    if (typeof v === 'number') return Number.isFinite(v) ? (v === 0 ? 0 : v) : null;
+    return v;
+  }
+  if (Array.isArray(v)) {
+    const n = v.length, out = new Array<unknown>(n);
+    for (let i = 0; i < n; i++) {
+      const x: unknown = v[i];
+      out[i] = x === undefined || typeof x === 'function' || typeof x === 'symbol' ? null : jsonCopy(x);
+    }
+    return out;
+  }
+  const out: Record<string, unknown> = {};
+  const o = v as Record<string, unknown>;
+  for (const k in o) {
+    if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
+    const x = o[k];
+    if (x !== undefined && typeof x !== 'function' && typeof x !== 'symbol') out[k] = jsonCopy(x);
+  }
+  return out;
 }
 
 export function command(world: World, cmd: Command): CommandResult {
