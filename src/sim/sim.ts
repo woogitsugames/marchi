@@ -48,11 +48,13 @@ export function stateHash(world: World): string {
  * the current tick, without stepping (D-672). Statuses are only set by `dispatch` inside `step`, so a command applied
  * while the game is paused (a road that links a cut-off brewery) left the old reading on screen until the next tick.
  * The UI reads this copy in pause; `world` is untouched (no tick, no RNG draw, same hash), the copy is never stepped
- * or saved. Terrain is shared (read-only).
+ * or saved. Terrain is shared (read-only). D-753: so is the search scratch (`world.scratch`: heap, stamps and the
+ * reuse distance pair, ~1 MB on the valley's map, allocated anew for every copy before) — every search resets what it
+ * reads, the world holds no result in it between calls, and the copy is read only until the world steps again.
  */
 export function pausedReading(world: World): World {
   const state = jsonCopy(world.state) as SimState;
-  const copy: World = { terrain: world.terrain, state, cache: null, scratch: null, seasons: world.seasons };
+  const copy: World = { terrain: world.terrain, state, cache: null, scratch: world.scratch ?? null, seasons: world.seasons };
   // D-733: the network cache and the distance memo of this very moment, read-only — the copy's dispatch repeats no search
   borrowNetMemo(world, copy);
   dispatch(copy);
@@ -68,11 +70,15 @@ export function jsonCopy(v: unknown): unknown {
     if (typeof v === 'number') return Number.isFinite(v) ? (v === 0 ? 0 : v) : null;
     return v;
   }
+  // D-753: numbers, null and strings are copied in place, without a call per value (the roads and traffic arrays
+  // hold one number per map cell): ~2× faster on the valley's state, the same result
   if (Array.isArray(v)) {
     const n = v.length, out = new Array<unknown>(n);
     for (let i = 0; i < n; i++) {
       const x: unknown = v[i];
-      out[i] = x === undefined || typeof x === 'function' || typeof x === 'symbol' ? null : jsonCopy(x);
+      if (typeof x === 'number') out[i] = Number.isFinite(x) ? (x === 0 ? 0 : x) : null;
+      else if (x === null) out[i] = null;
+      else out[i] = x === undefined || typeof x === 'function' || typeof x === 'symbol' ? null : jsonCopy(x);
     }
     return out;
   }
@@ -81,7 +87,8 @@ export function jsonCopy(v: unknown): unknown {
   for (const k in o) {
     if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
     const x = o[k];
-    if (x !== undefined && typeof x !== 'function' && typeof x !== 'symbol') out[k] = jsonCopy(x);
+    if (typeof x === 'number') out[k] = Number.isFinite(x) ? (x === 0 ? 0 : x) : null;
+    else if (x !== undefined && typeof x !== 'function' && typeof x !== 'symbol') out[k] = x === null || typeof x !== 'object' ? x : jsonCopy(x);
   }
   return out;
 }
