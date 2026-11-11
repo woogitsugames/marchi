@@ -505,12 +505,14 @@ function iceOnTicks(world: World): number {
  * `span` array is rebuilt with every network version) and span; each caller gets its own copy.
  */
 const spanMemo = new WeakMap<Int32Array, Map<number, number[]>>();
+/** Work counters of the reading helpers (tests/ui-read-budget.test.ts keeps them in budget). */
+export const readStats = { spanWalks: 0 };
 function spanCells(world: World, span: number): number[] {
   const sp = net(world).span;
   let m = spanMemo.get(sp);
   if (!m) spanMemo.set(sp, (m = new Map()));
   let cells = m.get(span);
-  if (!cells) m.set(span, (cells = spanWalk(sp, world.terrain.w, span)));
+  if (!cells) { readStats.spanWalks++; m.set(span, (cells = spanWalk(sp, world.terrain.w, span))); }
   return cells.slice();
 }
 
