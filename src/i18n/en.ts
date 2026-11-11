@@ -691,6 +691,7 @@ export const en: FullDict = {
   // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): see PENDING_KEYS
   'cause.heldJam': '{wagon} is held at a narrow bridge',
   'cause.heldIce': '{wagon} is held at a bridge closed by ice',
+  'cause.routeLost': '{wagon} has no road to its destination',
   'fix.pave': 'Pave the bridge in stone',
   'fix.paveWhy': '{wagon} waits at a wooden span. A stone bridge takes wagons both ways and ice does not close it.',
   'fix.paveQuarry': 'A stone bridge needs stone, and nobody quarries it. The quarry first, then the bridge.',

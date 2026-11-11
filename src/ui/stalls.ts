@@ -1,7 +1,7 @@
 // Ranking of the stalls on the map for the HUD (D-43): the "worst stall" card, the alarm seal that
 // cycles through them, the red / brass pins and the tool that cures the worst one. Read-only:
 // statuses, stalledTicks and the cause chains come from the sim; nothing here writes state.
-import { BUILDINGS, MISSIONS, TICK_HZ, contractsOf, outputGoods, reachable, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
+import { BUILDINGS, MISSIONS, TICK_HZ, contractsOf, outputGoods, reachable, suggestConnection, suggestLinkToStable, demolishQuote, WAGON_PRICE, busyOutOfReach, findPath, roadCellCost, inputGoods, canSurface, canPlace, cycleTicks, rankGated, net, validateRoad, buildingById, contractFilled, explainBuilding, granaryRelief, missionBuildable, outputCustomer, outputSurplus, seasonalSupplier, sharedInput, stoneInStore, topStallCauses, type Building, type BuildingType, type Good, type ReasonLink, type RoadSuggestion, type World } from '../sim/index';
 import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical, isStall, isWagonWait } from './stallKinds';
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
@@ -398,6 +398,19 @@ export function sharedContested(world: World, b: Building): boolean {
 export interface HeldSpan { wagon: number; kind: 'BRIDGE_JAM' | 'BRIDGE_CLOSED'; span: number; heldTicks: number; cells: number[] }
 export const HELD_SPAN_TICKS = 20 * TICK_HZ;
 export function heldSpanFor(world: World, b: Building): HeldSpan | null {
+  const own = heldSpanOf(world, b);
+  if (own) return own;
+  // D-652: a building short of an input its producer waits for (NO_INPUT blamed on it) is held by that producer's
+  // wagon too — mission IV: the castle "brak zapasów" behind the sawmill whose wood stood at the ice read critical
+  // with nothing to press (up to 87 s) while the sawmill's own card offered the stone bridge. One level only.
+  const s = b.status;
+  if (s.k !== 'NO_INPUT' || s.cause !== 'NONE_AVAILABLE' || s.blockedBy < 0 || s.blockedBy === b.id) return null;
+  const p = buildingById(world, s.blockedBy);
+  // (either leg of the producer's job: its input's wagon may be held on the way to the pickup)
+  return p ? heldSpanOf(world, p, true) : null;
+}
+
+function heldSpanOf(world: World, b: Building, anyLeg = false): HeldSpan | null {
   const st = world.state;
   let best: HeldSpan | null = null;
   for (const w of st.wagons) {
@@ -405,7 +418,7 @@ export function heldSpanFor(world: World, b: Building): HeldSpan | null {
     if (s.k !== 'BRIDGE_JAM' && s.k !== 'BRIDGE_CLOSED') continue;
     const held = st.tick - s.since;
     if (held < HELD_SPAN_TICKS || !w.job) continue;
-    if ((w.job.phase === 'pickup' ? w.job.from : w.job.to) !== b.id) continue;
+    if ((w.job.phase === 'pickup' ? w.job.from : w.job.to) !== b.id && !(anyLeg && w.job.to === b.id)) continue;
     if (!best || held > best.heldTicks || (held === best.heldTicks && w.id < best.wagon)) {
       best = { wagon: w.id, kind: s.k, span: s.span, heldTicks: held, cells: [] };
     }
@@ -659,6 +672,21 @@ export function granaryAnchor(world: World, b: Building, root: number): number {
 const SHARED_LEAD_TICKS = 45 * TICK_HZ;
 
 /** Buildings with a stall worth a pin, worst first (stalledTicks × criticality). */
+/**
+ * D-653: the wagon of this building's delivery or pickup has had no road to its target for MIN_STALL_TICKS or more
+ * (NO_ROUTE: a road cell on its way taken back). The building only "waits for the delivery", which is no stall, so
+ * the HUD had no card at all — mission VII: the castle's six fish on a wagon cut off from it for 6 min, the order
+ * lost with nothing on the card (the wagon's own red pin on the map was the only sign). Its wagon and how long. Pure read.
+ */
+export function routeLostFor(world: World, b: Building): { wagon: number; ticks: number } | null {
+  const s = b.status;
+  if (s.k !== 'WAITING_DELIVERY' && s.k !== 'WAITING_PICKUP') return null;
+  const w = world.state.wagons.find((q) => q.id === s.wagon);
+  if (!w || w.status.k !== 'NO_ROUTE') return null;
+  const ticks = world.state.tick - w.status.since;
+  return ticks >= MIN_STALL_TICKS ? { wagon: w.id, ticks } : null;
+}
+
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];
   for (const b of world.state.buildings) {
@@ -672,6 +700,11 @@ export function rankStalls(world: World): StallEntry[] {
       // D-633: ...or for stone dug into a quarry yard a full granary refuses (the quarry's own card leads)
       if (paveStoneWait(world, b) || (paveStoneHaul(world, b) < 0 && paveStoneYard(world, b) >= 0)) out.push({ id: b.id, ticks: held.heldTicks, crit: false, minor: true, score: held.heldTicks * W_MINOR });
       else out.push({ id: b.id, ticks: held.heldTicks, crit: true, minor: false, score: (held.heldTicks + SHARED_LEAD_TICKS) * W_CRIT });
+      continue;
+    }
+    const lost = routeLostFor(world, b);
+    if (lost) {
+      out.push({ id: b.id, ticks: lost.ticks, crit: true, minor: false, score: lost.ticks * W_CRIT });
       continue;
     }
     if (!isStall(b.status) && b.status.k !== 'NO_INPUT') continue;
@@ -700,6 +733,25 @@ export function cutOffProducer(world: World, chain: ReasonLink[]): number {
     if (l.kind !== 'building' || l.status.k !== 'OUTPUT_FULL' || l.status.cause !== 'NO_DESTINATION') continue;
     const b = buildingById(world, l.id);
     if (b && !reachable(world, b.gate, stable.gate)) return b.id;
+  }
+  return -1;
+}
+
+/**
+ * D-650: the other side of cutOffProducer — the producer is on the stable's roads, but the granary the sim names
+ * (`blockedBy`, the first one it cannot reach, not a full one) is off them: a road cell taken back left the granary on
+ * a piece of its own (mission IV: the stable's half cut from the sawmill's; mission I before the bridge). The card
+ * stayed critical with nothing to press (up to 8 min in the early-mission scan); the cure is the road to that granary.
+ * Its id, or -1. Pure read.
+ */
+export function cutOffGranary(world: World, chain: ReasonLink[]): number {
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!stable) return -1;
+  for (const l of chain) {
+    if (l.kind !== 'building' || l.status.k !== 'OUTPUT_FULL' || l.status.cause !== 'NO_DESTINATION' || l.status.blockedBy < 0) continue;
+    const b = buildingById(world, l.id), g = buildingById(world, l.status.blockedBy);
+    if (!b || !g || g.type !== 'warehouse' || g.status.k === 'STORAGE_FULL') continue;
+    if (reachable(world, b.gate, stable.gate) && !reachable(world, b.gate, g.gate)) return g.id;
   }
   return -1;
 }
@@ -793,8 +845,46 @@ export function cutOffNoLink(world: World, chain: ReasonLink[]): number {
 let gapCache: { world: World; key: string; s: RoadSuggestion | null } | null = null;
 export function gapSuggestion(world: World, target: number): RoadSuggestion | null {
   const key = `${target}:${world.state.netVersion}:${world.state.buildings.length}`;
-  if (gapCache?.key !== key || gapCache.world !== world) gapCache = { world, key, s: suggestLinkToStable(world, target) };
+  if (gapCache?.key !== key || gapCache.world !== world) {
+    gapCache = { world, key, s: buildingById(world, target)?.type === 'stable' ? stableLink(world) : suggestLinkToStable(world, target) ?? strandLink(world, target) };
+  }
   return gapCache.s;
+}
+
+/**
+ * D-654: a wagon of this building's job stranded on a road piece with no building on it (the producer it loaded at
+ * was taken down, or two cells around it were taken back — mission VII's fish), so D-618's `strandedTarget` had no
+ * building to link and the target needs no road of its own: the cheapest road from the wagon to the target's gate.
+ * Null when no such wagon or no road can be built. Pure read (one whole-grid Dijkstra, cached by `gapSuggestion`).
+ */
+function strandLink(world: World, id: number): RoadSuggestion | null {
+  const b = buildingById(world, id);
+  const stable = world.state.buildings.find((q) => q.type === 'stable');
+  if (!b || !stable) return null;
+  for (const wg of world.state.wagons) {
+    if (wg.status.k !== 'NO_ROUTE' || !wg.job || (wg.job.to !== id && wg.job.from !== id) || reachable(world, wg.at, b.gate)) continue;
+    const s = suggestConnection(world, wg.at, b.gate);
+    if (s && s.newCells.length) return s;
+  }
+  return null;
+}
+
+/**
+ * D-651: the stable itself off the roads (NO_ROAD: the cell at its gate taken back). `suggestLinkToStable` links a
+ * building *to* the stable's network, so for the stable it offered nothing and the card stayed critical with an
+ * empty sheet (missions III and IX in the early-mission scan, up to 4.5 min) while a bought wagon had nowhere to go.
+ * The cheapest road from its gate to the castle (or, without one, to the first building whose gate is on a road): the
+ * castle's network is the one the deliveries use. Pure read; a whole-grid Dijkstra (cached by `gapSuggestion`).
+ */
+function stableLink(world: World): RoadSuggestion | null {
+  const st = world.state;
+  const stable = st.buildings.find((q) => q.type === 'stable');
+  if (!stable) return null;
+  const castle = st.mission.contract ? buildingById(world, st.mission.contract.castle) : undefined;
+  const to = castle && st.roads[castle.gate] ? castle : st.buildings.find((q) => q.id !== stable.id && st.roads[q.gate]);
+  if (!to) return null;
+  const s = suggestConnection(world, stable.gate, to.gate);
+  return s && s.newCells.length ? s : null;
 }
 
 /** D-410: what taking the cut-off building back returns right now (half its price once it has worked). */
@@ -817,6 +907,8 @@ export function gapTarget(world: World, chain: ReasonLink[]): number {
   if (off >= 0) return off;
   const src = cutOffSource(world, chain);
   if (src >= 0) return src;
+  const wh = cutOffGranary(world, chain);
+  if (wh >= 0) return wh;
   if (root.kind === 'building') {
     const s = root.status;
     if (s.k === 'NO_ROAD') return root.id;
@@ -941,7 +1033,7 @@ function cureOf(world: World, b: Building): Cure {
   if (cutOffNoLink(world, chain) >= 0) {
     return 'demolish';
   }
-  let cure: Cure = cutOffProducer(world, chain) >= 0 || cutOffConsumer(world, chain) >= 0 || cutOffSource(world, chain) >= 0 ? 'road' : null;
+  let cure: Cure = cutOffProducer(world, chain) >= 0 || cutOffConsumer(world, chain) >= 0 || cutOffSource(world, chain) >= 0 || cutOffGranary(world, chain) >= 0 ? 'road' : null;
   for (let i = chain.length - 1; i >= 0 && !cure; i--) {
     const l = chain[i]!;
     if (l.kind === 'building') {

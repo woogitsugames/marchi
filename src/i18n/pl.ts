@@ -694,6 +694,7 @@ export const pl = {
   // a wagon held at a wooden span reaches the card (research 2026-11-04, P4): localized
   'cause.heldJam': '{wagon} stoi przed wąskim mostem',
   'cause.heldIce': '{wagon} stoi przed mostem zamkniętym przez krę',
+  'cause.routeLost': '{wagon} nie ma drogi do celu',
   'fix.pave': 'Wyłóż most kamieniem',
   'fix.paveWhy': '{wagon} czeka na drewnianym przęśle. Kamienny most mieści wozy w obie strony i kra go nie zamyka.',
   'fix.paveQuarry': 'Kamienny most potrzebuje kamienia, a nikt go nie wydobywa. Najpierw kamieniołom, potem most.',
@@ -971,6 +972,8 @@ export const PENDING_KEYS = [
   'cause.stoneYard', 'fix.stoneYard',
   // D-638, D-639
   'deadEnd.noSilver', 'deadEnd.late',
+  // D-653
+  'cause.routeLost',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */
