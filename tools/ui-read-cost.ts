@@ -8,7 +8,7 @@
 // HUD, the pins and both sheets, the ranking, the cures, the dead-end verdict) — two checkouts must print the same
 // digests for the same scenes.
 //   node tools/ui-read-cost-run.mjs [m14 m15 m16 m17 valley bench50 bench100 bench200] [--valley-from 100] [--min 10]
-//     [--no-digest] [--json out.json]
+//     [--no-digest] [--json out.json] [--pause-every 30 (s of game time)]
 import { installFakeDom, FakeElement } from './fake-dom';
 installFakeDom();
 import { writeFileSync } from 'node:fs';
@@ -183,7 +183,7 @@ function scene(name: string): Scene {
 
 const DEAD_END_EVERY = 5 * TICK_HZ;
 /** A command in pause every 30 s of game time (only the reading copy is taken: the world itself is not changed). */
-const PAUSE_EVERY = 30 * TICK_HZ;
+const PAUSE_EVERY = opt('pause-every', 30) * TICK_HZ;
 /** Re-pick the open sheets every 10 s of game time. */
 const PICK_EVERY = 10 * TICK_HZ;
 
@@ -194,6 +194,23 @@ function stat(a: number[]): Stat {
   const s = [...a].sort((x, y) => x - y);
   const q = (p: number) => s[Math.min(s.length - 1, Math.floor(s.length * p))]!;
   return { n: s.length, p50: q(0.5), p95: q(0.95), p99: q(0.99), max: s[s.length - 1]!, mean: s.reduce((x, y) => x + y, 0) / s.length, over1: s.filter((x) => x > 1).length };
+}
+
+/** D-672: a command in pause — the copy, then the first frame on it (ranking invalidated, sheets due at once). A named
+ *  function so a CPU profile (--cpu-prof) separates the paused reading from the ticks. */
+function pauseRead(ui: Ui, w: World, version: number): void {
+  const a = performance.now();
+  ui.reading = time('pause.copy', () => readingAfterCommand(w));
+  ui.ranking.invalidate();
+  frame(ui, version, 'pause');
+  updateSheets(ui, 'pause');
+  rec('pause.firstFrame', performance.now() - a);
+  feedUi(ui);
+  // the next sheet updates in pause (every 250 ms of wall time): the same copy, warm
+  updateSheets(ui, 'pauseAgain');
+  feedUi(ui);
+  ui.reading = null;
+  ui.ranking.invalidate();
 }
 
 const rows: Row[] = [];
@@ -242,21 +259,7 @@ for (const name of SCENES) {
       for (const b of w.state.buildings) cures += `${b.id}:${cureFor(w, b.id)},`;
       feed(cures);
     }
-    if (w.state.tick % PAUSE_EVERY === 0) {
-      // D-672: a command in pause — the copy, then the first frame on it (ranking invalidated, sheets due at once)
-      const a = performance.now();
-      ui.reading = time('pause.copy', () => readingAfterCommand(w));
-      ui.ranking.invalidate();
-      frame(ui, version, 'pause');
-      updateSheets(ui, 'pause');
-      rec('pause.firstFrame', performance.now() - a);
-      feedUi(ui);
-      // the next sheet updates in pause (every 250 ms of wall time): the same copy, warm
-      updateSheets(ui, 'pauseAgain');
-      feedUi(ui);
-      ui.reading = null;
-      ui.ranking.invalidate();
-    }
+    if (w.state.tick % PAUSE_EVERY === 0) pauseRead(ui, w, version);
   }
   const st = w.state;
   const stats: Record<string, Stat> = {};
