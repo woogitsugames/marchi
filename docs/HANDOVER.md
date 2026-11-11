@@ -25,6 +25,8 @@
 
 - (11 XI wieczór) Scalone D-730..D-737 (koszt odczytu kart w UI: `tools/ui-read-cost-run.mjs`; formattery, memo przęseł, `pausedReading` szybszy przez `jsonCopy`/`borrowNetMemo` w sim — tylko odczyt, hashe identyczne). Testy 740/0, layout 138/0. Otwarte P1 (D-730): arkusz budynku przelicza HTML 4×/s także w pauzie; zimne pamięci UI po komendzie w pauzie; `neckAnchor` liczy `findPath` co tick w dolinie; potwierdzić na Foldzie przez `?diag=1`.
 
+- (11 XI wieczór 2) Scalone D-750..D-754 (arkusze w pauzie bez przeliczania, `neckAnchor` memo, kopia w pauzie pożycza pamięci; sim: tylko kopia do odczytu; hashe identyczne). Testy 743/0, layout 138/0. Do decyzji właściciela (nie pilne, BACKLOG D-754): dzielenie niezmienionych tablic (`roads`, `traffic`) między światem a kopią w pauzie skróciłoby pierwszą klatkę po komendzie (dziś ok. 2–6 ms na telefonie), ale łamie umowę „kopia = JSON” z D-672/D-733. Do sprawdzenia na Foldzie: `?diag=1`.
+
 ## Scalone 10 XI wieczór (ta sama sesja)
 - Scalone i na `main`: D-500..502, D-520..522, D-540..543 (grafika 12), D-560..565, **D-570..574** (render: culling kafli 64 m, −33 % trójkątów w dolinie, bez zmiany obrazu; P1 do sprawdzenia na telefonie, bo +wywołania rysowania), **D-590..594** (arkusz zamykany nie przyjmuje tapnięć, szary kamień, pełne podwórze producenta, cache UI między grami). Testy 701/0, layout 138/0, hashe misji bez zmian.
 - Ostatnie APK: **8c2caef** (10 XI ~22:30). Otwarte: test Androida „Wstecz” (D-522) na prawdziwym urządzeniu; pytanie o LOD/cienie na low (BACKLOG); 3 klucze (`cause.stoneWagon`, `fix.stoneWagon`, `cause.yardRoom`) do tłumaczenia; sprawa desaturacji rdzawych koron jesienią.
