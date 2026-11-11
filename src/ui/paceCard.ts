@@ -12,6 +12,7 @@ import { postWouldTake } from './stallKinds';
 import { GROW_FEEDS, goodSaturated } from './saturation';
 import { bottleneckCard } from './bottleneck';
 import { siteExists } from './site';
+import { memoryWorld } from './readWorld';
 
 let cache: { world: World; log: PaceLog; key: string; f: ContractForecast | null } | null = null;
 
@@ -443,7 +444,7 @@ export function sampleFleet(world: World): void {
 
 /** Share of the last minute the whole fleet was on the road (0 until a full minute was sampled). */
 export function fleetBusyShare(world: World): number {
-  const log = fleetLogs.get(world);
+  const log = fleetLogs.get(memoryWorld(world));
   if (!log || log.bits.length < FLEET_WINDOW || world.state.tick - log.tick > TICK_HZ) return 0;
   let n = 0;
   for (const b of log.bits) n += b;

@@ -6,6 +6,7 @@ import { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, isCritical
 export { freshGranary, granaryFilling, granaryLoads, granaryUnwanted, marketTakesLoad, postWouldTake } from './stallKinds';
 import { bottleneckFor, bottleneckKey, sampleBottleneck } from './bottleneck';
 import { siteAnchor } from './site';
+import { memoryWorld } from './readWorld';
 
 /**
  * Free valley (research 2026-11-04, valley-3h proposal 2): a full granary that holds at least one wagon load
@@ -223,7 +224,7 @@ function calmRoot(world: World, key: string): boolean {
  * on its way and the season stay costs: too few wagons is a real cause. Pure read.
  */
 export function lossCauses(world: World, n = 3, minSeconds = 5): ReturnType<typeof topStallCauses> {
-  const log = calmLogs.get(world);
+  const log = calmLogs.get(memoryWorld(world));
   const rows: [string, number][] = [];
   for (const [key, seconds] of Object.entries(world.state.ledger.stallSeconds)) {
     const seen = Math.min(seconds, log?.seen[key] ?? 0);
@@ -361,7 +362,7 @@ export function sampleInputWaits(world: World): void {
 
 /** Ticks this building has waited for its input without a break (0 when the world was never sampled). */
 export function inputWaitTicks(world: World, b: Building): number {
-  const since = waitLogs.get(world)?.since.get(b.id);
+  const since = waitLogs.get(memoryWorld(world))?.since.get(b.id);
   return since === undefined || !waitsForInput(b) ? 0 : world.state.tick - since;
 }
 
@@ -955,8 +956,8 @@ function waitsForWagon(world: World, b: Building): boolean {
  * every recompute, i.e. once per sim tick the app sees.
  */
 export function noteWagonWaits(world: World): void {
-  let m = busyMemo.get(world);
-  if (!m) busyMemo.set(world, (m = new Map()));
+  let m = busyMemo.get(memoryWorld(world));
+  if (!m) busyMemo.set(memoryWorld(world), (m = new Map()));
   for (const b of world.state.buildings) if (b.stalledTicks >= MIN_STALL_TICKS && waitsForWagon(world, b)) m.set(b.id, world.state.tick);
 }
 
@@ -966,7 +967,7 @@ export function noteWagonWaits(world: World): void {
  * (first-10-e N8, D-161). Ticks since that wait, or -1.
  */
 export function recentWagonWait(world: World, id: number): number {
-  const at = busyMemo.get(world)?.get(id);
+  const at = busyMemo.get(memoryWorld(world))?.get(id);
   if (at === undefined) return -1;
   const ago = world.state.tick - at;
   return ago >= 0 && ago <= BUSY_MEMO_TICKS ? ago : -1;

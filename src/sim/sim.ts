@@ -43,6 +43,20 @@ export function stateHash(world: World): string {
   return hashState(world.state);
 }
 
+/**
+ * A copy of the world with the dispatcher's reading (building and wagon statuses, jobs, reservations) taken again at
+ * the current tick, without stepping (D-672). Statuses are only set by `dispatch` inside `step`, so a command applied
+ * while the game is paused (a road that links a cut-off brewery) left the old reading on screen until the next tick.
+ * The UI reads this copy in pause; `world` is untouched (no tick, no RNG draw, same hash), the copy is never stepped
+ * or saved. Terrain is shared (read-only).
+ */
+export function pausedReading(world: World): World {
+  const state = JSON.parse(JSON.stringify(world.state)) as SimState;
+  const copy: World = { terrain: world.terrain, state, cache: null, scratch: null, seasons: world.seasons };
+  dispatch(copy);
+  return copy;
+}
+
 export function command(world: World, cmd: Command): CommandResult {
   return applyCommand(world, cmd);
 }

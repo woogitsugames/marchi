@@ -25,6 +25,7 @@ import { attachInput, type InputHandle } from './input';
 import { applyLayoutClasses, computeLayout, devicePosture, foldSignature, isAbrupt, watchTextScale, type LayoutInfo } from './layout';
 import { Markers } from './markers';
 import { StallRanking, sampleCalmCosts, sampleInputWaits } from './stalls';
+import { readingAfterCommand } from './readWorld';
 import { sampleFleet } from './paceCard';
 import { freeRect, layoutRect, wellInside, type Rect } from './focus';
 import {
@@ -153,6 +154,13 @@ export class App implements PanelNav {
   world: World;
   /** Contract pace samples (UI-owned, never in the state): the waybill / castle-card forecast. */
   pace: PaceLog = newPaceLog();
+  /**
+   * D-672: after a command applied in pause, the dispatcher's fresh reading of the paused state (a copy; the sim does
+   * not tick). Cards, pins and sheets read it until the next tick; commands and the scene keep the real world.
+   */
+  private reading: World | null = null;
+  /** The sheets' view of the app: everything as the app, but the world they read is `readWorld()` (D-672). */
+  private readonly sheetNav: PanelNav = this.makeSheetNav();
   private loop: GameLoop;
   private mode: 'menu' | 'game' = 'menu';
   private missionId: MissionKey = 'm1';
@@ -558,6 +566,7 @@ export class App implements PanelNav {
 
   private setWorld(w: World): void {
     this.world = w;
+    this.reading = null;
     this.pace = newPaceLog();
     this.loop = new GameLoop(w);
     this.loop.onTick = () => this.onTick();
@@ -825,7 +834,8 @@ export class App implements PanelNav {
     this.hud.setCompact(!!this.layout?.mini);
     this.syncSheetFold();
     this.ranking.invalidate();
-    this.hud.update(this.world, this.pace, this.ranking.get(this.world, this.loop.journal.length));
+    const rw = this.readWorld();
+    this.hud.update(rw, this.pace, this.ranking.get(rw, this.loop.journal.length));
     this.watchRail();
   }
 
@@ -916,20 +926,21 @@ export class App implements PanelNav {
     }
     if (this.mode === 'game') {
       if (this.trial) this.trialCard(now);
-      const ranked = this.ranking.get(this.world, this.loop.journal.length);
+      const rw = this.readWorld();
+      const ranked = this.ranking.get(rw, this.loop.journal.length);
       // D-92: while the castellan's notes 1-5 teach the waybill and the crossing, the worst-stall card and
       // its alarm stay hidden (a third pointer beside the ring and the note); they appear, with the
       // first-stall flash, from the re-check note on or as soon as the tutorial ends or is skipped
       const quiet = !!this.tutorial && this.tutorial.current < 6;
       const stalls = quiet ? [] : ranked;
-      this.hud?.update(this.world, this.pace, stalls, !quiet);
+      this.hud?.update(rw, this.pace, stalls, !quiet);
       // a calm (minor) stall heading the list is no "worst" pin: the HUD shows the pace card then, the pin stays brass (D-178)
       const worst = stalls[0] && !stalls[0].minor ? stalls[0].id : -1;
-      this.markers.update(this.world, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, worst);
+      this.markers.update(rw, this.view, this.selection?.kind === 'wagon' ? this.selection.id : null, false, worst);
       if (!this.firstCritSeen && stalls[0]?.crit && this.world.state.mission.result === 'running') {
         this.firstCritSeen = true;
         this.markers.flash(stalls[0].id);
-        this.hud?.flashFirstStall(this.world, stalls[0].id);
+        this.hud?.flashFirstStall(rw, stalls[0].id);
       }
       const slow = this.speedHint.check(this.world, this.loop.speed, stalls);
       if (slow >= 0) this.hud?.toast(t('hud.speedHint', { name: buildingName(this.world, slow) }), 'info', 'speed1', 4200);
@@ -954,6 +965,7 @@ export class App implements PanelNav {
   }
 
   private onTick(): void {
+    this.reading = null; // the tick took its own reading (D-672)
     this.view.afterTick();
     samplePace(this.pace, this.world);
     sampleInputWaits(this.world);
@@ -1064,6 +1076,12 @@ export class App implements PanelNav {
 
   private onCommandResult(cmd: Command, r: CommandResult): void {
     if (cmd.t === 'place') this.build.settled();
+    // D-672: in pause the statuses wait for the next tick's dispatch — read a fresh copy now (the sim does not step)
+    if (r.ok && this.mode === 'game' && this.loop.speed === 0) {
+      this.reading = readingAfterCommand(this.world);
+      this.ranking.invalidate();
+      this.lastSheetUpdate = 0;
+    }
     if (r.ok && this.mode === 'game') {
       this.trial?.command(cmd.t === 'road' ? `road:${cmd.surface === 2 ? 'cobble' : 'dirt'}` : cmd.t === 'place' ? `place:${cmd.type}` : cmd.t);
       // S16 (D-343): which castle the participant set first, and when in play (the main contract is the east castle)
@@ -1150,6 +1168,32 @@ export class App implements PanelNav {
   // ------------------------------------------------------------------ PanelNav
 
   /** PanelNav: mission I's tutorial is on screen (the castle card folds its order and pace). */
+  /** What cards, pins and sheets read: the paused reading after a command (D-672), else the world itself. */
+  readWorld(): World {
+    return this.reading ?? this.world;
+  }
+
+  private makeSheetNav(): PanelNav {
+    const app = this;
+    return {
+      get world() { return app.readWorld(); },
+      get pace() { return app.pace; },
+      tutorialRunning: () => app.tutorialRunning(),
+      tutorialHut: () => app.tutorialHut(),
+      go: (kind, id) => app.go(kind, id),
+      buyWagon: (stable) => app.buyWagon(stable),
+      sellWagon: (wagon) => app.sellWagon(wagon),
+      toggleFollow: (wagon) => app.toggleFollow(wagon),
+      following: () => app.following(),
+      buildRoad: (cells, surface) => app.buildRoad(cells, surface),
+      setGhost: (cells, pave, frameAt) => app.setGhost(cells, pave, frameAt),
+      undoPlace: (building) => app.undoPlace(building),
+      pickBuild: (type, near, then) => app.pickBuild(type, near, then),
+      castleFirst: (castle) => app.castleFirst(castle),
+      chainFirst: (castle) => app.chainFirst(castle),
+    };
+  }
+
   tutorialRunning(): boolean {
     return this.tutorial !== null;
   }
@@ -1175,7 +1219,7 @@ export class App implements PanelNav {
       const b = buildingById(this.world, id);
       if (!b) return;
       if (focus) this.stopFollow();
-      this.sheets.open(buildingSheet(this, id));
+      this.sheets.open(buildingSheet(this.sheetNav, id));
       // a sheet that shows a sett ghost frames the ghost and the building's gate together (D-144); else the subject
       if (this.ghosts.gap && this.ghostFrame) { this.ghostFramed = ''; this.frameGhost(b.gate); }
       else this.focusSubject('building', id, (b.y + (b.h >> 1)) * this.world.terrain.w + b.x + (b.w >> 1), b.gate);
@@ -1183,7 +1227,7 @@ export class App implements PanelNav {
       const w = this.world.state.wagons.find((q) => q.id === id);
       if (!w) return;
       if (focus) this.stopFollow();
-      this.sheets.open(wagonSheet(this, id));
+      this.sheets.open(wagonSheet(this.sheetNav, id));
       if (this.followId !== id) this.focusSubject('wagon', id, w.next >= 0 ? w.next : w.at, -1);
     }
     this.select({ kind, id });

@@ -10,6 +10,7 @@ import {
 import { inputWaitTicks, waitsForInput } from './stalls';
 import { chainEndGood, goodSaturated } from './saturation';
 import { siteAnchor } from './site';
+import { memoryWorld } from './readWorld';
 
 export const NECK_WINDOW = 180; // samples, one per sim second
 export const NECK_SHOW_X100 = 150; // mean waiting consumers x100 to show
@@ -214,7 +215,7 @@ function computeCard(world: World, log: Log): BottleneckCard | null {
 /** The card right now (cached per tick), or null: window not full, nothing over the threshold, not the free valley. */
 export function bottleneckCard(world: World): BottleneckCard | null {
   if (!valley(world)) return null;
-  const log = logs.get(world);
+  const log = logs.get(memoryWorld(world));
   if (!log) return null;
   if (log.cardTick !== world.state.tick) {
     log.cardTick = world.state.tick;

@@ -3,6 +3,7 @@
 import { BUILDINGS, GOODS, MARKET, TICK_HZ, buildingById, rankGated, capacityOf, inputGoods, isMarket, marketOpen, postOpen, reachable, tradePostOf, outputSurplus, pricePct, type BuildingStatus, type Good, type ReasonLink, type WagonStatus } from '../sim/index';
 import type { MessageKey } from '../i18n/index';
 import type { World } from '../sim/index';
+import { memoryWorld } from './readWorld';
 
 /** A building status counts as a stall worth a bubble. */
 export function isStall(s: BuildingStatus): boolean {
@@ -113,8 +114,8 @@ export function granaryLoads(world: World, granaryId: number): 'wagon' | 'satura
   const g = world.state.buildings.find((q) => q.id === granaryId);
   if (!g || g.type !== 'warehouse') return null;
   const tick = world.state.tick;
-  let seen = loadSeen.get(world);
-  if (!seen) loadSeen.set(world, (seen = new Map()));
+  let seen = loadSeen.get(memoryWorld(world));
+  if (!seen) loadSeen.set(memoryWorld(world), (seen = new Map()));
   let loads = false, pending = false;
   let ready: boolean | null = null;
   for (let i = 0; i < GOODS.length; i++) {
