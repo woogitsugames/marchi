@@ -44,6 +44,22 @@ test('cut-off link: a consumer cut off with no road left gets "Rozbierz" too (D-
   eq(cureFor(w, b.id), 'demolish', 'the cure: take it back');
 });
 
+test('cut-off link: a workshop whose own gate lost its road (NO_ROAD) with no link left gets "Rozbierz" (D-634)', () => {
+  // valley seed 1321 card-10, 64:41-64:49: a malthouse NO_ROAD, the gap finder had nothing to offer
+  const { w, b } = boxed('malthouse');
+  const st = { k: 'NO_ROAD' } as BuildingStatus;
+  b.status = st; b.stalledTicks = 120 * TICK_HZ;
+  eq(cutOffNoLink(w, [{ kind: 'building', id: b.id, status: st }]), b.id, 'no road, no link');
+  eq(cureFor(w, b.id), 'demolish', 'the cure: take it back');
+  const free = createWorld('sandbox');
+  free.state.town.rank = 5;
+  place(free, 'malthouse', 20, 40, 2, true);
+  const c = free.state.buildings.at(-1)!;
+  c.status = st; c.stalledTicks = 120 * TICK_HZ;
+  eq(cutOffNoLink(free, [{ kind: 'building', id: c.id, status: st }]), -1, 'a link exists: the road');
+  eq(cureFor(free, c.id), 'road', 'the gap finder road');
+});
+
 test('cut-off link: with a link to build the cure stays the road; a mission keeps the road (D-410)', () => {
   const w = createWorld('sandbox');
   w.state.town.rank = 5;

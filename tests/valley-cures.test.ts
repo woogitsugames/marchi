@@ -100,6 +100,10 @@ test('a full granary needs a wagon only while a market takes another load (D-174
   const cap = capacityOf('bread');
   wh.stock.bread = cap * 2;
   wh.reservedOut.bread = 0;
+  // D-630: wagons stand idle with a market slot free — the next dispatch books the load (for 2 s); with every wagon
+  // on a job a wagon is short
+  eq(granaryLoads(w, wh.id), 'pending', 'an idle wagon will take it');
+  for (const v of st.wagons) v.job = { id: 1, good: 'wood', qty: 1, from: wh.id, to: wh.id, phase: 'pickup' };
   eq(granaryLoads(w, wh.id), 'wagon', 'room in flight, fair price: a wagon empties it');
   castle.incoming.bread = MARKET.inflightPerGood - cap + 1;
   const h = stateHash(w);
@@ -140,4 +144,41 @@ test('the rank card skips a building with no site by the castle (D-175, seed 130
   // silver short: the site still counts (the card shows how much is missing)
   w1.state.coins = 0;
   eq(siteExists(w1, 'quarry', castle1.id), buildSite(w1, 'quarry', castle1.id, true) !== null, 'silver aside');
+});
+
+test('a load the next dispatch books reads calm for 2 s, then a wagon short (D-630)', () => {
+  // valley seed 1322 card-10, 30:11: a load of flour just unloaded into the full granary, wagons idle — the fisher it
+  // refused flashed red for a second between two calm "rynek nasycony" reads
+  const w = createWorld('sandbox');
+  const st = w.state;
+  const castle = st.buildings.find((b) => b.type === 'castle')!;
+  let wh = st.buildings.find((b) => b.type === 'warehouse');
+  if (!wh) {
+    const s = buildSite(w, 'warehouse', castle.id)!;
+    st.buildings.push({ ...JSON.parse(JSON.stringify(castle)), id: st.nextId++, type: 'warehouse', x: s.x, y: s.y, status: { k: 'IDLE' }, stalledTicks: 0 });
+    wh = st.buildings[st.buildings.length - 1]!;
+  }
+  assert(st.wagons.some((v) => !v.job), 'an idle wagon');
+  wh.stock.bread = capacityOf('bread');
+  wh.status = { k: 'STORAGE_FULL' } as never;
+  wh.stalledTicks = 600;
+  const fisher = { ...JSON.parse(JSON.stringify(castle)), id: st.nextId++, type: 'fisher', status: { k: 'OUTPUT_FULL', good: 'fish', cause: 'NO_DESTINATION', blockedBy: wh.id }, stalledTicks: 600 };
+  st.buildings.push(fisher);
+  const h = stateHash(w);
+  eq(granaryLoads(w, wh.id), 'pending', 'just seen, a wagon ready: booked next');
+  eq(cureFor(w, fisher.id), null, 'no "Kup wóz" while a wagon stands idle');
+  eq(cureFor(w, wh.id), null, 'the granary neither');
+  eq(stateHash(w), h, 'read-only');
+  st.tick += 2 * 10 - 1;
+  eq(granaryLoads(w, wh.id), 'pending', 'still within 2 s');
+  st.tick += 1;
+  eq(granaryLoads(w, wh.id), 'wagon', 'left 2 s by the dispatcher: a wagon short');
+  eq(cureFor(w, fisher.id), 'wagon', 'the producer gets "Kup wóz"');
+  // a fresh load with the market's share of the fleet used up: a wagon short at once
+  const w2 = createWorld('sandbox');
+  const wh2 = w2.state.buildings.find((b) => b.id === wh!.id) ?? (w2.state.buildings.push(JSON.parse(JSON.stringify(wh))), w2.state.buildings.at(-1)!);
+  wh2.stock.bread = capacityOf('bread');
+  for (const v of w2.state.wagons) v.job = { id: 1, good: 'bread', qty: 1, from: wh2.id, to: castle.id, phase: 'dropoff' };
+  w2.state.wagons[0]!.job = null;
+  eq(granaryLoads(w2, wh2.id), 'wagon', 'every market slot taken: a wagon short');
 });

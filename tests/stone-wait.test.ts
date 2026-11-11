@@ -3,7 +3,7 @@
 // keeps the red card (its own stall is the cause). Synthetic statuses on a real valley (as dead-cards.test.ts).
 import { BUILDINGS, TICK_HZ, applyCommand, createWorld, cycleTicks, net, suggestLinkToStable, type Building, type World } from '../src/sim/index';
 import { readFileSync } from 'node:fs';
-import { HELD_SPAN_TICKS, cureFor, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, quarryForPave, rankStalls } from '../src/ui/stalls';
+import { HELD_SPAN_TICKS, cureFor, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, paveStoneYard, quarryForPave, rankStalls } from '../src/ui/stalls';
 import { assert, eq, test } from './harness';
 
 function heldPost(): { w: World; post: Building; quarry: Building; need: number } {
@@ -63,6 +63,9 @@ test('stone wait: stone already dug (at the quarry, on the way) -> calm, no dig 
 test('stone wait: a quarry that does not dig, stone in store, a mission -> no wait (D-420)', () => {
   const a = heldPost();
   a.quarry.progress = -1;
+  // D-632: WORKING with no cycle running is a quarry between two cycles (placed this tick, a cycle just done): it digs
+  assert(!!paveStoneWait(a.w, a.post), 'between cycles (WORKING, progress -1): still digging');
+  a.quarry.status = { k: 'NO_ROAD' };
   eq(paveStoneWait(a.w, a.post), null, 'idle quarry, nothing dug: the red card stays');
   const e = entry(a.w, a.post.id);
   assert(!!e && e.crit && !e.minor, 'red card');
@@ -133,4 +136,49 @@ test('stone wait: the HUD card and the sheet name the missing wagon (D-591)', ()
   const src = (f: string): string => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
   assert(/haul \? 'cause\.stoneWagon'/.test(src('ui/hud.ts')), 'card reason: the stone waits for a free wagon');
   assert(/paveStoneHaul\(world, b\) >= 0[\s\S]{0,300}t\('fix\.stoneWagon'/.test(src('ui/panels.ts')), 'sheet hint beside "Kup wóz"');
+});
+
+test('stone wait: dug stone in a quarry yard a full granary refuses -> calm pin, the quarry card leads (D-633)', () => {
+  // valley seed 1328 card-60, 110:37-110:46: the quarry's 8 of 9 stone stuck (OUTPUT_FULL.NO_DESTINATION, the granary
+  // full); the trading post's red card offered only the grey "Wyłóż most kamieniem" for 11 s
+  const { w, post, quarry, need } = heldPost();
+  const wh = w.state.buildings.find((b) => b.type === 'warehouse')!;
+  quarry.progress = -1;
+  quarry.stock.stone = need - 1;
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_DESTINATION', blockedBy: wh.id };
+  quarry.stalledTicks = 10 * TICK_HZ;
+  eq(paveStoneWait(w, post), null, 'no calm stone wait: the quarry cannot dig the rest');
+  eq(paveStoneHaul(w, post), -1, 'not a wagon short at the quarry');
+  eq(paveStoneYard(w, post), quarry.id, 'the stone waits in this quarry for room');
+  const e = entry(w, post.id);
+  assert(!!e && e.minor && !e.crit, `the post is a calm pin: ${JSON.stringify(e)}`);
+  assert(!!entry(w, quarry.id), 'the quarry has its own card');
+  // stone booked or a wagon short: the earlier readings stay
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
+  eq(paveStoneYard(w, post), -1, 'NO_WAGON is the haul cure (D-591)');
+  assert(entry(w, post.id)!.crit, 'red card with "Kup wóz"');
+});
+
+test('stone wait: the calm stone-yard pin names the quarry on the card and the sheet (D-633)', () => {
+  const src = (f: string): string => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
+  assert(/yard \? 'cause\.stoneYard'/.test(src('ui/hud.ts')), 'card reason: the stone lies at the quarry');
+  assert(/paveStoneYard\(world, b\)[\s\S]{0,400}t\('fix\.stoneYard'[\s\S]{0,120}data-go="building:\$\{yard\}"/.test(src('ui/panels.ts')), 'sheet hint with one tap to the quarry');
+});
+
+test('cure cache: a cure follows the state on the next tick, not after a 2 s bucket (D-631)', () => {
+  const { w, post, quarry, need } = heldPost();
+  quarry.progress = -1;
+  quarry.stock.stone = 0;
+  quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
+  w.state.tick += (20 - (w.state.tick % 20)) % 20; // the start of the old 2 s bucket
+  eq(cureFor(w, post.id), 'pave', 'no stone at the quarry: the stone button');
+  quarry.stock.stone = need - 1; // (the quarry's status, in the key, does not change)
+  w.state.tick += 1;
+  eq(cureFor(w, post.id), 'wagon', 'one tick later: the stone waits for a wagon');
+  const other = heldPost();
+  other.quarry.progress = -1;
+  other.quarry.status = { k: 'OUTPUT_FULL', good: 'stone', cause: 'NO_WAGON', blockedBy: -1 };
+  other.w.state.tick = w.state.tick;
+  eq(cureFor(other.w, other.post.id), 'pave', 'another world: its own answer');
+  eq(cureFor(w, post.id), 'wagon', 'the first world kept its own');
 });

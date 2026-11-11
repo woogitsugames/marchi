@@ -805,6 +805,8 @@ export const pl = {
   // D-591: the stone is dug, but lies in a quarry's full yard no wagon collects
   'cause.stoneWagon': '{wagon} stoi przed mostem — kamień na bruk czeka w kamieniołomie na wolny wóz',
   'fix.stoneWagon': 'Do kamiennego mostu brakuje kamienia: {n}. Kamieniołom ma już {quarry} na placu, ale wszystkie wozy są zajęte — nikt go nie wiezie, a pełny plac wstrzymuje wydobycie. Kup wóz albo zaczekaj, aż któryś się zwolni.',
+  'cause.stoneYard': '{wagon} stoi przed mostem — kamień na bruk leży w kamieniołomie, a spichlerz go nie przyjmie',
+  'fix.stoneYard': 'Do kamiennego mostu brakuje kamienia: {n}. Wykopany kamień leży w kamieniołomie, ale spichlerz jest pełny i go nie przyjmie — pełny plac wstrzymuje wydobycie. Co pomoże, mówi karta kamieniołomu:',
   // D-592: a full yard refused by a full granary while another granary has room
   'cause.yardRoom': 'pełne podwórze — towar pojedzie do spichlerza, który ma miejsce',
   // free valley bottleneck card (D-171)
@@ -961,6 +963,8 @@ export const PENDING_KEYS = [
   'cause.stoneWagon', 'fix.stoneWagon', 'cause.yardRoom',
   // D-613, D-615
   'deadEnd.noSource', 'fix.producerMissing',
+  // D-633
+  'cause.stoneYard', 'fix.stoneYard',
 ] as const satisfies readonly MessageKey[];
 export type PendingKey = (typeof PENDING_KEYS)[number];
 /** Complete dictionary (pl, en). */

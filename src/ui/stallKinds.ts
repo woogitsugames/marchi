@@ -105,20 +105,61 @@ export function marketTakesLoad(world: World, good: Good, from = -1): boolean {
 /**
  * What the free valley's loads in a granary say: 'wagon' — a full wagon load of a good some market takes now (another
  * wagon empties it), 'saturated' — loads only of goods the markets will not take more of (D-174: no "Kup wóz", a calm
- * "rynek nasycony"), null — no market load at all (not the free valley, or nothing sellable). Pure read.
+ * "rynek nasycony"), 'pending' — only loads the next dispatch is about to book (D-630), null — no market load at all
+ * (not the free valley, or nothing sellable). Reads (and keeps per world) when each load was first seen unbooked.
  */
-export function granaryLoads(world: World, granaryId: number): 'wagon' | 'saturated' | null {
+export function granaryLoads(world: World, granaryId: number): 'wagon' | 'saturated' | 'pending' | null {
   if (!marketOpen(world)) return null;
   const g = world.state.buildings.find((q) => q.id === granaryId);
   if (!g || g.type !== 'warehouse') return null;
-  let loads = false;
-  for (const good of GOODS) {
+  const tick = world.state.tick;
+  let seen = loadSeen.get(world);
+  if (!seen) loadSeen.set(world, (seen = new Map()));
+  let loads = false, pending = false;
+  let ready: boolean | null = null;
+  for (let i = 0; i < GOODS.length; i++) {
+    const good = GOODS[i]!;
     if (good === 'stone' || MARKET.base[good] <= 0) continue; // granary stone is building material
-    if (g.stock[good] - g.reservedOut[good] < capacityOf(good)) continue;
-    if (marketTakesLoad(world, good, g.gate)) return 'wagon';
+    const key = granaryId * GOODS.length + i;
+    if (g.stock[good] - g.reservedOut[good] < capacityOf(good)) { seen.delete(key); continue; }
+    if (marketTakesLoad(world, good, g.gate)) {
+      // D-630: a load just unloaded that the market takes, while a wagon without a job waits and the market's share
+      // of the fleet is not used up, is booked by the next dispatch (every DISPATCH_INTERVAL ticks): spoken for, like
+      // a reserved load — not a wagon short. Without this the granary, and the producer it refuses, flashed red for a
+      // second ("Kup wóz" with a wagon standing idle) between two calm "rynek nasycony" reads. Only for
+      // PENDING_LOAD_TICKS from when the load was first seen: a load the dispatcher still leaves (another source of
+      // the good is nearer the market, dearer goods take the slots) needs a wagon after all.
+      let first = seen.get(key);
+      if (first === undefined || first > tick) seen.set(key, (first = tick));
+      if (tick - first < PENDING_LOAD_TICKS && (ready ??= marketWagonReady(world, g.gate))) { pending = true; continue; }
+      return 'wagon';
+    }
+    seen.delete(key);
     loads = true;
   }
-  return loads ? 'saturated' : null;
+  return loads ? 'saturated' : pending ? 'pending' : null;
+}
+
+/** D-630: how long an unbooked market load may wait for the dispatcher before it reads as a wagon short (2 s). */
+const PENDING_LOAD_TICKS = 2 * TICK_HZ;
+/** D-630: per world, granary id × good -> the tick its unbooked market load was first read. */
+const loadSeen = new WeakMap<World, Map<number, number>>();
+
+/**
+ * D-630: the next dispatch can send a wagon from `gate` to a market — one without a job stands on the same road
+ * network, and the market's share of the fleet (MARKET.wagonSharePct, counted as `dispatch` counts it) is not used
+ * up. Pure read.
+ */
+export function marketWagonReady(world: World, gate: number): boolean {
+  const st = world.state;
+  if (!st.wagons.some((w) => !w.job && reachable(world, w.at, gate))) return false;
+  let slots = Math.max(1, Math.floor((st.wagons.length * MARKET.wagonSharePct) / 100));
+  for (const w of st.wagons) {
+    if (!w.job) continue;
+    const to = buildingById(world, w.job.to);
+    if (to && isMarket(world, to)) slots--;
+  }
+  return slots > 0;
 }
 
 /**

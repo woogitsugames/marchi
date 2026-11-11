@@ -18,7 +18,7 @@ import { bdi, buildingName, buildingStateIcon, buildingStatusText, dayClock, fmt
 import { iconSvg, type IconId } from './icons';
 import { missionTitleHtml } from './menu';
 import { forecastFor, sealPaceHtml, waybillPaceHtml } from './pace';
-import { calmWhy, cureFor, cutOffConsumer, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneHaul, paveStoneWait, sharedOneCard, type Cure, type StallEntry } from './stalls';
+import { calmWhy, cureFor, cutOffConsumer, cutOffNoLink, heldSpanFor, iceBeforeWagon, paveStoneHaul, paveStoneWait, paveStoneYard, sharedOneCard, type Cure, type StallEntry } from './stalls';
 import { castleForecastFor, paceCard, type PaceCard } from './paceCard';
 import { bottleneckCard, neckWaiting, type BottleneckCard } from './bottleneck';
 import { EventCard } from './eventCard';
@@ -766,10 +766,12 @@ export class Hud {
     const stone = held && w!.minor && held.kind !== 'BRIDGE_CLOSED' ? paveStoneWait(world, b!) : null;
     // D-591: the stone lies dug in a quarry's full yard no wagon collects — the card says a wagon is missing
     const haul = held && !stone && held.kind !== 'BRIDGE_CLOSED' && this.cure === 'wagon' && paveStoneHaul(world, b!) >= 0;
+    // D-633: the stone lies dug in a quarry yard a full granary refuses — the calm pin says so (the quarry's card leads)
+    const yard = held && !stone && !haul && w!.minor && held.kind !== 'BRIDGE_CLOSED' && paveStoneYard(world, b!) >= 0;
     // before the ice the wagon card yields to the span when a wagon would cost the stone bridge (day 8c)
     const ice = b && !shared && !held && this.cure === 'pave' ? iceBeforeWagon(world) : null;
     const iceIn = ice ? Math.ceil((ice.startTick - world.state.tick) / TICK_HZ) : -1;
-    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${stone ? (stone.digTicks > 0 ? 'dig' : 'coming') : haul ? 'haul' : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
+    const sig = b ? `${b.id}|${JSON.stringify(b.status)}|${stalls.length}|${w!.crit}|${w!.minor}|${calmWhy(world, b)}|${shared?.producer ?? -1}|${held ? held.wagon + held.kind : ''}|${stone ? (stone.digTicks > 0 ? 'dig' : 'coming') : haul ? 'haul' : yard ? 'yard' : ''}|${iceIn}|${this.cure}|${getLang()}` : '';
     if (sig === this.stallSig) return;
     this.stallSig = sig;
     this.wagonSig = '';
@@ -783,7 +785,7 @@ export class Hud {
       ? t('cause.sharedOne', { who: buildingName(world, shared.producer), n: fmtInt(shared.consumers) })
       : held
         // D-420: the stone bridge waits for stone that is coming or being dug — the calm card says which
-        ? t(stone ? (stone.digTicks > 0 ? 'cause.stoneDig' : 'cause.stoneComing') : haul ? 'cause.stoneWagon' : held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
+        ? t(stone ? (stone.digTicks > 0 ? 'cause.stoneDig' : 'cause.stoneComing') : haul ? 'cause.stoneWagon' : yard ? 'cause.stoneYard' : held.kind === 'BRIDGE_CLOSED' ? 'cause.heldIce' : 'cause.heldJam', { wagon: wagonName(world, held.wagon) })
         : ice
           ? t('cause.iceAhead', { time: ticksClock(ice.startTick - world.state.tick), n: fmtInt(ice.price) })
           // D-410: cut off later with no road left to build — say so (the sheet offers taking it back)

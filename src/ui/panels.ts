@@ -17,7 +17,7 @@ import { revealAboveDock, type Sheet, type SheetContent } from './sheets';
 import { WAGON_REFUND } from './deadEnd';
 import { castlePaceHtml, forecastFor, sharedHtml, thinHtml } from './pace';
 import { castleOrderHtml, castleSwitchHtml, twoCastleOrder } from './castles';
-import { gapSuggestion, chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, yardStoreRoom, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
+import { gapSuggestion, chainRoot, codexCalm, cutOffNoLink, cutOffRefund, quietStall, cureFor, granaryAnchor, gapTarget, freshGranary, granaryFilling, granaryUnwanted, marketSaturated, iceBeforeWagon, yardStoreRoom, paveCheck, paveSpanFor, paveStoneHaul, paveStoneWait, paveStoneYard, postWouldTake, producerCure, quarryForPave, recentWagonWait } from './stalls';
 import { bottleneckCard, neckWaiting } from './bottleneck';
 import { fleetCueFor, paceCard, type PaceCard, type PaceFleet, type PaceHaul, type PaceMud, type PaceRank, type PaceGrow } from './paceCard';
 
@@ -305,6 +305,15 @@ function cureHtml(world: World, b: Building, chain: ReasonLink[]): string {
       const en = translated(key) ? '' : ' lang="en" dir="ltr"';
       return `<div class="s-hint calm-hint">${iconSvg('quarry', 22)}<span${en}>${esc(t(key, {
         n: fmtInt(sw.short), time: ticksClock(sw.digTicks), incoming: fmtInt(sw.incoming), quarry: fmtInt(sw.atQuarry) }))}</span></div>`;
+    }
+    // D-633: the stone lies dug in a quarry yard a full granary refuses — the quarry's own sheet has the cure
+    const yard = paveStoneHaul(world, b) < 0 ? paveStoneYard(world, b) : -1;
+    if (yard >= 0) {
+      const ok = paveCheck(world, h);
+      const n = !ok.ok && ok.err.k === 'NO_STONE' ? ok.err.need - ok.err.have : 0;
+      const en = translated('fix.stoneYard') ? '' : ' lang="en" dir="ltr"';
+      return `<div class="s-hint calm-hint">${iconSvg('quarry', 22)}<span${en}>${esc(t('fix.stoneYard', { n: fmtInt(n) }))} <button class="linkish" data-go="building:${yard}">${
+        esc(buildingName(world, yard))}</button></span></div>`;
     }
     const ok = paveCheck(world, h);
     let price = 0;

@@ -30,6 +30,20 @@ export function marketSaturated(world: World, b: Building): boolean {
   return false;
 }
 
+/**
+ * D-630: a full granary (or a producer refused by one) whose only market loads the next dispatch books — a wagon
+ * without a job is ready and the market has a slot: room is coming within half a second. Pure read.
+ */
+export function granaryPending(world: World, b: Building): boolean {
+  const s = b.status;
+  if (s.k === 'STORAGE_FULL') return granaryLoads(world, b.id) === 'pending';
+  if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && s.blockedBy >= 0) {
+    const g = buildingById(world, s.blockedBy);
+    return !!g && g.status.k === 'STORAGE_FULL' && granaryLoads(world, g.id) === 'pending';
+  }
+  return false;
+}
+
 /** 2 s: no pin or card for a short hiccup. */
 export const MIN_STALL_TICKS = 20;
 
@@ -58,7 +72,8 @@ export interface StallEntry {
 // per world (D-592): two worlds with the same building id, status and second shared one answer
 const calmCaches = new WeakMap<World, Map<number, { key: string; calm: boolean }>>();
 export function calmStall(world: World, b: Building, sig: string): boolean {
-  const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${Math.floor(world.state.tick / 10)}`;
+  // D-630: the fleet size too — a wagon bought in the same tick makes a granary load "pending" (granaryPending)
+  const key = `${sig}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 10)}`;
   let calmCache = calmCaches.get(world);
   if (!calmCache) calmCaches.set(world, (calmCache = new Map()));
   const c = calmCache.get(b.id);
@@ -66,7 +81,7 @@ export function calmStall(world: World, b: Building, sig: string): boolean {
   // the trading post waiting for its road (D-170): the player may not want it; a brass pin, never a red card
   const calm = b.type === 'tradePost' || chainSwitchStall(world, b) || outputCustomer(world, b.id) >= 0 || seasonalSupplier(world, b.id) !== null || outputSurplus(world, b.id) !== null ||
     granaryRelief(world, b.id)?.k === 'ROOM' || yardStoreRoom(world, b) >= 0 || contractFilled(world, b.id) !== null || inputOrderFilled(world, b) || starvedForGood(world, b) || stoneInStore(world, b.id) > 0 ||
-    marketSaturated(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
+    marketSaturated(world, b) || granaryPending(world, b) || granaryUnwanted(world, b.id) || granaryFilling(world, b.id) || freshGranary(world, b) >= 0;
   calmCache.set(b.id, { key, calm });
   return calm;
 }
@@ -534,6 +549,13 @@ export function paveStoneWait(world: World, b: Building): StoneWait | null {
       // D-430: a yard full of stone a wagon is already booked to fetch (WAITING_PICKUP — often loads the trading post
       // buys) is no stall: the quarry digs again once the wagon comes. A whole cycle from now (pickup not guessed).
       // D-591: likewise a yard a wagon is already driving to (WAGON_DUE, the booking lands when it arrives)
+      // D-632: between cycles a quarry still reads WORKING with no cycle running — placed this tick (the next step
+      // starts it: the sheet's "Postaw kamieniołom" read the grey stone button until then) or a cycle just done (the
+      // next dispatch books the yard, WAITING_PICKUP, or the status turns OUTPUT_FULL). It digs, as one mid-cycle.
+      if (q.progress < 0 && q.status.k === 'WORKING') {
+        working++;
+        continue;
+      }
       if (q.progress < 0) {
         if (q.status.k !== 'WAITING_PICKUP' && q.status.k !== 'WAGON_DUE') continue;
         working++;
@@ -564,6 +586,29 @@ export function paveStoneHaul(world: World, b: Building): number {
   let best = -1, most = 0;
   for (const q of world.state.buildings) {
     if (q.type !== 'quarry' || q.status.k !== 'OUTPUT_FULL' || q.status.cause !== 'NO_WAGON') continue;
+    const free = q.stock.stone - q.reservedOut.stone;
+    if (free > most) { most = free; best = q.id; }
+  }
+  return best;
+}
+
+/**
+ * D-633: the held span's stone bridge lacks stone, the stone it needs is dug, and it lies in a quarry's full yard the
+ * granaries refuse (OUTPUT_FULL.NO_DESTINATION — a full granary), so the quarry digs no more. Neither a calm stone wait
+ * nor the grey stone button: what holds the bridge is the quarry's own stall, whose card names its granary and
+ * offers that chain's cure (a wagon to empty it, another granary, or "rynek nasycony" — calm). The held building is a
+ * calm pin so the quarry's card can head the HUD, and its sheet points to the quarry. Returns that quarry (the
+ * fullest one), or -1. Pure read.
+ */
+export function paveStoneYard(world: World, b: Building): number {
+  if (!rankGated(world)) return -1;
+  const h = heldSpanFor(world, b);
+  if (!h) return -1;
+  const ok = paveCheck(world, h);
+  if (ok.ok || ok.err.k !== 'NO_STONE' || ok.err.quarries === 0 || paveStoneWait(world, b)) return -1;
+  let best = -1, most = 0;
+  for (const q of world.state.buildings) {
+    if (q.type !== 'quarry' || q.status.k !== 'OUTPUT_FULL' || q.status.cause !== 'NO_DESTINATION') continue;
     const free = q.stock.stone - q.reservedOut.stone;
     if (free > most) { most = free; best = q.id; }
   }
@@ -623,7 +668,8 @@ export function rankStalls(world: World): StallEntry[] {
     const held = heldSpanFor(world, b);
     if (held) {
       // D-420: the stone bridge only waits for stone already coming or being dug — a calm pin, not the red card
-      if (paveStoneWait(world, b)) out.push({ id: b.id, ticks: held.heldTicks, crit: false, minor: true, score: held.heldTicks * W_MINOR });
+      // D-633: ...or for stone dug into a quarry yard a full granary refuses (the quarry's own card leads)
+      if (paveStoneWait(world, b) || (paveStoneHaul(world, b) < 0 && paveStoneYard(world, b) >= 0)) out.push({ id: b.id, ticks: held.heldTicks, crit: false, minor: true, score: held.heldTicks * W_MINOR });
       else out.push({ id: b.id, ticks: held.heldTicks, crit: true, minor: false, score: (held.heldTicks + SHARED_LEAD_TICKS) * W_CRIT });
       continue;
     }
@@ -721,6 +767,12 @@ export function cutOffNoLink(world: World, chain: ReasonLink[]): number {
   if (!rankGated(world)) return -1;
   let id = cutOffProducer(world, chain);
   if (id < 0) id = cutOffConsumer(world, chain);
+  // D-634: a workshop whose own gate lost its road (NO_ROAD at the chain's root — a road or building laid later took
+  // the cell its gate hung on) is cut off the same way
+  if (id < 0) {
+    const root = chain[chain.length - 1];
+    if (root?.kind === 'building' && root.status.k === 'NO_ROAD') id = root.id;
+  }
   const b = id >= 0 ? buildingById(world, id) : undefined;
   if (!b || !BUILDINGS[b.type].recipe || b.type === 'tradePost' || b.type === 'castle' || b.type === 'stable') return -1;
   const key = `${world.state.netVersion}|${world.state.buildings.length}`;
@@ -834,7 +886,8 @@ export function recentWagonWait(world: World, id: number): number {
   return ago >= 0 && ago <= BUSY_MEMO_TICKS ? ago : -1;
 }
 
-let cureCache: { world: World; key: string; cure: Cure } | null = null;
+// per world and building (D-631): the HUD card and an open sheet ask for different buildings in the same frame
+const cureCaches = new WeakMap<World, Map<number, { key: string; cure: Cure }>>();
 
 /** The quarries' status kinds (D-591: the stone haul cure follows a quarry's yard, not the stalled building's status). */
 function quarryKey(world: World): string {
@@ -847,37 +900,44 @@ function quarryKey(world: World): string {
  * root waits for a free wagon, a road when it lacks one, a granary when its output has nowhere to go
  * (OUTPUT_FULL.NO_DESTINATION) or the granary is full with no other to link or fill. Nothing when the chain runs into a wagon held at a bridge (ice, a
  * one-lane jam: a new wagon would wait there too) or when the full output is a surplus nobody needs
- * (audit 2026-11-03, fixes 1-2). Cached per status and network version.
+ * (audit 2026-11-03, fixes 1-2). Cached per tick, status and network version (D-631: the key held a 2 s bucket, so a
+ * cure read in its first tick — a quarry's yard, a granary's load, a stone count — stayed up to 2 s after the state
+ * had moved on; the dead-card scan saw those as 1 s flashes).
  */
 export function cureFor(world: World, id: number): Cure {
   const b = world.state.buildings.find((q) => q.id === id);
   if (!b) return null;
-  const key = `${id}|${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${Math.floor(world.state.tick / 20)}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${sharedContested(world, b)}|${world.state.coins}|${bottleneckKey(world)}|${quarryKey(world)}`;
-  if (cureCache?.key === key && cureCache.world === world) return cureCache.cure;
+  const key = `${JSON.stringify(b.status)}|${world.state.netVersion}|${world.state.buildings.length}|${world.state.wagons.length}|${world.state.tick}|${inputWaitTicks(world, b) >= SHARED_CARD_WAIT_TICKS}|${sharedContested(world, b)}|${world.state.coins}|${bottleneckKey(world)}|${quarryKey(world)}`;
+  let cache = cureCaches.get(world);
+  if (!cache) cureCaches.set(world, (cache = new Map()));
+  const hit = cache.get(id);
+  if (hit && hit.key === key) return hit.cure;
+  const cure = cureOf(world, b);
+  cache.set(id, { key, cure });
+  return cure;
+}
+
+function cureOf(world: World, b: Building): Cure {
+  const id = b.id;
   if (sharedOneCard(world, b) || sharedContested(world, b)) {
-    cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (bottleneckFor(world, b)) {
     // the free valley's bottleneck card (D-171): this workshop waits for the card's good; one more producer
-    cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (missingProducer(world, b)) {
     // D-615: nobody makes the good any more and the mission lets the player build its producer
-    cureCache = { world, key, cure: 'producer' };
     return 'producer';
   }
   if (heldSpanFor(world, b)) {
     // D-591: the stone is dug but lies in a quarry's yard no wagon collects — a wagon, not the grey stone button
     const c: Cure = paveStoneHaul(world, b) >= 0 ? 'wagon' : 'pave';
-    cureCache = { world, key, cure: c };
     return c;
   }
   const chain = explainBuilding(world, id, 5, true);
   // D-410: cut off with no road left to build — take it back (the gap finder would offer nothing)
   if (cutOffNoLink(world, chain) >= 0) {
-    cureCache = { world, key, cure: 'demolish' };
     return 'demolish';
   }
   let cure: Cure = cutOffProducer(world, chain) >= 0 || cutOffConsumer(world, chain) >= 0 || cutOffSource(world, chain) >= 0 ? 'road' : null;
@@ -895,14 +955,15 @@ export function cureFor(world: World, id: number): Cure {
       else if (s.k === 'OUTPUT_FULL' && s.cause === 'NO_DESTINATION' && i === chain.length - 1 && !contractFilled(world, l.id)) {
         // D-174: a granary full of loads no market takes: nothing to buy or build (calm "rynek nasycony")
         const loads = s.blockedBy >= 0 ? granaryLoads(world, s.blockedBy) : null;
-        if (loads === 'saturated') break;
+        // D-630: the granary's load is booked by the next dispatch — room is coming, nothing to buy
+        if (loads === 'saturated' || loads === 'pending') break;
         cure = loads === 'wagon' ? 'wagon' : 'granary';
       }
       // a full granary with no other granary to link or fill: another granary (fix 3); in the free valley a
       // granary full of goods the market buys needs wagons, not room (valley-3h proposal 2)
       else if (s.k === 'STORAGE_FULL' && i === chain.length - 1 && !granaryRelief(world, l.id)) {
         const loads = granaryLoads(world, l.id);
-        if (loads === 'saturated') break;
+        if (loads === 'saturated' || loads === 'pending') break;
         // D-212: its own goods are wanted by nobody — nothing to build for the granary itself; a producer of a
         // wanted good it refuses (i > 0) still needs another granary
         if (i === 0 && granaryUnwanted(world, l.id)) break;
@@ -920,7 +981,6 @@ export function cureFor(world: World, id: number): Cure {
   if (cure === 'granary' && freshGranary(world, b) >= 0) cure = null;
   // D-391: no granary site a road reaches anywhere the ghost would look — nothing to offer
   if (cure === 'granary' && granaryAnchor(world, b, chainRoot(chain, b.id)) < 0) cure = null;
-  cureCache = { world, key, cure };
   return cure;
 }
 
