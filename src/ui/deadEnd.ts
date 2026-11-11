@@ -2,7 +2,7 @@
 // even selling the spare wagons would not pay for the cheapest connection. Pure read of the sim (no writes).
 import {
   BUILDINGS, DEMOLISH_REFUND, GOODS, WAGON_PRICE, contractsOf, demolishQuote, inputGoods, marketOpen, missionBuildable, outputGoods,
-  roadCellCost, seasonal, suggestConnection, type BuildingType, type Good, type World,
+  roadCellCost, seasonal, suggestConnection, type BuildingType, type Good, type RoadSuggestion, type World,
 } from '../sim/index';
 
 /** Silver one sold wagon returns (commands.ts sellWagon: half the price). */
@@ -69,7 +69,7 @@ export function deadEnd(world: World): DeadEnd | null {
   for (const k of contractsOf(st.mission)) {
     const castle = st.buildings.find((b) => b.id === k.castle);
     if (!castle || !GOODS.some((g) => k.need[g] > castle.stock[g])) continue; // gone, or its order is in
-    const link = suggestConnection(world, stable.gate, castle.gate);
+    const link = connection(world, stable.gate, castle.gate);
     if (link && link.newCells.length === 0) continue; // connected: still winnable as far as roads go
     const cost = link ? link.cost : -1;
     const raise = Math.max(0, st.wagons.length - 1) * WAGON_REFUND;
@@ -77,6 +77,21 @@ export function deadEnd(world: World): DeadEnd | null {
     return { k: 'NO_ROUTE_TO_CASTLE', castle: castle.id, cost, coins: st.coins, raise };
   }
   return src; // D-639: too late, or null
+}
+
+/**
+ * D-735: suggestConnection (a whole-grid search) reads only the roads, the buildings' footprints and the terrain, all of
+ * which bump the network version when they change: the check every 5 s of game time asks it once per network version.
+ */
+const links = new WeakMap<World, { ver: number; map: Map<number, RoadSuggestion | null> }>();
+function connection(world: World, from: number, to: number): RoadSuggestion | null {
+  const ver = world.state.netVersion;
+  let m = links.get(world);
+  if (!m || m.ver !== ver) links.set(world, (m = { ver, map: new Map() }));
+  const key = from * 1e6 + to;
+  let s = m.map.get(key);
+  if (s === undefined) m.map.set(key, (s = suggestConnection(world, from, to)));
+  return s;
 }
 
 /**

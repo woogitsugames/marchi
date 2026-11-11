@@ -775,12 +775,15 @@ export function routeLostFor(world: World, b: Building): { wagon: number; ticks:
 
 export function rankStalls(world: World): StallEntry[] {
   const out: StallEntry[] = [];
+  // D-735: with no wagon standing at a span there is no held span anywhere — heldSpanFor would scan every wagon for
+  // every building (200 wagons × 41 buildings a tick on the bench) to say so
+  const bridged = world.state.wagons.some((w) => w.status.k === 'BRIDGE_JAM' || w.status.k === 'BRIDGE_CLOSED');
   for (const b of world.state.buildings) {
     if (sharedOneCard(world, b)) {
       out.push({ id: b.id, ticks: b.stalledTicks, crit: true, minor: false, score: (b.stalledTicks + SHARED_LEAD_TICKS) * W_CRIT });
       continue;
     }
-    const held = heldSpanFor(world, b);
+    const held = bridged ? heldSpanFor(world, b) : null;
     if (held) {
       // D-420: the stone bridge only waits for stone already coming or being dug — a calm pin, not the red card
       // D-633: ...or for stone dug into a quarry yard a full granary refuses (the quarry's own card leads)
