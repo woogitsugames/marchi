@@ -354,3 +354,48 @@ klatka po komendzie w pauzie p50 0,6–1,4 → **2,5–8 ms**, p95 ≤ 3,9 → d
 się w jednej–dwóch klatkach 60 Hz). Cel „najgorszy odczyt < 1 ms na telefonie” spełniony dla klatki między tickami
 i prawie dla klatki po ticku (dolina przy ×6: 1,2 ms); nie dla arkusza budynku p95 przy ×6 i jednorazowej klatki po
 komendzie w pauzie — co dalej: BACKLOG P1 (2026-11-11, D-730).
+
+## 2026-11-11 (2) — arkusz w pauzie, zimna kopia, kotwica wąskiego gardła (D-750..D-754)
+
+To samo narzędzie (`node tools/ui-read-cost-run.mjs`, nowa opcja `--pause-every N` — komenda w pauzie co N s gry,
+domyślnie 30); przed = `c1ff6cc` z tym samym narzędziem, mediana 5 przebiegów naprzemiennie (pauza: 3 przebiegi
+`m16 valley bench100 --pause-every 2`, 170–300 komend w pauzie na scenę zamiast 6–20). **Digesty identyczne przed
+i po** we wszystkich 8 scenach domyślnych (m14=e0c5e4be m15=5723837f m16=67d6905e m17=806a8d09 valley=d50b255b
+bench50=e01c03b9 bench100=f0116d33 bench200=933b8773) i w przebiegach `--pause-every 2` (m16=51a3500e
+valley=2dcc2bcd bench100=e9692abf); hashe misji 86/86 identyczne.
+
+Kontener, ms na wywołanie, p50 / p95 / p99 / max przed → po:
+
+| scena | arkusz budynku w pauzie bez zmian | pauza: 1. klatka | pauza: HUD na kopii | pauza: kopia | klatka po ticku |
+|---|---|---|---|---|---|
+| XIV | 0,085 / 0,25 → 0,003 / 0,087 | 0,88 / 3,51 → 0,54 / 3,23 ¹ | 0,23 / 0,65 → 0,11 / 0,38 | 0,30 / 2,38 → 0,19 / 1,86 | 0,028 / 0,10 / 0,23 → 0,025 / 0,093 / 0,22 |
+| XVI (`--pause-every 2`) | 0,092 / 0,21 / 0,30 / 0,67 → 0,003 / 0,007 / 0,015 / 0,067 | 0,85 / 1,59 / 4,46 → 0,67 / 1,44 / 4,03 | 0,27 / 0,67 → 0,27 / 0,65 | 0,22 / 0,39 → 0,16 / 0,32 | 0,054 / 0,14 / 0,45 → 0,048 / 0,13 / 0,37 |
+| XVII | 0,11 / 0,26 → 0,003 / 0,009 | 1,13 / 1,82 → 0,78 / 1,17 ¹ | 0,56 / 1,07 → 0,33 / 0,62 | 0,27 / 0,49 → 0,18 / 0,28 | 0,032 / 0,095 / 0,39 → 0,034 / 0,093 / 0,34 |
+| dolina (`--pause-every 2`) | 0,10 / 0,29 / 0,42 / 2,11 → 0,003 / 0,008 / 0,012 / 0,033 | 0,89 / 1,94 / 4,72 / 6,63 → 0,62 / 1,53 / 2,78 / 4,21 | 0,077 / 0,86 / 1,92 → 0,054 / 0,11 / 0,31 | 0,39 / 0,77 / 1,60 → 0,33 / 0,76 / 2,42 ² | 0,083 / 0,21 / 0,38 → 0,076 / 0,22 / 0,42 ³ |
+| bench 100 (`--pause-every 2`) | 0,10 / 0,23 / 0,45 → 0,003 / 0,008 / 0,028 | 0,94 / 1,96 → 0,77 / 1,63 | 0,047 / 0,077 → 0,044 / 0,074 | 0,59 / 1,34 → 0,47 / 1,37 | 0,054 / 0,12 / 0,25 → 0,051 / 0,10 / 0,18 |
+| bench 200 | 0,12 / 0,16 → 0,004 / 0,007 | 1,15 / 1,63 → 0,99 / 1,46 ¹ | 0,044 / 0,055 → 0,043 / 0,054 | 0,84 / 1,43 → 0,69 / 1,28 | 0,051 / 0,11 / 0,19 → 0,049 / 0,099 / 0,19 |
+
+¹ 6–14 próbek (domyślne co 30 s): p95 ≈ maksimum. ² p99/max kopii w górę o ~1 ms przy p50/p95 w dół: kopia to głównie
+alokacja, odśmiecanie trafia w inne miejsca (bez wzorca w `--spikes`). ³ różnica w szumie przebiegów; p50 −8 %.
+Arkusz wozu w pauzie bez zmian: p95 0,064–0,13 → 0,003–0,004 ms. Arkusz budynku po ticku (stan się zmienił, pełne
+przeliczenie) bez zmian: p95 0,13–0,28 ms. Ranking na kopii w XVI p50 0,094 → 0,013 ms (pamięć wyszukiwań bez nowej
+alokacji, D-753).
+
+Co zrobiono (wynik bit w bit): arkusze budynku i wozu pomijają przeliczenie, gdy nic, co czytają, się nie zmieniło
+(D-750 — w pauzie 4×/s, powtarzają tylko wywołania ducha drogi); kopia w pauzie czyta odpowiedzi `siteExists` /
+`siteLinked` świata pod tym samym kluczem (D-751 — karta wzrostu/rangi w dolinie); kotwica karty wąskiego gardła
+pamiętana per sieć, pogoda i kolejki mostów (D-752 — poza krą 57 przeszukań na 3751 ticków z kartą zamiast ~4 na
+tick); `jsonCopy` kopiuje liczby w pętli i kopia dostaje bufor wyszukiwań świata zamiast nowego ~1 MB (D-753).
+Test pracy (`tests/ui-read-budget.test.ts`): każda aktualizacja arkusza każdego budynku i wozu IV, XVI i doliny co
+10 s (po ticku, w pauzie, na kopii, znowu, z powrotem na świecie) równa świeżemu arkuszowi (DOM i duch), każda bez
+zmian pominięta, każda po zmianie przeliczona (13 475 porównań); kopia nie szuka miejsc ponownie; kotwica równa
+świeżej.
+
+**Telefon (×4–6):** arkusz budynku w pauzie p95 ≤ 0,47 → **≤ 0,013 ms** (< 0,1 ms; był 1,2–2,8 ms); HUD na kopii
+w dolinie p95 0,86 → 0,11 (0,4–0,7 ms); klatka po ticku p95 bez zmian 0,4–1,3 ms (dolina na granicy przy ×6).
+**Pierwsza klatka po komendzie w pauzie** p50 0,54–0,99 → 2,2–6 ms, p95 1,2–1,6 → 5–10 ms (było do ~23 ms) — dalej
+ponad 1 ms: to kopia stanu (0,16–0,69 ms p50, głębokie kopiowanie budynków, wozów, dróg) + rozesłanie na kopii
+(~0,1 ms) + pierwsze przeliczenie arkusza na nowym stanie (0,12–0,17 ms). Bez zmiany zachowania tego się nie skróci
+inaczej niż współdzieląc niezmienione tablice stanu z kopią (umowa „kopia = JSON”) — BACKLOG P1 (D-754). Kotwica
+wąskiego gardła w czasie kry (1200 z 6000 ticków doliny 100–110 min) liczy się dalej co tick (~0,05 ms, 0,2–0,3 ms
+telefon): wyszukiwanie dolicza resztę okna kry, ścieżka może się zmienić z tickiem.

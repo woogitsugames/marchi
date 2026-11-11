@@ -5197,3 +5197,52 @@ building per tick: O(buildings²) in the free valley, where it always answered n
 **D-737 — The ranking reads only the wagons standing at a span.** With wagons at a span (the bench's overloaded
 bridges: always) `rankStalls` now filters them once and passes that list to `heldSpanFor` / `heldSpanOf` (optional
 argument, fleet order kept, so ties break as before). Bench ranking per tick 0.063 → 0.009 ms (p50). (decided)
+
+**D-750 — The building and wagon sheets skip the rebuild when nothing they read changed.** Both sheets re-render ~4×/s
+(Sheets.update), also in pause, where the whole HTML (`t()`, plural blocks, the chain) was rebuilt only for `setHtml` to
+find the same string: 0.1–0.45 ms per update in the container. A sheet now keeps a mark of what its update read — the
+world and state objects, tick, silver, network version, building and wagon counts (the HUD's key, D-158), language,
+pace log, tutorial, tutorial hut, followed wagon — plus `sheetRev`, bumped by every tap on a sheet's link or button
+(the codex, castle fold and chain unfolds are module state shared by every sheet), and the body's first part (a body
+emptied for other content is rebuilt). With the same mark the update returns at once and only repeats its ghost calls
+(the app's ghost is shared with other sheets and tools, so a skipped update sets it exactly as the full one did).
+Running, the tick moves between updates, so nothing changes there; a command in pause swaps the reading copy
+(D-672) and a load swaps the world, so both rebuild. Test (`tools/sheet-mark-check.ts`, bundled by
+`tests/ui-read-budget.test.ts`): every building and wagon sheet of IV, XVI and the valley, every 10 s, after the tick,
+in pause, on the reading copy, again and back on the world — each update's DOM and ghost calls equal a fresh sheet's,
+every unchanged update skipped and every changed one rebuilt. (decided)
+
+**D-751 — A paused reading copy reads the world's site answers under the same key.** The first frame after a command
+in pause redid every `siteExists` / `siteLinked` search the world had memoized (the valley's grow and rank cards ask
+for a site by every candidate: 0.1–0.9 ms of the HUD on the copy). Both memos are keyed by what the answer reads — the
+network version (roads and buildings), the building count, the rank (`siteExists`), the terrain is fixed — so the
+real world's entry under the copy's key is the copy's answer too (`memoryWorld`, D-672). Read only: the copy keeps its
+own memo and never writes the world's. Test: the copy repeats no site search and agrees with a cold copy. (decided)
+
+**D-752 — The bottleneck card's anchor is kept per network, weather and span-queue state.** `bottleneckCard` is
+computed every tick and `neckAnchor` ran a loaded `findPath` + `pathTime` from every producer of the good to the
+waiting consumer (~13 % of the valley's frame after a tick). The anchor reads the roads and buildings (network
+version, building count), the rank (`siteExists`), rain and thaw (edge costs, `pathTime`) and the wooden spans'
+queue penalties (by content, like the sim's distance memo D-336); kept per world under that key, the network part
+dropping everything, up to 32 weather/queue states side by side (one wagon on the valley's bridge flips the penalties
+between ~20 states). While bridge ice lasts nothing is kept: the forward search charges the remaining ice window, so
+the path can change with the tick — in the valley's minutes 100–110 that is 1200 of 6000 ticks, still one search
+per producer each (~0.05 ms in the container). `spanPenalties` is exported from `src/sim/index.ts` (no sim change).
+Test: the memoized anchor equals a fresh one, and outside ice at most one card tick in ten searches. (decided)
+
+**D-753 — The paused reading copies numbers in place and shares the search scratch.** `jsonCopy` (D-733) called
+itself for every number of the roads and traffic arrays (one per map cell): numbers, null and strings are now copied
+in the loop (~2× faster on the valley's state, the same result — the JSON round-trip test still holds). The copy also
+gets the world's `scratch` (heap, stamps and the reuse distance pair, ~1 MB on the valley's map) instead of allocating
+its own: every search resets what it reads, the world keeps no result in it between calls, and the copy is read only
+until the world steps again. Mission hashes 86/86 identical. (decided)
+
+**D-754 — What stays over ~1 ms on a phone after D-750..D-753, and why it stays.** Measured with
+`tools/ui-read-cost-run.mjs` (new `--pause-every N`), digests identical before and after, numbers in docs/PERF.md
+"2026-11-11 (2)". The first frame after a command in pause is still 0.5–1 ms in the container (p50; 2–6 ms on a
+phone): the reading copy itself (a deep copy of buildings, wagons, roads and traffic, 0.16–0.69 ms), its dispatch
+(~0.1 ms) and the first sheet render on the new state (0.12–0.17 ms) — none of it repeats work the state has not
+changed. Shortening it means sharing unchanged state arrays between the world and the copy (copy-on-write), which
+breaks the copy's "plain JSON copy" contract (D-672, D-733) — left to the backlog. The bottleneck anchor during bridge
+ice is computed every tick (the forward search charges the remaining ice window; ~0.05 ms). The frame after a tick
+in the valley (p95 0.22 ms, ~1.3 ms at ×6) is unchanged. (decided)

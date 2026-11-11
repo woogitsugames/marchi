@@ -410,3 +410,8 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-735 | — | The ranking skips the held-span scan with no wagon at a span; the dead-end link once per network version | decided | sim |
 | D-736 | — | The shared-producer card checks the cheap conditions first | decided | UI |
 | D-737 | — | The ranking reads only the wagons standing at a span | decided | inne |
+| D-750 | — | The building and wagon sheets skip the rebuild when nothing they read changed | decided | sim |
+| D-751 | — | A paused reading copy reads the world's site answers under the same key | decided | inne |
+| D-752 | — | The bottleneck card's anchor is kept per network, weather and span-queue state | decided | UI |
+| D-753 | — | The paused reading copies numbers in place and shares the search scratch | decided | inne |
+| D-754 | 2026-11-11 | What stays over ~1 ms on a phone after D-750..D-753, and why it stays | decided | inne |
