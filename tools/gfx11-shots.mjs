@@ -1,4 +1,4 @@
-// Graphics audit 11 (D-500..): the main scenes against docs/ART_DIRECTION.md, before / after.
+// Graphics audits 11-13 (D-500.., D-690..): the main scenes against docs/ART_DIRECTION.md, before / after.
 // Built game: npm run build; npx vite preview --port 5199 --strictPort.
 //   node tools/gfx11-shots.mjs <baseUrl> <tag> [scene,...] [quality,...] [viewport,...]
 // -> docs/shots/<prefix>-<tag>-<scene>-<quality>-<w>x<h>.jpg (prefix: env GFX_PREFIX, default gfx11; audit 12 uses gfx12)
@@ -20,7 +20,7 @@ const [base = 'http://127.0.0.1:5199/', tag = 'before', only = '', qualS = 'low,
 
 // season ticks (TICK_HZ 10, 15 min seasons, spring first); spring after the thaw so the ground is not wet
 const SPRING = 6500, SUMMER = 9000 + 4500, AUTUMN = 18000 + 4500, WINTER = 27000 + 4500;
-const valley = (tick, time, dist = 110, yaw = 0.9) => ({ q: 'play=sandbox&ff=30', valley: true, tick, time, dist, yaw, hide: true });
+const valley = (tick, time, dist = 110, yaw = 0.9, rain = false) => ({ q: 'play=sandbox&ff=30', valley: true, tick, time, dist, yaw, hide: true, rain });
 const SCENES = {
   menu: { q: '', menu: true },
   m1: { q: 'play=m1&bot=1&ff=150' },
@@ -29,10 +29,23 @@ const SCENES = {
   m7: { q: 'play=m7&ff=60' },
   m13: { q: 'play=m13&ff=60' },
   m17: { q: 'play=m17&ff=60' },
+  // audit 13 (D-690..): the late missions X..XVII at 60 s, with the HUD
+  m10: { q: 'play=m10&ff=60' },
+  m11: { q: 'play=m11&ff=60' },
+  m12: { q: 'play=m12&ff=60' },
+  m14: { q: 'play=m14&ff=60' },
+  m15: { q: 'play=m15&ff=60' },
+  m16: { q: 'play=m16&ff=60' },
   'valley-spring': valley(SPRING, 0.45),
   'valley-summer': valley(SUMMER, 0.45),
   'valley-autumn': valley(AUTUMN, 0.45),
   'valley-winter': valley(WINTER, 0.45),
+  // audit 13: weather — a rain spell forced on for the shot (summer noon and autumn noon), and the morning mist peak
+  'valley-rain': valley(SUMMER, 0.45, 110, 0.9, true),
+  'valley-rain-autumn': valley(AUTUMN, 0.45, 110, 0.9, true),
+  'valley-fog': valley(AUTUMN, 0.27),
+  // late autumn (58 % of the season): the crowns at their rust peak just before the leaf fall (D-540)
+  'valley-autumn-late': valley(18000 + 5220, 0.45),
   'valley-dawn': valley(AUTUMN, 0.26),
   'valley-morning': valley(AUTUMN, 0.32),
   'valley-dusk': valley(AUTUMN, 0.73),
@@ -73,6 +86,7 @@ for (const [name, sc] of Object.entries(SCENES)) {
         a.loop.flushCommands();
         for (let i = 0; i < 900; i++) a.loop.tickOnce();
         w.seasons = true; w.state.tick = sc.tick; a.view.snapEnv = true; a.view.debug.forceTime = sc.time;
+        if (sc.rain) w.state.rain.push({ start: 0, end: 1e9 });
         for (let i = 0; i < 5; i++) a.loop.tickOnce();
         a.loop.speed = 0;
         const castle = w.state.buildings.find((b) => b.type === 'castle');
