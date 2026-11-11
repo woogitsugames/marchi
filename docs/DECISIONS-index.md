@@ -374,3 +374,13 @@ Data jest podana tylko wtedy, gdy treść decyzji zawiera jedną jednoznaczną d
 | D-617 | — | Starved for a good nothing can bring is calm | decided | inne |
 | D-618 | — | Stranded wagons: the gap finder links their road piece | decided | sim |
 | D-619 | 2026-11-10 | Bug hunt 2026-11-10 (late missions, free valley): results | decided | inne |
+| D-630 | — | A market load the next dispatch books reads calm for 2 s | decided | sim |
+| D-631 | — | `cureFor` is cached per world, building and tick | decided | inne |
+| D-632 | — | A quarry between two cycles digs | decided | inne |
+| D-633 | — | Stone dug into a quarry yard a full granary refuses: a calm pin that points to the quarry | decided | inne |
+| D-634 | — | A workshop whose own gate lost its road, with no link left, gets "Rozbierz" | decided | sim |
+| D-635 | — | The dead-end letter checks every castle with an order | decided | treść |
+| D-636 | — | A cycle already running counts toward what the map can still bring | decided | inne |
+| D-637 | — | `tools/dead-seconds.ts` reads the state the running game shows | decided | inne |
+| D-638 | — | Dead-end letter: a workshop on the build list no silver can pay for counts as none | decided | treść |
+| D-639 | — | Dead-end letter: too late for an order that can still be filled | decided | treść |

@@ -4871,3 +4871,62 @@ fuzz runs per mission, X–XVII, red card with nothing to press and no dead-end 
 opening contest kept by D-110, plus 1–7 s flashes. Valley `tools/dead-seconds.ts` card-10 1303/1305, card-30 1314,
 card-60 1328: unchanged (card-60 1328's 11 s trading post `pave-grey:NO_STONE` at 110:37 predates this hunt, BACKLOG).
 No sim change; mission hashes unchanged. (decided)
+
+**D-630 — A market load the next dispatch books reads calm for 2 s.** Seed 1322 card-10 30:11: a load of flour just
+unloaded into the full granary while wagons stood idle; the fisher it refused flashed red ("Kup wóz" with a wagon
+standing idle) for a second between two calm "rynek nasycony" reads. `granaryLoads` returns 'pending' when a market
+load is unbooked but a wagon without a job reaches the granary and the market's share of the fleet
+(`MARKET.wagonSharePct`) is not used up — for 2 s from when the load was first seen (UI memory per world; a load the
+dispatcher still leaves after that needs a wagon after all). `granaryPending` makes the granary and the producer it
+refuses calm; `cureFor` offers nothing. `calmStall`'s key includes the fleet size. (decided)
+
+**D-631 — `cureFor` is cached per world, building and tick.** The key held a 2 s bucket, so a cure read in its first
+tick (a quarry's yard, a granary's load, a stone count) stayed up to 2 s after the state had moved on; the dead-card
+scan saw those as 1 s flashes. One cache per world and building (the HUD card and an open sheet ask for different
+buildings in the same frame). Cost on a cache miss in the late valley: ≈ 0,01 ms on average, worst ≈ 2 ms. (decided)
+
+**D-632 — A quarry between two cycles digs.** WORKING with no cycle running (placed this tick, or a cycle just done
+and the next dispatch about to book the yard) counted as not digging, so the held span's sheet read the grey stone
+button for a tick (a paused game showed it until it ran again). `paveStoneWait` counts it as digging. (decided)
+
+**D-633 — Stone dug into a quarry yard a full granary refuses: a calm pin that points to the quarry.** Valley card-60
+seed 1328 110:37–110:46: the trading post's wagon held at the bridge (ice), its red card offered only the grey "Wyłóż
+most kamieniem" for 11 s — the stone it lacked lay in the quarry's full yard (OUTPUT_FULL.NO_DESTINATION, the granary
+full). `paveStoneYard`: the held span lacks stone, no calm stone wait and no wagon short (D-591), and a quarry's yard is
+refused by a granary (`blockedBy` ≥ 0) — the held building is a calm pin (`cause.stoneYard`; ice keeps
+`cause.heldIce`, D-455), its sheet says the stone lies at the quarry with one tap to the quarry, whose own card has the
+cure (a wagon, a granary, or calm "rynek nasycony"). New keys `cause.stoneYard`, `fix.stoneYard` (pending). (decided)
+
+**D-634 — A workshop whose own gate lost its road, with no link left, gets "Rozbierz".** Seed 1321 card-10 64:41: a
+malthouse NO_ROAD (a road or building laid later took its gate's cell) and the gap finder had nothing — red card,
+nothing to press. `cutOffNoLink` takes a NO_ROAD root as cut off too (D-410). (decided)
+
+**D-635 — The dead-end letter checks every castle with an order.** XVI / XVII: the second castle cut off with no
+silver to link it was never reported (only the main castle was). Each castle whose order is not in yet, main first;
+the letter text is the same ("Zamek nie ma drogi do stajni…"). (decided)
+
+**D-636 — A cycle already running counts toward what the map can still bring.** Fuzz m17 seed 104: the woodcutter
+taken down at 4:40, the sawmill's last cycle running — the letter said 10 of 12 planks left and would have cleared at
+5:01 when that cycle came out (its wood had left the yard when it started). `onMap` adds a running cycle's output.
+(decided)
+
+**D-637 — `tools/dead-seconds.ts` reads the state the running game shows.** It read after the look's command and
+before the step — a state a running game never draws (a command is stepped before the next frame; only a paused game
+shows it). `sandbox-first30` option `secondBeforeLook`. Valley 22 seeds × card-10/30/60, 120 min: 135 dead seconds
+with the old order; with the new order before D-630..D-634 100 s, after 72 s — all but 4 s NO_INPUT.CONTESTED (D-594 a,
+left for the playtest); the 4 s are a bakery NO_INPUT at 8:34 (card-30 1309), present before too. (decided)
+
+**D-638 — Dead-end letter: a workshop on the build list no silver can pay for counts as none.** D-613 counted any
+type on the build list as buildable. Now only when its price fits all the silver the player can still raise in a
+contract mission, where nothing pays but refunds: coins, every wagon but one sold, every building (not castle, stable,
+trading post) and every road cell taken back (`silverBound`; Infinity where a market pays). The letter
+`deadEnd.noSilver` names the cheapest such price. Generous by construction (a road to the new workshop is free here).
+Never seen in fuzz (missions start with silver); test on a stripped XIV. (decided)
+
+**D-639 — Dead-end letter: too late for an order that can still be filled.** TOO_LATE when, for a castle good, even
+every standing workshop of its chain working without a pause from now on (a running cycle only if it ends by the
+deadline, the next one after it, +1 tick of slack) with no wagon time cannot make the rest by the main deadline, and
+no new workshop can be built (not on the list, or D-638's silver). Missing source and a cut-off castle are named
+first. Seasons skip the bound (cycles vary). `tools/dead-end-scan.ts` (bots XVI/XVII, every balance-night6 player
+I–XVII with `--balance`, 3 000+ fuzz games with and without the mission's own silver, up to 30 min): 0 letters in a
+game won or cleared later. Example: the m1 players that never bridge get it at 10:01 of 12:00. Key `deadEnd.late` (pending). (decided)
