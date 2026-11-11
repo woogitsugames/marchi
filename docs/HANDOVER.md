@@ -13,6 +13,8 @@
 - Misja X, otwarcie 0:02–0:20: czerwony spór o drewno bez przycisku zostaje celowo (D-110). Czy pokazywać „Postaw drwala” od razu, czy czekać do playtestu? (BACKLOG)
 - Scalone w nocy: D-610..D-619 (karty późnych misji, list „Szlak nie do uratowania” przy rozebranym niezastępowalnym producencie). Testy 711/0, layout 138/0, sim nietknięty.
 
+- (11 XI noc) Scalone D-630..D-639 (P4 kart, list „Szlak nie do uratowania” rozszerzony: drugi zamek bez drogi, brak srebra, za późno; 0 fałszywych alarmów w >3000 grach). Testy 720/0, layout 138/0, sim nietknięty. Do decyzji: (1) list „za późno” w misji I (samouczek) — zostawić czy wyłączyć; (2) droga zbudowana w pauzie — odświeżać odczyt po komendzie czy zostawić. 6 kluczy `PENDING_KEYS` do tłumaczenia.
+
 ## Scalone 10 XI wieczór (ta sama sesja)
 - Scalone i na `main`: D-500..502, D-520..522, D-540..543 (grafika 12), D-560..565, **D-570..574** (render: culling kafli 64 m, −33 % trójkątów w dolinie, bez zmiany obrazu; P1 do sprawdzenia na telefonie, bo +wywołania rysowania), **D-590..594** (arkusz zamykany nie przyjmuje tapnięć, szary kamień, pełne podwórze producenta, cache UI między grami). Testy 701/0, layout 138/0, hashe misji bez zmian.
 - Ostatnie APK: **8c2caef** (10 XI ~22:30). Otwarte: test Androida „Wstecz” (D-522) na prawdziwym urządzeniu; pytanie o LOD/cienie na low (BACKLOG); 3 klucze (`cause.stoneWagon`, `fix.stoneWagon`, `cause.yardRoom`) do tłumaczenia; sprawa desaturacji rdzawych koron jesienią.
